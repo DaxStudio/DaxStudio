@@ -41,11 +41,7 @@ namespace DaxStudio
             AdomdCommand cmd = conn.CreateCommand();
             cmd.CommandType = CommandType.Text;
 
-            // if text is selected try to execute that
-            if (this.userControl12.daxEditor.SelectionLength == 0)
-                cmd.CommandText = this.userControl12.daxEditor.Text;
-            else
-                cmd.CommandText = this.userControl12.daxEditor.SelectedText;
+            cmd.CommandText = GetTextToExecute();
 
             DataTable dt = new DataTable("DAXQuery");
             AdomdDataAdapter da = new AdomdDataAdapter(cmd);
@@ -70,6 +66,15 @@ namespace DaxStudio
             {
                 WriteOutputError(ex.Message);
             }
+        }
+
+        private string GetTextToExecute()
+        {
+            // if text is selected try to execute that
+            if (this.userControl12.daxEditor.SelectionLength == 0)
+                return this.userControl12.daxEditor.Text;
+            else
+                return this.userControl12.daxEditor.SelectedText;
         }
 
         private void ClearOutput()
@@ -136,6 +141,39 @@ namespace DaxStudio
 
             }
 
+        }
+
+        private void tspRunToTable_Click(object sender, EventArgs e)
+        {
+            Excel.Workbook excelWorkbook = app.ActiveWorkbook;
+            
+            // Create a new Sheet
+            Excel.Worksheet excelSheet = (Excel.Worksheet)excelWorkbook.Sheets.Add(
+                Type.Missing, excelWorkbook.Sheets.get_Item(excelWorkbook.Sheets.Count)
+                , 1, Excel.XlSheetType.xlWorksheet);
+
+            Excel.ListObject lo = excelSheet.ListObjects.AddEx(0
+                , "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                , Type.Missing
+                ,Excel.XlYesNoGuess.xlGuess
+                , excelSheet.Range["$A$3"]);
+            lo.QueryTable.CommandType = Excel.XlCmdType.xlCmdDefault;
+            lo.QueryTable.CommandText = GetTextToExecute();
+            try
+            {
+                WriteOutputMessage(string.Format("{0} - Starting Query Table Refresh", DateTime.Now));
+                lo.QueryTable.Refresh(false);
+                WriteOutputMessage(string.Format("{0} - Query Table Refresh Complete", DateTime.Now));
+            }
+            catch (Exception ex)
+            {
+                WriteOutputError(ex.Message);
+            }
+        }
+
+        private void tspExportMetadata_Click(object sender, EventArgs e)
+        {
+            //TODO
         }
 
         

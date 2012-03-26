@@ -40,6 +40,9 @@
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
             this.userControl12 = new DaxStudio.UserControl1();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
+            this.tspRunToTable = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tspExportMetadata = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -63,7 +66,10 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbRun});
+            this.tsbRun,
+            this.tspRunToTable,
+            this.toolStripSeparator1,
+            this.tspExportMetadata});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(777, 25);
@@ -77,7 +83,7 @@
             this.tsbRun.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRun.Name = "tsbRun";
             this.tsbRun.Size = new System.Drawing.Size(23, 22);
-            this.tsbRun.Text = "Run";
+            this.tsbRun.Text = "Run as Data Copy";
             this.tsbRun.Click += new System.EventHandler(this.tsbRun_Click);
             // 
             // splitContainer1
@@ -166,6 +172,31 @@
             this.rtbOutput.TabIndex = 0;
             this.rtbOutput.Text = "";
             // 
+            // tspRunToTable
+            // 
+            this.tspRunToTable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tspRunToTable.Image = ((System.Drawing.Image)(resources.GetObject("tspRunToTable.Image")));
+            this.tspRunToTable.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tspRunToTable.Name = "tspRunToTable";
+            this.tspRunToTable.Size = new System.Drawing.Size(23, 22);
+            this.tspRunToTable.Text = "Run as Query Table";
+            this.tspRunToTable.Click += new System.EventHandler(this.tspRunToTable_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tspExportMetadata
+            // 
+            this.tspExportMetadata.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tspExportMetadata.Image = ((System.Drawing.Image)(resources.GetObject("tspExportMetadata.Image")));
+            this.tspExportMetadata.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tspExportMetadata.Name = "tspExportMetadata";
+            this.tspExportMetadata.Size = new System.Drawing.Size(23, 22);
+            this.tspExportMetadata.Text = "Export Metadata";
+            this.tspExportMetadata.Click += new System.EventHandler(this.tspExportMetadata_Click);
+            // 
             // DaxStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -209,6 +240,9 @@
         private System.Windows.Forms.RichTextBox rtbOutput;
         //private UserControl1 userControl11;
         private UserControl1 userControl12;
+        private System.Windows.Forms.ToolStripButton tspRunToTable;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton tspExportMetadata;
 
     }
 }

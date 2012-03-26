@@ -81,8 +81,12 @@ namespace DAXEditor
 
         void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
+            /*  TODO - temporarily commented out - we need a DAX parser before we can 
+             *         properly implement intellisense like functionality
+             *         
             if (e.Text == "(" || e.Text == " ")
             {
+                
                 // Open code completion after the user has pressed dot:
                 completionWindow = new CompletionWindow(this.TextArea);
 
@@ -106,6 +110,7 @@ namespace DAXEditor
                     completionWindow = null;
                 };
             }
+             * */
         }
 
         void textEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
