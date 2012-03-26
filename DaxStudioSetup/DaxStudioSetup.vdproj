@@ -616,6 +616,20 @@
         }
         "LaunchCondition"
         {
+            "{836E08B8-0285-4809-BA42-01DB6754A45D}:_96495954A69E4DF7AD634E8F05A5BAB4"
+            {
+            "Name" = "8:Verify VSTO Tools for Office 2010 Runtime Availability"
+            "Condition" = "8:VSTORUNTIMEREDIST>=\"10.0.30319\" or OFFICERUNTIME>=”10.0.21022”"
+            "Message" = "8:The Visual Studio 2010 Tools for Office Runtime is not installed. Please run Setup.exe."
+            "InstallUrl" = "8:"
+            }
+            "{836E08B8-0285-4809-BA42-01DB6754A45D}:_BFAE0A9FBABD46C8AF8560E1D0DD74E0"
+            {
+            "Name" = "8:Verify Office 2010 Shared PIA availability"
+            "Condition" = "8:HASSHAREDPIA"
+            "Message" = "8:A required component for interacting with Excel is not available. Please run setup.exe."
+            "InstallUrl" = "8:"
+            }
             "{836E08B8-0285-4809-BA42-01DB6754A45D}:_F77035ACC7F44A1C892E69D6F61A7A02"
             {
             "Name" = "8:Verify VSTO 2010 Runtime Availability"
@@ -633,6 +647,20 @@
             "RegKey" = "8:SOFTWARE\\Microsoft\\VSTO Runtime Setup\\v4R"
             "Value" = "8:Version"
             "Property" = "8:VSTORUNTIMEREDIST"
+            }
+            "{CF66B7F7-B7DA-4B08-A67A-233430638C9C}:_822CAAEDC38E4A8B8271E3E1C23C5754"
+            {
+            "Name" = "8:Search for VSTO Tools for Office 2010 Runtime"
+            "Root" = "2:1"
+            "RegKey" = "8:SOFTWARE\\Microsoft\\VSTO Runtime Setup\\v4"
+            "Value" = "8:Version"
+            "Property" = "8:OFFICERUNTIME"
+            }
+            "{B8A5E33E-1082-4FE2-AC2E-1197791E9409}:_A83359CB181B4D4297705FD5EAE588D9"
+            {
+            "Name" = "8:Search for Office 2010 Shared PIA"
+            "ComponentId" = "8:{64E2917E-AA13-4CA4-BFFE-EA6EDA3AFCB4}"
+            "Property" = "8:HASSHAREDPIA"
             }
         }
         "MsiBootstrapper"
