@@ -173,6 +173,7 @@ namespace DaxStudio
 
         private void tspExportMetadata_Click(object sender, EventArgs e)
         {
+            /*
             Excel.Workbook excelWorkbook = app.ActiveWorkbook;
 
             // Create a new Sheet
@@ -213,6 +214,7 @@ namespace DaxStudio
             }
 
             svr.Disconnect();
+             */
         }
 
 

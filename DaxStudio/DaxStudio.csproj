@@ -136,7 +136,7 @@
     <Reference Include="Accessibility" />
     <Reference Include="ICSharpCode.AvalonEdit, Version=0.0.0.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DAXEditor\DAXEditorTest\DAXEditorTest\bin\Debug\ICSharpCode.AvalonEdit.dll</HintPath>
+      <HintPath>..\DAXEditor\lib\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
