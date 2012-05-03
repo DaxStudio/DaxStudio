@@ -263,6 +263,10 @@
     <None Include="images\Actions-system-run-icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
+      <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
+      <Name>ADOTabular</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
       <Project>{EE4788C1-DCA6-465F-8049-28CEACE6586F}</Project>
       <Name>DAXEditor</Name>

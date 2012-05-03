@@ -32,23 +32,27 @@
             this.stsDax = new System.Windows.Forms.StatusStrip();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.tsbRun = new System.Windows.Forms.ToolStripButton();
+            this.tspRunToTable = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tspExportMetadata = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabMetadata = new System.Windows.Forms.TabPage();
+            this.tvwMetadata = new System.Windows.Forms.TreeView();
             this.tabFunctions = new System.Windows.Forms.TabPage();
+            this.tvwFunctions = new System.Windows.Forms.TreeView();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
             this.userControl12 = new DaxStudio.UserControl1();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
-            this.tspRunToTable = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tspExportMetadata = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabControl1.SuspendLayout();
+            this.tabMetadata.SuspendLayout();
+            this.tabFunctions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -86,6 +90,31 @@
             this.tsbRun.Text = "Run as Data Copy";
             this.tsbRun.Click += new System.EventHandler(this.tsbRun_Click);
             // 
+            // tspRunToTable
+            // 
+            this.tspRunToTable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tspRunToTable.Image = ((System.Drawing.Image)(resources.GetObject("tspRunToTable.Image")));
+            this.tspRunToTable.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tspRunToTable.Name = "tspRunToTable";
+            this.tspRunToTable.Size = new System.Drawing.Size(23, 22);
+            this.tspRunToTable.Text = "Run as Query Table";
+            this.tspRunToTable.Click += new System.EventHandler(this.tspRunToTable_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // tspExportMetadata
+            // 
+            this.tspExportMetadata.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tspExportMetadata.Image = ((System.Drawing.Image)(resources.GetObject("tspExportMetadata.Image")));
+            this.tspExportMetadata.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tspExportMetadata.Name = "tspExportMetadata";
+            this.tspExportMetadata.Size = new System.Drawing.Size(23, 22);
+            this.tspExportMetadata.Text = "Export Metadata";
+            this.tspExportMetadata.Click += new System.EventHandler(this.tspExportMetadata_Click);
+            // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -116,6 +145,7 @@
             // 
             // tabMetadata
             // 
+            this.tabMetadata.Controls.Add(this.tvwMetadata);
             this.tabMetadata.Location = new System.Drawing.Point(4, 22);
             this.tabMetadata.Name = "tabMetadata";
             this.tabMetadata.Padding = new System.Windows.Forms.Padding(3);
@@ -124,8 +154,18 @@
             this.tabMetadata.Text = "Metadata";
             this.tabMetadata.UseVisualStyleBackColor = true;
             // 
+            // tvwMetadata
+            // 
+            this.tvwMetadata.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvwMetadata.Location = new System.Drawing.Point(3, 3);
+            this.tvwMetadata.Name = "tvwMetadata";
+            this.tvwMetadata.Size = new System.Drawing.Size(243, 370);
+            this.tvwMetadata.TabIndex = 0;
+            this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.tvw_ItemDrag);
+            // 
             // tabFunctions
             // 
+            this.tabFunctions.Controls.Add(this.tvwFunctions);
             this.tabFunctions.Location = new System.Drawing.Point(4, 22);
             this.tabFunctions.Name = "tabFunctions";
             this.tabFunctions.Padding = new System.Windows.Forms.Padding(3);
@@ -133,6 +173,15 @@
             this.tabFunctions.TabIndex = 1;
             this.tabFunctions.Text = "Functions";
             this.tabFunctions.UseVisualStyleBackColor = true;
+            // 
+            // tvwFunctions
+            // 
+            this.tvwFunctions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvwFunctions.Location = new System.Drawing.Point(3, 3);
+            this.tvwFunctions.Name = "tvwFunctions";
+            this.tvwFunctions.Size = new System.Drawing.Size(243, 370);
+            this.tvwFunctions.TabIndex = 0;
+            this.tvwFunctions.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.tvw_ItemDrag);
             // 
             // splitContainer2
             // 
@@ -154,6 +203,7 @@
             // 
             // elementHost1
             // 
+            this.elementHost1.AllowDrop = true;
             this.elementHost1.AutoSize = true;
             this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.elementHost1.Location = new System.Drawing.Point(0, 0);
@@ -161,6 +211,7 @@
             this.elementHost1.Size = new System.Drawing.Size(516, 310);
             this.elementHost1.TabIndex = 0;
             this.elementHost1.Text = "elementHost1";
+            this.elementHost1.ChildChanged += new System.EventHandler<System.Windows.Forms.Integration.ChildChangedEventArgs>(this.elementHost1_ChildChanged);
             this.elementHost1.Child = this.userControl12;
             // 
             // rtbOutput
@@ -171,31 +222,6 @@
             this.rtbOutput.Size = new System.Drawing.Size(516, 88);
             this.rtbOutput.TabIndex = 0;
             this.rtbOutput.Text = "";
-            // 
-            // tspRunToTable
-            // 
-            this.tspRunToTable.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tspRunToTable.Image = ((System.Drawing.Image)(resources.GetObject("tspRunToTable.Image")));
-            this.tspRunToTable.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tspRunToTable.Name = "tspRunToTable";
-            this.tspRunToTable.Size = new System.Drawing.Size(23, 22);
-            this.tspRunToTable.Text = "Run as Query Table";
-            this.tspRunToTable.Click += new System.EventHandler(this.tspRunToTable_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // tspExportMetadata
-            // 
-            this.tspExportMetadata.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tspExportMetadata.Image = ((System.Drawing.Image)(resources.GetObject("tspExportMetadata.Image")));
-            this.tspExportMetadata.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tspExportMetadata.Name = "tspExportMetadata";
-            this.tspExportMetadata.Size = new System.Drawing.Size(23, 22);
-            this.tspExportMetadata.Text = "Export Metadata";
-            this.tspExportMetadata.Click += new System.EventHandler(this.tspExportMetadata_Click);
             // 
             // DaxStudioForm
             // 
@@ -208,6 +234,7 @@
             this.KeyPreview = true;
             this.Name = "DaxStudioForm";
             this.Text = "DAX Studio";
+            this.Load += new System.EventHandler(this.DaxStudioForm_Load);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DaxStudioForm_KeyUp);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
@@ -216,6 +243,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
+            this.tabMetadata.ResumeLayout(false);
+            this.tabFunctions.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -243,6 +272,8 @@
         private System.Windows.Forms.ToolStripButton tspRunToTable;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton tspExportMetadata;
+        private System.Windows.Forms.TreeView tvwMetadata;
+        private System.Windows.Forms.TreeView tvwFunctions;
 
     }
 }

@@ -7,9 +7,11 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "DaxStudioSetup", "DaxStudio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAXEditor", "DAXEditor\DAXEditor.csproj", "{EE4788C1-DCA6-465F-8049-28CEACE6586F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADOTabular", "ADOTabular\ADOTabular.csproj", "{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
+		SccNumberOfProjects = 5
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs01
 		SccLocalPath0 = .
@@ -22,6 +24,9 @@ Global
 		SccProjectUniqueName3 = DAXEditor\\DAXEditor.csproj
 		SccProjectName3 = DAXEditor
 		SccLocalPath3 = DAXEditor
+		SccProjectUniqueName4 = ADOTabular\\ADOTabular.csproj
+		SccProjectName4 = ADOTabular
+		SccLocalPath4 = ADOTabular
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CD_ROM|Any CPU = CD_ROM|Any CPU
@@ -59,6 +64,16 @@ Global
 		{EE4788C1-DCA6-465F-8049-28CEACE6586F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE4788C1-DCA6-465F-8049-28CEACE6586F}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
 		{EE4788C1-DCA6-465F-8049-28CEACE6586F}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.SingleImage|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

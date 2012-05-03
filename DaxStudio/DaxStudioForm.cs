@@ -9,11 +9,15 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices.AdomdClient;
 using Excel = Microsoft.Office.Interop.Excel;
+using ADOTabular;
 
 namespace DaxStudio
 {
     public partial class DaxStudioForm : Form
     {
+
+        ADOTabularConnection _conn;
+
         public DaxStudioForm()
         {
             InitializeComponent();
@@ -217,6 +221,71 @@ namespace DaxStudio
              */
         }
 
+        private void DaxStudioForm_Load(object sender, EventArgs e)
+        {
+            SetCurrentConnection();
+            PopulateConnectionMetadata();
+            this.userControl12.AllowDrop = true;
+            this.userControl12.Drop += new System.Windows.DragEventHandler(userControl12_Drop);
+        }
+
+        void userControl12_Drop(object sender, System.Windows.DragEventArgs e)
+        {
+            userControl12.daxEditor.SelectedText = e.Data.ToString();
+        }
+
+        private void SetCurrentConnection()
+        {
+            Excel.Workbook wb = app.ActiveWorkbook;
+            string wrkbkPath = wb.FullName;
+            string connStr = "Data Source=$embedded$;Location=" + wrkbkPath + ";";
+            _conn = new ADOTabularConnection(connStr);
+        }
+
+        private void PopulateConnectionMetadata()
+        {
+            foreach (ADOTabularModel m in _conn.Database.Models)
+            {
+                TreeNode modelNode = this.tvwMetadata.Nodes.Add(m.Name,m.Name); //todo - add image index
+                foreach (ADOTabularTable t in m.Tables)
+                {
+                    TreeNode tableNode = modelNode.Nodes.Add(t.Name,t.Name);
+                    foreach(ADOTabularColumn c in t.Columns)
+                    {
+                        tableNode.Nodes.Add(c.Name, c.Caption);
+                    }
+                }
+                modelNode.Expand();
+
+                foreach (ADOTabularFunction f in _conn.Functions)
+                {
+                    TreeNode groupNode;
+                    int groupIndex = -1;
+                    groupIndex = tvwFunctions.Nodes.IndexOfKey(f.Group);
+                    if (groupIndex == -1)
+                    {
+                        groupNode = tvwFunctions.Nodes.Add(f.Group,f.Group);
+                    }
+                    else
+                    {
+                        groupNode = tvwFunctions.Nodes[groupIndex];
+                    }
+                    groupNode.Nodes.Add(f.Signature, f.Name);
+
+                }
+
+            }
+        }
+
+        private void tvw_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            DoDragDrop(((TreeNode)e.Item).Name, DragDropEffects.Move);
+        }
+
+        private void elementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+
+        }
 
     }
 }
