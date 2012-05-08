@@ -18,6 +18,17 @@ namespace DaxStudio
 
         ADOTabularConnection _conn;
 
+        private enum tvwMetadataImages
+        {
+            Table = 0,
+            Column = 1,
+            HiddenColumn = 2,
+            Measure = 3,
+            HiddenMeasure = 4,
+            Folder = 5,
+            Function = 6
+        }
+
         public DaxStudioForm()
         {
             InitializeComponent();
@@ -30,12 +41,42 @@ namespace DaxStudio
             set { app = value; }
         }
 
-        private void tsbRun_Click(object sender, EventArgs e)
+
+        private void DaxQueryDiscardResults()
         {
-            RunDaxQuery();
+            //TODO
+            System.Windows.Forms.MessageBox.Show("Not Implemented");
         }
 
-        private void RunDaxQuery()
+        private void DaxQueryTable()
+        {
+            Excel.Workbook excelWorkbook = app.ActiveWorkbook;
+
+            // Create a new Sheet
+            Excel.Worksheet excelSheet = (Excel.Worksheet)excelWorkbook.Sheets.Add(
+                Type.Missing, excelWorkbook.Sheets.get_Item(excelWorkbook.Sheets.Count)
+                , 1, Excel.XlSheetType.xlWorksheet);
+
+            Excel.ListObject lo = excelSheet.ListObjects.AddEx(0
+                , "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                , Type.Missing
+                , Excel.XlYesNoGuess.xlGuess
+                , excelSheet.Range["$A$3"]);
+            lo.QueryTable.CommandType = Excel.XlCmdType.xlCmdDefault;
+            lo.QueryTable.CommandText = GetTextToExecute();
+            try
+            {
+                WriteOutputMessage(string.Format("{0} - Starting Query Table Refresh", DateTime.Now));
+                lo.QueryTable.Refresh(false);
+                WriteOutputMessage(string.Format("{0} - Query Table Refresh Complete", DateTime.Now));
+            }
+            catch (Exception ex)
+            {
+                WriteOutputError(ex.Message);
+            }
+        }
+
+        private void DaxQueryStaticResult()
         {
             Excel.Workbook wb = app.ActiveWorkbook;
             string wrkbkPath = wb.FullName;
@@ -140,40 +181,13 @@ namespace DaxStudio
             switch (e.KeyCode)
             {
                 case Keys.F5:
-                    RunDaxQuery();
+                    DaxQueryStaticResult();
                     break;
 
             }
 
         }
 
-        private void tspRunToTable_Click(object sender, EventArgs e)
-        {
-            Excel.Workbook excelWorkbook = app.ActiveWorkbook;
-
-            // Create a new Sheet
-            Excel.Worksheet excelSheet = (Excel.Worksheet)excelWorkbook.Sheets.Add(
-                Type.Missing, excelWorkbook.Sheets.get_Item(excelWorkbook.Sheets.Count)
-                , 1, Excel.XlSheetType.xlWorksheet);
-
-            Excel.ListObject lo = excelSheet.ListObjects.AddEx(0
-                , "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-                , Type.Missing
-                , Excel.XlYesNoGuess.xlGuess
-                , excelSheet.Range["$A$3"]);
-            lo.QueryTable.CommandType = Excel.XlCmdType.xlCmdDefault;
-            lo.QueryTable.CommandText = GetTextToExecute();
-            try
-            {
-                WriteOutputMessage(string.Format("{0} - Starting Query Table Refresh", DateTime.Now));
-                lo.QueryTable.Refresh(false);
-                WriteOutputMessage(string.Format("{0} - Query Table Refresh Complete", DateTime.Now));
-            }
-            catch (Exception ex)
-            {
-                WriteOutputError(ex.Message);
-            }
-        }
 
         private void tspExportMetadata_Click(object sender, EventArgs e)
         {
@@ -223,10 +237,22 @@ namespace DaxStudio
 
         private void DaxStudioForm_Load(object sender, EventArgs e)
         {
-            SetCurrentConnection();
-            PopulateConnectionMetadata();
             this.userControl12.AllowDrop = true;
             this.userControl12.Drop += new System.Windows.DragEventHandler(userControl12_Drop);
+            SetCurrentConnection();
+            PopulateConnectionMetadata();
+            PopulateOutputOptions(tcbOutputTo);            
+        }
+
+        private void PopulateOutputOptions(ToolStripComboBox tcbOutputTo)
+        {
+            Excel.Workbook wb = app.ActiveWorkbook;
+            tcbOutputTo.Items.Add("<Query Results Sheet>");
+            foreach (Excel.Worksheet ws in wb.Worksheets)
+            {
+                tcbOutputTo.Items.Add(ws.Name);
+            }
+            tcbOutputTo.Items.Add("<New Sheet>");
         }
 
         void userControl12_Drop(object sender, System.Windows.DragEventArgs e)
@@ -249,10 +275,27 @@ namespace DaxStudio
                 TreeNode modelNode = this.tvwMetadata.Nodes.Add(m.Name,m.Name); //todo - add image index
                 foreach (ADOTabularTable t in m.Tables)
                 {
-                    TreeNode tableNode = modelNode.Nodes.Add(t.Name,t.Name);
+                    TreeNode tableNode = modelNode.Nodes.Add(t.Name, t.Name, (int)tvwMetadataImages.Table, (int)tvwMetadataImages.Table);
                     foreach(ADOTabularColumn c in t.Columns)
                     {
-                        tableNode.Nodes.Add(c.Name, c.Caption);
+                        // add different icons for hidden columns/measures
+                        int iImageID = 0;
+                        if (c.Type == ADOTabularColumnType.Column)
+                        {
+                            if (c.IsVisible == true)
+                            {  iImageID = (int)tvwMetadataImages.Column;} 
+                            else
+                            { iImageID = (int)tvwMetadataImages.HiddenColumn; } 
+                        }
+                        else
+                        {
+                            if (c.IsVisible == true)
+                            { iImageID = (int)tvwMetadataImages.Measure; }
+                            else
+                            { iImageID = (int)tvwMetadataImages.HiddenMeasure; }
+                        }
+
+                            tableNode.Nodes.Add(c.Name, c.Caption,iImageID,iImageID);
                     }
                 }
                 modelNode.Expand();
@@ -264,13 +307,13 @@ namespace DaxStudio
                     groupIndex = tvwFunctions.Nodes.IndexOfKey(f.Group);
                     if (groupIndex == -1)
                     {
-                        groupNode = tvwFunctions.Nodes.Add(f.Group,f.Group);
+                        groupNode = tvwFunctions.Nodes.Add(f.Group, f.Group, (int)tvwMetadataImages.Folder, (int)tvwMetadataImages.Folder);
                     }
                     else
                     {
                         groupNode = tvwFunctions.Nodes[groupIndex];
                     }
-                    groupNode.Nodes.Add(f.Signature, f.Name);
+                    groupNode.Nodes.Add(f.Signature, f.Name, (int)tvwMetadataImages.Function, (int)tvwMetadataImages.Function);
 
                 }
 
@@ -286,6 +329,23 @@ namespace DaxStudio
         {
 
         }
+
+        private void runStaticResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DaxQueryStaticResult();
+        }
+
+        private void runDsicardResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DaxQueryDiscardResults();
+        }
+
+        private void runQueryTableToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DaxQueryTable();
+        }
+
+
 
     }
 }

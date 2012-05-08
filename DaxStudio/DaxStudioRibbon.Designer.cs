@@ -56,7 +56,7 @@
             // btnDax
             // 
             this.btnDax.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnDax.Image = global::DaxStudio.Properties.Resources.Actions_system_run_icon;
+            this.btnDax.Image = global::DaxStudio.Properties.Resources.run_icon;
             this.btnDax.Label = "DAX Studio";
             this.btnDax.Name = "btnDax";
             this.btnDax.ScreenTip = "Exectute DAX query";

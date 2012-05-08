@@ -260,7 +260,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="images\Actions-system-run-icon.png" />
+    <None Include="Resources\run_icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
@@ -273,8 +273,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="images\play.png" />
+    <EmbeddedResource Include="Resources\Table.png" />
+    <None Include="images\Actions-system-run-icon.png" />
+    <EmbeddedResource Include="Resources\Column.png" />
+    <EmbeddedResource Include="Resources\HiddenColumn.png" />
+    <EmbeddedResource Include="Resources\HiddenMeasure.png" />
+    <Content Include="Resources\Measure.png" />
+    <Content Include="Resources\play.png" />
+    <None Include="Resources\PlayIco.bmp" />
   </ItemGroup>
+  <ItemGroup />
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Include additional build rules for an Office application add-in. -->
