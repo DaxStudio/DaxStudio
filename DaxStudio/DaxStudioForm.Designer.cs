@@ -40,6 +40,8 @@
             this.tspExportMetadata = new System.Windows.Forms.ToolStripButton();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.tcbOutputTo = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStrip1cmboModel = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripCmdModels = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabMetadata = new System.Windows.Forms.TabPage();
@@ -48,9 +50,9 @@
             this.tabFunctions = new System.Windows.Forms.TabPage();
             this.tvwFunctions = new System.Windows.Forms.TreeView();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.rtbOutput = new System.Windows.Forms.RichTextBox();
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
             this.userControl12 = new DaxStudio.UserControl1();
+            this.rtbOutput = new System.Windows.Forms.RichTextBox();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -80,7 +82,9 @@
             this.toolStripSeparator1,
             this.tspExportMetadata,
             this.toolStripLabel1,
-            this.tcbOutputTo});
+            this.tcbOutputTo,
+            this.toolStrip1cmboModel,
+            this.toolStripCmdModels});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(777, 25);
@@ -146,6 +150,23 @@
             // 
             this.tcbOutputTo.Name = "tcbOutputTo";
             this.tcbOutputTo.Size = new System.Drawing.Size(121, 25);
+            // 
+            // toolStrip1cmboModel
+            // 
+            this.toolStrip1cmboModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStrip1cmboModel.Name = "toolStrip1cmboModel";
+            this.toolStrip1cmboModel.Size = new System.Drawing.Size(150, 25);
+            this.toolStrip1cmboModel.SelectedIndexChanged += new System.EventHandler(this.toolStrip1cmboModel_SelectedIndexChanged_1);
+            // 
+            // toolStripCmdModels
+            // 
+            this.toolStripCmdModels.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripCmdModels.Image = global::DaxStudio.Properties.Resources.DataSource;
+            this.toolStripCmdModels.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripCmdModels.Name = "toolStripCmdModels";
+            this.toolStripCmdModels.Size = new System.Drawing.Size(23, 22);
+            this.toolStripCmdModels.Text = "Models";
+            this.toolStripCmdModels.Click += new System.EventHandler(this.toolStripCmdModels_Click);
             // 
             // splitContainer1
             // 
@@ -253,15 +274,6 @@
             this.splitContainer2.SplitterDistance = 310;
             this.splitContainer2.TabIndex = 0;
             // 
-            // rtbOutput
-            // 
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.Text = "";
-            // 
             // elementHost1
             // 
             this.elementHost1.AllowDrop = true;
@@ -274,6 +286,15 @@
             this.elementHost1.Text = "elementHost1";
             this.elementHost1.ChildChanged += new System.EventHandler<System.Windows.Forms.Integration.ChildChangedEventArgs>(this.elementHost1_ChildChanged);
             this.elementHost1.Child = this.userControl12;
+            // 
+            // rtbOutput
+            // 
+            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
+            this.rtbOutput.Name = "rtbOutput";
+            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
+            this.rtbOutput.TabIndex = 0;
+            this.rtbOutput.Text = "";
             // 
             // DaxStudioForm
             // 
@@ -331,6 +352,8 @@
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox tcbOutputTo;
         private System.Windows.Forms.ImageList imgListTree;
+        private System.Windows.Forms.ToolStripComboBox toolStrip1cmboModel;
+        private System.Windows.Forms.ToolStripButton toolStripCmdModels;
 
     }
 }

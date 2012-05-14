@@ -138,13 +138,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DAXEditor\lib\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Microsoft.AnalysisServices.DLL</HintPath>
+      <HintPath>C:\Program Files\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files (x86)\Microsoft.NET\ADOMD.NET\110\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+      <HintPath>C:\Program Files\Microsoft.NET\ADOMD.NET\110\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -227,6 +227,9 @@
     <EmbeddedResource Include="DaxStudioRibbon.resx">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ServerManager.resx">
+      <DependentUpon>ServerManager.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="DaxStudio_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -241,6 +244,13 @@
     </Compile>
     <Compile Include="DaxStudioRibbon.Designer.cs">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ServerConnections.cs" />
+    <Compile Include="ServerManager.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ServerManager.Designer.cs">
+      <DependentUpon>ServerManager.cs</DependentUpon>
     </Compile>
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
@@ -278,6 +288,8 @@
     <EmbeddedResource Include="Resources\Column.png" />
     <EmbeddedResource Include="Resources\HiddenColumn.png" />
     <EmbeddedResource Include="Resources\HiddenMeasure.png" />
+    <Content Include="images\DataSource.ico" />
+    <None Include="Resources\DataSource.ico" />
     <Content Include="Resources\Measure.png" />
     <Content Include="Resources\play.png" />
     <None Include="Resources\PlayIco.bmp" />

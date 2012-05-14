@@ -7,9 +7,16 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+
+//using Microsoft.AnalysisServices.AdomdClient;
+
 using Microsoft.AnalysisServices.AdomdClient;
+
+
 using Excel = Microsoft.Office.Interop.Excel;
+//using ADOTabular;
 using ADOTabular;
+
 
 namespace DaxStudio
 {
@@ -17,6 +24,7 @@ namespace DaxStudio
     {
 
         ADOTabularConnection _conn;
+        ServerConnections _connections = new ServerConnections();
 
         private enum tvwMetadataImages
         {
@@ -28,19 +36,19 @@ namespace DaxStudio
             Folder = 5,
             Function = 6
         }
+        private Excel.Application app;
+
 
         public DaxStudioForm()
         {
             InitializeComponent();
         }
-        private Excel.Application app;
 
         public Excel.Application Application
         {
             get { return app; }
             set { app = value; }
         }
-
 
         private void DaxQueryDiscardResults()
         {
@@ -58,7 +66,8 @@ namespace DaxStudio
                 , 1, Excel.XlSheetType.xlWorksheet);
 
             Excel.ListObject lo = excelSheet.ListObjects.AddEx(0
-                , "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                //, "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                , @"OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
                 , Type.Missing
                 , Excel.XlYesNoGuess.xlGuess
                 , excelSheet.Range["$A$3"]);
@@ -80,7 +89,7 @@ namespace DaxStudio
         {
             Excel.Workbook wb = app.ActiveWorkbook;
             string wrkbkPath = wb.FullName;
-            string connStr = "Data Source=$embedded$;Location=" + wrkbkPath + ";";
+            string connStr = _connections.ConnectionString(toolStrip1cmboModel.Text);
             AdomdConnection conn = new AdomdConnection(connStr);
             conn.Open();
             AdomdCommand cmd = conn.CreateCommand();
@@ -188,7 +197,6 @@ namespace DaxStudio
 
         }
 
-
         private void tspExportMetadata_Click(object sender, EventArgs e)
         {
             /*
@@ -239,9 +247,20 @@ namespace DaxStudio
         {
             this.userControl12.AllowDrop = true;
             this.userControl12.Drop += new System.Windows.DragEventHandler(userControl12_Drop);
-            SetCurrentConnection();
-            PopulateConnectionMetadata();
-            PopulateOutputOptions(tcbOutputTo);            
+
+            /* PTB - add the default server */
+            Excel.Workbook wb = app.ActiveWorkbook;
+            string wrkbkPath = wb.FullName;
+            _connections.AddConnection("servername", "Current Excel WorkBook",  "Data Source=$embedded$;Location=" + wrkbkPath + ";");
+
+            toolStrip1cmboModel.Items.Add(_connections[0].ModelName);
+            toolStrip1cmboModel.SelectedIndex = 0;
+            
+            //PopulateConnectionMetadata();
+            // managed by changing the 'server' source
+            
+            PopulateOutputOptions(tcbOutputTo);      
+
         }
 
         private void PopulateOutputOptions(ToolStripComboBox tcbOutputTo)
@@ -258,14 +277,6 @@ namespace DaxStudio
         void userControl12_Drop(object sender, System.Windows.DragEventArgs e)
         {
             userControl12.daxEditor.SelectedText = e.Data.ToString();
-        }
-
-        private void SetCurrentConnection()
-        {
-            Excel.Workbook wb = app.ActiveWorkbook;
-            string wrkbkPath = wb.FullName;
-            string connStr = "Data Source=$embedded$;Location=" + wrkbkPath + ";";
-            _conn = new ADOTabularConnection(connStr);
         }
 
         private void PopulateConnectionMetadata()
@@ -346,6 +357,33 @@ namespace DaxStudio
         }
 
 
+        // ptb
+        private void toolStripCmdModels_Click(object sender, EventArgs e)
+        {
+            // loads dialog to get servers
+            ServerManager _servers = new ServerManager(_connections);
+            _servers.ShowDialog();
+
+            // PTB -- will have to clean and add (later)
+            string _currentSelection = toolStrip1cmboModel.Text;
+            toolStrip1cmboModel.Items.Clear();
+            for (int i = 0; i < _connections.Length; i++)
+                toolStrip1cmboModel.Items.Add(_connections[i].ModelName);
+
+            toolStrip1cmboModel.SelectedItem = _currentSelection;
+               
+        }
+
+
+
+        private void toolStrip1cmboModel_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            string _connString = _connections.ConnectionString(toolStrip1cmboModel.Text);
+            tvwMetadata.Nodes.Clear();
+            _conn = new ADOTabularConnection(_connString);
+            PopulateConnectionMetadata();
+
+        }
 
     }
 }
