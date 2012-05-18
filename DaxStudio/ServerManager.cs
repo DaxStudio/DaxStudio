@@ -53,7 +53,7 @@ namespace DaxStudio
             }
             catch (Exception exc)
             {
-                MessageBox.Show(exc.Message);
+                MessageBox.Show(exc.Message, "DAX Studio", MessageBoxButtons.OK);
                 Cursor.Current = Cursors.Default;
 
             }
@@ -82,8 +82,22 @@ namespace DaxStudio
 
         private void cmdAddModel_Click(object sender, EventArgs e)
         {
+            string _model_name = cmboModels.Text;
             string _conString = "Data Source=" + cmboServer.Text + ";" + "Initial Catalog=" + cmboModels.Text + ";";
-            _connections.AddConnection(cmboServer.Text, cmboModels.Text, _conString );
+            string _server = cmboServer.Text;
+
+            // check to see if the model exists in library
+            // if so prompt for overwrite
+            if (_connections.IndexOf(_model_name) == -1)
+            {
+                _connections.AddConnection(_server, _model_name, _conString);
+            }
+            else
+            {
+                if (MessageBox.Show("Model Exists, Over Write ?", "DAX Studio", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                    _connections.AddConnection(_server, _model_name, _conString);
+            }
+
         }
 
         private void cmboModels_SelectedIndexChanged(object sender, EventArgs e)

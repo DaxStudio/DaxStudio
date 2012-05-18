@@ -66,6 +66,17 @@ namespace DaxStudio
             }
         }
 
+        public int IndexOf(string ModelName)
+        {
+            // returns index of model name
+            for (int i = 0; i < _connections.Count; i++)
+            {
+                if (_connections[i].ModelName == ModelName)
+                    return i;
+            }
+            return (int) -1;
+        }
+
     }
 
     public class ServerConnection
