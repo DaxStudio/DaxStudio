@@ -306,6 +306,7 @@
     <Content Include="images\DataSource.ico" />
     <None Include="Resources\DataSource.ico" />
     <None Include="Resources\button_white_help.png" />
+    <Content Include="Resources\Folder.ico" />
     <Content Include="Resources\Function.png" />
     <Content Include="Resources\Measure.png" />
     <Content Include="Resources\play.png" />
