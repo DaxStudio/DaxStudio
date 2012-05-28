@@ -31,36 +31,54 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DaxStudioForm));
             this.stsDax = new System.Windows.Forms.StatusStrip();
+            this.tspStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tspConnection = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tspVersion = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tspSpid = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripSplitButton1 = new System.Windows.Forms.ToolStripSplitButton();
             this.runQueryTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runStaticResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runDsicardResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripCmdModels = new System.Windows.Forms.ToolStripButton();
+            this.cboDatabase = new System.Windows.Forms.ToolStripComboBox();
             this.tspExportMetadata = new System.Windows.Forms.ToolStripButton();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.tcbOutputTo = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStrip1cmboModel = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripCmdModels = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripSplitButton();
+            this.documentationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mSDNForumsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.pnlModel = new System.Windows.Forms.Panel();
+            this.cboModel = new System.Windows.Forms.ComboBox();
+            this.tabMetadataBrowser = new System.Windows.Forms.TabControl();
             this.tabMetadata = new System.Windows.Forms.TabPage();
             this.tvwMetadata = new System.Windows.Forms.TreeView();
             this.imgListTree = new System.Windows.Forms.ImageList(this.components);
             this.tabFunctions = new System.Windows.Forms.TabPage();
             this.tvwFunctions = new System.Windows.Forms.TreeView();
+            this.tabDMV = new System.Windows.Forms.TabPage();
+            this.listDMV = new System.Windows.Forms.ListView();
+            this.colDmv = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.userControl12 = new DaxStudio.UserControl1();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
+            this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
+            this.stsDax.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.pnlModel.SuspendLayout();
+            this.tabMetadataBrowser.SuspendLayout();
             this.tabMetadata.SuspendLayout();
             this.tabFunctions.SuspendLayout();
+            this.tabDMV.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
@@ -69,22 +87,63 @@
             // 
             // stsDax
             // 
-            this.stsDax.Location = new System.Drawing.Point(0, 427);
+            this.stsDax.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tspStatus,
+            this.tspConnection,
+            this.tspVersion,
+            this.tspSpid});
+            this.stsDax.Location = new System.Drawing.Point(0, 425);
             this.stsDax.Name = "stsDax";
-            this.stsDax.Size = new System.Drawing.Size(777, 22);
+            this.stsDax.Size = new System.Drawing.Size(777, 24);
             this.stsDax.TabIndex = 0;
             this.stsDax.Text = "statusStrip1";
+            // 
+            // tspStatus
+            // 
+            this.tspStatus.Name = "tspStatus";
+            this.tspStatus.Size = new System.Drawing.Size(636, 19);
+            this.tspStatus.Spring = true;
+            this.tspStatus.Text = "Ready";
+            this.tspStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tspConnection
+            // 
+            this.tspConnection.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.tspConnection.MergeIndex = 1;
+            this.tspConnection.Name = "tspConnection";
+            this.tspConnection.Size = new System.Drawing.Size(92, 19);
+            this.tspConnection.Text = "Not Connected";
+            this.tspConnection.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.tspConnection.ToolTipText = "ServerName";
+            // 
+            // tspVersion
+            // 
+            this.tspVersion.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.tspVersion.Name = "tspVersion";
+            this.tspVersion.Size = new System.Drawing.Size(17, 19);
+            this.tspVersion.Text = "0";
+            this.tspVersion.ToolTipText = "Server Version";
+            // 
+            // tspSpid
+            // 
+            this.tspSpid.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.tspSpid.Name = "tspSpid";
+            this.tspSpid.Size = new System.Drawing.Size(17, 19);
+            this.tspSpid.Text = "0";
+            this.tspSpid.ToolTipText = "Connection SPID";
             // 
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSplitButton1,
             this.toolStripSeparator1,
+            this.toolStripCmdModels,
+            this.cboDatabase,
             this.tspExportMetadata,
             this.toolStripLabel1,
             this.tcbOutputTo,
-            this.toolStrip1cmboModel,
-            this.toolStripCmdModels});
+            this.toolStripSeparator2,
+            this.toolStripButton1});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(777, 25);
@@ -103,32 +162,53 @@
             this.toolStripSplitButton1.Name = "toolStripSplitButton1";
             this.toolStripSplitButton1.Size = new System.Drawing.Size(32, 22);
             this.toolStripSplitButton1.Text = "toolStripSplitButton1";
+            this.toolStripSplitButton1.ToolTipText = "Run Query";
+            this.toolStripSplitButton1.ButtonClick += new System.EventHandler(this.RunLastQueryType);
             // 
             // runQueryTableToolStripMenuItem
             // 
             this.runQueryTableToolStripMenuItem.Name = "runQueryTableToolStripMenuItem";
             this.runQueryTableToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.runQueryTableToolStripMenuItem.Text = "Run (Query Table)";
-            this.runQueryTableToolStripMenuItem.Click += new System.EventHandler(this.runQueryTableToolStripMenuItem_Click);
+            this.runQueryTableToolStripMenuItem.Click += new System.EventHandler(this.RunQueryTableToolStripMenuItemClick);
             // 
             // runStaticResultsToolStripMenuItem
             // 
             this.runStaticResultsToolStripMenuItem.Name = "runStaticResultsToolStripMenuItem";
             this.runStaticResultsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.runStaticResultsToolStripMenuItem.Text = "Run (Static Results)";
-            this.runStaticResultsToolStripMenuItem.Click += new System.EventHandler(this.runStaticResultsToolStripMenuItem_Click);
+            this.runStaticResultsToolStripMenuItem.Click += new System.EventHandler(this.RunStaticResultsToolStripMenuItemClick);
             // 
             // runDsicardResultsToolStripMenuItem
             // 
             this.runDsicardResultsToolStripMenuItem.Name = "runDsicardResultsToolStripMenuItem";
             this.runDsicardResultsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.runDsicardResultsToolStripMenuItem.Text = "Run (Dsicard Results)";
-            this.runDsicardResultsToolStripMenuItem.Click += new System.EventHandler(this.runDsicardResultsToolStripMenuItem_Click);
+            this.runDsicardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripCmdModels
+            // 
+            this.toolStripCmdModels.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripCmdModels.Image = global::DaxStudio.Properties.Resources.DataSource;
+            this.toolStripCmdModels.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripCmdModels.Name = "toolStripCmdModels";
+            this.toolStripCmdModels.Size = new System.Drawing.Size(23, 22);
+            this.toolStripCmdModels.Text = "Models";
+            this.toolStripCmdModels.ToolTipText = "Change Connection";
+            this.toolStripCmdModels.Click += new System.EventHandler(this.ToolStripCmdModelsClick);
+            // 
+            // cboDatabase
+            // 
+            this.cboDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboDatabase.Name = "cboDatabase";
+            this.cboDatabase.Size = new System.Drawing.Size(180, 25);
+            this.cboDatabase.ToolTipText = "Database Name";
+            this.cboDatabase.SelectedIndexChanged += new System.EventHandler(this.CboDatabasesSelectionChangeCommitted);
             // 
             // tspExportMetadata
             // 
@@ -138,7 +218,7 @@
             this.tspExportMetadata.Name = "tspExportMetadata";
             this.tspExportMetadata.Size = new System.Drawing.Size(23, 22);
             this.tspExportMetadata.Text = "Export Metadata";
-            this.tspExportMetadata.Click += new System.EventHandler(this.tspExportMetadata_Click);
+            this.tspExportMetadata.Click += new System.EventHandler(this.TspExportMetadataClick);
             // 
             // toolStripLabel1
             // 
@@ -149,24 +229,47 @@
             // tcbOutputTo
             // 
             this.tcbOutputTo.Name = "tcbOutputTo";
-            this.tcbOutputTo.Size = new System.Drawing.Size(121, 25);
+            this.tcbOutputTo.Size = new System.Drawing.Size(150, 25);
+            this.tcbOutputTo.ToolTipText = "Output Target";
             // 
-            // toolStrip1cmboModel
+            // toolStripSeparator2
             // 
-            this.toolStrip1cmboModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.toolStrip1cmboModel.Name = "toolStrip1cmboModel";
-            this.toolStrip1cmboModel.Size = new System.Drawing.Size(150, 25);
-            this.toolStrip1cmboModel.SelectedIndexChanged += new System.EventHandler(this.toolStrip1cmboModel_SelectedIndexChanged_1);
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripCmdModels
+            // toolStripButton1
             // 
-            this.toolStripCmdModels.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripCmdModels.Image = global::DaxStudio.Properties.Resources.DataSource;
-            this.toolStripCmdModels.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripCmdModels.Name = "toolStripCmdModels";
-            this.toolStripCmdModels.Size = new System.Drawing.Size(23, 22);
-            this.toolStripCmdModels.Text = "Models";
-            this.toolStripCmdModels.Click += new System.EventHandler(this.toolStripCmdModels_Click);
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.documentationToolStripMenuItem,
+            this.mSDNForumsToolStripMenuItem,
+            this.aboutToolStripMenuItem});
+            this.toolStripButton1.Image = global::DaxStudio.Properties.Resources.question_button;
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(32, 22);
+            this.toolStripButton1.Text = "toolStripButton1";
+            // 
+            // documentationToolStripMenuItem
+            // 
+            this.documentationToolStripMenuItem.Name = "documentationToolStripMenuItem";
+            this.documentationToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.documentationToolStripMenuItem.Text = "Documentation";
+            this.documentationToolStripMenuItem.Click += new System.EventHandler(this.DocumentationToolStripMenuItemClick);
+            // 
+            // mSDNForumsToolStripMenuItem
+            // 
+            this.mSDNForumsToolStripMenuItem.Name = "mSDNForumsToolStripMenuItem";
+            this.mSDNForumsToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.mSDNForumsToolStripMenuItem.Text = "MSDN Forums";
+            this.mSDNForumsToolStripMenuItem.Click += new System.EventHandler(this.MsdnForumsToolStripMenuItemClick);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItemClick);
             // 
             // splitContainer1
             // 
@@ -176,25 +279,50 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.tabControl1);
+            this.splitContainer1.Panel1.Controls.Add(this.pnlModel);
+            this.splitContainer1.Panel1.Controls.Add(this.tabMetadataBrowser);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(777, 402);
+            this.splitContainer1.Size = new System.Drawing.Size(777, 400);
             this.splitContainer1.SplitterDistance = 257;
             this.splitContainer1.TabIndex = 2;
             // 
-            // tabControl1
+            // pnlModel
             // 
-            this.tabControl1.Controls.Add(this.tabMetadata);
-            this.tabControl1.Controls.Add(this.tabFunctions);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(257, 402);
-            this.tabControl1.TabIndex = 0;
+            this.pnlModel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlModel.Controls.Add(this.cboModel);
+            this.pnlModel.Location = new System.Drawing.Point(4, 4);
+            this.pnlModel.Name = "pnlModel";
+            this.pnlModel.Size = new System.Drawing.Size(246, 23);
+            this.pnlModel.TabIndex = 1;
+            // 
+            // cboModel
+            // 
+            this.cboModel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cboModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboModel.FormattingEnabled = true;
+            this.cboModel.Location = new System.Drawing.Point(0, 0);
+            this.cboModel.Name = "cboModel";
+            this.cboModel.Size = new System.Drawing.Size(246, 21);
+            this.cboModel.TabIndex = 0;
+            this.cboModel.SelectionChangeCommitted += new System.EventHandler(this.CboModelSelectionChangeCommitted);
+            // 
+            // tabMetadataBrowser
+            // 
+            this.tabMetadataBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabMetadataBrowser.Controls.Add(this.tabMetadata);
+            this.tabMetadataBrowser.Controls.Add(this.tabFunctions);
+            this.tabMetadataBrowser.Controls.Add(this.tabDMV);
+            this.tabMetadataBrowser.Location = new System.Drawing.Point(0, 31);
+            this.tabMetadataBrowser.Name = "tabMetadataBrowser";
+            this.tabMetadataBrowser.SelectedIndex = 0;
+            this.tabMetadataBrowser.Size = new System.Drawing.Size(257, 369);
+            this.tabMetadataBrowser.TabIndex = 0;
             // 
             // tabMetadata
             // 
@@ -202,7 +330,7 @@
             this.tabMetadata.Location = new System.Drawing.Point(4, 22);
             this.tabMetadata.Name = "tabMetadata";
             this.tabMetadata.Padding = new System.Windows.Forms.Padding(3);
-            this.tabMetadata.Size = new System.Drawing.Size(249, 376);
+            this.tabMetadata.Size = new System.Drawing.Size(249, 343);
             this.tabMetadata.TabIndex = 0;
             this.tabMetadata.Text = "Metadata";
             this.tabMetadata.UseVisualStyleBackColor = true;
@@ -216,9 +344,9 @@
             this.tvwMetadata.Location = new System.Drawing.Point(3, 3);
             this.tvwMetadata.Name = "tvwMetadata";
             this.tvwMetadata.SelectedImageIndex = 0;
-            this.tvwMetadata.Size = new System.Drawing.Size(243, 370);
+            this.tvwMetadata.Size = new System.Drawing.Size(243, 337);
             this.tvwMetadata.TabIndex = 0;
-            this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.tvw_ItemDrag);
+            this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TvwItemDrag);
             // 
             // imgListTree
             // 
@@ -238,7 +366,7 @@
             this.tabFunctions.Location = new System.Drawing.Point(4, 22);
             this.tabFunctions.Name = "tabFunctions";
             this.tabFunctions.Padding = new System.Windows.Forms.Padding(3);
-            this.tabFunctions.Size = new System.Drawing.Size(249, 376);
+            this.tabFunctions.Size = new System.Drawing.Size(249, 343);
             this.tabFunctions.TabIndex = 1;
             this.tabFunctions.Text = "Functions";
             this.tabFunctions.UseVisualStyleBackColor = true;
@@ -252,9 +380,41 @@
             this.tvwFunctions.Location = new System.Drawing.Point(3, 3);
             this.tvwFunctions.Name = "tvwFunctions";
             this.tvwFunctions.SelectedImageIndex = 0;
-            this.tvwFunctions.Size = new System.Drawing.Size(243, 370);
+            this.tvwFunctions.Size = new System.Drawing.Size(243, 337);
             this.tvwFunctions.TabIndex = 0;
-            this.tvwFunctions.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.tvw_ItemDrag);
+            this.tvwFunctions.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TvwItemDrag);
+            // 
+            // tabDMV
+            // 
+            this.tabDMV.Controls.Add(this.listDMV);
+            this.tabDMV.Location = new System.Drawing.Point(4, 22);
+            this.tabDMV.Name = "tabDMV";
+            this.tabDMV.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDMV.Size = new System.Drawing.Size(249, 343);
+            this.tabDMV.TabIndex = 2;
+            this.tabDMV.Text = "DMV";
+            this.tabDMV.UseVisualStyleBackColor = true;
+            // 
+            // listDMV
+            // 
+            this.listDMV.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colDmv});
+            this.listDMV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listDMV.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listDMV.Location = new System.Drawing.Point(3, 3);
+            this.listDMV.MultiSelect = false;
+            this.listDMV.Name = "listDMV";
+            this.listDMV.Size = new System.Drawing.Size(243, 337);
+            this.listDMV.SmallImageList = this.imgListTree;
+            this.listDMV.TabIndex = 0;
+            this.listDMV.UseCompatibleStateImageBehavior = false;
+            this.listDMV.View = System.Windows.Forms.View.SmallIcon;
+            this.listDMV.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ListDmvItemDrag);
+            // 
+            // colDmv
+            // 
+            this.colDmv.Text = "DMV";
+            this.colDmv.Width = 239;
             // 
             // splitContainer2
             // 
@@ -270,22 +430,9 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.rtbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(516, 402);
-            this.splitContainer2.SplitterDistance = 310;
+            this.splitContainer2.Size = new System.Drawing.Size(516, 400);
+            this.splitContainer2.SplitterDistance = 308;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // elementHost1
-            // 
-            this.elementHost1.AllowDrop = true;
-            this.elementHost1.AutoSize = true;
-            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.elementHost1.Location = new System.Drawing.Point(0, 0);
-            this.elementHost1.Name = "elementHost1";
-            this.elementHost1.Size = new System.Drawing.Size(516, 310);
-            this.elementHost1.TabIndex = 0;
-            this.elementHost1.Text = "elementHost1";
-            this.elementHost1.ChildChanged += new System.EventHandler<System.Windows.Forms.Integration.ChildChangedEventArgs>(this.elementHost1_ChildChanged);
-            this.elementHost1.Child = this.userControl12;
             // 
             // rtbOutput
             // 
@@ -295,6 +442,18 @@
             this.rtbOutput.Size = new System.Drawing.Size(516, 88);
             this.rtbOutput.TabIndex = 0;
             this.rtbOutput.Text = "";
+            // 
+            // elementHost1
+            // 
+            this.elementHost1.AllowDrop = true;
+            this.elementHost1.AutoSize = true;
+            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.elementHost1.Location = new System.Drawing.Point(0, 0);
+            this.elementHost1.Name = "elementHost1";
+            this.elementHost1.Size = new System.Drawing.Size(516, 308);
+            this.elementHost1.TabIndex = 0;
+            this.elementHost1.Text = "elementHost1";
+            this.elementHost1.Child = this.ucDaxEditor;
             // 
             // DaxStudioForm
             // 
@@ -307,17 +466,23 @@
             this.KeyPreview = true;
             this.Name = "DaxStudioForm";
             this.Text = "DAX Studio";
-            this.Load += new System.EventHandler(this.DaxStudioForm_Load);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DaxStudioForm_KeyUp);
+            this.Activated += new System.EventHandler(this.DaxStudioFormActivated);
+            this.Load += new System.EventHandler(this.DaxStudioFormLoad);
+            this.Shown += new System.EventHandler(this.DaxStudioFormShown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DaxStudioFormKeyUp);
+            this.stsDax.ResumeLayout(false);
+            this.stsDax.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.tabControl1.ResumeLayout(false);
+            this.pnlModel.ResumeLayout(false);
+            this.tabMetadataBrowser.ResumeLayout(false);
             this.tabMetadata.ResumeLayout(false);
             this.tabFunctions.ResumeLayout(false);
+            this.tabDMV.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -333,14 +498,14 @@
         private System.Windows.Forms.StatusStrip stsDax;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl tabMetadataBrowser;
         private System.Windows.Forms.TabPage tabMetadata;
         private System.Windows.Forms.TabPage tabFunctions;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Integration.ElementHost elementHost1;
         private System.Windows.Forms.RichTextBox rtbOutput;
-        //private UserControl1 userControl11;
-        private UserControl1 userControl12;
+        //private DaxEditorUserControl userControl11;
+        private DaxEditorUserControl ucDaxEditor;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton tspExportMetadata;
         private System.Windows.Forms.TreeView tvwMetadata;
@@ -352,8 +517,23 @@
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox tcbOutputTo;
         private System.Windows.Forms.ImageList imgListTree;
-        private System.Windows.Forms.ToolStripComboBox toolStrip1cmboModel;
         private System.Windows.Forms.ToolStripButton toolStripCmdModels;
+        private System.Windows.Forms.ToolStripStatusLabel tspStatus;
+        private System.Windows.Forms.Panel pnlModel;
+        private System.Windows.Forms.ComboBox cboModel;
+        private System.Windows.Forms.ToolStripStatusLabel tspConnection;
+        private System.Windows.Forms.TabPage tabDMV;
+        private System.Windows.Forms.ListView listDMV;
+        private System.Windows.Forms.ColumnHeader colDmv;
+        private System.Windows.Forms.ToolStripStatusLabel tspVersion;
+        private System.Windows.Forms.ToolStripStatusLabel tspSpid;
+        private System.Windows.Forms.ToolStripComboBox cboDatabase;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolStripSplitButton toolStripButton1;
+        private System.Windows.Forms.ToolStripMenuItem documentationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mSDNForumsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
 
     }
 }

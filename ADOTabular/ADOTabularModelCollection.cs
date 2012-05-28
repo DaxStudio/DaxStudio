@@ -3,16 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
-    public class ADOTabularModelCollection:IEnumerable<ADOTabularModel>,IEnumerable
+    public class ADOTabularModelCollection:IEnumerable<ADOTabularModel>
     {
-        private ADOTabularConnection _adoTabConn;
-        private ADOTabularDatabase  _database;
-        private DataTable dtModels;
+        private readonly ADOTabularConnection _adoTabConn;
+        private readonly ADOTabularDatabase  _database;
+        private DataTable _dtModels;
         public ADOTabularModelCollection(ADOTabularConnection adoTabConn, ADOTabularDatabase database)
         {
             _adoTabConn = adoTabConn;
@@ -27,24 +26,31 @@ namespace ADOTabular
 
         private DataTable GetModelsTable()
         {
-            if (dtModels == null)
+            if (_dtModels == null)
             {
-            AdomdRestrictionCollection resColl = new AdomdRestrictionCollection();
-            resColl.Add("CUBE_SOURCE",1);
-            dtModels = _adoTabConn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
+            var resColl = new AdomdRestrictionCollection {{"CUBE_SOURCE", 1}};
+                _dtModels = _adoTabConn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
             }
-            return dtModels;
+            return _dtModels;
         }
 
-/*
-        public IEnumerator<ADOTabularModel> GetEnumerator()
+        public ADOTabularModel this[string modelName]
         {
-            foreach (DataRow dr in GetModelsTable().Rows)
+            get
             {
-                yield return new ADOTabularModel(_adoTabConn, dr["CUBE_NAME"].ToString());
+                if (
+                    GetModelsTable().Rows.Cast<DataRow>().Any(
+                        dr =>
+                        string.Compare(modelName, dr["CUBE_NAME"].ToString(),
+                                       StringComparison.InvariantCultureIgnoreCase) == 0))
+                {
+                    return new ADOTabularModel(_adoTabConn, modelName);
+                }
+                // todo - should we return a model not found exception instead of null?
+                return null;
             }
         }
-        */
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -57,5 +63,7 @@ namespace ADOTabular
                 yield return new ADOTabularModel(_adoTabConn, dr["CUBE_NAME"].ToString());
             }
         }
+
+        
     }
 }

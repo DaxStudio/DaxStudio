@@ -61,14 +61,14 @@
             this.btnDax.Name = "btnDax";
             this.btnDax.ScreenTip = "Exectute DAX query";
             this.btnDax.ShowImage = true;
-            this.btnDax.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnDax_Click);
+            this.btnDax.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.BtnDaxClick);
             // 
             // DaxStudioRibbon
             // 
             this.Name = "DaxStudioRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.Tabs.Add(this.tab1);
-            this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Ribbon1_Load);
+            this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Ribbon1Load);
             this.tab1.ResumeLayout(false);
             this.tab1.PerformLayout();
             this.group1.ResumeLayout(false);

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
+﻿using System.Data;
 
 namespace ADOTabular
 {
     public class ADOTabularParameter
     {
-        private DataRow _dr;
+        private readonly DataRow _dr;
         public ADOTabularParameter(DataRow dr)
         {
             _dr = dr;

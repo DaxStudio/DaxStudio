@@ -5,9 +5,9 @@ using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
-    public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>, IEnumerable
+    public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>
     {
-        private ADOTabularConnection _adoTabConn;
+        private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularFunctionCollection(ADOTabularConnection adoTabConn)
         {
             _adoTabConn = adoTabConn;
@@ -15,10 +15,8 @@ namespace ADOTabular
 
         private DataSet GetFunctionsTable()
         {
-            AdomdRestrictionCollection resColl = new AdomdRestrictionCollection();
-            resColl.Add("ORIGIN",3);
-            resColl.Add("ORIGIN",4);
-            
+            var resColl = new AdomdRestrictionCollection {{"ORIGIN", 3}, {"ORIGIN", 4}};
+
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", resColl);
 
         }
@@ -37,7 +35,7 @@ namespace ADOTabular
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             foreach (DataRow dr in GetFunctionsTable().Tables[0].Rows)
             {

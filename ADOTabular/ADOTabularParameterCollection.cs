@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
 
 namespace ADOTabular
 {
-    public class ADOTabularParameterCollection:IEnumerable<ADOTabularParameter>,IEnumerable
+    public class ADOTabularParameterCollection:IEnumerable<ADOTabularParameter>
     {
-        private DataRow[] _paramInfo;
+        private readonly DataRow[] _paramInfo;
 
         public ADOTabularParameterCollection(DataRow[] paramInfo)
         {
@@ -38,8 +35,8 @@ namespace ADOTabular
         // <<param,...>>, repeating?? 
         public override string ToString()
         {
-            List<string> arrParam = new List<string>();
-            StringBuilder sbParam = new StringBuilder();
+            var arrParam = new List<string>();
+            
             foreach (DataRow dr in _paramInfo)
             {
                 if (dr["OPTIONAL"].ToString() == "TRUE" && dr["REPEATING"].ToString() == "TRUE")

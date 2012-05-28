@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
 using Microsoft.AnalysisServices.AdomdClient;
@@ -14,10 +11,10 @@ namespace ADOTabular
         Measure
     }
 
-    public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>,IEnumerable
+    public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>
     {
-        private ADOTabularTable _table;
-        private ADOTabularConnection _adoTabConn;
+        private readonly ADOTabularTable _table;
+        private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularColumnCollection(ADOTabularConnection adoTabConn, ADOTabularTable table)
         {
             _table = table;
@@ -33,18 +30,22 @@ where hierarchy_origin = 2
 and cube_name = 'Model'
 and [Dimension_unique_name] = '[Product]'
              */
-            AdomdRestrictionCollection resColl = new AdomdRestrictionCollection();
-            resColl.Add("HIERARCHY_ORIGIN", 2);
-            resColl.Add("CUBE_NAME", string.Format("{0}",_table.Model.Name));
-            resColl.Add("DIMENSION_UNIQUE_NAME",string.Format("[{0}]", _table.Name));
+            var resColl = new AdomdRestrictionCollection
+                              {
+                                  {"HIERARCHY_ORIGIN", 2},
+                                  {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
+                                  {"DIMENSION_UNIQUE_NAME", string.Format("[{0}]", _table.Caption)}
+                              };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", resColl).Tables[0];
         }
 
         private DataTable GetMeasuresTable()
         {
-            AdomdRestrictionCollection resColl = new AdomdRestrictionCollection();
-            resColl.Add("CUBE_NAME", string.Format("{0}",_table.Model.Name));
-            resColl.Add("MEASUREGROUP_NAME",string.Format("{0}", _table.Name));
+            var resColl = new AdomdRestrictionCollection
+                              {
+                                  {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
+                                  {"MEASUREGROUP_NAME", string.Format("{0}", _table.Caption)}
+                              };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_MEASURES", resColl).Tables[0];
         }
 
@@ -55,13 +56,13 @@ and [Dimension_unique_name] = '[Product]'
             {
                 //if (dr["COLUMN_NAME"] != "RowNumber")
                 //{
-                yield return new ADOTabularColumn(_adoTabConn, _table, dr,ADOTabularColumnType.Column);
+                yield return new ADOTabularColumn(_table, dr,ADOTabularColumnType.Column);
                 //}
             }
             // Add measures to column collection
             foreach (DataRow dr in GetMeasuresTable().Rows)
             {
-                yield return new ADOTabularColumn(_adoTabConn, _table, dr, ADOTabularColumnType.Measure);
+                yield return new ADOTabularColumn(_table, dr, ADOTabularColumnType.Measure);
             }
         }
 

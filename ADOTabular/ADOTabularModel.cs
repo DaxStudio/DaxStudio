@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace ADOTabular
+﻿namespace ADOTabular
 {
     public class ADOTabularModel
     {
-        private ADOTabularConnection _adoTabConn;
-        private string _modelName;
-        private ADOTabularTableCollection tableColl;
+        private readonly ADOTabularConnection _adoTabConn;
+        private readonly string _modelName;
+        private ADOTabularTableCollection _tableColl;
         public ADOTabularModel(ADOTabularConnection adoTabConn, string modelName)
         {
             _adoTabConn = adoTabConn;
@@ -23,13 +18,7 @@ namespace ADOTabular
 
         public ADOTabularTableCollection Tables
         {
-            get {
-                if (tableColl == null)
-                {
-                    tableColl = new ADOTabularTableCollection(_adoTabConn, this);
-                }
-                return tableColl; 
-            }
+            get { return _tableColl ?? (_tableColl = new ADOTabularTableCollection(_adoTabConn, this)); }
         }
     }
 }

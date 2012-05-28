@@ -4,31 +4,31 @@ using System.Collections;
 
 namespace ADOTabular
 {
-    public class ADOTabularDatabaseCollection:IEnumerable<string>
+    public class ADOTabularDynamicManagementViewCollection : IEnumerable<ADOTabularDynamicManagementView>
     {
         private DataSet _dsDatabases;
         private readonly ADOTabularConnection _adoTabConn;
-        public ADOTabularDatabaseCollection(ADOTabularConnection adoTabConn)
+        public ADOTabularDynamicManagementViewCollection(ADOTabularConnection adoTabConn)
         {
             _adoTabConn = adoTabConn;
-            
+
         }
-        
-        private DataTable GetDatabaseTable()
+
+        private DataTable GetDmvTable()
         {
             if (_dsDatabases == null)
             {
-                _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
+                _dsDatabases = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
             }
             return _dsDatabases.Tables[0];
         }
 
-        public IEnumerator<string> GetEnumerator()
+        public IEnumerator<ADOTabularDynamicManagementView> GetEnumerator()
         {
-            foreach (DataRow dr in GetDatabaseTable().Rows)
+            foreach (DataRow dr in GetDmvTable().Rows)
             {
                 //yield return new ADOTabularDatabase(_adoTabConn, dr["CATALOG_NAME"].ToString());//, dr);
-                yield return dr["CATALOG_NAME"].ToString();//, dr);
+                yield return new ADOTabularDynamicManagementView(dr);
             }
         }
 

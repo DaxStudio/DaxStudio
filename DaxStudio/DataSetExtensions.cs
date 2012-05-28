@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using System.IO;
-using System.Xml.Serialization;
-using System.Data;
+﻿using System.Data;
 
 namespace DaxStudio
 {
@@ -30,8 +23,8 @@ namespace DaxStudio
         public static object[,]  ToObjectArray(this DataTable dt)
         {
 
-            // Copy the DataTable to an object array
-            object[,] rawData = new object[dt.Rows.Count + 1, dt.Columns.Count];
+            // Copy the DataTable to an object array of object[,]
+            var rawData = new object[dt.Rows.Count + 1, dt.Columns.Count];
 
             // Copy the column names to the first row of the object array
             for (int col = 0; col < dt.Columns.Count; col++)

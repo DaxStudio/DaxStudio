@@ -1,18 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using ICSharpCode.AvalonEdit;
-using System.IO;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
@@ -51,23 +38,17 @@ namespace DAXEditor
     /// </summary>
     public class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
     {
-        static DAXEditor()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(DAXEditor), new FrameworkPropertyMetadata(typeof(DAXEditor)));
-
-        }
-
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
-            this.TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            this.TextArea.TextEntered += textEditor_TextArea_TextEntered;
-            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(this.GetType());
-            using (Stream s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
+            TextArea.TextEntering += textEditor_TextArea_TextEntering;
+            TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
+            using (var s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
             {
-                using (XmlTextReader reader = new XmlTextReader(s))
+                using (var reader = new XmlTextReader(s))
                 {
-                    this.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                    SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
             }
             //ToolTip tt = new ToolTip();

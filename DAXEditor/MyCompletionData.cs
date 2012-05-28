@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Document;
-using System.Resources;
-using DAXEditor.Properties;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace DAXEditor
@@ -27,15 +21,15 @@ namespace DAXEditor
         public CodeCompletionType CompletionType;
         public MyCompletionData(string text, CodeCompletionType completionType)
         {
-            this.Text = text;
-            this.CompletionType = completionType;
+            Text = text;
+            CompletionType = completionType;
         }
 
         public System.Windows.Media.ImageSource Image
         {
             get {
                 Uri uriSource;
-                switch (this.CompletionType)
+                switch (CompletionType)
                 {
                     case CodeCompletionType.Function:
                         uriSource = new Uri(@"/DAXEditor;component/Resources/DAXEditor.Function.png", UriKind.Relative);
@@ -65,18 +59,18 @@ namespace DAXEditor
         // Use this property if you want to show a fancy UIElement in the list.
         public object Content
         {
-            get { return this.Text; }
+            get { return Text; }
         }
 
         public object Description
         {
-            get { return "Description for " + this.Text; }
+            get { return "Description for " + Text; }
         }
 
         public void Complete(TextArea textArea, ISegment completionSegment,
             EventArgs insertionRequestEventArgs)
         {
-            textArea.Document.Replace(completionSegment, this.Text);
+            textArea.Document.Replace(completionSegment, Text);
         }
 
         

@@ -1,43 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.OleDb;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using System.Windows.Forms;
-
-//using Microsoft.AnalysisServices.AdomdClient;
-
-using Microsoft.AnalysisServices.AdomdClient;
-
-
+using DaxStudio.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
-//using ADOTabular;
 using ADOTabular;
-
 
 namespace DaxStudio
 {
-    public partial class DaxStudioForm : Form
+    public partial class DaxStudioForm : Form, IOutputWindow
     {
 
-        ADOTabularConnection _conn;
-        ServerConnections _connections = new ServerConnections();
-
-        private enum tvwMetadataImages
+        private enum QueryType
         {
-            Table = 0,
-            Column = 1,
-            HiddenColumn = 2,
-            Measure = 3,
-            HiddenMeasure = 4,
-            Folder = 5,
-            Function = 6
+            ToTable = 0,
+            ToStatic =1,
+            NoResults=2
         }
-        private Excel.Application app;
 
+        private bool _refreshingMetadata = false;
+        private ADOTabularConnection _conn;
+        private Excel.Application _app;
+        private QueryType _defaultQueryType = QueryType.ToTable;
+        private Excel.Workbook _workbook;
+
+        public string CurrentConnectionString
+        {
+            get { return _conn.ConnectionString; }
+        }
 
         public DaxStudioForm()
         {
@@ -46,158 +37,28 @@ namespace DaxStudio
 
         public Excel.Application Application
         {
-            get { return app; }
-            set { app = value; }
-        }
-
-        private void DaxQueryDiscardResults()
-        {
-            //TODO
-            System.Windows.Forms.MessageBox.Show("Not Implemented");
-        }
-
-        private void DaxQueryTable()
-        {
-            Excel.Workbook excelWorkbook = app.ActiveWorkbook;
-
-            // Create a new Sheet
-            Excel.Worksheet excelSheet = (Excel.Worksheet)excelWorkbook.Sheets.Add(
-                Type.Missing, excelWorkbook.Sheets.get_Item(excelWorkbook.Sheets.Count)
-                , 1, Excel.XlSheetType.xlWorksheet);
-
-            Excel.ListObject lo = excelSheet.ListObjects.AddEx(0
-                //, "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-                , @"OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-                , Type.Missing
-                , Excel.XlYesNoGuess.xlGuess
-                , excelSheet.Range["$A$3"]);
-            lo.QueryTable.CommandType = Excel.XlCmdType.xlCmdDefault;
-            lo.QueryTable.CommandText = GetTextToExecute();
-            try
-            {
-                WriteOutputMessage(string.Format("{0} - Starting Query Table Refresh", DateTime.Now));
-                lo.QueryTable.Refresh(false);
-                WriteOutputMessage(string.Format("{0} - Query Table Refresh Complete", DateTime.Now));
-            }
-            catch (Exception ex)
-            {
-                WriteOutputError(ex.Message);
-            }
-        }
-
-        private void DaxQueryStaticResult()
-        {
-            Excel.Workbook wb = app.ActiveWorkbook;
-            string wrkbkPath = wb.FullName;
-            string connStr = _connections.ConnectionString(toolStrip1cmboModel.Text);
-            AdomdConnection conn = new AdomdConnection(connStr);
-            conn.Open();
-            AdomdCommand cmd = conn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-
-            cmd.CommandText = GetTextToExecute();
-
-            DataTable dt = new DataTable("DAXQuery");
-            AdomdDataAdapter da = new AdomdDataAdapter(cmd);
-            try
-            {
-
-                ClearOutput();
-                WriteOutputMessage(string.Format("{0} - Query Started", DateTime.Now));
-                DateTime queryBegin = DateTime.UtcNow;
-
-                // run query
-                da.Fill(dt);
-                DateTime queryComplete = DateTime.UtcNow;
-                WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
-
-                // output results
-                CopyDataTableToRange(dt, wb);
-                DateTime resultsEnd = DateTime.UtcNow;
-                WriteOutputMessage(string.Format("{0} - Results Sent to Excel ({1:mm\\:ss\\.fff})", DateTime.Now, resultsEnd - queryComplete));
-            }
-            catch (Exception ex)
-            {
-                WriteOutputError(ex.Message);
-            }
+            get { return _app; }
+            set { _app = value; }
         }
 
         private string GetTextToExecute()
         {
             // if text is selected try to execute that
-            if (this.userControl12.daxEditor.SelectionLength == 0)
-                return this.userControl12.daxEditor.Text;
-            else
-                return this.userControl12.daxEditor.SelectedText;
+            return ucDaxEditor.daxEditor.SelectionLength == 0 ? ucDaxEditor.daxEditor.Text : ucDaxEditor.daxEditor.SelectedText;
         }
 
-        private void ClearOutput()
-        {
-            this.rtbOutput.Clear();
-            this.rtbOutput.ForeColor = Color.Black;
-        }
 
-        private void WriteOutputMessage(string message)
-        {
-            this.rtbOutput.AppendText(message + "\n");
-        }
-
-        private void WriteOutputError(string message)
-        {
-            this.rtbOutput.ForeColor = Color.Red;
-            this.rtbOutput.Text = message;
-        }
-
-        private void CopyDataTableToRange(DataTable dt, Excel.Workbook excelWorkbook)
-        {
-
-            //        // Calculate the final column letter
-            string finalColLetter = string.Empty;
-            string colCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            int colCharsetLen = colCharset.Length;
-
-            if (dt.Columns.Count > colCharsetLen)
-            {
-                finalColLetter = colCharset.Substring(
-                    (dt.Columns.Count - 1) / colCharsetLen - 1, 1);
-            }
-
-            finalColLetter += colCharset.Substring(
-                    (dt.Columns.Count - 1) % colCharsetLen, 1);
-
-            // Create a new Sheet
-            Excel.Worksheet excelSheet = (Excel.Worksheet)excelWorkbook.Sheets.Add(
-                Type.Missing, excelWorkbook.Sheets.get_Item(excelWorkbook.Sheets.Count)
-                , 1, Excel.XlSheetType.xlWorksheet);
-
-            //excelSheet.Name = dt.TableName;
-
-            // Fast data export to Excel
-            string excelRange = string.Format("A1:{0}{1}",
-                finalColLetter, dt.Rows.Count + 1);
-
-            // copying an object array to Value2 means that there is only one
-            // .Net to COM interop call
-            excelSheet.get_Range(excelRange, Type.Missing).Value2 = dt.ToObjectArray();
-
-            // Mark the first row as BOLD
-            ((Excel.Range)excelSheet.Rows[1, Type.Missing]).Font.Bold = true;
-
-        }
-
-        private void DaxStudioForm_KeyUp(object sender, KeyEventArgs e)
+        private void DaxStudioFormKeyUp(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.F5:
-                    DaxQueryStaticResult();
+                    RunLastQueryType(sender, e);
                     break;
-
             }
-
         }
 
-        private void tspExportMetadata_Click(object sender, EventArgs e)
+        private void TspExportMetadataClick(object sender, EventArgs e)
         {
             /*
             Excel.Workbook excelWorkbook = app.ActiveWorkbook;
@@ -243,147 +104,240 @@ namespace DaxStudio
              */
         }
 
-        private void DaxStudioForm_Load(object sender, EventArgs e)
+        private ExcelHelper _xlHelper;
+        private void DaxStudioFormLoad(object sender, EventArgs e)
         {
-            this.userControl12.AllowDrop = true;
-            this.userControl12.Drop += new System.Windows.DragEventHandler(userControl12_Drop);
-
-            /* PTB - add the default server */
-            Excel.Workbook wb = app.ActiveWorkbook;
-            string wrkbkPath = wb.FullName;
-            _connections.AddConnection("servername", "Current Excel WorkBook",  "Data Source=$embedded$;Location=" + wrkbkPath + ";");
-
-            toolStrip1cmboModel.Items.Add(_connections[0].ModelName);
-            toolStrip1cmboModel.SelectedIndex = 0;
-            
-            //PopulateConnectionMetadata();
-            // managed by changing the 'server' source
-            
-            PopulateOutputOptions(tcbOutputTo);      
-
+            ucDaxEditor.AllowDrop = true;
+            ucDaxEditor.Drop += UcDaxEditorDrop;
+            _xlHelper = new ExcelHelper(_app, tcbOutputTo);
+            _workbook = Application.ActiveWorkbook;
         }
 
-        private void PopulateOutputOptions(ToolStripComboBox tcbOutputTo)
+        void UcDaxEditorDrop(object sender, System.Windows.DragEventArgs e)
         {
-            Excel.Workbook wb = app.ActiveWorkbook;
-            tcbOutputTo.Items.Add("<Query Results Sheet>");
-            foreach (Excel.Worksheet ws in wb.Worksheets)
-            {
-                tcbOutputTo.Items.Add(ws.Name);
-            }
-            tcbOutputTo.Items.Add("<New Sheet>");
+            ucDaxEditor.daxEditor.SelectedText = e.Data.ToString();
         }
 
-        void userControl12_Drop(object sender, System.Windows.DragEventArgs e)
-        {
-            userControl12.daxEditor.SelectedText = e.Data.ToString();
-        }
-
-        private void PopulateConnectionMetadata()
-        {
-            foreach (ADOTabularModel m in _conn.Database.Models)
-            {
-                TreeNode modelNode = this.tvwMetadata.Nodes.Add(m.Name,m.Name); //todo - add image index
-                foreach (ADOTabularTable t in m.Tables)
-                {
-                    TreeNode tableNode = modelNode.Nodes.Add(t.Name, t.Name, (int)tvwMetadataImages.Table, (int)tvwMetadataImages.Table);
-                    foreach(ADOTabularColumn c in t.Columns)
-                    {
-                        // add different icons for hidden columns/measures
-                        int iImageID = 0;
-                        if (c.Type == ADOTabularColumnType.Column)
-                        {
-                            if (c.IsVisible == true)
-                            {  iImageID = (int)tvwMetadataImages.Column;} 
-                            else
-                            { iImageID = (int)tvwMetadataImages.HiddenColumn; } 
-                        }
-                        else
-                        {
-                            if (c.IsVisible == true)
-                            { iImageID = (int)tvwMetadataImages.Measure; }
-                            else
-                            { iImageID = (int)tvwMetadataImages.HiddenMeasure; }
-                        }
-
-                            tableNode.Nodes.Add(c.Name, c.Caption,iImageID,iImageID);
-                    }
-                }
-                modelNode.Expand();
-
-                foreach (ADOTabularFunction f in _conn.Functions)
-                {
-                    TreeNode groupNode;
-                    int groupIndex = -1;
-                    groupIndex = tvwFunctions.Nodes.IndexOfKey(f.Group);
-                    if (groupIndex == -1)
-                    {
-                        groupNode = tvwFunctions.Nodes.Add(f.Group, f.Group, (int)tvwMetadataImages.Folder, (int)tvwMetadataImages.Folder);
-                    }
-                    else
-                    {
-                        groupNode = tvwFunctions.Nodes[groupIndex];
-                    }
-                    groupNode.Nodes.Add(f.Signature, f.Name, (int)tvwMetadataImages.Function, (int)tvwMetadataImages.Function);
-
-                }
-
-            }
-        }
-
-        private void tvw_ItemDrag(object sender, ItemDragEventArgs e)
+        private void TvwItemDrag(object sender, ItemDragEventArgs e)
         {
             DoDragDrop(((TreeNode)e.Item).Name, DragDropEffects.Move);
         }
 
-        private void elementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        private void RunStaticResultsToolStripMenuItemClick(object sender, EventArgs e)
         {
-
+            _defaultQueryType = QueryType.ToStatic;
+            RunLastQueryType(sender,e);
         }
 
-        private void runStaticResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RunDsicardResultsToolStripMenuItemClick(object sender, EventArgs e)
         {
-            DaxQueryStaticResult();
+            _defaultQueryType = QueryType.NoResults;
+            RunLastQueryType(sender,e);
         }
 
-        private void runDsicardResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RunQueryTableToolStripMenuItemClick(object sender, EventArgs e)
         {
-            DaxQueryDiscardResults();
+            _defaultQueryType = QueryType.ToTable;
+            RunLastQueryType(sender,e);
         }
 
-        private void runQueryTableToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ToolStripCmdModelsClick(object sender, EventArgs e)
         {
-            DaxQueryTable();
-        }
+            var conDialog = new ConnectionDialog(Application.ActiveWorkbook, _conn.ConnectionString, _xlHelper);
+            if (conDialog.ShowDialog() == DialogResult.Cancel) return;
 
-
-        // ptb
-        private void toolStripCmdModels_Click(object sender, EventArgs e)
-        {
-            // loads dialog to get servers
-            ServerManager _servers = new ServerManager(_connections);
-            _servers.ShowDialog();
-
-            // PTB -- will have to clean and add (later)
-            string _currentSelection = toolStrip1cmboModel.Text;
-            toolStrip1cmboModel.Items.Clear();
-            for (int i = 0; i < _connections.Length; i++)
-                toolStrip1cmboModel.Items.Add(_connections[i].ModelName);
-
-            toolStrip1cmboModel.SelectedItem = _currentSelection;
-               
+            _conn = conDialog.Connection;
+            RefreshDatabaseList();
+            //RefreshTabularMetadata();
         }
 
 
-
-        private void toolStrip1cmboModel_SelectedIndexChanged_1(object sender, EventArgs e)
+        private void RefreshTabularMetadata()
         {
-            string _connString = _connections.ConnectionString(toolStrip1cmboModel.Text);
+            _refreshingMetadata = true;
+            try
+            {
+                tspStatus.Text = Resources.Refreshing_Metadata;
+                
+                //populate metadata tabs
+                TabularMetadata.PopulateConnectionMetadata(_conn, tvwMetadata, tvwFunctions, listDMV, cboModel.Text);
+                
+                // update status bar
+                tspStatus.Text = Resources.Status_Ready;
+                tspConnection.Text = _conn.ServerName;
+                tspVersion.Text = _conn.ServerVersion;
+                tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                _refreshingMetadata = false;
+            }
+        }
+
+        private void RunLastQueryType(object sender, EventArgs e)
+        {
+            switch ( _defaultQueryType )
+            {
+                case QueryType.ToTable:
+                    DaxQueryHelpers.DaxQueryTable(_xlHelper.SelectedOutput,CurrentConnectionString,GetTextToExecute(),this);
+                    break;
+                case QueryType.ToStatic:
+                    DaxQueryHelpers.DaxQueryStaticResult(_xlHelper.SelectedOutput,CurrentConnectionString,GetTextToExecute(),this,_xlHelper);
+                    break;
+                case QueryType.NoResults:
+                    DaxQueryHelpers.DaxQueryDiscardResults(_conn,GetTextToExecute(),this);
+                    break;
+            }
+        }
+
+        private void DaxStudioFormShown(object sender, EventArgs e)
+        {
+            var wb = _app.ActiveWorkbook;
+            if (_xlHelper.HasPowerPivotData())
+            {
+                // if current workbook has PowerPivot data ensure it is loaded into memory
+                _xlHelper.EnsurePowerPivotDataIsLoaded();
+                RefreshTabularMetadata();
+            }
+            else
+            {
+                var connDialog = new ConnectionDialog(wb,"",_xlHelper);
+                if (connDialog.ShowDialog() == DialogResult.OK)
+                {
+                    _conn = new ADOTabularConnection(connDialog.ConnectionString);
+                    RefreshDatabaseList();
+                    //cboDatabase.SelectedIndex = 0;
+                    //RefreshTabularMetadata();
+                }
+            }
+        }
+
+        private void CboDatabasesSelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (!_refreshingMetadata)
+            {
+                _conn.ChangeDatabase(cboDatabase.Text);
+                RefreshModelList();
+                
+            }
+        }
+
+        private void ListDmvItemDrag(object sender, ItemDragEventArgs e)
+        {
+            DoDragDrop(((ListViewItem)e.Item).Name, DragDropEffects.Move);
+        }
+
+        private void DaxStudioFormActivated(object sender, EventArgs e)
+        {
+            if (Application.ActiveWorkbook == _workbook) return;
+            _workbook = Application.ActiveWorkbook;
+            if (_conn.ServerName != "$Embedded$") return;
+            if ( _xlHelper.HasPowerPivotData())
+            {
+                //change connection
+                RefreshTabularMetadata();
+            }
+            else
+            {
+                // prompt for new connection
+                var connDialog = new ConnectionDialog(_workbook, null, _xlHelper);
+                if (connDialog.ShowDialog() == DialogResult.OK)
+                {
+                    _conn = connDialog.Connection;
+                    RefreshTabularMetadata();
+                }
+                else
+                {
+                    ClearTabularMetadata();
+                }
+            }
+        }
+
+        public void ClearTabularMetadata()
+        {
+            tvwFunctions.Nodes.Clear();
             tvwMetadata.Nodes.Clear();
-            _conn = new ADOTabularConnection(_connString);
-            PopulateConnectionMetadata();
-
+            listDMV.Items.Clear();
         }
 
+        public void RefreshDatabaseList()
+        {
+            cboDatabase.Items.Clear();
+            //populate db dropdown
+            foreach (var database in _conn.Databases)
+            {
+                cboDatabase.Items.Add(database);
+            }
+            //select first db
+            if (cboDatabase.Items.Count >= 1) cboDatabase.SelectedIndex = 0;
+            //_conn.ChangeDatabase(cboDatabase.Text);
+
+            
+        }
+
+        public void RefreshModelList()
+        {
+            // populate model tab
+            cboModel.Items.Clear();
+            foreach (var model in _conn.Database.Models)
+            {
+                cboModel.Items.Add(model.Name);
+            }
+            // select first model
+            if (cboModel.Items.Count > 0)
+            {
+                cboModel.Text = cboModel.Items[0].ToString();
+            }
+            RefreshTabularMetadata();
+        }
+
+
+        #region IOutputWindow methods
+
+        public void ClearOutput()
+        {
+            rtbOutput.Clear();
+            rtbOutput.ForeColor = Color.Black;
+        }
+
+        public void WriteOutputMessage(string message)
+        {
+            rtbOutput.ForeColor = Color.Black;
+            rtbOutput.AppendText(message + "\n");
+        }
+
+        public void WriteOutputError(string message)
+        {
+            rtbOutput.ForeColor = Color.Red;
+            rtbOutput.Text = message;
+        }
+        
+        #endregion
+
+        private void CboModelSelectionChangeCommitted(object sender, EventArgs e)
+        {
+            RefreshTabularMetadata();
+        }
+
+        private void DocumentationToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            Process.Start(Resources.DocumentationUrl);
+        }
+
+        private void AboutToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var aboutBox = new AboutDaxStudio();
+            aboutBox.ShowDialog();
+        }
+
+        private void MsdnForumsToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            Process.Start(Resources.MsdnForumsUrl);
+        }
+
+        private void analysisServicesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -1,49 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
+﻿using System.Data;
 
 namespace ADOTabular
 {
     public class ADOTabularFunction
     {
-        private string name;
-        private string desc;
-        private string group;
-        private ADOTabularParameterCollection paramColl;
+        private readonly string _name;
+        private readonly string _desc;
+        private readonly string _group;
+        private readonly ADOTabularParameterCollection _paramColl;
         public ADOTabularFunction(DataRow dr)
         {
-            name = dr["FUNCTION_NAME"].ToString();
-            desc = dr["DESCRIPTION"].ToString();
-            group = dr["INTERFACE_NAME"].ToString();
-            paramColl = new ADOTabularParameterCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
+            _name = dr["FUNCTION_NAME"].ToString();
+            _desc = dr["DESCRIPTION"].ToString();
+            _group = dr["INTERFACE_NAME"].ToString();
+            _paramColl = new ADOTabularParameterCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
             
         }
 
         public string Name
         {
-            get { return name; }
+            get { return _name; }
         }
 
         public string Description
         {
-            get { return desc; }
+            get { return _desc; }
         }
 
         public string Group
         {
-            get { return group; }
+            get { return _group; }
         }
 
         public ADOTabularParameterCollection Parameters
         {
-            get { return paramColl; }
+            get { return _paramColl; }
         }
 
         public string Signature
         {
-            get { return string.Format("{0}({1})", Name, Parameters.ToString());  }
+            get { return string.Format("{0}({1})", Name, Parameters);  }
         }
     }
 }

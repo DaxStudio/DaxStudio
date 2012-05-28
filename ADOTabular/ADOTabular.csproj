@@ -53,6 +53,8 @@
     <Compile Include="ADOTabularDatabase.cs" />
     <Compile Include="ADOTabularDatabaseCollection.cs" />
     <Compile Include="ADOTabularConnection.cs" />
+    <Compile Include="ADOTabularDynamicManagementView.cs" />
+    <Compile Include="ADOTabularDynamicManagementViewCollection.cs" />
     <Compile Include="ADOTabularFunction.cs" />
     <Compile Include="ADOTabularFunctionCollection.cs" />
     <Compile Include="ADOTabularModel.cs" />

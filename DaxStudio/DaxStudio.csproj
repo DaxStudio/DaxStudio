@@ -198,19 +198,40 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="AboutDaxStudio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutDaxStudio.Designer.cs">
+      <DependentUpon>AboutDaxStudio.cs</DependentUpon>
+    </Compile>
     <Compile Include="DataSetExtensions.cs" />
+    <Compile Include="DaxQueryHelpers.cs" />
     <Compile Include="DaxStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="DaxStudioForm.Designer.cs">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ExcelHelper.cs" />
+    <Compile Include="ConnectionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectionDialog.Designer.cs">
+      <DependentUpon>ConnectionDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IOutputWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DaxEditorControl.xaml.cs">
-      <DependentUpon>DaxEditorControl.xaml</DependentUpon>
+    <Compile Include="DaxEditorUserControl.xaml.cs">
+      <DependentUpon>DaxEditorUserControl.xaml</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AboutDaxStudio.resx">
+      <DependentUpon>AboutDaxStudio.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionDialog.resx">
+      <DependentUpon>ConnectionDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DaxStudioForm.resx">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -227,9 +248,6 @@
     <EmbeddedResource Include="DaxStudioRibbon.resx">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ServerManager.resx">
-      <DependentUpon>ServerManager.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="DaxStudio_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -245,13 +263,8 @@
     <Compile Include="DaxStudioRibbon.Designer.cs">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </Compile>
-    <Compile Include="ServerConnections.cs" />
-    <Compile Include="ServerManager.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ServerManager.Designer.cs">
-      <DependentUpon>ServerManager.cs</DependentUpon>
-    </Compile>
+    <Compile Include="RegistryHelper.cs" />
+    <Compile Include="TabularMetadata.cs" />
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -264,7 +277,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="DaxEditorControl.xaml">
+    <Page Include="DaxEditorUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -283,6 +296,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\question_button.png" />
+    <None Include="Resources\question1.ico" />
     <EmbeddedResource Include="Resources\Table.png" />
     <None Include="images\Actions-system-run-icon.png" />
     <EmbeddedResource Include="Resources\Column.png" />
@@ -290,6 +305,8 @@
     <EmbeddedResource Include="Resources\HiddenMeasure.png" />
     <Content Include="images\DataSource.ico" />
     <None Include="Resources\DataSource.ico" />
+    <None Include="Resources\button_white_help.png" />
+    <Content Include="Resources\Function.png" />
     <Content Include="Resources\Measure.png" />
     <Content Include="Resources\play.png" />
     <None Include="Resources\PlayIco.bmp" />

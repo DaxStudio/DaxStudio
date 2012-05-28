@@ -1,35 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
-using Microsoft.AnalysisServices.AdomdClient;
+﻿using System.Data;
 
 namespace ADOTabular
 {
     public class ADOTabularColumn
     {
-        private ADOTabularConnection _adoTabConn;
-        private ADOTabularTable _table;
-        private string _columnCaption;
-        private string _columnName;
-        private bool _visible;
-        private ADOTabularColumnType _type;
-        public ADOTabularColumn(ADOTabularConnection adoTabConn, ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
+        private readonly ADOTabularTable _table;
+        private readonly string _columnCaption;
+        private readonly string _columnName;
+        private readonly bool _visible;
+        private readonly ADOTabularColumnType _type;
+        public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
         {
-            _adoTabConn = adoTabConn;
             _table = table;
             _type = colType;
             if (colType == ADOTabularColumnType.Column)
             {
                 _columnCaption = dr["HIERARCHY_NAME"].ToString();
-                _columnName = string.Format("'{0}'[{1}]", table.Name, _columnCaption);
+                _columnName = string.Format("'{0}'[{1}]", table.Caption, _columnCaption);
                 _visible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
             }
             else
             {
                 _columnCaption = dr["MEASURE_NAME"].ToString();
-                _columnName = string.Format("'{0}'[{1}]", table.Name, _columnCaption);
+                _columnName = string.Format("'{0}'[{1}]", table.Caption, _columnCaption);
                 _visible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
             }
         }
