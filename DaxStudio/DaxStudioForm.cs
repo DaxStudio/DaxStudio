@@ -283,7 +283,7 @@ namespace DaxStudio
             //populate db dropdown
             foreach (var database in _conn.Databases)
             {
-                cboDatabase.Items.Add(database);
+                cboDatabase.Items.Add( database);
             }
             //select first db
             if (cboDatabase.Items.Count >= 1) cboDatabase.SelectedIndex = 0;

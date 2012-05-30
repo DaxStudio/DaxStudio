@@ -38,7 +38,7 @@ namespace DaxStudio
                     { tImageId = (int)MetadataImages.Table; }
                     else
                     { tImageId = (int)MetadataImages.HiddenTable; }
-                    var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, (int)MetadataImages.Table, tImageId);
+                    var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, tImageId,tImageId);
                     foreach (var c in t.Columns)
                     {
                         // add different icons for hidden columns/measures
