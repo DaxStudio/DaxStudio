@@ -13,7 +13,8 @@ namespace DaxStudio
             Measure = 3,
             HiddenMeasure = 4,
             Folder = 5,
-            Function = 6
+            Function = 6,
+            HiddenTable = 7
         }
 
         public static void PopulateConnectionMetadata(ADOTabularConnection adoTabularConnection, TreeView tvwMetadata, TreeView tvwFunctions, ListView dmvList, string modelName)
@@ -32,7 +33,12 @@ namespace DaxStudio
                 var modelNode = tvwMetadata.Nodes.Add(m.Name, m.Name, (int)MetadataImages.Folder, (int)MetadataImages.Folder); //todo - add image index
                 foreach (var t in m.Tables)
                 {
-                    var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, (int)MetadataImages.Table, (int)MetadataImages.Table);
+                    var tImageId = 0;
+                    if (t.IsVisible)
+                    { tImageId = (int)MetadataImages.Table; }
+                    else
+                    { tImageId = (int)MetadataImages.HiddenTable; }
+                    var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, (int)MetadataImages.Table, tImageId);
                     foreach (var c in t.Columns)
                     {
                         // add different icons for hidden columns/measures

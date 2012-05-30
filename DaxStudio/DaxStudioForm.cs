@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -21,7 +22,8 @@ namespace DaxStudio
             ToStatic =1,
             NoResults=2
         }
-
+        private readonly BackgroundWorker _bgQuery = new BackgroundWorker();
+        private readonly BackgroundWorker _bgMetadata = new BackgroundWorker();
         private bool _refreshingMetadata = false;
         private ADOTabularConnection _conn;
         private Excel.Application _app;
@@ -32,7 +34,6 @@ namespace DaxStudio
         {
             get
             {
-                
                 return _conn.ConnectionString;
             }
         }
@@ -45,6 +46,7 @@ namespace DaxStudio
             if (ctr == null)
                 return;
             ctr.KeyUp += DaxEditorKeyUp;
+            _bgMetadata.DoWork += (sender, args) => RefreshTabularMetadata();
         }
 
         public Excel.Application Application
@@ -160,19 +162,23 @@ namespace DaxStudio
             //RefreshTabularMetadata();
         }
 
+        private void RefreshTabularMetadataAsync()
+        {
+            tspStatus.Text = Resources.Refreshing_Metadata;
+            _bgMetadata.RunWorkerAsync();
+            tspStatus.Text = Resources.Status_Ready;
+        }
 
         private void RefreshTabularMetadata()
         {
             _refreshingMetadata = true;
             try
             {
-                tspStatus.Text = Resources.Refreshing_Metadata;
-                
                 //populate metadata tabs
                 TabularMetadata.PopulateConnectionMetadata(_conn, tvwMetadata, tvwFunctions, listDMV, cboModel.Text);
                 
                 // update status bar
-                tspStatus.Text = Resources.Status_Ready;
+                
                 tspConnection.Text = _conn.ServerName;
                 tspVersion.Text = _conn.ServerVersion;
                 tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);
@@ -191,18 +197,7 @@ namespace DaxStudio
 
         private void RunDefaultQueryType() //object sender, EventArgs e)
         {
-            switch ( _defaultQueryType )
-            {
-                case QueryType.ToTable:
-                    DaxQueryHelpers.DaxQueryTable(_xlHelper.SelectedOutput,CurrentConnectionString,GetTextToExecute(),this);
-                    break;
-                case QueryType.ToStatic:
-                    DaxQueryHelpers.DaxQueryStaticResult(_xlHelper.SelectedOutput,CurrentConnectionString,GetTextToExecute(),this,_xlHelper);
-                    break;
-                case QueryType.NoResults:
-                    DaxQueryHelpers.DaxQueryDiscardResults(_conn,GetTextToExecute(),this);
-                    break;
-            }
+            RunQuery(_defaultQueryType);
         }
 
         private string BuildPowerPivotConnection()
@@ -373,8 +368,19 @@ namespace DaxStudio
         private void RunQuery(QueryType queryType)
         {
             _defaultQueryType = queryType;
-            toolStripButton1.Image = GetQueryImage(queryType);
-            RunDefaultQueryType();
+            btnRun.Image = GetQueryImage(queryType);
+            switch (queryType)
+            {
+                case QueryType.ToTable:
+                    DaxQueryHelpers.DaxQueryTable(_xlHelper.SelectedOutput, CurrentConnectionString, GetTextToExecute(), this);
+                    break;
+                case QueryType.ToStatic:
+                    DaxQueryHelpers.DaxQueryStaticResult(_xlHelper.SelectedOutput, CurrentConnectionString, GetTextToExecute(), this, _xlHelper);
+                    break;
+                case QueryType.NoResults:
+                    DaxQueryHelpers.DaxQueryDiscardResults(_conn, GetTextToExecute(), this);
+                    break;
+            }
         }
 
         private Image GetQueryImage(QueryType queryType)
@@ -382,13 +388,13 @@ namespace DaxStudio
             switch (queryType)
             {
                 case QueryType.ToTable:
-                    return runQueryTableToolStripMenuItem.Image;    
+                    return (Image)runQueryTableToolStripMenuItem.Image;    
                 case QueryType.ToStatic:
-                    return runStaticResultsToolStripMenuItem.Image;
+                    return (Image)runStaticResultsToolStripMenuItem.Image;
                 case QueryType.NoResults:
-                    return runDsicardResultsToolStripMenuItem.Image;
+                    return (Image)runDiscardResultsToolStripMenuItem.Image;
                 default:
-                    return runQueryTableToolStripMenuItem.Image;
+                    return (Image)runQueryTableToolStripMenuItem.Image;
             }
         }
 

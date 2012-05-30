@@ -36,10 +36,10 @@
             this.tspVersion = new System.Windows.Forms.ToolStripStatusLabel();
             this.tspSpid = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripSplitButton1 = new System.Windows.Forms.ToolStripSplitButton();
+            this.btnRun = new System.Windows.Forms.ToolStripSplitButton();
             this.runQueryTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runStaticResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.runDsicardResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runDiscardResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripCmdModels = new System.Windows.Forms.ToolStripButton();
             this.cboDatabase = new System.Windows.Forms.ToolStripComboBox();
@@ -47,7 +47,7 @@
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.tcbOutputTo = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripSplitButton();
+            this.btnHelp = new System.Windows.Forms.ToolStripSplitButton();
             this.documentationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mSDNForumsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -135,7 +135,7 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSplitButton1,
+            this.btnRun,
             this.toolStripSeparator1,
             this.toolStripCmdModels,
             this.cboDatabase,
@@ -143,27 +143,27 @@
             this.toolStripLabel1,
             this.tcbOutputTo,
             this.toolStripSeparator2,
-            this.toolStripButton1});
+            this.btnHelp});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(777, 25);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // toolStripSplitButton1
+            // btnRun
             // 
-            this.toolStripSplitButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripSplitButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRun.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.runQueryTableToolStripMenuItem,
             this.runStaticResultsToolStripMenuItem,
-            this.runDsicardResultsToolStripMenuItem});
-            this.toolStripSplitButton1.Image = global::DaxStudio.Properties.Resources.PlayTable1;
-            this.toolStripSplitButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripSplitButton1.Name = "toolStripSplitButton1";
-            this.toolStripSplitButton1.Size = new System.Drawing.Size(32, 22);
-            this.toolStripSplitButton1.Text = "toolStripSplitButton1";
-            this.toolStripSplitButton1.ToolTipText = "Run Query (F5)";
-            this.toolStripSplitButton1.ButtonClick += new System.EventHandler(this.RunLastQueryType);
+            this.runDiscardResultsToolStripMenuItem});
+            this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayTable1;
+            this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRun.Name = "btnRun";
+            this.btnRun.Size = new System.Drawing.Size(32, 22);
+            this.btnRun.Text = "toolStripSplitButton1";
+            this.btnRun.ToolTipText = "Run Query (F5)";
+            this.btnRun.ButtonClick += new System.EventHandler(this.RunLastQueryType);
             // 
             // runQueryTableToolStripMenuItem
             // 
@@ -183,14 +183,14 @@
             this.runStaticResultsToolStripMenuItem.Text = "Run (Static Results)";
             this.runStaticResultsToolStripMenuItem.Click += new System.EventHandler(this.RunStaticResultsToolStripMenuItemClick);
             // 
-            // runDsicardResultsToolStripMenuItem
+            // runDiscardResultsToolStripMenuItem
             // 
-            this.runDsicardResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayDiscard;
-            this.runDsicardResultsToolStripMenuItem.Name = "runDsicardResultsToolStripMenuItem";
-            this.runDsicardResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F5)));
-            this.runDsicardResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.runDsicardResultsToolStripMenuItem.Text = "Run (Discard Results)";
-            this.runDsicardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
+            this.runDiscardResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayDiscard;
+            this.runDiscardResultsToolStripMenuItem.Name = "runDiscardResultsToolStripMenuItem";
+            this.runDiscardResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F5)));
+            this.runDiscardResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runDiscardResultsToolStripMenuItem.Text = "Run (Discard Results)";
+            this.runDiscardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
             // 
             // toolStripSeparator1
             // 
@@ -243,18 +243,18 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripButton1
+            // btnHelp
             // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.documentationToolStripMenuItem,
             this.mSDNForumsToolStripMenuItem,
             this.aboutToolStripMenuItem});
-            this.toolStripButton1.Image = global::DaxStudio.Properties.Resources.question_button;
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(32, 22);
-            this.toolStripButton1.Text = "Help";
+            this.btnHelp.Image = global::DaxStudio.Properties.Resources.question_button;
+            this.btnHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnHelp.Name = "btnHelp";
+            this.btnHelp.Size = new System.Drawing.Size(32, 22);
+            this.btnHelp.Text = "toolStripButton1";
             // 
             // documentationToolStripMenuItem
             // 
@@ -367,6 +367,7 @@
             this.imgListTree.Images.SetKeyName(4, "HiddenMeasure.png");
             this.imgListTree.Images.SetKeyName(5, "Folder");
             this.imgListTree.Images.SetKeyName(6, "Function.png");
+            this.imgListTree.Images.SetKeyName(7, "HiddenTable.png");
             // 
             // tabFunctions
             // 
@@ -518,10 +519,10 @@
         private System.Windows.Forms.ToolStripButton tspExportMetadata;
         private System.Windows.Forms.TreeView tvwMetadata;
         private System.Windows.Forms.TreeView tvwFunctions;
-        private System.Windows.Forms.ToolStripSplitButton toolStripSplitButton1;
+        private System.Windows.Forms.ToolStripSplitButton btnRun;
         private System.Windows.Forms.ToolStripMenuItem runQueryTableToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runStaticResultsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem runDsicardResultsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runDiscardResultsToolStripMenuItem;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox tcbOutputTo;
         private System.Windows.Forms.ImageList imgListTree;
@@ -538,7 +539,7 @@
         private System.Windows.Forms.ToolStripComboBox cboDatabase;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.ToolStripSplitButton toolStripButton1;
+        private System.Windows.Forms.ToolStripSplitButton btnHelp;
         private System.Windows.Forms.ToolStripMenuItem documentationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mSDNForumsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;

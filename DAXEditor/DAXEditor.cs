@@ -38,11 +38,14 @@ namespace DAXEditor
     /// </summary>
     public class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
     {
+        //BracketHighlightRenderer bracketRenderer;
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
             TextArea.TextEntering += textEditor_TextArea_TextEntering;
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            //TextArea.Caret.PositionChanged += HighlightBrackets;
+
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
             using (var s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
             {
@@ -112,5 +115,46 @@ namespace DAXEditor
             // Do not set e.Handled=true.
             // We still want to insert the character that was typed.
         }
+
+        /*
+        public void HighlightBrackets(object sender, EventArgs e)
+        {
+            
+			// * Special case: ITextEditor.Language guarantees that it never returns null.
+			// * In this case however it can be null, since this code may be called while the document is loaded.
+			// * ITextEditor.Language gets set in CodeEditorAdapter.FileNameChanged, which is called after
+			// * loading of the document has finished.
+			// * 
+            if (this.Adapter.Language != null)
+            {
+                if (CodeEditorOptions.Instance.HighlightBrackets || CodeEditorOptions.Instance.ShowHiddenDefinitions)
+                {
+                    var bracketSearchResult = this.Adapter.Language.BracketSearcher.SearchBracket(this.Adapter.Document, this.TextArea.Caret.Offset);
+                    if (CodeEditorOptions.Instance.HighlightBrackets)
+                    {
+                        this.bracketRenderer.SetHighlight(bracketSearchResult);
+                    }
+                    else
+                    {
+                        this.bracketRenderer.SetHighlight(null);
+                    }
+                    if (CodeEditorOptions.Instance.ShowHiddenDefinitions)
+                    {
+                        this.hiddenDefinitionRenderer.BracketSearchResult = bracketSearchResult;
+                        this.hiddenDefinitionRenderer.Show();
+                    }
+                    else
+                    {
+                        this.hiddenDefinitionRenderer.ClosePopup();
+                    }
+                }
+                else
+                {
+                    this.bracketRenderer.SetHighlight(null);
+                    this.hiddenDefinitionRenderer.ClosePopup();
+                }
+            }
+        }
+*/
     }
 }

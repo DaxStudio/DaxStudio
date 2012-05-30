@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
+using System.Linq;
 using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
@@ -34,7 +35,8 @@ and [Dimension_unique_name] = '[Product]'
                               {
                                   {"HIERARCHY_ORIGIN", 2},
                                   {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
-                                  {"DIMENSION_UNIQUE_NAME", string.Format("[{0}]", _table.Caption)}
+                                  {"DIMENSION_UNIQUE_NAME", string.Format("[{0}]", _table.Caption)},
+                                  {"HIERARCHY_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)}
                               };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", resColl).Tables[0];
         }
@@ -44,7 +46,8 @@ and [Dimension_unique_name] = '[Product]'
             var resColl = new AdomdRestrictionCollection
                               {
                                   {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
-                                  {"MEASUREGROUP_NAME", string.Format("{0}", _table.Caption)}
+                                  {"MEASUREGROUP_NAME", string.Format("{0}", _table.Caption)},
+                                  {"MEASURE_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)}
                               };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_MEASURES", resColl).Tables[0];
         }
@@ -52,15 +55,12 @@ and [Dimension_unique_name] = '[Product]'
         public IEnumerator<ADOTabularColumn> GetEnumerator()
         {
             // Add attributes as columns
-            foreach (DataRow dr in GetColumnsTable().Rows)
+            foreach (var dr in GetColumnsTable().Rows.Cast<DataRow>().Where(dr => dr["HIERARCHY_NAME"].ToString() != "RowNumber"))
             {
-                //if (dr["COLUMN_NAME"] != "RowNumber")
-                //{
                 yield return new ADOTabularColumn(_table, dr,ADOTabularColumnType.Column);
-                //}
             }
             // Add measures to column collection
-            foreach (DataRow dr in GetMeasuresTable().Rows)
+            foreach (var dr in GetMeasuresTable().Rows.Cast<DataRow>().Where(dr => dr["MEASURE_NAME"].ToString() != string.Format("_Count {0}",_table.Caption)))
             {
                 yield return new ADOTabularColumn(_table, dr, ADOTabularColumnType.Measure);
             }

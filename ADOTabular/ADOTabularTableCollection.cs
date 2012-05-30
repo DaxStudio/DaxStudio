@@ -27,7 +27,9 @@ namespace ADOTabular
         {
             if (_dtTables == null)
             {
-                var resColl = new AdomdRestrictionCollection {{"CUBE_NAME", Model.Name}};
+                var resColl = new AdomdRestrictionCollection { 
+                                    { "CUBE_NAME", Model.Name }, 
+                                    { "DIMENSION_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) } };
                 _dtTables = _adoTabConn.GetSchemaDataSet("MDSCHEMA_DIMENSIONS", resColl).Tables[0];
             }
             return _dtTables;
@@ -39,7 +41,7 @@ namespace ADOTabular
             foreach (DataRow dr in GetTablesTable().Rows)
             {
                 if (dr["DIMENSION_NAME"].ToString().ToUpper()!="MEASURES")
-                yield return new ADOTabularTable(_adoTabConn, dr["DIMENSION_NAME"].ToString(),_model);
+                yield return new ADOTabularTable(_adoTabConn, dr,_model);
             }
         }
 

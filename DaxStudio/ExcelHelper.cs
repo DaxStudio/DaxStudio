@@ -38,7 +38,7 @@ namespace DaxStudio
 
         private void PopulateOutputOptions(ToolStripComboBox outputTo)
         {
-            if (_tcbOutputTo == null) return;
+            if (_tcbOutputTo.ComboBox == null) return;
             _tcbOutputTo.Items.Clear();
             Workbook wb = _app.ActiveWorkbook;
             outputTo.Items.Add(DAX_RESULTS_SHEET);

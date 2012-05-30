@@ -5,12 +5,24 @@ using System.Data;
 
 namespace ADOTabular
 {
+
+    [Flags]
+    public enum MdschemaVisibility
+    {
+        Visible = 0x01,
+        NonVisible = 0x02
+    }
+        
+        
     public class ADOTabularConnection
     {
         private readonly AdomdConnection _adomdConn; 
         public ADOTabularConnection(string connectionString)
         {
-            _adomdConn = new AdomdConnection(connectionString);
+            _adomdConn = new AdomdConnection();
+            _adomdConn.ConnectionString = connectionString;
+            _adomdConn.ShowHiddenObjects = true;
+            _adomdConn.Open();
         }
 
         // returns the current database for the connection
