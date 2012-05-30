@@ -38,6 +38,7 @@ namespace ADOTabular
         {
             foreach (DataRow dr in GetTablesTable().Rows)
             {
+                if (dr["DIMENSION_NAME"].ToString().ToUpper()!="MEASURES")
                 yield return new ADOTabularTable(_adoTabConn, dr["DIMENSION_NAME"].ToString(),_model);
             }
         }
