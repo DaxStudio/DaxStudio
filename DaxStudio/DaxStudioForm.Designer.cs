@@ -64,10 +64,12 @@
             this.listDMV = new System.Windows.Forms.ListView();
             this.colDmv = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
+            this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.clearCacheToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stsDax.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -156,7 +158,9 @@
             this.btnRun.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.runQueryTableToolStripMenuItem,
             this.runStaticResultsToolStripMenuItem,
-            this.runDiscardResultsToolStripMenuItem});
+            this.runDiscardResultsToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.clearCacheToolStripMenuItem});
             this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayTable1;
             this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRun.Name = "btnRun";
@@ -443,6 +447,15 @@
             this.splitContainer2.SplitterDistance = 308;
             this.splitContainer2.TabIndex = 0;
             // 
+            // rtbOutput
+            // 
+            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
+            this.rtbOutput.Name = "rtbOutput";
+            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
+            this.rtbOutput.TabIndex = 0;
+            this.rtbOutput.Text = "";
+            // 
             // elementHost1
             // 
             this.elementHost1.AllowDrop = true;
@@ -455,14 +468,18 @@
             this.elementHost1.Text = "elementHost1";
             this.elementHost1.Child = this.ucDaxEditor;
             // 
-            // rtbOutput
+            // toolStripSeparator3
             // 
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.Text = "";
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(224, 6);
+            // 
+            // clearCacheToolStripMenuItem
+            // 
+            this.clearCacheToolStripMenuItem.Name = "clearCacheToolStripMenuItem";
+            this.clearCacheToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.clearCacheToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.clearCacheToolStripMenuItem.Text = "Clear Cache";
+            this.clearCacheToolStripMenuItem.Click += new System.EventHandler(this.clearCacheToolStripMenuItem_Click);
             // 
             // DaxStudioForm
             // 
@@ -543,6 +560,8 @@
         private System.Windows.Forms.ToolStripMenuItem documentationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mSDNForumsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem clearCacheToolStripMenuItem;
 
     }
 }

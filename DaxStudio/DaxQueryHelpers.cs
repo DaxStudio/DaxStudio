@@ -7,6 +7,21 @@ namespace DaxStudio
 {
     public static class DaxQueryHelpers
     {
+        public static void DaxClearCache(ADOTabularConnection conn, IOutputWindow output) {
+            var queryBegin = DateTime.UtcNow;
+            conn.ExecuteCommand(String.Format(@"
+<Batch xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+   <ClearCache>
+     <Object>
+       <DatabaseID>{0}</DatabaseID>   
+    </Object>
+   </ClearCache>
+ </Batch>
+", conn.Database.Name));
+            var queryComplete = DateTime.UtcNow;
+            output.WriteOutputMessage(string.Format("{0} - Cleared Cache ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
+        }
+
         public static void DaxQueryDiscardResults(ADOTabularConnection conn, string daxQuery, IOutputWindow output)
         {
             var queryBegin = DateTime.UtcNow;

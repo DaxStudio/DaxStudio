@@ -408,5 +408,9 @@ namespace DaxStudio
             //if (e2.KeyData == Key.F5 || e.KeyboardDevice.Modifiers != System.Windows.Input.ModifierKeys.None)
                 DaxStudioFormKeyUp(sender, e2);
         }
+
+        private void clearCacheToolStripMenuItem_Click(object sender, EventArgs e) {
+            DaxQueryHelpers.DaxClearCache(_conn, this);
+        }
     }
 }

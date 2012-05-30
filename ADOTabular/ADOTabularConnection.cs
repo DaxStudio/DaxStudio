@@ -125,6 +125,12 @@ namespace ADOTabular
             return dt;
         }
 
+        public int ExecuteCommand(string command) {
+            AdomdCommand cmd = _adomdConn.CreateCommand();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = command;
+            return cmd.ExecuteNonQuery();
+        }
 
         public void Close()
         {
