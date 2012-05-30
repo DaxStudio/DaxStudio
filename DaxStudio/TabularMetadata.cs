@@ -30,14 +30,10 @@ namespace DaxStudio
 
             var m = adoTabularConnection.Database.Models[modelName];
             {
-                var modelNode = tvwMetadata.Nodes.Add(m.Name, m.Name, (int)MetadataImages.Folder, (int)MetadataImages.Folder); //todo - add image index
+                var modelNode = tvwMetadata.Nodes.Add(m.Name, m.Name, (int)MetadataImages.Folder, (int)MetadataImages.Folder);
                 foreach (var t in m.Tables)
                 {
-                    var tImageId = 0;
-                    if (t.IsVisible)
-                    { tImageId = (int)MetadataImages.Table; }
-                    else
-                    { tImageId = (int)MetadataImages.HiddenTable; }
+                    var tImageId = t.IsVisible ? (int)MetadataImages.Table : (int)MetadataImages.HiddenTable; 
                     var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, tImageId,tImageId);
                     foreach (var c in t.Columns)
                     {
@@ -47,17 +43,11 @@ namespace DaxStudio
                         // ReSharper restore RedundantAssignment
                         if (c.Type == ADOTabularColumnType.Column)
                         {
-                            if (c.IsVisible)
-                            { iImageId = (int)MetadataImages.Column; }
-                            else
-                            { iImageId = (int)MetadataImages.HiddenColumn; }
+                            iImageId = c.IsVisible ? (int)MetadataImages.Column : (int)MetadataImages.HiddenColumn; 
                         }
                         else
                         {
-                            if (c.IsVisible)
-                            { iImageId = (int)MetadataImages.Measure; }
-                            else
-                            { iImageId = (int)MetadataImages.HiddenMeasure; }
+                            iImageId = c.IsVisible ? (int)MetadataImages.Measure : (int)MetadataImages.HiddenMeasure; 
                         }
 
                         tableNode.Nodes.Add(c.Name, c.Caption, iImageId, iImageId);
