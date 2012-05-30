@@ -20,6 +20,7 @@ namespace DaxStudio
             _app = app;
             _tcbOutputTo = tcbOutputTo;
             _app.WorkbookActivate += AppWorkbookActivate;
+            
             PopulateOutputOptions(_tcbOutputTo);
 
         }
@@ -37,6 +38,7 @@ namespace DaxStudio
 
         private void PopulateOutputOptions(ToolStripComboBox outputTo)
         {
+            if (_tcbOutputTo == null) return;
             _tcbOutputTo.Items.Clear();
             Workbook wb = _app.ActiveWorkbook;
             outputTo.Items.Add(DAX_RESULTS_SHEET);
@@ -103,20 +105,24 @@ namespace DaxStudio
         private  Worksheet _shtDaxResults;
         public  Worksheet GetDaxResultsWorkSheet(Workbook workbook)
         {
-
-
-            // this will return a COM exception if the worksheet does not exist
+            
             if (_shtDaxResults == null)
             {
                 foreach (Worksheet s in from Worksheet s in workbook.Sheets where s.Name == "DaxResults" select s)
                 {
                     _shtDaxResults = s;
-                    return _shtDaxResults;
+                    //return _shtDaxResults;
                 }
             }
-            else
+            /*else
             {
                 return _shtDaxResults;
+            }*/
+            if (_shtDaxResults != null)
+            {
+                _app.DisplayAlerts = false;
+                _shtDaxResults.Delete();
+                _app.DisplayAlerts = true;
             }
             // Create a new Sheet
             _shtDaxResults = (Worksheet)workbook.Sheets.Add(
@@ -129,6 +135,7 @@ namespace DaxStudio
 
         public bool HasPowerPivotData()
         {
+            if (_app.ActiveWorkbook == null) return false;
             PivotCaches pvtcaches = _app.ActiveWorkbook.PivotCaches();
             if (pvtcaches.Count == 0)
                 return false;

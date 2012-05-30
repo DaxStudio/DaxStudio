@@ -3,9 +3,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+using System.Windows.Input;
 using DaxStudio.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
 using ADOTabular;
+using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 
 namespace DaxStudio
 {
@@ -27,12 +30,21 @@ namespace DaxStudio
 
         public string CurrentConnectionString
         {
-            get { return _conn.ConnectionString; }
+            get
+            {
+                
+                return _conn.ConnectionString;
+            }
         }
 
         public DaxStudioForm()
         {
-            InitializeComponent();
+            InitializeComponent();          
+            // hook up the KeyUp event of the DaxEditor (wpf) control
+            var ctr = (elementHost1.Child as DaxEditorUserControl);
+            if (ctr == null)
+                return;
+            ctr.KeyUp += DaxEditorKeyUp;
         }
 
         public Excel.Application Application
@@ -50,10 +62,10 @@ namespace DaxStudio
 
         private void DaxStudioFormKeyUp(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
+            switch (e.KeyData)
             {
                 case Keys.F5:
-                    RunLastQueryType(sender, e);
+                    RunDefaultQueryType();
                     break;
             }
         }
@@ -125,20 +137,17 @@ namespace DaxStudio
 
         private void RunStaticResultsToolStripMenuItemClick(object sender, EventArgs e)
         {
-            _defaultQueryType = QueryType.ToStatic;
-            RunLastQueryType(sender,e);
+            RunQuery(QueryType.ToStatic);
         }
 
         private void RunDsicardResultsToolStripMenuItemClick(object sender, EventArgs e)
         {
-            _defaultQueryType = QueryType.NoResults;
-            RunLastQueryType(sender,e);
+            RunQuery(QueryType.NoResults);
         }
 
         private void RunQueryTableToolStripMenuItemClick(object sender, EventArgs e)
         {
-            _defaultQueryType = QueryType.ToTable;
-            RunLastQueryType(sender,e);
+            RunQuery(QueryType.ToTable);
         }
 
         private void ToolStripCmdModelsClick(object sender, EventArgs e)
@@ -174,7 +183,13 @@ namespace DaxStudio
             }
         }
 
-        private void RunLastQueryType(object sender, EventArgs e)
+        private void RunLastQueryType(object sender, EventArgs e) //object sender, EventArgs e)
+        {
+            RunDefaultQueryType();
+
+        }
+
+        private void RunDefaultQueryType() //object sender, EventArgs e)
         {
             switch ( _defaultQueryType )
             {
@@ -190,6 +205,11 @@ namespace DaxStudio
             }
         }
 
+        private string BuildPowerPivotConnection()
+        {
+            return string.Format("Data Source=$Embedded$;Location={0}", _workbook.FullName);
+        }
+
         private void DaxStudioFormShown(object sender, EventArgs e)
         {
             var wb = _app.ActiveWorkbook;
@@ -197,7 +217,9 @@ namespace DaxStudio
             {
                 // if current workbook has PowerPivot data ensure it is loaded into memory
                 _xlHelper.EnsurePowerPivotDataIsLoaded();
-                RefreshTabularMetadata();
+                _conn = new ADOTabularConnection(BuildPowerPivotConnection());
+                RefreshDatabaseList();
+                //RefreshTabularMetadata();
             }
             else
             {
@@ -338,6 +360,47 @@ namespace DaxStudio
         private void analysisServicesToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void ElementHostChildChanged(object sender, ChildChangedEventArgs e)
+        {
+            var ctr = (elementHost1.Child as DaxEditorUserControl);
+            if (ctr == null)
+                return;
+            ctr.KeyUp += DaxEditorKeyUp;
+        }
+
+        private void RunQuery(QueryType queryType)
+        {
+            _defaultQueryType = queryType;
+            toolStripButton1.Image = GetQueryImage(queryType);
+            RunDefaultQueryType();
+        }
+
+        private Image GetQueryImage(QueryType queryType)
+        {
+            switch (queryType)
+            {
+                case QueryType.ToTable:
+                    return runQueryTableToolStripMenuItem.Image;    
+                case QueryType.ToStatic:
+                    return runStaticResultsToolStripMenuItem.Image;
+                case QueryType.NoResults:
+                    return runDsicardResultsToolStripMenuItem.Image;
+                default:
+                    return runQueryTableToolStripMenuItem.Image;
+            }
+        }
+
+        void DaxEditorKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var wpfKey = e.Key == Key.System ? e.SystemKey : e.Key;
+            var formsKey = (Keys)KeyInterop.VirtualKeyFromKey(wpfKey);
+            var e2 = new KeyEventArgs(formsKey);
+            
+            // "forward" the event to the form's KeyUp handler
+            //if (e2.KeyData == Key.F5 || e.KeyboardDevice.Modifiers != System.Windows.Input.ModifierKeys.None)
+                DaxStudioFormKeyUp(sender, e2);
         }
     }
 }

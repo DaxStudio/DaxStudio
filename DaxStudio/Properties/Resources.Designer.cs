@@ -108,6 +108,34 @@ namespace DaxStudio.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap PlayDiscard {
+            get {
+                object obj = ResourceManager.GetObject("PlayDiscard", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PlayStatic {
+            get {
+                object obj = ResourceManager.GetObject("PlayStatic", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PlayTable {
+            get {
+                object obj = ResourceManager.GetObject("PlayTable", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PlayTable1 {
+            get {
+                object obj = ResourceManager.GetObject("PlayTable1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap question_button {
             get {
                 object obj = ResourceManager.GetObject("question_button", resourceCulture);

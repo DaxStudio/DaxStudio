@@ -42,7 +42,18 @@ namespace ADOTabular
 
         public string ConnectionString
         {
-            get { return _adomdConn.ConnectionString; }
+            get
+            {
+                if (!_adomdConn.ConnectionString.Contains("Initial Catalog"))
+                {
+                    return
+                        string.Format(
+                            _adomdConn.ConnectionString.EndsWith(";")
+                                ? "{0}Initial Catalog={1}"
+                                : "{0};Initial Catalog={1}", _adomdConn.ConnectionString, Database.Name);
+                }
+                return _adomdConn.ConnectionString;
+            }
         }
 
         // In ADO we set the current DB in the connection string

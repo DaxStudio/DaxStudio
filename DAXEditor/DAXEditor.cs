@@ -56,6 +56,10 @@ namespace DAXEditor
 
 
             //this.textEditor1.ToolTip = tt;
+
+            //TODO - hardcoded for v1 - should be moved to a settings dialog
+            this.FontFamily = new System.Windows.Media.FontFamily("Lucida Console");
+            this.ShowLineNumbers = true;
         }
 
         CompletionWindow completionWindow;

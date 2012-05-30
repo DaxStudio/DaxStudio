@@ -64,10 +64,10 @@
             this.listDMV = new System.Windows.Forms.ListView();
             this.colDmv = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.rtbOutput = new System.Windows.Forms.RichTextBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
             this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
+            this.rtbOutput = new System.Windows.Forms.RichTextBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.stsDax.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -157,33 +157,39 @@
             this.runQueryTableToolStripMenuItem,
             this.runStaticResultsToolStripMenuItem,
             this.runDsicardResultsToolStripMenuItem});
-            this.toolStripSplitButton1.Image = global::DaxStudio.Properties.Resources.play;
+            this.toolStripSplitButton1.Image = global::DaxStudio.Properties.Resources.PlayTable1;
             this.toolStripSplitButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripSplitButton1.Name = "toolStripSplitButton1";
             this.toolStripSplitButton1.Size = new System.Drawing.Size(32, 22);
             this.toolStripSplitButton1.Text = "toolStripSplitButton1";
-            this.toolStripSplitButton1.ToolTipText = "Run Query";
+            this.toolStripSplitButton1.ToolTipText = "Run Query (F5)";
             this.toolStripSplitButton1.ButtonClick += new System.EventHandler(this.RunLastQueryType);
             // 
             // runQueryTableToolStripMenuItem
             // 
+            this.runQueryTableToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayTable1;
             this.runQueryTableToolStripMenuItem.Name = "runQueryTableToolStripMenuItem";
-            this.runQueryTableToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.runQueryTableToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
+            this.runQueryTableToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
             this.runQueryTableToolStripMenuItem.Text = "Run (Query Table)";
             this.runQueryTableToolStripMenuItem.Click += new System.EventHandler(this.RunQueryTableToolStripMenuItemClick);
             // 
             // runStaticResultsToolStripMenuItem
             // 
+            this.runStaticResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayStatic;
             this.runStaticResultsToolStripMenuItem.Name = "runStaticResultsToolStripMenuItem";
-            this.runStaticResultsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.runStaticResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
+            this.runStaticResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
             this.runStaticResultsToolStripMenuItem.Text = "Run (Static Results)";
             this.runStaticResultsToolStripMenuItem.Click += new System.EventHandler(this.RunStaticResultsToolStripMenuItemClick);
             // 
             // runDsicardResultsToolStripMenuItem
             // 
+            this.runDsicardResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayDiscard;
             this.runDsicardResultsToolStripMenuItem.Name = "runDsicardResultsToolStripMenuItem";
-            this.runDsicardResultsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
-            this.runDsicardResultsToolStripMenuItem.Text = "Run (Dsicard Results)";
+            this.runDsicardResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F5)));
+            this.runDsicardResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runDsicardResultsToolStripMenuItem.Text = "Run (Discard Results)";
             this.runDsicardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
             // 
             // toolStripSeparator1
@@ -253,21 +259,23 @@
             // documentationToolStripMenuItem
             // 
             this.documentationToolStripMenuItem.Name = "documentationToolStripMenuItem";
-            this.documentationToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.documentationToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.documentationToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.documentationToolStripMenuItem.Text = "Documentation";
             this.documentationToolStripMenuItem.Click += new System.EventHandler(this.DocumentationToolStripMenuItemClick);
             // 
             // mSDNForumsToolStripMenuItem
             // 
             this.mSDNForumsToolStripMenuItem.Name = "mSDNForumsToolStripMenuItem";
-            this.mSDNForumsToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.mSDNForumsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F1)));
+            this.mSDNForumsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.mSDNForumsToolStripMenuItem.Text = "MSDN Forums";
             this.mSDNForumsToolStripMenuItem.Click += new System.EventHandler(this.MsdnForumsToolStripMenuItemClick);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItemClick);
             // 
@@ -434,15 +442,6 @@
             this.splitContainer2.SplitterDistance = 308;
             this.splitContainer2.TabIndex = 0;
             // 
-            // rtbOutput
-            // 
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.Text = "";
-            // 
             // elementHost1
             // 
             this.elementHost1.AllowDrop = true;
@@ -454,6 +453,15 @@
             this.elementHost1.TabIndex = 0;
             this.elementHost1.Text = "elementHost1";
             this.elementHost1.Child = this.ucDaxEditor;
+            // 
+            // rtbOutput
+            // 
+            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
+            this.rtbOutput.Name = "rtbOutput";
+            this.rtbOutput.Size = new System.Drawing.Size(516, 88);
+            this.rtbOutput.TabIndex = 0;
+            this.rtbOutput.Text = "";
             // 
             // DaxStudioForm
             // 
