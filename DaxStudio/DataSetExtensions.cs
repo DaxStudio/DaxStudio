@@ -35,6 +35,9 @@ namespace DaxStudio
             // Copy the values to the object array
             for (int col = 0; col < dt.Columns.Count; col++)
             {
+                if ( dt.Columns[col].DataType.Name == "Byte[]" ) // TODO: there must be a better way to do this
+                    continue; // ignore this column 
+
                 for (int row = 0; row < dt.Rows.Count; row++)
                 {
                     if (dt.Rows[row].ItemArray[col] is System.Guid)

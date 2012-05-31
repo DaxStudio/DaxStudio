@@ -90,6 +90,9 @@ namespace DaxStudio
             // .Net to COM interop call
             excelSheet.Range[excelRange, Type.Missing].Value2 = dt.ToObjectArray();
 
+            // Autofit the columns to the data
+            excelSheet.Range[excelRange, Type.Missing].EntireColumn.AutoFit();
+
             // Mark the first row as BOLD
             ((Range)excelSheet.Rows[1, Type.Missing]).Font.Bold = true;
         }
