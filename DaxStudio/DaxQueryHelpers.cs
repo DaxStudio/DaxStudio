@@ -28,13 +28,13 @@ namespace DaxStudio
 
             //TODO - test using a cellset instead of a DataAdaptor
             // run query
-            conn.ExecuteDaxQuery(daxQuery);
+            conn.ExecuteDaxQueryDataTable(daxQuery);
             var queryComplete = DateTime.UtcNow;
             output.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
         }
 
 
-        public static void DaxQueryTable(Worksheet excelSheet, string connectionString, string daxQuery, IOutputWindow output)
+        public static void DaxQueryTable(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow output)
         {
             ListObject lo;
             if (excelSheet.ListObjects.Count > 0)
@@ -44,7 +44,7 @@ namespace DaxStudio
             else
             {
                 lo = excelSheet.ListObjects.AddEx(0
-                , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connectionString)
+                , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connection.ConnectionString)
                 , Type.Missing
                 , XlYesNoGuess.xlGuess
                 , excelSheet.Range["$A$3"]);
@@ -66,14 +66,13 @@ namespace DaxStudio
             catch (Exception ex)
             {
                 output.WriteOutputError(ex.Message);
-                output.WriteOutputError("Please check your query.");
+                output.WriteOutputError("Checking the query for errors...");
+                DaxQueryDiscardResults(connection,daxQuery,output);
             }
         }
 
-        public static void DaxQueryStaticResult(Worksheet excelSheet, string connectionString, string daxQuery, IOutputWindow window, ExcelHelper xlHelper)
+        public static void DaxQueryStaticResult(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow window, ExcelHelper xlHelper)
         {
-            var conn = new ADOTabularConnection(connectionString);
-
             try
             {
                 window.ClearOutput();
@@ -82,7 +81,7 @@ namespace DaxStudio
 
                 //TODO - test using a cellset instead of a DataAdaptor
                 // run query
-                System.Data.DataTable dt = conn.ExecuteDaxQuery(daxQuery);
+                System.Data.DataTable dt = connection.ExecuteDaxQueryDataTable(daxQuery);
                 var queryComplete = DateTime.UtcNow;
                 window.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
 

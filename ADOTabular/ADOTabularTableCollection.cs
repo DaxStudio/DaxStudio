@@ -29,7 +29,7 @@ namespace ADOTabular
             {
                 var resColl = new AdomdRestrictionCollection { 
                                     { "CUBE_NAME", Model.Name }, 
-                                    { "DIMENSION_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) } };
+                                    { "DIMENSION_VISIBILITY", _adoTabConn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} };
                 _dtTables = _adoTabConn.GetSchemaDataSet("MDSCHEMA_DIMENSIONS", resColl).Tables[0];
             }
             return _dtTables;

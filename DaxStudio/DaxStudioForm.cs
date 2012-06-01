@@ -1,8 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using System.Windows.Input;
@@ -22,9 +22,8 @@ namespace DaxStudio
             ToStatic =1,
             NoResults=2
         }
-        private readonly BackgroundWorker _bgQuery = new BackgroundWorker();
-        private readonly BackgroundWorker _bgMetadata = new BackgroundWorker();
-        private bool _refreshingMetadata = false;
+
+        private bool _refreshingMetadata;
         private ADOTabularConnection _conn;
         private Excel.Application _app;
         private QueryType _defaultQueryType = QueryType.ToTable;
@@ -46,13 +45,25 @@ namespace DaxStudio
             if (ctr == null)
                 return;
             ctr.KeyUp += DaxEditorKeyUp;
-            _bgMetadata.DoWork += (sender, args) => RefreshTabularMetadata();
+
         }
+
 
         public Excel.Application Application
         {
             get { return _app; }
             set { _app = value; }
+        }
+
+        private string _fileName = string.Empty;
+        public string FileName
+        {
+            get { return _fileName; }
+            set
+            {
+                _fileName = value;
+                Text = string.Format("{0} - {1}", Resources.DAX_Studio_Caption, _fileName);
+            }
         }
 
         private string GetTextToExecute()
@@ -158,27 +169,27 @@ namespace DaxStudio
             if (conDialog.ShowDialog() == DialogResult.Cancel) return;
 
             _conn = conDialog.Connection;
+            _conn.ShowHiddenObjects = true;
             RefreshDatabaseList();
             //RefreshTabularMetadata();
         }
 
-        private void RefreshTabularMetadataAsync()
-        {
-            tspStatus.Text = Resources.Refreshing_Metadata;
-            _bgMetadata.RunWorkerAsync();
-            tspStatus.Text = Resources.Status_Ready;
-        }
 
         private void RefreshTabularMetadata()
         {
             _refreshingMetadata = true;
             try
             {
+                tspStatus.Text = Resources.Refreshing_Metadata;
+                Cursor = System.Windows.Forms.Cursors.WaitCursor;
+                System.Windows.Forms.Application.DoEvents();
                 //populate metadata tabs
                 TabularMetadata.PopulateConnectionMetadata(_conn, tvwMetadata, tvwFunctions, listDMV, cboModel.Text);
                 
+                ResetCursor();
                 // update status bar
-                
+                tspStatus.Text = Resources.Status_Ready;
+
                 tspConnection.Text = _conn.ServerName;
                 tspVersion.Text = _conn.ServerVersion;
                 tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);
@@ -213,6 +224,7 @@ namespace DaxStudio
                 // if current workbook has PowerPivot data ensure it is loaded into memory
                 _xlHelper.EnsurePowerPivotDataIsLoaded();
                 _conn = new ADOTabularConnection(BuildPowerPivotConnection());
+                _conn.ShowHiddenObjects = true;
                 RefreshDatabaseList();
                 //RefreshTabularMetadata();
             }
@@ -372,10 +384,10 @@ namespace DaxStudio
             switch (queryType)
             {
                 case QueryType.ToTable:
-                    DaxQueryHelpers.DaxQueryTable(_xlHelper.SelectedOutput, CurrentConnectionString, GetTextToExecute(), this);
+                    DaxQueryHelpers.DaxQueryTable(_xlHelper.SelectedOutput, _conn, GetTextToExecute(), this);
                     break;
                 case QueryType.ToStatic:
-                    DaxQueryHelpers.DaxQueryStaticResult(_xlHelper.SelectedOutput, CurrentConnectionString, GetTextToExecute(), this, _xlHelper);
+                    DaxQueryHelpers.DaxQueryStaticResult(_xlHelper.SelectedOutput, _conn, GetTextToExecute(), this, _xlHelper);
                     break;
                 case QueryType.NoResults:
                     DaxQueryHelpers.DaxQueryDiscardResults(_conn, GetTextToExecute(), this);
@@ -388,13 +400,13 @@ namespace DaxStudio
             switch (queryType)
             {
                 case QueryType.ToTable:
-                    return (Image)runQueryTableToolStripMenuItem.Image;    
+                    return runQueryTableToolStripMenuItem.Image;    
                 case QueryType.ToStatic:
-                    return (Image)runStaticResultsToolStripMenuItem.Image;
+                    return runStaticResultsToolStripMenuItem.Image;
                 case QueryType.NoResults:
-                    return (Image)runDiscardResultsToolStripMenuItem.Image;
+                    return runDiscardResultsToolStripMenuItem.Image;
                 default:
-                    return (Image)runQueryTableToolStripMenuItem.Image;
+                    return runQueryTableToolStripMenuItem.Image;
             }
         }
 
@@ -411,6 +423,43 @@ namespace DaxStudio
 
         private void clearCacheToolStripMenuItem_Click(object sender, EventArgs e) {
             DaxQueryHelpers.DaxClearCache(_conn, this);
+        }
+
+        private void OpenToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            // file open dialog 
+            if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
+            // read file
+            FileName = openFileDialog1.FileName;
+            TextReader tr = new StreamReader(FileName);
+            // put contents in edit window
+            ucDaxEditor.daxEditor.Text = tr.ReadToEnd();
+            tr.Close();
+        }
+
+        private void SaveAsToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() ==  DialogResult.OK )
+            {
+                FileName = saveFileDialog1.FileName;
+                TextWriter tw = new StreamWriter(FileName);
+                tw.Write(ucDaxEditor.daxEditor.Text);
+                tw.Close();
+            }
+        }
+
+        
+        private void SaveToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            if (FileName == string.Empty) 
+                SaveAsToolStripMenuItemClick(sender,e);
+            else
+            {
+                TextWriter tw = new StreamWriter(FileName);
+                tw.Write(ucDaxEditor.daxEditor.Text);
+                tw.Close();    
+            }
+            
         }
     }
 }

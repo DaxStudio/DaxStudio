@@ -38,9 +38,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.AvalonEdit, Version=4.2.0.8783, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+    <Reference Include="ICSharpCode.AvalonEdit, Version=4.1.0.8000, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AvalonEdit.4.2.0.8783\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+      <HintPath>..\packages\AvalonEdit.4.1.0.8000\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit.CodeCompletion, Version=1.8.0.17, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDevelopCodeCompletion.1.8.0.17\lib\ICSharpCode.AvalonEdit.CodeCompletion.dll</HintPath>
@@ -116,7 +116,7 @@
     <Resource Include="Resources\DAXEditor.Table.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\ICSharpCode.AvalonEdit.dll" />
+    <Folder Include="lib\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

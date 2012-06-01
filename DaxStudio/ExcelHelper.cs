@@ -12,17 +12,27 @@ namespace DaxStudio
         const string NEW_SHEET = "<New Sheet>";
         const string DAX_RESULTS_SHEET = "<Query Results Sheet>";
         // ReSharper restore InconsistentNaming
-
+        private QueryTable _qryTable;
         private readonly Excel.Application _app ;
         private readonly ToolStripComboBox _tcbOutputTo;
+
+        public delegate void QueryTableRefreshedHandler(object sender, QueryTableRefreshEventArgs e);
+        public event QueryTableRefreshedHandler QueryTableRefreshed;
+
         public ExcelHelper(Excel.Application app, ToolStripComboBox tcbOutputTo)
         {
             _app = app;
             _tcbOutputTo = tcbOutputTo;
             _app.WorkbookActivate += AppWorkbookActivate;
-            
             PopulateOutputOptions(_tcbOutputTo);
+            
+        }
 
+        public void RefreshQueryTableAsync(QueryTable queryTable)
+        {
+            _qryTable = queryTable;
+            _qryTable.AfterRefresh += OnQueryTableAfterRefresh;
+            _qryTable.Refresh(true);
         }
 
         void AppWorkbookActivate(Workbook wb)
@@ -50,6 +60,8 @@ namespace DaxStudio
             // set the default 
             outputTo.Text = DAX_RESULTS_SHEET;
         }
+
+        
 
         public Worksheet SelectedOutput
         {
@@ -167,5 +179,22 @@ namespace DaxStudio
             }
 
         }
+
+        public void OnQueryTableAfterRefresh(bool success) 
+        {
+            QueryTableRefreshed(this, new QueryTableRefreshEventArgs(success));
+        }
     }
+
+    public class QueryTableRefreshEventArgs : EventArgs
+    {
+        public QueryTableRefreshEventArgs(bool success)
+        {
+            Success = success;
+        }
+
+        public bool Success { get; set; }
+    
+    }
+    
 }

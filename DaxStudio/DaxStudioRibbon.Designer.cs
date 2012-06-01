@@ -50,7 +50,6 @@
             // group1
             // 
             this.group1.Items.Add(this.btnDax);
-            this.group1.Label = "group1";
             this.group1.Name = "group1";
             // 
             // btnDax

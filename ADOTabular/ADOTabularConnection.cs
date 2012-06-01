@@ -21,8 +21,16 @@ namespace ADOTabular
         {
             _adomdConn = new AdomdConnection();
             _adomdConn.ConnectionString = connectionString;
-            _adomdConn.ShowHiddenObjects = true;
-            _adomdConn.Open();
+            //_adomdConn.ShowHiddenObjects = true;
+            //_adomdConn.Open();
+        }
+
+        public ADOTabularConnection(string connectionString, bool showHiddenObjects)
+        {
+            _adomdConn = new AdomdConnection();
+            _adomdConn.ConnectionString = connectionString;
+            ShowHiddenObjects = showHiddenObjects;
+            //_adomdConn.Open();
         }
 
         // returns the current database for the connection
@@ -41,10 +49,16 @@ namespace ADOTabular
             _adomdConn.ChangeDatabase(database);
         }
 
+        private bool _showHiddenObjects;
         public bool ShowHiddenObjects
         {
-            get { return _adomdConn.ShowHiddenObjects; }
-            set { _adomdConn.ShowHiddenObjects = value; }
+            get { return _showHiddenObjects; }
+            set
+            {
+                if (_adomdConn.State == ConnectionState.Open) 
+                    throw new Exception("Cannot set the ShowHiddenObjects setting while the connection is open");
+                _showHiddenObjects = value;
+            }
         }
 
         public override string ToString()
@@ -111,18 +125,30 @@ namespace ADOTabular
             AdomdCommand cmd = _adomdConn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = query;
+            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
             return cmd.ExecuteReader();
         }
 
-        public DataTable ExecuteDaxQuery(string query)
+        public DataTable ExecuteDaxQueryDataTable(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = query;
             var da = new AdomdDataAdapter(cmd);
             var dt = new DataTable("DAXResult");
+            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
             da.Fill(dt);
             return dt;
+        }
+
+        public CellSet ExecuteDaxQueryCellset(string query)
+        {
+            AdomdCommand cmd = _adomdConn.CreateCommand();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = query;
+            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
+            var cs = cmd.ExecuteCellSet();
+            return cs;
         }
 
         public int ExecuteCommand(string command) {

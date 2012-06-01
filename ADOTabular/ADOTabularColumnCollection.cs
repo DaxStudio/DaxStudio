@@ -36,7 +36,7 @@ and [Dimension_unique_name] = '[Product]'
                                   {"HIERARCHY_ORIGIN", 2},
                                   {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
                                   {"DIMENSION_UNIQUE_NAME", string.Format("[{0}]", _table.Caption)},
-                                  {"HIERARCHY_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)}
+                                  {"HIERARCHY_VISIBILITY", _adoTabConn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} 
                               };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", resColl).Tables[0];
         }
@@ -47,7 +47,7 @@ and [Dimension_unique_name] = '[Product]'
                               {
                                   {"CUBE_NAME", string.Format("{0}", _table.Model.Name)},
                                   {"MEASUREGROUP_NAME", string.Format("{0}", _table.Caption)},
-                                  {"MEASURE_VISIBILITY", (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)}
+                                  {"MEASURE_VISIBILITY", _adoTabConn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} 
                               };
             return _adoTabConn.GetSchemaDataSet("MDSCHEMA_MEASURES", resColl).Tables[0];
         }
