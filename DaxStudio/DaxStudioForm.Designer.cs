@@ -104,6 +104,7 @@
             this.tspSpid});
             this.stsDax.Location = new System.Drawing.Point(0, 425);
             this.stsDax.Name = "stsDax";
+            this.stsDax.ShowItemToolTips = true;
             this.stsDax.Size = new System.Drawing.Size(777, 24);
             this.stsDax.TabIndex = 0;
             this.stsDax.Text = "statusStrip1";
@@ -268,7 +269,7 @@
             this.clearCacheToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
             this.clearCacheToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
             this.clearCacheToolStripMenuItem.Text = "Clear Cache";
-            this.clearCacheToolStripMenuItem.Click += new System.EventHandler(this.clearCacheToolStripMenuItem_Click);
+            this.clearCacheToolStripMenuItem.Click += new System.EventHandler(this.ClearCacheToolStripMenuItemClick);
             // 
             // toolStripSeparator1
             // 
@@ -432,6 +433,7 @@
             this.tvwMetadata.Location = new System.Drawing.Point(3, 3);
             this.tvwMetadata.Name = "tvwMetadata";
             this.tvwMetadata.SelectedImageIndex = 0;
+            this.tvwMetadata.ShowNodeToolTips = true;
             this.tvwMetadata.Size = new System.Drawing.Size(243, 337);
             this.tvwMetadata.TabIndex = 0;
             this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TvwItemDrag);
@@ -441,13 +443,16 @@
             this.imgListTree.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imgListTree.ImageStream")));
             this.imgListTree.TransparentColor = System.Drawing.Color.Transparent;
             this.imgListTree.Images.SetKeyName(0, "Table.png");
-            this.imgListTree.Images.SetKeyName(1, "Column.png");
-            this.imgListTree.Images.SetKeyName(2, "HiddenColumn.png");
-            this.imgListTree.Images.SetKeyName(3, "Measure.png");
-            this.imgListTree.Images.SetKeyName(4, "HiddenMeasure.png");
-            this.imgListTree.Images.SetKeyName(5, "Folder");
-            this.imgListTree.Images.SetKeyName(6, "Function.png");
-            this.imgListTree.Images.SetKeyName(7, "HiddenTable.png");
+            this.imgListTree.Images.SetKeyName(1, "HiddenTable.png");
+            this.imgListTree.Images.SetKeyName(2, "Column2.png");
+            this.imgListTree.Images.SetKeyName(3, "HiddenColumn2.png");
+            this.imgListTree.Images.SetKeyName(4, "Measure.png");
+            this.imgListTree.Images.SetKeyName(5, "HiddenMeasure.png");
+            this.imgListTree.Images.SetKeyName(6, "Folder");
+            this.imgListTree.Images.SetKeyName(7, "Function.png");
+            this.imgListTree.Images.SetKeyName(8, "DmvTable.png");
+            this.imgListTree.Images.SetKeyName(9, "Column.png");
+            this.imgListTree.Images.SetKeyName(10, "HiddenColumn.png");
             // 
             // tabFunctions
             // 
@@ -562,6 +567,7 @@
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.stsDax);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "DaxStudioForm";
             this.Text = "DAX Studio";

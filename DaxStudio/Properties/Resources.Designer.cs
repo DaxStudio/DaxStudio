@@ -83,6 +83,13 @@ namespace DaxStudio.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap daxstudio_logo_32x32 {
+            get {
+                object obj = ResourceManager.GetObject("daxstudio-logo_32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to http://daxstudio.codeplex.com/documentation.
         /// </summary>

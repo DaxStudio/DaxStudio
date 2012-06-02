@@ -21,18 +21,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_0D6D664D9797F5EB988248E7568961EF"
-        "OwnerKey" = "8:_933EA7DC57C83CC6F124BEB2F1DBA870"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_0D6D664D9797F5EB988248E7568961EF"
-        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_14CF1A7AD99A9059FE73681D557665B0"
         "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "MsmSig" = "8:_UNDEFINED"
@@ -63,7 +51,25 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+        "OwnerKey" = "8:_E6DA029C75C20DCC09050A69F4036BC5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_5339E44C33384655A214C770CA379E49"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -87,19 +93,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_933EA7DC57C83CC6F124BEB2F1DBA870"
-        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_9F0490BB02ECB63604EFC14508459B2C"
-        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_A246A69363F26FED2F53FE393A5239CC"
         "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -130,7 +124,19 @@
         "Entry"
         {
         "MsmKey" = "8:_AD372894EE252E2E65784242463288D4"
-        "OwnerKey" = "8:_A246A69363F26FED2F53FE393A5239CC"
+        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E6DA029C75C20DCC09050A69F4036BC5"
+        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
+        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -142,19 +148,19 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_933EA7DC57C83CC6F124BEB2F1DBA870"
+        "OwnerKey" = "8:_E6DA029C75C20DCC09050A69F4036BC5"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0D6D664D9797F5EB988248E7568961EF"
+        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A246A69363F26FED2F53FE393A5239CC"
+        "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -330,37 +336,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_0D6D664D9797F5EB988248E7568961EF"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:ICSharpCode.AvalonEdit, Version=0.0.0.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_0D6D664D9797F5EB988248E7568961EF"
-                    {
-                    "Name" = "8:ICSharpCode.AvalonEdit.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:ICSharpCode.AvalonEdit.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_14CF1A7AD99A9059FE73681D557665B0"
             {
             "AssemblyRegister" = "3:1"
@@ -454,6 +429,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ICSharpCode.AvalonEdit, Version=4.1.0.8000, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_4D1EDF0D3CC4A6C79469338D4BF9802A"
+                    {
+                    "Name" = "8:ICSharpCode.AvalonEdit.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:ICSharpCode.AvalonEdit.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5339E44C33384655A214C770CA379E49"
             {
             "SourcePath" = "8:..\\DaxStudio\\bin\\Release\\DaxStudio.vsto"
@@ -471,6 +477,26 @@
             "PackageAs" = "3:1"
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_82E51576FF5E4E0D9FD544ACE50C6A64"
+            {
+            "SourcePath" = "8:..\\DaxStudio\\images\\DaxStudioSetupBanner.jpg"
+            "TargetName" = "8:DaxStudioSetupBanner.jpg"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
@@ -505,37 +531,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_933EA7DC57C83CC6F124BEB2F1DBA870"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:DAXEditor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_933EA7DC57C83CC6F124BEB2F1DBA870"
-                    {
-                    "Name" = "8:DAXEditor.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:DAXEditor.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9F0490BB02ECB63604EFC14508459B2C"
             {
             "AssemblyRegister" = "3:1"
@@ -564,37 +559,6 @@
             "PackageAs" = "3:1"
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_A246A69363F26FED2F53FE393A5239CC"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:ADOTabular, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_A246A69363F26FED2F53FE393A5239CC"
-                    {
-                    "Name" = "8:ADOTabular.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:ADOTabular.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -674,6 +638,68 @@
                     }
                 }
             "SourcePath" = "8:Microsoft.AnalysisServices.AdomdClient.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E6DA029C75C20DCC09050A69F4036BC5"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:DAXEditor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_E6DA029C75C20DCC09050A69F4036BC5"
+                    {
+                    "Name" = "8:DAXEditor.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:DAXEditor.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E7011ACFC12E543AD485B77E15B1FEF7"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ADOTabular, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_E7011ACFC12E543AD485B77E15B1FEF7"
+                    {
+                    "Name" = "8:ADOTabular.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:ADOTabular.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
@@ -791,7 +817,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DaxStudio"
         "ProductCode" = "8:{F91C1C8C-B5F8-425A-B592-688836BC6E48}"
-        "PackageCode" = "8:{3A61B2AA-9A03-4DAC-9A6D-3974C9B2989E}"
+        "PackageCode" = "8:{28B3B5FD-C864-4B7A-BE7E-014984AC7F66}"
         "UpgradeCode" = "8:{43FA976A-2312-41D3-8FCA-584F56AB81FE}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -998,7 +1024,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "UpdateText"
@@ -1042,7 +1069,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "ShowProgress"
@@ -1086,7 +1114,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "ShowProgress"
@@ -1130,7 +1159,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -1167,7 +1197,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -1189,7 +1220,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "CopyrightWarning"
@@ -1237,7 +1269,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -1274,7 +1307,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "InstallAllUsersVisible"
@@ -1309,7 +1343,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -1331,7 +1366,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_82E51576FF5E4E0D9FD544ACE50C6A64"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "CopyrightWarning"
@@ -1400,7 +1436,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_92CBC7BE4A074FC5AA37C7A245190A1B"
             {
-            "SourcePath" = "8:..\\DaxStudio\\obj\\Debug\\DaxStudio.dll"
+            "SourcePath" = "8:..\\DaxStudio\\obj\\Release\\DaxStudio.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"

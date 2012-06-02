@@ -1,20 +1,21 @@
-﻿namespace ADOTabular
+﻿using System.Data;
+
+namespace ADOTabular
 {
     public class ADOTabularModel
     {
         private readonly ADOTabularConnection _adoTabConn;
-        private readonly string _modelName;
         private ADOTabularTableCollection _tableColl;
-        public ADOTabularModel(ADOTabularConnection adoTabConn, string modelName)
+        public ADOTabularModel(ADOTabularConnection adoTabConn, DataRow dr)
         {
             _adoTabConn = adoTabConn;
-            _modelName = modelName;
+            Name = dr["CUBE_NAME"].ToString();
+            Description = dr["DESCRIPTION"].ToString();
         }
 
-        public string Name
-        {
-            get { return _modelName; }
-        }
+        public string Name { get; private set; }
+
+        public string Description { get; private set; }
 
         public ADOTabularTableCollection Tables
         {

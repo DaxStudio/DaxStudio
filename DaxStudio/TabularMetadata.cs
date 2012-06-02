@@ -7,14 +7,15 @@ namespace DaxStudio
     {
         private enum MetadataImages
         {
-            Table = 0,
-            Column = 1,
-            HiddenColumn = 2,
-            Measure = 3,
-            HiddenMeasure = 4,
-            Folder = 5,
-            Function = 6,
-            HiddenTable = 7
+            Table         = 0,
+            HiddenTable   = 1,
+            Column        = 2,
+            HiddenColumn  = 3,
+            Measure       = 4,
+            HiddenMeasure = 5,
+            Folder        = 6,
+            Function      = 7,
+            DmvTable      = 8
         }
 
         public static void PopulateConnectionMetadata(ADOTabularConnection adoTabularConnection, TreeView tvwMetadata, TreeView tvwFunctions, ListView dmvList, string modelName)
@@ -35,6 +36,7 @@ namespace DaxStudio
                 {
                     var tImageId = t.IsVisible ? (int)MetadataImages.Table : (int)MetadataImages.HiddenTable; 
                     var tableNode = modelNode.Nodes.Add(t.Name, t.Caption, tImageId,tImageId);
+                    tableNode.ToolTipText = t.Description;
                     foreach (var c in t.Columns)
                     {
                         // add different icons for hidden columns/measures
@@ -50,7 +52,8 @@ namespace DaxStudio
                             iImageId = c.IsVisible ? (int)MetadataImages.Measure : (int)MetadataImages.HiddenMeasure; 
                         }
 
-                        tableNode.Nodes.Add(c.Name, c.Caption, iImageId, iImageId);
+                        var columnNode = tableNode.Nodes.Add(c.Name, c.Caption, iImageId, iImageId);
+                        columnNode.ToolTipText = c.Description;
                     }
                 }
                 modelNode.Expand();

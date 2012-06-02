@@ -4,51 +4,36 @@ namespace ADOTabular
 {
     public class ADOTabularColumn
     {
-        private readonly ADOTabularTable _table;
-        private readonly string _columnCaption;
-        private readonly string _columnName;
-        private readonly bool _visible;
-        private readonly ADOTabularColumnType _type;
         public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
         {
-            _table = table;
-            _type = colType;
+            Table = table;
+            Type = colType;
             if (colType == ADOTabularColumnType.Column)
             {
-                _columnCaption = dr["HIERARCHY_NAME"].ToString();
-                _columnName = string.Format("'{0}'[{1}]", table.Caption, _columnCaption);
-                _visible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
+                Caption = dr["HIERARCHY_NAME"].ToString();
+                Name = string.Format("'{0}'[{1}]", table.Caption, Caption);
+                IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
+                Description = dr["DESCRIPTION"].ToString();
             }
             else
             {
-                _columnCaption = dr["MEASURE_NAME"].ToString();
-                _columnName = string.Format("'{0}'[{1}]", table.Caption, _columnCaption);
-                _visible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
+                Caption = dr["MEASURE_NAME"].ToString();
+                Name = string.Format("'{0}'[{1}]", table.Caption, Caption);
+                IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
+                Description = dr["DESCRIPTION"].ToString();
             }
         }
 
-        public ADOTabularColumnType Type
-        {
-            get { return _type; }
-        }
+        public ADOTabularColumnType Type { get; private set; }
 
-        public ADOTabularTable Table
-        {
-            get { return _table; }
-        }
+        public ADOTabularTable Table { get; private set; }
 
-        public string Caption
-        {
-            get { return _columnCaption; }
-        }
-        public string Name
-        {
-            get { return _columnName; }
-        }
+        public string Caption { get; private set; }
 
-        public bool IsVisible
-        {
-            get { return _visible; }
-        }
+        public string Name { get; private set; }
+
+        public string Description { get; private set; }
+
+        public bool IsVisible { get; private set; }
     }
 }

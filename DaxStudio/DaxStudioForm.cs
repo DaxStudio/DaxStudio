@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
-using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using DaxStudio.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -18,9 +18,9 @@ namespace DaxStudio
 
         private enum QueryType
         {
-            ToTable = 0,
-            ToStatic =1,
-            NoResults=2
+            ToTable   = 0,
+            ToStatic  = 1,
+            NoResults = 2
         }
 
         private bool _refreshingMetadata;
@@ -223,8 +223,7 @@ namespace DaxStudio
             {
                 // if current workbook has PowerPivot data ensure it is loaded into memory
                 _xlHelper.EnsurePowerPivotDataIsLoaded();
-                _conn = new ADOTabularConnection(BuildPowerPivotConnection());
-                _conn.ShowHiddenObjects = true;
+                _conn = new ADOTabularConnection(BuildPowerPivotConnection(),true);
                 RefreshDatabaseList();
                 //RefreshTabularMetadata();
             }
@@ -233,7 +232,7 @@ namespace DaxStudio
                 var connDialog = new ConnectionDialog(wb,"",_xlHelper);
                 if (connDialog.ShowDialog() == DialogResult.OK)
                 {
-                    _conn = new ADOTabularConnection(connDialog.ConnectionString);
+                    _conn = new ADOTabularConnection(connDialog.ConnectionString,true);
                     RefreshDatabaseList();
                     //cboDatabase.SelectedIndex = 0;
                     //RefreshTabularMetadata();
@@ -364,19 +363,6 @@ namespace DaxStudio
             Process.Start(Resources.MsdnForumsUrl);
         }
 
-        private void analysisServicesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ElementHostChildChanged(object sender, ChildChangedEventArgs e)
-        {
-            var ctr = (elementHost1.Child as DaxEditorUserControl);
-            if (ctr == null)
-                return;
-            ctr.KeyUp += DaxEditorKeyUp;
-        }
-
         private void RunQuery(QueryType queryType)
         {
             _defaultQueryType = queryType;
@@ -421,9 +407,11 @@ namespace DaxStudio
                 DaxStudioFormKeyUp(sender, e2);
         }
 
-        private void clearCacheToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void ClearCacheToolStripMenuItemClick(object sender, EventArgs e) {
             DaxQueryHelpers.DaxClearCache(_conn, this);
         }
+
+        #region file open/save
 
         private void OpenToolStripMenuItemClick(object sender, EventArgs e)
         {
@@ -431,7 +419,7 @@ namespace DaxStudio
             if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
             // read file
             FileName = openFileDialog1.FileName;
-            TextReader tr = new StreamReader(FileName);
+            TextReader tr = new StreamReader(FileName,true);
             // put contents in edit window
             ucDaxEditor.daxEditor.Text = tr.ReadToEnd();
             tr.Close();
@@ -439,27 +427,26 @@ namespace DaxStudio
 
         private void SaveAsToolStripMenuItemClick(object sender, EventArgs e)
         {
-            if (saveFileDialog1.ShowDialog() ==  DialogResult.OK )
-            {
-                FileName = saveFileDialog1.FileName;
-                TextWriter tw = new StreamWriter(FileName);
-                tw.Write(ucDaxEditor.daxEditor.Text);
-                tw.Close();
-            }
+            if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
+            FileName = saveFileDialog1.FileName;
+            SaveDaxFile();
         }
 
-        
+        // save the current contents of the edit control to a unicode text file
+        private void SaveDaxFile()
+        {
+            TextWriter tw = new StreamWriter(FileName,false, Encoding.Unicode );
+            tw.Write(ucDaxEditor.daxEditor.Text);
+            tw.Close();
+        }
+
         private void SaveToolStripMenuItemClick(object sender, EventArgs e)
         {
-            if (FileName == string.Empty) 
-                SaveAsToolStripMenuItemClick(sender,e);
+            if (FileName == string.Empty)
+                SaveAsToolStripMenuItemClick(sender, e);
             else
-            {
-                TextWriter tw = new StreamWriter(FileName);
-                tw.Write(ucDaxEditor.daxEditor.Text);
-                tw.Close();    
-            }
-            
+                SaveDaxFile();
         }
+        #endregion
     }
 }

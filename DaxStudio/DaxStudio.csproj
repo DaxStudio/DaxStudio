@@ -250,6 +250,8 @@
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="DaxStudio_TemporaryKey.pfx" />
+    <None Include="images\DaxStudioSetupBanner.pdn" />
+    <None Include="images\PlayButton.pdn" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -311,6 +313,14 @@
     <None Include="images\PlayDiscard.png" />
     <None Include="images\PlayStatic.png" />
     <None Include="images\PlayTable.png" />
+    <None Include="images\daxstudio-logo_32x32.png" />
+    <Content Include="images\daxstudio-logo_100x100.png" />
+    <Content Include="images\daxstudio-logo_150x150.png" />
+    <Content Include="images\daxstudio-logo_250x250.png" />
+    <Content Include="images\daxstudio-logo_32x32.ico" />
+    <Content Include="images\daxstudio-logo_64x64.png" />
+    <Content Include="images\DaxStudio.ico" />
+    <Content Include="images\DaxStudioSetupBanner.jpg" />
     <Content Include="Resources\Folder.ico" />
     <Content Include="Resources\Function.png" />
     <Content Include="Resources\Measure.png" />

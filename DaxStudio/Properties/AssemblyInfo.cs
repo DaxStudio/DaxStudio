@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DaxStudio")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("An Excel Add-in for working with DAX against Microsoft PowerPivot or Analysis Services Tabular models")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("DaxStudio")]

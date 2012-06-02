@@ -12,6 +12,7 @@ namespace ADOTabular
         {
             Caption = dr["DIMENSION_NAME"].ToString();
             IsVisible = bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString());
+            Description = dr["DESCRIPTION"].ToString();
             _adoTabConn = adoTabConn;
             _model = model;
         }
@@ -22,6 +23,8 @@ namespace ADOTabular
         }
 
         public string Caption { get; private set; }
+
+        public string Description { get; private set; }
 
         public bool IsVisible { get; private set; }
 

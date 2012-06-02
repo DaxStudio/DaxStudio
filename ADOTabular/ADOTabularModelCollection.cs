@@ -38,16 +38,8 @@ namespace ADOTabular
         {
             get
             {
-                if (
-                    GetModelsTable().Rows.Cast<DataRow>().Any(
-                        dr =>
-                        string.Compare(modelName, dr["CUBE_NAME"].ToString(),
-                                       StringComparison.InvariantCultureIgnoreCase) == 0))
-                {
-                    return new ADOTabularModel(_adoTabConn, modelName);
-                }
+                return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
                 // todo - should we return a model not found exception instead of null?
-                return null;
             }
         }
 
@@ -60,7 +52,7 @@ namespace ADOTabular
         {
             foreach (DataRow dr in GetModelsTable().Rows)
             {
-                yield return new ADOTabularModel(_adoTabConn, dr["CUBE_NAME"].ToString());
+                yield return new ADOTabularModel(_adoTabConn, dr);
             }
         }
 
