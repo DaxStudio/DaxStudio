@@ -137,7 +137,14 @@ namespace ADOTabular
             var da = new AdomdDataAdapter(cmd);
             var dt = new DataTable("DAXResult");
             if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
-            da.Fill(dt);
+            try
+            {
+                da.Fill(dt);
+            }
+            catch (Exception e)
+            {
+                return dt;
+            }
             return dt;
         }
 
