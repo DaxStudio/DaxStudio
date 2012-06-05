@@ -25,12 +25,18 @@ namespace DaxStudio
         public static void DaxQueryDiscardResults(ADOTabularConnection conn, string daxQuery, IOutputWindow output)
         {
             var queryBegin = DateTime.UtcNow;
-
-            //TODO - test using a cellset instead of a DataAdaptor
             // run query
-            conn.ExecuteDaxQueryDataTable(daxQuery);
-            var queryComplete = DateTime.UtcNow;
-            output.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
+            try
+            {
+                //TODO - test using a cellset instead of a DataAdaptor
+                conn.ExecuteDaxQueryDataTable(daxQuery);
+                var queryComplete = DateTime.UtcNow;
+                output.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
+            }
+            catch (Exception ex)
+            {
+                output.WriteOutputError(ex.Message);
+            }
         }
 
 
@@ -66,7 +72,7 @@ namespace DaxStudio
             catch (Exception ex)
             {
                 output.WriteOutputError(ex.Message);
-                output.WriteOutputError("Checking the query for errors...");
+                output.WriteOutputError("Error detected - collecting error details...");
                 DaxQueryDiscardResults(connection,daxQuery,output);
             }
         }

@@ -28,7 +28,9 @@ namespace DaxStudio
         public static void PopulateModelMetadata(ADOTabularConnection adoTabularConnection, TreeView tvwMetadata,string modelName)
         {
             tvwMetadata.Nodes.Clear();
-
+            // don't try to populate metadata if we don't have a modelName
+            // this possibly means that the table/cube is unprocessed.
+            if (modelName == string.Empty) return;
             var m = adoTabularConnection.Database.Models[modelName];
             {
                 var modelNode = tvwMetadata.Nodes.Add(m.Name, m.Name, (int)MetadataImages.Folder, (int)MetadataImages.Folder);
@@ -40,9 +42,7 @@ namespace DaxStudio
                     foreach (var c in t.Columns)
                     {
                         // add different icons for hidden columns/measures
-                        // ReSharper disable RedundantAssignment
-                        var iImageId = 0;
-                        // ReSharper restore RedundantAssignment
+                        int iImageId;
                         if (c.Type == ADOTabularColumnType.Column)
                         {
                             iImageId = c.IsVisible ? (int)MetadataImages.Column : (int)MetadataImages.HiddenColumn; 

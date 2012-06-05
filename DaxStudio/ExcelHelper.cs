@@ -81,7 +81,7 @@ namespace DaxStudio
 
         public  void CopyDataTableToRange(System.Data.DataTable dt, Worksheet excelSheet)
         {
-
+            
             // Calculate the final column letter
             var finalColLetter = string.Empty;
             const string colCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

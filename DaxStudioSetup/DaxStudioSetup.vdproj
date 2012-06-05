@@ -117,6 +117,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_ACABB5576819445F93283E75ED8F544D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_AD372894EE252E2E65784242463288D4"
         "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "MsmSig" = "8:_UNDEFINED"
@@ -154,13 +160,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
+        "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -624,6 +630,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_ACABB5576819445F93283E75ED8F544D"
+            {
+            "SourcePath" = "8:..\\DaxStudio\\images\\daxstudio-logo_32x32a.ico"
+            "TargetName" = "8:daxstudio-logo_32x32a.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AD372894EE252E2E65784242463288D4"
             {
             "AssemblyRegister" = "3:1"
@@ -747,7 +773,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_E2F9DA3D432141AC98F25165DDBC9D4A"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFilesFolder]\\[ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -815,26 +841,26 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:DaxStudio"
+        "ProductName" = "8:Dax Studio"
         "ProductCode" = "8:{F91C1C8C-B5F8-425A-B592-688836BC6E48}"
-        "PackageCode" = "8:{28B3B5FD-C864-4B7A-BE7E-014984AC7F66}"
+        "PackageCode" = "8:{1443B298-9D8D-4CA7-BBA1-8D40DD962AFA}"
         "UpgradeCode" = "8:{43FA976A-2312-41D3-8FCA-584F56AB81FE}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
+        "InstallAllUsers" = "11:TRUE"
         "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:Dax Studio"
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
+        "ARPHELPLINK" = "8:http://daxstudio.codeplex.com"
         "Title" = "8:DaxStudioSetup"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Dax Studio"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:Dax Studio Setup"
         "ARPURLINFOABOUT" = "8:http://daxstudio.codeplex.com"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_ACABB5576819445F93283E75ED8F544D"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -936,7 +962,7 @@
                                                                     "Condition" = "8:"
                                                                     "Transitive" = "11:FALSE"
                                                                     "ValueTypes" = "3:1"
-                                                                    "Value" = "8:[TargetDir]DaxStudio.vsto|vstolocal"
+                                                                    "Value" = "8:file:///[TARGETDIR]DaxStudio.vsto|vstolocal"
                                                                     }
                                                                     "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_B549F7CFA0814BB190C0709E3F69884F"
                                                                     {

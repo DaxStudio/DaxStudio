@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AnalysisServices.AdomdClient;
 using System.Data;
 
@@ -137,14 +138,7 @@ namespace ADOTabular
             var da = new AdomdDataAdapter(cmd);
             var dt = new DataTable("DAXResult");
             if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
-            try
-            {
-                da.Fill(dt);
-            }
-            catch (Exception e)
-            {
-                return dt;
-            }
+            da.Fill(dt);
             return dt;
         }
 
@@ -240,5 +234,33 @@ namespace ADOTabular
                 return _spid;
             }
         }
+
+        public void Cancel()
+        {
+            var cancelConn = new AdomdConnection();
+            if (_adomdConn.State == ConnectionState.Closed | _adomdConn.State == ConnectionState.Connecting) return;
+            cancelConn.SessionID = _adomdConn.SessionID;
+            cancelConn.ConnectionString = _adomdConn.ConnectionString;
+            cancelConn.Open();
+            var cancelCmd = cancelConn.CreateCommand();
+            cancelCmd.CommandType = CommandType.Text;
+            cancelCmd.CommandText = "<Command><Cancel></Cancel></Command>";
+            cancelCmd.Execute();
+        }
+
+        // BeginQueryAsync
+        /*
+        public void BeginQueryAsync(string query)
+        {
+            Task<TResult> t = new Task(ExecuteDaxQueryDataTableTask, query);
+            t.Start();
+        }
+
+        public void ExecuteDaxQueryDataTableTask(string query)
+        {
+            ExecuteDaxQueryDataTable(query)
+        }
+        */
+        // QueryComplete
     }
 }
