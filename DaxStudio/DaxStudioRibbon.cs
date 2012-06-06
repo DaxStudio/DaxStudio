@@ -9,14 +9,18 @@ namespace DaxStudio
 
         }
 
+        private DaxStudioForm _ds;
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
-            var appl = Globals.ThisAddIn.Application;
-            //Excel.Workbook wb = (Excel.Workbook)appl.ActiveWorkbook;
-            var ds = new DaxStudioForm();
-            var app = appl;// (Excel.Application)this.Context;
-            ds.Application = app;
-            ds.Show();
+            if (_ds == null || _ds.IsDisposed)
+            {
+                _ds = new DaxStudioForm();
+                _ds.Application = Globals.ThisAddIn.Application;
+            }
+            if (!_ds.Visible)
+                _ds.Show();
+            else
+                _ds.Activate();
         }
     }
 }
