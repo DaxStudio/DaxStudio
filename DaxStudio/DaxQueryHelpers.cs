@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Excel;
 //using Excel = Microsoft.Office.Interop.Excel;
 using ADOTabular;
@@ -53,7 +54,7 @@ namespace DaxStudio
                 , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connection.ConnectionString)
                 , Type.Missing
                 , XlYesNoGuess.xlGuess
-                , excelSheet.Range["$A$3"]);
+                , excelSheet.Range["$A$1"]);
             }
             //System.Runtime.InteropServices.COMException
             //{"Exception from HRESULT: 0x800401A8"}
@@ -75,6 +76,7 @@ namespace DaxStudio
                 output.WriteOutputError("Error detected - collecting error details...");
                 DaxQueryDiscardResults(connection,daxQuery,output);
             }
+            WriteQueryToExcelComment(excelSheet, daxQuery);
         }
 
         public static void DaxQueryStaticResult(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow window, ExcelHelper xlHelper)
@@ -95,6 +97,7 @@ namespace DaxStudio
                 xlHelper.CopyDataTableToRange(dt,excelSheet);
                 var resultsEnd = DateTime.UtcNow;
                 window.WriteOutputMessage(string.Format("{0} - Results Sent to Excel ({1:mm\\:ss\\.fff})", DateTime.Now, resultsEnd - queryComplete));
+                WriteQueryToExcelComment(excelSheet, daxQuery);
             }
             catch (Exception ex)
             {
@@ -102,6 +105,13 @@ namespace DaxStudio
             }
         }
 
+        private static void WriteQueryToExcelComment(Worksheet excelSheet, string daxQuery)
+        {
+            var cmtPrefix = "DAX Query:";
+            Range r = excelSheet.Range["A1"];
+            var cmt = r.AddComment(string.Format("{0}\n{1}", cmtPrefix,daxQuery));
+            cmt.Shape.TextFrame.Characters(cmtPrefix.Length).Font.Bold = MsoTriState.msoFalse;
+        }
         
     }
 }

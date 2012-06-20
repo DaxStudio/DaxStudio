@@ -129,6 +129,19 @@
   <PropertyGroup>
     <ManifestCertificateThumbprint>B21DD78C312D367D89C19852A845E2BB8C09409F</ManifestCertificateThumbprint>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
+    <OutputPath>bin\Release64\</OutputPath>
+    <DefineConstants>VSTO40;TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\DaxStudio.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+  </PropertyGroup>
   <!--
     This section specifies references for the project.
   -->
@@ -212,6 +225,9 @@
     <Compile Include="DaxStudioForm.Designer.cs">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DaxStudioWPF.xaml.cs">
+      <DependentUpon>DaxStudioWPF.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExcelHelper.cs" />
     <Compile Include="ConnectionDialog.cs">
       <SubType>Form</SubType>
@@ -282,6 +298,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="DaxEditorUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DaxStudioWPF.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
