@@ -225,9 +225,6 @@
     <Compile Include="DaxStudioForm.Designer.cs">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="DaxStudioWPF.xaml.cs">
-      <DependentUpon>DaxStudioWPF.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ExcelHelper.cs" />
     <Compile Include="ConnectionDialog.cs">
       <SubType>Form</SubType>
@@ -298,10 +295,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="DaxEditorUserControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DaxStudioWPF.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
