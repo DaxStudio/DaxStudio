@@ -222,8 +222,8 @@
             this.btnRun.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.runQueryTableToolStripMenuItem,
             this.runStaticResultsToolStripMenuItem,
-            this.runDiscardResultsToolStripMenuItem,
             this.runGridResultsToolStripMenuItem,
+            this.runDiscardResultsToolStripMenuItem,
             this.toolStripSeparator3,
             this.clearCacheToolStripMenuItem});
             this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayTable1;
