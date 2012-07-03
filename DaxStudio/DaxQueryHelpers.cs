@@ -105,6 +105,38 @@ namespace DaxStudio
             }
         }
 
+        public static void DaxQueryGrid(ADOTabularConnection connection, string daxQuery, IOutputWindow window, DaxResultGrid DaxResultGrid)
+        {
+            if (!DaxResultGrid.Visible)
+                DaxResultGrid.Show();
+
+
+            try
+            {
+                window.WriteOutputMessage(string.Format("{0} - Query Started", DateTime.Now));
+                var queryBegin = DateTime.UtcNow;
+
+                //TODO - test using a cellset instead of a DataAdaptor
+                // run query
+                System.Data.DataTable dt = connection.ExecuteDaxQueryDataTable(daxQuery);
+                    DaxResultGrid.BindResults(dt);
+                var queryComplete = DateTime.UtcNow;
+                window.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
+
+            }
+            catch (Exception ex)
+            {
+                // if the query fails etc ... we will not show results
+                DaxResultGrid.BindResults(new System.Data.DataTable());
+                window.WriteOutputError(ex.Message);
+            }
+
+
+
+
+
+        }
+
         private static void WriteQueryToExcelComment(Worksheet excelSheet, string daxQuery)
         {
             var cmtPrefix = "DAX Query:";

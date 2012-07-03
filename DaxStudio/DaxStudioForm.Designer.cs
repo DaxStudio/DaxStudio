@@ -46,6 +46,7 @@
             this.runQueryTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runStaticResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runDiscardResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runGridResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.clearCacheToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -72,12 +73,12 @@
             this.listDMV = new System.Windows.Forms.ListView();
             this.colDmv = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
+            this.ucDaxEditor = new DaxStudio.DaxEditorUserControl();
             this.stsDax.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -222,6 +223,7 @@
             this.runQueryTableToolStripMenuItem,
             this.runStaticResultsToolStripMenuItem,
             this.runDiscardResultsToolStripMenuItem,
+            this.runGridResultsToolStripMenuItem,
             this.toolStripSeparator3,
             this.clearCacheToolStripMenuItem});
             this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayTable1;
@@ -258,6 +260,16 @@
             this.runDiscardResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
             this.runDiscardResultsToolStripMenuItem.Text = "Run (Discard Results)";
             this.runDiscardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
+            // 
+            // runGridResultsToolStripMenuItem
+            // 
+            this.runGridResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayGrid;
+            this.runGridResultsToolStripMenuItem.Name = "runGridResultsToolStripMenuItem";
+            this.runGridResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F5)));
+            this.runGridResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runGridResultsToolStripMenuItem.Text = "Run (Grid)";
+            this.runGridResultsToolStripMenuItem.Click += new System.EventHandler(this.runGridResultsToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -529,18 +541,6 @@
             this.splitContainer2.SplitterDistance = 308;
             this.splitContainer2.TabIndex = 0;
             // 
-            // elementHost1
-            // 
-            this.elementHost1.AllowDrop = true;
-            this.elementHost1.AutoSize = true;
-            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.elementHost1.Location = new System.Drawing.Point(0, 0);
-            this.elementHost1.Name = "elementHost1";
-            this.elementHost1.Size = new System.Drawing.Size(516, 308);
-            this.elementHost1.TabIndex = 0;
-            this.elementHost1.Text = "elementHost1";
-            this.elementHost1.Child = this.ucDaxEditor;
-            // 
             // rtbOutput
             // 
             this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -559,6 +559,18 @@
             // saveFileDialog1
             // 
             this.saveFileDialog1.Filter = "Dax Files|*.dax|Text Files|*.txt|All files|*.*";
+            // 
+            // elementHost1
+            // 
+            this.elementHost1.AllowDrop = true;
+            this.elementHost1.AutoSize = true;
+            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.elementHost1.Location = new System.Drawing.Point(0, 0);
+            this.elementHost1.Name = "elementHost1";
+            this.elementHost1.Size = new System.Drawing.Size(516, 308);
+            this.elementHost1.TabIndex = 0;
+            this.elementHost1.Text = "elementHost1";
+            this.elementHost1.Child = this.ucDaxEditor;
             // 
             // DaxStudioForm
             // 
@@ -650,6 +662,7 @@
         private System.Windows.Forms.ToolStripMenuItem documentationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mSDNForumsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runGridResultsToolStripMenuItem;
 
     }
 }

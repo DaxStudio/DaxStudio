@@ -20,7 +20,8 @@ namespace DaxStudio
         {
             ToTable   = 0,
             ToStatic  = 1,
-            NoResults = 2
+            NoResults = 2,
+            ToGrid = 3
         }
 
         private bool _refreshingMetadata;
@@ -28,6 +29,7 @@ namespace DaxStudio
         private Excel.Application _app;
         private QueryType _defaultQueryType = QueryType.ToTable;
         private Excel.Workbook _workbook;
+        private DaxResultGrid _daxResultGrid = new DaxResultGrid();
 
         public string CurrentConnectionString
         {
@@ -378,6 +380,9 @@ namespace DaxStudio
                 case QueryType.NoResults:
                     DaxQueryHelpers.DaxQueryDiscardResults(_conn, GetTextToExecute(), this);
                     break;
+                case QueryType.ToGrid:
+                    DaxQueryHelpers.DaxQueryGrid(_conn, GetTextToExecute(), this, _daxResultGrid);
+                    break;
             }
         }
 
@@ -391,6 +396,9 @@ namespace DaxStudio
                     return runStaticResultsToolStripMenuItem.Image;
                 case QueryType.NoResults:
                     return runDiscardResultsToolStripMenuItem.Image;
+                case QueryType.ToGrid :
+                    return runGridResultsToolStripMenuItem.Image;
+
                 default:
                     return runQueryTableToolStripMenuItem.Image;
             }
@@ -453,5 +461,14 @@ namespace DaxStudio
         {
             this.Close();
         }
+
+        private void runGridResultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RunQuery(QueryType.ToGrid);
+            //DaxQueryHelpers.DaxQueryGrid(_conn, GetTextToExecute(), this,  _daxResultGrid);
+
+        }
+
+
     }
 }

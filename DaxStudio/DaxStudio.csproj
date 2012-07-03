@@ -219,6 +219,12 @@
     </Compile>
     <Compile Include="DataSetExtensions.cs" />
     <Compile Include="DaxQueryHelpers.cs" />
+    <Compile Include="DaxResultGrid.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DaxResultGrid.Designer.cs">
+      <DependentUpon>DaxResultGrid.cs</DependentUpon>
+    </Compile>
     <Compile Include="DaxStudioForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -244,6 +250,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ConnectionDialog.resx">
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DaxResultGrid.resx">
+      <DependentUpon>DaxResultGrid.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DaxStudioForm.resx">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
@@ -313,6 +322,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\PlayGrid.png" />
     <None Include="Resources\question_button.png" />
     <None Include="Resources\question1.ico" />
     <EmbeddedResource Include="Resources\Table.png" />
@@ -325,7 +335,6 @@
     <None Include="Resources\button_white_help.png" />
     <None Include="images\PlayDiscard.png" />
     <None Include="images\PlayStatic.png" />
-    <None Include="images\PlayTable.png" />
     <None Include="images\daxstudio-logo_32x32.png" />
     <Content Include="images\daxstudio-logo_100x100.png" />
     <Content Include="images\daxstudio-logo_150x150.png" />
@@ -334,6 +343,7 @@
     <Content Include="images\daxstudio-logo_64x64.png" />
     <Content Include="images\DaxStudio.ico" />
     <Content Include="images\DaxStudioSetupBanner.jpg" />
+    <None Include="images\PlayGrid.png" />
     <Content Include="Resources\Folder.ico" />
     <Content Include="Resources\Function.png" />
     <Content Include="Resources\Measure.png" />
