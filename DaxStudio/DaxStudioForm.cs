@@ -381,6 +381,8 @@ namespace DaxStudio
                     DaxQueryHelpers.DaxQueryDiscardResults(_conn, GetTextToExecute(), this);
                     break;
                 case QueryType.ToGrid:
+                    if (this._daxResultGrid.IsDisposed  == true)
+                        _daxResultGrid = new DaxResultGrid();
                     DaxQueryHelpers.DaxQueryGrid(_conn, GetTextToExecute(), this, _daxResultGrid);
                     break;
             }
@@ -464,10 +466,13 @@ namespace DaxStudio
 
         private void runGridResultsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             RunQuery(QueryType.ToGrid);
             //DaxQueryHelpers.DaxQueryGrid(_conn, GetTextToExecute(), this,  _daxResultGrid);
 
         }
+
+
 
 
     }

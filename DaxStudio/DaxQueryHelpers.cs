@@ -107,6 +107,8 @@ namespace DaxStudio
 
         public static void DaxQueryGrid(ADOTabularConnection connection, string daxQuery, IOutputWindow window, DaxResultGrid DaxResultGrid)
         {
+
+
             if (!DaxResultGrid.Visible)
                 DaxResultGrid.Show();
 
