@@ -239,7 +239,7 @@
             this.runQueryTableToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayTable1;
             this.runQueryTableToolStripMenuItem.Name = "runQueryTableToolStripMenuItem";
             this.runQueryTableToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
-            this.runQueryTableToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runQueryTableToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.runQueryTableToolStripMenuItem.Text = "Run (Query Table)";
             this.runQueryTableToolStripMenuItem.Click += new System.EventHandler(this.RunQueryTableToolStripMenuItemClick);
             // 
@@ -248,7 +248,7 @@
             this.runStaticResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayStatic;
             this.runStaticResultsToolStripMenuItem.Name = "runStaticResultsToolStripMenuItem";
             this.runStaticResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
-            this.runStaticResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runStaticResultsToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.runStaticResultsToolStripMenuItem.Text = "Run (Static Results)";
             this.runStaticResultsToolStripMenuItem.Click += new System.EventHandler(this.RunStaticResultsToolStripMenuItemClick);
             // 
@@ -258,7 +258,7 @@
             this.runGridResultsToolStripMenuItem.Name = "runGridResultsToolStripMenuItem";
             this.runGridResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.F5)));
-            this.runGridResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.runGridResultsToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.runGridResultsToolStripMenuItem.Text = "Run (Grid)";
             this.runGridResultsToolStripMenuItem.Click += new System.EventHandler(this.runGridResultsToolStripMenuItem_Click);
             // 
@@ -267,20 +267,20 @@
             this.runDiscardResultsToolStripMenuItem.Image = global::DaxStudio.Properties.Resources.PlayDiscard;
             this.runDiscardResultsToolStripMenuItem.Name = "runDiscardResultsToolStripMenuItem";
             this.runDiscardResultsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F5)));
-            this.runDiscardResultsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.runDiscardResultsToolStripMenuItem.Text = "Run (Discard Results)";
+            this.runDiscardResultsToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.runDiscardResultsToolStripMenuItem.Text = "Run (Validate)";
             this.runDiscardResultsToolStripMenuItem.Click += new System.EventHandler(this.RunDsicardResultsToolStripMenuItemClick);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(224, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(223, 6);
             // 
             // clearCacheToolStripMenuItem
             // 
             this.clearCacheToolStripMenuItem.Name = "clearCacheToolStripMenuItem";
             this.clearCacheToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.clearCacheToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.clearCacheToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.clearCacheToolStripMenuItem.Text = "Clear Cache";
             this.clearCacheToolStripMenuItem.Click += new System.EventHandler(this.ClearCacheToolStripMenuItemClick);
             // 
@@ -450,7 +450,6 @@
             this.tvwMetadata.Size = new System.Drawing.Size(243, 337);
             this.tvwMetadata.TabIndex = 0;
             this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TvwItemDrag);
-
             // 
             // imgListTree
             // 
