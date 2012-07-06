@@ -31,13 +31,13 @@ namespace DaxStudio
 
         }
 
-        private void DaxResultGrid_ResizeEnd(object sender, EventArgs e)
-        {
-            daxGrid.Width = this.Width - WidthBuffer;
-            daxGrid.Height = this.Height - 60;
+        //private void DaxResultGrid_ResizeEnd(object sender, EventArgs e)
+        //{
+        //    daxGrid.Width = this.Width - WidthBuffer;
+        //    daxGrid.Height = this.Height - 60;
 
 
-        }
+        //}
 
 
 

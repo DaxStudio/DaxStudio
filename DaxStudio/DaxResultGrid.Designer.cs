@@ -39,10 +39,11 @@
             this.daxGrid.AllowUserToDeleteRows = false;
             this.daxGrid.AllowUserToOrderColumns = true;
             this.daxGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.daxGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.daxGrid.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.daxGrid.Location = new System.Drawing.Point(13, 13);
+            this.daxGrid.Location = new System.Drawing.Point(0, 0);
             this.daxGrid.Name = "daxGrid";
-            this.daxGrid.Size = new System.Drawing.Size(390, 260);
+            this.daxGrid.Size = new System.Drawing.Size(430, 281);
             this.daxGrid.TabIndex = 0;
             // 
             // DaxResultGrid
@@ -54,8 +55,6 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "DaxResultGrid";
             this.Text = "Query Results";
-
-            this.ResizeEnd += new System.EventHandler(this.DaxResultGrid_ResizeEnd);
             ((System.ComponentModel.ISupportInitialize)(this.daxGrid)).EndInit();
             this.ResumeLayout(false);
 

@@ -423,7 +423,7 @@
             this.tabMetadataBrowser.Location = new System.Drawing.Point(0, 31);
             this.tabMetadataBrowser.Name = "tabMetadataBrowser";
             this.tabMetadataBrowser.SelectedIndex = 0;
-            this.tabMetadataBrowser.Size = new System.Drawing.Size(257, 369);
+            this.tabMetadataBrowser.Size = new System.Drawing.Size(257, 277);
             this.tabMetadataBrowser.TabIndex = 0;
             // 
             // tabMetadata
@@ -432,7 +432,7 @@
             this.tabMetadata.Location = new System.Drawing.Point(4, 22);
             this.tabMetadata.Name = "tabMetadata";
             this.tabMetadata.Padding = new System.Windows.Forms.Padding(3);
-            this.tabMetadata.Size = new System.Drawing.Size(249, 343);
+            this.tabMetadata.Size = new System.Drawing.Size(249, 251);
             this.tabMetadata.TabIndex = 0;
             this.tabMetadata.Text = "Metadata";
             this.tabMetadata.UseVisualStyleBackColor = true;
@@ -447,7 +447,7 @@
             this.tvwMetadata.Name = "tvwMetadata";
             this.tvwMetadata.SelectedImageIndex = 0;
             this.tvwMetadata.ShowNodeToolTips = true;
-            this.tvwMetadata.Size = new System.Drawing.Size(243, 337);
+            this.tvwMetadata.Size = new System.Drawing.Size(243, 245);
             this.tvwMetadata.TabIndex = 0;
             this.tvwMetadata.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TvwItemDrag);
             // 
