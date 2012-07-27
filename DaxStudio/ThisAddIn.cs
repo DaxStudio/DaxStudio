@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Threading;
 
 namespace DaxStudio
 {
@@ -12,8 +13,9 @@ namespace DaxStudio
 
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {
-            
-            
+            // this forces the wpf RibbonWindow to shutdown correctly
+            // see http://go4answers.webhost4life.com/Example/ribbonribbonwindow-microsoft-ribbon-74444.aspx
+            Dispatcher.CurrentDispatcher.InvokeShutdown();
         }
 
         #region VSTO generated code

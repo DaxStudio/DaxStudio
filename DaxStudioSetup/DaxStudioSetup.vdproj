@@ -27,6 +27,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_1C30B4242B750566165E3D66C12AF57F"
+        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_35E5408CDEC44A12EF20075316DD7C13"
         "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "MsmSig" = "8:_UNDEFINED"
@@ -89,6 +95,18 @@
         {
         "MsmKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9A59896FBE3E27FD907CD559EED2FA97"
+        "OwnerKey" = "8:_92CBC7BE4A074FC5AA37C7A245190A1B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9A59896FBE3E27FD907CD559EED2FA97"
+        "OwnerKey" = "8:_1C30B4242B750566165E3D66C12AF57F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -160,13 +178,19 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
+        "OwnerKey" = "8:_1C30B4242B750566165E3D66C12AF57F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -215,6 +239,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_A383EEE5626B808C13C334867557413B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_9A59896FBE3E27FD907CD559EED2FA97"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -410,6 +440,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_1C30B4242B750566165E3D66C12AF57F"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:RibbonControlsLibrary, Version=4.0.0.11019, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_1C30B4242B750566165E3D66C12AF57F"
+                    {
+                    "Name" = "8:RibbonControlsLibrary.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:RibbonControlsLibrary.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_35E5408CDEC44A12EF20075316DD7C13"
             {
             "AssemblyRegister" = "3:1"
@@ -571,6 +632,37 @@
             "PackageAs" = "3:1"
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9A59896FBE3E27FD907CD559EED2FA97"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:Microsoft.Windows.Shell, Version=3.5.41019.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_9A59896FBE3E27FD907CD559EED2FA97"
+                    {
+                    "Name" = "8:Microsoft.Windows.Shell.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:Microsoft.Windows.Shell.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_E2F9DA3D432141AC98F25165DDBC9D4A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -880,7 +972,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Dax Studio"
         "ProductCode" = "8:{F91C1C8C-B5F8-425A-B592-688836BC6E48}"
-        "PackageCode" = "8:{CDF4E6B7-1FB7-4416-BCE9-1301BB91A33C}"
+        "PackageCode" = "8:{438130A1-A5C9-4C5D-A3D1-8A37937BBC9E}"
         "UpgradeCode" = "8:{43FA976A-2312-41D3-8FCA-584F56AB81FE}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

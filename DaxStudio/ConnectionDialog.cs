@@ -108,6 +108,13 @@ namespace DaxStudio
             return props;
         }
 
+
+        /*
+         * Note: The ability to connect to PowerPivot from DAX Studio (or any third party application) is not
+         * supported by Microsoft. Microsoft does not support connecting to PowerPivot models using the APIs 
+         * used here and as such the behaviour may change or stop working without notice in future releases. 
+         * This functionality is provided on an "as-is" basis.
+         */
         private string BuildPowerPivotConnection()
         {
             return string.Format("Data Source=$Embedded$;Location={0}", _workbook.FullName);

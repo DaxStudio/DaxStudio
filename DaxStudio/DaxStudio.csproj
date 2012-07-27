@@ -161,6 +161,10 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="RibbonControlsLibrary, Version=4.0.0.11019, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\RibbonControlsLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -231,6 +235,9 @@
     <Compile Include="DaxStudioForm.Designer.cs">
       <DependentUpon>DaxStudioForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DaxStudioWindow.xaml.cs">
+      <DependentUpon>DaxStudioWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExcelHelper.cs" />
     <Compile Include="ConnectionDialog.cs">
       <SubType>Form</SubType>
@@ -239,6 +246,9 @@
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="IOutputWindow.cs" />
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -290,6 +300,12 @@
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </Compile>
     <Compile Include="RegistryHelper.cs" />
+    <Compile Include="Ribbon.cs">
+      <XmlRibbon>true</XmlRibbon>
+    </Compile>
+    <Compile Include="RichTextBoxWatermarked.xaml.cs">
+      <DependentUpon>RichTextBoxWatermarked.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TabularMetadata.cs" />
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
@@ -307,6 +323,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="DaxStudioWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RichTextBoxWatermarked.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\run_icon.png" />
@@ -323,6 +351,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\PlayGrid.png" />
+    <EmbeddedResource Include="Ribbon.xml" />
     <None Include="Resources\question_button.png" />
     <None Include="Resources\question1.ico" />
     <EmbeddedResource Include="Resources\Table.png" />

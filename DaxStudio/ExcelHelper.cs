@@ -74,7 +74,7 @@ namespace DaxStudio
                     case DAX_RESULTS_SHEET:
                         return GetDaxResultsWorkSheet(_app.ActiveWorkbook);
                     default:
-                        return _app.ActiveWorkbook.Sheets[_tcbOutputTo.Text];
+                        return (Worksheet)_app.ActiveWorkbook.Sheets[_tcbOutputTo.Text];
                 }
             }
         }
