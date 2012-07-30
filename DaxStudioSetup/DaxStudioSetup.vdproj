@@ -172,25 +172,25 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E6DA029C75C20DCC09050A69F4036BC5"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1C30B4242B750566165E3D66C12AF57F"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_E6DA029C75C20DCC09050A69F4036BC5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_4D1EDF0D3CC4A6C79469338D4BF9802A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_E7011ACFC12E543AD485B77E15B1FEF7"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -352,6 +352,16 @@
                     {
                     "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Office.PIARedist.2010"
+                    {
+                    "Name" = "8:Microsoft Office 2010 Primary Interop Assemblies"
+                    "ProductCode" = "8:Microsoft.Office.PIARedist.2010"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.VSTORuntime.4.0"
+                    {
+                    "Name" = "8:Microsoft Visual Studio 2010 Tools for Office Runtime (x86 and x64)"
+                    "ProductCode" = "8:Microsoft.VSTORuntime.4.0"
                     }
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
                     {
@@ -972,7 +982,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Dax Studio"
         "ProductCode" = "8:{F91C1C8C-B5F8-425A-B592-688836BC6E48}"
-        "PackageCode" = "8:{438130A1-A5C9-4C5D-A3D1-8A37937BBC9E}"
+        "PackageCode" = "8:{31FF8FB9-ADFA-4E86-A7BF-3B2471D8094B}"
         "UpgradeCode" = "8:{43FA976A-2312-41D3-8FCA-584F56AB81FE}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -993,7 +1003,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:1"
+        "TargetPlatform" = "3:0"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"
