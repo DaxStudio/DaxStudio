@@ -377,7 +377,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\RibbonControlsLibrary.dll" />
+    <None Include="lib\RibbonControlsLibrary.dll" />
     <Content Include="Resources\PlayGrid.png" />
     <EmbeddedResource Include="Ribbon.xml" />
     <None Include="Resources\question_button.png" />
