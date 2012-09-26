@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Office.Interop.Excel;
+using Microsoft.Windows.Controls.Ribbon;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Forms;
 
@@ -15,7 +16,7 @@ namespace DaxStudio
         private QueryTable _qryTable;
         private readonly Excel.Application _app ;
         private readonly ToolStripComboBox _tcbOutputTo;
-
+        private readonly RibbonComboBox _cboOutputTo;
         public delegate void QueryTableRefreshedHandler(object sender, QueryTableRefreshEventArgs e);
         public event QueryTableRefreshedHandler QueryTableRefreshed;
 
@@ -25,7 +26,14 @@ namespace DaxStudio
             _tcbOutputTo = tcbOutputTo;
             _app.WorkbookActivate += AppWorkbookActivate;
             PopulateOutputOptions(_tcbOutputTo);
-            
+        }
+
+        public ExcelHelper(Excel.Application app, RibbonComboBox cboOutputTo)
+        {
+            _app = app;
+            _cboOutputTo = cboOutputTo;
+            _app.WorkbookActivate += AppWorkbookActivate;
+            PopulateOutputOptions(cboOutputTo);
         }
 
         public void RefreshQueryTableAsync(QueryTable queryTable)
@@ -38,7 +46,14 @@ namespace DaxStudio
         void AppWorkbookActivate(Workbook wb)
         {
             // re-populate the output options if the active workbook changes
-            PopulateOutputOptions(_tcbOutputTo);
+            if (_tcbOutputTo != null)
+            {
+                PopulateOutputOptions(_tcbOutputTo);
+            }
+            if (_cboOutputTo != null)
+            {
+                PopulateOutputOptions(_cboOutputTo);
+            }
             EnsurePowerPivotDataIsLoaded();
             // TODO - reset workbook connection
 
@@ -48,8 +63,8 @@ namespace DaxStudio
 
         private void PopulateOutputOptions(ToolStripComboBox outputTo)
         {
-            if (_tcbOutputTo.ComboBox == null) return;
-            _tcbOutputTo.Items.Clear();
+            if (outputTo.ComboBox == null) return;
+            outputTo.Items.Clear();
             Workbook wb = _app.ActiveWorkbook;
             outputTo.Items.Add(DAX_RESULTS_SHEET);
             foreach (Worksheet ws in wb.Worksheets)
@@ -61,20 +76,42 @@ namespace DaxStudio
             outputTo.Text = DAX_RESULTS_SHEET;
         }
 
-        
+        private void PopulateOutputOptions(RibbonComboBox outputTo)
+        {
+            if (outputTo == null) return;
+            outputTo.Items.Clear();
+            Workbook wb = _app.ActiveWorkbook;
+            outputTo.Items.Add(DAX_RESULTS_SHEET);
+            foreach (Worksheet ws in wb.Worksheets)
+            {
+                outputTo.Items.Add(ws.Name);
+            }
+            outputTo.Items.Add(NEW_SHEET);
+            // set the default 
+            outputTo.Text = DAX_RESULTS_SHEET;
+        }
 
         public Worksheet SelectedOutput
         {
             get
             {
-                switch (_tcbOutputTo.Text)
+                string outputToText=DAX_RESULTS_SHEET; //default to results sheet
+                if (_tcbOutputTo != null)
+                {
+                    outputToText = _tcbOutputTo.Text;
+                }
+                if (_cboOutputTo != null)
+                {
+                    outputToText = _cboOutputTo.Text;
+                }
+                switch (outputToText)
                 {
                     case NEW_SHEET:
                         return CreateNewWorkSheeet(_app.ActiveWorkbook);
                     case DAX_RESULTS_SHEET:
                         return GetDaxResultsWorkSheet(_app.ActiveWorkbook);
                     default:
-                        return (Worksheet)_app.ActiveWorkbook.Sheets[_tcbOutputTo.Text];
+                        return (Worksheet)_app.ActiveWorkbook.Sheets[outputToText];
                 }
             }
         }

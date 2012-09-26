@@ -244,6 +244,9 @@
     <Compile Include="AboutDaxStudio.Designer.cs">
       <DependentUpon>AboutDaxStudio.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConnectionWindow.xaml.cs">
+      <DependentUpon>ConnectionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DataSetExtensions.cs" />
     <Compile Include="DaxQueryHelpers.cs" />
     <Compile Include="DaxResultGrid.cs">
@@ -269,15 +272,16 @@
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="IOutputWindow.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DaxEditorUserControl.xaml.cs">
       <DependentUpon>DaxEditorUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\ColumnViewModel.cs" />
+    <Compile Include="ViewModel\TableViewModel.cs" />
+    <Compile Include="ViewModel\TabularModelViewModel.cs" />
+    <Compile Include="ViewModel\TreeViewItemViewModel.cs" />
     <EmbeddedResource Include="AboutDaxStudio.resx">
       <DependentUpon>AboutDaxStudio.cs</DependentUpon>
     </EmbeddedResource>
@@ -342,15 +346,15 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ConnectionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="DaxEditorUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DaxStudioWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
