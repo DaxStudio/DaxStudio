@@ -1,0 +1,46 @@
+﻿<Window x:Class="wpf_testimng.ConnectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Connectcions" Height="501" Width="449" ResizeMode="NoResize">
+    <Grid Width="431" Height="453">
+        <GroupBox Header="Data Source" Height="126" HorizontalAlignment="Left" Margin="0,10,0,0" Name="grpServer" VerticalAlignment="Top" Width="427">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="8*" />
+                    <ColumnDefinition Width="259*" />
+                    <ColumnDefinition Width="151*" />
+                </Grid.ColumnDefinitions>
+                <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="6,19,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="6,70,0,0" Name="rdoTabularServer" VerticalAlignment="Top" Checked="rdoTabularServer_Checked" Grid.ColumnSpan="2" />
+                <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="120,14,0,0" Name="lblWorkBook" VerticalAlignment="Top" Width="259" Grid.ColumnSpan="2" Grid.Column="1" />
+                <ComboBox Height="23" HorizontalAlignment="Left" Margin="120,70,0,0" Name="cboServers" VerticalAlignment="Top" Width="259" DataContext="{Binding}" Grid.ColumnSpan="2" Grid.Column="1" IsEditable="True" />
+                <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="8,34,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top" Width="371" Foreground="#FFFA0000" Grid.ColumnSpan="2" Grid.Column="1" />
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Server Options" Height="267" HorizontalAlignment="Left" Margin="0,145,0,0" Name="grpOptions" VerticalAlignment="Top" Width="427">
+            <Grid Height="239">
+                <ComboBox Height="23" HorizontalAlignment="Left" Margin="122,25,0,0" Name="cboDirectQuery" VerticalAlignment="Top" Width="287"   >
+                    <ComboBoxItem Name="default" IsSelected="True">Default</ComboBoxItem>
+                    <ComboBoxItem Name="direct" >Direct Query</ComboBoxItem>
+                    <ComboBoxItem Name="inMemory">In-Memory</ComboBoxItem>
+                </ComboBox>
+                <Label Content="Direct Query Mode" Height="27" HorizontalAlignment="Left" Margin="0,25,0,0" Name="lblDirectQuery" VerticalAlignment="Top" Width="116" />
+                <ComboBox Height="23" HorizontalAlignment="Left" Margin="122,54,0,0" Name="cboMdxCompat" VerticalAlignment="Top" Width="287">
+                    <ComboBoxItem Name="type_0" Content="0 - Equivalent to 1" />
+                    <ComboBoxItem Name="type_1" Content="1 - Placeholder members are exposed" />
+                    <ComboBoxItem Name="type_2" Content="2 - Placeholder members are not exposed" />
+                    <ComboBoxItem Name="type_3" Content="3- (Default) Placeholder members are not exposed" IsSelected="True" />
+                </ComboBox>
+                <Label Content="MDX Compatibility" Height="27" HorizontalAlignment="Left" Margin="0,54,0,0" Name="lblMdxCompat" VerticalAlignment="Top" Width="116" />
+                <Label Content="Effective User Name" Height="28" HorizontalAlignment="Left" Margin="0,81,0,0" Name="lblEffectiveUserName" VerticalAlignment="Top" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="122,83,0,0" Name="txtEffectiveUserName" VerticalAlignment="Top" Width="287" />
+                <Label Content="Roles" Height="28" HorizontalAlignment="Left" Margin="0,110,0,0" Name="lblRoles" VerticalAlignment="Top" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="122,112,0,0" Name="txtRoles" VerticalAlignment="Top" Width="287" />
+                <Label Content="Additional Options" Height="28" HorizontalAlignment="Left" Margin="0,139,0,0" Name="lblAdditionalOptions" VerticalAlignment="Top" />
+                <TextBox Height="88" HorizontalAlignment="Left" Margin="122,141,0,0" Name="txtAdditionalOptions" VerticalAlignment="Top" Width="287" />
+            </Grid>
+        </GroupBox>
+        <Button Content="Connect" Height="23" HorizontalAlignment="Left" Margin="271,424,0,0" Name="btnConnect" VerticalAlignment="Top" Width="75" />
+        <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="352,424,0,0" Name="btnCancel" VerticalAlignment="Top" Width="75" />
+    </Grid>
+</Window>
