@@ -247,9 +247,6 @@
     <Compile Include="ConnectionDialog.xaml.cs">
       <DependentUpon>ConnectionDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConnectionWindow.xaml.cs">
-      <DependentUpon>ConnectionWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="DataSetExtensions.cs" />
     <Compile Include="DaxQueryHelpers.cs" />
     <Compile Include="DaxResultGrid.cs">
@@ -352,10 +349,6 @@
     <Page Include="ConnectionDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="ConnectionWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DaxEditorUserControl.xaml">
       <SubType>Designer</SubType>
