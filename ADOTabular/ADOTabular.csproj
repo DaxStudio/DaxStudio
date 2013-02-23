@@ -51,10 +51,32 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Exel 2013|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Exel 2013\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\ADOTabular.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files\Microsoft.NET\ADOMD.NET\110\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Excel.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <Aliases>ExcelAdomdClientReference</Aliases>
+      <HintPath>..\DaxStudio\lib\Microsoft.Excel.AdomdClient.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,6 +86,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdomdClientWrappers\AdomdCommand.cs" />
+    <Compile Include="AdomdClientWrappers\AdomdConnection.cs" />
+    <Compile Include="AdomdClientWrappers\AdomdDataAdapter.cs" />
+    <Compile Include="AdomdClientWrappers\AdomdDataReader.cs" />
+    <Compile Include="AdomdClientWrappers\AdomdParameter.cs" />
+    <Compile Include="AdomdClientWrappers\AdomdRestriction.cs" />
+    <Compile Include="AdomdClientWrappers\Axis.cs" />
+    <Compile Include="AdomdClientWrappers\CellSet.cs" />
+    <Compile Include="AdomdClientWrappers\CubeDef.cs" />
+    <Compile Include="AdomdClientWrappers\Dimension.cs" />
+    <Compile Include="AdomdClientWrappers\ExcelAdoMdConnections.cs" />
+    <Compile Include="AdomdClientWrappers\Hierarchy.cs" />
+    <Compile Include="AdomdClientWrappers\Kpi.cs" />
+    <Compile Include="AdomdClientWrappers\Level.cs" />
+    <Compile Include="AdomdClientWrappers\Measure.cs" />
+    <Compile Include="AdomdClientWrappers\Member.cs" />
+    <Compile Include="AdomdClientWrappers\MemberProperty.cs" />
+    <Compile Include="AdomdClientWrappers\NamedSet.cs" />
+    <Compile Include="AdomdClientWrappers\Position.cs" />
+    <Compile Include="AdomdClientWrappers\Property.cs" />
     <Compile Include="ADOTabularColumn.cs" />
     <Compile Include="ADOTabularColumnCollection.cs" />
     <Compile Include="ADOTabularDatabase.cs" />

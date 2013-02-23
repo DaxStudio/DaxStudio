@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ADOTabular;
+using DaxStudio.AdomdClientWrappers;
 using Microsoft.Office.Interop.Excel;
 
 
@@ -151,11 +152,16 @@ namespace DaxStudio
             }
         }
 
+        public AdomdType ConnectionType
+        {
+            get { return radPowerPivot.Checked ? AdomdType.Excel : AdomdType.AnalysisServices; }
+        }
+
         private void BtnConnectClick(object sender, EventArgs e)
         {
             try
             {
-                Connection = new ADOTabularConnection(ConnectionString);
+                Connection = new ADOTabularConnection(this.ConnectionString,this.ConnectionType);
                 RegistryHelper.SaveServerMRUListToRegistry(cboServers);
             }
             catch (Exception ex)

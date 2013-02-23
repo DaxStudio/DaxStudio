@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Input;
+using DaxStudio.AdomdClientWrappers;
 using DaxStudio.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
 using ADOTabular;
@@ -225,7 +226,8 @@ namespace DaxStudio
             {
                 // if current workbook has PowerPivot data ensure it is loaded into memory
                 _xlHelper.EnsurePowerPivotDataIsLoaded();
-                _conn = new ADOTabularConnection(BuildPowerPivotConnection(),true);
+                _conn = _xlHelper.GetPowerPivotConnection();
+                //_conn = new ADOTabularConnection(BuildPowerPivotConnection(), AdomdType.Excel,true);
                 RefreshDatabaseList();
                 //RefreshTabularMetadata();
             }
@@ -234,7 +236,7 @@ namespace DaxStudio
                 var connDialog = new ConnectionDialog(wb,"",_xlHelper);
                 if (connDialog.ShowDialog() == DialogResult.OK)
                 {
-                    _conn = new ADOTabularConnection(connDialog.ConnectionString,true);
+                    _conn = new ADOTabularConnection(connDialog.ConnectionString, AdomdType.AnalysisServices ,true);
                     RefreshDatabaseList();
                     //cboDatabase.SelectedIndex = 0;
                     //RefreshTabularMetadata();

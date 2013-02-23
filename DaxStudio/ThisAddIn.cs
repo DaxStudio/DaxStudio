@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace DaxStudio
@@ -7,9 +8,36 @@ namespace DaxStudio
     {
         private void ThisAddInStartup(object sender, EventArgs e)
         {
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.AssemblyResolve += new ResolveEventHandler(currentDomain_AssemblyResolve);
+
             CreateRibbonObjects();
 
         }
+
+        //the Microsoft.Excel.AdomdClient.dll used for Excel Data Models in Excel 15 isn't in any of the paths .NET looks for assemblies in... so we have to catch the AssemblyResolve event and manually load that assembly
+        //private static AdomdClientWrappers.ExcelAdoMdConnections _helper = new AdomdClientWrappers.ExcelAdoMdConnections();
+        System.Reflection.Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
+                {
+                    return AdomdClientWrappers.ExcelAdoMdConnections.ExcelAdomdClientAssembly;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Problem during AssemblyResolve in Dax Studio:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "Dax Studio");
+                return null;
+            }
+        }
+		
 
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {

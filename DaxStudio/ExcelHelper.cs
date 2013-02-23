@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Linq;
+using ADOTabular;
+using DaxStudio.AdomdClientWrappers;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Windows.Controls.Ribbon;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Forms;
+using System.Data;
+using Office = Microsoft.Office.Core;
+using System.ComponentModel;
 
 namespace DaxStudio
 {
@@ -187,10 +192,19 @@ namespace DaxStudio
 
         public bool HasPowerPivotData()
         {
+            
             if (_app.ActiveWorkbook == null) return false;
             PivotCaches pvtcaches = _app.ActiveWorkbook.PivotCaches();
             if (pvtcaches.Count == 0)
                 return false;
+            if (float.Parse(_app.Version) >= 15 )
+                return (from PivotCache pvtc in pvtcaches
+                        let conn = pvtc.Connection.ToString()
+                        where pvtc.OLAP
+                          && pvtc.CommandType == XlCmdType.xlCmdCube
+                          && (int)pvtc.WorkbookConnection.Type == 7 // xl15Model
+                        select pvtc).Any();
+            
             return (from PivotCache pvtc in pvtcaches
                     let conn = pvtc.Connection.ToString()
                     where pvtc.OLAP 
@@ -198,6 +212,42 @@ namespace DaxStudio
                       && ((string) conn).Contains("Data Source=$Embedded$")
                     select pvtc).Any();
         }
+
+        //((dynamic)pc.WorkbookConnection).ModelConnection.ADOConnection.ConnectionString
+        //"Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7"
+        public ADOTabularConnection GetPowerPivotConnection()
+        {
+            PivotCache pc=null;
+            string connStr = "";
+            PivotCaches pvtcaches = _app.ActiveWorkbook.PivotCaches();
+            if (float.Parse(_app.Version) >= 15)
+            {
+                pc = (from PivotCache pvtc in pvtcaches
+                                 let conn = pvtc.Connection.ToString()
+                                 where pvtc.OLAP
+                                       && pvtc.CommandType == XlCmdType.xlCmdCube
+                                       && (int) pvtc.WorkbookConnection.Type == 7 // xl15Model
+                                 select pvtc).First();
+                connStr = (string)((dynamic)pc.WorkbookConnection).ModelConnection.ADOConnection.ConnectionString;
+                connStr = string.Format("{0};location={1}", connStr, _app.ActiveWorkbook.FullName);
+                // for connections to Excel 2013 or later we need to use the Excel version of ADOMDClient
+                return new ADOTabularConnection(connStr, AdomdType.Excel);
+            }
+            else
+            {
+                pc = (from PivotCache pvtc in pvtcaches
+                                 let conn = pvtc.Connection.ToString()
+                                 where pvtc.OLAP
+                                       && pvtc.CommandType == XlCmdType.xlCmdCube
+                                       //&& (int)pvtc.WorkbookConnection.Type == 7
+                                 select pvtc).First();
+                connStr = ((dynamic) pc.WorkbookConnection).OLEDBConnection.Connection.Replace("OLEDB;","");
+                connStr = string.Format("{0};location={1}", connStr, _app.ActiveWorkbook.FullName);
+                // for connections to Excel 2010 we need to use the AnalysisServices version of ADOMDClient
+                return new ADOTabularConnection(connStr, AdomdType.AnalysisServices);
+            }
+        }
+
 
         public void EnsurePowerPivotDataIsLoaded()
         {

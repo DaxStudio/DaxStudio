@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.AdomdClientWrappers;
 
 namespace ADOTabular
 {

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 using System.Data;
+using ADOTabular.AdomdClientWrappers;
+using DaxStudio.AdomdClientWrappers;
 
 namespace ADOTabular
 {
@@ -13,23 +15,22 @@ namespace ADOTabular
         Visible = 0x01,
         NonVisible = 0x02
     }
-        
-        
+
     public class ADOTabularConnection
     {
         private readonly AdomdConnection _adomdConn; 
-        public ADOTabularConnection(string connectionString)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType)
         {
-            _adomdConn = new AdomdConnection();
-            _adomdConn.ConnectionString = connectionString;
+            _adomdConn = new AdomdConnection(connectionString, connectionType);  //TODO - add new connection object
+            //_adomdConn.ConnectionString = connectionString;
             //_adomdConn.ShowHiddenObjects = true;
             //_adomdConn.Open();
         }
 
-        public ADOTabularConnection(string connectionString, bool showHiddenObjects)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects)
         {
-            _adomdConn = new AdomdConnection();
-            _adomdConn.ConnectionString = connectionString;
+            _adomdConn = new AdomdConnection(connectionString,connectionType);
+         //   _adomdConn.ConnectionString = connectionString;
             ShowHiddenObjects = showHiddenObjects;
             //_adomdConn.Open();
         }
@@ -129,7 +130,7 @@ namespace ADOTabular
             if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
             return cmd.ExecuteReader();
         }
-
+        
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();
@@ -237,10 +238,10 @@ namespace ADOTabular
 
         public void Cancel()
         {
-            var cancelConn = new AdomdConnection();
+            var cancelConn = new AdomdConnection(_adomdConn.ConnectionString, _adomdConn.Type);
             if (_adomdConn.State == ConnectionState.Closed | _adomdConn.State == ConnectionState.Connecting) return;
             cancelConn.SessionID = _adomdConn.SessionID;
-            cancelConn.ConnectionString = _adomdConn.ConnectionString;
+            //cancelConn.ConnectionString = _adomdConn.ConnectionString;
             cancelConn.Open();
             var cancelCmd = cancelConn.CreateCommand();
             cancelCmd.CommandType = CommandType.Text;

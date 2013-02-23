@@ -2,7 +2,8 @@
 using System.Data;
 using System.Collections;
 using System.Linq;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.AdomdClientWrappers;
 
 namespace ADOTabular
 {
