@@ -34,8 +34,13 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                _objExcel = new ExcelAdomdClient.AdomdDataAdapter();
-                _objExcel.SelectCommand = (ExcelAdomdClient.AdomdCommand) obj.UnderlyingCommand;
+                ExcelAdoMdConnections.VoidDelegate f = delegate
+                {
+                    _objExcel = new ExcelAdomdClient.AdomdDataAdapter();
+                    _objExcel.SelectCommand =
+                        (ExcelAdomdClient.AdomdCommand) obj.UnderlyingCommand;
+                };
+                f();
             }
             
         }
