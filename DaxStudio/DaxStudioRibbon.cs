@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+using System.Windows.Threading;
 using DaxStudio;
 using Microsoft.Office.Tools.Ribbon;
 
@@ -30,32 +32,38 @@ namespace DaxStudio
         {
             if (Control.ModifierKeys == Keys.Shift)
             {
-                ShowWpfForm();
+ //               ShowWpfForm();
             }
             else
             {
                 ShowWinForm();
             }
         }
-
+/* TODO - WPF Window
         DaxStudioWindow _wpfWindow;
         private void ShowWpfForm()
         {
                 
-            if (_wpfWindow == null )
+            if (_wpfWindow != null )
             {
-                _wpfWindow = new DaxStudioWindow(Globals.ThisAddIn.Application);
+                _wpfWindow.Close();
+                _wpfWindow = null;
+            }
+            //_wpfWindow = new DaxStudioWindow(Globals.ThisAddIn.Application);
                 //_wpfWindow.Application = Globals.ThisAddIn.Application;
                 // use WindowInteropHelper to set the Owner of our WPF window to the Excel application window
-                var hwndHelper = new System.Windows.Interop.WindowInteropHelper(_wpfWindow);
-                hwndHelper.Owner = new IntPtr(Globals.ThisAddIn.Application.Hwnd);
-            }
+                var hwndOwner = new IntPtr(Globals.ThisAddIn.Application.Hwnd);
+               // var hwndHelper = new System.Windows.Interop.WindowInteropHelper(_wpfWindow);
+               // hwndHelper.Owner = hwndOwner;
+                //var hook = new System.Windows.Interop.HwndSourceHook()
+            
 
             // show our window
-            _wpfWindow.Show();
+            UserForm.ShowUserForm(Globals.ThisAddIn.Application, hwndOwner);
+            //_wpfWindow.Show();
             
         }
 
-
+        */
     }
 }

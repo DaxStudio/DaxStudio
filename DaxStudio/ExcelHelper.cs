@@ -3,7 +3,7 @@ using System.Linq;
 using ADOTabular;
 using DaxStudio.AdomdClientWrappers;
 using Microsoft.Office.Interop.Excel;
-using Microsoft.Windows.Controls.Ribbon;
+//using Microsoft.Windows.Controls.Ribbon;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Windows.Forms;
 using System.Data;
@@ -21,9 +21,18 @@ namespace DaxStudio
         private QueryTable _qryTable;
         private readonly Excel.Application _app ;
         private readonly ToolStripComboBox _tcbOutputTo;
-        private readonly RibbonComboBox _cboOutputTo;
+        private readonly Fluent.ComboBox _fcbOutputTo;
+        //private readonly RibbonComboBox _cboOutputTo;
         public delegate void QueryTableRefreshedHandler(object sender, QueryTableRefreshEventArgs e);
         public event QueryTableRefreshedHandler QueryTableRefreshed;
+
+        public ExcelHelper(Excel.Application app, Fluent.ComboBox fcbOutputTo)
+        {
+            _app = app;
+            _fcbOutputTo = fcbOutputTo;
+            _app.WorkbookActivate += AppWorkbookActivate;
+            PopulateOutputOptions(_fcbOutputTo);
+        }
 
         public ExcelHelper(Excel.Application app, ToolStripComboBox tcbOutputTo)
         {
@@ -32,7 +41,7 @@ namespace DaxStudio
             _app.WorkbookActivate += AppWorkbookActivate;
             PopulateOutputOptions(_tcbOutputTo);
         }
-
+        /*
         public ExcelHelper(Excel.Application app, RibbonComboBox cboOutputTo)
         {
             _app = app;
@@ -40,7 +49,7 @@ namespace DaxStudio
             _app.WorkbookActivate += AppWorkbookActivate;
             PopulateOutputOptions(cboOutputTo);
         }
-
+        */
         public void RefreshQueryTableAsync(QueryTable queryTable)
         {
             _qryTable = queryTable;
@@ -55,15 +64,34 @@ namespace DaxStudio
             {
                 PopulateOutputOptions(_tcbOutputTo);
             }
-            if (_cboOutputTo != null)
+            /*if (_cboOutputTo != null)
             {
                 PopulateOutputOptions(_cboOutputTo);
+            }*/
+            if (_fcbOutputTo != null)
+            {
+                PopulateOutputOptions(_fcbOutputTo);
             }
             EnsurePowerPivotDataIsLoaded();
             // TODO - reset workbook connection
 
             // TODO - repopulate metadata
             
+        }
+
+        private void PopulateOutputOptions(Fluent.ComboBox outputTo)
+        {
+            if (outputTo == null) return;
+            outputTo.Items.Clear();
+            Workbook wb = _app.ActiveWorkbook;
+            outputTo.Items.Add(DAX_RESULTS_SHEET);
+            foreach (Worksheet ws in wb.Worksheets)
+            {
+                outputTo.Items.Add(ws.Name);
+            }
+            outputTo.Items.Add(NEW_SHEET);
+            // set the default 
+            outputTo.Text = DAX_RESULTS_SHEET;
         }
 
         private void PopulateOutputOptions(ToolStripComboBox outputTo)
@@ -80,8 +108,8 @@ namespace DaxStudio
             // set the default 
             outputTo.Text = DAX_RESULTS_SHEET;
         }
-
-        private void PopulateOutputOptions(RibbonComboBox outputTo)
+        /*
+        private void PopulateOutputOptions(Fluent.ComboBox outputTo)
         {
             if (outputTo == null) return;
             outputTo.Items.Clear();
@@ -95,7 +123,7 @@ namespace DaxStudio
             // set the default 
             outputTo.Text = DAX_RESULTS_SHEET;
         }
-
+        */
         public Worksheet SelectedOutput
         {
             get
@@ -105,10 +133,12 @@ namespace DaxStudio
                 {
                     outputToText = _tcbOutputTo.Text;
                 }
+               /* TODO 
                 if (_cboOutputTo != null)
                 {
                     outputToText = _cboOutputTo.Text;
                 }
+                */ 
                 switch (outputToText)
                 {
                     case NEW_SHEET:

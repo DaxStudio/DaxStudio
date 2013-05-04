@@ -4,8 +4,9 @@ using System.Text;
 using System.Windows;
 using ADOTabular;
 using DaxStudio.AdomdClientWrappers;
+using DaxStudio.ViewModel;
 using Microsoft.Win32;
-using Microsoft.Windows.Controls.Ribbon;
+//using Microsoft.Windows.Controls.Ribbon;
 using DaxStudio.Properties;
 
 namespace DaxStudio
@@ -13,7 +14,7 @@ namespace DaxStudio
     /// <summary>
     /// Interaction logic for DaxStudioWindow.xaml
     /// </summary>
-    public partial class DaxStudioWindow : RibbonWindow
+    public partial class DaxStudioWindow : Fluent.RibbonWindow
     {
         private enum QueryType
         {
@@ -39,6 +40,12 @@ namespace DaxStudio
             daxEditorUserControl1.Drop += UcDaxEditorDrop;
             _xlHelper = new ExcelHelper(_app, cboOutputTo);
             _workbook = Application.ActiveWorkbook;
+            this.btnRunGrid.Click += OnRunGrdClick;
+        }
+
+        private void OnRunGrdClick(object sender, RoutedEventArgs args)
+        {
+            MessageBox.Show("Button Pressed");
         }
 
         public Microsoft.Office.Interop.Excel.Application Application
@@ -70,6 +77,7 @@ namespace DaxStudio
         {
             daxEditorUserControl1.daxEditor.SelectedText = e.Data.ToString();
         }
+
 /*
         private void TvwItemDrag(object sender, ItemDragEventArgs e)
         {
@@ -91,42 +99,10 @@ namespace DaxStudio
             RunQuery(QueryType.ToTable);
         }
 
-        private void ToolStripCmdModelsClick(object sender, EventArgs e)
-        {
-            var conDialog = new ConnectionDialog(Application.ActiveWorkbook, _conn.ConnectionString, _xlHelper);
-            if (conDialog.ShowDialog() == DialogResult.Cancel) return;
-
-            _conn = conDialog.Connection;
-            _conn.ShowHiddenObjects = true;
-            RefreshDatabaseList();
-            //RefreshTabularMetadata();
-        }
+        
 
 
-        private void RefreshTabularMetadata()
-        {
-            _refreshingMetadata = true;
-            try
-            {
-                tspStatus.Text = Resources.Refreshing_Metadata;
-                Cursor = System.Windows.Forms.Cursors.WaitCursor;
-                System.Windows.Forms.Application.DoEvents();
-                //populate metadata tabs
-                TabularMetadata.PopulateConnectionMetadata(_conn, tvwMetadata, tvwFunctions, listDMV, cboModel.Text);
-
-                ResetCursor();
-                // update status bar
-                tspStatus.Text = Resources.Status_Ready;
-
-                tspConnection.Text = _conn.ServerName;
-                tspVersion.Text = _conn.ServerVersion;
-                tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);
-            }
-            finally
-            {
-                _refreshingMetadata = false;
-            }
-        }
+        
 
         private void RunLastQueryType(object sender, EventArgs e) //object sender, EventArgs e)
         {
@@ -401,6 +377,52 @@ namespace DaxStudio
             }
         }
 
+        
+        private void cboDatabaseSelectionChange(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            RefreshTabularMetadata();
+        }
 
+        private void btnConnectClick(object sender, RoutedEventArgs e)
+        {
+
+            var conDialog = new wpf_testing.ConnectionDialog();//Application.ActiveWorkbook, _conn.ConnectionString, _xlHelper);
+            var vm = new ConnectionViewModel(_conn, "No Workbook Selected");
+            conDialog.DataContext = vm;
+            var dialogRes = conDialog.ShowDialog();
+            if (!(conDialog.DialogResult.HasValue && conDialog.DialogResult.Value)) return;
+            
+                    RegistryHelper.SaveServerListToRegistry(vm.DataSource,vm.RecentServers);
+                    _conn = vm.Connection;
+            _conn.ShowHiddenObjects = true;
+            RefreshDatabaseList();
+        }
+
+        private void RefreshTabularMetadata()
+        {
+            _refreshingMetadata = true;
+            try
+            {
+                //tspStatus.Text = Resources.Refreshing_Metadata;
+                Cursor = System.Windows.Input.Cursors.Wait;
+                System.Windows.Forms.Application.DoEvents();
+                //populate metadata tabs
+                //TabularMetadata.PopulateConnectionMetadata(_conn, tvwMetadata, tvwFunctions, listDMV, cboModel.Text);
+                TabularModelViewModel vmTabularModel = new TabularModelViewModel(_conn.Database.Models[cboModel.Text] );
+                tvwMetadata.DataContext = vmTabularModel;
+                Cursor = System.Windows.Input.Cursors.Arrow;
+                //TODO - update status
+                // update status bar
+                //tspStatus.Text = Resources.Status_Ready;
+
+                //tspConnection.Text = _conn.ServerName;
+                //tspVersion.Text = _conn.ServerVersion;
+                //tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                _refreshingMetadata = false;
+            }
+        }
     }
 }

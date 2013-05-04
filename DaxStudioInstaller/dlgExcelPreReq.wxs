@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <Binary Id="TickImage" SourceFile="tick.jpg" />
+    <Binary Id="GreyTickImage" SourceFile="tickgrey.jpg" />
+    <Binary Id="CrossImage" SourceFile="cross.jpg" />
+    <CustomAction Id="LaunchUrl" BinaryKey="WixCA" DllEntry="WixShellExec" Execute="immediate" Return="check" Impersonate="yes" />
+    <UI>
+      <Dialog Id="dlgExcelPreReq" Width="370" Height="270">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.LicenseAgreementDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="340" Height="15" Transparent="yes" NoPrefix="yes" Text="Looking for Excel 2010 or later and Primary Interop Assemblies" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Checking Excel Components" />
+        <!--<Control Id="IgnoreIssuesCheckBox" Type="CheckBox" X="75" Y="199" Width="226" Height="18" CheckBoxValue="1" Property="IgnoreExcelIssues" Text="Ignore Excel component Issues" />-->
+        <!--!(loc.WelcomeEulaDlgLicenseAcceptedCheckBox)-->
+        <!-- Text -->
+        <Control Type="Text" Id="txtExcel2010" Width="50" Height="17" X="68" Y="75" Text="Excel 2010" TabSkip="no" >
+          
+        </Control>
+        <Control Type="Text" Id="txtExcel2010PIA" Width="182" Height="17" X="82" Y="94" Text="Excel 2010 Primary Interop Assemblies (PIA)" />
+        <Control Type="Text" Id="txtExcel2013" Width="50" Height="17" X="71" Y="124" Text="Excel 2013" />
+        <Control Type="Text" Id="txtExcel2013PIA" Width="178" Height="17" X="86" Y="142" Text="Excel 2013 Primary Interop Assemblies (PIA)" />
+        <!-- Nav Buttons -->
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)">
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+
+        <!-- Images -->
+        <Control Id="Excel2010Tick" Type="Bitmap" X="26" Y="75" Width="12" Height="12" TabSkip="no" Text="TickImage" Hidden="yes">
+          <Condition Action="show">EXCEL2010="Microsoft Excel Application"</Condition>
+        </Control>
+        <Control Id="Excel2010Grey" Type="Bitmap" X="26" Y="75" Width="12" Height="12" TabSkip="no" Text="GreyTickImage" Hidden="yes">
+          <Condition Action="show">NOT EXCEL2010="Microsoft Excel Application"</Condition>
+        </Control>
+
+        <Control Id="Excel2010PIACross" Type="Bitmap" X="26" Y="94" Width="12" Height="12"  Text="CrossImage" Hidden="yes">
+          <Condition Action="show">EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_32</Condition>
+        </Control>
+
+        <Control Id="Excel2010PIATick" Type="Bitmap" X="26" Y="94" Width="12" Height="12" TabSkip="no" Text="TickImage" Hidden="yes">
+          <Condition Action="show">EXCEL2010="Microsoft Excel Application" AND EXCEL2010PIA_32</Condition>
+        </Control>
+        <Control Id="Excel2010PIAGrey" Type="Bitmap" X="26" Y="94" Width="12" Height="12" TabSkip="no" Text="GreyTickImage" Hidden="yes">
+          <Condition Action="show">NOT EXCEL2010="Microsoft Excel Application"</Condition>
+        </Control>
+
+        
+        <Control Id="Excel2013Tick" Type="Bitmap" X="26" Y="124" Width="12" Height="12" TabSkip="no" Text="TickImage" Hidden="yes">
+          <Condition Action="show">EXCEL2013="Microsoft Excel Application"</Condition>
+        </Control>
+        <Control Id="Excel2013Grey" Type="Bitmap" X="26" Y="124" Width="12" Height="12" TabSkip="no" Text="GreyTickImage" Hidden="yes">
+          <Condition Action="show">NOT EXCEL2013="Microsoft Excel Application"</Condition>
+        </Control>
+
+        <Control Id="Excel2013PIACross" Type="Bitmap" X="26" Y="142" Width="12" Height="12"  Text="CrossImage" Hidden="yes">
+<!--          <?if $(var.Platform)=x64 ?>
+          <Condition Action="show">EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_64</Condition>
+          <?else?>-->
+          <Condition Action="show">EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_32</Condition>
+<!--          <?endif?>-->
+        </Control>
+        <Control Id="Excel2013PIATick" Type="Bitmap" X="26" Y="142" Width="12" Height="12" TabSkip="no" Text="TickImage" Hidden="yes">
+<!--          <?if $(var.Platform)=x64 ?>
+          <Condition Action="show">EXCEL2013="Microsoft Excel Application" AND EXCEL2013PIA_64</Condition>
+          <?else?>-->
+          <Condition Action="show">EXCEL2013="Microsoft Excel Application" AND EXCEL2013PIA_32</Condition>
+<!--          <?endif?>-->
+        </Control>
+        <Control Id="Excel2013PIAGrey" Type="Bitmap" X="26" Y="142" Width="12" Height="12" TabSkip="no" Text="GreyTickImage" Hidden="yes">
+          <Condition Action="show">NOT EXCEL2013="Microsoft Excel Application"</Condition>
+        </Control>
+        <!-- Help Button-->
+        <Control Type="PushButton" Id="btnGetExcelComponentHelp" Width="178" Height="22" X="75" Y="169" Text="Get Help about Excel Pre-requisites" Hidden="yes">
+          <Publish Property="WixShellExecTarget" Value="https://daxstudio.codeplex.com/wikipage?title=Installation%20Pre-Requisites" Order="1">1</Publish>
+          <Publish Event="DoAction" Value="LaunchUrl" Order="2">1</Publish>
+<!--          <?if $(var.Platform)=x64 ?>
+          <Condition Action="show">(EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_64) OR (EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_64)</Condition>
+          <?else?> -->
+          <Condition Action="show">(EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_32) OR (EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_32)</Condition>
+<!--          <?endif?>-->
+        </Control>
+        <!-- Ignore Issues Tickbox -->
+        <Control Id="IgnoreIssuesCheckBox" Type="CheckBox" X="75" Y="199" Width="226" Height="18" CheckBoxValue="1" Property="IGNORE_EXCEL_ISSUES" Text="Ignore Excel component Issues" Hidden="yes">
+<!--          <?if $(var.Platform)=x64 ?>
+          <Condition Action="show">(EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_64) OR (EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_64)</Condition>
+          <?else?>-->
+          <Condition Action="show">(EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_32) OR (EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_32)</Condition>
+<!--          <?endif?>-->
+        </Control>
+      </Dialog>
+    </UI>
+
+  </Fragment>
+</Wix>

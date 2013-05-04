@@ -226,7 +226,7 @@
             this.runDiscardResultsToolStripMenuItem,
             this.toolStripSeparator3,
             this.clearCacheToolStripMenuItem});
-            this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayTable1;
+            this.btnRun.Image = global::DaxStudio.Properties.Resources.PlayStatic;
             this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(32, 22);

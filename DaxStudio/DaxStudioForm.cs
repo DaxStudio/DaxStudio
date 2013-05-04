@@ -28,7 +28,7 @@ namespace DaxStudio
         private bool _refreshingMetadata;
         private ADOTabularConnection _conn;
         private Excel.Application _app;
-        private QueryType _defaultQueryType = QueryType.ToTable;
+        private QueryType _defaultQueryType = QueryType.ToStatic;
         private Excel.Workbook _workbook;
         private DaxResultGrid _daxResultGrid = new DaxResultGrid();
 
@@ -193,6 +193,8 @@ namespace DaxStudio
                 // update status bar
                 tspStatus.Text = Resources.Status_Ready;
 
+                runQueryTableToolStripMenuItem.Enabled = _conn.SupportsQueryTable;
+                
                 tspConnection.Text = _conn.ServerName;
                 tspVersion.Text = _conn.ServerVersion;
                 tspSpid.Text = _conn.SPID.ToString(CultureInfo.InvariantCulture);

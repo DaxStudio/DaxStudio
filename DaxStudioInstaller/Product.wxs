@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- These variables define the Windows Installer product version, product code and upgrade code. They   -->
+<!-- will be used later on in this file.                                                                 -->
+
+<!-- Set a specific product code based on the processor architecture build variable -->
+<?include $(sys.CURRENTDIR)\variables.wxi?>
+<?define Property_UpgradeCode = "86809B6B-E2E3-43EC-9351-D4D66CAF7864" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+  <Product Id="CE2CEA93-9DD3-4724-8FE3-FCBF0A0915C1"
+           Name="DAX Studio"
+           Language="1033"
+           Version="$(var.ProductVersion)"
+           Manufacturer="DaxStudio.Codeplex.com"
+           UpgradeCode="7b3b630d-c617-419f-8272-95942cf21420">
+<?if $(var.Platform)=x64 ?>
+    <Package InstallerVersion="200"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Platform="x64" />
+<?else ?>
+    <Package InstallerVersion="200"
+          Compressed="yes"
+          InstallScope="perMachine" />
+<?endif?>
+	  <Icon Id="DaxStudio.ico" SourceFile="..\DaxStudio\Images\DaxStudio.ico" />
+	  <Property Id="ARPPRODUCTICON" Value="DaxStudio.ico" />
+	  <Property Id="ARPHELPLINK" Value="http://daxstudio.codeplex.com/" />
+	  
+    <MajorUpgrade DowngradeErrorMessage="A newer version of DAX Studio is already installed." />
+
+	<Property Id="INSTALLLOCATION">
+		<RegistrySearch Id="RegistrySearch" Type="raw" Root="HKLM" Win64="$(var.Win64)"
+				Key="Software\DaxStudio\DaxStudio" Name="InstallLocation" />
+	</Property>  
+	  
+<?if $(var.Platform)=x64 ?>
+	<Property Id="VSTORUNTIMEREDIST">
+      <RegistrySearch
+        Id="VSTORuntimeRedist"
+        Root="HKLM"
+        Key="SOFTWARE\Wow6432Node\Microsoft\VSTO Runtime Setup\v4R"
+        Name="Version"
+        Type="raw"
+		Win64="$(var.win64Flag)"/>
+    </Property>
+    <Property Id="VSTORUNTIME">
+      <RegistrySearch
+        Id="VSTORuntime"
+        Root="HKLM"
+        Key="SOFTWARE\Wow6432Node\Microsoft\VSTO Runtime Setup\v4"
+        Name="Version"
+        Type="raw" 
+		Win64="$(var.win64Flag)"/>
+    </Property>
+
+	<?else?>
+    <Property Id="VSTORUNTIMEREDIST">
+      <RegistrySearch
+        Id="VSTORuntimeRedist"
+        Root="HKLM"
+        Key="SOFTWARE\Microsoft\VSTO Runtime Setup\v4R"
+        Name="Version"
+        Type="raw" />
+    </Property>
+    <Property Id="VSTORUNTIME">
+      <RegistrySearch
+        Id="VSTORuntime"
+        Root="HKLM"
+        Key="SOFTWARE\Microsoft\VSTO Runtime Setup\v4"
+        Name="Version"
+        Type="raw" />
+    </Property>
+
+	<?endif?>
+
+
+    <Property Id="EXCELVER">
+      <RegistrySearch
+        Id="ExcelVer"
+        Root="HKLM"
+        Key="SOFTWARE\Classes\Excel.Application\CurVer"
+        Type="raw" />
+    </Property>
+
+    <Property Id="EXCEL2010">
+      <RegistrySearch
+        Id="Excel2010"
+        Root="HKLM"
+        Key="SOFTWARE\Classes\Excel.Application.14"
+        Type="raw" />
+    </Property>
+
+    <Property Id="EXCEL2013">
+      <RegistrySearch
+        Id="Excel2013"
+        Root="HKLM"
+        Key="SOFTWARE\Classes\Excel.Application.15"
+        Type="raw" />
+    </Property>
+	  
+    <Property Id="SHARED2010PIA_32">
+      <ComponentSearch Id="SharedPia2010" Guid="{64E2917E-AA13-4CA4-BFFE-EA6EDA3AFCB4}" />
+    </Property>
+
+    <Property Id="EXCEL2010PIA_32">
+      <ComponentSearch Id="ExcelPia2010" Guid="{EA7564AC-C67D-4868-BE5C-26E4FC2223FF}" />
+    </Property>
+
+    <Property Id="SHARED2013PIA_32">
+      <ComponentSearch Id="SharedPia2013_32" Guid="{6A174BDB-0049-4D1C-86EF-3114CB0C4C4E}" />
+    </Property>
+
+    <Property Id="EXCEL2013PIA_32">
+      <ComponentSearch Id="ExcelPia2013_32" Guid="{C8A65ABE-3270-4FD7-B854-50C8082C8F39}" />
+    </Property>
+
+    <Property Id="SHARED2013PIA_64">
+      <ComponentSearch Id="SharedPia2013_64" Guid="{76601EBB-44A7-49EE-8DE3-7B7B9D7EBB05}" />
+    </Property>
+
+    <Property Id="EXCEL2013PIA_64">
+      <ComponentSearch Id="ExcelPia2013_64" Guid="{E3BD1151-B9CA-4D45-A77E-51A6E0ED322A}" />
+    </Property>
+
+    <!-- CHECK for .Net Framework 4.0-->
+    <PropertyRef Id="NETFRAMEWORK40CLIENT"/>
+    <Condition Message="This application requires .NET Framework 4.0.">
+      <![CDATA[Installed OR NETFRAMEWORK40CLIENT]]>
+    </Condition>
+
+    <!-- Check for VSTO Runtime -->
+    <Condition
+      Message="The Visual Studio 2010 Tools for Office Runtime is not installed. 
+  Please download and install from http://www.microsoft.com/en-us/download/details.aspx?id=20479.">
+      <![CDATA[Installed OR VSTORUNTIMEREDIST>="10.0.30319"]]>      
+    </Condition>
+
+<!--    
+    <Condition
+  Message="Excel 2010 PIA is not installed. 
+  Please download and install from http://www.microsoft.com/en-us/download/details.aspx?id=20479.">
+      <![CDATA[Installed OR (EXCELVER="Excel.Application.14" AND EXCEL2010PIA_32)]]>
+    </Condition>
+-->
+	  <!--
+ <?if $(var.Platform)=x64 ?>
+        <Condition
+      Message="Excel 2013 PIA (64 bit) or later is not installed. 
+      Please download and install from http://www.microsoft.com/en-us/download/details.aspx?id=20479.">
+          <![CDATA[Installed OR (EXCELVER>="Excel.Application.15" AND EXCEL2013PIA_64)]]>
+        </Condition>
+ <?else?>
+        <Condition
+      Message="Excel 2013 PIA (32 bit) or later is not installed." >
+          <![CDATA[Installed OR (EXCELVER>="Excel.Application.15" AND EXCEL2013PIA_32)]]>
+        </Condition>
+ <?endif?>
+ -->
+    <Media Id="1" Cabinet="DaxStudio.cab" EmbedCab="yes"/>
+
+    <Upgrade Id="$(var.UpgradeCode)">
+      <UpgradeVersion Minimum="$(var.ProductVersion)"
+                      IncludeMinimum="no"
+                      OnlyDetect="yes"
+                      Language="1033"
+                      Property="NEWPRODUCTFOUND" />
+      <UpgradeVersion Minimum="$(var.RTMProductVersion)"
+                      IncludeMinimum="yes"
+                      Maximum="$(var.ProductVersion)"
+                      IncludeMaximum="no"
+                      Language="1033"
+                      Property="UPGRADEFOUND" />
+    </Upgrade>
+
+    <Feature Id="ProductFeature" Title="DAX Studio" Level="1">
+      <Feature Id="ProductFeature.ExcelAddin" Display="expand" Level="1" Title="Dax Studio Excel Addin" Description="Requires Excel 2010 or later and the VSTO runtimes see http://daxstudio.codeplex.com/prerequisites">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="DaxStudioRegistryKeys" />
+        <Condition Level="2">(EXCEL2010="Microsoft Excel Application" AND NOT EXCEL2010PIA_32) OR (EXCEL2013="Microsoft Excel Application" AND NOT EXCEL2013PIA_32) OR IGNORE_EXCEL_ISSUES</Condition>
+      </Feature>
+    </Feature>
+
+    <UIRef Id="WixUI_MyFeatureTree" />
+    <WixVariable Id="WixUILicenseRtf" Value="EULA.rtf" />
+    <WixVariable Id="WixUIBannerBmp" Value="..\DaxStudio\images\DaxStudioWixBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="..\DaxStudio\images\DaxStudioWixDialog.bmp" />
+    <!--<Icon Id="DaxStudio.dll" SourceFile="$(var.AddinFiles)\DaxStudio.dll" />-->
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+        <Directory Id="INSTALLFOLDER" Name="Dax Studio" />
+      </Directory>
+    </Directory>
+  </Fragment>
+  
+  <Fragment>
+  <Component Id="DaxStudioRegistryKeys" Guid="97C045A9-9739-407E-B4AF-FB38C57538FC" Directory="INSTALLFOLDER" Win64="$(var.win64Flag)" >
+
+    <!-- this is the path where user settings are stored, by adding this here it should be removed on uninstall -->
+    <RegistryKey Root="HKCU" Key="SOFTWARE\DaxStudio" />
+    
+    <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Office\Excel\AddIns" >
+      
+        <RegistryValue Id="RegKey_FriendlyName" 
+                       Key="DaxStudio.ExcelAddIn"
+                       Name="FriendlyName"
+                       Value="Dax Studio Excel Add-In"
+                       Type="string" />
+      
+        <RegistryValue Id="RegKey_Description" 
+                       Key="DaxStudio.ExcelAddIn"
+                       Name="Description"
+                       Value="Dax Studio Excel Add-In"
+                       Type="string" />
+      
+        <RegistryValue Id="RegKey_Manifest" 
+                       Key="DaxStudio.ExcelAddIn"
+                       Name="Manifest" Value="file:///[INSTALLFOLDER]DaxStudio.vsto|vstolocal"
+                       Type="string" />
+      
+        <RegistryValue Id="RegKey_LoadBehavior" 
+                       Key="DaxStudio.ExcelAddIn"
+                       Name="LoadBehavior" Value="3"
+                       Type="integer" />
+      
+    </RegistryKey>
+    
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" >
+      <!-- vsto -->
+      
+      <Component Id="MSOfficeToolsCommon_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="MSOfficeToolsCommon_dll" KeyPath="yes"
+              Name="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Source="$(var.AddinFiles)"></File>
+      </Component>
+      <!-- core libraries-->
+      <Component Id="DaxStudio_vsto_Component" Directory="INSTALLFOLDER">
+        <File Id="ExcelAddin1_vsto" KeyPath="yes"
+              Name="DaxStudio.vsto" Source="$(var.AddinFiles)"></File>
+      </Component>
+      <Component Id="DaxStudio_dll_manifest_Component" Directory="INSTALLFOLDER">
+        <File Id="ExcelAddIn1_dll_manifest" KeyPath="yes"
+              Name="DaxStudio.dll.manifest" Source="$(var.AddinFiles)"></File>
+      </Component>
+      <Component Id="DaxEditor_dll" Directory="INSTALLFOLDER">
+        <File Id="DaxEditor_dll" KeyPath="yes"
+              Name="DaxEditor.dll" Source="$(var.AddinFiles)"></File>
+      </Component>
+      <Component Id="AdoTabular_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="AdoTabular_dll" KeyPath="yes"
+              Name="AdoTabular.dll" Source="$(var.AddinFiles)"></File>
+      </Component>
+      <Component Id="DaxStudio_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="DaxStudio_dll" KeyPath="yes"
+              Name="DaxStudio.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <!-- Avalon Edit Components-->
+      <Component Id="AvalonEditCodeCompletion_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="AvalonEditCodeCompletion_dll" KeyPath="yes"
+              Name="ICSharpCode.AvalonEdit.CodeCompletion.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <Component Id="AvalonEdit_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="AvalonEdit_dll" KeyPath="yes"
+              Name="ICSharpCode.AvalonEdit.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <Component Id="NRefactory_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="NRefactory_dll" KeyPath="yes"
+              Name="ICSharpCode.NRefactory.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <Component Id="SharpDevelopDom_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="SharpDevelopDom_dll" KeyPath="yes"
+              Name="ICSharpCode.SharpDevelop.Dom.dll" Source="$(var.AddinFiles)" />
+      </Component>
+
+      <Component Id="MonoCecil_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="MonoCecil_dll" KeyPath="yes"
+              Name="Mono.Cecil.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <!-- ribbon control -->
+      <Component Id="RibbonControlslibrary_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="Fluent_dll" KeyPath="yes"
+              Name="Fluent.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      
+      <Component Id="SystemWindowsInteractivity_dll_Component" Directory="INSTALLFOLDER">
+      <File Id="SystemWindowsInteractivity_dll" KeyPath="yes"
+            Name="System.Windows.Interactivity.dll" Source="$(var.AddinFiles)" />
+      </Component>
+      <!--
+      <Component Id="MicrosoftWindowsShell_dll_Component" Directory="INSTALLFOLDER">
+        <File Id="MicrosoftWindowsShell_dll" KeyPath="yes"
+              Name="Microsoft.Windows.Shell.dll" Source="$(var.AddinFiles)" />
+      </Component>
+	  -->
+  
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

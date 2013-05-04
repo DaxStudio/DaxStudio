@@ -1,15 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ADOTabular")]
+[assembly: AssemblyTitle("DaxStudioInstallerCustomActions")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("daxstudio.codeplex.com")]
-[assembly: AssemblyProduct("ADOTabular")]
-[assembly: AssemblyCopyright("Copyright © Dax Studio 2012")]
+[assembly: AssemblyCompany("Telstra Corporation")]
+[assembly: AssemblyProduct("DaxStudioInstallerCustomActions")]
+[assembly: AssemblyCopyright("Copyright © Telstra Corporation 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0e587c74-9f2d-4a38-99cf-152193112d52")]
+[assembly: Guid("fc72a5e9-fa1a-4937-bdeb-db6ffecce1fc")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

@@ -63,6 +63,19 @@ namespace ADOTabular
             }
         }
 
+        public AdomdType Type
+        {
+            get { return _adomdConn.Type; }
+        }
+
+        public bool SupportsQueryTable
+        {
+            get
+            {
+                return _adomdConn.Type == AdomdType.AnalysisServices; 
+            }
+        }
+
         public override string ToString()
         {
             return _adomdConn.ConnectionString;
