@@ -18,8 +18,6 @@ namespace DaxStudio.Standalone
             
             app.Run();
         }
-
-        
         
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 
-namespace DaxStudio.ViewModel
+namespace DaxStudio.UI.ViewModels
 {
 
     /// <summary>
