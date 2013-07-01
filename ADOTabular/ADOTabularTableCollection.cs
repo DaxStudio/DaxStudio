@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Data;
-//using Microsoft.AnalysisServices.AdomdClient;
 using System.Collections;
-using DaxStudio.AdomdClientWrappers;
+//using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
@@ -11,38 +9,37 @@ namespace ADOTabular
         
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel  _model;
-        private DataTable _dtTables;
+        private readonly Dictionary<string, ADOTabularTable> _tables;
+
         public ADOTabularTableCollection(ADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
             _model = model;
+            _tables = _adoTabConn.Visitor.Visit(this);
         }
 
         public ADOTabularModel Model
         {
             get { return _model; }
         }
-
-
-        private DataTable GetTablesTable()
+        
+        public ADOTabularTable GetById(string internalId)
         {
-            if (_dtTables == null)
+            foreach (var t in _tables.Values)
             {
-                var resColl = new AdomdRestrictionCollection { 
-                                    { "CUBE_NAME", Model.Name }, 
-                                    { "DIMENSION_VISIBILITY", _adoTabConn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} };
-                _dtTables = _adoTabConn.GetSchemaDataSet("MDSCHEMA_DIMENSIONS", resColl).Tables[0];
+                if (t.InternalId == internalId)
+                {
+                    return t;
+                }
             }
-            return _dtTables;
+            return null;
         }
 
-        
         public IEnumerator<ADOTabularTable> GetEnumerator()
         {
-            foreach (DataRow dr in GetTablesTable().Rows)
+            foreach (var t in _tables.Values)
             {
-                if (dr["DIMENSION_NAME"].ToString().ToUpper()!="MEASURES")
-                yield return new ADOTabularTable(_adoTabConn, dr,_model);
+                yield return t;
             }
         }
 

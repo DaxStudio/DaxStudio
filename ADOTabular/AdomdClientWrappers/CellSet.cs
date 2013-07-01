@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class CellSet
     {
-        private AsAdomdClient.CellSet _obj;
-        private ExcelAdomdClient.CellSet _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.CellSet _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet _objExcel;
 
-        public CellSet(AsAdomdClient.CellSet obj)
+        public CellSet(Microsoft.AnalysisServices.AdomdClient.CellSet obj)
         {
             _obj = obj;
         }
-        public CellSet(ExcelAdomdClient.CellSet obj)
+        public CellSet(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet obj)
         {
             _objExcel = obj;
         }
@@ -29,7 +24,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Axis> list = new List<Axis>();
-                    foreach (AsAdomdClient.Axis level in _obj.Axes)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Axis level in _obj.Axes)
                     {
                         list.Add(new Axis(level));
                     }
@@ -40,7 +35,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Axis>> f = delegate
                     {
                         List<Axis> list = new List<Axis>();
-                        foreach (ExcelAdomdClient.Axis level in _objExcel.Axes)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis level in _objExcel.Axes)
                         {
                             list.Add(new Axis(level));
                         }

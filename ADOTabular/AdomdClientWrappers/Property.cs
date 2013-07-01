@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Property
     {

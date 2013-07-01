@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using System.Xml;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using ICSharpCode.AvalonEdit.CodeCompletion;
@@ -36,14 +38,17 @@ namespace DAXEditor
     ///     <MyNamespace:CustomControl1/>
     ///
     /// </summary>
-    public class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
+    public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
     {
         //BracketHighlightRenderer bracketRenderer;
         protected override void OnInitialized(EventArgs e)
         {
+            
             base.OnInitialized(e);
             TextArea.TextEntering += textEditor_TextArea_TextEntering;
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            //SetValue(TextBoxControllerProperty, new TextBoxController());
+
             //TextArea.Caret.PositionChanged += HighlightBrackets;
 
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
@@ -62,7 +67,7 @@ namespace DAXEditor
 
             //TODO - hardcoded for v1 - should be moved to a settings dialog
             this.FontFamily = new System.Windows.Media.FontFamily("Lucida Console");
-            this.ShowLineNumbers = true;
+            this.ShowLineNumbers = true;            ;
         }
 
         CompletionWindow completionWindow;

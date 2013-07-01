@@ -1,25 +1,20 @@
 ﻿extern alias ExcelAdomdClientReference;
-
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdCommand
     {
-        private AsAdomdClient.AdomdCommand _obj;
-        private ExcelAdomdClient.AdomdCommand _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.AdomdCommand _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand _objExcel;
 
         public AdomdCommand() { }
-        public AdomdCommand(AsAdomdClient.AdomdCommand obj)
+        public AdomdCommand(Microsoft.AnalysisServices.AdomdClient.AdomdCommand obj)
         {
             _obj = obj;
         }
-        public AdomdCommand(ExcelAdomdClient.AdomdCommand obj)
+        public AdomdCommand(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand obj)
         {
             _objExcel = obj;
         }
@@ -47,16 +42,16 @@ namespace DaxStudio.AdomdClientWrappers
                 if (value.Type == AdomdType.AnalysisServices)
                 {
                     if (_obj == null)
-                        _obj = new AsAdomdClient.AdomdCommand();
-                    _obj.Connection = (AsAdomdClient.AdomdConnection)value.UnderlyingConnection;
+                        _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
+                    _obj.Connection = (Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection;
                 }
                 else
                 {
                     ExcelAdoMdConnections.VoidDelegate f = delegate
                     {
                         if (_objExcel == null)
-                            _objExcel = new ExcelAdomdClient.AdomdCommand();
-                        _objExcel.Connection = (ExcelAdomdClient.AdomdConnection)value.UnderlyingConnection;
+                            _objExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
+                        _objExcel.Connection = (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection;
                     };
                     f();
                 }
@@ -165,7 +160,7 @@ namespace DaxStudio.AdomdClientWrappers
                 _obj.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new AsAdomdClient.AdomdParameter(param.Name, param.Value));
+                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
                 return new CellSet(_obj.ExecuteCellSet());
             }
@@ -176,7 +171,7 @@ namespace DaxStudio.AdomdClientWrappers
                     _objExcel.Parameters.Clear();
                     foreach (AdomdParameter param in _parameters)
                     {
-                        _objExcel.Parameters.Add(new ExcelAdomdClient.AdomdParameter(param.Name, param.Value));
+                        _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
                     return new CellSet(_objExcel.ExecuteCellSet());
                 };
@@ -192,7 +187,7 @@ namespace DaxStudio.AdomdClientWrappers
                 _obj.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new AsAdomdClient.AdomdParameter(param.Name, param.Value));
+                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
                 return new AdomdDataReader(_obj.ExecuteReader());
             }
@@ -203,7 +198,7 @@ namespace DaxStudio.AdomdClientWrappers
                     _objExcel.Parameters.Clear();
                     foreach (AdomdParameter param in _parameters)
                     {
-                        _objExcel.Parameters.Add(new ExcelAdomdClient.AdomdParameter(param.Name, param.Value));
+                        _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
                     return new AdomdDataReader(_objExcel.ExecuteReader());
                 };
@@ -219,7 +214,7 @@ namespace DaxStudio.AdomdClientWrappers
                 _obj.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new AsAdomdClient.AdomdParameter(param.Name, param.Value));
+                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
                 return _obj.ExecuteNonQuery();
             }
@@ -230,7 +225,7 @@ namespace DaxStudio.AdomdClientWrappers
                     _objExcel.Parameters.Clear();
                     foreach (AdomdParameter param in _parameters)
                     {
-                        _objExcel.Parameters.Add(new ExcelAdomdClient.AdomdParameter(param.Name, param.Value));
+                        _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
                     return _objExcel.ExecuteNonQuery();
                 };
@@ -245,7 +240,7 @@ namespace DaxStudio.AdomdClientWrappers
                 _obj.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new AsAdomdClient.AdomdParameter(param.Name, param.Value));
+                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
                 _obj.Execute();
             }
@@ -256,7 +251,7 @@ namespace DaxStudio.AdomdClientWrappers
                     _objExcel.Parameters.Clear();
                     foreach (AdomdParameter param in _parameters)
                     {
-                        _objExcel.Parameters.Add(new ExcelAdomdClient.AdomdParameter(param.Name, param.Value));
+                        _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
                     _objExcel.Execute();
                 };

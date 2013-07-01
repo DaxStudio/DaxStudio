@@ -1,45 +1,16 @@
 ﻿using System;
+using ADOTabular;
+using DaxStudio.UI;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Excel;
 //using Excel = Microsoft.Office.Interop.Excel;
-using ADOTabular;
+using DaxStudio;
 
 namespace DaxStudio
 {
     public static class DaxQueryHelpers
     {
-        public static void DaxClearCache(ADOTabularConnection conn, IOutputWindow output) {
-            var queryBegin = DateTime.UtcNow;
-            conn.ExecuteCommand(String.Format(@"
-<Batch xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
-   <ClearCache>
-     <Object>
-       <DatabaseID>{0}</DatabaseID>   
-    </Object>
-   </ClearCache>
- </Batch>
-", conn.Database.Name));
-            var queryComplete = DateTime.UtcNow;
-            output.WriteOutputMessage(string.Format("{0} - Cleared Cache ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
-        }
-
-        public static void DaxQueryDiscardResults(ADOTabularConnection conn, string daxQuery, IOutputWindow output)
-        {
-            var queryBegin = DateTime.UtcNow;
-            // run query
-            try
-            {
-                //TODO - test using a cellset instead of a DataAdaptor
-                conn.ExecuteDaxQueryDataTable(daxQuery);
-                var queryComplete = DateTime.UtcNow;
-                output.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
-            }
-            catch (Exception ex)
-            {
-                output.WriteOutputError(ex.Message);
-            }
-        }
-
+        
         public static void DaxQueryTable(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow output)
         {
             DaxQueryTable2010(excelSheet, connection, daxQuery, output);
@@ -82,6 +53,24 @@ namespace DaxStudio
             }
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }
+
+        public static void DaxQueryDiscardResults(ADOTabularConnection conn, string daxQuery, IOutputWindow output)
+        {
+            var queryBegin = DateTime.UtcNow;
+            // run query
+            try
+            {
+                //TODO - test using a cellset instead of a DataAdaptor
+                conn.ExecuteDaxQueryDataTable(daxQuery);
+                var queryComplete = DateTime.UtcNow;
+                output.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
+            }
+            catch (Exception ex)
+            {
+                output.WriteOutputError(ex.Message);
+            }
+        }
+
 
         public static void DaxQueryTable2013(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow output)
         {
@@ -222,41 +211,7 @@ namespace DaxStudio
             {
                 window.WriteOutputError(ex.Message);
             }
-        }
-
-        public static void DaxQueryGrid(ADOTabularConnection connection, string daxQuery, IOutputWindow window, DaxResultGrid DaxResultGrid)
-        {
-
-
-            if (!DaxResultGrid.Visible)
-                DaxResultGrid.Show();
-
-
-            try
-            {
-                window.WriteOutputMessage(string.Format("{0} - Query Started", DateTime.Now));
-                var queryBegin = DateTime.UtcNow;
-
-                //TODO - test using a cellset instead of a DataAdaptor
-                // run query
-                System.Data.DataTable dt = connection.ExecuteDaxQueryDataTable(daxQuery);
-                    DaxResultGrid.BindResults(dt);
-                var queryComplete = DateTime.UtcNow;
-                window.WriteOutputMessage(string.Format("{0} - Query Complete ({1:mm\\:ss\\.fff})", DateTime.Now, queryComplete - queryBegin));
-
-            }
-            catch (Exception ex)
-            {
-                // if the query fails etc ... we will not show results
-                DaxResultGrid.BindResults(new System.Data.DataTable());
-                window.WriteOutputError(ex.Message);
-            }
-
-
-
-
-
-        }
+        }      
 
         private static void WriteQueryToExcelComment(Worksheet excelSheet, string daxQuery)
         {

@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Axis
     {
-        private AsAdomdClient.Axis _obj;
-        private ExcelAdomdClient.Axis _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.Axis _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis _objExcel;
 
-        public Axis(AsAdomdClient.Axis obj)
+        public Axis(Microsoft.AnalysisServices.AdomdClient.Axis obj)
         {
             _obj = obj;
         }
-        public Axis(ExcelAdomdClient.Axis obj)
+        public Axis(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis obj)
         {
             _objExcel = obj;
         }
@@ -29,7 +24,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Position> list = new List<Position>();
-                    foreach (AsAdomdClient.Position level in _obj.Positions)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Position level in _obj.Positions)
                     {
                         list.Add(new Position(level));
                     }
@@ -40,7 +35,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Position>> f = delegate
                     {
                         List<Position> list = new List<Position>();
-                        foreach (ExcelAdomdClient.Position level in _objExcel.Positions)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Position level in _objExcel.Positions)
                         {
                             list.Add(new Position(level));
                         }

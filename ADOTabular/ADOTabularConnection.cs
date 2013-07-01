@@ -1,10 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-//using Microsoft.AnalysisServices.AdomdClient;
 using System.Data;
+using System.Threading.Tasks;
+using System.Xml;
 using ADOTabular.AdomdClientWrappers;
-using DaxStudio.AdomdClientWrappers;
 
 namespace ADOTabular
 {
@@ -16,29 +16,55 @@ namespace ADOTabular
         NonVisible = 0x02
     }
 
+    public enum ADOTabularMetadataDiscovery
+    {
+        Adomd
+        ,Csdl
+    }
+
     public class ADOTabularConnection
     {
         private readonly AdomdConnection _adomdConn; 
-        public ADOTabularConnection(string connectionString, AdomdType connectionType)
-        {
-            _adomdConn = new AdomdConnection(connectionString, connectionType);  //TODO - add new connection object
-            //_adomdConn.ConnectionString = connectionString;
-            //_adomdConn.ShowHiddenObjects = true;
-            //_adomdConn.Open();
-        }
+        public ADOTabularConnection(string connectionString, AdomdType connectionType) 
+            : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
+        { }
 
-        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, ADOTabularMetadataDiscovery visitorType)
+            : this(connectionString, connectionType, false, visitorType)
+        { }
+
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHidden)
+            : this(connectionString, connectionType, showHidden, ADOTabularMetadataDiscovery.Csdl)
+        { }
+
+
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery vistorType)
         {
             _adomdConn = new AdomdConnection(connectionString,connectionType);
          //   _adomdConn.ConnectionString = connectionString;
             ShowHiddenObjects = showHiddenObjects;
             //_adomdConn.Open();
+            if (vistorType == ADOTabularMetadataDiscovery.Adomd)
+            {
+                Visitor = new MetaDataVisitorADOMD(this);
+            }
+            else
+            {
+                Visitor = new MetaDataVisitorCSDL(this);
+            }
         }
+
+        
 
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
             get { return new ADOTabularDatabase(this, _adomdConn.Database); }
+        }
+
+        public void Open()
+        {
+            _adomdConn.Open();
         }
 
         public void Open(string connectionString)
@@ -124,8 +150,18 @@ namespace ADOTabular
 
         public DataSet GetSchemaDataSet(string schemaName)
         {
-            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             return _adomdConn.GetSchemaDataSet(schemaName, null);
+        }
+
+        //TODO
+        public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
+        {
+            return Task.Factory.StartNew(() =>
+                {
+                    if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                    return _adomdConn.GetSchemaDataSet(schemaName, null);
+                });
         }
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection)
@@ -135,15 +171,76 @@ namespace ADOTabular
             return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
         }
 
+        //TODO
+        public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
+        {
+            
+            return Task.Factory.StartNew(() =>
+                {
+                    if (_adomdConn.State != ConnectionState.Open)
+                        _adomdConn.Open();
+                    return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
+                });
+        }
+        /*
         public AdomdDataReader ExecuteDaxReader(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = query;
-            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             return cmd.ExecuteReader();
         }
+        */
+        public void ExecuteNonQuery(string command)
+        {
+            var cmd = _adomdConn.CreateCommand();
+            cmd.CommandText = command;
+            cmd.CommandType = CommandType.Text;
+            cmd.ExecuteNonQuery();
+        }
+
+        public void CancelSPID(int spid)
+        {
+            var cmd =
+                string.Format(
+                    "<Cancel xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'><SPID>{0}</SPID></Cancel>",
+                    spid);
+            ExecuteNonQuery(cmd);
+        }
+
+        public void CancelQuery()
+        {
+            const string cmd = "<Cancel xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'/>";
+            ExecuteNonQuery(cmd);
+        }
+
+        public void Ping()
+        {
+            const string cmd = "<Batch xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'/>";
+            ExecuteNonQuery(cmd);
+        }
+
+        private Func<AdomdDataReader> _execReader; 
+        public IAsyncResult BeginExecuteDaxReader(string query, AsyncCallback callback)
+        {
+            AdomdCommand cmd = _adomdConn.CreateCommand();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = query;
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+            _execReader = cmd.ExecuteReader;
+            return _execReader.BeginInvoke(callback,null);
+        }
+
+
+
+        public void EndExecuteDaxReader(IAsyncResult result)
+        {
+            _execReader.EndInvoke(result);
+        }
+
         
+
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();
@@ -151,20 +248,28 @@ namespace ADOTabular
             cmd.CommandText = query;
             var da = new AdomdDataAdapter(cmd);
             var dt = new DataTable("DAXResult");
-            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
+            
+            FixColumnNaming(dt);
             return dt;
         }
 
-        public CellSet ExecuteDaxQueryCellset(string query)
+        //TODO
+        public DataTable ExecuteDaxQueryAsync(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = query;
-            if (_adomdConn.State == ConnectionState.Closed) _adomdConn.Open();
-            var cs = cmd.ExecuteCellSet();
-            return cs;
+            var da = new AdomdDataAdapter(cmd);
+            var dt = new DataTable("DAXResult");
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+            da.Fill(dt);
+
+            FixColumnNaming(dt);
+            return dt;
         }
+
 
         public int ExecuteCommand(string command) {
             AdomdCommand cmd = _adomdConn.CreateCommand();
@@ -181,6 +286,12 @@ namespace ADOTabular
             }
         }
 
+        private ADOTabularFunctionGroupCollection _functionGroups;
+        public ADOTabularFunctionGroupCollection FunctionGroups
+        {
+            get { return _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(this)); }
+        }
+        /*
         private ADOTabularFunctionCollection _adoTabFuncColl;
         public ADOTabularFunctionCollection Functions
         {
@@ -200,7 +311,7 @@ namespace ADOTabular
                 return _adoTabFuncColl;
             }
         }
-
+        */
         private ADOTabularDynamicManagementViewCollection _dmvCollection;
         public ADOTabularDynamicManagementViewCollection DynamicManagementViews
         {
@@ -225,9 +336,39 @@ namespace ADOTabular
         {
             get { return _adomdConn.ServerVersion; }
         }
-        public string SessionID
+        public string SessionId
         { 
             get { return _adomdConn.SessionID; }
+        }
+
+        public string GetServerMode()
+        {
+            
+            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+                                                 new AdomdRestrictionCollection
+                                                     {
+                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+                                                     });
+            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
+            
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)))
+            {
+                if (rdr.NameTable != null)
+                {
+                    var eSvrMode = rdr.NameTable.Add("ServerMode");
+
+                    while (rdr.Read())
+                    {
+                        if (rdr.NodeType == XmlNodeType.Element
+                            && rdr.LocalName == eSvrMode)
+                        {
+                            return rdr.ReadContentAsString();
+                        }
+
+                    }
+                }
+            }
+            return "Unknown";
         }
 
         private int _spid;
@@ -240,7 +381,7 @@ namespace ADOTabular
                     //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
                     //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
                     var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
-                    foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => dr["SESSION_ID"].ToString() == SessionID))
+                    foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => dr["SESSION_ID"].ToString() == SessionId))
                     {
                         _spid = int.Parse(dr["SESSION_SPID"].ToString());
                     }
@@ -248,6 +389,8 @@ namespace ADOTabular
                 return _spid;
             }
         }
+
+        public IMetaDataVisitor Visitor { get; set; }
 
         public void Cancel()
         {
@@ -276,5 +419,20 @@ namespace ADOTabular
         }
         */
         // QueryComplete
+
+        private static void FixColumnNaming(DataTable dataTable)
+        {
+            foreach (DataColumn col in dataTable.Columns)
+            {
+                string name = col.ColumnName;
+                int firstBracket = name.IndexOf('[')+1;
+                name = firstBracket==0 ? name: name.Substring(firstBracket,name.Length - firstBracket-1);
+                col.Caption = name;
+                col.ColumnName = name.Replace(' ', '_');
+            }
+
+        }
     }
+
+
 }

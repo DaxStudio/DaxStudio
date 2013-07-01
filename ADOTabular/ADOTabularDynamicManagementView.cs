@@ -1,24 +1,34 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 
 namespace ADOTabular
 {
-    public class ADOTabularDynamicManagementView
+    public class ADOTabularDynamicManagementView:IADOTabularObject
     {
         public ADOTabularDynamicManagementView(DataRow dr)
         {
-            _name = dr["SchemaName"].ToString();
+            _caption = dr["SchemaName"].ToString();
         }
 
-        private readonly string _name;
-        public string Name
+        private readonly string _caption;
+        public string Caption
         {
-            get { return _name; }
+            get { return _caption; }
+        }
+
+        public string DaxName
+        {
+            get { return DefaultQuery; }
         }
 
         public string DefaultQuery
         {
-            get { return string.Format("select * from $SYSTEM.{0}", _name); }
+            get { return String.Format("select * from $SYSTEM.{0}", _caption); }
         }
 
+        public MetadataImages MetadataImage
+        {
+            get { return MetadataImages.DmvTable; }
+        }
     }
 }

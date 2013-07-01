@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdParameter
     {

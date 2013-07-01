@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class NamedSet
     {
-        private AsAdomdClient.NamedSet _obj;
-        private ExcelAdomdClient.NamedSet _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.NamedSet _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet _objExcel;
 
-        public NamedSet(AsAdomdClient.NamedSet obj)
+        public NamedSet(Microsoft.AnalysisServices.AdomdClient.NamedSet obj)
         {
             _obj = obj;
         }
-        public NamedSet(ExcelAdomdClient.NamedSet obj)
+        public NamedSet(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet obj)
         {
             _objExcel = obj;
         }
@@ -86,7 +81,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     PropertyCollection coll = new PropertyCollection();
-                    foreach (AsAdomdClient.Property prop in _obj.Properties)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Property prop in _obj.Properties)
                     {
                         coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                     }
@@ -97,7 +92,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<PropertyCollection> f = delegate
                     {
                         PropertyCollection coll = new PropertyCollection();
-                        foreach (ExcelAdomdClient.Property prop in _objExcel.Properties)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Property prop in _objExcel.Properties)
                         {
                             coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                         }

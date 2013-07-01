@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
+using ADOTabular.AdomdClientWrappers;
 
 namespace DaxStudio
 {
@@ -24,7 +25,7 @@ namespace DaxStudio
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
                 if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
                 {
-                    return AdomdClientWrappers.ExcelAdoMdConnections.ExcelAdomdClientAssembly;
+                    return ExcelAdoMdConnections.ExcelAdomdClientAssembly;
                 }
                 else
                 {

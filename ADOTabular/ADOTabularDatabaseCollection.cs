@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Collections;
 
@@ -21,6 +22,24 @@ namespace ADOTabular
                 _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
             }
             return _dsDatabases.Tables[0];
+        }
+
+        public string this[int index]
+        {
+            get
+            {
+                int i = 0;
+                foreach (DataRow dr in GetDatabaseTable().Rows)
+                {
+                    if (i == index)
+                    {
+                        return dr["CATALOG_NAME"].ToString();
+                    }
+                    i++;
+                }
+
+                throw new IndexOutOfRangeException();
+            }
         }
 
         public IEnumerator<string> GetEnumerator()

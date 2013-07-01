@@ -63,16 +63,6 @@
     <Compile Include="WixUI_MyFeatureTree.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DaxStudio\DaxStudio.csproj">
-      <Name>DaxStudio</Name>
-      <Project>{C8769178-B109-4155-ABC2-F4E4587642DB}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
@@ -95,6 +85,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DaxStudio_en-us.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DaxStudio\DaxStudio.ExcelAddin.csproj">
+      <Name>DaxStudio.ExcelAddin</Name>
+      <Project>{c8769178-b109-4155-abc2-f4e4587642db}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <!--

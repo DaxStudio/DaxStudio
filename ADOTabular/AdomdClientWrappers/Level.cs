@@ -1,25 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
+using Microsoft.AnalysisServices.AdomdClient;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
-
-using LevelTypeEnum = Microsoft.AnalysisServices.AdomdClient.LevelTypeEnum;
-
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Level
     {
-        private AsAdomdClient.Level _obj;
-        private ExcelAdomdClient.Level _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.Level _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level _objExcel;
 
-        public Level(AsAdomdClient.Level obj)
+        public Level(Microsoft.AnalysisServices.AdomdClient.Level obj)
         {
             _obj = obj;
         }
-        public Level(ExcelAdomdClient.Level obj)
+        public Level(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level obj)
         {
             _objExcel = obj;
         }
@@ -124,7 +117,7 @@ namespace DaxStudio.AdomdClientWrappers
             if (_obj != null)
             {
                 MemberCollection coll = new MemberCollection();
-                foreach (AsAdomdClient.Member member in _obj.GetMembers(start, count, properties, new AsAdomdClient.MemberFilter[] { }))
+                foreach (Microsoft.AnalysisServices.AdomdClient.Member member in _obj.GetMembers(start, count, properties, new Microsoft.AnalysisServices.AdomdClient.MemberFilter[] { }))
                 {
                     coll.Add(new Member(member));
                 }
@@ -135,7 +128,7 @@ namespace DaxStudio.AdomdClientWrappers
                 ExcelAdoMdConnections.ReturnDelegate<MemberCollection> f = delegate
                 {
                     MemberCollection coll = new MemberCollection();
-                    foreach (ExcelAdomdClient.Member member in _objExcel.GetMembers(start, count, properties, new ExcelAdomdClient.MemberFilter[] { }))
+                    foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member member in _objExcel.GetMembers(start, count, properties, new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberFilter[] { }))
                     {
                         coll.Add(new Member(member));
                     }

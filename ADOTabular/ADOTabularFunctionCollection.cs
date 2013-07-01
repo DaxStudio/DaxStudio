@@ -1,18 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
-using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
     public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>
     {
+        private Dictionary<string, ADOTabularFunction> _functions; 
         private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularFunctionCollection(ADOTabularConnection adoTabConn)
         {
             _adoTabConn = adoTabConn;
+            _functions = new Dictionary<string, ADOTabularFunction>();
         }
 
+        public ADOTabularFunctionCollection()
+        {
+            _functions = new Dictionary<string, ADOTabularFunction>();
+        }
+
+        /*
         private DataSet _dsFuncs;
         private DataSet GetFunctionsTable()
         {
@@ -23,27 +30,34 @@ namespace ADOTabular
 
             return _dsFuncs;
         }
-        
+        */
 
         public int Count
         {
-            get { return GetFunctionsTable().Tables[0].Rows.Count; }
+            get { return _functions.Count; }
+        }
+
+        public IEnumerator<ADOTabularFunction> GetEnumerator()
+        {
+            foreach (var f in _functions.Values)
+            {
+                yield return f;
+            }
         }
 
         IEnumerator<ADOTabularFunction> IEnumerable<ADOTabularFunction>.GetEnumerator()
         {
-            foreach (DataRow dr in GetFunctionsTable().Tables[0].Select("ORIGIN=3 OR ORIGIN=4"))
-            {
-                yield return new ADOTabularFunction(dr);
-            }
+            return GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (DataRow dr in GetFunctionsTable().Tables[0].Select("ORIGIN=3 OR ORIGIN=4"))
-            {
-                yield return new ADOTabularFunction(dr);
-            }
+            return GetEnumerator();
+        }
+
+        public void Add(ADOTabularFunction fun)
+        {
+            _functions.Add(fun.Caption, fun);
         }
     }
 }

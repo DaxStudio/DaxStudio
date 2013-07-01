@@ -163,7 +163,7 @@
   <data name="MsdnForumsUrl" xml:space="preserve">
     <value>http://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/</value>
   </data>
-  <data name="daxstudio-logo_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="daxstudio_logo_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\daxstudio-logo_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PlayGrid" type="System.Resources.ResXFileRef, System.Windows.Forms">

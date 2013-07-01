@@ -1,23 +1,19 @@
 ﻿extern alias ExcelAdomdClientReference;
-
 using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class CubeDef
     {
-        private AsAdomdClient.CubeDef _obj;
-        private ExcelAdomdClient.CubeDef _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.CubeDef _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef _objExcel;
 
-        public CubeDef(AsAdomdClient.CubeDef obj)
+        public CubeDef(Microsoft.AnalysisServices.AdomdClient.CubeDef obj)
         {
             _obj = obj;
         }
-        public CubeDef(ExcelAdomdClient.CubeDef obj)
+        public CubeDef(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef obj)
         {
             _objExcel = obj;
         }
@@ -66,7 +62,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     DimensionCollection list = new DimensionCollection();
-                    foreach (AsAdomdClient.Dimension dim in _obj.Dimensions)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Dimension dim in _obj.Dimensions)
                     {
                         list.Add(new Dimension(dim));
                     }
@@ -77,7 +73,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<DimensionCollection> f = delegate
                     {
                         DimensionCollection list = new DimensionCollection();
-                        foreach (ExcelAdomdClient.Dimension dim in _objExcel.Dimensions)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension dim in _objExcel.Dimensions)
                         {
                             list.Add(new Dimension(dim));
                         }
@@ -95,7 +91,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Measure> list = new List<Measure>();
-                    foreach (AsAdomdClient.Measure dim in _obj.Measures)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Measure dim in _obj.Measures)
                     {
                         list.Add(new Measure(dim));
                     }
@@ -106,7 +102,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Measure>> f = delegate
                     {
                         List<Measure> list = new List<Measure>();
-                        foreach (ExcelAdomdClient.Measure dim in _objExcel.Measures)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Measure dim in _objExcel.Measures)
                         {
                             list.Add(new Measure(dim));
                         }
@@ -124,7 +120,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Kpi> list = new List<Kpi>();
-                    foreach (AsAdomdClient.Kpi dim in _obj.Kpis)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Kpi dim in _obj.Kpis)
                     {
                         list.Add(new Kpi(dim));
                     }
@@ -135,7 +131,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Kpi>> f = delegate
                     {
                         List<Kpi> list = new List<Kpi>();
-                        foreach (ExcelAdomdClient.Kpi dim in _objExcel.Kpis)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi dim in _objExcel.Kpis)
                         {
                             list.Add(new Kpi(dim));
                         }
@@ -153,7 +149,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     NamedSetCollection list = new NamedSetCollection();
-                    foreach (AsAdomdClient.NamedSet dim in _obj.NamedSets)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.NamedSet dim in _obj.NamedSets)
                     {
                         list.Add(new NamedSet(dim));
                     }
@@ -164,7 +160,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<NamedSetCollection> f = delegate
                     {
                         NamedSetCollection list = new NamedSetCollection();
-                        foreach (ExcelAdomdClient.NamedSet dim in _objExcel.NamedSets)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet dim in _objExcel.NamedSets)
                         {
                             list.Add(new NamedSet(dim));
                         }
@@ -178,14 +174,14 @@ namespace DaxStudio.AdomdClientWrappers
 
     public class CubeCollection
     {
-        private AsAdomdClient.CubeCollection _obj;
-        private ExcelAdomdClient.CubeCollection _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.CubeCollection _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection _objExcel;
 
-        public CubeCollection(AsAdomdClient.CubeCollection obj)
+        public CubeCollection(Microsoft.AnalysisServices.AdomdClient.CubeCollection obj)
         {
             _obj = obj;
         }
-        public CubeCollection(ExcelAdomdClient.CubeCollection obj)
+        public CubeCollection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection obj)
         {
             _objExcel = obj;
         }
@@ -194,14 +190,14 @@ namespace DaxStudio.AdomdClientWrappers
         {
             if (_obj != null)
             {
-                AsAdomdClient.CubeDef obj = _obj.Find(index);
+                Microsoft.AnalysisServices.AdomdClient.CubeDef obj = _obj.Find(index);
                 return obj == null ? null : new CubeDef(obj);
             }
             else
             {
                 ExcelAdoMdConnections.ReturnDelegate<CubeDef> f = delegate
                 {
-                    ExcelAdomdClient.CubeDef obj = _objExcel.Find(index);
+                    ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef obj = _objExcel.Find(index);
                     return obj == null ? null : new CubeDef(obj);
                 };
                 return f();
@@ -218,7 +214,7 @@ namespace DaxStudio.AdomdClientWrappers
                     {
                         return _obj.Count;
                     }
-                    catch (AsAdomdClient.AdomdConnectionException)
+                    catch (Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException)
                     {
                         throw new AdomdConnectionException(); //just to communicate what type of exception
                     }
@@ -231,7 +227,7 @@ namespace DaxStudio.AdomdClientWrappers
                         {
                             return _objExcel.Count;
                         }
-                        catch (ExcelAdomdClient.AdomdConnectionException)
+                        catch (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException)
                         {
                             throw new AdomdConnectionException(); //just to communicate what type of exception
                         }

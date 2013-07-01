@@ -1,0 +1,470 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5EFEFF14-3052-4DC1-B020-8E259062B899}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DaxStudio.UI</RootNamespace>
+    <AssemblyName>DaxStudio.UI</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug Standalone\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Standalone\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Accessibility">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="AvalonDock">
+      <HintPath>..\packages\AvalonDock.2.0.1746\lib\net40\AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.Aero">
+      <HintPath>..\packages\AvalonDock.2.0.1746\lib\net40\AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.Expression">
+      <HintPath>..\packages\AvalonDock.2.0.1746\lib\net40\AvalonDock.Themes.Expression.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.Metro">
+      <HintPath>..\packages\AvalonDock.2.0.1746\lib\net40\AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.VS2010">
+      <HintPath>..\packages\AvalonDock.2.0.1746\lib\net40\AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Caliburn.Micro">
+      <HintPath>..\packages\Caliburn.Micro.1.5.1\lib\net40\Caliburn.Micro.dll</HintPath>
+    </Reference>
+    <Reference Include="Fluent">
+      <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\Fluent.dll</HintPath>
+    </Reference>
+    <Reference Include="Gat.Controls.About">
+      <HintPath>..\packages\AboutBox.1.4.3.1\lib\net40\Gat.Controls.About.dll</HintPath>
+    </Reference>
+    <Reference Include="GongSolutions.Wpf.DragDrop">
+      <HintPath>..\packages\gong-wpf-dragdrop.0.1.3.6\lib\net40\GongSolutions.Wpf.DragDrop.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\packages\AvalonEdit.4.3.1.9430\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Microsoft.AnalysisServices.DLL</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Caliburn.Micro.1.5.1\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="AttachedProperties\ListViewExtenders.cs" />
+    <Compile Include="Behaviours\GridViewColumnResize.cs" />
+    <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
+    <Compile Include="Conventions\VisibilityBindingConvention.cs" />
+    <Compile Include="Converters\ActiveDocumentConverter.cs" />
+    <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
+    <Compile Include="Converters\DynamicGridViewConverter.cs" />
+    <Compile Include="Converters\ResourceLookupConverter.cs" />
+    <Compile Include="Events\ActivateDocumentEvent.cs" />
+    <Compile Include="Events\ActivateTrace.cs" />
+    <Compile Include="Events\LoadFileEvent.cs" />
+    <Compile Include="Events\OpenFileEvent.cs" />
+    <Compile Include="Events\TraceWatcherToggleEvent.cs" />
+    <Compile Include="Model\QueryTrace.cs" />
+    <Compile Include="Model\IQueryRunner.cs" />
+    <Compile Include="Model\IToolWindow.cs" />
+    <Compile Include="Model\ITraceWatcher.cs" />
+    <Compile Include="Model\ResultsTargetTimer.cs" />
+    <Compile Include="Model\ToolWindowBase.cs" />
+    <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
+    <Compile Include="Utils\DataSetExtensions.cs" />
+    <Compile Include="DaxStudioDockingManager.cs" />
+    <Compile Include="Events\ConnectionChangedEvent.cs" />
+    <Compile Include="Events\RunQueryEvent.cs" />
+    <Compile Include="Events\SaveDocumentEvent.cs" />
+    <Compile Include="Events\SendTextToEditor.cs" />
+    <Compile Include="Events\UpdateConnectionEvent.cs" />
+    <Compile Include="Model\IResultsTarget.cs" />
+    <Compile Include="Utils\DaxStudioLayoutStrategy.cs" />
+    <Compile Include="Utils\EventExtension.cs" />
+    <Compile Include="Utils\PaneStyleSelector.cs" />
+    <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
+    <Compile Include="ViewModels\DmvPaneViewModel.cs" />
+    <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
+    <Compile Include="Model\OutputMessage.cs" />
+    <Compile Include="Utils\InputBindingTrigger.cs" />
+    <Compile Include="Utils\DebugLogger.cs" />
+    <Compile Include="IShell.cs" />
+    <Compile Include="Utils\ImageConverter.cs" />
+    <Compile Include="Utils\RegistryHelper.cs" />
+    <Compile Include="RichTextBoxWatermarked.xaml.cs">
+      <DependentUpon>RichTextBoxWatermarked.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\ConnectionDialogViewModel.cs" />
+    <Compile Include="ViewModels\MetadataPaneViewModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewModels\OutputPaneViewModel.cs" />
+    <Compile Include="ViewModels\QueryResultsPaneViewModel.cs" />
+    <Compile Include="Model\ResultsTargetGrid.cs" />
+    <Compile Include="ViewModels\ServerTimesViewModel.cs" />
+    <Compile Include="ViewModels\ToolPaneBaseViewModel.cs" />
+    <Compile Include="ViewModels\DocumentTabViewModel.cs" />
+    <Compile Include="ViewModels\DocumentViewModel.cs" />
+    <Compile Include="Events\NewDocumentEvent.cs" />
+    <Compile Include="ViewModels\RibbonViewModel.cs" />
+    <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="ViewModels\TraceWatcherBaseViewModel.cs" />
+    <Compile Include="Views\ConnectionDialogView.xaml.cs">
+      <DependentUpon>ConnectionDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DmvPaneView.xaml.cs">
+      <DependentUpon>DmvPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionPaneView.xaml.cs">
+      <DependentUpon>FunctionPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DocumentTabView.xaml.cs">
+      <DependentUpon>DocumentTabView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DocumentView.xaml.cs">
+      <DependentUpon>DocumentView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MetadataPaneView.xaml.cs">
+      <DependentUpon>MetadataPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OutputPaneView.xaml.cs">
+      <DependentUpon>OutputPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\QueryPlanTraceView.xaml.cs">
+      <DependentUpon>QueryPlanTraceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\QueryResultsPaneView.xaml.cs">
+      <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RibbonView.xaml.cs">
+      <DependentUpon>RibbonView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ServerTimesView.xaml.cs">
+      <DependentUpon>ServerTimesView.xaml</DependentUpon>
+    </Compile>
+    <Resource Include="Resources\ResourceDictionaryMetadata.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Page Include="RichTextBoxWatermarked.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ConnectionDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DmvPaneView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\FunctionPaneView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DaxStudioTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DocumentTabView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DocumentView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MetadataPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OutputPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\QueryPlanTraceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\QueryResultsPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RibbonView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ServerTimesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ShellView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\button_white_help.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Column.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\DataSource.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Folder.ico" />
+    <Resource Include="Resources\Function.png" />
+    <Resource Include="Resources\Measure.png" />
+    <Resource Include="Resources\play.png" />
+    <Resource Include="Resources\PlayGrid.png" />
+    <Resource Include="Resources\Table.png" />
+    <Resource Include="Resources\run_icon.png" />
+    <Resource Include="Resources\question1.ico" />
+    <Resource Include="Resources\question_button.png" />
+    <Resource Include="Resources\PlayIco.bmp" />
+    <Resource Include="Resources\HiddenMeasure.png" />
+    <Resource Include="Resources\HiddenColumn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
+      <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
+      <Name>ADOTabular</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
+      <Project>{EE4788C1-DCA6-465F-8049-28CEACE6586F}</Project>
+      <Name>DAXEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
+      <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
+      <Name>DaxStudio.Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\DaxStudio.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\button_white_help1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DataSource1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\daxstudio-logo_32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\play1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PlayDiscard.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PlayGrid1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PlayStatic.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PlayTable.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PlayTable1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\question_button1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Table.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Folder.ico" />
+    <Resource Include="Images\Function.png" />
+    <Resource Include="Images\HiddenMeasure.png" />
+    <Resource Include="Images\Measure.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Column.png" />
+    <Resource Include="Images\DmvTable.png" />
+    <Resource Include="Images\HiddenColumn.png" />
+    <Resource Include="Images\HiddenTable.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\error.circle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\information.circle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\warning.triangle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\metro\model.png" />
+    <Resource Include="Images\metro\run.png" />
+    <Resource Include="Images\metro\timer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\metro\clipboard.paste.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\daxstudio-splashscreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\DaxStudioSplashScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\daxstudio-logo_250x250.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="daxstudio-logo_250x250.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

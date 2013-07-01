@@ -1,26 +1,20 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdConnection
     {
         private AdomdType _type;
-        private AsAdomdClient.AdomdConnection _conn;
-        private ExcelAdomdClient.AdomdConnection _connExcel;
+        private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
 
-        public AdomdConnection(AsAdomdClient.AdomdConnection obj)
+        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
         {
             _type = AdomdType.AnalysisServices;
             _conn = obj;
         }
-        public AdomdConnection(ExcelAdomdClient.AdomdConnection obj)
+        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
         {
             _type = AdomdType.Excel;
             _connExcel = obj;
@@ -31,13 +25,13 @@ namespace DaxStudio.AdomdClientWrappers
             _type = type;
             if (_type == AdomdType.AnalysisServices)
             {
-                _conn = new AsAdomdClient.AdomdConnection(connectionString);
+                _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
             }
             else
             {
                 ExcelAdoMdConnections.VoidDelegate f = delegate
                 {
-                    _connExcel = new ExcelAdomdClient.AdomdConnection(connectionString);
+                    _connExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
                 };
                 f();
             }
@@ -69,6 +63,7 @@ namespace DaxStudio.AdomdClientWrappers
 
         public void Open()
         {
+            
             if (_type == AdomdType.AnalysisServices)
             {
                 _conn.Open();
@@ -76,9 +71,9 @@ namespace DaxStudio.AdomdClientWrappers
             else
             {
                 ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _connExcel.Open();
-                };
+                    {
+                        _connExcel.Open();
+                    };
                 f();
             }
         }
@@ -301,13 +296,13 @@ namespace DaxStudio.AdomdClientWrappers
         {
             if (_type == AdomdType.AnalysisServices)
             {
-                AsAdomdClient.AdomdRestrictionCollection coll = new AsAdomdClient.AdomdRestrictionCollection();
+                Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                 if (restrictions != null)
                 {
                 
                     foreach (AdomdRestriction res in restrictions)
                     {
-                        coll.Add(new AsAdomdClient.AdomdRestriction(res.Name, res.Value));
+                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
                     }
                 }
                 return _conn.GetSchemaDataSet(schemaName, coll);
@@ -316,12 +311,12 @@ namespace DaxStudio.AdomdClientWrappers
             {
                 ExcelAdoMdConnections.ReturnDelegate<DataSet> f = delegate
                 {
-                    ExcelAdomdClient.AdomdRestrictionCollection coll = new ExcelAdomdClient.AdomdRestrictionCollection();
+                    ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                     if (restrictions != null)
                     {
                         foreach (AdomdRestriction res in restrictions)
                         {
-                            coll.Add(new ExcelAdomdClient.AdomdRestriction(res.Name, res.Value));
+                            coll.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
                         }
                     }
                     return _connExcel.GetSchemaDataSet(schemaName, coll);

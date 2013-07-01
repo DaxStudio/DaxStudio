@@ -4,31 +4,29 @@ namespace ADOTabular
 {
     public class ADOTabularParameter
     {
-        private readonly DataRow _dr;
+        
         public ADOTabularParameter(DataRow dr)
         {
-            _dr = dr;
+            Name = dr["NAME"].ToString();
+            Description = dr["DESCRIPTION"].ToString();
+            Optional = bool.Parse(dr["OPTIONAL"].ToString());
+            Repeatable = bool.Parse(dr["REAPEATABLE"].ToString());
+            RepeatGroup = int.Parse(dr["REPEATGROUP"].ToString());
         }
 
-        public string Name
+        public ADOTabularParameter(string name, string description, bool optional, bool repeatable, int repeatGroup)
         {
-            get {return _dr["NAME"].ToString();}
+            Name = name;
+            Description = description;
+            Optional = optional;
+            Repeatable = repeatable;
+            RepeatGroup = repeatGroup;
         }
-        public string Description
-        {
-            get {return _dr["DESCRIPTION"].ToString();}
-        }
-        public bool Optional
-        {
-            get {return bool.Parse(_dr["OPTIONAL"].ToString());}
-        }
-        public bool Repeatable
-        {
-            get {return bool.Parse(_dr["REAPEATABLE"].ToString());}
-        }
-        public int RepeatGroup
-        {
-            get {return int.Parse(_dr["REPEATGROUP"].ToString());}
-        }
+
+        public string Name { get; private set; }
+        public string Description { get; private set; }
+        public bool Optional { get; private set; }
+        public bool Repeatable { get; private set; }
+        public int RepeatGroup { get; private set; }
     }
 }

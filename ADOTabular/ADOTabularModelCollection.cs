@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+
 //using Microsoft.AnalysisServices.AdomdClient;
-using DaxStudio.AdomdClientWrappers;
 
 namespace ADOTabular
 {
@@ -12,11 +11,11 @@ namespace ADOTabular
     {
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularDatabase  _database;
-        private DataTable _dtModels;
         public ADOTabularModelCollection(ADOTabularConnection adoTabConn, ADOTabularDatabase database)
         {
             _adoTabConn = adoTabConn;
             _database = database;
+            _models = _adoTabConn.Visitor.Visit(this);
         }
 
         public ADOTabularDatabase Database
@@ -24,39 +23,63 @@ namespace ADOTabular
             get { return _database; }
         }
 
-
-        private DataTable GetModelsTable()
+        public ADOTabularModel BaseModel
         {
-            if (_dtModels == null)
-            {
-            var resColl = new AdomdRestrictionCollection {{"CUBE_SOURCE", 1}};
-                _dtModels = _adoTabConn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
-            }
-            return _dtModels;
+            get
+            { return _models.Values.FirstOrDefault(m => !m.IsPerspective); }
         }
 
         public ADOTabularModel this[string modelName]
         {
             get
             {
-                return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
+                return _models[modelName];
+                //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
                 // todo - should we return a model not found exception instead of null?
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public ADOTabularModel this[int index]
         {
-            return GetEnumerator();
-        }
-
-        public IEnumerator<ADOTabularModel> GetEnumerator()
-        {
-            foreach (DataRow dr in GetModelsTable().Rows)
+            get
             {
-                yield return new ADOTabularModel(_adoTabConn, dr);
+                int i = 0;
+                foreach (var m in _models.Values)
+                {
+                    if (i == index)
+                    {
+                        return m;
+                    }
+                    i++;
+                }
+                    
+                throw new IndexOutOfRangeException();
+
+                //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
+                // todo - should we return a model not found exception instead of null?
             }
         }
 
+        public int Count
+        {
+            get { return _models.Count; }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator(); 
+        }
+
+        private Dictionary<string,ADOTabularModel> _models;  
+
+        public IEnumerator<ADOTabularModel> GetEnumerator()
+        {
+            foreach (ADOTabularModel m in _models.Values)
+            {
+                yield return m;
+
+            }   
+        }
         
     }
 }

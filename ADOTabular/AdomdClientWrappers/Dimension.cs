@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Dimension
     {
-        private AsAdomdClient.Dimension _obj;
-        private ExcelAdomdClient.Dimension _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.Dimension _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension _objExcel;
 
-        public Dimension(AsAdomdClient.Dimension obj)
+        public Dimension(Microsoft.AnalysisServices.AdomdClient.Dimension obj)
         {
             _obj = obj;
         }
-        public Dimension(ExcelAdomdClient.Dimension obj)
+        public Dimension(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension obj)
         {
             _objExcel = obj;
         }
@@ -29,7 +24,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Hierarchy> list = new List<Hierarchy>();
-                    foreach (AsAdomdClient.Hierarchy dim in _obj.Hierarchies)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Hierarchy dim in _obj.Hierarchies)
                     {
                         list.Add(new Hierarchy(dim));
                     }
@@ -40,7 +35,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Hierarchy>> f = delegate
                     {
                         List<Hierarchy> list = new List<Hierarchy>();
-                        foreach (ExcelAdomdClient.Hierarchy dim in _objExcel.Hierarchies)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy dim in _objExcel.Hierarchies)
                         {
                             list.Add(new Hierarchy(dim));
                         }
@@ -134,7 +129,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     PropertyCollection coll = new PropertyCollection();
-                    foreach (AsAdomdClient.Property prop in _obj.Properties)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Property prop in _obj.Properties)
                     {
                         coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                     }
@@ -145,7 +140,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<PropertyCollection> f = delegate
                     {
                         PropertyCollection coll = new PropertyCollection();
-                        foreach (ExcelAdomdClient.Property prop in _objExcel.Properties)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Property prop in _objExcel.Properties)
                         {
                             coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                         }

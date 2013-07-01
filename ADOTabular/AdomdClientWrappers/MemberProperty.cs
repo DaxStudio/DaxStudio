@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class MemberProperty
     {
-        private AsAdomdClient.MemberProperty _obj;
-        private ExcelAdomdClient.MemberProperty _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.MemberProperty _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberProperty _objExcel;
 
-        public MemberProperty(AsAdomdClient.MemberProperty obj)
+        public MemberProperty(Microsoft.AnalysisServices.AdomdClient.MemberProperty obj)
         {
             _obj = obj;
         }
-        public MemberProperty(ExcelAdomdClient.MemberProperty obj)
+        public MemberProperty(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberProperty obj)
         {
             _objExcel = obj;
         }

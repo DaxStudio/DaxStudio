@@ -1,23 +1,19 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Hierarchy
     {
-        private AsAdomdClient.Hierarchy _obj;
-        private ExcelAdomdClient.Hierarchy _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.Hierarchy _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy _objExcel;
 
-        public Hierarchy(AsAdomdClient.Hierarchy obj)
+        public Hierarchy(Microsoft.AnalysisServices.AdomdClient.Hierarchy obj)
         {
             _obj = obj;
         }
-        public Hierarchy(ExcelAdomdClient.Hierarchy obj)
+        public Hierarchy(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy obj)
         {
             _objExcel = obj;
         }
@@ -116,19 +112,19 @@ namespace DaxStudio.AdomdClientWrappers
                 }
             }
         }
-        public AsAdomdClient.HierarchyOrigin HierarchyOrigin
+        public Microsoft.AnalysisServices.AdomdClient.HierarchyOrigin HierarchyOrigin
         {
             get
             {
                 if (_obj != null)
                 {
-                    return (AsAdomdClient.HierarchyOrigin)_obj.HierarchyOrigin;
+                    return (Microsoft.AnalysisServices.AdomdClient.HierarchyOrigin)_obj.HierarchyOrigin;
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<AsAdomdClient.HierarchyOrigin> f = delegate
+                    ExcelAdoMdConnections.ReturnDelegate<HierarchyOrigin> f = delegate
                     {
-                        return (AsAdomdClient.HierarchyOrigin)_objExcel.HierarchyOrigin;
+                        return (Microsoft.AnalysisServices.AdomdClient.HierarchyOrigin)_objExcel.HierarchyOrigin;
                     };
                     return f();
                 }
@@ -142,7 +138,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     List<Level> list = new List<Level>();
-                    foreach (AsAdomdClient.Level level in _obj.Levels)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.Level level in _obj.Levels)
                     {
                         list.Add(new Level(level));
                     }
@@ -153,7 +149,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<List<Level>> f = delegate
                     {
                         List<Level> list = new List<Level>();
-                        foreach (ExcelAdomdClient.Level level in _objExcel.Levels)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level level in _objExcel.Levels)
                         {
                             list.Add(new Level(level));
                         }

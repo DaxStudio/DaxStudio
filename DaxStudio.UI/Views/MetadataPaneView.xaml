@@ -1,0 +1,104 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" >
+    <UserControl.Resources>
+        <conv:ResourceLookupConverter x:Key="MetadataIcons">
+            <ResourceDictionary>
+                <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
+                <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenTable.png"/>
+                <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
+                <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenColumn.png" />
+                <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
+                <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
+                <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/DmvTable.png" />
+                <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+    </UserControl.Resources>
+
+    <Grid >
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ComboBox Grid.Row="0" 
+                  IsEditable="False"
+                  IsEnabled="{Binding IsConnected, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                  SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  
+                  Style="{DynamicResource MetroComboBox}"
+                   IsSynchronizedWithCurrentItem="True"
+                  >
+            <!--  -->
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DaxStudio.UI;component/Resources/Table.png" Margin="2,1,5,1"/>
+                        <TextBlock Text="{Binding Name}"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+            
+        </ComboBox>
+    
+        <!--<ListView ItemsSource="{Binding Tables,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></ListView>-->
+
+        <TreeView Grid.Row="1" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
+                  dd:DragDrop.IsDragSource="True"
+                  dd:DragDrop.IsDropTarget="False" 
+                  dd:DragDrop.DragHandler="{Binding}"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"
+                  >
+            <!--" dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">>-->
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Columns}">
+                        <!-- Table Template -->
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                        <TextBlock  Text="{Binding Caption}" >
+                            <TextBlock.ToolTip>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                    <TextBlock Text="{Binding Name}"></TextBlock><TextBlock Text="{Binding DataType}"></TextBlock>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Description}"></TextBlock>
+                            </StackPanel>
+                        </TextBlock.ToolTip>    
+                        </TextBlock>    
+                    </StackPanel>
+                    <!-- Column Template -->
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" >
+                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
+                                <TextBlock Text="{Binding Caption}">
+                                    <TextBlock.ToolTip>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                    <TextBlock Text="{Binding Name}"></TextBlock><TextBlock Text="{Binding DataType}"></TextBlock>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Description}"></TextBlock>
+                            </StackPanel>
+                        </TextBlock.ToolTip>    
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        
+    
+    </Grid>
+</UserControl>

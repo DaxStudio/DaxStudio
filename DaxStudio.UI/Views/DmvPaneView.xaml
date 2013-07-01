@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.DmvPaneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" >
+    <UserControl.Resources>
+        <BitmapImage x:Key="DmvQuery" UriSource="pack://application:,,,/DaxStudio.UI;component/images/DmvTable.png"/>
+    </UserControl.Resources>
+    
+    <Grid >
+        <!--Style="{StaticResource DaxMetadataIcons}"-->
+        <!--
+        <Grid.Style>
+        <Style TargetType="Image">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ColumnType}" Value="Column"></Condition>
+                        <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Source" Value="Resources/Column.png"></Setter>
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding ColumnType}" Value="Measure"></Condition>
+                        <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Source" Value="Resources/Measure.png"></Setter>
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        </Grid.Style> -->
+        
+        <ListView ItemsSource="{Binding DmvQueries}" 
+                  dd:DragDrop.IsDragSource="True"
+                  dd:DragDrop.IsDropTarget="False" 
+                  dd:DragDrop.DragHandler="{Binding}"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource DmvQuery}" Margin="1,1,5,1"></Image>
+                        <TextBlock Text="{Binding Caption}"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    
+    
+    </Grid>
+</UserControl>

@@ -68,6 +68,22 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug Standalone\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\ADOTabular.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -114,14 +130,24 @@
     <Compile Include="ADOTabularDynamicManagementView.cs" />
     <Compile Include="ADOTabularDynamicManagementViewCollection.cs" />
     <Compile Include="ADOTabularFunction.cs" />
-    <Compile Include="ADOTabularFunctionCollection.cs" />
+    <Compile Include="ADOTabularFunctionCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ADOTabularFunctionGroup.cs" />
+    <Compile Include="ADOTabularFunctionGroupCollection.cs" />
+    <Compile Include="ADOTabularMetadataImages.cs" />
     <Compile Include="ADOTabularModel.cs" />
     <Compile Include="ADOTabularModelCollection.cs" />
     <Compile Include="ADOTabularParameter.cs" />
     <Compile Include="ADOTabularParameterCollection.cs" />
     <Compile Include="ADOTabularTable.cs" />
     <Compile Include="ADOTabularTableCollection.cs" />
+    <Compile Include="IADOTabularObject.cs" />
+    <Compile Include="MetaDataVisitorCSDL.cs" />
+    <Compile Include="IMetaDataVisitor.cs" />
+    <Compile Include="MetaDataVisitorADOMD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VersionComparisonExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

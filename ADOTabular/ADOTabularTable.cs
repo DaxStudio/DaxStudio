@@ -2,7 +2,7 @@
 
 namespace ADOTabular
 {
-    public class ADOTabularTable
+    public class ADOTabularTable :IADOTabularObject
     {
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel _model;
@@ -17,10 +17,20 @@ namespace ADOTabular
             _model = model;
         }
 
-        public string Name
+        public ADOTabularTable(ADOTabularConnection adoTabConn, string name, string description, bool isVisible)
+        {
+            _adoTabConn = adoTabConn;
+            Caption = name;
+            Description = description;
+            IsVisible = isVisible;
+        }
+
+        public string DaxName
         {
             get { return string.Format("'{0}'", Caption); }
         }
+
+        public string InternalId { get; set; }
 
         public string Caption { get; private set; }
 
@@ -36,6 +46,11 @@ namespace ADOTabular
         public ADOTabularModel Model
         {
             get { return _model;}
+        }
+
+        public MetadataImages MetadataImage
+        {
+            get { return IsVisible ? MetadataImages.Table : MetadataImages.HiddenTable; }
         }
     }
 }

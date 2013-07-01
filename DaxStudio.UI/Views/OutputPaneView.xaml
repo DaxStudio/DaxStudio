@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.OutputPaneView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
+        <conv:ResourceLookupConverter x:Key="Icons">
+            <ResourceDictionary>
+                <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/information.circle.png  "/>
+                <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
+                <BitmapImage x:Key="Error"       UriSource="pack://application:,,,/DaxStudio.UI;component/images/error.circle.png" />
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+        <conv:ResourceLookupConverter x:Key="OutputColor">
+            <ResourceDictionary>
+                <SolidColorBrush x:Key="Information"  Color="Black"></SolidColorBrush>
+                <SolidColorBrush x:Key="Warning"  Color="DarkOrange"></SolidColorBrush>
+                <SolidColorBrush x:Key="Error"  Color="Red"></SolidColorBrush>
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+    </UserControl.Resources>
+    <Grid>
+        <ListView x:Name="Messages" HorizontalAlignment="Stretch"  
+            behaviours:GridViewColumnResize.Enabled="True"
+            extenders:ListViewExtenders.AutoScrollToEnd="True">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Width="20" Height="20" Source="{Binding MessageType, Converter={StaticResource Icons}}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}" behaviours:GridViewColumnResize.Width="58"></GridViewColumn>
+                    <GridViewColumn Header="Duration"  Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Right">
+                                <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Duration}"></TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Text" 
+                                    behaviours:GridViewColumnResize.Width="*1">                        
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate x:Name="Text">
+                                <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" TextTrimming="None" 
+                                           Text="{Binding Text}"
+                                           Foreground="{Binding MessageType, Converter={StaticResource OutputColor}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                   
+                </GridView>
+            </ListView.View>
+        </ListView>           
+    </Grid>
+</UserControl>

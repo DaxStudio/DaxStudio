@@ -1,14 +1,11 @@
 using System;
 using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     //Microsoft.Excel.AdomdClient.dll path logic from Microsoft.ReportingServices.AdHoc.Excel.Client.ExcelAdoMdConnections
     //Microsoft.Excel.AdomdClient.dll assembly loading improved over that approach

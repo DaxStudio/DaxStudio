@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using ADOTabular;
-using DaxStudio.AdomdClientWrappers;
+using ADOTabular.AdomdClientWrappers;
+using DaxStudio;
 using Microsoft.Office.Interop.Excel;
 //using Microsoft.Windows.Controls.Ribbon;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -34,10 +35,10 @@ namespace DaxStudio
             PopulateOutputOptions(_fcbOutputTo);
         }
 
-        public ExcelHelper(Excel.Application app, ToolStripComboBox tcbOutputTo)
+        public ExcelHelper(Excel.Application app)//, ToolStripComboBox tcbOutputTo)
         {
             _app = app;
-            _tcbOutputTo = tcbOutputTo;
+            //_tcbOutputTo = tcbOutputTo;
             _app.WorkbookActivate += AppWorkbookActivate;
             PopulateOutputOptions(_tcbOutputTo);
         }
@@ -117,7 +118,7 @@ namespace DaxStudio
             outputTo.Items.Add(DAX_RESULTS_SHEET);
             foreach (Worksheet ws in wb.Worksheets)
             {
-                outputTo.Items.Add(ws.Name);
+                outputTo.Items.Add(ws.Caption);
             }
             outputTo.Items.Add(NEW_SHEET);
             // set the default 

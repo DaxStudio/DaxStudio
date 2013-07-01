@@ -6,7 +6,7 @@ namespace ADOTabular
 {
     public class ADOTabularDynamicManagementViewCollection : IEnumerable<ADOTabularDynamicManagementView>
     {
-        private DataSet _dsDatabases;
+        private DataSet _dsDmvs;
         private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularDynamicManagementViewCollection(ADOTabularConnection adoTabConn)
         {
@@ -16,11 +16,11 @@ namespace ADOTabular
 
         private DataTable GetDmvTable()
         {
-            if (_dsDatabases == null)
+            if (_dsDmvs == null)
             {
-                _dsDatabases = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
+                _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
             }
-            return _dsDatabases.Tables[0];
+            return _dsDmvs.Tables[0];
         }
 
         public IEnumerator<ADOTabularDynamicManagementView> GetEnumerator()

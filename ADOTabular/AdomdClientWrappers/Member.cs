@@ -1,23 +1,18 @@
 ﻿extern alias ExcelAdomdClientReference;
-
-using System;
 using System.Collections.Generic;
-using System.Text;
-using AsAdomdClient = Microsoft.AnalysisServices.AdomdClient;
-using ExcelAdomdClient = ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient;
 
-namespace DaxStudio.AdomdClientWrappers
+namespace ADOTabular.AdomdClientWrappers
 {
     public class Member
     {
-        private AsAdomdClient.Member _obj;
-        private ExcelAdomdClient.Member _objExcel;
+        private Microsoft.AnalysisServices.AdomdClient.Member _obj;
+        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member _objExcel;
 
-        public Member(AsAdomdClient.Member obj)
+        public Member(Microsoft.AnalysisServices.AdomdClient.Member obj)
         {
             _obj = obj;
         }
-        public Member(ExcelAdomdClient.Member obj)
+        public Member(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member obj)
         {
             _objExcel = obj;
         }
@@ -105,7 +100,7 @@ namespace DaxStudio.AdomdClientWrappers
                 if (_obj != null)
                 {
                     MemberPropertyCollection coll = new MemberPropertyCollection();
-                    foreach (AsAdomdClient.MemberProperty member in _obj.MemberProperties)
+                    foreach (Microsoft.AnalysisServices.AdomdClient.MemberProperty member in _obj.MemberProperties)
                     {
                         coll.Add(new MemberProperty(member));
                     }
@@ -116,7 +111,7 @@ namespace DaxStudio.AdomdClientWrappers
                     ExcelAdoMdConnections.ReturnDelegate<MemberPropertyCollection> f = delegate
                     {
                         MemberPropertyCollection coll = new MemberPropertyCollection();
-                        foreach (ExcelAdomdClient.MemberProperty member in _objExcel.MemberProperties)
+                        foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberProperty member in _objExcel.MemberProperties)
                         {
                             coll.Add(new MemberProperty(member));
                         }

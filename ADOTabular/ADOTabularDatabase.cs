@@ -1,4 +1,6 @@
-﻿namespace ADOTabular
+﻿using System;
+
+namespace ADOTabular
 {
     public class ADOTabularDatabase
     {
@@ -25,6 +27,23 @@
         public ADOTabularConnection Connection
         {
             get { return _adoTabConn; }
+        }
+
+        public void ClearCache()
+        {
+            _adoTabConn.ExecuteCommand(String.Format(@"
+                <Batch xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+                   <ClearCache>
+                     <Object>
+                       <DatabaseID>{0}</DatabaseID>   
+                    </Object>
+                   </ClearCache>
+                 </Batch>
+                ", _adoTabConn.Database.Name));
+        }
+        public MetadataImages MetadataImage
+        {
+            get { return MetadataImages.Database; }
         }
     }
 }

@@ -11,8 +11,6 @@ namespace ADOTabular
         public ADOTabularParameterCollection(DataRow[] paramInfo)
         {
             _paramInfo = paramInfo;
-            
-
         }
 
         public IEnumerator<ADOTabularParameter> GetEnumerator()
