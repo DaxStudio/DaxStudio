@@ -186,6 +186,7 @@
     <Compile Include="Model\ITraceWatcher.cs" />
     <Compile Include="Model\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
+    <Compile Include="Model\TraceEventFactory.cs" />
     <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
     <Compile Include="Utils\DataSetExtensions.cs" />
     <Compile Include="DaxStudioDockingManager.cs" />

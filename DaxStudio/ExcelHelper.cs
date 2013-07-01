@@ -3,6 +3,7 @@ using System.Linq;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio;
+using DaxStudio.UI;
 using Microsoft.Office.Interop.Excel;
 //using Microsoft.Windows.Controls.Ribbon;
 using Excel = Microsoft.Office.Interop.Excel;

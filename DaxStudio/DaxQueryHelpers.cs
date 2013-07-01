@@ -11,12 +11,12 @@ namespace DaxStudio
     public static class DaxQueryHelpers
     {
         
-        public static void DaxQueryTable(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow output)
+        public static void DaxQueryTable(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery)
         {
-            DaxQueryTable2010(excelSheet, connection, daxQuery, output);
+            DaxQueryTable2010(excelSheet, connection, daxQuery);
         }
 
-        public static void DaxQueryTable2010(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IOutputWindow output)
+        public static void DaxQueryTable2010(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery)
         {
             ListObject lo;
             if (excelSheet.ListObjects.Count > 0)

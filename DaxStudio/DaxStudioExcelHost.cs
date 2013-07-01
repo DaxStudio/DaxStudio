@@ -37,12 +37,12 @@ namespace DaxStudio
         {
             return false;
         }
-        /*
+        
         public string BuildPowerPivotConnection()
         {
             throw new NotImplementedException();
         }
-        */
+        
         public string WorkbookName {
             get { return _workbook.FullName; }
             set {}

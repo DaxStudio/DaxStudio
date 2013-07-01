@@ -16,13 +16,21 @@ namespace DaxStudio.UI
 	public class AppBootstrapper : Bootstrapper<IShell>
 	{
 		CompositionContainer _container;
-
-		/// <summary>
+        /*
+        public AppBootstrapper():base()
+        {
+        }
+        */
+	    public AppBootstrapper(bool useApplication) : base(useApplication)
+	    {
+	    }
+        
+	    /// <summary>
 		/// By default, we are configured to use MEF
 		/// </summary>
 		protected override void Configure() {
 
-            SplashScreen splashScreen = new SplashScreen(System.Reflection.Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
+            var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
             splashScreen.Show(true);
 
 		    var catalog = new AggregateCatalog(

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Windows.Forms.Integration;
-using System.Windows.Threading;
-using DaxStudio;
+using Caliburn.Micro;
 using DaxStudio.UI;
+using DaxStudio.UI.ViewModels;
 using Microsoft.Office.Tools.Ribbon;
 
 namespace DaxStudio
@@ -45,15 +43,25 @@ namespace DaxStudio
              * */
         }
 // TODO - WPF Window
-        DaxStudioWindow _wpfWindow;
+        //DaxStudioWindow _wpfWindow;
         private void ShowWpfForm()
         {
-                
+            var bootstrapper = new AppBootstrapper(false);
+            bootstrapper.Start();
+
+            var windowManager = IoC.Get<IWindowManager>();
+            var eventAggregator = IoC.Get<IEventAggregator>();
+            var ribbonViewModel = IoC.Get<RibbonViewModel>();
+            var conductor = IoC.Get<IConductor>();
+            windowManager.ShowDialog(new ShellViewModel(windowManager,eventAggregator, ribbonViewModel, conductor  ));
+
+            /*
             if (_wpfWindow != null )
             {
                 _wpfWindow.Close();
                 _wpfWindow = null;
             }
+             */ 
             //_wpfWindow = new DaxStudioWindow(Globals.ThisAddIn.Application);
                 //_wpfWindow.Application = Globals.ThisAddIn.Application;
                 // use WindowInteropHelper to set the Owner of our WPF window to the Excel application window
@@ -64,7 +72,7 @@ namespace DaxStudio
             
 
             // show our window
-            UserForm.ShowUserForm(new DaxStudioExcelHost(Globals.ThisAddIn.Application)); //, hwndOwner);
+            //UserForm.ShowUserForm(new DaxStudioExcelHost(Globals.ThisAddIn.Application)); //, hwndOwner);
             //_wpfWindow.Show();
             
         }
