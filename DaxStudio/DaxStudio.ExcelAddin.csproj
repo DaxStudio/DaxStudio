@@ -165,7 +165,7 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Exel 2013|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Excel 2013|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug Exel 2013\</OutputPath>
     <DefineConstants>VSTO40;DEBUG;TRACE</DefineConstants>
@@ -313,6 +313,7 @@
     <Compile Include="DaxStudioRibbon.Designer.cs">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </Compile>
+    <Compile Include="ResultTargets\ResultsTargetGrid.cs" />
     <Compile Include="Ribbon.cs">
       <XmlRibbon>true</XmlRibbon>
     </Compile>

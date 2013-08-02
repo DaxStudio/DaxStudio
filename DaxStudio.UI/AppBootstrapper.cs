@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using DaxStudio.UI.ViewModels;
@@ -16,45 +17,60 @@ namespace DaxStudio.UI
 	public class AppBootstrapper : Bootstrapper<IShell>
 	{
 		CompositionContainer _container;
-        /*
-        public AppBootstrapper():base()
+	    private Assembly _hostAssembly;
+	    /*
+        public AppBootstrapper():base(true)
         {
         }
         */
-	    public AppBootstrapper(bool useApplication) : base(useApplication)
+	    public AppBootstrapper(Assembly hostAssembly, bool useApplication) : base(useApplication)
 	    {
+	        _hostAssembly = hostAssembly;
+            
 	    }
         
+        protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            base.OnUnhandledException(sender, e);
+            Debug.WriteLine(e.Exception);
+        }
 	    /// <summary>
 		/// By default, we are configured to use MEF
 		/// </summary>
 		protected override void Configure() {
+            try
+            {
+                var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
+                splashScreen.Show(true);
+	        
+	            var catalog = new AggregateCatalog(
+	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
+	                );
+	            _container = new CompositionContainer(catalog);
+	            var batch = new CompositionBatch();
 
-            var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
-            splashScreen.Show(true);
+	            batch.AddExportedValue<IWindowManager>(new WindowManager());
+	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());
+	            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
+	            batch.AddExportedValue<Func<IWindowManager, IEventAggregator, DocumentViewModel>>(
+	                (w, e) => _container.GetExportedValue<DocumentViewModel>());
+	            batch.AddExportedValue(_container);
+	            batch.AddExportedValue(catalog);
 
-		    var catalog = new AggregateCatalog(
-		        AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
-		        );
-            _container = new CompositionContainer(catalog);
-			var batch = new CompositionBatch();
-            
-			batch.AddExportedValue<IWindowManager>(new WindowManager());
-			batch.AddExportedValue<IEventAggregator>(new EventAggregator());
-            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
-            batch.AddExportedValue<Func<IWindowManager,IEventAggregator, DocumentViewModel>>((w,e) => _container.GetExportedValue<DocumentViewModel>());
-			batch.AddExportedValue(_container);
-		    batch.AddExportedValue(catalog);
+	            _container.Compose(batch);
 
-			_container.Compose(batch);
+	            // Add AvalonDock binding convetions
+	            AvalonDockConventions.Install();
 
-            // Add AvalonDock binding convetions
-            AvalonDockConventions.Install();
-		    
-            // TODO - not working
-            //VisibilityBindingConvention.Install();
+	            // TODO - not working
+	            //VisibilityBindingConvention.Install();
 
-            LogManager.GetLog = type => new DebugLogger(type);
+	            LogManager.GetLog = type => new DebugLogger(type);
+	        }
+	        catch (Exception e)
+	        {
+	            Debug.WriteLine(e);
+	        }
 		}
 
 		protected override object GetInstance(Type serviceType, string key)
@@ -81,10 +97,19 @@ namespace DaxStudio.UI
         // This override causes Caliburn Micro to pass this Assembly to MEF
         protected override IEnumerable<Assembly> SelectAssemblies()
         {
-            return new[] {
-                Assembly.GetExecutingAssembly()
-                ,Assembly.GetEntryAssembly()
-            };
+            var type = typeof(DaxStudio.Interfaces.IDaxStudioHost);
+            var hostType = AppDomain.CurrentDomain.GetAssemblies().ToList()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => type.IsAssignableFrom(p))
+                .FirstOrDefault();
+            var hostAssembly = Assembly.GetAssembly(hostType);
+
+            return AssemblySource.Instance.Any() ?
+                new Assembly[] { } : 
+                new[] {
+                    Assembly.GetExecutingAssembly()
+                    ,hostAssembly
+                };
         }
 
 

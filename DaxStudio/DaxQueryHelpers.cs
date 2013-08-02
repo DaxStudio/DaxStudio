@@ -10,7 +10,7 @@ namespace DaxStudio
 {
     public static class DaxQueryHelpers
     {
-        
+        /*
         public static void DaxQueryTable(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery)
         {
             DaxQueryTable2010(excelSheet, connection, daxQuery);
@@ -82,23 +82,23 @@ namespace DaxStudio
             //var c = ((Workbook)excelSheet.Parent).Connections.Add("DaxStudio", "DaxStudio Conection", connStr, daxQuery, (dynamic)8);
             //lo.QueryTable.Connection = c;
 
-            /*
-             With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
-        Connections(". NSW_Crime Offences"), Destination:=Range("$C$1")).TableObject
-        .RowNumbers = False
-        .PreserveFormatting = True
-        .RefreshStyle = 1
-        .AdjustColumnWidth = True
-        .ListObject.DisplayName = "Table_Offences"
-        .Refresh
-    End With
-    Range("D2").Select
-    With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
-        .CommandText = Array("evaluate values(Offences[lga])")
-        .CommandType = xlCmdDAX
-    End With
-    ActiveWorkbook.Connections("ModelConnection_Offences").Refresh
-             */
+            
+    //         With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+    //    Connections(". NSW_Crime Offences"), Destination:=Range("$C$1")).TableObject
+    //    .RowNumbers = False
+    //    .PreserveFormatting = True
+    //    .RefreshStyle = 1
+    //    .AdjustColumnWidth = True
+    //    .ListObject.DisplayName = "Table_Offences"
+    //    .Refresh
+    //End With
+    //Range("D2").Select
+    //With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
+    //    .CommandText = Array("evaluate values(Offences[lga])")
+    //    .CommandType = xlCmdDAX
+    //End With
+    //ActiveWorkbook.Connections("ModelConnection_Offences").Refresh
+            
             Workbook wb = excelSheet.Parent;
             WorkbookConnection wc = null;
             foreach (WorkbookConnection c in wb.Connections)
@@ -129,32 +129,33 @@ namespace DaxStudio
                 lo.TableObject.WorkbookConnection.OLEDBConnection.CommandText = cmds;
                 lo.TableObject.WorkbookConnection.OLEDBConnection.CommandType = XlCmdType.xlCmdDAX;
 
-                /*
-                var c = ((Workbook)excelSheet.Parent).Connections["LinkedTable_Population"];
-                lo = excelSheet.ListObjects.Add(XlListObjectSourceType.xlSrcQuery, c, Type.Missing,
-                                                XlYesNoGuess.xlGuess, excelSheet.Range["$A$1"]);
-                */
+                
+                //var c = ((Workbook)excelSheet.Parent).Connections["LinkedTable_Population"];
+                //lo = excelSheet.ListObjects.Add(XlListObjectSourceType.xlSrcQuery, c, Type.Missing,
+                //                                XlYesNoGuess.xlGuess, excelSheet.Range["$A$1"]);
+                
             }
             //System.Runtime.InteropServices.COMException
             //{"Exception from HRESULT: 0x800401A8"}
 
             //, "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
             //, @"OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-            /*  
-              With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
-          Connections("LinkedTable_Sales"), Destination:=Range("$A$13")).TableObject
-          .RowNumbers = False
-          .PreserveFormatting = True
-          .RefreshStyle = 1
-          .AdjustColumnWidth = True
-          .ListObject.DisplayName = "Table_Sales_1"
-          .Refresh
-      End With
-      With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
-          .CommandText = Array("EVALUATE Sales")
-          .CommandType = xlCmdDAX
-      End With
-              */
+            
+      
+      //        With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+      //    Connections("LinkedTable_Sales"), Destination:=Range("$A$13")).TableObject
+      //    .RowNumbers = False
+      //    .PreserveFormatting = True
+      //    .RefreshStyle = 1
+      //    .AdjustColumnWidth = True
+      //    .ListObject.DisplayName = "Table_Sales_1"
+      //    .Refresh
+      //End With
+      //With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
+      //    .CommandText = Array("EVALUATE Sales")
+      //    .CommandType = xlCmdDAX
+      //End With
+      //        
 
 
             //lo.QueryTable.CommandType = (XlCmdType)8; // xlCmdDAX
@@ -220,6 +221,6 @@ namespace DaxStudio
             var cmt = r.AddComment(string.Format("{0}\n{1}", cmtPrefix,daxQuery));
             cmt.Shape.TextFrame.Characters(cmtPrefix.Length).Font.Bold = MsoTriState.msoFalse;
         }
-        
+        */
     }
 }

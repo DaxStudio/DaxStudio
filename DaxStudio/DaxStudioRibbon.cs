@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Caliburn.Micro;
 using DaxStudio.UI;
 using DaxStudio.UI.ViewModels;
@@ -44,9 +45,12 @@ namespace DaxStudio
         }
 // TODO - WPF Window
         //DaxStudioWindow _wpfWindow;
-        private void ShowWpfForm()
+        private static void ShowWpfForm()
         {
-            var bootstrapper = new AppBootstrapper(false);
+            //var appProv = IoC.GetInstance( typeof(ApplicationProvider),"") as ApplicationProvider;
+            //appProv.ExcelApplication = Globals.ThisAddIn.Application;
+
+            var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioExcelHost)), false);
             bootstrapper.Start();
 
             var windowManager = IoC.Get<IWindowManager>();
