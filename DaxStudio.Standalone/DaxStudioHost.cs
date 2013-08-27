@@ -49,5 +49,16 @@ namespace DaxStudio.Standalone
             //Todo 
             throw new NotImplementedException();
         }
+
+
+        void IDaxStudioHost.EnsurePowerPivotDataIsLoaded()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<string> IDaxStudioHost.Worksheets
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

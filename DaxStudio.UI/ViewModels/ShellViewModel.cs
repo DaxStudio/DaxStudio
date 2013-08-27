@@ -1,3 +1,5 @@
+using System;
+using System.Reflection;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
 
@@ -5,7 +7,7 @@ namespace DaxStudio.UI.ViewModels {
     [Export(typeof (IShell))]
     public class ShellViewModel : Screen, IShell
     {
-        private readonly IWindowManager windowManager;
+        private readonly IWindowManager windowManager; 
         private DocumentTabViewModel _tabs;
 
         [ImportingConstructor]
@@ -18,9 +20,11 @@ namespace DaxStudio.UI.ViewModels {
             //Tabs = new DocumentTabViewModel(windowManager,eventAggregator) ;    
             //var tabs =  (Conductor<IScreen>.Collection.OneActive)conductor;
             //Tabs = tabs.Items;
+            DisplayName = string.Format("DaxStudio - v{0}.{1}", Version.Major, Version.Minor); 
         }
 
-        
+
+        public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
         public void ContentRendered()

@@ -1,6 +1,6 @@
 <fluent:MetroWindow x:Class="DaxStudio.UI.Views.ShellView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
         xmlns:fluent="clr-namespace:Fluent;assembly=Fluent" 
         xmlns:avalondock="http://avalondock.codeplex.com" 
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
@@ -76,7 +76,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="24"/>
+            <!--<RowDefinition Height="24"/>-->
         </Grid.RowDefinitions>
         
         <ContentControl x:Name="Ribbon" Grid.Row="0"></ContentControl>

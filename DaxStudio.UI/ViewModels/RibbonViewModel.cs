@@ -6,7 +6,7 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using Microsoft.Win32;
+using Microsoft.Win32; 
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -27,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             _host = host;
-
+            
         }
 
         public Visibility OutputGroupIsVisible
@@ -143,5 +143,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         protected DocumentViewModel ActiveDocument { get; set; }
+
+        public IEnumerable<string> Worksheets
+        {
+            get { return _host.Worksheets; }
+        }
     }
 }

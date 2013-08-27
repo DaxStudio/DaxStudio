@@ -5,13 +5,12 @@ using System.Timers;
 using System.Xml;
 using ADOTabular;
 using Caliburn.Micro;
-using DaxStudio.UI.Utils;
 using Microsoft.AnalysisServices;
 
 namespace DaxStudio.UI.Model
 {
 
-    public class TraceStartedEventArgs:EventArgs
+    public class TraceStartedEventArgs:EventArgs 
     {
         public TraceStartedEventArgs(IResultsTarget target)
         {
@@ -142,7 +141,7 @@ namespace DaxStudio.UI.Model
           
               if (_trace == null)
               {
-                  _trace = _server.Traces.Add(string.Format("DaxStudio_Trace_SPID_{0}", _connection.SPID));
+                  _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _connection.SPID));
                   //TODO - filter on session id
                   // _trace.Filter = GetSpidFilter();
                   _trace.OnEvent += OnTraceEventInternal;

@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Behaviours
     /// Static class used to attach to wpf control
     /// </summary>
     public static class GridViewColumnResize
-    {
+    { 
         #region DependencyProperties
 
         public static readonly DependencyProperty WidthProperty =
@@ -216,7 +216,9 @@ namespace DaxStudio.UI.Behaviours
                     Resize();
                     _element.SizeChanged += OnSizeChanged;
                 };
-                _timer = new Timer(x => Application.Current.Dispatcher.BeginInvoke(resizeAndEnableSize), null, Delay,
+                
+                // todo - no application when running as Excel Addin - need to find dispatcher some other way
+                _timer = new Timer(x => _element.Dispatcher.BeginInvoke(resizeAndEnableSize), null, Delay,
                                    RefreshTime);
             }
 

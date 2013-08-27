@@ -12,7 +12,7 @@ using System.Data;
 using Office = Microsoft.Office.Core;
 using System.ComponentModel;
 
-namespace DaxStudio
+namespace DaxStudio 
 {
     public class ExcelHelper
     {
@@ -41,7 +41,7 @@ namespace DaxStudio
             _app = app;
             //_tcbOutputTo = tcbOutputTo;
             _app.WorkbookActivate += AppWorkbookActivate;
-            PopulateOutputOptions(_tcbOutputTo);
+        //    PopulateOutputOptions(_tcbOutputTo);
         }
         /*
         public ExcelHelper(Excel.Application app, RibbonComboBox cboOutputTo)

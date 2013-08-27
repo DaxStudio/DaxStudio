@@ -8,7 +8,7 @@ namespace ADOTabular
     public enum ADOTabularColumnType
     {
         Column,
-        Measure
+        Measure 
     }
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>
@@ -44,7 +44,9 @@ namespace ADOTabular
         {
             foreach (var adoTabularColumn in _cols.Values)
             {
-                yield return adoTabularColumn;
+                // rownumber cannot be referenced in queries so we exclude it from the collection
+                if (adoTabularColumn.Contents != "RowNumber") 
+                    yield return adoTabularColumn;
             }
         }
 

@@ -7,13 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using ADOTabular;
+using ADOTabular; 
 using Caliburn.Micro;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Views;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 
@@ -39,11 +41,13 @@ namespace DaxStudio.UI.ViewModels
         private IObservableCollection<object> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
+        private IDaxStudioHost _host;
 
         [ImportingConstructor]
-        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator )
+        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host  )
         {
             Init(windowManager,eventAggregator);
+            _host = host;
         }
 
         public void Init( IWindowManager windowManager, IEventAggregator eventAggregator)
@@ -58,7 +62,35 @@ namespace DaxStudio.UI.ViewModels
             OutputPane = new OutputPaneViewModel();
             QueryResultsPane = new QueryResultsPaneViewModel();
             Document = new TextDocument();
+            StatusBar = new StatusBarViewModel(_eventAggregator, _connection);
+            
         }
+
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+            var e = GetEditor();
+            if (e != null)
+            {
+                e.TextArea.Caret.PositionChanged += OnPositionChanged;
+                e.TextChanged += OnDocumentChanged;
+            }
+        }
+
+        void OnDocumentChanged(object sender, EventArgs e)
+        {
+            IsDirty = true;
+            NotifyOfPropertyChange(()=>IsDirty);
+        }
+
+        void OnPositionChanged(object sender, EventArgs e)
+        {
+            var caret = sender as Caret;
+            if (caret != null)
+                _eventAggregator.Publish(new EditorPositionChangedMessage(caret.Column, caret.Line));
+        }
+
+        public bool IsDirty { get; set; }
 
         private QueryTrace _tracer;
         public QueryTrace Tracer
@@ -123,7 +155,7 @@ namespace DaxStudio.UI.ViewModels
         private DAXEditor.DAXEditor GetEditor()
         {
             DocumentView v = GetDocumentView();
-            return v.daxEditor;
+            return v != null ? v.daxEditor : null;
         }
         
         public TextDocument Document { get; set; }
@@ -201,7 +233,8 @@ namespace DaxStudio.UI.ViewModels
             _connection = value;
             MetadataPane.Connection = _connection;
             FunctionPane.Connection = _connection;
-            DmvPane.Connection = _connection; 
+            DmvPane.Connection = _connection;
+            StatusBar.Connection = _connection;
         }
 
         public void ContentRendered()
@@ -218,7 +251,7 @@ namespace DaxStudio.UI.ViewModels
         
         public void ChangeConnection()
         {
-            var connDialog = new ConnectionDialogViewModel(Connection);
+            var connDialog = new ConnectionDialogViewModel(Connection, _host);
             _windowManager.ShowDialog(connDialog);
             try
             {
@@ -295,12 +328,13 @@ namespace DaxStudio.UI.ViewModels
         {
             // if there are any trace listners we need to make sure that the trace is started
             // and that the appropriate events are registered
+            
             _queryRunning = true;
             NotifyOfPropertyChange(()=>CanRunQuery);
             RegisterTraceWatchers();
             if (Tracer.EnabledTraceWatchers.Count > 0)
             {
-                
+                new StatusBarMessage("Waiting for Trace to start...");
                 // only run the query after the trace starts
                 Tracer.Start(message.ResultsTarget);
             }
@@ -311,7 +345,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        
+        public StatusBarViewModel StatusBar { get; set; }
         public void RegisterTraceWatchers()
         {
             if (TraceWatchers == null)
@@ -620,4 +654,6 @@ namespace DaxStudio.UI.ViewModels
         }
         
     }
+
+
 }

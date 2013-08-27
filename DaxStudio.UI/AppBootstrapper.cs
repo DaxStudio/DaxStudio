@@ -14,7 +14,7 @@ namespace DaxStudio.UI
 	using System.Linq;
 	using Caliburn.Micro;
 
-	public class AppBootstrapper : Bootstrapper<IShell>
+    public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
 		CompositionContainer _container;
 	    private Assembly _hostAssembly;
@@ -26,9 +26,14 @@ namespace DaxStudio.UI
 	    public AppBootstrapper(Assembly hostAssembly, bool useApplication) : base(useApplication)
 	    {
 	        _hostAssembly = hostAssembly;
-            
+            base.Start();
 	    }
-        
+
+        protected override void OnStartup(object sender, StartupEventArgs e)
+        {
+            base.DisplayRootViewFor<IShell>(null);
+        }
+
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             base.OnUnhandledException(sender, e);

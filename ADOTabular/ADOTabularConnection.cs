@@ -13,7 +13,7 @@ namespace ADOTabular
     public enum MdschemaVisibility
     {
         Visible = 0x01,
-        NonVisible = 0x02
+        NonVisible = 0x02 
     }
 
     public enum ADOTabularMetadataDiscovery
@@ -22,8 +22,11 @@ namespace ADOTabular
         ,Csdl
     }
 
+    
+
     public class ADOTabularConnection
     {
+        public event EventHandler ConnectionChanged;
         private readonly AdomdConnection _adomdConn; 
         public ADOTabularConnection(string connectionString, AdomdType connectionType) 
             : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
@@ -52,6 +55,8 @@ namespace ADOTabular
             {
                 Visitor = new MetaDataVisitorCSDL(this);
             }
+            if (ConnectionChanged != null)
+                ConnectionChanged(this, new EventArgs());
         }
 
         
@@ -70,11 +75,15 @@ namespace ADOTabular
         public void Open(string connectionString)
         {
             _adomdConn.Open(connectionString);
+            if (ConnectionChanged!=null)
+                ConnectionChanged(this,new EventArgs());
         }
 
         public void ChangeDatabase(string database)
         {
             _adomdConn.ChangeDatabase(database);
+            if (ConnectionChanged != null)
+                ConnectionChanged(this, new EventArgs());
         }
 
         private bool _showHiddenObjects;

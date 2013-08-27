@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="DaxStudio.UI.Views.DocumentView"
+    x:Class="DaxStudio.UI.Views.DocumentView" 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -199,10 +199,15 @@
     </i:Interaction.Triggers>
     -->
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="24"></RowDefinition>
+        </Grid.RowDefinitions>
         <avalondock:DockingManager x:Name="Document" 
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
                                    Margin="0,-1,0,1"
-                                   AnchorablesSource="{Binding ToolWindows}">
+                                   AnchorablesSource="{Binding ToolWindows}"
+                                   Grid.Row="0">
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
@@ -307,6 +312,6 @@
 
             </avalondock:LayoutRoot>
         </avalondock:DockingManager>
-
+        <ContentControl Grid.Row="1" x:Name="StatusBar"></ContentControl>
     </Grid>
 </UserControl>

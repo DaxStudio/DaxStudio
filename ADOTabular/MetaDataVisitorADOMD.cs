@@ -8,7 +8,7 @@ namespace ADOTabular
     {
         private readonly ADOTabularConnection _conn;
 
-        public MetaDataVisitorADOMD(ADOTabularConnection conn)
+        public MetaDataVisitorADOMD(ADOTabularConnection conn) 
         {
             _conn = conn;
         }
@@ -67,7 +67,9 @@ namespace ADOTabular
                         ,dr["HIERARCHY_NAME"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString())
-                        ,ADOTabularColumnType.Column));
+                        ,ADOTabularColumnType.Column
+                        ,"")
+                        );
             }
             var resCollMeasures = new AdomdRestrictionCollection
                 {
@@ -88,7 +90,9 @@ namespace ADOTabular
                         ,dr["MEASURE_NAME"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
-                        ,ADOTabularColumnType.Measure));
+                        ,ADOTabularColumnType.Measure
+                        ,"")
+                        );
             }
             return ret;
         }

@@ -11,11 +11,11 @@ using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
-    class ConnectionDialogViewModel : Screen 
+    class ConnectionDialogViewModel : Screen  
     {
 
-
-        public ConnectionDialogViewModel(ADOTabularConnection conn)
+        /*
+        public ConnectionDialogViewModel(ADOTabularConnection conn )
         {
             Connection = conn;
             PowerPivotEnabled = false;
@@ -23,14 +23,29 @@ namespace DaxStudio.UI.ViewModels
             WorkbookName = "";
             MdxCompatibility = "1";
         }
-
+        */
         public ConnectionDialogViewModel(ADOTabularConnection conn, IDaxStudioHost host)
         {
             Connection = conn;
             PowerPivotEnabled = true;
             Host = host;
             WorkbookName = host.WorkbookName;
+            DisplayName = "Connect To";
         }
+
+        public bool HostIsExcel { get { return Host.IsExcel; } }
+
+        public bool HasPowerPivotModel { get { return Host.HasPowerPivotModel; } }
+
+        public bool ShowMissingModelWarning{ 
+            get
+            {
+                if (!HostIsExcel)
+                    return false;
+                return !Host.HasPowerPivotModel;
+            }
+        }
+
 
         public Visibility PowerPivotUnavailableVisibility
         {
@@ -77,27 +92,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void ConnectionDialogLoad(object sender, EventArgs e)
         {
-        //    lblWorkbook.Text = _workbook.Caption;
-        //    lblPowerPivotUnavailable.Visible = false;
-            
-            // if current workbook does not have PPvt data disable that option
-        /*
-            if (!_xlHelper.HasPowerPivotData())
-            {
-                radPowerPivot.Enabled = false;
-                lblPowerPivotUnavailable.Visible = true;
-            }
-         */ 
-
             // if connection string is not blank, split it into it's pieces
             // and populate UI 
-            if (Connection == null)
+            if (Connection != null)
             {
-            }
-            else
-            {
-
-
                 if (Connection.ConnectionString != String.Empty)
                 {
                     _connectionProperties = SplitConnectionString(Connection.ConnectionString);
@@ -125,7 +123,7 @@ namespace DaxStudio.UI.ViewModels
                                 case "effectiveusername":
                                     EffectiveUserName = p.Value;
                                     break;
-                                /*
+                                    /*
                             case "mdx compatibility":
                                 KeyValuePair<string, string> p1 = p;
                                 foreach (
@@ -155,7 +153,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
             }
-
+            
         }
 
         public string DataSource { get; set; }
@@ -241,6 +239,7 @@ namespace DaxStudio.UI.ViewModels
         */
         private string BuildPowerPivotConnection()
         {
+            
             // TODO - need Full workbook name, not just the display name
             return string.Format("Data Source=$Embedded$;Location={0}", WorkbookName);
         }
@@ -254,7 +253,9 @@ namespace DaxStudio.UI.ViewModels
         public void Connect()
         {
             //todo - need to send proper connection type
-            Connection = new ADOTabularConnection(ConnectionString,AdomdType.AnalysisServices);
+            Connection = PowerPivotModeSelected 
+                ? Host.GetPowerPivotConnection() 
+                : new ADOTabularConnection(ConnectionString,AdomdType.AnalysisServices);
             TryClose(true);
         }
     }

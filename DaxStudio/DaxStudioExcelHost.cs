@@ -14,7 +14,7 @@ namespace DaxStudio
 
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IDaxStudioHost))]
-    public class DaxStudioExcelHost : PropertyChangedBase, IDaxStudioHost
+    public class DaxStudioExcelHost : PropertyChangedBase, IDaxStudioHost 
     {
         const string NEW_SHEET = "<New Sheet>";
         const string DAX_RESULTS_SHEET = "<Query Results Sheet>";

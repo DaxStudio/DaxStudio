@@ -114,7 +114,7 @@ namespace ADOTabular
             string daxName = "";
             string tableId = "";
             string dataType = "";
-            
+            string contents = "";
 
             var colType = ADOTabularColumnType.Column;
             while (!(rdr.NodeType == XmlNodeType.EndElement
@@ -152,6 +152,9 @@ namespace ADOTabular
                             case "Caption":
                                 caption = rdr.Value;
                                 break;
+                            case "Contents":
+                                contents = rdr.Value;
+                                break;
                             case "Hidden":
                                 isVisible = !bool.Parse(rdr.Value);
                                 break;
@@ -171,16 +174,16 @@ namespace ADOTabular
                     if (caption.Length == 0)
                         caption = daxName;
                     var tab = GetTableById(tables, tableId);
-                    var col = new ADOTabularColumn(tab, caption, description, isVisible, colType);
+                    var col = new ADOTabularColumn(tab, caption, description, isVisible, colType, contents);
                     col.DataType = Type.GetType( string.Format("System.{0}",dataType));
-                    tab.Columns.Add(col);
+                    tab.Columns.Add(col); 
 
                     // reset temp variables
                     caption = "";
                     description = "";
                     isVisible = true;
                     daxName = "";
-                    
+                    contents = "";
                     dataType = "";
                     colType = ADOTabularColumnType.Column;
                 }

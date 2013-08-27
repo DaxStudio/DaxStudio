@@ -8,7 +8,7 @@ namespace ADOTabular
 
         public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
         {
-            Table = table;
+            Table = table; 
             ColumnType = colType;
             if (colType == ADOTabularColumnType.Column)
             {
@@ -25,13 +25,14 @@ namespace ADOTabular
         }
 
         public ADOTabularColumn( ADOTabularTable table, string caption,  string description,
-                                bool isVisible, ADOTabularColumnType columnType)
+                                bool isVisible, ADOTabularColumnType columnType, string contents)
         {
             Table = table;
             Caption = caption;
             Description = description;
             IsVisible = isVisible;
             ColumnType = columnType;
+            Contents = contents;
         }
 
         public ADOTabularColumnType ColumnType { get; private set; }
@@ -40,9 +41,12 @@ namespace ADOTabular
 
         public string Caption { get; private set; }
 
+        public string Contents { get; private set; }
+
         public string DaxName {
             get
             {
+                // for measures we exclude the table name
                 return ColumnType == ADOTabularColumnType.Column  
                     ? string.Format("{0}[{1}]", Table.DaxName, Caption)
                     : string.Format("[{0}]",Caption);
