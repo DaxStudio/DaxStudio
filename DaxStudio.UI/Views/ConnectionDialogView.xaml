@@ -63,7 +63,7 @@
 
                 <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
                 <ComboBox Height="23"  Name="cboMdxCompat" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Text="{Binding Path=MdxCompatibility}" Grid.Column="1" Grid.Row="1">
-                    <ComboBoxItem Name="type_0" Content="0 - Equivalent to 1" />
+                    <ComboBoxItem Name="type_0" Content="0 - Equivalent to 1"  />
                     <ComboBoxItem Name="type_1" Content="1 - Placeholder members are exposed" />
                     <ComboBoxItem Name="type_2" Content="2 - Placeholder members are not exposed" />
                     <ComboBoxItem Name="type_3" Content="3- (Default) Placeholder members are not exposed" IsSelected="True" />

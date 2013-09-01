@@ -39,7 +39,7 @@
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
-                <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}"  Size="Middle" ClickMode="Press" Width="Auto">
+                <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}" Fluent:RibbonAttachedProperties.RibbonSize="Middle"  ClickMode="Press" Width="Auto">
                 </Fluent:ToggleButton>
             </DataTemplate>
         </Fluent:Ribbon.Resources>
@@ -179,7 +179,7 @@
                                    Fluent:KeyTip.Keys="X"
                                    Header="Cut"
                                    Icon="Images\Cut.png"
-                                   SizeDefinition="Middle,Small"
+                                   Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
                                    Command="Cut">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Cut (Ctrl+X)"
@@ -192,13 +192,13 @@
                                    Fluent:KeyTip.Keys="C"
                                    Header="Copy"
                                    Icon="Images\Copy.png"
-                                   SizeDefinition="Middle,Small"
-                                   Command="Copy" />
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Command="Copy" />
                 <Fluent:Button x:Name="pasteButton"
                                    Fluent:KeyTip.Keys="X"
                                    Header="Paste"
                                    Icon="..\Images\metro\clipboard.paste.png"
-                                   SizeDefinition="Middle,Small"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
                                    Command="Paste">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Paste (Ctrl+V)"

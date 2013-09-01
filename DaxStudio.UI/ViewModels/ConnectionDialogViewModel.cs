@@ -29,8 +29,19 @@ namespace DaxStudio.UI.ViewModels
             Connection = conn;
             PowerPivotEnabled = true;
             Host = host;
+            ServerModeSelected = true;
+            if (Host.IsExcel)
+            {
+                if (Host.HasPowerPivotModel)
+                {
+                    ServerModeSelected = false;
+                    PowerPivotModeSelected = true;
+                }
+            }
+            
             WorkbookName = host.WorkbookName;
             DisplayName = "Connect To";
+            MdxCompatibility = "3- (Default) Placeholder members are not exposed";
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }
