@@ -4,31 +4,37 @@
         xmlns:avalonDock="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
         DataContext="{Binding}"
         >
-<UserControl.Resources>
+    <UserControl.Resources>
         <avalonDock:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
-    <Grid Width="431" Height="403">
+    <Grid Width="431" Height="426">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="298*"/>
+            <ColumnDefinition Width="24*"/>
+            <ColumnDefinition Width="109*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MinHeight="131"/>
+            <RowDefinition Height="60*"/>
+            <RowDefinition Height="73*"/>
+            <RowDefinition Height="Auto" MinHeight="29"/>
         </Grid.RowDefinitions>
-        <GroupBox Header="Data Source" Height="Auto" HorizontalAlignment="Left" Margin="0,0,0,0" Name="grpServer" VerticalAlignment="Top" Width="430" Grid.Row="0">
+        <GroupBox Header="Data Source"  HorizontalAlignment="Left" Margin="10,10,0,0" Name="grpServer" VerticalAlignment="Top" Width="411" Grid.Row="0" Grid.ColumnSpan="3">
             <StackPanel Orientation="Vertical">
                 <StackPanel>
                     <Grid Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=HostIsExcel}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="130" />
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}"/>
-                    <Label Content="{Binding WorkbookName}" Height="28" Margin="0,5,5,0" Name="lblWorkBook" VerticalAlignment="Top"  Grid.Column="1" />
-                    
-                </Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}"/>
+                        <Label Content="{Binding WorkbookName}" Height="28" Margin="0,5,5,0" Name="lblWorkBook" VerticalAlignment="Top"  Grid.Column="1" />
+
+                    </Grid>
                     <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="5,0,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowMissingModelWarning}"/>
                 </StackPanel>
                 <Grid>
@@ -36,16 +42,17 @@
                         <ColumnDefinition Width="130" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
-                <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  ItemsSource="{Binding Path=RecentServers}" Text="{Binding DataSource}" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1" />
+                    <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
+                    <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  ItemsSource="{Binding Path=RecentServers}" Text="{Binding DataSource}" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1" />
                 </Grid>
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" Grid.Row="1">
+        <GroupBox Header="Server Options" Margin="10,10,10,0" Name="grpOptions" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2">
             <Grid Height="Auto">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="130"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="120*"/>
+                    <ColumnDefinition Width="149*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -55,14 +62,14 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Content="Direct Query Mode: " Height="27" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" Name="lblDirectQuery" VerticalAlignment="Top" Width="116" />
-                <ComboBox Height="23" Grid.Column="1" Grid.Row="0" Name="cboDirectQuery" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}">
+                <ComboBox Height="23" Grid.Column="1" Grid.Row="0" Name="cboDirectQuery" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.ColumnSpan="2">
                     <ComboBoxItem Name="default" IsSelected="True">Default</ComboBoxItem>
                     <ComboBoxItem Name="direct" >Direct Query</ComboBoxItem>
                     <ComboBoxItem Name="inMemory">In-Memory</ComboBoxItem>
                 </ComboBox>
 
                 <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
-                <ComboBox Height="23"  Name="cboMdxCompat" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Text="{Binding Path=MdxCompatibility}" Grid.Column="1" Grid.Row="1">
+                <ComboBox Height="23"  Name="cboMdxCompat" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Text="{Binding Path=MdxCompatibility}" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
                     <ComboBoxItem Name="type_0" Content="0 - Equivalent to 1"  />
                     <ComboBoxItem Name="type_1" Content="1 - Placeholder members are exposed" />
                     <ComboBoxItem Name="type_2" Content="2 - Placeholder members are not exposed" />
@@ -70,16 +77,16 @@
                 </ComboBox>
 
                 <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
-                <TextBox Height="23"  Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}"  Grid.Column="1" Grid.Row="2"/>
+                <TextBox Height="23"  Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}"  Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2"/>
                 <Label Content="Roles: " Height="28" HorizontalAlignment="Left" Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
-                <TextBox Height="23"  Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="3" Grid.Column="1" />
+                <TextBox Height="23"  Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" />
                 <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
-                <TextBox Name="txtAdditionalOptions" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="4" Grid.Column="1" />
+                <TextBox Name="txtAdditionalOptions" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" />
             </Grid>
         </GroupBox>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
-        <Button Content="Connect" Height="23" HorizontalAlignment="Right" Margin="0,5,5,6" Name="Connect" VerticalAlignment="Bottom" Width="75" IsDefault="True" Click="btnConnect_Click" />
-        <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,5,10,6" Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
+        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165">
+            <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Click="btnConnect_Click" Height="23" VerticalAlignment="Bottom" />
+            <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
         </StackPanel>
     </Grid>
 </UserControl>

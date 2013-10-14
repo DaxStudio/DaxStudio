@@ -8,18 +8,34 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
              xmlns:local="clr-namespace:DaxStudio.UI.Utils" xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="137" d:DesignWidth="571">
+             d:DesignHeight="137" d:DesignWidth="654">
    <UserControl.Resources>
         <conv:ResourceLookupConverter x:Key="OutputIcons">
             <ResourceDictionary>
-                <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
-                <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/timer.png"/>
+                <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table.png"/>
+                <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer.png"/>
             </ResourceDictionary>
-            </conv:ResourceLookupConverter>
-            <BitmapImage x:Key="PlayIcon"  UriSource="..\images\metro\run.png"></BitmapImage>
-            <BitmapImage x:Key="TimerIcon"  UriSource="..\images\metro\timer.png"></BitmapImage>
-        
-       <DataTemplate x:Key="ResultsTargetTemplate">
+        </conv:ResourceLookupConverter>
+       
+        <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
+        <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="TimerIcon"  UriSource="..\images\icon-timer.png"></BitmapImage>
+        <BitmapImage x:Key="TimerIconLarger"  UriSource="..\images\icon-timer@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="CutIcon"  UriSource="..\images\icon-cut.png"></BitmapImage>
+        <BitmapImage x:Key="CutIconLarger"  UriSource="..\images\icon-cut@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="CopyIcon"  UriSource="..\images\icon-copy.png"></BitmapImage>
+        <BitmapImage x:Key="CopyIconLarger"  UriSource="..\images\icon-copy@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="PasteIcon"  UriSource="..\images\icon-paste.png"></BitmapImage>
+        <BitmapImage x:Key="PasteIconLarger"  UriSource="..\images\icon-paste@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="ConnectIcon"  UriSource="..\images\icon-connection.png"></BitmapImage>
+        <BitmapImage x:Key="ConnectIconLarger"  UriSource="..\images\icon-connection@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="PlanIcon"  UriSource="..\images\icon-plan.png"></BitmapImage>
+        <BitmapImage x:Key="PlanIconLarger"  UriSource="..\images\icon-plan@96ppi.png"></BitmapImage>
+        <BitmapImage x:Key="TimingsIcon"  UriSource="..\images\icon-timings.png"></BitmapImage>
+        <BitmapImage x:Key="TimingsIconLarger"  UriSource="..\images\icon-timings@96ppi.png"></BitmapImage>
+
+
+        <DataTemplate x:Key="ResultsTargetTemplate">
             <Border Tag="Excel"
                         BorderThickness="4"
                         BorderBrush="Transparent">
@@ -126,12 +142,12 @@
         </Fluent:Ribbon.Menu>
         <!-- Home Tabs-->
         <Fluent:RibbonTabItem Header="Home">
-            <Fluent:RibbonGroupBox Header="Query">
-                <Fluent:Button Name="RunQuery" 
+            <Fluent:RibbonGroupBox Header="Query" Margin="0,0,4,0">
+                <Fluent:Button Name="RunQuery"
                                Header="Run"
-                               Icon="{StaticResource PlayIcon}"
-                               LargeIcon="{StaticResource PlayIcon}"
-                    cal:Message.Attach="[Event Click] = [Action RunQuery()]">
+                               
+                               LargeIcon="{StaticResource PlayIconLarger}"
+                    cal:Message.Attach="[Event Click] = [Action RunQuery()]" Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
                                           Text="Executes the query and sends the results to the selected output"
@@ -144,7 +160,7 @@
                                            Header="Output"
                                            LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            IsEnabled="True"
-                                           VerticalAlignment="Top">
+                                           VerticalAlignment="Top" Padding="0" Margin="4,0">
                     
                     <Fluent:Gallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
@@ -174,11 +190,11 @@
                 </Fluent:DropDownButton>
             </Fluent:RibbonGroupBox>
             
-            <Fluent:RibbonGroupBox Header="Edit">
+            <Fluent:RibbonGroupBox Header="Edit" Padding="0" Margin="4,0">
                 <Fluent:Button x:Name="cutButton"
                                    Fluent:KeyTip.Keys="X"
                                    Header="Cut"
-                                   Icon="Images\Cut.png"
+                                   Icon="{StaticResource CutIconLarger}"
                                    Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
                                    Command="Cut">
                     <Fluent:Button.ToolTip>
@@ -191,13 +207,13 @@
                 <Fluent:Button x:Name="copyButton"
                                    Fluent:KeyTip.Keys="C"
                                    Header="Copy"
-                                   Icon="Images\Copy.png"
+                                   Icon="{StaticResource CopyIconLarger}"
                                Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
                                Command="Copy" />
                 <Fluent:Button x:Name="pasteButton"
                                    Fluent:KeyTip.Keys="X"
                                    Header="Paste"
-                                   Icon="..\Images\metro\clipboard.paste.png"
+                                   Icon="{StaticResource PasteIconLarger}"
                                Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
                                    Command="Paste">
                     <Fluent:Button.ToolTip>
@@ -210,19 +226,18 @@
             </Fluent:RibbonGroupBox>
             
                         
-            <Fluent:RibbonGroupBox Header="Connect">
-                <Fluent:Button x:Name="Connect" Header="Connect"
-Icon="Images\Green.png"
-LargeIcon="Images\GreenLarge.png" />
-                <TextBlock Text="Database:"/>
-
+            <Fluent:RibbonGroupBox Header="Connect" Margin="4,0">
+                <Fluent:Button x:Name="Connect" Header=" Connect"
+LargeIcon="{StaticResource ConnectIconLarger}" Width="60" Margin="4,0,12,0" />
+                <TextBlock Text="Database:" Padding="0,6,0,0"/>
                 <Fluent:ComboBox x:Name="Databases" 
                                  SelectedItem="{Binding SelectedDatabase}"
-                                 ItemsSource="{Binding Databases}"   MinWidth="160" MaxWidth="220" 
+                                 ItemsSource="{Binding Databases}"   MinWidth="160" MaxWidth="200" 
                                  IsEditable="False"
-                                 IsSynchronizedWithCurrentItem="True"></Fluent:ComboBox>
+                                 IsSynchronizedWithCurrentItem="True" Margin="0,8,8,0"/>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Output" x:Name="OutputGroup" Visibility="{Binding OutputGroupIsVisible}" >
+                
                 <Fluent:ComboBox Name="cboOutputTo" Text="&lt;Output Sheet&gt;" MinWidth="120" MaxWidth="200" IsEditable="False"></Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Traces" ItemsSource="{Binding TraceWatchers}"

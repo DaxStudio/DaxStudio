@@ -522,6 +522,26 @@
   <ItemGroup>
     <Resource Include="daxstudio-logo_250x250.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-connection%4096ppi.png" />
+    <Resource Include="Images\icon-connection.png" />
+    <Resource Include="Images\icon-copy%4096ppi.png" />
+    <Resource Include="Images\icon-copy.png" />
+    <Resource Include="Images\icon-cut%4096ppi.png" />
+    <Resource Include="Images\icon-cut.png" />
+    <Resource Include="Images\icon-paste%4096ppi.png" />
+    <Resource Include="Images\icon-paste.png" />
+    <Resource Include="Images\icon-plan%4096ppi.png" />
+    <Resource Include="Images\icon-plan.png" />
+    <Resource Include="Images\icon-run%4096ppi.png" />
+    <Resource Include="Images\icon-run.png" />
+    <Resource Include="Images\icon-table%4096ppi.png" />
+    <Resource Include="Images\icon-table.png" />
+    <Resource Include="Images\icon-timer%4096ppi.png" />
+    <Resource Include="Images\icon-timer.png" />
+    <Resource Include="Images\icon-timings%4096ppi.png" />
+    <Resource Include="Images\icon-timings.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
