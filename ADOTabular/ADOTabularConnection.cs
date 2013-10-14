@@ -21,9 +21,7 @@ namespace ADOTabular
         Adomd
         ,Csdl
     }
-
     
-
     public class ADOTabularConnection
     {
         public event EventHandler ConnectionChanged;
@@ -33,7 +31,7 @@ namespace ADOTabular
         { }
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, ADOTabularMetadataDiscovery visitorType)
-            : this(connectionString, connectionType, false, visitorType)
+            : this(connectionString, connectionType, true, visitorType)
         { }
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHidden)
@@ -43,9 +41,11 @@ namespace ADOTabular
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery vistorType)
         {
-            _adomdConn = new AdomdConnection(connectionString,connectionType);
-         //   _adomdConn.ConnectionString = connectionString;
             ShowHiddenObjects = showHiddenObjects;
+            ConnectionString = connectionString;
+            _adomdConn = new AdomdConnection(ConnectionString,connectionType);
+         //   _adomdConn.ConnectionString = connectionString;
+            
             //_adomdConn.Open();
             if (vistorType == ADOTabularMetadataDiscovery.Adomd)
             {
@@ -64,7 +64,7 @@ namespace ADOTabular
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
-            get { return new ADOTabularDatabase(this, _adomdConn.Database); }
+            get { return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database); }
         }
 
         public void Open()
@@ -92,8 +92,11 @@ namespace ADOTabular
             get { return _showHiddenObjects; }
             set
             {
-                if (_adomdConn.State == ConnectionState.Open) 
-                    throw new Exception("Cannot set the ShowHiddenObjects setting while the connection is open");
+                if (_adomdConn != null)
+                {
+                    if (_adomdConn.State == ConnectionState.Open)
+                        throw new Exception("Cannot set the ShowHiddenObjects setting while the connection is open");
+                }
                 _showHiddenObjects = value;
             }
         }
@@ -116,20 +119,31 @@ namespace ADOTabular
             return _adomdConn.ConnectionString;
         }
 
+        private string _connectionString="";
         public string ConnectionString
         {
             get
             {
-                if (!_adomdConn.ConnectionString.Contains("Initial Catalog"))
+                var connstr = _connectionString;
+                if (!connstr.Contains("Initial Catalog") && Database != null)
                 {
-                    return
+                    connstr = 
                         string.Format(
-                            _adomdConn.ConnectionString.EndsWith(";")
+                            connstr.EndsWith(";")
                                 ? "{0}Initial Catalog={1}"
-                                : "{0};Initial Catalog={1}", _adomdConn.ConnectionString, Database.Name);
+                                : "{0};Initial Catalog={1}", connstr, Database.Name);
                 }
-                return _adomdConn.ConnectionString;
+                if (!connstr.Contains("Show Hidden Cubes") && ShowHiddenObjects)
+                {
+                    connstr =
+                        string.Format(
+                            connstr.EndsWith(";")
+                                ? "{0}Show Hidden Cubes=true"
+                                : "{0};Show Hidden Cubes=true", connstr);
+                }
+                return connstr;
             }
+            set { _connectionString = value; }
         }
 
         // In ADO we set the current DB in the connection string
@@ -241,7 +255,10 @@ namespace ADOTabular
             return _execReader.BeginInvoke(callback,null);
         }
 
-
+        public ConnectionState State
+        {
+            get { return _adomdConn.State; }
+        }
 
         public void EndExecuteDaxReader(IAsyncResult result)
         {

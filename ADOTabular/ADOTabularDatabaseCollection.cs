@@ -14,13 +14,18 @@ namespace ADOTabular
             _adoTabConn = adoTabConn;
             
         }
-        
+
         private DataTable GetDatabaseTable()
         {
             if (_dsDatabases == null)
             {
                 _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
             }
+            _dsDatabases.Tables[0].PrimaryKey = new DataColumn[] {
+                _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
+                }
+
+    ;
             return _dsDatabases.Tables[0];
         }
 
@@ -54,6 +59,11 @@ namespace ADOTabular
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public bool Contains(string databaseName)
+        {
+            return GetDatabaseTable().Rows.Contains(databaseName);
         }
     }
 }
