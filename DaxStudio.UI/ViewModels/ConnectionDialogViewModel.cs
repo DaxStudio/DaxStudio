@@ -8,6 +8,7 @@ using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -24,15 +25,19 @@ namespace DaxStudio.UI.ViewModels
             MdxCompatibility = "1";
         }
         */
-        public ConnectionDialogViewModel(ADOTabularConnection conn, IDaxStudioHost host)
+        private readonly IEventAggregator _eventAggregator;
+        private readonly string _connectionString;
+        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator )
         {
-            Connection = conn;
+            _eventAggregator = eventAggregator;
+            //Connection = conn;
+            _connectionString = connectionString;
             PowerPivotEnabled = true;
             Host = host;
             ServerModeSelected = true;
             if (Host.IsExcel)
             {
-                if (Host.HasPowerPivotModel)
+                if (HasPowerPivotModel)
                 {
                     ServerModeSelected = false;
                     PowerPivotModeSelected = true;
@@ -53,7 +58,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (!HostIsExcel)
                     return false;
-                return !Host.HasPowerPivotModel;
+                return !HasPowerPivotModel;
             }
         }
 
@@ -105,11 +110,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // if connection string is not blank, split it into it's pieces
             // and populate UI 
-            if (Connection != null)
-            {
-                if (Connection.ConnectionString != String.Empty)
+            //if (Connection != null)
+            //{
+                if (_connectionString != String.Empty)
                 {
-                    _connectionProperties = SplitConnectionString(Connection.ConnectionString);
+                    _connectionProperties = SplitConnectionString(_connectionString);
                     // if data source = $Embedded$ then mark Ppvt option as selected 
                     if (_connectionProperties["Data Source"] == "$Embedded$")
                     {
@@ -163,7 +168,7 @@ namespace DaxStudio.UI.ViewModels
                         ServerModeSelected = true;
                     }
                 }
-            }
+            //}
             
         }
 
@@ -203,7 +208,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ADOTabularConnection Connection { get; set; }   
+        //public ADOTabularConnection Connection { get; set; }   
 
         public bool PowerPivotEnabled { get; private set; }
 
@@ -264,10 +269,18 @@ namespace DaxStudio.UI.ViewModels
         public void Connect()
         {
             //todo - need to send proper connection type
-            Connection = PowerPivotModeSelected 
-                ? Host.GetPowerPivotConnection() 
-                : new ADOTabularConnection(ConnectionString,AdomdType.AnalysisServices);
+            using (new StatusBarMessage("Connecting..."))
+            {
+                //Connection = PowerPivotModeSelected
+                //                 ? Host.GetPowerPivotConnection()
+                //                 : new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+                _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected));
+            }
             TryClose(true);
+        }
+        public void Cancel()
+        {
+            _eventAggregator.Publish(new CancelConnectEvent());
         }
     }
         

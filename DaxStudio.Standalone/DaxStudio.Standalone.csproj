@@ -127,14 +127,19 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Caliburn.Micro">
+    <Reference Include="Caliburn.Micro, Version=1.5.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\Caliburn.Micro.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xaml" />
+    <Reference Include="System.XML" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>

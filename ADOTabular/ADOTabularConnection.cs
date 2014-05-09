@@ -24,6 +24,8 @@ namespace ADOTabular
     
     public class ADOTabularConnection
     {
+        private AdomdCommand _runningCommand;
+
         public event EventHandler ConnectionChanged;
         private readonly AdomdConnection _adomdConn; 
         public ADOTabularConnection(string connectionString, AdomdType connectionType) 
@@ -269,15 +271,16 @@ namespace ADOTabular
 
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            AdomdCommand cmd = _adomdConn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = query;
-            var da = new AdomdDataAdapter(cmd);
+            _runningCommand = _adomdConn.CreateCommand();
+            _runningCommand.CommandType = CommandType.Text;
+            _runningCommand.CommandText = query;
+            var da = new AdomdDataAdapter(_runningCommand);
             var dt = new DataTable("DAXResult");
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
             
             FixColumnNaming(dt);
+            _runningCommand = null;
             return dt;
         }
 
@@ -420,15 +423,11 @@ namespace ADOTabular
 
         public void Cancel()
         {
-            var cancelConn = new AdomdConnection(_adomdConn.ConnectionString, _adomdConn.Type);
-            if (_adomdConn.State == ConnectionState.Closed | _adomdConn.State == ConnectionState.Connecting) return;
-            cancelConn.SessionID = _adomdConn.SessionID;
-            //cancelConn.ConnectionString = _adomdConn.ConnectionString;
-            cancelConn.Open();
-            var cancelCmd = cancelConn.CreateCommand();
-            cancelCmd.CommandType = CommandType.Text;
-            cancelCmd.CommandText = "<Command><Cancel></Cancel></Command>";
-            cancelCmd.Execute();
+            if (_runningCommand != null)
+            {
+                _runningCommand.Cancel();
+            }
+            
         }
 
         // BeginQueryAsync
@@ -459,6 +458,5 @@ namespace ADOTabular
 
         }
     }
-
 
 }

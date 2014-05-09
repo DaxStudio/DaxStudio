@@ -25,9 +25,9 @@ namespace ADOTabular
             return ret;
         }
 
-        public Dictionary<string,ADOTabularTable> Visit(ADOTabularTableCollection tables)
+        public SortedDictionary<string,ADOTabularTable> Visit(ADOTabularTableCollection tables)
         {
-            var ret = new Dictionary<string, ADOTabularTable>();
+            var ret = new SortedDictionary<string, ADOTabularTable>();
             var resColl = new AdomdRestrictionCollection
                 {
                     {"CUBE_NAME", tables.Model.Name },

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
@@ -8,7 +9,7 @@ using Microsoft.AnalysisServices;
 namespace DaxStudio.UI.ViewModels
 {
     [InheritedExport(typeof(ITraceWatcher)), PartCreationPolicy(CreationPolicy.NonShared)]
-    public abstract class TraceWatcherBaseViewModel : PropertyChangedBase, IToolWindow, ITraceWatcher
+    public abstract class TraceWatcherBaseViewModel : PropertyChangedBase, IToolWindow, ITraceWatcher, IHandle<ConnectionChangedEvent>
     {
         private List<TraceEventArgs> _events;
         private readonly IEventAggregator _eventAggregator;
@@ -84,7 +85,12 @@ namespace DaxStudio.UI.ViewModels
         public int AutoHideMinHeight { get; set; }
         public bool IsSelected { get; set; }
 
-        public bool IsEnabled { get { return IsChecked; } }
+        private bool _isEnabled ;
+        public bool IsEnabled { get { return _isEnabled; }
+            set { _isEnabled = value;
+            NotifyOfPropertyChange("IsEnabled");} 
+        }
+
         public bool IsActive { get; set; }
 
         private bool _isChecked;
@@ -96,6 +102,11 @@ namespace DaxStudio.UI.ViewModels
                 _isChecked = value;
                 _eventAggregator.Publish(new TraceWatcherToggleEvent(this, value));
             }
+        }
+
+        public void Handle(ConnectionChangedEvent message)
+        {
+            IsEnabled = (message.Connection.Type == AdomdType.AnalysisServices);
         }
     }
 }

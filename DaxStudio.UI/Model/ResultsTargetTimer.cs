@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.UI.Model
@@ -26,6 +28,8 @@ namespace DaxStudio.UI.Model
                 var end = DateTime.Now;
                 var durationMs = (end - start).TotalMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
+                runner.QueryCompleted();
+                runner.ActivateOutput();
             }
             catch (Exception ex)
             {
@@ -34,5 +38,9 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        public Task OutputResultsAsync(IQueryRunner runner)
+        {
+            return Task.Factory.StartNew(() => OutputResults(runner));
+        }
     }
 }

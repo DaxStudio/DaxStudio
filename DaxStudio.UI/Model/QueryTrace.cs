@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Xml;
 using ADOTabular;
@@ -62,7 +63,7 @@ namespace DaxStudio.UI.Model
             if (trace.Events.Find(TraceEventClass.QueryEnd)==null)
                 trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
 
-            foreach (var watcher in EnabledTraceWatchers)
+            foreach (var watcher in CheckedTraceWatchers)
             {
                 //reset the watcher so it can clear any cached events 
                 watcher.Reset();
@@ -83,10 +84,10 @@ namespace DaxStudio.UI.Model
         private List<ITraceWatcher> _registeredWatchers;
         public List<ITraceWatcher> RegisteredTraceWatchers { get { return _registeredWatchers ?? (_registeredWatchers = new List<ITraceWatcher>()); } }   
 
-        public IList<ITraceWatcher> EnabledTraceWatchers
+        public IList<ITraceWatcher> CheckedTraceWatchers
         {
             get {
-                return new List<ITraceWatcher>(RegisteredTraceWatchers.Where(rw => rw.IsEnabled));
+                return new List<ITraceWatcher>(RegisteredTraceWatchers.Where(rw => rw.IsChecked));
             }
         }
 
@@ -104,6 +105,11 @@ namespace DaxStudio.UI.Model
         public void Clear()
         {
             _trace.Events.Clear();
+        }
+
+        public Task StartAsync(IResultsTarget resultsTarget)
+        {
+            return Task.Factory.StartNew(() => Start(resultsTarget));
         }
 
         private Timer _startingTimer;

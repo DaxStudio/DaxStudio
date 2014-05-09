@@ -5,6 +5,7 @@ using System.Windows;
 using AvalonDock;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -23,6 +24,7 @@ namespace DaxStudio.UI.ViewModels
     public class DocumentTabViewModel : Conductor<IScreen>.Collection.OneActive
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
+        , IDocumentWorkspace
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -60,6 +62,7 @@ namespace DaxStudio.UI.ViewModels
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
+                _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection));
             }
         }
 
@@ -93,8 +96,15 @@ namespace DaxStudio.UI.ViewModels
                 _documentCount++;
                 newDoc.DisplayName = fileName;
                 new System.Action(ChangeConnection).BeginOnUIThread();
+                
             }
-            
+            //newDoc.IsDirty = false;
+            new System.Action(CleanActiveDocument).BeginOnUIThread();
+        }
+
+        private void CleanActiveDocument()
+        {
+            ActiveDocument.IsDirty = false;
         }
 
         private void ChangeConnection()
@@ -114,11 +124,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void TabClosing(object sender, DocumentClosingEventArgs args)
         {
-            var doc = sender as DocumentViewModel;
+            
+            var doc = args.Document.Content as IScreen;
             if (doc == null) return;
-            if (!doc.Close())
-                args.Cancel = true;
+
+            args.Cancel = true; // cancel the default tab close action as we want to call 
+
+            doc.TryClose();     // TryClose and give the document a chance to block the close
         }
+
         /*
         public IEnumerable<IResult> DocumentClosing(DocumentViewModel document, DocumentClosingEventArgs e)
         {
@@ -154,5 +168,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         */
+
+        public void Activate(object document)
+        {
+            var doc = document as DocumentViewModel;
+            if (doc != null)
+            {
+                ActivateItem(doc);
+                ActiveDocument = doc;
+            }
+        }
     }
 }

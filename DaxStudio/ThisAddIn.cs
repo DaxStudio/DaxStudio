@@ -1,22 +1,30 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
-using System.Windows.Threading;
 using ADOTabular.AdomdClientWrappers;
-using Caliburn.Micro;
-using DaxStudio.UI;
+using Microsoft.Office.Tools.Ribbon;
 
 namespace DaxStudio
 {
     public partial class ThisAddIn
     {
+        private static bool _inShutdown ;
+
         private void ThisAddInStartup(object sender, EventArgs e)
         {
+            
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
-            
-            
             CreateRibbonObjects();
+            
+        }
 
+        private DaxStudioRibbon _ribbon;
+        protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
+        {
+            this._ribbon = new DaxStudioRibbon();
+            return new IRibbonExtension[] {this._ribbon};
+            //return base.CreateRibbonObjects();
         }
 
         //the Microsoft.Excel.AdomdClient.dll used for Excel Data Models in Excel 15 isn't in any of the paths .NET looks for assemblies in... so we have to catch the AssemblyResolve event and manually load that assembly
@@ -30,7 +38,12 @@ namespace DaxStudio
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Problem during AssemblyResolve in Dax Studio:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "Dax Studio");
+                if (!_inShutdown)
+                {
+                    MessageBox.Show(
+                        "Problem during AssemblyResolve in Dax Studio:\r\n" + ex.Message + "\r\n" + ex.StackTrace,
+                        "Dax Studio");
+                }
                 return null;
             }
         }
@@ -40,7 +53,23 @@ namespace DaxStudio
         {
             // this forces the wpf RibbonWindow to shutdown correctly
             // see http://go4answers.webhost4life.com/Example/ribbonribbonwindow-microsoft-ribbon-74444.aspx
-            Dispatcher.CurrentDispatcher.InvokeShutdown();
+            try
+            {
+                _inShutdown = true;
+                _ribbon.CancelToken.Cancel();
+                Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
+                // wait upto 5 secs for app to shutdown
+                _ribbon.ShutDownSync.WaitOne(3000);
+                //GC.Collect();
+                //GC.WaitForPendingFinalizers();
+                Debug.WriteLine(string.Format("{0} ===>>> app shutdown", DateTime.Now ));
+                //    Dispatcher.CurrentDispatcher.InvokeShutdown();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            
         }
 
         #region VSTO generated code

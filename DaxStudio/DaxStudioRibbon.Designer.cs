@@ -67,6 +67,7 @@
             this.Name = "DaxStudioRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.Tabs.Add(this.tab1);
+            this.Close += new System.EventHandler(this.DaxStudioRibbon_Close);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Ribbon1Load);
             this.tab1.ResumeLayout(false);
             this.tab1.PerformLayout();

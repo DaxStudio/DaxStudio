@@ -9,6 +9,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
+        <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/icon-model@16px.png" />
         <conv:ResourceLookupConverter x:Key="MetadataIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
@@ -17,10 +18,11 @@
                 <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenColumn.png" />
                 <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
                 <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
-                <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/DmvTable.png" />
+                <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/model.png" />
                 <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
+        <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
     </UserControl.Resources>
 
     <Grid >
@@ -42,7 +44,7 @@
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="/DaxStudio.UI;component/Resources/Table.png" Margin="2,1,5,1"/>
+                        <Image Source="{StaticResource ModelIcon}" Margin="2,1,5,1"/>
                         <TextBlock Text="{Binding Name}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
@@ -66,10 +68,10 @@
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                         <TextBlock  Text="{Binding Caption}" >
                             <TextBlock.ToolTip>
-                            <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Vertical" MaxWidth="250">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                    <TextBlock Text="{Binding Name}"></TextBlock><TextBlock Text="{Binding DataType}"></TextBlock>
+                                    <TextBlock Text="{Binding Caption}"></TextBlock>
                                 </StackPanel>
                                 <TextBlock Text="{Binding Description}"></TextBlock>
                             </StackPanel>
@@ -83,14 +85,17 @@
                                 <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                                 <TextBlock Text="{Binding Caption}">
                                     <TextBlock.ToolTip>
-                            <StackPanel Orientation="Vertical">
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                    <TextBlock Text="{Binding Name}"></TextBlock><TextBlock Text="{Binding DataType}"></TextBlock>
-                                </StackPanel>
-                                <TextBlock Text="{Binding Description}"></TextBlock>
-                            </StackPanel>
-                        </TextBlock.ToolTip>    
+                                        <StackPanel Orientation="Vertical" MaxWidth="250">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                                <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                            </StackPanel>
+                                            <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                        </StackPanel>
+                                    </TextBlock.ToolTip>    
                                 </TextBlock>
                             </StackPanel>
                         </DataTemplate>

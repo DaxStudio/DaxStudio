@@ -1,9 +1,10 @@
 ﻿extern alias ExcelAdomdClientReference;
+using System;
 using System.Data;
 
 namespace ADOTabular.AdomdClientWrappers
 {
-    public class AdomdConnection
+    public class AdomdConnection:IDisposable
     {
         private AdomdType _type;
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
@@ -322,6 +323,25 @@ namespace ADOTabular.AdomdClientWrappers
                     return _connExcel.GetSchemaDataSet(schemaName, coll);
                 };
                 return f();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_type == AdomdType.AnalysisServices)
+            {
+                if (_conn != null)
+                    _conn.Dispose();
+            }
+            else
+            {
+                ExcelAdoMdConnections.VoidDelegate f = delegate
+                {
+                    if (_connExcel != null)
+                        _connExcel.Dispose();
+                };
+                f();
+                
             }
         }
     }

@@ -119,7 +119,6 @@ Global
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Excel 2013|x86.ActiveCfg = Debug Excel 2013|Any CPU
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Standalone|Any CPU.ActiveCfg = Debug Standalone|Any CPU
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Standalone|Mixed Platforms.ActiveCfg = Debug Standalone|Any CPU
-		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Standalone|Mixed Platforms.Build.0 = Debug Standalone|Any CPU
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Standalone|x64.ActiveCfg = Debug Standalone|Any CPU
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug Standalone|x86.ActiveCfg = Debug Standalone|Any CPU
 		{C8769178-B109-4155-ABC2-F4E4587642DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -256,13 +255,11 @@ Global
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.CD_ROM|x86.Build.0 = Release|x86
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|Any CPU.ActiveCfg = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|Mixed Platforms.ActiveCfg = Debug|x64
-		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|x64.ActiveCfg = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|x64.Build.0 = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Excel 2013|x86.ActiveCfg = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|Any CPU.ActiveCfg = Debug|x86
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|Mixed Platforms.ActiveCfg = Debug|x64
-		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|Mixed Platforms.Build.0 = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|x64.ActiveCfg = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|x64.Build.0 = Debug|x64
 		{FBDAFC3A-7391-4FEB-A595-8DAE2AE1B8D2}.Debug Standalone|x86.ActiveCfg = Debug|x64
@@ -305,13 +302,11 @@ Global
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.CD_ROM|x86.Build.0 = Release|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|Any CPU.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|Mixed Platforms.ActiveCfg = Debug Standalone|x86
-		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|x64.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|x86.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Excel 2013|x86.Build.0 = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Standalone|Any CPU.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Standalone|Mixed Platforms.ActiveCfg = Debug Standalone|x86
-		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Standalone|Mixed Platforms.Build.0 = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Standalone|x64.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug Standalone|x86.ActiveCfg = Debug Standalone|x86
 		{75A1C420-EBF5-4BBF-96D7-3E226463C3E5}.Debug|Any CPU.ActiveCfg = Debug|x86
@@ -399,7 +394,6 @@ Global
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.CD_ROM|x86.Build.0 = Release|x86
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|Any CPU.ActiveCfg = Debug Standalone|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|Mixed Platforms.ActiveCfg = Debug Standalone|Any CPU
-		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug Standalone|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|x64.ActiveCfg = Debug Standalone|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|x86.ActiveCfg = Debug Standalone|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Standalone|Any CPU.ActiveCfg = Debug Standalone|Any CPU

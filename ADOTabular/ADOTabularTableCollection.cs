@@ -9,7 +9,7 @@ namespace ADOTabular
         
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel  _model;
-        private readonly Dictionary<string, ADOTabularTable> _tables;
+        private readonly SortedDictionary<string, ADOTabularTable> _tables;
 
         public ADOTabularTableCollection(ADOTabularConnection adoTabConn, ADOTabularModel model)
         {

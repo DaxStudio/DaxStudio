@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 using System.Xml;
 using ICSharpCode.AvalonEdit.Editing;
@@ -45,6 +47,8 @@ namespace DAXEditor
         {
             
             base.OnInitialized(e);
+            base.Loaded += OnLoaded;
+            base.Unloaded += OnUnloaded;
             TextArea.TextEntering += textEditor_TextArea_TextEntering;
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
             //SetValue(TextBoxControllerProperty, new TextBoxController());
@@ -67,8 +71,61 @@ namespace DAXEditor
 
             //TODO - hardcoded for v1 - should be moved to a settings dialog
             this.FontFamily = new System.Windows.Media.FontFamily("Lucida Console");
-            this.ShowLineNumbers = true;            ;
+            this.DefaultFontSize = 11.0;
+            this.FontSize = DefaultFontSize;
+            this.ShowLineNumbers = true;            
         }
+
+        private double _defaultFontSize = 11.0;
+        public double DefaultFontSize {
+            get { return _defaultFontSize; }
+            set { _defaultFontSize = value;
+                FontSize = _defaultFontSize;
+            } 
+        }
+
+        public double FontScale
+        {
+            get { return FontSize/DefaultFontSize * 100; }
+            set { FontSize = DefaultFontSize * value/100; }
+        }
+
+        private readonly List<double> _fontScaleDefaultValues = new List<double>() {25.0, 50.0, 100.0, 200.0, 300.0, 400.0};
+        public  List<double> FontScaleDefaultValues
+        {
+            get { return _fontScaleDefaultValues; }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            this.PreviewMouseWheel -= OnPreviewMouseWheel;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            this.PreviewMouseWheel += OnPreviewMouseWheel;
+        }
+
+        private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                double fontSize = this.FontSize + e.Delta / 25.0;
+
+                if (fontSize < 6)
+                    this.FontSize = 6;
+                else
+                {
+                    if (fontSize > 200)
+                        this.FontSize = 200;
+                    else
+                        this.FontSize = fontSize;
+                }
+
+                e.Handled = true;
+            }
+        }
+
 
         CompletionWindow completionWindow;
 

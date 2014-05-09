@@ -2,6 +2,7 @@
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
@@ -118,7 +119,15 @@ namespace DaxStudio.UI.ViewModels
             base.OnConnectionChanged();
             if (Connection == null)
                 return;
-            ModelList = Connection.Database.Models;
+            var ml = Connection.Database.Models;
+            if (Dispatcher.CurrentDispatcher.CheckAccess())
+            {
+                Dispatcher.CurrentDispatcher.Invoke(new System.Action(()=> ModelList = ml));
+            }
+            else
+            {
+                ModelList = ml;
+            }
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => Connection);
         }

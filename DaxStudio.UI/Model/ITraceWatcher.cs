@@ -9,6 +9,7 @@ namespace DaxStudio.UI.Model
         // todo - need to pass event object as parameter
         void ProcessEvent(TraceEventArgs traceEvent);
         void Reset();
-        bool IsEnabled { get; }
+        bool IsEnabled { get; set; }
+        bool IsChecked { get; set; }
     }
 }

@@ -17,7 +17,8 @@
     <Grid>
         <avalondock:DockingManager 
             x:Name="Items"
-            ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}">
+            ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
+             >
 
             <!-- Note the Binding to "Content". This is how AvalonDock holds the model -->
 
@@ -27,7 +28,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Content.DisplayName}"/>
-                        <!--
+                        <!-- 
                         <Button x:Name="DocumentCloseButton"
                                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
                                 Margin="5,0,0,0" Visibility="Visible" >
@@ -65,7 +66,7 @@
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="DocumentClosing">
                     <cal:ActionMessage MethodName="TabClosing">
-                        <cal:Parameter Value="$documentcontext" />
+                        <cal:Parameter Value="{Binding}" />
                         <cal:Parameter Value="$eventArgs" />
                     </cal:ActionMessage>
                 </i:EventTrigger>

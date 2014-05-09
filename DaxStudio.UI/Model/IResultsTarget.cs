@@ -1,5 +1,6 @@
-﻿using System.Data;
-using DaxStudio.UI.ViewModels;
+﻿
+using DaxStudio.Interfaces;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Model
 {
@@ -8,5 +9,6 @@ namespace DaxStudio.UI.Model
         string Name { get; }
         string Group { get; }
         void OutputResults(IQueryRunner runner );
+        Task OutputResultsAsync(IQueryRunner runner);
     }
 }

@@ -141,6 +141,9 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\DaxStudio.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -162,19 +165,22 @@
     </Reference>
     <Reference Include="Caliburn.Micro">
       <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\Caliburn.Micro.dll</HintPath>
-    </Reference>
-    <Reference Include="Fluent">
-      <HintPath>..\packages\Fluent.Ribbon.2.1.0-f\lib\net40\Fluent.dll</HintPath>
-    </Reference>
-    <Reference Include="Gat.Controls.About">
-      <HintPath>..\packages\AboutBox.1.4.3.1\lib\net40\Gat.Controls.About.dll</HintPath>
-    </Reference>
-    <Reference Include="GongSolutions.Wpf.DragDrop">
-      <HintPath>..\packages\gong-wpf-dragdrop.0.1.3.10\lib\net40\GongSolutions.Wpf.DragDrop.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>..\packages\AvalonEdit.4.3.1.9430\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    <Reference Include="Fluent, Version=2.1.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Fluent.dll</HintPath>
+    </Reference>
+    <Reference Include="Gat.Controls.AboutBox">
+      <HintPath>..\packages\AboutBox.2.0.0\lib\net40\Gat.Controls.AboutBox.dll</HintPath>
+    </Reference>
+    <Reference Include="GongSolutions.Wpf.DragDrop, Version=0.1.3.11, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\gong-wpf-dragdrop.0.1.3.11\lib\net40\GongSolutions.Wpf.DragDrop.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=4.4.0.9727, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AvalonEdit.4.4.0.9727\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -185,7 +191,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fluent.Ribbon.2.1.0-f\lib\net40\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -230,18 +236,26 @@
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
+    <Compile Include="Events\ApplicationActivatedEvent.cs" />
+    <Compile Include="Events\CancelQueryEvent.cs" />
+    <Compile Include="Events\ConnectEvent.cs" />
+    <Compile Include="Events\CancelConnectEvent.cs" />
     <Compile Include="Events\EditorPositionChangedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
     <Compile Include="Events\OpenFileEvent.cs" />
+    <Compile Include="Events\OutputInformationMessageEvent.cs" />
+    <Compile Include="Events\QueryFinishedEvent.cs" />
+    <Compile Include="Events\SelectionChangeCaseEvent.cs" />
     <Compile Include="Events\StatusBarMessage.cs" />
     <Compile Include="Events\TraceWatcherToggleEvent.cs" />
     <Compile Include="Model\QueryTrace.cs" />
-    <Compile Include="Model\IQueryRunner.cs" />
     <Compile Include="Model\IToolWindow.cs" />
     <Compile Include="Model\ITraceWatcher.cs" />
     <Compile Include="Model\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="Model\TraceEventFactory.cs" />
+    <Compile Include="Utils\ApplicationCloseCheck.cs" />
+    <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
     <Compile Include="Utils\DataSetExtensions.cs" />
     <Compile Include="DaxStudioDockingManager.cs" />
@@ -253,6 +267,9 @@
     <Compile Include="Model\IResultsTarget.cs" />
     <Compile Include="Utils\DaxStudioLayoutStrategy.cs" />
     <Compile Include="Utils\EventExtension.cs" />
+    <Compile Include="Utils\IDocumentWorkspace.cs" />
+    <Compile Include="Utils\IHaveShutdownTask.cs" />
+    <Compile Include="Utils\MessageBoxEx.cs" />
     <Compile Include="Utils\PaneStyleSelector.cs" />
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
     <Compile Include="ViewModels\DmvPaneViewModel.cs" />
@@ -541,6 +558,48 @@
     <Resource Include="Images\icon-timer.png" />
     <Resource Include="Images\icon-timings%4096ppi.png" />
     <Resource Include="Images\icon-timings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-cancel%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\metro\icon-model.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-database.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-plan%4017px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-timings%4017px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\spinnermask.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\status-pos.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\status-server.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\status-spid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\metro\icon-model%4016px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-clearcache%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-excelstatic%4096ppi.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

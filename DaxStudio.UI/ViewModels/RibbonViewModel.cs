@@ -1,24 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Windows;
 using ADOTabular;
+using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using Microsoft.Win32; 
+using DaxStudio.UI.Properties;
 
 namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
-        , IHandle<ConnectionChangedEvent>
+        , IHandle<UpdateConnectionEvent>
         , IHandle<ActivateDocumentEvent>
+        , IHandle<QueryFinishedEvent>
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private ADOTabularConnection _connection;
-        private bool databaseComboChanging = false;
+        private bool _databaseComboChanging = false;
 
 
         [ImportingConstructor]
@@ -42,12 +46,41 @@ namespace DaxStudio.UI.ViewModels
 
         public void RunQuery()
         {
-            _eventAggregator.Publish(new RunQueryEvent(SelectedTarget) );
+            _queryRunning = true;
+            NotifyOfPropertyChange(()=>CanRunQuery);
+            NotifyOfPropertyChange(()=>CanCancelQuery);
+            NotifyOfPropertyChange(() => CanClearCache);
+            _eventAggregator.Publish(new RunQueryEvent(SelectedTarget,SelectedWorksheet) );
+
         }
 
-        public bool CanRunQuery()
+        public bool CanRunQuery
         {
-            return ActiveDocument.CanRunQuery;
+            get
+            {
+                return !_queryRunning;
+            }
+        }
+
+        public void CancelQuery()
+        {
+            _eventAggregator.Publish(new CancelQueryEvent());
+        }
+
+        public bool CanCancelQuery
+        {
+            get { return !CanRunQuery; }
+        }
+
+        public bool CanClearCache
+        {
+            get { return CanRunQuery; }
+        }
+
+        public void ClearCache()
+        {
+            _connection.Database.ClearCache();
+            _eventAggregator.Publish(new OutputInformationMessageEvent(string.Format("Cache Cleared for Database: {0}",_connection.Database.Name)));
         }
 
         public void Save()
@@ -58,7 +91,24 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument.SaveAs();
         }
-        
+
+        public void Connect()
+        {
+            ActiveDocument.ChangeConnection();
+        }
+
+        public bool CanConnect()
+        {
+            return true;
+        }
+
+        public ShellViewModel Shell { get; set; }
+
+        public void Exit()
+        {
+            Shell.TryClose();
+        }
+
         public void Open()
         {
             /*
@@ -84,9 +134,12 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Publish(new OpenFileEvent());
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public void Handle(UpdateConnectionEvent message)
         {
-            _connection = message.Connection;
+            if (message != null)
+            {
+                _connection = message.Connection;
+            }
             if (_connection == null)
             {
                 Databases = null;
@@ -94,31 +147,36 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
             Databases = _connection.Databases;
-            NotifyOfPropertyChange(()=> Databases);
-            databaseComboChanging = true;
+            
+            //databaseComboChanging = true;
             SelectedDatabase = _connection.Database.Name;
-            databaseComboChanging = false;
+            NotifyOfPropertyChange(() => Databases);
+            //databaseComboChanging = false;
 
         }
 
-        private string _selectedDatabase;
+        private string _selectedDatabase; 
         public string SelectedDatabase {
             get { return _selectedDatabase; }
             set
             {
-                if (value == _selectedDatabase)
-                    return;
-                if (!databaseComboChanging)
+                if (value == _selectedDatabase) return;
+                if (_databaseComboChanging) return;
+
+                _databaseComboChanging = true;
+
+                _selectedDatabase = value;
+                if (_connection != null && _selectedDatabase != null)
                 {
-                    databaseComboChanging = true;
-
-                    _selectedDatabase = value;
-                    _connection.ChangeDatabase(_selectedDatabase);
-                    //NotifyOfPropertyChange(()=> SelectedDatabase);
-                    _eventAggregator.Publish(new UpdateConnectionEvent(_connection));
-
-                    databaseComboChanging = false;
+                    if (!_connection.Database.Name.Equals(_selectedDatabase))
+                    {
+                        _connection.ChangeDatabase(_selectedDatabase);
+                        _eventAggregator.Publish(new UpdateConnectionEvent(_connection,_selectedDatabase));
+                    }
                 }
+                    
+                NotifyOfPropertyChange(()=> SelectedDatabase);
+                _databaseComboChanging = false;
             }
         }
 
@@ -126,6 +184,7 @@ namespace DaxStudio.UI.ViewModels
         public List<IResultsTarget> ResultsTargets {get; set; }
 
         private IResultsTarget _selectedTarget;
+        private bool _queryRunning;
         // default to first target if none currently selected
         public IResultsTarget SelectedTarget {
             get { return _selectedTarget ?? ResultsTargets[0]; }
@@ -139,7 +198,24 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(ActivateDocumentEvent message)
         {
             ActiveDocument = message.Document;
+            //ActiveDocument.PropertyChanged += ActiveDocumentOnPropertyChanged;   
             NotifyOfPropertyChange(()=> TraceWatchers);
+            if (ActiveDocument.Connection != null)
+            {
+                foreach (var tw in TraceWatchers)
+                {
+                    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
+                }
+            }
+            
+        }
+
+        private void ActiveDocumentOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+        /*    if (propertyChangedEventArgs.PropertyName != "CanRunQuery") return;
+            NotifyOfPropertyChange(() => CanRunQuery());
+            NotifyOfPropertyChange(()=> CanCancelQuery());
+         */
         }
 
         protected DocumentViewModel ActiveDocument { get; set; }
@@ -147,6 +223,25 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<string> Worksheets
         {
             get { return _host.Worksheets; }
+        }
+
+        public string SelectedWorksheet {
+            get { return ActiveDocument.SelectedWorksheet; } 
+            set { ActiveDocument.SelectedWorksheet = value; } }
+
+        // TODO - configure MRU list
+        public System.Collections.Specialized.StringCollection RecentDocuments
+        {
+            get { return Settings.Default.RecentDocuments; }
+            
+        }
+
+        public void Handle(QueryFinishedEvent message)
+        {
+            _queryRunning = false;
+            NotifyOfPropertyChange(()=>CanRunQuery);
+            NotifyOfPropertyChange(()=>CanCancelQuery);
+            NotifyOfPropertyChange(()=>CanClearCache);
         }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Windows.Threading;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Model;
 using Microsoft.Office.Interop.Excel;
 using Caliburn.Micro;
 using System.Linq;
@@ -11,26 +14,31 @@ using System.Linq;
 namespace DaxStudio
 {
     
-
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IDaxStudioHost))]
-    public class DaxStudioExcelHost : PropertyChangedBase, IDaxStudioHost 
+    public class DaxStudioExcelHost : PropertyChangedBase, IDaxStudioHost , IDisposable
     {
-        const string NEW_SHEET = "<New Sheet>";
-        const string DAX_RESULTS_SHEET = "<Query Results Sheet>";
-
-        private readonly Workbook _workbook;
-        private Application _app;
-        private ExcelHelper _xlHelper;
+        
+        private readonly Application _app;
+        private readonly ExcelHelper _xlHelper;
+        
         [ImportingConstructor]
         public DaxStudioExcelHost()
         {
-            _app = Globals.ThisAddIn.Application;
-            _workbook = _app.ActiveWorkbook;
-            _app.WorkbookActivate += new AppEvents_WorkbookActivateEventHandler(_app_WorkbookActivate);
+            var addin = Globals.ThisAddIn;
+            _app = addin.Application;
             _xlHelper = new ExcelHelper(_app);
         }
 
+        public string WorksheetDaxResults
+        {
+            get { return DaxStudio.UI.Properties.Resources.DAX_Results_Sheet; }
+        }
+
+        public string WorksheetNew
+        {
+            get { return DaxStudio.UI.Properties.Resources.DAX_New_Sheet; }
+        }
         void _app_WorkbookActivate(Workbook Wb)
         {
             // TODO - check powerpivot model, reload metadata??
@@ -70,21 +78,48 @@ namespace DaxStudio
         }
         
         public string WorkbookName {
-            get { return _workbook.FullName; }
-            set {}
+            get
+            {
+                var wb = _app.ActiveWorkbook;
+                return wb.FullName;
+            }
+            //set {}
         }
 
         public IEnumerable<string> Worksheets {
             get
             {
-                yield return DAX_RESULTS_SHEET;
-                yield return NEW_SHEET;
+                yield return WorksheetDaxResults;
+                yield return WorksheetNew;
                 foreach (Worksheet sht in _app.ActiveWorkbook.Worksheets)
                 {
                     yield return sht.Name;
                 }
             }
         }
+
+        public void OutputStaticResult(System.Data.DataTable results, string sheetName)
+        { 
+            if (Dispatcher.CurrentDispatcher.CheckAccess())
+            {
+                Debug.WriteLine("===>> Invoking on Dispatcher  <<===");
+                Dispatcher.CurrentDispatcher.Invoke(new System.Action(
+                    () => _xlHelper.CopyDataTableToRange(results, _xlHelper.GetTargetWorksheet(sheetName))));
+            }
+            else
+            {
+                _xlHelper.CopyDataTableToRange(results, _xlHelper.GetTargetWorksheet(sheetName));    
+            }
+            
+        }
+
+        public void OutputQueryTableResult(string connection, string daxQuery, string sheetName,IQueryRunner runner)
+        {
+            // TODO - write dynamic results
+            var ws = _xlHelper.GetTargetWorksheet(sheetName);
+            _xlHelper.DaxQueryTable(ws,connection, daxQuery,runner);
+        }
+
 
         public ADOTabularConnection GetPowerPivotConnection()
         {
@@ -117,6 +152,12 @@ namespace DaxStudio
                 // for connections to Excel 2010 we need to use the AnalysisServices version of ADOMDClient
                 return new ADOTabularConnection(connStr, AdomdType.AnalysisServices);
             }
+        }
+
+        public void Dispose()
+        {
+            _xlHelper.Dispose();
+
         }
     }
 }

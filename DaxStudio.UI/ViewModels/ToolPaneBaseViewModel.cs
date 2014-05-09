@@ -72,10 +72,13 @@ namespace DaxStudio.UI.ViewModels
 
         public void Dropped(IDropInfo dropInfo)
         {
-            throw new System.NotImplementedException();
+            // do nothing
         }
 
-        
+        public void DragCancelled()
+        {
+            // do nothing
+        }
     }
 
 }

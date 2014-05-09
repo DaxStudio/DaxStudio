@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Interfaces
 {
     public interface IQueryRunner
     {
@@ -20,5 +16,9 @@ namespace DaxStudio.UI.Model
         void ActivateResults();
         void ActivateOutput();
         void QueryCompleted();
+        IDaxStudioHost Host { get; }
+        string SelectedWorksheet { get; set; }
+        string ConnectionString { get; }
+    
     }
 }

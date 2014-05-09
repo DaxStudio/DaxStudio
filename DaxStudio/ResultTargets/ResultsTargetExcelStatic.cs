@@ -6,12 +6,12 @@ using DaxStudio.UI.Model;
 
 namespace DaxStudio.ResultTargets
 {
-    // This is the target which writes the results out to
-    // the a linked table in Excel (so that it can be refreshed without using Dax Studio)
+    // This is the target which writes the static results out to
+    // a range in Excel
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetExcelLinked: IResultsTarget
+    public class ResultsTargetExcelStatic: IResultsTarget
     {
-        public string Name {get { return "Linked"; }
+        public string Name {get { return "Static"; }
         }
         public string Group {get { return "Excel"; }
         }
@@ -32,8 +32,7 @@ namespace DaxStudio.ResultTargets
                         var res = antecendant.Result;
 
                         // TODO write results to Excel
-                        runner.Host.OutputQueryTableResult(runner.ConnectionString,runner.QueryText,runner.SelectedWorksheet,runner );
-                        
+                        runner.Host.OutputStaticResult(res, runner.SelectedWorksheet);
                         //runner.ResultsTable = res;
                         
                         runner.OutputMessage(
@@ -67,7 +66,7 @@ namespace DaxStudio.ResultTargets
 
 
                         // TODO write results to Excel
-                        runner.Host.OutputQueryTableResult(runner.ConnectionString, runner.QueryText, runner.SelectedWorksheet, runner);
+                        runner.Host.OutputStaticResult(res, runner.SelectedWorksheet);
                         //runner.ResultsTable = res;
 
                         runner.OutputMessage(

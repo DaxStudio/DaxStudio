@@ -29,7 +29,7 @@ namespace ADOTabular
             return ret;
         }
 
-        Dictionary<string, ADOTabularTable> IMetaDataVisitor.Visit(ADOTabularTableCollection tables)
+        SortedDictionary<string, ADOTabularTable> IMetaDataVisitor.Visit(ADOTabularTableCollection tables)
         {
             var resColl = new AdomdRestrictionCollection { { "CATALOG_NAME", _conn.Database.Name } };
             // restrict the metadata to the selected perspective
@@ -38,9 +38,19 @@ namespace ADOTabular
             // if we are SQL 2012 SP1 or greater ask for v1.1 of the Metadata (includes KPI & Hierarchy information)
             if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0"))
                 resColl.Add(new AdomdRestriction("VERSION", "1.1"));
-            var tabs = new Dictionary<string, ADOTabularTable>();
+            var tabs = new SortedDictionary<string, ADOTabularTable>();
             var ds = _conn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", resColl);
             string csdl = ds.Tables[0].Rows[0]["Metadata"].ToString();
+
+
+            /*
+            //  debug code
+            using (StreamWriter outfile = new StreamWriter( @"d:\data\csdl.xml"))
+            {
+                outfile.Write(csdl);
+            }
+            */
+
             XmlReader rdr = new XmlTextReader( new StringReader(csdl) );
             if (rdr.NameTable != null)
             {
@@ -48,7 +58,8 @@ namespace ADOTabular
                 var eEntityType = rdr.NameTable.Add("EntityType");
                 var eProperty = rdr.NameTable.Add("Property");
                 var eMeasure = rdr.NameTable.Add("Measure");
-            
+                var eSummary = rdr.NameTable.Add("Summary");
+
                 while (rdr.Read())
                 {
                     if (rdr.NodeType == XmlNodeType.Element
@@ -60,7 +71,7 @@ namespace ADOTabular
                     if (rdr.NodeType == XmlNodeType.Element
                         && rdr.LocalName == eEntityType)
                     {
-                        AddColumnsToTable(rdr,tabs, eEntityType, eProperty,eMeasure);
+                        AddColumnsToTable(rdr,tabs, eEntityType, eProperty,eMeasure,eSummary);
                     }
                 }
             }
@@ -106,7 +117,7 @@ namespace ADOTabular
             return tab;
         }
 
-        private void AddColumnsToTable(XmlReader rdr, Dictionary<string,ADOTabularTable> tables, string eEntityType, string eProperty, string eMeasure )
+        private void AddColumnsToTable(XmlReader rdr, SortedDictionary<string,ADOTabularTable> tables, string eEntityType, string eProperty, string eMeasure, string eSummary )
         {
             string caption = "";
             string description = "";
@@ -133,11 +144,14 @@ namespace ADOTabular
                     }
                 }
 
-                if (rdr.NodeType == XmlNodeType.Element && (rdr.LocalName == eProperty || rdr.LocalName == eMeasure))
+                if (rdr.NodeType == XmlNodeType.Element && (rdr.LocalName == eProperty || rdr.LocalName == eMeasure || rdr.LocalName == eSummary))
                 {
                     
                     if (rdr.LocalName == eMeasure)
                         colType = ADOTabularColumnType.Measure;
+
+                    if (rdr.LocalName == eSummary)
+                        description = rdr.ReadElementContentAsString();
 
                     while (rdr.MoveToNextAttribute())
                     {
@@ -193,7 +207,7 @@ namespace ADOTabular
         }
 
 
-        private ADOTabularTable GetTableById(Dictionary<string, ADOTabularTable> tables, string tableId)
+        private ADOTabularTable GetTableById(SortedDictionary<string, ADOTabularTable> tables, string tableId)
         {
             foreach (var t in tables.Values)
             {

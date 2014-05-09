@@ -56,8 +56,10 @@ namespace ADOTabular
         public string Description { get; private set; }
 
         public bool IsVisible { get; private set; }
-
+ 
         public Type DataType { get; set; }
+
+        public string DataTypeName { get { return DataType.ToString().Replace("System.", ""); } }
 
         public MetadataImages MetadataImage
         {

@@ -6,6 +6,7 @@ using ADOTabular;
 using DaxStudio;
 using DaxStudio.UI;
 using DaxStudio.Interfaces;
+using System.Data;
 
 namespace DaxStudio.Standalone
 {
@@ -39,8 +40,17 @@ namespace DaxStudio.Standalone
             get { return "No Workbook available"; }
             set {}
         }
-        public List<string> Worksheets {
-            get { return null; }
+
+        /* ==== Excel Host Stub functions - do not need to be implemented in the stand alone host  ==== */
+
+        public void OutputStaticResult(DataTable results, string sheetName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OutputQueryTableResult(string connection, string daxQuery, string sheetName, IQueryRunner runner)
+        {
+            throw new NotImplementedException();
         }
 
         public ADOTabularConnection GetPowerPivotConnection()
@@ -48,7 +58,6 @@ namespace DaxStudio.Standalone
             //Todo 
             throw new NotImplementedException();
         }
-
 
         void IDaxStudioHost.EnsurePowerPivotDataIsLoaded()
         {
@@ -58,6 +67,12 @@ namespace DaxStudio.Standalone
         IEnumerable<string> IDaxStudioHost.Worksheets
         {
             get { throw new NotImplementedException(); }
+        }
+
+
+        public void Dispose()
+        {
+            
         }
     }
 }
