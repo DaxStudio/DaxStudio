@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
         xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent" 
         xmlns:DAXEditor="clr-namespace:DAXEditor;assembly=DAXEditor" 
-        xmlns:avalondock="http://avalondock.codeplex.com" 
+        xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock" 
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:cal="http://www.caliburnproject.org" 
         mc:Ignorable="d" 
@@ -109,6 +109,21 @@
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SelectionToLower"/>
         </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="U" Modifiers="Control+Alt"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="UncommentSelection"/>
+        </local:InputBindingTrigger>
+        
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="C" Modifiers="Control+Alt"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="CommentSelection"/>
+        </local:InputBindingTrigger>
+
     </i:Interaction.Triggers>
 
     <Grid x:Name="LayoutRoot"

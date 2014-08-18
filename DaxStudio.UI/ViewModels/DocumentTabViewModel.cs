@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Windows;
-using AvalonDock;
+using Xceed.Wpf.AvalonDock;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
+using Microsoft.Win32;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -41,6 +43,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             NewQueryDocument(); // load a blank query window at startup
             _eventAggregator.Subscribe(this);
+
         }
 
 
@@ -62,17 +65,17 @@ namespace DaxStudio.UI.ViewModels
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
-                _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection));
+                _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
             }
         }
 
         
         public void NewQueryDocument()
         {
-            NewQueryDocument(false);
+            NewQueryDocument(string.Empty);
         }
 
-        public void NewQueryDocument( bool loadFromDisk)
+        public void NewQueryDocument( string fileName)
         {
             //var newDoc = new DocumentViewModel();
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
@@ -80,26 +83,29 @@ namespace DaxStudio.UI.ViewModels
             
             Items.Add(newDoc);
             
-
+            
             ActivateItem(newDoc);
             ActiveDocument = newDoc;
-
-            if (loadFromDisk)
+            
+            if (fileName != string.Empty)
             {
             //    _eventAggregator.Publish(new LoadFileEvent(fileName));
-                newDoc.DisplayName = "<New>";
-                newDoc.OpenFile();
+                newDoc.DisplayName = "Opening...";
+                //newDoc.OpenFile(fileName);
+                newDoc.FileName = fileName;
+                newDoc.State = DocumentState.LoadPending;
+                //newDoc.OpenFile();
             }
             else
             {
-                var fileName = string.Format("Query{0}.dax", _documentCount);
+                var newFileName = string.Format("Query{0}.dax", _documentCount);
                 _documentCount++;
-                newDoc.DisplayName = fileName;
-                new System.Action(ChangeConnection).BeginOnUIThread();
-                
+                newDoc.DisplayName = newFileName;
+                new System.Action(ChangeConnection).BeginOnUIThread();    
             }
             //newDoc.IsDirty = false;
             new System.Action(CleanActiveDocument).BeginOnUIThread();
+            
         }
 
         private void CleanActiveDocument()
@@ -119,7 +125,25 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(OpenFileEvent message)
         {
-            NewQueryDocument(true);
+            // Configure open file dialog box
+            var dlg = new OpenFileDialog
+            {
+                FileName = "Document",
+                DefaultExt = ".dax",
+                Filter = "DAX documents (.dax)|*.dax"
+            };
+
+            // Show open file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process open file dialog box results 
+            if (result == true)
+            {
+                // Open document 
+                var fileName = dlg.FileName;
+                NewQueryDocument(fileName);
+            }
+            
         }
 
         public void TabClosing(object sender, DocumentClosingEventArgs args)

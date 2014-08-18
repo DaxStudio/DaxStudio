@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:avalondock="http://avalondock.codeplex.com" 
+    xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock" 
     mc:Ignorable="d" d:DesignWidth="294.813" d:DesignHeight="215.84" 
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
@@ -136,11 +136,11 @@
                                             </Setter>
                                         </Style>
                                     </avalondock:DropDownButton.Style>
-                                    <Image>
+                                    <!--<Image>
                                         <Image.Source>
                                             <BitmapImage UriSource="pack://application:,,,/AvalonDock;component/Images/PinDocMenu.png"/>
                                         </Image.Source>
-                                    </Image>
+                                    </Image>-->
                                 </avalondock:DropDownButton>
                             </Grid>
                             <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
@@ -201,7 +201,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="24"></RowDefinition>
         </Grid.RowDefinitions>
         <avalondock:DockingManager x:Name="Document" 
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
@@ -273,14 +272,16 @@
                     </avalondock:LayoutAnchorablePaneGroup>
                     
                     <!-- Main Document Pane -->
-                    <avalondock:LayoutPanel Orientation="Vertical">    
-                        <avalondock:LayoutDocumentPane DockHeight="Auto"  >
+                    
+                    <avalondock:LayoutPanel Orientation="Vertical">
+                        
+                            <avalondock:LayoutDocumentPane DockHeight="Auto"  >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
                                 
                                 
                                     <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"                                    
                                                    VerticalAlignment="Top" MinWidth="100" MinHeight="80"
-                                                    
+                                                   FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    AllowDrop="True"
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -291,8 +292,10 @@
                             
                             </avalondock:LayoutDocument>
                         </avalondock:LayoutDocumentPane>
+                    
                         
-                        <!-- Bottom Output panes -->
+                    <!-- Bottom Output panes -->
+                        
                         <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="100" DockHeight="200">
 
                             <avalondock:LayoutAnchorablePane Name="DockBottom">
@@ -312,6 +315,6 @@
 
             </avalondock:LayoutRoot>
         </avalondock:DockingManager>
-        <ContentControl Grid.Row="1" x:Name="StatusBar"></ContentControl>
+        
     </Grid>
 </UserControl>

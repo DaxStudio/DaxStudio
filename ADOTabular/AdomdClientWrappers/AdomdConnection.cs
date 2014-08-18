@@ -297,14 +297,18 @@ namespace ADOTabular.AdomdClientWrappers
         {
             if (_type == AdomdType.AnalysisServices)
             {
-                Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
+                global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                 if (restrictions != null)
                 {
                 
-                    foreach (AdomdRestriction res in restrictions)
+                    foreach (AdomdClientWrappers.AdomdRestriction res in restrictions)
                     {
-                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
+                        coll.Add(new global::Microsoft.AnalysisServices.AdomdClient.AdomdRestriction( res.Name, res.Value));
                     }
+                }
+                if (_conn.State != ConnectionState.Open)
+                {
+                    _conn.Open();
                 }
                 return _conn.GetSchemaDataSet(schemaName, coll);
             }
@@ -319,6 +323,10 @@ namespace ADOTabular.AdomdClientWrappers
                         {
                             coll.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
                         }
+                    }
+                    if (_connExcel.State != ConnectionState.Open)
+                    {
+                        _connExcel.Open();
                     }
                     return _connExcel.GetSchemaDataSet(schemaName, coll);
                 };

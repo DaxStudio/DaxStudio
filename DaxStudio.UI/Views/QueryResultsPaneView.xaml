@@ -16,6 +16,9 @@
             <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
                 <Setter Property="RecognizesAccessKey" Value="False"/>
             </Style>
+            <!--<DataTemplate DataType="{x:Type DateTime}">
+                <TextBlock Text="{Binding StringFormat={0:d}}"  />
+            </DataTemplate>-->
         </ListView.Resources>
     
     </ListView>    

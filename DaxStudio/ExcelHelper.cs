@@ -4,9 +4,9 @@ using System.Linq;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
-using DaxStudio.UI;
 using Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+using System.Data;
 
 namespace DaxStudio 
 {
@@ -17,7 +17,7 @@ namespace DaxStudio
         const string DAX_RESULTS_SHEET = "<Query Results Sheet>";
         // ReSharper restore InconsistentNaming
 
-        private QueryTable _qryTable;
+        //private QueryTable _qryTable;
         private readonly Application _app ;
 
         public delegate void QueryTableRefreshedHandler(object sender, QueryTableRefreshEventArgs e);
@@ -28,13 +28,15 @@ namespace DaxStudio
             _app = app;
         }
         
+        /*
         public void RefreshQueryTableAsync(QueryTable queryTable)
         {
             _qryTable = queryTable;
             _qryTable.AfterRefresh += OnQueryTableAfterRefresh;
             _qryTable.Refresh(true);
         }        
-        
+        */
+
         public Worksheet GetTargetWorksheet(string sheetName)
         {
             var wb = _app.ActiveWorkbook;
@@ -78,6 +80,18 @@ namespace DaxStudio
             var cols = r.EntireColumn;
             cols.AutoFit();
 
+            var iCol = 1;     // Excel ranges are 1 based
+            foreach (DataColumn c in dt.Columns)
+            {
+                if (c.DataType == typeof(DateTime))
+                {
+                    Range col = r.Columns[iCol];
+                    col.NumberFormat = "m/d/yyyy"; // US format appears to set the default date format for the current culture
+
+                }
+                iCol++;
+            }
+
             // Mark the first row as BOLD
             var hdr = ((Range)excelSheet.Rows[1, Type.Missing]);
             var hdrFont = hdr.Font;
@@ -120,6 +134,13 @@ namespace DaxStudio
             return _shtDaxResults;
         }
 
+        internal bool IsExcel2013OrLater
+        {
+            get {
+                return float.Parse(_app.Version) >= 15;
+            }
+        }
+
         public bool HasPowerPivotData()
         {
             var wb = _app.ActiveWorkbook;
@@ -128,15 +149,15 @@ namespace DaxStudio
             
                 if (pvtcaches.Count == 0)
                     return false;
-                if (float.Parse(_app.Version) >= 15)
-                    return (from PivotCache pvtc in pvtcaches
-                            //let conn = pvtc.Connection.ToString()
-                            where pvtc.OLAP
-                                  && pvtc.CommandType == XlCmdType.xlCmdCube
-                                  && (int) pvtc.WorkbookConnection.Type == 7
-                            // xl15Model
-                            select pvtc).Any();
+                if (IsExcel2013OrLater)
+                {
+                    var conns = wb.Connections;
+                    var wbc = conns["ThisWorkbookDataModel"];
+                    if (wbc != null)  return true;
 
+                    return false;
+
+                }
                 return (from PivotCache pvtc in pvtcaches
                         let conn = pvtc.Connection.ToString()
                         where pvtc.OLAP
@@ -146,6 +167,8 @@ namespace DaxStudio
             
         }
 
+
+
         //((dynamic)pc.WorkbookConnection).ModelConnection.ADOConnection.ConnectionString
         //"Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7"
         public ADOTabularConnection GetPowerPivotConnection()
@@ -154,7 +177,7 @@ namespace DaxStudio
             string connStr;
             var wb = _app.ActiveWorkbook;
             PivotCaches pvtcaches = wb.PivotCaches();
-            if (float.Parse(_app.Version) >= 15)
+            if (IsExcel2013OrLater)
             {
                 pc = (from PivotCache pvtc in pvtcaches
                                  let conn = pvtc.Connection.ToString()
@@ -189,8 +212,21 @@ namespace DaxStudio
             }
         }
 
-
         public void EnsurePowerPivotDataIsLoaded()
+        {
+            if (IsExcel2013OrLater)
+            { EnsurePowerPivotDataIsLoaded2013(); }
+            else
+            { EnsurePowerPivotDataIsLoaded2010(); }
+        }
+
+        public void EnsurePowerPivotDataIsLoaded2013()
+        {
+            var wbc = FindPowerPivotConnection(_app.ActiveWorkbook);
+            wbc.Refresh();
+        }
+
+        public void EnsurePowerPivotDataIsLoaded2010()
         {
             var wb = _app.ActiveWorkbook;
             PivotCaches pvtcaches = wb.PivotCaches();
@@ -216,37 +252,28 @@ namespace DaxStudio
 
         public void Dispose()
         {
-        //    _app.WorkbookActivate -= _wbkActivate;
-
-            try
-            {
-            //    GC.Collect();
-            //    GC.WaitForPendingFinalizers();
-                //Marshal.FinalReleaseComObject(_app);
-                //Marshal.FinalReleaseComObject(_qryTable);
-                //    _qryTable.AfterRefresh -= OnQueryTableAfterRefresh;
-            }
-            finally
-            {
-                _qryTable = null;
-            }
+        
         }
 
 
-        /*
-     
-     *=====================================================
-     *  Query table functions
-     *=====================================================
-     */
+/*
+*=====================================================
+*  Query table functions
+*=====================================================
+*/
 
-        public void DaxQueryTable(Worksheet excelSheet, string connectionString, string daxQuery , IQueryRunner runner)
+        public void DaxQueryTable(Worksheet excelSheet, string daxQuery )
         {
-            DaxQueryTable2013(excelSheet, connectionString, daxQuery, runner);
+            if (IsExcel2013OrLater)
+            { DaxQueryTable2013(excelSheet, daxQuery); }
+            else
+            { DaxQueryTable2010(excelSheet, daxQuery); }
         }
 
-        public static void DaxQueryTable2010(Worksheet excelSheet, ADOTabularConnection connection, string daxQuery, IQueryRunner runner)
+        public static void DaxQueryTable2010(Worksheet excelSheet, string daxQuery)
         {
+            Workbook wb = excelSheet.Parent;
+            string path = wb.FullName;
             ListObject lo;
             var listObjs = excelSheet.ListObjects;
             if (listObjs.Count > 0)
@@ -256,7 +283,9 @@ namespace DaxStudio
             else
             {
                 lo = listObjs.AddEx(0
-                , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connection.ConnectionString)
+                    , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source={0};Location={1};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                                , "$Embedded$"
+                                , path)
                 , Type.Missing
                 , XlYesNoGuess.xlGuess
                 , excelSheet.Range["$A$1"]);
@@ -287,139 +316,52 @@ namespace DaxStudio
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }
 
-        public static void DaxQueryTable2013(Worksheet excelSheet, string connectionString, string daxQuery, IQueryRunner runner)//, IOutputWindow output)
+        private static WorkbookConnection FindPowerPivotConnection(Workbook wb)
         {
-            ListObject lo;
-            var listObjs = excelSheet.ListObjects;
-            if (listObjs.Count > 0)
-            {
-                lo = listObjs[1]; //ListObjects collection is 1 based
-            }
-            else
-            {
-                lo = listObjs.AddEx(0
-                , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connectionString)
-                , Type.Missing
-                , XlYesNoGuess.xlGuess
-                , excelSheet.Range["$A$1"]);
-            }
-
-            var connStr = string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connectionString);
-
-            //connStr = string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;{0};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue", connection.ConnectionString)
-            //connStr = "OLEDB;Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=True;Data Source=.;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=W8B059096PR830;Use Encryption for Data=False;Tag with column collation when possible=False;Initial Catalog=NSW_Crime";
-            //var c = ((Workbook)excelSheet.Parent).Connections.Add("DaxStudio", "DaxStudio Conection", connStr, daxQuery, (dynamic)8);
-            //lo.QueryTable.Connection = c;
-
-            /*
-             With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
-        Connections(". NSW_Crime Offences"), Destination:=Range("$C$1")).TableObject
-        .RowNumbers = False
-        .PreserveFormatting = True
-        .RefreshStyle = 1
-        .AdjustColumnWidth = True
-        .ListObject.DisplayName = "Table_Offences"
-        .Refresh
-    End With
-    Range("D2").Select
-    With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
-        .CommandText = Array("evaluate values(Offences[lga])")
-        .CommandType = xlCmdDAX
-    End With
-    ActiveWorkbook.Connections("ModelConnection_Offences").Refresh
-             */
-            
-            var qt = lo.QueryTable;
-            Workbook wb = excelSheet.Parent;
-            WorkbookConnection wc = null;
+            WorkbookConnection wbc = null;
             foreach (WorkbookConnection c in wb.Connections)
             {
-                if (c.Name == ". NSW_Crime Offences")
-                    wc = c;
+                Debug.WriteLine("WorkbookConnection: " + c.Name);
+                if (!c.InModel) continue;
+                if (c.Type == XlConnectionType.xlConnectionTypeMODEL) continue;
+                if (c.ModelTables == null) continue;
+                if (c.ModelTables.Count == 0) continue;
                 
+                // otherwise
+                wbc = c;
+                break; 
             }
-            if (excelSheet.ListObjects.Count > 0)
-            {
-                lo = excelSheet.ListObjects[1]; //ListObjects collection is 1 based
-            }
-            else
-            {
-                // TODO - if Excel 15 ...
-                lo = excelSheet.ListObjects.Add( XlListObjectSourceType.xlSrcModel //4 //0
-                , wc //connStr
-                , Type.Missing
-                , XlYesNoGuess.xlGuess
-                , excelSheet.Range["$A$1"]);
-                qt.RowNumbers = false;
-                
-                qt.PreserveFormatting = true;
-                qt.RefreshStyle = XlCellInsertionMode.xlOverwriteCells;
-                qt.AdjustColumnWidth = true;
-                qt.ListObject.DisplayName = "DaxStudio";
-                //qt.Refresh();
-                string[] cmds = new string[1];
-                cmds[0] = daxQuery;
-                var wbc = qt.WorkbookConnection;
-                var oledbCnn = wbc.OLEDBConnection;
-                oledbCnn.CommandText = cmds;
-                oledbCnn.CommandType = XlCmdType.xlCmdDAX;
+            return wbc;
+        }
 
-                /*
-                var c = ((Workbook)excelSheet.Parent).Connections["LinkedTable_Population"];
-                lo = excelSheet.ListObjects.Add(XlListObjectSourceType.xlSrcQuery, c, Type.Missing,
-                                                XlYesNoGuess.xlGuess, excelSheet.Range["$A$1"]);
-                */
-            }
-            //System.Runtime.InteropServices.COMException
-            //{"Exception from HRESULT: 0x800401A8"}
+        public static void DaxQueryTable2013(Worksheet excelSheet, string daxQuery)//, IOutputWindow output)
+        {
 
-            //, "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-            //, @"OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
-            /*  
-              With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
-          Connections("LinkedTable_Sales"), Destination:=Range("$A$13")).TableObject
-          .RowNumbers = False
-          .PreserveFormatting = True
-          .RefreshStyle = 1
-          .AdjustColumnWidth = True
-          .ListObject.DisplayName = "Table_Sales_1"
-          .Refresh
-      End With
-      With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
-          .CommandText = Array("EVALUATE Sales")
-          .CommandType = xlCmdDAX
-      End With
-              */
+            Worksheet ws = excelSheet;
+            Workbook wb = excelSheet.Parent;
+            WorkbookConnection wbc=null;
 
+            // TODO - find connections
+            wbc = FindPowerPivotConnection(wb);
 
-            //lo.QueryTable.CommandType = (XlCmdType)8; // xlCmdDAX
-            //lo.QueryTable.CommandType = (dynamic)Enum.Parse(lo.QueryTable.CommandType.GetType(), "xlCmdDAX");
+            if (wbc == null) throw new Exception("Workbook table connection not found");
 
-            // TODO - if client = Excel 2013
+            var listObjs = ws.ListObjects;
+            var r = ws.Cells[1, 1];
+            var lo = listObjs.Add(SourceType: XlListObjectSourceType.xlSrcModel
+                , Source: wbc
+                , Destination: r);
 
-            //lo.TableObject.WorkbookConnection.OLEDBConnection.CommandType = XlCmdType.xlCmdDAX;
-            //lo.TableObject.WorkbookConnection.OLEDBConnection.CommandText = daxQuery;
-
-            //lo.QueryTable.CommandType = XlCmdType.xlCmdDAX;
-            //lo.QueryTable.CommandText = daxQuery;
-
-            //var p = ((Worksheet) ((Workbook) excelSheet.Parent).Sheets["Sheet2]"]).ListObjects["Table_Population"];
-
-            //lo.QueryTable.CommandText = daxQuery;
-            try
-            {
-                
-                runner.OutputMessage("Linked Table Refresh Starting");
-                //lo.QueryTable.Refresh(false);
-                qt.Refresh();
-                runner.OutputMessage("Linked Table Refresh Complete");
-                
-            }
-            catch (Exception ex)
-            {
-                runner.OutputError(ex.Message);
-                runner.ActivateOutput();
-            }
+            var to = lo.TableObject;
+            to.RowNumbers = false;
+            to.PreserveFormatting = true;
+            to.RefreshStyle = XlCellInsertionMode.xlInsertEntireRows;
+            to.AdjustColumnWidth = true;
+            //to.ListObject.DisplayName = "DAX query";
+            var oleCnn = to.WorkbookConnection.OLEDBConnection;
+            oleCnn.CommandText = new string[] { daxQuery };
+            oleCnn.CommandType = XlCmdType.xlCmdDAX;
+            oleCnn.Refresh();
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }
 
@@ -464,7 +406,4 @@ namespace DaxStudio
     
     }
     
-
-    
-
 }

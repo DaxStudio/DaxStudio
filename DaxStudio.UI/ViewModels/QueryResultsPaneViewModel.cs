@@ -33,6 +33,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DataView ResultsDataView
-        { get { return _resultsTable.AsDataView(); } }
+        { get { return _resultsTable==null?new DataTable("blank").AsDataView():  _resultsTable.AsDataView(); } }
     }
 }

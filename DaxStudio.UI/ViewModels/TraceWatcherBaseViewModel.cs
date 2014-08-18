@@ -108,5 +108,11 @@ namespace DaxStudio.UI.ViewModels
         {
             IsEnabled = (message.Connection.Type == AdomdType.AnalysisServices);
         }
+
+
+        public void CheckEnabled(ADOTabular.ADOTabularConnection _connection)
+        {
+            IsEnabled = (!_connection.IsPowerPivot);
+        }
     }
 }

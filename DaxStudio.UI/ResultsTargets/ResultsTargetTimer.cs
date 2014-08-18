@@ -42,5 +42,20 @@ namespace DaxStudio.UI.Model
         {
             return Task.Factory.StartNew(() => OutputResults(runner));
         }
+
+
+        public bool IsDefault
+        {
+            get { return false; }
+        }
+
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
+        public int DisplayOrder
+        {
+            get { return 20; }
+        }
     }
 }

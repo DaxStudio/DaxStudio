@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using AvalonDock.Layout;
+using Xceed.Wpf.AvalonDock.Layout;
 using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Utils

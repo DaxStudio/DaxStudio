@@ -1,5 +1,9 @@
-﻿using Owin;
+﻿using Newtonsoft.Json;
+using Owin;
+using System.Collections.Generic;
+using System.Net.Http.Formatting;
 using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
 
 namespace DaxStudio.Xmla
 {
@@ -11,12 +15,31 @@ namespace DaxStudio.Xmla
         {
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
+            /*
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-
+            config.Routes.MapHttpRoute(
+                name: "WorkbookApi",
+                routeTemplate: "api/{controller}/{action}", 
+                defaults: new { id = RouteParameter.Optional}
+                );
+             */
+            config.MapHttpAttributeRoutes();
+            /*config.Formatters.Add(new JsonMediaTypeFormatter
+            {
+                SerializerSettings = new JsonSerializerSettings
+                {
+                    Converters = new List<JsonConverter>
+                    {
+                        //list of your converters
+                        new JsonDataTableConverter()
+                    }
+                }
+            });*/
+            config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
             appBuilder.UseWebApi(config);
         }
     }

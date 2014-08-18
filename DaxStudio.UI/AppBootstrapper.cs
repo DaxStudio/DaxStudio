@@ -13,6 +13,8 @@ namespace DaxStudio.UI
 	using System.ComponentModel.Composition.Primitives;
 	using System.Linq;
 	using Caliburn.Micro;
+    using System.Windows.Markup;
+    using System.Globalization;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -47,7 +49,13 @@ namespace DaxStudio.UI
             {
                 var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
                 splashScreen.Show(true);
-	        
+
+                // Fixes the default datetime format in the results listview
+                // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
+                FrameworkElement.LanguageProperty.OverrideMetadata(
+                    typeof(FrameworkElement),
+                    new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
+
 	            var catalog = new AggregateCatalog(
 	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
 	                );

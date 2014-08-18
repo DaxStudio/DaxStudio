@@ -9,56 +9,60 @@ using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
     class ConnectionDialogViewModel : Screen  
     {
 
-        /*
-        public ConnectionDialogViewModel(ADOTabularConnection conn )
-        {
-            Connection = conn;
-            PowerPivotEnabled = false;
-            ServerModeSelected = true;
-            WorkbookName = "";
-            MdxCompatibility = "1";
-        }
-        */
         private readonly IEventAggregator _eventAggregator;
         private readonly string _connectionString;
-        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator )
+        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel )
         {
             _eventAggregator = eventAggregator;
-            //Connection = conn;
             _connectionString = connectionString;
             PowerPivotEnabled = true;
             Host = host;
             ServerModeSelected = true;
             if (Host.IsExcel)
             {
-                if (HasPowerPivotModel)
+                using (new StatusBarMessage("Checking for PowerPivot model..."))
                 {
-                    ServerModeSelected = false;
-                    PowerPivotModeSelected = true;
+                    //bool hasPpvt = false;
+                    //HasPowerPivotModelAsync().ContinueWith(t => hasPpvt = t.Result).Wait(); 
+                    
+                    if (hasPowerPivotModel)
+                    {
+                        ServerModeSelected = false;
+                        PowerPivotModeSelected = true;
+                    }
+                   
                 }
             }
             
-            WorkbookName = host.WorkbookName;
+            WorkbookName = host.Proxy.WorkbookName;
             DisplayName = "Connect To";
             MdxCompatibility = "3- (Default) Placeholder members are not exposed";
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }
 
-        public bool HasPowerPivotModel { get { return Host.HasPowerPivotModel; } }
+     
+        public async Task<bool> HasPowerPivotModelAsync() {
+
+            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel);
+            return res;
+            
+        }
 
         public bool ShowMissingModelWarning{ 
             get
             {
                 if (!HostIsExcel)
                     return false;
-                return !HasPowerPivotModel;
+                var hasPpvtModel = HasPowerPivotModelAsync().Result;
+                return !hasPpvtModel;
             }
         }
 
@@ -108,68 +112,58 @@ namespace DaxStudio.UI.ViewModels
 
         private void ConnectionDialogLoad(object sender, EventArgs e)
         {
-            // if connection string is not blank, split it into it's pieces
-            // and populate UI 
-            //if (Connection != null)
-            //{
-                if (_connectionString != String.Empty)
+            if (_connectionString != String.Empty)
+            {
+                _connectionProperties = SplitConnectionString(_connectionString);
+                // if data source = $Embedded$ then mark Ppvt option as selected 
+                if (_connectionProperties["Data Source"] == "$Embedded$")
                 {
-                    _connectionProperties = SplitConnectionString(_connectionString);
-                    // if data source = $Embedded$ then mark Ppvt option as selected 
-                    if (_connectionProperties["Data Source"] == "$Embedded$")
-                    {
-                        //           radPowerPivot.Checked = true;
-                        PowerPivotModeSelected = true;
-                    }
-                    else
-                    {
-                        //           radServer.Checked = true;
-                        // set dialog box properties
-                        //var sbOther = new StringBuilder();
-                        foreach (var p in _connectionProperties)
-                        {
-                            switch (p.Key.ToLower())
-                            {
-                                case "data source":
-                                    DataSource = p.Value;
-                                    break;
-                                case "roles":
-                                    Roles = p.Value;
-                                    break;
-                                case "effectiveusername":
-                                    EffectiveUserName = p.Value;
-                                    break;
-                                    /*
-                            case "mdx compatibility":
-                                KeyValuePair<string, string> p1 = p;
-                                foreach (
-                                    var compat in
-                                        cboMdxCompat.Items.Cast<string>().Where(
-                                            compat => compat.StartsWith(p1.Value)))
-                                {
-                                    cboMdxCompat.Text = compat;
-                                }
-                                break;
-                                 */
-                                case "directquerymode":
-                                    DirectQueryMode = p.Value;
-                                    break;
-                                default:
-                                    AdditionalProperties.Append(string.Format("{0}={1};", p.Key, p.Value));
-                                    break;
-                            }
-                        }
-                    }
+                    PowerPivotModeSelected = true;
                 }
                 else
                 {
-                    if (!PowerPivotModeSelected)
+                    foreach (var p in _connectionProperties)
                     {
-                        ServerModeSelected = true;
+                        switch (p.Key.ToLower())
+                        {
+                            case "data source":
+                                DataSource = p.Value;
+                                break;
+                            case "roles":
+                                Roles = p.Value;
+                                break;
+                            case "effectiveusername":
+                                EffectiveUserName = p.Value;
+                                break;
+                                /*
+                        case "mdx compatibility":
+                            KeyValuePair<string, string> p1 = p;
+                            foreach (
+                                var compat in
+                                    cboMdxCompat.Items.Cast<string>().Where(
+                                        compat => compat.StartsWith(p1.Value)))
+                            {
+                                cboMdxCompat.Text = compat;
+                            }
+                            break;
+                                */
+                            case "directquerymode":
+                                DirectQueryMode = p.Value;
+                                break;
+                            default:
+                                AdditionalProperties.Append(string.Format("{0}={1};", p.Key, p.Value));
+                                break;
+                        }
                     }
                 }
-            //}
-            
+            }
+            else
+            {
+                if (!PowerPivotModeSelected)
+                {
+                    ServerModeSelected = true;
+                }
+            }           
         }
 
         public string DataSource { get; set; }
@@ -208,8 +202,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //public ADOTabularConnection Connection { get; set; }   
-
         public bool PowerPivotEnabled { get; private set; }
 
         public string WorkbookName { get; private set; }
@@ -218,10 +210,12 @@ namespace DaxStudio.UI.ViewModels
         {
             return Roles == string.Empty ? string.Empty : string.Format("Roles={0};", Roles);
         }
+
         private string GetDirectQueryMode()
         {
             return DirectQueryMode == string.Empty ? string.Empty : string.Format("DirectQueryMode={0}", DirectQueryMode);
         }
+
         private string GetMdxCompatibilityMode()
         {
             return string.Format("MDX Compatibility={0};", MdxCompatibility.Substring(0, 1));
@@ -254,30 +248,21 @@ namespace DaxStudio.UI.ViewModels
         * This functionality is provided on an "as-is" basis.
         */
         private string BuildPowerPivotConnection()
-        {
-            
+        {    
             // TODO - need Full workbook name, not just the display name
             return string.Format("Data Source=$Embedded$;Location={0}", WorkbookName);
         }
 
-
-        public AdomdType ConnectionType
-        {
-            get { return PowerPivotModeSelected ? AdomdType.Excel : AdomdType.AnalysisServices; }
-        }
-
         public void Connect()
         {
-            //todo - need to send proper connection type
-            using (new StatusBarMessage("Connecting..."))
+            if (ServerModeSelected)
             {
-                //Connection = PowerPivotModeSelected
-                //                 ? Host.GetPowerPivotConnection()
-                //                 : new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
-                _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected));
+                RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
             }
+            _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName ));
             TryClose(true);
         }
+
         public void Cancel()
         {
             _eventAggregator.Publish(new CancelConnectEvent());

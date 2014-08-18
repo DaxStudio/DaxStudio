@@ -20,6 +20,11 @@ using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.AnalysisServices;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using UnitComboLib.ViewModel;
+using UnitComboLib.Unit.Screen;
+using System.Collections.Generic;
+using UnitComboLib.Unit;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -27,20 +32,21 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (Screen))]
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
-                                     , IHandle<RunQueryEvent>
-                                     , IHandle<SaveDocumentEvent>
-                                     , IHandle<SendTextToEditor>
-                                     , IHandle<UpdateConnectionEvent> // ,IDropTarget
-                                     , IHandle<TraceWatcherToggleEvent>
-                                     , IHandle<LoadFileEvent>
-                                     , IHandle<CancelQueryEvent>
-                                     , IHandle<OutputInformationMessageEvent>
-                                     , IHandle<ApplicationActivatedEvent>
-                                     , IHandle<ConnectEvent>
-                                     , IHandle<CancelConnectEvent>
-                                     , IHandle<SelectionChangeCaseEvent>
-                                     , IQueryRunner
-                                     , IHaveShutdownTask
+            , IHandle<RunQueryEvent>
+            , IHandle<SaveDocumentEvent>
+            , IHandle<SendTextToEditor>
+            , IHandle<UpdateConnectionEvent> // ,IDropTarget
+            , IHandle<TraceWatcherToggleEvent>
+            , IHandle<LoadFileEvent>
+            , IHandle<CancelQueryEvent>
+            , IHandle<OutputInformationMessageEvent>
+            , IHandle<ApplicationActivatedEvent>
+            , IHandle<ConnectEvent>
+            , IHandle<CancelConnectEvent>
+            , IHandle<SelectionChangeCaseEvent>
+            , IHandle<CommentEvent>
+            , IQueryRunner
+            , IHaveShutdownTask
 
     {
         private ADOTabularConnection _connection;
@@ -59,13 +65,17 @@ namespace DaxStudio.UI.ViewModels
         {
             Init(windowManager, eventAggregator);
             _host = host;
-
+            State = DocumentState.New;
+             
         }
 
         public void Init(IWindowManager windowManager, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             _windowManager = windowManager;
+
+            var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( GenerateScreenUnitList());
+            this.SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
 
             // Initialize default Tool Windows
             MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator);
@@ -74,12 +84,30 @@ namespace DaxStudio.UI.ViewModels
             OutputPane = new OutputPaneViewModel();
             QueryResultsPane = new QueryResultsPaneViewModel();
             Document = new TextDocument();
-//            StatusBar = new StatusBarViewModel(_eventAggregator);
 
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
 
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
             NotifyOfPropertyChange(() => SelectedWorksheet);
+        }
+
+        
+
+        /// <summary>
+        /// Initialize Scale View with useful units in percent and font point size
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerable<ListItem> GenerateScreenUnitList()
+        {
+            List<ListItem> unitList = new List<ListItem>();
+
+            var percentDefaults = new ObservableCollection<string>() { "25", "50", "75", "100", "125", "150", "175", "200", "300", "400", "500" };
+            var pointsDefaults = new ObservableCollection<string>() { "3", "6", "8", "9", "10", "12", "14", "16", "18", "20", "24", "26", "32", "48", "60" };
+
+            unitList.Add(new ListItem(Itemkey.ScreenPercent, "percent", "%", percentDefaults));
+            unitList.Add(new ListItem(Itemkey.ScreenFontPoints, "font size", "pt", pointsDefaults));
+
+            return unitList;
         }
 
         protected override void OnViewLoaded(object view)
@@ -91,6 +119,11 @@ namespace DaxStudio.UI.ViewModels
                 e.TextArea.Caret.PositionChanged += OnPositionChanged;
                 e.TextChanged += OnDocumentChanged;
             }
+            if (this.State == DocumentState.LoadPending)
+            {
+                OpenFile();
+            }
+
         }
 
         private void OnDocumentChanged(object sender, EventArgs e)
@@ -236,6 +269,12 @@ namespace DaxStudio.UI.ViewModels
             var loc = Document.GetLocation(0);
             _eventAggregator.Publish(new EditorPositionChangedMessage(loc.Column, loc.Line));
             _eventAggregator.Publish(new ActivateDocumentEvent(this));
+/*            if (Host.Proxy.WorkbookName != this.CurrentWorkbookName)
+            {
+                // TODO - active workbook has changed need to 
+                MessageBox.Show("active workbook has changed");
+            }
+ */ 
         }
 
         public override void CanClose(Action<bool> callback)
@@ -283,7 +322,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_connection == value)
                     return;
-                var m = new StatusBarMessage("Connecting...");
+                //var m = new StatusBarMessage("Connecting...3");
                 
                 UpdateConnections(value,"");
                 _eventAggregator.Publish(new ConnectionChangedEvent(_connection)); 
@@ -297,8 +336,15 @@ namespace DaxStudio.UI.ViewModels
             */
         } 
         }
-        
-        
+
+        //private bool _isPowerPivotConnection;
+        /*
+        public bool IsPowerPivotConnection
+        {
+            get { return _isPowerPivotConnection; }
+            private set { _isPowerPivotConnection = value; }
+        }
+        */ 
         private void UpdateConnections(ADOTabularConnection value,string selectedDatabase)
         {
             _logger.Info("In UpdateConnections");
@@ -316,7 +362,9 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var traceWatcher in TraceWatchers)
                 {
-                    traceWatcher.IsEnabled = (_connection.Type == AdomdType.AnalysisServices);
+                    //TODO - can we enable traces on PowerPivot
+                    traceWatcher.CheckEnabled(_connection);
+                    
                 }
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;
@@ -349,8 +397,24 @@ namespace DaxStudio.UI.ViewModels
         public void ChangeConnection()
         {
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
-            var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator);
-            _windowManager.ShowDialog(connDialog);
+            var stsMsg = new StatusBarMessage("Checking for PowerPivot model...");
+            
+
+                // todo - check for PowerPivot model
+                //Execute.BeginOnUIThread(()=>
+                    Task.Factory.StartNew(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
+                    {
+                        bool hasPpvtModel = x.Result;
+                        stsMsg.Dispose();
+                        Execute.BeginOnUIThread(() =>
+                        {
+                            var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel);
+                            _windowManager.ShowDialog(connDialog);
+                        });
+                    }
+                //    )
+                );
+            
             /*
             try
             {
@@ -363,13 +427,25 @@ namespace DaxStudio.UI.ViewModels
             }
              */ 
         }
-             
+
+        public async Task<bool> HasPowerPivotModelAsync()
+        {
+           return await Task.Factory.StartNew(() => Host.Proxy.HasPowerPivotModel );
+        //    bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel);
+        //    return res;
+        //    return true;
+        }
 
         public string ConnectionError { get; set; }
 
         public bool IsConnected
         {
             get { return Connection != null; }
+        }
+
+        public bool IsQueryRunning 
+        {
+            get { return _queryRunning; }
         }
 
         public DmvPaneViewModel DmvPane { get; private set; }
@@ -411,7 +487,6 @@ namespace DaxStudio.UI.ViewModels
         private void SelectedTextToUpperInternal(DAXEditor.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
-            
             editor.SelectedText = editor.SelectedText.ToUpper();   
         }
 
@@ -431,7 +506,6 @@ namespace DaxStudio.UI.ViewModels
         private void SelectedTextToLowerInternal(DAXEditor.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
-            
             editor.SelectedText = editor.SelectedText.ToLower();
         }
 
@@ -448,6 +522,37 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void CommentSelection()
+        {
+            var editor = GetEditor();
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.CommentSelectedLines();
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(new System.Action(() => editor.CommentSelectedLines()));
+            }
+        }
+
+        public void UnCommentSelection()
+        {
+            var editor = GetEditor();
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.UncommentSelectedLines();
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(new System.Action(() => editor.UncommentSelectedLines()));
+            }
+        }
+
+        private void CommentLineInternal()
+        {
+            var editor = GetEditor();
+            //TODO - comment current line(s)
+        }
         private string GetQueryTextFromEditorInternal(DAXEditor.DAXEditor editor)
         {
             var queryText = editor.SelectedText;
@@ -797,48 +902,23 @@ namespace DaxStudio.UI.ViewModels
 
         public void OpenFile()
         {
-            OpenFileAsync(); //.ContinueWith((antecendant)=> ChangeConnection());
-        }
-
-        private Task OpenFileAsync()
-        {
-            return Task.Factory.StartNew(ShowOpenFileDialog);
-        }
-
-        private void ShowOpenFileDialog()
-        {
-            var dlg = new OpenFileDialog
+            
+            Execute.OnUIThread(() =>
             {
-                DefaultExt = ".dax",
-                Filter = "DAX documents (.dax)|*.dax"
-            };
-
-            // Show open file dialog box
-            var result = dlg.ShowDialog();
-
-            // Process open file dialog box results 
-            if (result == true)
-            {
-                // Open document 
-                var fileName = dlg.FileName;
-                Execute.OnUIThread(() => { 
-                    LoadFile(fileName);
-                    ChangeConnection(); 
+                Task.Run(() => {
+                    Execute.OnUIThread(() => { LoadFile(); });
+                }).ContinueWith((previous) => {
+                    Execute.OnUIThread(() => { ChangeConnection(); });
                 });
-
-            }
-            else
-            {
-                this.Close();
-            }
+            }) ;
             
         }
 
-
-        public void LoadFile(string fileName)
+        
+        public void LoadFile()
         {
-            FileName = fileName;
-            _displayName = Path.GetFileName(fileName);
+            
+            _displayName = Path.GetFileName(FileName);
             IsDiskFileName = true;
             using (TextReader tr = new StreamReader(FileName, true))
             {
@@ -847,18 +927,10 @@ namespace DaxStudio.UI.ViewModels
                 tr.Close();
             }
             IsDirty = false;
+            State = DocumentState.Loaded;
         }
         
-        /*
-        protected  void OnContentRendered()
-        {
-            if (!IsDiskFileName) return;
-
-            LoadFile(FileName);
-            if (Connection==null)
-                ChangeConnection();
-        }
-        */
+        
         public new string DisplayName
         {
             get { return _displayName + (IsDirty?"*":"") ; }
@@ -894,24 +966,32 @@ namespace DaxStudio.UI.ViewModels
         {
             _logger.Info("In Handle<ConnectEvent>");
             var m = new StatusBarMessage("Connecting...");
+            
             Task.Factory.StartNew(() =>
                 {
 
                     var cnn = message.PowerPivotModeSelected
-                                     ? Host.GetPowerPivotConnection()
+                                     ? Host.Proxy.GetPowerPivotConnection()
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
-                        Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => Connection = cnn ));
+                        Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => { 
+                            Connection = cnn;
+                            Connection.IsPowerPivot = message.PowerPivotModeSelected;
+                            CurrentWorkbookName = message.WorkbookName;
+                        }));
                     }
                     else
                     {
-                        Connection = cnn;    
+                        Connection = cnn;
+                        Connection.IsPowerPivot = message.PowerPivotModeSelected;
+                        CurrentWorkbookName = message.WorkbookName;
                     }
                     
                 }).ContinueWith((antecendant) =>
                     {
-                        _eventAggregator.Publish(new UpdateConnectionEvent(Connection));
+                        _eventAggregator.Publish(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
+                        m.Dispose(); //reset the status message
                     });
             
         }
@@ -919,7 +999,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(CancelConnectEvent message)
         {
             // refresh the other views with the existing connection details
-            _eventAggregator.Publish(new UpdateConnectionEvent(Connection));
+            _eventAggregator.Publish(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
         }
 
         public IResult GetShutdownTask()
@@ -931,8 +1011,8 @@ namespace DaxStudio.UI.ViewModels
         {
             
             var res = MessageBoxEx.Show(Application.Current.MainWindow,
-                string.Format("\"{0}\" has unsaved data. Are you sure you want to close this document? All changes will be lost.",_displayName),
-                "Unsaved Data", MessageBoxButton.YesNo
+                string.Format("\"{0}\" has unsaved changes.\nAre you sure you want to close this document without saving?.",_displayName),
+                "Unsaved Changes", MessageBoxButton.YesNo
                 
                 );
             callback(res == MessageBoxResult.Yes);
@@ -950,6 +1030,24 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+
+        public UnitViewModel SizeUnitLabel { get; set; }
+
+        public void Handle(CommentEvent message)
+        {
+            if (message.CommentSelection)
+            {
+                CommentSelection();
+            }
+            else
+            {
+                UnCommentSelection();
+            }
+        }
+
+        public DocumentState State { get; set; }
+
+        public string CurrentWorkbookName { get; set; }
     }
 
 

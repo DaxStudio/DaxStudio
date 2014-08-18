@@ -4,7 +4,9 @@
     xmlns:local="clr-namespace:DAXEditor"
     xmlns:editing="clr-namespace:ICSharpCode.AvalonEdit.Editing;assembly=ICSharpCode.AvalonEdit"
     xmlns:rendering="clr-namespace:ICSharpCode.AvalonEdit.Rendering;assembly=ICSharpCode.AvalonEdit"
-    xmlns:AEComplete="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit">
+    xmlns:AEComplete="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
+    xmlns:unit="clr-namespace:UnitComboLib;assembly=UnitComboLib"
+    >
     <Style TargetType="{x:Type local:DAXEditor}">
         <!--
         <Setter Property="Template">
@@ -199,7 +201,7 @@
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-
+<!--
                                                     <ComboBox DataContext="{Binding FontScale}"
                                            FontSize="12"
                                            ItemsSource="{Binding FontScaleDefaultValues}"
@@ -213,8 +215,24 @@
                                            IsEditable="True">
                                                         
                                                     </ComboBox>
-
-                                                    <ScrollBar Name="PART_HorizontalScrollBar"
+-->
+                                                <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
+                                           FontSize="12"
+                                           ItemsSource="{Binding SelectedItem.DefaultValues}"
+                                           ToolTip="{Binding ValueTip}"
+                                           HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                           Grid.Column="0"
+                                           Margin="3,0"
+                                           Padding="0"
+                                           BorderThickness="1"
+                                           BorderBrush="Transparent"
+                                           IsEditable="True">
+                                                    <unit:UnitCombobox.Text>
+                                                        <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
+                                                    </unit:UnitCombobox.Text>
+                                                </unit:UnitCombobox>
+                                                    
+                                                <ScrollBar Name="PART_HorizontalScrollBar"
                                    Orientation="Horizontal"
                                    Grid.Column="1"
                                    Value="{TemplateBinding HorizontalOffset}"

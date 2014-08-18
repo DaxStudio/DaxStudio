@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:avalondock="http://avalondock.codeplex.com">
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock">
 	<!-- Resource dictionary entries should be defined here. -->
 	<Style x:Key="DockingManagerStyle2" TargetType="{x:Type avalondock:DockingManager}">
 		<Setter Property="DocumentPaneControlStyle">
@@ -129,11 +130,11 @@
 													</Setter>
 												</Style>
 											</avalondock:DropDownButton.Style>
-											<Image>
+											<!--<Image>
 												<Image.Source>
-													<BitmapImage UriSource="pack://application:,,,/AvalonDock;component/Images/PinDocMenu.png"/>
+													<BitmapImage UriSource="pack://application:,,,/Xceed.Wpf.AvalonDock;component/Images/PinDocMenu.png"/>
 												</Image.Source>
-											</Image>
+											</Image>-->
 										</avalondock:DropDownButton>
 									</Grid>
 									<Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">

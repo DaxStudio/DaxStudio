@@ -1,6 +1,6 @@
 ﻿using System;
 using ADOTabular;
-using DaxStudio.UI;
+//using DaxStudio.UI;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Excel;
 //using Excel = Microsoft.Office.Interop.Excel;

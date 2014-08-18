@@ -5,7 +5,7 @@ using Caliburn.Micro;
 
 namespace DaxStudio.UI.Utils {
     public class ApplicationCloseStrategy : ICloseStrategy<IScreen> {
-        IEnumerator<IScreen> enumerator;
+        //IEnumerator<IScreen> enumerator;
         private IEnumerable<IScreen> toclose; 
         bool finalResult;
         Action<bool, IEnumerable<IScreen>> callback;

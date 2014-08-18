@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Events
 {
     public class OutputMessage
     {

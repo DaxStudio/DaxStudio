@@ -7,6 +7,7 @@ using DaxStudio;
 using DaxStudio.UI;
 using DaxStudio.Interfaces;
 using System.Data;
+using Caliburn.Micro;
 
 namespace DaxStudio.Standalone
 {
@@ -14,10 +15,38 @@ namespace DaxStudio.Standalone
     [Export(typeof(IDaxStudioHost))]
     public class DaxStudioHost : IDaxStudioHost
     {
-        
-        public bool IsExcel {
-            get { return false; }
+        private int _port;
+        private IDaxStudioProxy _proxy;
+        private IEventAggregator _eventAggregator;
+        [ImportingConstructor]
+        public DaxStudioHost(IEventAggregator eventAggregator)
+        {
+            _eventAggregator = eventAggregator;
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1)
+            {
+                int.TryParse(args[1], out _port);
+            }
+            if (_port > 0)
+            {
+                _proxy = new DaxStudio.UI.Model.ProxyPowerPivot(_eventAggregator, _port);
+            }
+            else
+            {
+                _proxy = new DaxStudio.UI.Model.ProxyStandalone();
+            }
         }
+
+        public bool IsExcel {
+            get { return _proxy.IsExcel; }
+        }
+
+        public IDaxStudioProxy Proxy
+        {
+            get { return _proxy; }
+        }
+
+ /*
         public bool SupportsQueryTable { get { return false; } }
         public bool SupportsStaticTable { get { return false; } }
         public bool HasPowerPivotModel { get { return false; } }
@@ -40,9 +69,11 @@ namespace DaxStudio.Standalone
             get { return "No Workbook available"; }
             set {}
         }
+        */
 
         /* ==== Excel Host Stub functions - do not need to be implemented in the stand alone host  ==== */
 
+        /*
         public void OutputStaticResult(DataTable results, string sheetName)
         {
             throw new NotImplementedException();
@@ -66,13 +97,14 @@ namespace DaxStudio.Standalone
 
         IEnumerable<string> IDaxStudioHost.Worksheets
         {
-            get { throw new NotImplementedException(); }
+            get { return new List<string>(); }
         }
 
-
+*/
         public void Dispose()
         {
             
         }
+  
     }
 }

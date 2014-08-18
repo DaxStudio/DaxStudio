@@ -11,5 +11,7 @@ namespace DaxStudio.UI.Model
         void Reset();
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
+
+        void CheckEnabled(ADOTabular.ADOTabularConnection _connection);
     }
 }

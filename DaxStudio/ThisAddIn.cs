@@ -3,12 +3,14 @@ using System.Diagnostics;
 using System.Windows;
 using ADOTabular.AdomdClientWrappers;
 using Microsoft.Office.Tools.Ribbon;
+using Microsoft.Owin.Hosting;
 
 namespace DaxStudio
 {
     public partial class ThisAddIn
     {
         private static bool _inShutdown ;
+        
 
         private void ThisAddInStartup(object sender, EventArgs e)
         {
@@ -34,7 +36,14 @@ namespace DaxStudio
             try
             {
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
-                return args.Name.Contains("Microsoft.Excel.AdomdClient") ? ExcelAdoMdConnections.ExcelAdomdClientAssembly : null;
+                if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
+                {return ExcelAdoMdConnections.ExcelAdomdClientAssembly;}
+
+                if (args.Name.Contains("Microsoft.Excel.Amo"))
+                { return Xmla.ExcelAmoWrapper.ExcelAmoAssembly; }
+
+
+                return null;
             }
             catch (Exception ex)
             {
@@ -56,6 +65,7 @@ namespace DaxStudio
             try
             {
                 _inShutdown = true;
+                
                 _ribbon.CancelToken.Cancel();
                 Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
                 // wait upto 5 secs for app to shutdown

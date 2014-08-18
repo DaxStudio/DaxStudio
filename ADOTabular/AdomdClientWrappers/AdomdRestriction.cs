@@ -20,6 +20,11 @@ namespace ADOTabular.AdomdClientWrappers
         {
             this.Add(new AdomdRestriction(propertyName,value));
         }
+
+        internal void Add(Microsoft.AnalysisServices.AdomdClient.AdomdRestriction adomdRestriction)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 }

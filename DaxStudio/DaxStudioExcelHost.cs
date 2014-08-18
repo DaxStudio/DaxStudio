@@ -6,7 +6,7 @@ using System.Windows.Threading;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Model;
+//using DaxStudio.UI.Model;
 using Microsoft.Office.Interop.Excel;
 using Caliburn.Micro;
 using System.Linq;
@@ -30,6 +30,10 @@ namespace DaxStudio
             _xlHelper = new ExcelHelper(_app);
         }
 
+        public IDaxStudioProxy Proxy
+        {
+            get { return null; }
+        }
         public string WorksheetDaxResults
         {
             get { return DaxStudio.UI.Properties.Resources.DAX_Results_Sheet; }

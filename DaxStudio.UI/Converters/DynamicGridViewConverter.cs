@@ -33,8 +33,9 @@ namespace DaxStudio.UI.Converters
                     //var cellContentPresenter = new FrameworkElementFactory(typeof(Border));
                     //cellContentPresenter.SetValue(ContentPresenter.RecognizesAccessKeyProperty, false);
                     var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
-                    cellTxtBlock.SetBinding(TextBlock.TextProperty, new Binding(item.ColumnName));
+                    cellTxtBlock.SetBinding(TextBlock.TextProperty, new Binding(item.ColumnName) );
                     cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                    
                     //cellContentPresenter.AppendChild(cellTxtBlock);
                     //cellTemplate.VisualTree = cellContentPresenter;
                     cellTemplate.VisualTree = cellTxtBlock;

@@ -83,6 +83,17 @@ namespace DaxStudio.ResultTargets
                     }
                 });
         }
+
+
+        public bool IsDefault
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool IsEnabled
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 
 

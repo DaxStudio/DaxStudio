@@ -8,94 +8,71 @@ namespace DaxStudio.UI
 {
     public static class RegistryHelper
     {
-  /*      
-        public static string[] LoadServerMRUListFromRegistry(ComboBox cboServers)
-        {
-            cboServers.Items.Clear();
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey("SOFTWARE\\DaxStudio");
-            if (regDaxStudio != null)
-            {
-                var regSvrMRU = regDaxStudio.OpenSubKey("ServerMRU");
-                if (regSvrMRU != null)
-                    foreach (var svr in regSvrMRU.GetValueNames())
-                    {
-                        cboServers.Items.Add(regSvrMRU.GetValue(svr));
-                    }
-                
-            }
-            return null;
-        }
-        
-        public static void SaveServerMRUListToRegistry(ComboBox cboServers)
-        {
-
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey("SOFTWARE\\DaxStudio", RegistryKeyPermissionCheck.ReadWriteSubTree);
-            if (regDaxStudio == null)
-                Registry.CurrentUser.CreateSubKey("SOFTWARE\\DaxStudio");
-            if (regDaxStudio != null)
-            {
-                // clear existing data
-                regDaxStudio.DeleteSubKeyTree("SeverMRU", false);
-                var regSvrMRU = regDaxStudio.CreateSubKey("ServerMRU", RegistryKeyPermissionCheck.ReadWriteSubTree);
-                if (regSvrMRU != null)
-                {
-                    int i = 0;
-                    bool selectedItemInList = false;
-                    foreach (string listItem in cboServers.Items)
-                    {
-                        if (listItem == cboServers.Text) selectedItemInList = true;
-                        regSvrMRU.SetValue(string.Format("Server{0}", i), listItem);
-                        i++;
-                    }
-                    if (!selectedItemInList)
-                        regSvrMRU.SetValue(string.Format("Server{0}", i), cboServers.Text);
-                }
-            }
-        }
-    */    
+    
+        private const string registryRootKey = "SOFTWARE\\DaxStudio";
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
-            var servers = new ObservableCollection<string>();
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey("SOFTWARE\\DaxStudio");
+            return GetMRUListFromRegistry("Server");
+        }
+
+        public static void SaveServerMRUListToRegistry(string currentServer, ObservableCollection<string> servers)
+        {
+            SaveListToRegistry("Server", currentServer, servers);
+        }
+
+        public static ObservableCollection<string> GetFileMRUListFromRegistry()
+        {
+            return GetMRUListFromRegistry("File");
+        }
+
+        public static void SaveFileMRUListToRegistry(string currentServer, ObservableCollection<string> servers)
+        {
+            SaveListToRegistry("File", currentServer, servers);
+        }
+
+        internal static ObservableCollection<string> GetMRUListFromRegistry(string listName)
+        {
+            var list = new ObservableCollection<string>();
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
             if (regDaxStudio != null)
             {
-                var regSvrMRU = regDaxStudio.OpenSubKey("ServerMRU");
-                if (regSvrMRU != null)
-                    foreach (var svr in regSvrMRU.GetValueNames())
+                var regListMRU = regDaxStudio.OpenSubKey(string.Format("{0}MRU",listName));
+                if (regListMRU != null)
+                    foreach (var svr in regListMRU.GetValueNames())
                     {
-                        var svrName = regSvrMRU.GetValue(svr).ToString();
-                        servers.Add(svrName);
+                        var itmName = regListMRU.GetValue(svr).ToString();
+                        list.Add(itmName);
                     }
             }
 
-            return servers;
+            return list;
         }
 
 
 
-        public static void SaveServerListToRegistry(string currentServer, ObservableCollection<string>serverList)
+        internal static void SaveListToRegistry(string listName, string currentItem, ObservableCollection<string>itemList)
         {
-            
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey("SOFTWARE\\DaxStudio",RegistryKeyPermissionCheck.ReadWriteSubTree);
+            var listKey = string.Format("{0}MRU", listName);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
             if (regDaxStudio == null)
-                Registry.CurrentUser.CreateSubKey("SOFTWARE\\DaxStudio");
+                Registry.CurrentUser.CreateSubKey(registryRootKey);
             if (regDaxStudio != null)
             {
                 // clear existing data
-                regDaxStudio.DeleteSubKeyTree("SeverMRU", false);
-                var regSvrMRU = regDaxStudio.CreateSubKey("ServerMRU", RegistryKeyPermissionCheck.ReadWriteSubTree);
-                if (regSvrMRU != null)
+                regDaxStudio.DeleteSubKeyTree(listKey, false);
+                var regListMRU = regDaxStudio.CreateSubKey(listKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+                if (regListMRU != null)
                 {
-                    int i = 0;
-                    bool selectedItemInList = false;
-                    foreach (string listItem in serverList)
+                    int i = 1;
+                    // set current item as item 1
+                    regListMRU.SetValue(string.Format("{0}{1}",listName, i), currentItem);
+                    foreach (string listItem in itemList)
                     {
-                        if (listItem == currentServer) selectedItemInList = true;
-                        regSvrMRU.SetValue(string.Format("Server{0}", i), listItem );
+                        if (listItem == currentItem) continue;
+                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), listItem );
                         i++;
                     }
-                    if (!selectedItemInList)
-                        regSvrMRU.SetValue(string.Format("Server{0}", i), currentServer);
+                        
                 }
             }
         }

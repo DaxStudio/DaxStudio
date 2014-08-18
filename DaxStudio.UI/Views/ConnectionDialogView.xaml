@@ -1,11 +1,10 @@
 ﻿<UserControl x:Class="DaxStudio.UI.Views.ConnectionDialogView" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:avalonDock="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
         DataContext="{Binding}"
         >
     <UserControl.Resources>
-        <avalonDock:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid Width="431" Height="426">
         <Grid.ColumnDefinitions>
@@ -14,7 +13,8 @@
             <ColumnDefinition Width="109*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="131"/>
+            <RowDefinition Height="Auto" />
+            <!-- MinHeight="131"-->
             <RowDefinition Height="60*"/>
             <RowDefinition Height="73*"/>
             <RowDefinition Height="Auto" MinHeight="29"/>
@@ -43,7 +43,27 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
-                    <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  ItemsSource="{Binding Path=RecentServers}" Text="{Binding DataSource}" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1" />
+                    <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  ItemsSource="{Binding Path=RecentServers}" Text="{Binding DataSource}" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1">
+                        <ComboBox.Resources>
+                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
+                                <VisualBrush.Visual>
+                                    <TextBlock FontStyle="Italic" Text="Type or select from list"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </ComboBox.Resources>
+                        <ComboBox.Style>
+                            <Style TargetType="ComboBox">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="{x:Null}">
+                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.Style>
+                    </ComboBox>
                 </Grid>
             </StackPanel>
         </GroupBox>

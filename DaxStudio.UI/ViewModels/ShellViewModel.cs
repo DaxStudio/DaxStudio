@@ -47,7 +47,6 @@ namespace DaxStudio.UI.ViewModels {
         {
             base.TryClose();
 
-            _host.Dispose();
         }
 
         protected override void OnDeactivate(bool close)
@@ -81,7 +80,17 @@ namespace DaxStudio.UI.ViewModels {
         {
             _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
+        
+        public void UncommentSelection()
+        {
+            _eventAggregator.Publish(new CommentEvent(false));
+        }
 
+        public void CommentSelection()
+        {
+            _eventAggregator.Publish(new CommentEvent(true));
+        }
+        
         protected override void OnActivate()
         {
             base.OnActivate();

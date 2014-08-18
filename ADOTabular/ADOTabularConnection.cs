@@ -391,7 +391,7 @@ namespace ADOTabular
                         if (rdr.NodeType == XmlNodeType.Element
                             && rdr.LocalName == eSvrMode)
                         {
-                            return rdr.ReadContentAsString();
+                            return rdr.ReadElementContentAsString();
                         }
 
                     }
@@ -429,6 +429,9 @@ namespace ADOTabular
             }
             
         }
+
+
+        public bool IsPowerPivot {get; set;}
 
         // BeginQueryAsync
         /*

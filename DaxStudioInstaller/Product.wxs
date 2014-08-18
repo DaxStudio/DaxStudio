@@ -231,16 +231,22 @@
     </Component>
   </Fragment>
 
+  <!--
+  <?include $(sys.CURRENTDIR)Components.wxs?>
+-->
+  
+  <!--
   <Fragment>
-    <ComponentGroup Id="ProductComponents" >
+    <ComponentGroup Id="ProductComponents" >-->
       <!-- vsto -->
       
-      <Component Id="MSOfficeToolsCommon_dll_Component" Directory="INSTALLFOLDER">
+      <!--<Component Id="MSOfficeToolsCommon_dll_Component" Directory="INSTALLFOLDER">
         <File Id="MSOfficeToolsCommon_dll" KeyPath="yes"
               Name="Microsoft.Office.Tools.Common.v4.0.Utilities.dll" Source="$(var.AddinFiles)"></File>
-      </Component>
+      </Component>-->
+      
       <!-- core libraries-->
-      <Component Id="DaxStudio_vsto_Component" Directory="INSTALLFOLDER">
+      <!--<Component Id="DaxStudio_vsto_Component" Directory="INSTALLFOLDER">
         <File Id="ExcelAddin1_vsto" KeyPath="yes"
               Name="DaxStudio.vsto" Source="$(var.AddinFiles)"></File>
       </Component>
@@ -259,9 +265,9 @@
       <Component Id="DaxStudio_dll_Component" Directory="INSTALLFOLDER">
         <File Id="DaxStudio_dll" KeyPath="yes"
               Name="DaxStudio.dll" Source="$(var.AddinFiles)" />
-      </Component>
+      </Component>-->
       <!-- Avalon Edit Components-->
-      <Component Id="AvalonEditCodeCompletion_dll_Component" Directory="INSTALLFOLDER">
+      <!--<Component Id="AvalonEditCodeCompletion_dll_Component" Directory="INSTALLFOLDER">
         <File Id="AvalonEditCodeCompletion_dll" KeyPath="yes"
               Name="ICSharpCode.AvalonEdit.CodeCompletion.dll" Source="$(var.AddinFiles)" />
       </Component>
@@ -281,9 +287,9 @@
       <Component Id="MonoCecil_dll_Component" Directory="INSTALLFOLDER">
         <File Id="MonoCecil_dll" KeyPath="yes"
               Name="Mono.Cecil.dll" Source="$(var.AddinFiles)" />
-      </Component>
+      </Component>-->
       <!-- ribbon control -->
-      <Component Id="RibbonControlslibrary_dll_Component" Directory="INSTALLFOLDER">
+      <!--<Component Id="RibbonControlslibrary_dll_Component" Directory="INSTALLFOLDER">
         <File Id="Fluent_dll" KeyPath="yes"
               Name="Fluent.dll" Source="$(var.AddinFiles)" />
       </Component>
@@ -292,14 +298,9 @@
       <File Id="SystemWindowsInteractivity_dll" KeyPath="yes"
             Name="System.Windows.Interactivity.dll" Source="$(var.AddinFiles)" />
       </Component>
-      <!--
-      <Component Id="MicrosoftWindowsShell_dll_Component" Directory="INSTALLFOLDER">
-        <File Id="MicrosoftWindowsShell_dll" KeyPath="yes"
-              Name="Microsoft.Windows.Shell.dll" Source="$(var.AddinFiles)" />
-      </Component>
-	  -->
+      
   
     </ComponentGroup>
-  </Fragment>
+  </Fragment>-->
 
 </Wix>

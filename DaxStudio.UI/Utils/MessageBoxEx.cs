@@ -8,8 +8,6 @@ using System.Drawing;
 namespace DaxStudio.UI.Utils
 {
 
-
-
     public class MessageBoxEx
     {
         private static IntPtr _owner;
@@ -170,7 +168,7 @@ namespace DaxStudio.UI.Utils
 
             if (_owner != null)
             {
-                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
+                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, System.Threading.Thread.CurrentThread.ManagedThreadId);// AppDomain.GetCurrentThreadId());
             }
         }
 

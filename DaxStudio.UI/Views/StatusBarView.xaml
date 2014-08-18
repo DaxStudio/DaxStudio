@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:avalondock="http://avalondock.codeplex.com"
+             xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="400">
     <UserControl.Resources>
-        <avalondock:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
         <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
         <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>

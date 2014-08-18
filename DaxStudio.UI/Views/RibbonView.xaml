@@ -58,6 +58,13 @@
         <BitmapImage x:Key="TimingsIconSmall"  UriSource="..\images\icon-timings@17px.png"></BitmapImage>
         <BitmapImage x:Key="BrowseIconLarger"  UriSource="..\images\icon-open.png"></BitmapImage>
         <BitmapImage x:Key="SaveIcon"  UriSource="..\images\icon-save.png"></BitmapImage>
+        <BitmapImage x:Key="CommentIcon"  UriSource="..\images\icon-comment.png"></BitmapImage>
+        <BitmapImage x:Key="UncommentIcon"  UriSource="..\images\icon-uncomment.png"></BitmapImage>
+        <BitmapImage x:Key="ToUpperIcon"  UriSource="..\images\icon-to-upper.png"></BitmapImage>
+        <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
+        <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
+        <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
+
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -106,7 +113,11 @@
                 <Fluent:BackstageTabControl>
 
                     <!-- File New -->
-                    <Fluent:Button Header="New" x:Name="NewQuery" HorizontalContentAlignment="Left" Foreground="White" >
+                    <Fluent:Button Header="New" 
+                                   x:Name="NewQuery" 
+                                   HorizontalContentAlignment="Left" 
+                                   Foreground="White"
+                                   Icon="{StaticResource NewIconSmall}">
                         
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
@@ -196,7 +207,11 @@
 
         <Fluent:Ribbon.QuickAccessItems>
             <Fluent:QuickAccessMenuItem Header="New" 
-                                            IsChecked="True"  />
+                                            IsChecked="True"
+                                        Target="{Binding ElementName=NewQueryQat}"
+                                        Icon="{StaticResource NewIconSmall}"
+                                        IsDefinitive="True"
+                                        />
             <Fluent:QuickAccessMenuItem Target="{Binding ElementName=cutButton}"
                                             IsChecked="True" />
             <Fluent:QuickAccessMenuItem Target="{Binding ElementName=copyButton}" />
@@ -360,6 +375,125 @@ LargeIcon="{StaticResource ConnectIconLarger}" Width="60" Margin="4,0,12,0"
 
             </Fluent:RibbonGroupBox>
 
+        </Fluent:RibbonTabItem>
+        <!-- Format Tab -->
+        <Fluent:RibbonTabItem Header="Format">
+            <Fluent:RibbonGroupBox Header="Format" Margin="0,0,4,0">
+                <Fluent:Button Name="ToUpper"
+                               Header="To Upper"
+                               cal:Message.Attach="[Event Click] = [Action ToUpper()]"
+                               Icon="{StaticResource ToUpperIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
+                                          Text="Converts the selected text to Uppercase"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="ToLower"
+                               Header="To Lower"
+                               cal:Message.Attach="[Event Click] = [Action ToLower()]"
+                               Icon="{StaticResource ToLowerIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
+                                          Text="Converts the selected text to Lowercase"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Comments" Margin="0,0,4,0">
+                <Fluent:Button Name="CommentSelection"
+                               Header="Comment"
+                               cal:Message.Attach="[Event Click] = [Action CommentSelection()]"
+                               Icon="{StaticResource CommentIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Comment (Ctrl+Alt C)"
+                                          Text="Comments the selected lines"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="UncommentSelection"
+                               Header="Uncomment"
+                               cal:Message.Attach="[Event Click] = [Action UncommentSelection()]"
+                               Icon="{StaticResource UncommentIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
+                                          Text="Uncomments the selected lines"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+        </Fluent:RibbonTabItem>
+        <!-- Help Tab -->
+        <Fluent:RibbonTabItem Header="Help">
+            <Fluent:RibbonGroupBox Header="Help" Margin="0,0,4,0">
+                <Fluent:Button Name="helpDaxStudioWiki"
+                               Header="DAX Studio Help"
+                               cal:Message.Attach="[Event Click] = [Action LinkToDaxStudioWiki()]"
+                               Icon="{StaticResource ExternalLinkIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="DAX Studio Help"
+                                          Text="Links to the documentation on the DAX Studio website"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpPowerPivotForum"
+                               Header="Power Pivot Forum"
+                               cal:Message.Attach="[Event Click] = [Action LinkToPowerPivotForum()]"
+                               Icon="{StaticResource ExternalLinkIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Power Pivot Forum"
+                                          Text="Link to the Power Pivot MSDN Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpSSASForum"
+                               Header="Analysis Services Forum"
+                               cal:Message.Attach="[Event Click] = [Action LinkToSsasForum()]"
+                               Icon="{StaticResource ExternalLinkIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Analysis Services Forum"
+                                          Text="Link to the Analysis Services MSDN Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
+                
+            
+        </Fluent:RibbonTabItem>
+        <!-- Quick Access Targets -->
+        <Fluent:RibbonTabItem Visibility="Collapsed">
+            <Fluent:RibbonGroupBox x:Name="QuickAccessHiddenCommands">
+            <Fluent:Button Header="New" 
+                                   x:Name="NewQueryQat" 
+                                   HorizontalContentAlignment="Left" 
+                                   Foreground="White"
+                                   Icon="{StaticResource NewIconSmall}">
+
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <cal:ActionMessage MethodName="NewQuery">
+
+                        </cal:ActionMessage>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+            </Fluent:Button>
+            </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>
     </Fluent:Ribbon>
 </UserControl>

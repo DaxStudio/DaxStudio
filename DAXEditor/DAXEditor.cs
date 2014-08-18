@@ -8,6 +8,9 @@ using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Document;
+using System.Text.RegularExpressions;
+using DAXEditor.BracketRenderer;
 
 namespace DAXEditor
 {
@@ -42,7 +45,7 @@ namespace DAXEditor
     /// </summary>
     public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
     {
-        //BracketHighlightRenderer bracketRenderer;
+        private BracketRenderer.BracketHighlightRenderer _bracketRenderer;
         protected override void OnInitialized(EventArgs e)
         {
             
@@ -52,7 +55,7 @@ namespace DAXEditor
             TextArea.TextEntering += textEditor_TextArea_TextEntering;
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
             //SetValue(TextBoxControllerProperty, new TextBoxController());
-
+            TextArea.Caret.PositionChanged += Caret_PositionChanged;
             //TextArea.Caret.PositionChanged += HighlightBrackets;
 
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
@@ -66,7 +69,7 @@ namespace DAXEditor
             //ToolTip tt = new ToolTip();
             //tt.Content = "hello";
 
-
+            _bracketRenderer = new BracketRenderer.BracketHighlightRenderer(this.TextArea.TextView );
             //this.textEditor1.ToolTip = tt;
 
             //TODO - hardcoded for v1 - should be moved to a settings dialog
@@ -74,6 +77,14 @@ namespace DAXEditor
             this.DefaultFontSize = 11.0;
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;            
+        }
+
+        void Caret_PositionChanged(object sender, EventArgs e)
+        {
+            try{
+                HighlightBrackets();
+            }
+            catch {}
         }
 
         private double _defaultFontSize = 11.0;
@@ -105,6 +116,28 @@ namespace DAXEditor
         {
             this.PreviewMouseWheel += OnPreviewMouseWheel;
         }
+
+        private DaxStudioBracketSearcher FindBrackets
+        { get; set; }
+
+        
+
+ public void HighlightBrackets()
+ {
+        //if (this.TextArea.Options.EnableHighlightBrackets == true)
+      //{
+        if (this.FindBrackets == null)
+        {
+          this.FindBrackets = new DaxStudioBracketSearcher();
+        }
+        var bracketSearchResult = FindBrackets.SearchBracket(this.Document, this.TextArea.Caret.Offset);
+        this._bracketRenderer.SetHighlight(bracketSearchResult);
+      //}
+      //else
+      //{
+      //  this._bracketRenderer.SetHighlight(null);
+      //}
+}
 
         private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
@@ -162,6 +195,45 @@ namespace DAXEditor
             }
              * */
         }
+        const string COMMENT_DELIM="//";
+        private bool IsLineCommented(DocumentLine line)
+        {
+            var trimmed =  this.Document.GetText(line.Offset,line.Length).Trim();
+            return trimmed.IndexOf( COMMENT_DELIM).Equals(0);
+        }
+
+        #region "Commenting/Uncommenting"
+
+        private Regex rxUncomment = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM), RegexOptions.Compiled | RegexOptions.Multiline);
+        private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
+
+        private void SelectFullLines()
+        {
+            int selStart = Document.GetLineByOffset(SelectionStart).Offset;
+            int selLength = Document.GetLineByOffset(SelectionStart + SelectionLength).EndOffset - selStart;
+            SelectionStart = selStart;
+            SelectionLength = selLength;
+        }
+
+        public void CommentSelectedLines()
+        {
+            if (SelectedText != "")
+            {
+            SelectFullLines();
+            SelectedText = rxComment.Replace(SelectedText, string.Format("{0}$1",COMMENT_DELIM));
+            }
+        }
+
+        public void UncommentSelectedLines()
+        {
+            if (SelectedText != "" )
+            {
+            SelectFullLines();
+            SelectedText = rxUncomment.Replace(SelectedText, "$1");
+            }
+        }
+
+        #endregion
 
         void textEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
         {

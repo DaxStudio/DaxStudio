@@ -48,6 +48,10 @@ namespace DaxStudio.UI.Model
                 runner.OutputError(ex.Message);
             }
         }
+        public int DisplayOrder
+        {
+            get { return 10; }
+        }
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
@@ -82,6 +86,18 @@ namespace DaxStudio.UI.Model
                 });
         }
 
+
+
+
+        public bool IsDefault
+        {
+            get { return true; }
+        }
+
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
     }
 
 

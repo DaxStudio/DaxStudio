@@ -10,6 +10,8 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Properties;
+using System.Linq;
+using Microsoft.Win32;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -24,6 +26,9 @@ namespace DaxStudio.UI.ViewModels
         private ADOTabularConnection _connection;
         private bool _databaseComboChanging = false;
 
+        private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
+        private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
+        private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator )
@@ -44,11 +49,31 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Publish(new NewDocumentEvent());
         }
 
+        public void CommentSelection()
+        {
+            _eventAggregator.Publish(new CommentEvent(true));
+        }
+
+        public void UncommentSelection()
+        {
+            _eventAggregator.Publish(new CommentEvent(false));
+        }
+
+        public void ToUpper()
+        {
+            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+        }
+
+        public void ToLower()
+        {
+            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+        }
+
         public void RunQuery()
         {
             _queryRunning = true;
-            NotifyOfPropertyChange(()=>CanRunQuery);
-            NotifyOfPropertyChange(()=>CanCancelQuery);
+            NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             _eventAggregator.Publish(new RunQueryEvent(SelectedTarget,SelectedWorksheet) );
 
@@ -111,26 +136,6 @@ namespace DaxStudio.UI.ViewModels
 
         public void Open()
         {
-            /*
-            // Configure open file dialog box
-            var dlg = new OpenFileDialog
-                {
-                    FileName = "Document",
-                    DefaultExt = ".dax",
-                    Filter = "DAX documents (.dax)|*.dax"
-                };
-
-            // Show open file dialog box
-            var result = dlg.ShowDialog();
-
-            // Process open file dialog box results 
-            if (result == true)
-            {
-                // Open document 
-                var fileName = dlg.FileName;
-                _eventAggregator.Publish(new OpenFileEvent(fileName));
-            }
-            */
             _eventAggregator.Publish(new OpenFileEvent());
         }
 
@@ -171,7 +176,7 @@ namespace DaxStudio.UI.ViewModels
                     if (!_connection.Database.Name.Equals(_selectedDatabase))
                     {
                         _connection.ChangeDatabase(_selectedDatabase);
-                        _eventAggregator.Publish(new UpdateConnectionEvent(_connection,_selectedDatabase));
+                        _eventAggregator.Publish(new UpdateConnectionEvent(_connection,_selectedDatabase));//, ActiveDocument.IsPowerPivotConnection));
                     }
                 }
                     
@@ -181,13 +186,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [ImportMany]
-        public List<IResultsTarget> ResultsTargets {get; set; }
+        public IEnumerable<IResultsTarget> AvailableResultsTargets {get; set; }
+
+        public IEnumerable<IResultsTarget> ResultsTargets { get {
+            //return  AvailableResultsTargets.OrderBy<IEnumerable<IResultsTarget>,int>(AvailableResultsTargets, x => x.DisplayOrder).Where(x=> x.IsEnabled.ToList<IResultsTarget>();
+            return (from t in AvailableResultsTargets
+                    where t.IsEnabled
+                    select t).OrderBy(x => x.DisplayOrder).AsEnumerable<IResultsTarget>();
+        } }
 
         private IResultsTarget _selectedTarget;
         private bool _queryRunning;
         // default to first target if none currently selected
         public IResultsTarget SelectedTarget {
-            get { return _selectedTarget ?? ResultsTargets[0]; }
+            get { return _selectedTarget ?? AvailableResultsTargets.Where(x => x.IsDefault).First<IResultsTarget>(); }
             set { _selectedTarget = value;
             NotifyOfPropertyChange(()=>SelectedTarget);}
         }
@@ -199,12 +211,23 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument = message.Document;
             //ActiveDocument.PropertyChanged += ActiveDocumentOnPropertyChanged;   
+
+            if (ActiveDocument.IsQueryRunning != _queryRunning)
+            {
+                _queryRunning = ActiveDocument.IsQueryRunning;
+                NotifyOfPropertyChange(() => CanRunQuery);
+                NotifyOfPropertyChange(() => CanCancelQuery);
+                NotifyOfPropertyChange(() => CanClearCache);
+            }
+
             NotifyOfPropertyChange(()=> TraceWatchers);
             if (ActiveDocument.Connection != null)
             {
                 foreach (var tw in TraceWatchers)
                 {
-                    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
+                    // TODO - can we enable traces for PowerPivot?
+                //    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
+                    tw.CheckEnabled(ActiveDocument.Connection);
                 }
             }
             
@@ -222,7 +245,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IEnumerable<string> Worksheets
         {
-            get { return _host.Worksheets; }
+            get { return _host.Proxy.Worksheets; }
         }
 
         public string SelectedWorksheet {
@@ -239,9 +262,24 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryFinishedEvent message)
         {
             _queryRunning = false;
-            NotifyOfPropertyChange(()=>CanRunQuery);
-            NotifyOfPropertyChange(()=>CanCancelQuery);
-            NotifyOfPropertyChange(()=>CanClearCache);
+            NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanCancelQuery);
+            NotifyOfPropertyChange(() => CanClearCache);
+        }
+
+        public void LinkToDaxStudioWiki()
+        {
+            System.Diagnostics.Process.Start(urlDaxStudioWiki);
+        }
+
+        public void LinkToPowerPivotForum()
+        {
+            System.Diagnostics.Process.Start(urlPowerPivotForum);
+        }
+
+        public void LinkToSsasForum()
+        {
+            System.Diagnostics.Process.Start(urlSsasForum);
         }
     }
 }

@@ -1,13 +1,23 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
-using System.Windows;
+//using System.Windows;
 using System.Windows.Threading;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
-using DaxStudio.UI;
-using DaxStudio.UI.ViewModels;
+//using DaxStudio.UI;
+//using DaxStudio.UI.ViewModels;
 using Microsoft.Office.Tools.Ribbon;
+using Microsoft.Owin.Hosting;
+using System.Net.Http;
+using System.Diagnostics;
+using Microsoft.Office.Interop.Excel;
+using Microsoft.Win32;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace DaxStudio
 {
@@ -15,12 +25,19 @@ namespace DaxStudio
     public partial class DaxStudioRibbon
     {
         
-        private static Thread _launcherThread;
+        //private static Thread _launcherThread;
         private static CancellationTokenSource _cancelToken;
         private static AutoResetEvent _showWindow;
-        private Application _application;
+        //private Application _application;
         private static AutoResetEvent _shutdownSync;
+        private IDisposable webapp;
+        private Process _client;
+        private int _port;
 
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    
         public CancellationTokenSource CancelToken
         {
             get { return _cancelToken; }
@@ -36,11 +53,11 @@ namespace DaxStudio
             _cancelToken = new CancellationTokenSource();
             _shutdownSync = new AutoResetEvent(false);
 
-            _launcherThread = new Thread(() => ShowWindow(_showWindow, _cancelToken));
-            _launcherThread.SetApartmentState(ApartmentState.STA);
-            _launcherThread.Start();
+//            _launcherThread = new Thread(() => ShowWindow(_showWindow, _cancelToken));
+//            _launcherThread.SetApartmentState(ApartmentState.STA);
+ //           _launcherThread.Start();
         }
-
+        /*
         private void ShowWindow(AutoResetEvent showMe, CancellationTokenSource cancelMe)
         {
             var waits = new WaitHandle[2];
@@ -92,6 +109,7 @@ namespace DaxStudio
             //_application.Dispatcher.InvokeShutdown();
             ShutDownSync.Set();
         }
+        */
 
         //private AutoResetEvent _shutDownSync;
         //public AutoResetEvent ShutDownSync { get { return _shutDownSync; } set { _shutDownSync = value; } }
@@ -119,7 +137,44 @@ namespace DaxStudio
             PresentationTraceSources.MarkupSource.Switch.Level = SourceLevels.All;
             PresentationTraceSources.MarkupSource.Listeners.Add(new DefaultTraceListener());  
              */
-        ShowWpfForm();
+            //ShowWpfForm();
+            
+            // check if web host is running
+            if (webapp == null)
+            {
+                // find free port
+                _port = GetOpenPort(9000,9999);
+
+                System.Diagnostics.EventLog appLog =new System.Diagnostics.EventLog();
+                appLog.Source = "Application";
+                appLog.WriteEntry( string.Format("DaxStudio Excel Add-in Listening on port {0}",_port),EventLogEntryType.Information);
+
+                //if not Find free port and start it
+                StartWebHost(_port);
+            }
+
+            // activate DAX Studio if it's already running
+            if (_client != null)
+            {
+                if (!_client.HasExited)
+                {
+                    SetForegroundWindow(_client.MainWindowHandle);
+                    return;
+                }
+            }
+            
+            var path = "";
+            // try to get path from LocalMachine registry
+            path = (string)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\DaxStudio", "Path", null);
+            // otherwise get path from HKCU registry
+            if (path == null)
+            {
+                path = (string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\DaxStudio", "Path", "");
+            }
+            // start Dax Studio process
+            _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
+            
+
             /*
             if (Control.ModifierKeys == Keys.Shift)
             {
@@ -131,7 +186,7 @@ namespace DaxStudio
             }
              * */
         }
-// TODO - WPF Window
+
         
         //[STAThread()]
         private static void ShowWpfForm()
@@ -175,6 +230,10 @@ namespace DaxStudio
         private static void ShowWpfWindowAsync()
         {
             _showWindow.Set();
+
+            Process p = new Process();
+            p.Start();
+            
             /*
             var thread = new Thread(() =>
             {
@@ -237,13 +296,70 @@ namespace DaxStudio
             //Dispatcher.Run();
         }
 
+        private void StartWebHost(int port)
+        {
+            string baseAddress = string.Format("http://localhost:{0}/",port); 
+
+            // Start OWIN host 
+            //StartOptions so = new StartOptions(baseAddress);
+            //so.Settings.Add("location", ExcelHelper.ActiveWorkbookLocation);
+            //webapp = WebApp.Start<Xmla.Startup>(so);
+            webapp = WebApp.Start<Xmla.Startup>(url: baseAddress );
+            
+            //using (WebApp.Start<Xmla.Startup>(url: baseAddress)) 
+            //{
+                // Create HttpCient and make a request to api/values 
+                //HttpClient client = new HttpClient(); 
+
+                //var response = client.GetAsync(baseAddress + "api/xmla").Result; 
+
+                //Debug.WriteLine(response); 
+                //Console.WriteLine(response.Content.ReadAsStringAsync().Result); 
+            //    System.Windows.MessageBox.Show("WebHost started");
+            //}
+        }
+
+        private int GetOpenPort(int portStartIndex, int portEndIndex)
+        {
+            //int PortStartIndex = 1000;
+            //int PortEndIndex = 2000;
+            IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] tcpEndPoints = properties.GetActiveTcpListeners();
+
+            List<int> usedPorts = tcpEndPoints.Select(p => p.Port).ToList<int>();
+            int unusedPort = 0;
+
+            for (int port = portStartIndex; port < portEndIndex; port++)
+            {
+                if (!usedPorts.Contains(port))
+                {
+                    unusedPort = port;
+                    break;
+                }
+            }
+            return unusedPort;
+        }
+
         private void DaxStudioRibbon_Close(object sender, EventArgs e)
         {
+            if (webapp != null)
+            {
+                webapp.Dispose();
+            }
+            if (_client != null)
+            {
+                if (!_client.HasExited)
+                {
+                    SetForegroundWindow(_client.MainWindowHandle);
+                    _client.CloseMainWindow();
+                }
+            }
             _cancelToken.Cancel();
             _shutdownSync.Dispose();
             _showWindow.Dispose();
             _cancelToken.Dispose();
         }
+
         
     }
 }

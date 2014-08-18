@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.Composition;
 using Caliburn.Micro;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
