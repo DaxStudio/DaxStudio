@@ -18,9 +18,10 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        protected override void OnConnectionChanged()
+        protected override void OnConnectionChanged(bool isSameServer)
         {
-            base.OnConnectionChanged();
+            base.OnConnectionChanged(isSameServer);
+            if (isSameServer) return;
             NotifyOfPropertyChange(()=> FunctionGroups);
         }
 

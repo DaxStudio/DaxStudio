@@ -25,9 +25,9 @@ namespace ADOTabular
             return ret;
         }
 
-        public SortedDictionary<string,ADOTabularTable> Visit(ADOTabularTableCollection tables)
+        public void Visit(ADOTabularTableCollection tables)
         {
-            var ret = new SortedDictionary<string, ADOTabularTable>();
+            //var ret = new SortedDictionary<string, ADOTabularTable>();
             var resColl = new AdomdRestrictionCollection
                 {
                     {"CUBE_NAME", tables.Model.Name },
@@ -41,12 +41,14 @@ namespace ADOTabular
             DataTable dtTables = _conn.GetSchemaDataSet("MDSCHEMA_DIMENSIONS", resColl).Tables[0];
             foreach (DataRow dr in dtTables.Rows)
             {
-                ret.Add(dr["DIMENSION_NAME"].ToString()
-                    , new ADOTabularTable(_conn,dr["DIMENSION_NAME"].ToString()
+                tables.Add(
+                    new ADOTabularTable(_conn, dr["DIMENSION_NAME"].ToString()
                         ,dr["DESCRIPTION"].ToString()
-                        ,bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString())));
+                        ,bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString())
+                    )
+                );
             }
-            return ret;
+            
         }
 
         public Dictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns)
@@ -64,6 +66,7 @@ namespace ADOTabular
             {
                 ret.Add(dr[""].ToString()
                     , new ADOTabularColumn(columns.Table
+                        ,dr["HIERARCHY_NAME"].ToString()
                         ,dr["HIERARCHY_NAME"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString())
@@ -87,6 +90,7 @@ namespace ADOTabular
             {
                 ret.Add(dr["MEASURE_NAME"].ToString()
                     , new ADOTabularColumn(columns.Table
+                        ,dr["MEASURE_NAME"].ToString()
                         ,dr["MEASURE_NAME"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())

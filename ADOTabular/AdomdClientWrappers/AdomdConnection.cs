@@ -280,6 +280,8 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 if (_type == AdomdType.AnalysisServices)
                 {
+                    if (_conn.State != ConnectionState.Open)
+                        _conn.Open();
                     return _conn.ServerVersion;
                 }
                 else

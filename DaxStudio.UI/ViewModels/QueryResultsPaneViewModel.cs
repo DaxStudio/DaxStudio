@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.Composition;
 using System.Data;
 using DaxStudio.UI.Model;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -23,8 +25,6 @@ namespace DaxStudio.UI.ViewModels
             get { return "Results"; }
         }
 
-        
-
         public DataTable ResultsDataTable
         {
             get { return _resultsTable; }
@@ -34,5 +34,22 @@ namespace DaxStudio.UI.ViewModels
 
         public DataView ResultsDataView
         { get { return _resultsTable==null?new DataTable("blank").AsDataView():  _resultsTable.AsDataView(); } }
+
+        private void ResultsAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            
+            if ((e.PropertyName.Contains(".")
+                || e.PropertyName.Contains("/")
+                || e.PropertyName.Contains("(")
+                || e.PropertyName.Contains(")")
+                || e.PropertyName.Contains("[")
+                || e.PropertyName.Contains("]")
+                ) && e.Column is DataGridBoundColumn)
+            {
+                DataGridBoundColumn dataGridBoundColumn = e.Column as DataGridBoundColumn;
+                dataGridBoundColumn.Binding = new Binding("[" + e.PropertyName + "]");
+            }
+        }
+
     }
 }

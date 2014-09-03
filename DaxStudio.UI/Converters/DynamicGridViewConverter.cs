@@ -7,7 +7,8 @@ using System.Windows.Data;
 
 namespace DaxStudio.UI.Converters
 {
-
+    // Referenced by QueryResultsPaneView.xaml
+    //
     public class DynamicGridViewConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -30,20 +31,16 @@ namespace DaxStudio.UI.Converters
                     hdrTemplate.VisualTree = contentPresenter;
 
                     var cellTemplate = new DataTemplate();
-                    //var cellContentPresenter = new FrameworkElementFactory(typeof(Border));
-                    //cellContentPresenter.SetValue(ContentPresenter.RecognizesAccessKeyProperty, false);
                     var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
-                    cellTxtBlock.SetBinding(TextBlock.TextProperty, new Binding(item.ColumnName) );
+                    // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
+                    cellTxtBlock.SetBinding(TextBlock.TextProperty, new Binding("[" + item.ColumnName + "]") );
                     cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                     
-                    //cellContentPresenter.AppendChild(cellTxtBlock);
-                    //cellTemplate.VisualTree = cellContentPresenter;
                     cellTemplate.VisualTree = cellTxtBlock;
 
                     var gvc = new GridViewColumn
                     {
                         CellTemplate = cellTemplate,
-                        //DisplayMemberBinding = new Binding(item.ColumnName),
                         Width = Double.NaN,    
                         HeaderTemplate = hdrTemplate
                     };

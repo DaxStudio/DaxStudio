@@ -4,12 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:ado="clr-namespace:ADOTabular;assembly=ADOTabular"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
         <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/icon-model@16px.png" />
+        <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
+        <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Kpi.png"/>
+        <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
+        <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
         <conv:ResourceLookupConverter x:Key="MetadataIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
@@ -20,6 +25,7 @@
                 <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
                 <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/model.png" />
                 <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
+                <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
         <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
@@ -31,6 +37,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
+        <!-- Model Dropdown -->
         <ComboBox Grid.Row="0" 
                   IsEditable="False"
                   IsEnabled="{Binding IsConnected, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -52,58 +59,144 @@
             
         </ComboBox>
     
-        <!--<ListView ItemsSource="{Binding Tables,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></ListView>-->
-
+        
+        <!-- Tables -->
         <TreeView Grid.Row="1" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
                   cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"
                   >
-            <!--" dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">>-->
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Columns}">
-                        <!-- Table Template -->
+
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularTable}" ItemsSource="{Binding Columns}">
+                    <!-- Table Template -->
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                         <TextBlock  Text="{Binding Caption}" >
                             <TextBlock.ToolTip>
-                            <StackPanel Orientation="Vertical" MaxWidth="250">
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                    <TextBlock Text="{Binding Caption}"></TextBlock>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                        <TextBlock Text="{Binding Caption}"></TextBlock>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Description}"></TextBlock>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Description}"></TextBlock>
-                            </StackPanel>
-                        </TextBlock.ToolTip>    
-                        </TextBlock>    
+                            </TextBlock.ToolTip>    
+                        </TextBlock>
                     </StackPanel>
                     <!-- Column Template -->
-                        <HierarchicalDataTemplate.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" >
-                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
-                                <TextBlock Text="{Binding Caption}">
-                                    <TextBlock.ToolTip>
-                                        <StackPanel Orientation="Vertical" MaxWidth="250">
-                                            <StackPanel Orientation="Horizontal">
-                                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                                <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                            </StackPanel>
-                                            <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
-                                        </StackPanel>
-                                    </TextBlock.ToolTip>    
+
+                    <!-- TODO -->
+
+                </HierarchicalDataTemplate>
+
+                <!-- Hierarchies -->
+                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularHierarchy}" ItemsSource="{Binding Levels}">
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="{StaticResource Hierarchy}" Margin="2,1,5,1" />
+                        <TextBlock Text="{Binding Caption}">
+                            <TextBlock.ToolTip>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{StaticResource Hierarchy}" Margin="2,1,5,1"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" [hierarchy]"/>
+                                    </StackPanel>
+                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                </StackPanel>
+                            </TextBlock.ToolTip>    
                                 </TextBlock>
-                            </StackPanel>
-                        </DataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-        
-    
+                    </StackPanel>
+
+                </HierarchicalDataTemplate>
+
+                <!-- Levels -->
+                <DataTemplate DataType="{x:Type ado:ADOTabularLevel}">
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="{StaticResource ResourceKey=Column}" Margin="2,1,5,1" />
+                        <TextBlock Text="{Binding Column.Caption}">
+                            <TextBlock.ToolTip>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{StaticResource ResourceKey=Column}" Margin="2,1,5,1"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding Column.Caption}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding Column.DataTypeName}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                    </StackPanel>
+                                    <TextBlock FontStyle="Italic" Text="{Binding Column.Description}"></TextBlock>
+                                </StackPanel>
+                            </TextBlock.ToolTip>    
+                                </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+
+                <!-- Column Template -->
+                <DataTemplate DataType="{x:Type ado:ADOTabularColumn}">
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
+                        <TextBlock Text="{Binding Caption}">
+                            <TextBlock.ToolTip>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                    </StackPanel>
+                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                </StackPanel>
+                            </TextBlock.ToolTip>    
+                                </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+
+                <!-- KPI -->
+                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularKpi}" ItemsSource="{Binding Components}">
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="{StaticResource ResourceKey=Kpi}" Margin="2,1,5,1" />
+                        <TextBlock Text="{Binding Caption}">
+                            <TextBlock.ToolTip>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{StaticResource Kpi}" Margin="2,1,5,1"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                    </StackPanel>
+                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                </StackPanel>
+                            </TextBlock.ToolTip>    
+                                </TextBlock>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+                <!-- KpiComponent Template -->
+                <DataTemplate DataType="{x:Type ado:ADOTabularKpiComponent}">
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="{StaticResource Measure}" Margin="2,1,5,1" />
+                        <TextBlock Text="{Binding Caption}">
+                            <TextBlock.ToolTip>
+                                <StackPanel Orientation="Vertical" MaxWidth="250">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{StaticResource Measure}" Margin="2,1,5,1"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                    </StackPanel>
+                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                </StackPanel>
+                            </TextBlock.ToolTip>    
+                                </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.Resources>
+
+        </TreeView>
+
     </Grid>
 </UserControl>

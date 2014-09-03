@@ -9,5 +9,7 @@ namespace DaxStudio.Interfaces
     {
         IDaxStudioProxy Proxy { get; }
         bool IsExcel { get; }
+
+        string CommandLineFileName { get; }
     }
 }

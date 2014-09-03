@@ -19,7 +19,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return new List<TraceEventClass> 
                 { TraceEventClass.QuerySubcube
-                    , TraceEventClass.VertiPaqSEQueryEnd
+                , TraceEventClass.VertiPaqSEQueryEnd
                 , TraceEventClass.QueryEnd };
         }
     
@@ -29,12 +29,14 @@ namespace DaxStudio.UI.ViewModels
         protected override void ProcessResults()
         {
             StorageEngineDuration = 0;
+            StorageEngineQueryCount = 0;
 
             foreach (var traceEvent in Events)
             {
                 if (traceEvent.EventClass == TraceEventClass.VertiPaqSEQueryEnd && traceEvent.EventSubclass == TraceEventSubclass.VertiPaqScan)
                 {
                     StorageEngineDuration += traceEvent.Duration;
+                    StorageEngineQueryCount++;
                 }
                 if (traceEvent.EventClass == TraceEventClass.QueryEnd)
                 {
@@ -55,9 +57,9 @@ namespace DaxStudio.UI.ViewModels
         public double FormulaEnginePercent {
             get { return TotalDuration == 0 ? 0:(TotalDuration-StorageEngineDuration)/TotalDuration;}
         }
-        public long TotalDuration { get; set; }
-        public long StorageEngineDuration { get; set; }
-
+        public long TotalDuration { get; private set; }
+        public long StorageEngineDuration { get; private set; }
+        public long StorageEngineQueryCount { get; private set; }
         // IToolWindow interface
         public override string Title
         {

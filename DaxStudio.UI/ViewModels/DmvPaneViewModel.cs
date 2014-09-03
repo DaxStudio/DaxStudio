@@ -19,9 +19,10 @@ namespace DaxStudio.UI.ViewModels
             get { return Connection == null ? null: Connection.DynamicManagementViews; }
         }
 
-        protected override void OnConnectionChanged()
+        protected override void OnConnectionChanged(bool isSameServer)
         {
-            base.OnConnectionChanged();
+            base.OnConnectionChanged(isSameServer);
+            if (isSameServer) return;
             NotifyOfPropertyChange(()=> DmvQueries);
         }
         public override string DefaultDockingPane

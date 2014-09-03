@@ -4,21 +4,23 @@ using System.Windows;
 using ADOTabular.AdomdClientWrappers;
 using Microsoft.Office.Tools.Ribbon;
 using Microsoft.Owin.Hosting;
+using Serilog;
 
 namespace DaxStudio
 {
     public partial class ThisAddIn
     {
         private static bool _inShutdown ;
-        
 
+        public ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
         {
             
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
             CreateRibbonObjects();
-            
+            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+            Log.Logger = log;
         }
 
         private DaxStudioRibbon _ribbon;

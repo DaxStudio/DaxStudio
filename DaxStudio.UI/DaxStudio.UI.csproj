@@ -183,6 +183,15 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog">
+      <HintPath>..\packages\Serilog.1.4.7\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Extras.AppSettings">
+      <HintPath>..\packages\Serilog.Extras.AppSettings.1.4.7\lib\net45\Serilog.Extras.AppSettings.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx">
+      <HintPath>..\packages\Serilog.1.4.7\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
@@ -233,6 +242,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
@@ -638,6 +650,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-externalLink%4017px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\hierarchy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\kpi.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

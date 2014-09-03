@@ -18,6 +18,7 @@ namespace DaxStudio.Standalone
         private int _port;
         private IDaxStudioProxy _proxy;
         private IEventAggregator _eventAggregator;
+        private string _commandLineFileName = string.Empty;
         [ImportingConstructor]
         public DaxStudioHost(IEventAggregator eventAggregator)
         {
@@ -33,6 +34,8 @@ namespace DaxStudio.Standalone
             }
             else
             {
+                // pass along commandline to UI
+                if (args.Length > 1) _commandLineFileName = args[1];
                 _proxy = new DaxStudio.UI.Model.ProxyStandalone();
             }
         }
@@ -46,61 +49,11 @@ namespace DaxStudio.Standalone
             get { return _proxy; }
         }
 
- /*
-        public bool SupportsQueryTable { get { return false; } }
-        public bool SupportsStaticTable { get { return false; } }
-        public bool HasPowerPivotModel { get { return false; } }
-        public bool HasPowerPivotData()
+        public string CommandLineFileName
         {
-            return false;
+            get { return _commandLineFileName; }
         }
 
-        public bool EnsurePowerPivotDataIsLoaded()
-        {
-            return false;
-        }
-
-        public string BuildPowerPivotConnection()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string WorkbookName {
-            get { return "No Workbook available"; }
-            set {}
-        }
-        */
-
-        /* ==== Excel Host Stub functions - do not need to be implemented in the stand alone host  ==== */
-
-        /*
-        public void OutputStaticResult(DataTable results, string sheetName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OutputQueryTableResult(string connection, string daxQuery, string sheetName, IQueryRunner runner)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ADOTabularConnection GetPowerPivotConnection()
-        {
-            //Todo 
-            throw new NotImplementedException();
-        }
-
-        void IDaxStudioHost.EnsurePowerPivotDataIsLoaded()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<string> IDaxStudioHost.Worksheets
-        {
-            get { return new List<string>(); }
-        }
-
-*/
         public void Dispose()
         {
             

@@ -82,6 +82,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="IDaxStudioProxy.cs" />
     <Compile Include="IDaxStudioHost.cs" />
     <Compile Include="IQueryRunner.cs" />

@@ -5,7 +5,7 @@ using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using System.Collections.Generic;
 
 namespace DaxStudio.Tests
 {
@@ -42,7 +42,7 @@ namespace DaxStudio.Tests
         // public void MyTestCleanup() { }
         //
         #endregion
-
+        /*
         [TestMethod]
         public void TestMethod1()
         {
@@ -80,5 +80,61 @@ namespace DaxStudio.Tests
             }
             Assert.AreEqual(0,final.Rows.Count,"incorrect row count");
         }
+        */
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitor()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\csdl.xml");
+            var tabs = new ADOTabularTableCollection(c,m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(4, tabs.Count);
+            Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+        }
+
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitorHierarchies()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\AdvWrks.xml");
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            var tabs = new ADOTabularTableCollection(c,m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(15, tabs.Count);
+            Assert.AreEqual(28, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
+            var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).First());
+            Assert.AreEqual(3, h.Levels.Count);
+            Assert.AreEqual("Group", h.Levels[0].LevelName);
+            Assert.AreEqual("Country", h.Levels[1].LevelName);
+            Assert.AreEqual("Region", h.Levels[2].LevelName);
+        }
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitorKPI()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\AdvWrks.xml");
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            var tabs = new ADOTabularTableCollection(c, m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(15, tabs.Count);
+            Assert.AreEqual(28, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
+            var k = (ADOTabularKpi)(tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.KPI).First());
+            Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);
+            Assert.AreEqual("_Total Current Quarter Sales Performance Goal", k.Goal.Caption);
+            Assert.AreEqual("_Total Current Quarter Sales Performance Status", k.Status.Caption);
+        }
+
     }
 }

@@ -52,6 +52,12 @@ namespace DaxStudio
         public bool IsExcel {
             get { return true; }
         }
+
+        public string CommandLineFileName
+        {
+            get { return string.Empty; }
+        }
+
         public bool SupportsQueryTable { get { return false; } }
         public bool SupportsStaticTable { get { return true; } }
 

@@ -312,6 +312,7 @@ namespace ADOTabular
             if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)
             {
                 _adomdConn.Close();
+                _spid = 0;
             }
         }
 
@@ -361,9 +362,20 @@ namespace ADOTabular
             }
         }
 
+        private string _svrVersion = null;
         public string ServerVersion
         {
-            get { return _adomdConn.ServerVersion; }
+            get {
+                if (_svrVersion == null)
+                {
+                    _svrVersion = _adomdConn.ServerVersion;
+                }
+                return _svrVersion;
+            }
+            set
+            {
+                _svrVersion = value;
+            }
         }
         public string SessionId
         { 
@@ -407,12 +419,19 @@ namespace ADOTabular
             {
                 if (_spid == 0)
                 {
-                    //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
-                    //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
-                    var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
-                    foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => dr["SESSION_ID"].ToString() == SessionId))
+                    try
                     {
-                        _spid = int.Parse(dr["SESSION_SPID"].ToString());
+                        //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
+                        //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
+                        var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
+                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => dr["SESSION_ID"].ToString() == SessionId))
+                        {
+                            _spid = int.Parse(dr["SESSION_SPID"].ToString());
+                        }
+                    }
+                    catch
+                    {
+                        _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }
                 }
                 return _spid;

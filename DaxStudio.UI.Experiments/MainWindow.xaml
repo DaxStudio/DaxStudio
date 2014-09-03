@@ -1,0 +1,105 @@
+﻿<Window x:Class="DaxStudio.UI.Experiments.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ado="clr-namespace:ADOTabular;assembly=ADOTabular"
+        Title="MainWindow" Height="350" Width="525"
+   >
+
+    <Grid>
+
+        <TreeView HorizontalAlignment="Left" Height="309" Margin="10,10,0,0" VerticalAlignment="Top" Width="497" ItemsSource="{Binding Tables}">
+            <!--
+            <TreeView.ItemContainerStyle>
+                 
+    This Style binds a TreeViewItem to a TreeViewItemViewModel. 
+    
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                
+            </TreeView.ItemContainerStyle>
+
+            
+            
+-->
+            <TreeView.Resources>
+                <HierarchicalDataTemplate 
+                DataType="{x:Type ado:ADOTabularModel}" 
+                ItemsSource="{Binding Tables}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" Margin="3,0" />
+                        <!-- Source="Images\Region.png" /> -->
+                        <TextBlock Text="{Binding Caption}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+                <HierarchicalDataTemplate 
+                DataType="{x:Type ado:ADOTabularTable}" 
+                ItemsSource="{Binding Columns}" >
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" 
+                         Margin="3,0"  />
+                        <!--="Images\State.png" />-->
+                        <TextBlock Text="T: " />
+                        <TextBlock Text="{Binding Caption}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+
+                <HierarchicalDataTemplate 
+                DataType="{x:Type ado:ADOTabularHierarchy}" 
+                ItemsSource="{Binding Levels}" >
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" 
+                        Margin="3,0"  />
+                        <!--="Images\State.png" />-->
+                        <TextBlock Text="H: " />
+                        <TextBlock Text="{Binding Caption}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+                <HierarchicalDataTemplate 
+                DataType="{x:Type ado:ADOTabularKpi}" 
+                ItemsSource="{Binding Levels}" >
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" 
+                        Margin="3,0"  />
+                        <!--="Images\State.png" />-->
+                        <TextBlock Text="K: " />
+                        <TextBlock Text="{Binding Caption}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+
+
+                <DataTemplate DataType="{x:Type ado:ADOTabularColumn}" >
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" 
+           Margin="3,0" />
+                        <!--="Images\City.png" />-->
+                        <TextBlock Text="SC: " />
+                        <TextBlock Text="{Binding Caption}" />
+                    </StackPanel>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type ado:ADOTabularLevel}" >
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" 
+           Margin="3,0" />
+                        <!--="Images\City.png" />-->
+                        <TextBlock Text="L: " />
+                        <TextBlock Text="{Binding Column.Caption}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+
+    </Grid>
+</Window>

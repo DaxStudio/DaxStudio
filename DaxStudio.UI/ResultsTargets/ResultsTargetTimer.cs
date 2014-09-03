@@ -3,6 +3,7 @@ using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.Model
 {
@@ -22,11 +23,11 @@ namespace DaxStudio.UI.Model
             try
             {
                 runner.OutputMessage("Query Started");
-                var start = DateTime.Now;
+                var sw = Stopwatch.StartNew();
                 var dq = runner.QueryText;
                 var res = runner.ExecuteQuery(dq);
-                var end = DateTime.Now;
-                var durationMs = (end - start).TotalMilliseconds;
+                sw.Stop();
+                var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
                 runner.QueryCompleted();
                 runner.ActivateOutput();

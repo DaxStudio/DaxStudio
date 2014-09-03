@@ -5,6 +5,7 @@ using System.ComponentModel.Composition;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels {
     [Export(typeof (IShell))]
@@ -13,27 +14,31 @@ namespace DaxStudio.UI.ViewModels {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
-        //private DocumentTabViewModel _tabs;
-
+        private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host)
         {
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
-            //StatusBar = new StatusBarViewModel(eventAggregator);
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             Tabs = (DocumentTabViewModel) conductor;
             Tabs.ConductWith(this);
             Tabs.CloseStrategy = new ApplicationCloseStrategy();
-
             _host = host;
-            //Tabs = new DocumentTabViewModel(windowManager,eventAggregator) ;    
-            //var tabs =  (Conductor<IScreen>.Collection.OneActive)conductor;
-            //Tabs = tabs.Items;
-            DisplayName = string.Format("DaxStudio - v{0}.{1}", Version.Major, Version.Minor); 
-            
+            if (_host.CommandLineFileName != string.Empty)
+            {
+                Tabs.NewQueryDocument(_host.CommandLineFileName);
+            }
+            else
+            {
+                Tabs.NewQueryDocument();
+            }
+            DisplayName = string.Format("DaxStudio - v{0}.{1}", Version.Major, Version.Minor);
+            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+            Log.Logger = log;
+            Log.Verbose("============ Application Launch =============");
         }
 
         public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }

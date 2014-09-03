@@ -12,6 +12,8 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Properties;
 using System.Linq;
 using Microsoft.Win32;
+using Serilog;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -104,8 +106,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
+            var sw = Stopwatch.StartNew();
             _connection.Database.ClearCache();
-            _eventAggregator.Publish(new OutputInformationMessageEvent(string.Format("Cache Cleared for Database: {0}",_connection.Database.Name)));
+            _eventAggregator.Publish(new OutputInformationMessageEvent(string.Format("Evalating Calculation Script for Database: {0}", _connection.Database.Name)));
+            ActiveDocument.ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) => {
+                sw.Stop();
+                var duration = sw.ElapsedMilliseconds;
+                _eventAggregator.Publish(new OutputInformationMessageEvent(string.Format("Cache Cleared for Database: {0}",_connection.Database.Name),duration));
+            });
         }
 
         public void Save()
@@ -149,15 +157,17 @@ namespace DaxStudio.UI.ViewModels
             {
                 Databases = null;
                 SelectedDatabase = null;
+                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", "<null>");
                 return;
             }
+            
             Databases = _connection.Databases;
             
-            //databaseComboChanging = true;
-            SelectedDatabase = _connection.Database.Name;
+            _databaseComboChanging = true;
             NotifyOfPropertyChange(() => Databases);
-            //databaseComboChanging = false;
+            _databaseComboChanging = false;
 
+            SelectedDatabase = _connection.Database.Name;
         }
 
         private string _selectedDatabase; 
@@ -165,16 +175,18 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedDatabase; }
             set
             {
+                //Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set", value);
                 if (value == _selectedDatabase) return;
                 if (_databaseComboChanging) return;
 
                 _databaseComboChanging = true;
-
+                
                 _selectedDatabase = value;
                 if (_connection != null && _selectedDatabase != null)
                 {
                     if (!_connection.Database.Name.Equals(_selectedDatabase))
                     {
+                        Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set (changing)", value);
                         _connection.ChangeDatabase(_selectedDatabase);
                         _eventAggregator.Publish(new UpdateConnectionEvent(_connection,_selectedDatabase));//, ActiveDocument.IsPowerPivotConnection));
                     }
@@ -209,6 +221,7 @@ namespace DaxStudio.UI.ViewModels
         public ADOTabularDatabaseCollection Databases { get; set; }
         public void Handle(ActivateDocumentEvent message)
         {
+            Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
             ActiveDocument = message.Document;
             //ActiveDocument.PropertyChanged += ActiveDocumentOnPropertyChanged;   
 
@@ -220,26 +233,21 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCache);
             }
 
-            NotifyOfPropertyChange(()=> TraceWatchers);
+            
             if (ActiveDocument.Connection != null)
             {
                 foreach (var tw in TraceWatchers)
                 {
                     // TODO - can we enable traces for PowerPivot?
-                //    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
+                    //    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
                     tw.CheckEnabled(ActiveDocument.Connection);
                 }
             }
-            
+            NotifyOfPropertyChange(() => TraceWatchers);
         }
-
         private void ActiveDocumentOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
-        /*    if (propertyChangedEventArgs.PropertyName != "CanRunQuery") return;
-            NotifyOfPropertyChange(() => CanRunQuery());
-            NotifyOfPropertyChange(()=> CanCancelQuery());
-         */
-        }
+        { }
+        
 
         protected DocumentViewModel ActiveDocument { get; set; }
 

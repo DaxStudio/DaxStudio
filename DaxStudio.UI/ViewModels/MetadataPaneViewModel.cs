@@ -7,6 +7,7 @@ using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using GongSolutions.Wpf.DragDrop;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -14,45 +15,18 @@ namespace DaxStudio.UI.ViewModels
     public class MetadataPaneViewModel:ToolPaneBaseViewModel, IDragSource
     {
         private string _modelName;
-        //private ADOTabularConnection _connection;
+        
         public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator):base(connection,eventAggregator)
-        {
-        }
-
-        /*
-        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator)
-        {
-            PropertyChanged += OnPropertyChanged;
-            Connection = connection;
-            _eventAggregator = eventAggregator;
-        }
-        */
-
-        private readonly IEventAggregator _eventAggregator;
+        {  }
 
         public override void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
             switch (propertyChangedEventArgs.PropertyName)
             {
-                case "Connection":
-                    
-                        if (Connection != null)
-                        {
-                            ModelList = Connection.Database.Models;
-                            //SelectedModel = Connection.Database.Models.BaseModel;
-
-                        }
-                    break;
                 case "ModelList":
-                    //SelectedModel = Connection.Database.Models.BaseModel;
                     SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
-                              
-//                    NotifyOfPropertyChange(() => SelectedModel);
-//                    NotifyOfPropertyChange(() => SelectedModelName);
-//                    NotifyOfPropertyChange(() => SelectedIndex);
-
+                    Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList", Connection.Database.Models.BaseModel.Name);          
                     break;
-
             }
         }
 
@@ -70,20 +44,13 @@ namespace DaxStudio.UI.ViewModels
 
         public ADOTabularModel SelectedModel {
             get { return _selectedModel; } 
-            set { _selectedModel = value;
-                //SelectedIndex = 0;
-  /*              for (int i = 0; i <= ModelList.Count - 1; i++)
+            set {
+                if (_selectedModel != value)
                 {
-                    if (!ModelList[i].IsPerspective)
-                    {
-                        SelectedIndex = i;
-                        break;
-                    }
+                    _selectedModel = value;
+                    NotifyOfPropertyChange(() => SelectedModel);
+                    NotifyOfPropertyChange(() => Tables);
                 }
-   */ 
-                NotifyOfPropertyChange(() => SelectedModel);
-   //             NotifyOfPropertyChange(() => SelectedModelName);
-                NotifyOfPropertyChange(() => Tables);
             }
         }
 
@@ -94,32 +61,17 @@ namespace DaxStudio.UI.ViewModels
                 return SelectedModel == null ? "--":SelectedModel.Name; 
             }
         }
-        /*
-        public bool IsConnected
+        
+        protected override void OnConnectionChanged(bool isSameServer)
         {
-            get { return Connection != null; }
-        }
-
-        public ADOTabularConnection Connection {
-            get { return _connection; } 
-            set
-            {
-                if (_connection == value)
-                    return;
-                _connection = value;
-                ModelList = _connection.Database.Models;
-                NotifyOfPropertyChange(() => IsConnected);
-                NotifyOfPropertyChange(() => Connection);
-            }
-        }
-        */
-
-        protected override void OnConnectionChanged()
-        {
-            base.OnConnectionChanged();
+            base.OnConnectionChanged(isSameServer);
             if (Connection == null)
                 return;
+            if (ModelList == Connection.Database.Models)
+                return;
+            
             var ml = Connection.Database.Models;
+            Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);          
             if (Dispatcher.CurrentDispatcher.CheckAccess())
             {
                 Dispatcher.CurrentDispatcher.Invoke(new System.Action(()=> ModelList = ml));
@@ -131,8 +83,6 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => Connection);
         }
-
-        //private IObservableCollection<string> _modelList;
 
         public ADOTabularTableCollection Tables {
             get
@@ -152,24 +102,6 @@ namespace DaxStudio.UI.ViewModels
 	          set { base.Title = value; }
         }
         
-    /*
-        public void MouseDoubleClick(IADOTabularObject item)
-        {
-            var txt = item.DaxName;
-            _eventAggregator.Publish(new SendTextToEditor(txt) );
-        }
-        
-        public IADOTabularObject SelectedItem { get; set; }
-        
-        public void SetSelectedItem(object item)
-        {
-            SelectedItem = (IADOTabularObject)item;
-        }
-        
-        public int SelectedIndex { get; set; }
-        */
-        //private BindableCollection<ADOTabularModel> _modelList;
-        //public BindableCollection<ADOTabularModel> ModelList
         private ADOTabularModelCollection _modelList;
         public ADOTabularModelCollection ModelList
         {
@@ -183,19 +115,6 @@ namespace DaxStudio.UI.ViewModels
                 
             }
         }
-        /*
-        public void StartDrag(IDragInfo dragInfo)
-        {
-            dragInfo.Data = ((IADOTabularObject) dragInfo.SourceItem).DaxName;
-            dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
-            dragInfo.Effects = DragDropEffects.Move;
-        }
         
-        public void Dropped(IDropInfo dropInfo)
-        {
-            throw new System.NotImplementedException();
-        }
-         */ 
     }
-
 }

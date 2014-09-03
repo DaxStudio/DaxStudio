@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Events;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.Model
 {
@@ -31,15 +32,15 @@ namespace DaxStudio.UI.Model
                 try
                 {
                     runner.OutputMessage("Query Started");
-                    var start = DateTime.Now;
+                    var sw = Stopwatch.StartNew();
 
                     var dq = runner.QueryText;
                     var res = runner.ExecuteQuery(dq);
 
                     using (new StatusBarMessage("Executing Query..."))
                     {
-                        var end = DateTime.Now;
-                        var durationMs = (end - start).TotalMilliseconds;
+                        sw.Stop();
+                        var durationMs = sw.ElapsedMilliseconds;
 
                         runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet).ContinueWith((ascendant) =>
                         {
@@ -104,13 +105,13 @@ namespace DaxStudio.UI.Model
                     try
                     {
                         runner.OutputMessage("Query Started");
-                        var start = DateTime.Now;
+                        var sw = Stopwatch.StartNew();
 
                         var dq = runner.QueryText;
                         var res = runner.ExecuteQuery(dq);
 
-                        var end = DateTime.Now;
-                        var durationMs = (end - start).TotalMilliseconds;
+                        sw.Stop();
+                        var durationMs = sw.ElapsedMilliseconds;
 
 
                         // TODO write results to Excel

@@ -39,7 +39,13 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Header="Start" DisplayMemberBinding="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}" behaviours:GridViewColumnResize.Width="58"></GridViewColumn>
-                    <GridViewColumn Header="Duration"  Width="Auto">
+                    <GridViewColumn Width="Auto">
+                        <GridViewColumn.Header>
+                            <StackPanel Orientation="Horizontal" ToolTip="Client Duration - includes network transfer and rendering time">
+                                <TextBlock Text="Duration" />
+                                <TextBlock Text=" i" FontFamily="WebDings"/>
+                            </StackPanel>
+                        </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
@@ -49,7 +55,8 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Header="Text" 
-                                    behaviours:GridViewColumnResize.Width="*1">                        
+                                    behaviours:GridViewColumnResize.Width="*1">
+                        
                         <GridViewColumn.CellTemplate>
                             <DataTemplate x:Name="Text">
                                 <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" TextTrimming="None" 

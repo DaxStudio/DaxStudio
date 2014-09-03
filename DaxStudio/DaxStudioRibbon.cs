@@ -18,6 +18,7 @@ using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Serilog;
 
 namespace DaxStudio
 {
@@ -145,6 +146,7 @@ namespace DaxStudio
                 // find free port
                 _port = GetOpenPort(9000,9999);
 
+                Log.Information("DaxStudio Host started on port {port}", _port);
                 System.Diagnostics.EventLog appLog =new System.Diagnostics.EventLog();
                 appLog.Source = "Application";
                 appLog.WriteEntry( string.Format("DaxStudio Excel Add-in Listening on port {0}",_port),EventLogEntryType.Information);
@@ -171,6 +173,7 @@ namespace DaxStudio
             {
                 path = (string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\DaxStudio", "Path", "");
             }
+            Log.Debug("About to launch DaxStudio on path: {path}", path);
             // start Dax Studio process
             _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
             

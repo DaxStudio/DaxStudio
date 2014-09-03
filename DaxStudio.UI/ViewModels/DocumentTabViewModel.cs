@@ -8,6 +8,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using Microsoft.Win32;
 using DaxStudio.UI.Model;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -41,7 +42,7 @@ namespace DaxStudio.UI.ViewModels
             _documentFactory = documentFactory;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
-            NewQueryDocument(); // load a blank query window at startup
+            //NewQueryDocument(); // load a blank query window at startup
             _eventAggregator.Subscribe(this);
 
         }
@@ -61,10 +62,14 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 if (_activeDocument == value) 
-                    return;
+                    return;  // this item is already active
+                if (this.Items.Count == 0)
+                    return;  // no items in collection usually means we are shutting down
+                Log.Debug("{Class} {Event} {Connection} {Document}", "DocumentTabViewModel", "ActiveDocument:Set", value.DisplayName);
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
+                _eventAggregator.Publish(new ActivateDocumentEvent(_activeDocument));
                 _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
             }
         }

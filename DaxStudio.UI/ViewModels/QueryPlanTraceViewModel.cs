@@ -48,9 +48,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string PhysicalQueryPlanText { get; set; }
-        public string LogicalQueryPlanText { get; set; }
-        public long TotalDuration { get; set; }
+        public string PhysicalQueryPlanText { get; private set; }
+        public string LogicalQueryPlanText { get; private set; }
+        public long TotalDuration { get; private set; }
 
         // IToolWindow interface
         public override string Title

@@ -5,6 +5,7 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -99,8 +100,13 @@ namespace DaxStudio.UI.ViewModels
             get { return _isChecked; }
             set
             {
-                _isChecked = value;
-                _eventAggregator.Publish(new TraceWatcherToggleEvent(this, value));
+                if (_isChecked != value)
+                {
+                    _isChecked = value;
+                    NotifyOfPropertyChange(() => IsChecked);
+                    _eventAggregator.Publish(new TraceWatcherToggleEvent(this, value));
+                    Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
+                }
             }
         }
 
@@ -112,7 +118,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CheckEnabled(ADOTabular.ADOTabularConnection _connection)
         {
-            IsEnabled = (!_connection.IsPowerPivot);
+            IsEnabled = (!_connection.IsPowerPivot && _connection.SPID != -1);
         }
     }
 }

@@ -15,7 +15,26 @@ namespace ADOTabular
         {
             _adoTabConn = adoTabConn;
             _database = database;
-            _models = _adoTabConn.Visitor.Visit(this);
+            //_models = _adoTabConn.Visitor.Visit(this);
+        }
+
+        private Dictionary<string,ADOTabularModel> InternalModelCollection
+        {
+            get
+            {
+                if (_models == null)
+                {
+                    _models = _adoTabConn.Visitor.Visit(this);
+                }
+                return _models;
+            }
+        }
+
+        public void Add(ADOTabularModel model)
+        {
+            if (_models == null)
+                _models = new Dictionary<string, ADOTabularModel>();
+            _models.Add(model.Name, model);
         }
 
         public ADOTabularDatabase Database
@@ -26,14 +45,14 @@ namespace ADOTabular
         public ADOTabularModel BaseModel
         {
             get
-            { return _models.Values.FirstOrDefault(m => !m.IsPerspective); }
+            { return InternalModelCollection.Values.FirstOrDefault(m => !m.IsPerspective); }
         }
 
         public ADOTabularModel this[string modelName]
         {
             get
             {
-                return _models[modelName];
+                return InternalModelCollection[modelName];
                 //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
                 // todo - should we return a model not found exception instead of null?
             }
@@ -44,7 +63,7 @@ namespace ADOTabular
             get
             {
                 int i = 0;
-                foreach (var m in _models.Values)
+                foreach (var m in InternalModelCollection.Values)
                 {
                     if (i == index)
                     {
@@ -62,7 +81,7 @@ namespace ADOTabular
 
         public int Count
         {
-            get { return _models.Count; }
+            get { return InternalModelCollection.Count; }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -74,7 +93,7 @@ namespace ADOTabular
 
         public IEnumerator<ADOTabularModel> GetEnumerator()
         {
-            foreach (ADOTabularModel m in _models.Values)
+            foreach (ADOTabularModel m in InternalModelCollection.Values)
             {
                 yield return m;
 

@@ -9,23 +9,70 @@ namespace ADOTabular
         
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel  _model;
-        private readonly SortedDictionary<string, ADOTabularTable> _tables;
+        private SortedDictionary<string, ADOTabularTable> _tables;
 
         public ADOTabularTableCollection(ADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
             _model = model;
-            _tables = _adoTabConn.Visitor.Visit(this);
+            
+        }
+
+        private SortedDictionary<string,ADOTabularTable> InternalTableCollection
+        {
+            get
+            {
+                if (_tables == null)
+                {
+                    _adoTabConn.Visitor.Visit(this);
+                }
+                return _tables;
+            }
         }
 
         public ADOTabularModel Model
         {
             get { return _model; }
         }
+
+        public int Count
+        {
+            get { return InternalTableCollection.Count; }
+        }
+
+        public void Add(ADOTabularTable table)
+        {
+            if (_tables == null)
+            {
+                _tables = new SortedDictionary<string, ADOTabularTable>();
+            }
+            _tables.Add(table.Caption, table);
+        }
+
+        public ADOTabularTable this[string index]
+        {
+            get
+            {
+                return InternalTableCollection[index];
+            }
+        }
+
+        public ADOTabularTable this[int index]
+        {
+            get
+            {
+                string[] keys = new string[InternalTableCollection.Count];
+                InternalTableCollection.Keys.CopyTo(keys, 0);
+                return InternalTableCollection[keys[index]];
+            }
+
+        }
+
+
         
         public ADOTabularTable GetById(string internalId)
         {
-            foreach (var t in _tables.Values)
+            foreach (var t in InternalTableCollection.Values)
             {
                 if (t.InternalId == internalId)
                 {
@@ -37,7 +84,7 @@ namespace ADOTabular
 
         public IEnumerator<ADOTabularTable> GetEnumerator()
         {
-            foreach (var t in _tables.Values)
+            foreach (var t in InternalTableCollection.Values)
             {
                 yield return t;
             }

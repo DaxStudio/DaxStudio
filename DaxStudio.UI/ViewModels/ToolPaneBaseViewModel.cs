@@ -39,13 +39,19 @@ namespace DaxStudio.UI.ViewModels
             {
                 //if (_connection == value)
                 //    return;
+                if (_connection == null && value == null) return;
+                var isSameServer = false;
+                if (_connection != null && value != null)
+                {
+                    isSameServer = _connection.ServerName.Equals(value.ServerName, System.StringComparison.InvariantCultureIgnoreCase);
+                }
                 _connection = value;
                 NotifyOfPropertyChange(()=> Connection);
-                OnConnectionChanged();
+                OnConnectionChanged(isSameServer);
             }
         }
 
-        protected virtual void OnConnectionChanged()
+        protected virtual void OnConnectionChanged(bool isSameServer)
         {}
     
         public void MouseDoubleClick(IADOTabularObject item)

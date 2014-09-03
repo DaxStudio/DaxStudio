@@ -3,7 +3,9 @@ using System.Data;
 
 namespace ADOTabular
 {
-    public class ADOTabularColumn:IADOTabularObject
+
+
+    public  class ADOTabularColumn:IADOTabularObject
     {
 
         public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
@@ -24,10 +26,11 @@ namespace ADOTabular
             }
         }
 
-        public ADOTabularColumn( ADOTabularTable table, string caption,  string description,
+        public ADOTabularColumn( ADOTabularTable table, string internalReference, string caption,  string description,
                                 bool isVisible, ADOTabularColumnType columnType, string contents)
         {
             Table = table;
+            InternalReference = internalReference;
             Caption = caption;
             Description = description;
             IsVisible = isVisible;
@@ -35,7 +38,9 @@ namespace ADOTabular
             Contents = contents;
         }
 
-        public ADOTabularColumnType ColumnType { get; private set; }
+        public string InternalReference { get; private set; }
+
+        public ADOTabularColumnType ColumnType { get; internal set; }
 
         public ADOTabularTable Table { get; private set; }
 
@@ -43,7 +48,7 @@ namespace ADOTabular
 
         public string Contents { get; private set; }
 
-        public string DaxName {
+        public virtual string DaxName {
             get
             {
                 // for measures we exclude the table name
@@ -59,7 +64,7 @@ namespace ADOTabular
  
         public Type DataType { get; set; }
 
-        public string DataTypeName { get { return DataType.ToString().Replace("System.", ""); } }
+        public string DataTypeName { get { return DataType==null?"n/a":DataType.ToString().Replace("System.", ""); } }
 
         public MetadataImages MetadataImage
         {

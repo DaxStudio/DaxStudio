@@ -8,13 +8,15 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DaxStudio.UI")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("DaxStudio.codeplex.com")]
-[assembly: AssemblyProduct("DaxStudio.UI")]
-[assembly: AssemblyCopyright("Copyright © DaxStudio 2013")] 
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyDescription("DaxStudio Common UI Library")]
+
+// moved to CommonAssemblyInfo.cs at Solution level
+//[assembly: AssemblyConfiguration("")]
+//[assembly: AssemblyCompany("DaxStudio.codeplex.com")]
+//[assembly: AssemblyProduct("DaxStudio.UI")]
+//[assembly: AssemblyCopyright("Copyright © DaxStudio 2013")] 
+//[assembly: AssemblyTrademark("")]
+//[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -51,5 +53,8 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
+
+// moved to CommonAssemblyInfo.cs at Solution level
+
+//[assembly: AssemblyVersion("2.0.0.1")]
+//[assembly: AssemblyFileVersion("2.0.0.1")]
