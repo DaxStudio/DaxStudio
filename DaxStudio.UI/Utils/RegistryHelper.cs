@@ -68,11 +68,10 @@ namespace DaxStudio.UI
                     regListMRU.SetValue(string.Format("{0}{1}",listName, i), currentItem);
                     foreach (string listItem in itemList)
                     {
+                        i++;
                         if (listItem == currentItem) continue;
                         regListMRU.SetValue(string.Format("{0}{1}",listName, i), listItem );
-                        i++;
                     }
-                        
                 }
             }
         }

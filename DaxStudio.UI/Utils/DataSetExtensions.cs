@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text;
+using System.Windows.Documents;
 
 namespace DaxStudio.UI
 {
@@ -119,5 +120,68 @@ namespace DaxStudio.UI
 
             return sbData.ToString();
         }
+
+
+        /*
+Imports System.IO
+Imports System.Text
+Imports System.Web.UI
+Imports System.Web.UI.WebControls
+        
+  
+  /// <summary>
+  /// Generate a string representation of an HTML table from a DataTable.  Add
+  /// a column header row with cells for the text, and all data cells.
+  /// </summary>
+  /// <returns>A string that represents the HTML table.</returns>
+  public static string GenerateFromDataTable(DataTable dt)
+  {
+   // Create a new HTML table object.
+    var table = new Table();
+
+    // Declare variables.
+    TableRow row;
+    TableCell cell;
+    
+
+    // Add column header cells.
+    foreach (var dc in dt.Columns)
+    {
+      row = new TableRow();
+      cell = new TableCell();
+      cell. .Text = dc.ColumnName;
+      row.Cells.Add(cell);
+
+      table.Rows.Add(row)
+    }
+
+    // Add data rows and cells.
+    foreach (var dr in dt.Rows)
+    {
+      row = new TableRow();
+      foreach (dc In dt.Columns)
+      {
+        cell = new TableCell();
+        cell.Text = dr(dc).ToString();
+        row.Cells.Add(cell);
+      }
+      table.Rows.Add(row);
+    }
+
+    // Render the HTML table to a StringBuilder to get the string representation
+    // for the table.
+    var sb = new StringBuilder();
+    using (var sw = new StringWriter(sb))
+      {
+      using (var tw = new HtmlTextWriter(sw))
+      {
+        table.RenderControl(tw);
+      }
+      }
+    return sb.ToString();
+  }
+*/
+
+
     }
 }

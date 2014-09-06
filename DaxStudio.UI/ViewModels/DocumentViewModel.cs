@@ -202,11 +202,33 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [ImportMany(typeof (ITraceWatcher))]
+        // Use MEF to give us a collection of TraceWatcher factory objects
+        // used to create unique instances of each TraceWatcher type per document
+        [ImportMany(typeof(ITraceWatcher))]
+        public List<ExportFactory<ITraceWatcher>> TraceWatcherFactories { get; set; }
+        
         public BindableCollection<ITraceWatcher> TraceWatchers
         {
-            get { return _traceWatchers ?? (_traceWatchers = new BindableCollection<ITraceWatcher>()); }
+            // we use the factory to make sure that each DocumentViewModel has it's
+            // own set of TraceWatchers so that they can be enabled/disabled per
+            // document
+            get
+            {
+                if (_traceWatchers == null)
+                {
+                    _traceWatchers = new BindableCollection<ITraceWatcher>();
+                    foreach( var fac in TraceWatcherFactories)
+                    {
+                        var tw = fac.CreateExport().Value;
+                        _traceWatchers.Add(tw);
+                    }
+                }
+                return _traceWatchers;
+            }
+            
         }
+
+        
 
         public IObservableCollection<object> ToolWindows
         {

@@ -157,17 +157,24 @@ namespace DaxStudio.UI.ViewModels
             {
                 Databases = null;
                 SelectedDatabase = null;
-                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", "<null>");
+                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", "<null>", "<null>");
                 return;
             }
-            
-            Databases = _connection.Databases;
-            
-            _databaseComboChanging = true;
-            NotifyOfPropertyChange(() => Databases);
-            _databaseComboChanging = false;
+            try
+            {
+                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", _connection.ConnectionString, message.DatabaseName);
+                Databases = _connection.Databases;
 
-            SelectedDatabase = _connection.Database.Name;
+                _databaseComboChanging = true;
+                NotifyOfPropertyChange(() => Databases);
+                _databaseComboChanging = false;
+
+                SelectedDatabase = _connection.Database.Name;
+            }
+            catch (Exception ex)
+            {
+                _eventAggregator.Publish(new OutputMessage(MessageType.Error, ex.Message));
+            }
         }
 
         private string _selectedDatabase; 

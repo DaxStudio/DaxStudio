@@ -9,19 +9,21 @@
 <UserControl.Resources>
         <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
     </UserControl.Resources>
+    
     <ListView x:Name="ResultsDataView" 
-              View="{Binding Path=ResultsDataView,  Converter={StaticResource DynamicGridViewConverter},Mode=OneWay, UpdateSourceTrigger=PropertyChanged }" 
-              
-              >
+              View="{Binding Path=ResultsDataView,  Converter={StaticResource DynamicGridViewConverter},Mode=OneWay, UpdateSourceTrigger=PropertyChanged }"  >
         <ListView.Resources>
             <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
                 <Setter Property="RecognizesAccessKey" Value="False"/>
             </Style>
-            <!--<DataTemplate DataType="{x:Type DateTime}">
-                <TextBlock Text="{Binding StringFormat={0:d}}"  />
-            </DataTemplate>-->
         </ListView.Resources>
-    
     </ListView>    
     
+<!--
+    <DataGrid x:Name="ResultsDataView" 
+              ClipboardCopyMode="IncludeHeader"
+              SelectionMode="Single"       AlternatingRowBackground="LightGray"  VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"     >
+        
+    </DataGrid>
+    -->
 </UserControl>

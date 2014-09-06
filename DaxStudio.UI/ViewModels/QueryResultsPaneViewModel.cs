@@ -3,6 +3,8 @@ using System.Data;
 using DaxStudio.UI.Model;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,8 +34,19 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=> ResultsDataView);}
         }
 
+        public void CopyAllResultsToClipboard(object obj)
+        {
+            System.Diagnostics.Debug.WriteLine(obj);
+            Clipboard.SetData("CommaSeparatedValue", ResultsDataTable.ToCsv());
+        }
+
         public DataView ResultsDataView
         { get { return _resultsTable==null?new DataTable("blank").AsDataView():  _resultsTable.AsDataView(); } }
+
+        public void OnListViewItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("in OnListViewItemPreviewMouseRightButtonDown");
+        }
 
         private void ResultsAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
