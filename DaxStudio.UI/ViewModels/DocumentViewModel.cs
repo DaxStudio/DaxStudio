@@ -33,21 +33,22 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (Screen))]
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
-            , IHandle<RunQueryEvent>
-            , IHandle<SaveDocumentEvent>
-            , IHandle<SendTextToEditor>
-            , IHandle<UpdateConnectionEvent> // ,IDropTarget
-            , IHandle<TraceWatcherToggleEvent>
-            , IHandle<LoadFileEvent>
-            , IHandle<CancelQueryEvent>
-            , IHandle<OutputInformationMessageEvent>
-            , IHandle<ApplicationActivatedEvent>
-            , IHandle<ConnectEvent>
-            , IHandle<CancelConnectEvent>
-            , IHandle<SelectionChangeCaseEvent>
-            , IHandle<CommentEvent>
-            , IQueryRunner
-            , IHaveShutdownTask
+        , IHandle<ApplicationActivatedEvent>
+        , IHandle<CancelQueryEvent>
+        , IHandle<CancelConnectEvent>
+        , IHandle<CommentEvent>
+        , IHandle<ConnectEvent>
+        , IHandle<LoadFileEvent>
+        , IHandle<OutputInformationMessageEvent>
+        , IHandle<OutputMessage>
+        , IHandle<RunQueryEvent>
+        , IHandle<SaveDocumentEvent>    
+        , IHandle<SelectionChangeCaseEvent>
+        , IHandle<SendTextToEditor>
+        , IHandle<TraceWatcherToggleEvent>
+        , IHandle<UpdateConnectionEvent> // ,IDropTarget    
+        , IQueryRunner
+        , IHaveShutdownTask
 
     {
         private ADOTabularConnection _connection;
@@ -174,7 +175,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_tracer == null && _connection.Type != AdomdType.Excel)
                 {
-                    _tracer = new QueryTrace(_connection);
+                    _tracer = new QueryTrace(_connection, this);
                     _tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
                     _tracer.TraceCompleted += TracerOnTraceCompleted;
@@ -185,13 +186,13 @@ namespace DaxStudio.UI.ViewModels
 
         private void TracerOnTraceCompleted(object sender, EventArgs e)
         {
-            _tracer.Stop();
+        //    _tracer.Stop();
         }
 
         private void TracerOnTraceStarted(object sender, TraceStartedEventArgs e)
         {
             Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", "DocumentViewModel", "TracerOnTraceStarted", e);          
-            Execute.OnUIThread(() => e.ResultsTarget.OutputResults(this));
+            Execute.OnUIThread(() => OutputMessage("Query Trace Started")); // e.ResultsTarget.OutputResults(this));
         }
 
         private void TracerOnTraceEvent(object sender, TraceEventArgs traceEventArgs)
@@ -429,6 +430,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ChangeConnection()
         {
+            _eventAggregator.Publish(new ConnectionPendingEvent());
             Log.Debug("{Class} {Event}", "DocumentViewModel", "ChangeConnection");          
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
             var stsMsg = new StatusBarMessage("Checking for PowerPivot model...");
@@ -640,25 +642,34 @@ namespace DaxStudio.UI.ViewModels
             {
                 using (var msg1 = new StatusBarMessage("Waiting for Trace to start..."))
                 {
-                    // only run the query after the trace starts
-                    Tracer.Start(message.ResultsTarget);
+                    // TODO - only run the query after the trace starts
+                    while (Tracer.Status != QueryTraceStatus.Started)
+                    {
+                        System.Threading.Thread.Sleep(150);
+                    }
+                    RunQueryInternal(message);
                 }
                 
             }
             else
             {
-                var m1 = new StatusBarMessage("Running Query...");
-
-                message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
-                    {
-                        _queryRunning = false;
-                        NotifyOfPropertyChange(() => CanRunQuery);
-                        m1 = new StatusBarMessage("Ready");
-                    });
+                RunQueryInternal(message);
 
             }
             
 
+        }
+
+        private void RunQueryInternal(RunQueryEvent message)
+        {
+            var m1 = new StatusBarMessage("Running Query...");
+
+            message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+            {
+                _queryRunning = false;
+                NotifyOfPropertyChange(() => CanRunQuery);
+                m1 = new StatusBarMessage("Ready");
+            });
         }
 
         public StatusBarViewModel StatusBar { get; set; }
@@ -868,11 +879,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 ToolWindows.Add(message.TraceWatcher);
                 // todo - spin up trace if one is not already running
-                foreach (var tw in TraceWatchers)
+                if (Tracer.Status != QueryTraceStatus.Started
+                    && Tracer.Status != QueryTraceStatus.Starting)
                 {
-                    if (tw.IsChecked) return;
+                    OutputMessage("Starting Trace");
+                    Tracer.StartAsync();
                 }
-                OutputMessage("Starting Trace");
             }
             else
             {
@@ -882,7 +894,8 @@ namespace DaxStudio.UI.ViewModels
                     if (tw.IsChecked) return;
                 }
                 OutputMessage("Stopping Trace");
-                // todo - spin down trace is no tracewatchers are active
+                // spin down trace is no tracewatchers are active
+                Tracer.Stop();
             }
         }
 
@@ -934,8 +947,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 Task.Run(() => {
                     Execute.OnUIThread(() => { LoadFile(); });
-                }).ContinueWith((previous) => {
-                    Execute.OnUIThread(() => { ChangeConnection(); });
+                    }).ContinueWith((previous) => {
+                        Execute.OnUIThread(() => { ChangeConnection(); });
+                        }).ContinueWith((previous) => {
+                            Execute.OnUIThread(() => { IsDirty = false; });
                 });
             }) ;
             
@@ -944,7 +959,6 @@ namespace DaxStudio.UI.ViewModels
         
         public void LoadFile()
         {
-            
             _displayName = Path.GetFileName(FileName);
             IsDiskFileName = true;
             using (TextReader tr = new StreamReader(FileName, true))
@@ -1080,6 +1094,23 @@ namespace DaxStudio.UI.ViewModels
         public DocumentState State { get; set; }
 
         public string CurrentWorkbookName { get; set; }
+
+        public void Handle(OutputMessage message)
+        {
+            switch (message.MessageType)
+            {
+                case MessageType.Error:
+                    OutputError(message.Text);
+                    break;
+                case MessageType.Warning:
+                    OutputWarning(message.Text);
+                    break;
+                default:
+                    OutputMessage(message.Text);
+                    break;
+            }
+            
+        }
     }
 
 

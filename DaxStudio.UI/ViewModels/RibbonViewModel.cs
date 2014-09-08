@@ -19,6 +19,7 @@ namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
+        , IHandle<ConnectionPendingEvent>
         , IHandle<UpdateConnectionEvent>
         , IHandle<ActivateDocumentEvent>
         , IHandle<QueryFinishedEvent>
@@ -130,9 +131,14 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.ChangeConnection();
         }
 
-        public bool CanConnect()
+        private bool _canConnect;
+        public bool CanConnect
         {
-            return true;
+            get { return _canConnect; }
+            set { 
+                _canConnect = value;
+                NotifyOfPropertyChange(()=> CanConnect);
+            }
         }
 
         public ShellViewModel Shell { get; set; }
@@ -149,20 +155,26 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateConnectionEvent message)
         {
-            if (message != null)
-            {
-                _connection = message.Connection;
-            }
+            RefreshConnectionDetails(message.Connection, message.DatabaseName);
+        }
+
+        private void RefreshConnectionDetails(ADOTabularConnection connection, string databaseName)
+        {
+            //if (connection != null)
+            //{
+                _connection = connection;
+            //}
             if (_connection == null)
             {
                 Databases = null;
                 SelectedDatabase = null;
                 Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", "<null>", "<null>");
+                CanConnect = true;
                 return;
             }
             try
             {
-                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", _connection.ConnectionString, message.DatabaseName);
+                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "Handle:UpdateConnectionEvent", _connection.ConnectionString, databaseName);
                 Databases = _connection.Databases;
 
                 _databaseComboChanging = true;
@@ -174,6 +186,10 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 _eventAggregator.Publish(new OutputMessage(MessageType.Error, ex.Message));
+            }
+            finally
+            {
+                CanConnect = true;
             }
         }
 
@@ -243,6 +259,7 @@ namespace DaxStudio.UI.ViewModels
             
             if (ActiveDocument.Connection != null)
             {
+                RefreshConnectionDetails(ActiveDocument.Connection, ActiveDocument.Connection.Database.Name);
                 foreach (var tw in TraceWatchers)
                 {
                     // TODO - can we enable traces for PowerPivot?
@@ -295,6 +312,11 @@ namespace DaxStudio.UI.ViewModels
         public void LinkToSsasForum()
         {
             System.Diagnostics.Process.Start(urlSsasForum);
+        }
+
+        public void Handle(ConnectionPendingEvent message)
+        {
+            CanConnect = false;
         }
     }
 }

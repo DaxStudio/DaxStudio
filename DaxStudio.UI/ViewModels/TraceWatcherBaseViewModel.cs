@@ -112,9 +112,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ConnectionChangedEvent message)
         {
-            IsEnabled = (message.Connection.Type == AdomdType.AnalysisServices);
+            CheckEnabled(message.Connection);
         }
-
 
         public void CheckEnabled(ADOTabular.ADOTabularConnection _connection)
         {

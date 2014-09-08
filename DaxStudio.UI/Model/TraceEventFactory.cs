@@ -13,6 +13,7 @@ namespace DaxStudio.UI.Model
             trc.Columns.Add(TraceColumn.CurrentTime);
             trc.Columns.Add(TraceColumn.StartTime);
             trc.Columns.Add(TraceColumn.Spid);
+            trc.Columns.Add(TraceColumn.SessionID);
             switch (eventClass)
             {
                 case TraceEventClass.CommandEnd:

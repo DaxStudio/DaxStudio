@@ -7,10 +7,11 @@ using System.Xml;
 using ADOTabular;
 using Caliburn.Micro;
 using Microsoft.AnalysisServices;
+using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.UI.Model
 {
-
+    /*
     public class TraceStartedEventArgs:EventArgs 
     {
         public TraceStartedEventArgs(IResultsTarget target)
@@ -20,8 +21,24 @@ namespace DaxStudio.UI.Model
         public IResultsTarget ResultsTarget { get; private set; }
 
     }
+    */
+    public class TraceStartedEventArgs : EventArgs
+    {
+        public TraceStartedEventArgs()
+        {
+           
+        }
+        //public IResultsTarget ResultsTarget { get; private set; }
 
-    
+    }
+
+    public enum QueryTraceStatus
+    {
+        Stopped,
+        Stopping,
+        Started,
+        Starting
+    }
 
     public class QueryTrace
     {
@@ -31,21 +48,31 @@ namespace DaxStudio.UI.Model
     
         private readonly Server _server;
         private Trace _trace;
+        private WeakReference _currentDocumentReference;
         //private readonly Dictionary<TraceEventClass, TraceEvent> _traceEvents;
 
-        public QueryTrace(ADOTabularConnection connection)
+        public QueryTrace(ADOTabularConnection connection, DocumentViewModel document)
         {
             _server = new Server();
             _server.Connect(connection.ConnectionString);
             _connection = connection;
-            
-            //    _traceEvents = new Dictionary<TraceEventClass, TraceEvent>();
+            Status = QueryTraceStatus.Stopped;
+            // new Dictionary<TraceEventClass, TraceEvent>();
+            _currentDocumentReference = new WeakReference(document);
         }
 
+        public DocumentViewModel CurrentDocument
+        {
+            get { return _currentDocumentReference.Target as DocumentViewModel; }
+        }
+
+        public QueryTraceStatus Status { get; set; }
         public void UnRegisterTraceWatcher(ITraceWatcher watcher)
         {
             RegisteredTraceWatchers.Remove(watcher);
         }
+
+        
 
         public void RegisterTraceWatcher(ITraceWatcher watcher)
         {
@@ -63,7 +90,8 @@ namespace DaxStudio.UI.Model
             if (trace.Events.Find(TraceEventClass.QueryEnd)==null)
                 trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
 
-            foreach (var watcher in CheckedTraceWatchers)
+            //foreach (var watcher in CheckedTraceWatchers)
+            foreach (var watcher in AvailableTraceWatchers)
             {
                 //reset the watcher so it can clear any cached events 
                 watcher.Reset();
@@ -77,8 +105,14 @@ namespace DaxStudio.UI.Model
                     trace.Events.Add(trcEvent);
                 }
             }
+            
             trace.Update();
             
+        }
+
+        public BindableCollection<ITraceWatcher> AvailableTraceWatchers
+        {
+            get { return CurrentDocument.TraceWatchers; }
         }
 
         private List<ITraceWatcher> _registeredWatchers;
@@ -102,27 +136,46 @@ namespace DaxStudio.UI.Model
             return doc;
         }
 
+        private XmlNode GetSessionIdFilter()
+        {
+            var filterXml = string.Format(
+                "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>"
+                , (int)TraceColumn.SessionID
+                , _connection.SessionId);
+            var doc = new XmlDocument();
+            doc.LoadXml(filterXml);
+            return doc;
+        }
+
         public void Clear()
         {
             _trace.Events.Clear();
         }
 
-        public Task StartAsync(IResultsTarget resultsTarget)
+        //public Task StartAsync(IResultsTarget resultsTarget)
+        //{
+        //    return Task.Factory.StartNew(() => Start(resultsTarget));
+        //}
+
+        public Task  StartAsync()
         {
-            return Task.Factory.StartNew(() => Start(resultsTarget));
+            return Task.Factory.StartNew(() => Start());
         }
 
         private Timer _startingTimer;
-        private IResultsTarget _resultsTarget;
-        public void Start(IResultsTarget resultsTarget)
+        //private IResultsTarget _resultsTarget;
+        public void Start()
         {
+
             if (_trace != null)
                 if (_trace.IsStarted)
                     throw new InvalidOperationException("Cannot start a new trace as one is already running");
 
+            if (Status != QueryTraceStatus.Started)
+                Status = QueryTraceStatus.Starting;
+
             _trace = GetTrace();
             SetupTrace(_trace);
-            _resultsTarget = resultsTarget;
             _trace.Start();
             
             // create timer to "ping" the server with DISCOVER_SESSION requests
@@ -150,6 +203,7 @@ namespace DaxStudio.UI.Model
                   _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _connection.SPID));
                   //TODO - filter on session id
                   // _trace.Filter = GetSpidFilter();
+                  _trace.Filter = GetSessionIdFilter();
                   _trace.OnEvent += OnTraceEventInternal;
               }
               return _trace;
@@ -178,8 +232,9 @@ namespace DaxStudio.UI.Model
             {
                 StopTimer();
                 _traceStarted = true;
+                Status = QueryTraceStatus.Started;
                 if (TraceStarted != null)
-                    TraceStarted(this, new TraceStartedEventArgs(_resultsTarget));
+                    TraceStarted(this, new TraceStartedEventArgs());
                 //TraceStarted.Raise(this, new TraceStartedEventArgs(_resultsTarget)); 
             }
             else
@@ -205,6 +260,8 @@ namespace DaxStudio.UI.Model
 
         public void Stop()
         {
+            Status = QueryTraceStatus.Stopping;
+            
             //Execute.OnUIThread(() =>
             //    {
                     _trace.OnEvent -= OnTraceEventInternal;
@@ -213,6 +270,7 @@ namespace DaxStudio.UI.Model
                     //    _trace.Stop();
                         _trace.Drop();
                         _trace = null;
+                        Status = QueryTraceStatus.Stopped;
                     }
                     catch (Exception e)
                     {

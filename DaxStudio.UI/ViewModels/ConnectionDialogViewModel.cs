@@ -27,8 +27,8 @@ namespace DaxStudio.UI.ViewModels
             ServerModeSelected = true;
             if (Host.IsExcel)
             {
-                using (new StatusBarMessage("Checking for PowerPivot model..."))
-                {
+                //using (new StatusBarMessage("Checking for PowerPivot model 2..."))
+                //{
                     //bool hasPpvt = false;
                     //HasPowerPivotModelAsync().ContinueWith(t => hasPpvt = t.Result).Wait(); 
                     
@@ -38,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
                         PowerPivotModeSelected = true;
                     }
                    
-                }
+                //}
             }
             
             WorkbookName = host.Proxy.WorkbookName;
@@ -250,17 +250,39 @@ namespace DaxStudio.UI.ViewModels
         private string BuildPowerPivotConnection()
         {    
             // TODO - need Full workbook name, not just the display name
-            return string.Format("Data Source=$Embedded$;Location={0}", WorkbookName);
+            //return string.Format("Data Source=$Embedded$;Location={0}", WorkbookName);
+            return Host.Proxy.GetPowerPivotConnection().ConnectionString;
+            
         }
 
         public void Connect()
         {
-            if (ServerModeSelected)
+            try
             {
-                RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
+                var vw = (Window)this.GetView();
+                vw.Visibility = Visibility.Hidden;
+                using (var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
+                {
+                    c.Open();
+                    
+                }
+                if (ServerModeSelected)
+                {
+                    RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
+                }
+                _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName));
             }
-            _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName ));
-            TryClose(true);
+            catch (Exception ex)
+            {
+                _eventAggregator.Publish(
+                    new OutputMessage(MessageType.Error
+                        , String.Format("Could not connect to '{0}': {1}", DataSource, ex.Message))
+                    );
+            }
+            finally
+            {
+                TryClose(true);
+            }
         }
 
         public void Cancel()

@@ -70,7 +70,8 @@ namespace DaxStudio.UI.ViewModels
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
                 _eventAggregator.Publish(new ActivateDocumentEvent(_activeDocument));
-                _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
+            // TODO - is this causing excess metadata refreshes
+            //    _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
             }
         }
 
@@ -115,6 +116,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void CleanActiveDocument()
         {
+            Log.Debug("{Class} {Event} {ActiveDocument} IsDirty: {IsDirty}", "DocumentTabViewModel", "CleanActiveDocument", ActiveDocument.DisplayName, ActiveDocument.IsDirty);
             ActiveDocument.IsDirty = false;
         }
 

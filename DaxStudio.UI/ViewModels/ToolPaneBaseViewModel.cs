@@ -37,21 +37,25 @@ namespace DaxStudio.UI.ViewModels
             get { return _connection; } 
             set
             {
+                //bool isSameDatabase = false;
                 //if (_connection == value)
                 //    return;
                 if (_connection == null && value == null) return;
-                var isSameServer = false;
-                if (_connection != null && value != null)
-                {
-                    isSameServer = _connection.ServerName.Equals(value.ServerName, System.StringComparison.InvariantCultureIgnoreCase);
-                }
+                //var isSameServer = false;
+                //if (_connection != null && value != null)
+                //{
+                //    isSameServer = _connection.ServerName.Equals(value.ServerName, System.StringComparison.InvariantCultureIgnoreCase);
+                //    isSameDatabase = _connection.Database.Name.Equals(value.Database.Name, System.StringComparison.InvariantCultureIgnoreCase);
+                //}
+                //if (isSameServer && isSameDatabase) return;
                 _connection = value;
-                NotifyOfPropertyChange(()=> Connection);
-                OnConnectionChanged(isSameServer);
+                //// TODO - should i notify here if it is the same server?
+                ////NotifyOfPropertyChange(()=> Connection);
+                OnConnectionChanged();//isSameServer);
             }
         }
 
-        protected virtual void OnConnectionChanged(bool isSameServer)
+        protected virtual void OnConnectionChanged()//bool isSameServer)
         {}
     
         public void MouseDoubleClick(IADOTabularObject item)

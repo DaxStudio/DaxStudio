@@ -22,7 +22,7 @@ namespace ADOTabular
         ,Csdl
     }
     
-    public class ADOTabularConnection
+    public class ADOTabularConnection:IDisposable
     {
         private AdomdCommand _runningCommand;
 
@@ -478,6 +478,11 @@ namespace ADOTabular
                 col.ColumnName = name.Replace(' ', '_');
             }
 
+        }
+
+        void IDisposable.Dispose()
+        {
+            Close();
         }
     }
 
