@@ -8,7 +8,9 @@ using Microsoft.AnalysisServices;
 namespace DaxStudio.UI.ViewModels
 {
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class ServerTimesViewModel: TraceWatcherBaseViewModel
+    class ServerTimesViewModel
+        : TraceWatcherBaseViewModel 
+        
     {
         [ImportingConstructor]
         public ServerTimesViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
@@ -20,6 +22,7 @@ namespace DaxStudio.UI.ViewModels
             return new List<TraceEventClass> 
                 { TraceEventClass.QuerySubcube
                 , TraceEventClass.VertiPaqSEQueryEnd
+                , TraceEventClass.VertiPaqSEQueryCacheMatch
                 , TraceEventClass.QueryEnd };
         }
     
@@ -30,6 +33,8 @@ namespace DaxStudio.UI.ViewModels
         {
             StorageEngineDuration = 0;
             StorageEngineQueryCount = 0;
+            VertipaqCacheMatches = 0;
+            TotalDuration = 0;
 
             foreach (var traceEvent in Events)
             {
@@ -42,11 +47,17 @@ namespace DaxStudio.UI.ViewModels
                 {
                     TotalDuration = traceEvent.Duration;
                 }
+                if (traceEvent.EventClass == TraceEventClass.VertiPaqSEQueryCacheMatch)
+                {
+                    VertipaqCacheMatches++;
+                }
             }
+            Events.Clear();
             NotifyOfPropertyChange(()=> StorageEngineDuration);
             NotifyOfPropertyChange(()=> TotalDuration);
+            NotifyOfPropertyChange(() => VertipaqCacheMatches);
+            NotifyOfPropertyChange(() => StorageEngineQueryCount);
         }
-
 
         public double StorageEnginePercent {
             get
@@ -60,12 +71,13 @@ namespace DaxStudio.UI.ViewModels
         public long TotalDuration { get; private set; }
         public long StorageEngineDuration { get; private set; }
         public long StorageEngineQueryCount { get; private set; }
+        public int VertipaqCacheMatches { get; set; }
         // IToolWindow interface
         public override string Title
         {
             get { return "Server Timings"; }
             set { }
         }
-        
+
     }
 }

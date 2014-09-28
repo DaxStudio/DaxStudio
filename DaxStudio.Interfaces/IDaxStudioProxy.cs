@@ -23,7 +23,7 @@ namespace DaxStudio.Interfaces
        // void DaxQueryStaticResult(string WorksheetName, ADOTabularConnection connection, string daxQuery);
         
         Task OutputStaticResultAsync(DataTable results, string sheetName);
-        Task OutputLinkedResultAsync(string daxQuery, string sheetName);
+        Task OutputLinkedResultAsync(string daxQuery, string sheetName, string connectionString);
 
         ADOTabularConnection GetPowerPivotConnection();
     }

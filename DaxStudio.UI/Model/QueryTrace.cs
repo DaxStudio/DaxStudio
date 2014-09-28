@@ -49,6 +49,11 @@ namespace DaxStudio.UI.Model
         private readonly Server _server;
         private Trace _trace;
         private WeakReference _currentDocumentReference;
+        private DateTime utcPingStart;
+
+        // todo - implement operations queue
+        //private Queue<TraceOperation> operationQueue;
+
         //private readonly Dictionary<TraceEventClass, TraceEvent> _traceEvents;
 
         public QueryTrace(ADOTabularConnection connection, DocumentViewModel document)
@@ -166,7 +171,7 @@ namespace DaxStudio.UI.Model
         //private IResultsTarget _resultsTarget;
         public void Start()
         {
-
+            
             if (_trace != null)
                 if (_trace.IsStarted)
                     throw new InvalidOperationException("Cannot start a new trace as one is already running");
@@ -186,13 +191,20 @@ namespace DaxStudio.UI.Model
             _startingTimer.Elapsed += OnTimerElapsed;
             _startingTimer.Enabled = true;
             _startingTimer.Start();
-            
+            utcPingStart = DateTime.UtcNow;
             // Wait for Trace to become active
         }
 
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
              Execute.OnUIThread(()=> _connection.Ping());
+            //todo - if past timeout then exit and display error
+            if ( ( utcPingStart - DateTime.UtcNow ).Seconds > 30)
+            {
+                _startingTimer.Stop();
+                _trace.Drop();
+                CurrentDocument.OutputError("Timeout exceeded attempting to start Trace");
+            }
         }
 
         private Trace GetTrace()
@@ -217,7 +229,6 @@ namespace DaxStudio.UI.Model
         {
             if (TraceEvent != null)
                 TraceEvent(this, e);
-            //TraceEvent.Raise(this, e);           
         }
 
         private bool _traceStarted;
@@ -235,7 +246,6 @@ namespace DaxStudio.UI.Model
                 Status = QueryTraceStatus.Started;
                 if (TraceStarted != null)
                     TraceStarted(this, new TraceStartedEventArgs());
-                //TraceStarted.Raise(this, new TraceStartedEventArgs(_resultsTarget)); 
             }
             else
             {
@@ -245,7 +255,6 @@ namespace DaxStudio.UI.Model
                     //Stop();
                     if (TraceCompleted != null)
                         TraceCompleted(this, null);
-                    //TraceCompleted.Raise(this, null);
                 }
             }
         }

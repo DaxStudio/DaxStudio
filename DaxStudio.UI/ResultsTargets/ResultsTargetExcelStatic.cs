@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Model
                     var dq = runner.QueryText;
                     var res = runner.ExecuteQuery(dq);
 
-                    using (new StatusBarMessage("Executing Query..."))
+                    using (runner.NewStatusBarMessage("Executing Query..."))
                     {
                         sw.Stop();
                         var durationMs = sw.ElapsedMilliseconds;
@@ -47,7 +47,7 @@ namespace DaxStudio.UI.Model
                             //runner.ResultsTable = res;
 
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count,
+                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateOutput();
                             runner.QueryCompleted();
@@ -83,7 +83,7 @@ namespace DaxStudio.UI.Model
                             //runner.ResultsTable = res;
 
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count,
+                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateResults();
                             runner.QueryCompleted();
@@ -119,7 +119,7 @@ namespace DaxStudio.UI.Model
                             //runner.ResultsTable = res;
 
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count,
+                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateOutput();
                             runner.QueryCompleted();

@@ -262,13 +262,34 @@ namespace DaxStudio
 *=====================================================
 */
 
+
+        public void DaxQueryTable(Worksheet excelSheet, string daxQuery , string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                DaxQueryTable(excelSheet, daxQuery);
+            }
+
+            if (IsExcel2013OrLater)
+            {    DaxQueryTable2013(excelSheet, daxQuery, connectionString);    }
+            else
+            {    DaxQueryTable2010(excelSheet, daxQuery, connectionString);    }
+        }
+
+        private void DaxQueryTable2010(Worksheet excelSheet, string daxQuery, string connectionString)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DaxQueryTable(Worksheet excelSheet, string daxQuery )
         {
             if (IsExcel2013OrLater)
-            { DaxQueryTable2013(excelSheet, daxQuery); }
+            {    DaxQueryTable2013(excelSheet, daxQuery);    }
             else
-            { DaxQueryTable2010(excelSheet, daxQuery); }
+            {    DaxQueryTable2010(excelSheet, daxQuery);    }
         }
+
+
 
         public static void DaxQueryTable2010(Worksheet excelSheet, string daxQuery)
         {
@@ -309,6 +330,7 @@ namespace DaxStudio
             {
                 Debug.WriteLine("ERROR");
                 Debug.WriteLine(ex.Message);
+                
                 //output.WriteOutputError(ex.Message);
                 //output.WriteOutputError("Error detected - collecting error details...");
                 //DaxQueryDiscardResults(connection, daxQuery, output);
@@ -365,6 +387,92 @@ namespace DaxStudio
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }
 
+
+        public static void DaxQueryTable2013(Worksheet excelSheet, string daxQuery, string connectionString)        
+        {
+
+            Workbook wb = excelSheet.Parent;
+            string path = wb.FullName;
+            ListObject lo;
+            var listObjs = excelSheet.ListObjects;
+            if (listObjs.Count > 0)
+            {
+                lo = listObjs[1]; //ListObjects collection is 1 based
+            }
+            else
+            {
+                lo = listObjs.AddEx(0
+                    , string.Format("OLEDB;Provider=MSOLAP.5;Integrated Security=SSPI;{0}"
+                                , FixMDXCompatibilitySetting(connectionString))
+                , Type.Missing
+                , XlYesNoGuess.xlGuess
+                , excelSheet.Range["$A$1"]);
+            }
+            //System.Runtime.InteropServices.COMException
+            //{"Exception from HRESULT: 0x800401A8"}
+
+            //, "OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+            //, @"OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+            var qt = lo.QueryTable;
+
+            qt.CommandType = XlCmdType.xlCmdDefault;
+            qt.CommandText = daxQuery;
+            try
+            {
+                //output.WriteOutputMessage(string.Format("{0} - Starting Query Table Refresh", DateTime.Now));
+                qt.Refresh(false);
+                //output.WriteOutputMessage(string.Format("{0} - Query Table Refresh Complete", DateTime.Now));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR");
+                Debug.WriteLine(ex.Message);
+                //output.WriteOutputError(ex.Message);
+                //output.WriteOutputError("Error detected - collecting error details...");
+                //DaxQueryDiscardResults(connection, daxQuery, output);
+            }
+            WriteQueryToExcelComment(excelSheet, daxQuery);
+
+            /*
+        With ActiveSheet.ListObjects.Add(SourceType:=0, Source:=Array( _
+        "OLEDB;Provider=MSOLAP.5;Integrated Security=SSPI;Persist Security Info=True;Initial Catalog=AdventureWorks Tabular Model SQL 2012;Data Source=wsapp2254\tabular;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error") _
+        , Destination:=Range("$A$1")).QueryTable
+        .CommandType = xlCmdDefault
+        .CommandText = Array("Evaluate currency")
+        .Refresh BackgroundQuery:=False
+            */
+
+            /*
+            Worksheet ws = excelSheet;
+            Workbook wb = excelSheet.Parent;
+            WorkbookConnection wbc = wb.Connections.Add2("dax", "dax", connectionString, daxQuery, XlCmdType.xlCmdDefault);
+            // TODO - find connections
+            
+            var listObjs = ws.ListObjects;
+            var r = ws.Cells[1, 1];
+            var lo = listObjs.Add(SourceType: XlListObjectSourceType.xlSrcExternal
+                , Source: wbc
+                , Destination: r);
+
+            var to = lo.TableObject;
+            to.RowNumbers = false;
+            to.PreserveFormatting = true;
+            to.RefreshStyle = XlCellInsertionMode.xlInsertEntireRows;
+            to.AdjustColumnWidth = true;
+            //to.ListObject.DisplayName = "DAX query";
+            var oleCnn = to.WorkbookConnection.OLEDBConnection;
+            oleCnn.CommandText = new string[] { daxQuery };
+            oleCnn.CommandType = XlCmdType.xlCmdDAX;
+            oleCnn.Refresh();
+            WriteQueryToExcelComment(excelSheet, daxQuery);
+            */
+        }
+
+        private static string FixMDXCompatibilitySetting(string connectionString)
+        {
+            var rex = new System.Text.RegularExpressions.Regex("MDX\\sCompatibility=\\d;");
+            return rex.Replace(connectionString, "");
+        }
         private static void WriteQueryToExcelComment(Worksheet excelSheet, string daxQuery)
         {
             // Using lots of intermediate viarables so that we can release and COM RCW objects

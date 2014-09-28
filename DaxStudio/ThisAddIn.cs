@@ -21,6 +21,7 @@ namespace DaxStudio
             CreateRibbonObjects();
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
+            Log.Verbose("============ Excel Add-in Startup =============");
         }
 
         private DaxStudioRibbon _ribbon;
@@ -62,16 +63,17 @@ namespace DaxStudio
 
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {
+            Log.Verbose("============ Excel Add-in Shutdown =============");
             // this forces the wpf RibbonWindow to shutdown correctly
             // see http://go4answers.webhost4life.com/Example/ribbonribbonwindow-microsoft-ribbon-74444.aspx
             try
             {
                 _inShutdown = true;
                 
-                _ribbon.CancelToken.Cancel();
+                //_ribbon.CancelToken.Cancel();
                 Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
                 // wait upto 5 secs for app to shutdown
-                _ribbon.ShutDownSync.WaitOne(3000);
+                //_ribbon.ShutDownSync.WaitOne(3000);
                 //GC.Collect();
                 //GC.WaitForPendingFinalizers();
                 Debug.WriteLine(string.Format("{0} ===>>> app shutdown", DateTime.Now ));

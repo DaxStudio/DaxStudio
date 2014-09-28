@@ -19,6 +19,8 @@ namespace DaxStudio.Interfaces
         IDaxStudioHost Host { get; }
         string SelectedWorksheet { get; set; }
         string ConnectionString { get; }
-    
+        bool ConnectedToPowerPivot { get; }
+
+        IStatusBarMessage NewStatusBarMessage(string message);
     }
 }

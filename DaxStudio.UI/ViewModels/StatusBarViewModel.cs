@@ -4,14 +4,17 @@ using System.Globalization;
 using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(StatusBarViewModel))]
     public class StatusBarViewModel:PropertyChangedBase
-        , IHandle<StatusBarMessageEvent>
+        //, IHandle<StatusBarMessageEvent>
         , IHandle<EditorPositionChangedMessage>
         , IHandle<UpdateConnectionEvent>
+        , IHandle<UpdateTimerTextEvent>
+        , IHandle<ActivateDocumentEvent>
     {
         //private ADOTabularConnection _connection;
         [ImportingConstructor]
@@ -39,17 +42,25 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=> Spid);
         }
         */
+        /*
         public void Handle(StatusBarMessageEvent message)
         {
             Message = message.Text;
             Working = (Message != "Ready");
-            NotifyOfPropertyChange(()=>Message);
+            NotifyOfPropertyChange(()=> Message);
             NotifyOfPropertyChange(() => Working);
         }
-
-        public string Message { get; set; }
+        */
+        private string _message = "Ready";
+        public string Message { 
+            get { return _message; }
+            set { 
+                _message = value;
+                NotifyOfPropertyChange(() => Message);
+            }
+        }
         private string _serverName = "";
-        public string ServerName { get { return _serverName==""?"<Not Connected>":_serverName; }
+        public string ServerName { get { return string.IsNullOrWhiteSpace(_serverName)?"<Not Connected>":_serverName; }
             set
             {
                 _serverName = value;
@@ -57,6 +68,7 @@ namespace DaxStudio.UI.ViewModels
             } }
 
         private string _spid = "";
+        
         public string Spid 
         { 
             get { return _spid == ""?"-":_spid; } 
@@ -65,7 +77,14 @@ namespace DaxStudio.UI.ViewModels
                 }
         }
 
-        public string TimerText { get; set; }
+        private string _timerText = "";
+        public string TimerText { get { return _timerText; }
+            set
+            {
+                _timerText = value;
+                NotifyOfPropertyChange(() => TimerText);
+            }
+        }
         
         public string PositionText { get; set; }
 
@@ -91,5 +110,53 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
+
+        public void Handle(UpdateTimerTextEvent message)
+        {
+            TimerText = message.TimerText;
+            
+        }
+
+        public void Handle(ActivateDocumentEvent message)
+        {
+            if (message.Document == null ) return;
+            // remove handler for previous active document
+            if (ActiveDocument != null)
+            {
+                ActiveDocument.PropertyChanged -= ActiveDocument_PropertyChanged;
+            }
+            // set new active document
+            ActiveDocument = message.Document;
+            // add property changed handler for new document
+            ActiveDocument.PropertyChanged += ActiveDocument_PropertyChanged;
+            TimerText = message.Document.ElapsedQueryTime;
+            NotifyOfPropertyChange(() => TimerText);
+            NotifyOfPropertyChange(() => ActiveDocument);
+            Spid = ActiveDocument.Spid;
+            ServerName = ActiveDocument.ServerName;
+            TimerText = ActiveDocument.ElapsedQueryTime;
+            Message = ActiveDocument.StatusBarMessage;
+        }
+
+        void ActiveDocument_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "Message":
+                    NotifyOfPropertyChange(() => Message);
+                    break;
+                case "Spid":
+                    NotifyOfPropertyChange(() => Spid);
+                    break;
+                case "ServerName":
+                    NotifyOfPropertyChange(() => ServerName);
+                    break;
+                case "TimerText":
+                    NotifyOfPropertyChange(() => TimerText);
+                    break;
+            }
+        }
+
+        public DocumentViewModel ActiveDocument { get; set; }
     }
 }

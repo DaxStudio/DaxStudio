@@ -21,10 +21,13 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             WaitForEvent = TraceEventClass.QueryEnd;
             //todo - add abstract method
-// ReSharper disable DoNotCallOverridableMethodsInConstructor
-            MonitoredEvents = GetMonitoredEvents();
-// ReSharper restore DoNotCallOverridableMethodsInConstructor
+            Init();
+            //_eventAggregator.Subscribe(this); 
+        }
 
+        private void Init()
+        {
+            MonitoredEvents = GetMonitoredEvents();
         }
 
         public List<TraceEventClass> MonitoredEvents { get; private set; }
@@ -117,6 +120,20 @@ namespace DaxStudio.UI.ViewModels
 
         public void CheckEnabled(ADOTabular.ADOTabularConnection _connection)
         {
+            if (_connection == null) {
+                IsEnabled = false; 
+                IsChecked = false; 
+                return; 
+            }
+            if (_connection.State == System.Data.ConnectionState.Closed
+                || _connection.State == System.Data.ConnectionState.Broken)
+            {
+                // if connection has been closed or broken then uncheck and disable
+                IsEnabled = false;
+                IsChecked = false;
+                return;
+            }
+
             IsEnabled = (!_connection.IsPowerPivot && _connection.SPID != -1);
         }
     }

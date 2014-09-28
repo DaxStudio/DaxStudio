@@ -89,6 +89,7 @@
     <Compile Include="IDaxStudioHost.cs" />
     <Compile Include="IQueryRunner.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
+    <Compile Include="IStatusBarMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IStaticQueryResult.cs" />
   </ItemGroup>

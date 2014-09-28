@@ -69,7 +69,7 @@ namespace DaxStudio.UI.ViewModels
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
-                _eventAggregator.Publish(new ActivateDocumentEvent(_activeDocument));
+            //    _eventAggregator.Publish(new ActivateDocumentEvent(_activeDocument));
             // TODO - is this causing excess metadata refreshes
             //    _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
             }

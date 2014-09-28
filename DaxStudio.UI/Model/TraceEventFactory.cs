@@ -11,7 +11,10 @@ namespace DaxStudio.UI.Model
             trc.Columns.Add(TraceColumn.EventSubclass);
             trc.Columns.Add(TraceColumn.TextData);
             trc.Columns.Add(TraceColumn.CurrentTime);
-            trc.Columns.Add(TraceColumn.StartTime);
+            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
+            {
+                trc.Columns.Add(TraceColumn.StartTime);
+            }
             trc.Columns.Add(TraceColumn.Spid);
             trc.Columns.Add(TraceColumn.SessionID);
             switch (eventClass)

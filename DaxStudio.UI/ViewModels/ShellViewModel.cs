@@ -35,7 +35,7 @@ namespace DaxStudio.UI.ViewModels {
             {
                 Tabs.NewQueryDocument();
             }
-            DisplayName = string.Format("DaxStudio - v{0}.{1}", Version.Major, Version.Minor);
+            DisplayName = string.Format("DaxStudio - {0}.{1}", Version.Major, Version.Minor);
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
             Log.Verbose("============ Application Launch =============");
@@ -95,7 +95,17 @@ namespace DaxStudio.UI.ViewModels {
         {
             _eventAggregator.Publish(new CommentEvent(true));
         }
-        
+
+        public void Undo()
+        {
+            Ribbon.Undo();
+        }
+
+        public void Redo()
+        {
+            Ribbon.Redo();
+        }
+
         protected override void OnActivate()
         {
             base.OnActivate();

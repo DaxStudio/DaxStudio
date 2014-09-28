@@ -59,8 +59,7 @@ namespace DaxStudio.UI.Model
             
         }
 
-
-        public Task OutputLinkedResultAsync(string daxQuery, string sheetName)
+        public Task OutputLinkedResultAsync(string daxQuery, string sheetName, string connectionString)
         {
             throw new NotImplementedException();
         }

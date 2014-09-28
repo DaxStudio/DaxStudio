@@ -124,6 +124,20 @@
             <cal:ActionMessage MethodName="CommentSelection"/>
         </local:InputBindingTrigger>
 
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="Y" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Redo"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="Z" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Undo"/>
+        </local:InputBindingTrigger>
+
     </i:Interaction.Triggers>
 
     <Grid x:Name="LayoutRoot"

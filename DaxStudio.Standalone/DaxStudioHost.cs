@@ -8,17 +8,20 @@ using DaxStudio.UI;
 using DaxStudio.Interfaces;
 using System.Data;
 using Caliburn.Micro;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.Standalone
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IDaxStudioHost))]
-    public class DaxStudioHost : IDaxStudioHost
+    public class DaxStudioHost 
+        : IDaxStudioHost
     {
         private int _port;
         private IDaxStudioProxy _proxy;
         private IEventAggregator _eventAggregator;
         private string _commandLineFileName = string.Empty;
+        private UI.ViewModels.DocumentViewModel _activeDocument;
         [ImportingConstructor]
         public DaxStudioHost(IEventAggregator eventAggregator)
         {
@@ -58,6 +61,6 @@ namespace DaxStudio.Standalone
         {
             
         }
-  
+
     }
 }

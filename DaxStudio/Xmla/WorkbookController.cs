@@ -97,11 +97,19 @@ namespace DaxStudio.ExcelAddin.Xmla
 
         [HttpPost]
         [Route("LinkedQueryResult")]
-        public void PostLinkedQueryResult(LinkedQueryResult results)
+        public IHttpActionResult PostLinkedQueryResult(LinkedQueryResult results)
         {
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            var sht = xl.GetTargetWorksheet(results.TargetSheet);
-            xl.DaxQueryTable( sht,results.DaxQuery);
+            try
+            {
+                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
+                var sht = xl.GetTargetWorksheet(results.TargetSheet);
+                xl.DaxQueryTable(sht, results.DaxQuery, results.ConnectionString);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Ok( ex );
+            }
         }
 
     }

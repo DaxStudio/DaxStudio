@@ -12,15 +12,22 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <TextBlock Text="Total Server Duration:" Grid.Row="0" Grid.Column="0" Padding="5,5,0,0"/>
-        <TextBlock Text="Storage Engine Duration:" Grid.Row="1" Padding="5,5,0,0"/>
+        <TextBlock Text="SE Duration:" Grid.Row="1" Padding="5,5,0,0"/>
+        <TextBlock Text="SE Queries:" Grid.Row="2" Padding="5,5,0,0"/>
+        <TextBlock Text="SE Cache Matches:" Grid.Row="3" Padding="5,5,0,0"/>
+        
         <TextBlock x:Name="TotalDuration" Text="0" Grid.Row="0" Grid.Column="1" Padding="5,5,0,0" />
         <TextBlock x:Name="StorageEngineDuration" Text="0" Grid.Row="1" Grid.Column="1" Padding="5,5,0,0"/>
+        <TextBlock x:Name="StorageEngineQueryCount" Text="0" Grid.Row="2" Grid.Column="1" Padding="5,5,0,0" />
+        <TextBlock x:Name="VertipaqCacheMatches" Text="0" Grid.Row="3" Grid.Column="1" Padding="5,5,0,0" />
     </Grid>
     
 </UserControl>

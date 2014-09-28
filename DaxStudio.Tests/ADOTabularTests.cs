@@ -108,7 +108,7 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(28, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).First());
             Assert.AreEqual(3, h.Levels.Count);
@@ -128,7 +128,7 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(28, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
             var k = (ADOTabularKpi)(tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.KPI).First());
             Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);

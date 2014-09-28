@@ -6,6 +6,6 @@ namespace DaxStudio.Interfaces
     {
         string DaxQuery { get; set; }
         string TargetSheet { get; set; }
-        
+        string ConnectionString { get; set; }
     }
 }

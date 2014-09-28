@@ -37,16 +37,19 @@ namespace DaxStudio.UI.ResultsTargets
                     var dq = runner.QueryText;
                     var res = runner.ExecuteQuery(dq);
 
-                    using (new StatusBarMessage("Executing Query..."))
+                    using (runner.NewStatusBarMessage("Executing Query..."))
                     {
                         sw.Stop();
                         var durationMs = sw.ElapsedMilliseconds;
-                        runner.Host.Proxy.OutputLinkedResultAsync(dq, runner.SelectedWorksheet).ContinueWith((ascendant) =>
+                        runner.Host.Proxy.OutputLinkedResultAsync(
+                            dq
+                            , runner.SelectedWorksheet
+                            , runner.ConnectedToPowerPivot?"":runner.ConnectionString).ContinueWith((ascendant) =>
                         {
                             
                             // TODO - what message should we output here?
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count,
+                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateOutput();
                             runner.QueryCompleted();
@@ -81,10 +84,12 @@ namespace DaxStudio.UI.ResultsTargets
                         var durationMs = sw.ElapsedMilliseconds;
 
                         //  write results to Excel
-                        runner.Host.Proxy.OutputLinkedResultAsync(dq, runner.SelectedWorksheet).ContinueWith((ascendant) => {
+                        runner.Host.Proxy.OutputLinkedResultAsync(dq
+                            , runner.SelectedWorksheet
+                            , runner.ConnectedToPowerPivot?"":runner.ConnectionString).ContinueWith((ascendant) => {
 
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count,
+                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateOutput();
                             runner.QueryCompleted();

@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
     </UserControl.Resources>
     <Grid>
         <avalondock:DockingManager 
@@ -26,6 +27,9 @@
             <avalondock:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0"
+                                   Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsQueryRunning}"
+                                   />
                         <TextBlock Text="{Binding Content.DisplayName}"/>
                         <!-- 
                         <Button x:Name="DocumentCloseButton"

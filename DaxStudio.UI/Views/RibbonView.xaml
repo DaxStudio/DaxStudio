@@ -17,7 +17,7 @@
                 <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
                 <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer@96ppi.png"/>
                 <BitmapImage x:Key="Static" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
-                <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
+                <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
@@ -64,7 +64,9 @@
         <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
         <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
         <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
-
+        <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo@16x16.png"></BitmapImage>
+        <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
+        <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -207,14 +209,22 @@
 
         <Fluent:Ribbon.QuickAccessItems>
             <Fluent:QuickAccessMenuItem Header="New" 
-                                            IsChecked="True"
+                                        IsChecked="True"
                                         Target="{Binding ElementName=NewQueryQat}"
+                                        Command="{Binding NewQuery}"
                                         Icon="{StaticResource NewIconSmall}"
                                         IsDefinitive="True"
                                         />
-            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=cutButton}"
-                                            IsChecked="True" />
-            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=copyButton}" />
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=undoButton}"
+                                        Command="{Binding Undo}"
+                                        IsChecked="True" />
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=redoButton}"
+                                        Command="{Binding Redo}"
+                                        IsChecked="True"/>
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=saveButton}" 
+                                        Command="{Binding Save}"
+                                        IsChecked="True"
+                                        IsDefinitive="True"/>
         </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
@@ -228,7 +238,7 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
                                           Text="Executes the query and sends the results to the selected output"
-                                          DisableReason="A query is currently executing"
+                                          DisableReason="{Binding RunQueryDisableReason}"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -342,11 +352,14 @@
 LargeIcon="{StaticResource ConnectIconLarger}" Width="60" Margin="4,0,12,0"
                               cal:Message.Attach="[Event Click] = [Action Connect()]" />
                 <TextBlock Text="Database:" Padding="0,6,0,0"/>
-                <Fluent:ComboBox x:Name="Databases" 
+                <Fluent:ComboBox x:Name="Database" 
                                  SelectedItem="{Binding SelectedDatabase}"
-                                 ItemsSource="{Binding Databases}"   MinWidth="160" MaxWidth="200" 
+                                 ItemsSource="{Binding Databases}"   
+                                 MinWidth="160" MaxWidth="200" 
                                  IsEditable="False"
-                                 IsSynchronizedWithCurrentItem="True" Margin="0,8,8,0">
+                                 IsSynchronizedWithCurrentItem="True" 
+                                 IsEnabled="{Binding CanSelectDatabase}" 
+                                 Margin="0,8,8,0">
                     <Fluent:ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -426,6 +439,61 @@ LargeIcon="{StaticResource ConnectIconLarger}" Width="60" Margin="4,0,12,0"
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
                                           Text="Uncomments the selected lines"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Utils" Margin="0,0,4,0">
+                
+                <Fluent:Button x:Name="undoButton"
+                               Header="Undo"
+                               Fluent:KeyTip.Keys="Z"
+                               cal:Message.Attach="[Event Click] = [Action Undo()]"
+                               Icon="{StaticResource UndoIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Undo (Ctrl+Z)"
+                                          Text="Undoes previous actions"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button x:Name="redoButton"
+                               Header="Redo"
+                               Fluent:KeyTip.Keys="Y"
+                               cal:Message.Attach="[Event Click] = [Action Redo()]"
+                               Icon="{StaticResource RedoIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Redo (Ctrl+Y)"
+                                          Text="Re-does changes that were previously undone"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="MergeParameters"
+                               Header="Merge Parameters"
+                               cal:Message.Attach="[Event Click] = [Action MergeParameters()]"
+                               Icon="{StaticResource ParameterIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Merge Parameters"
+                                          Text="Merges Parameter XML block from a profiler trace"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button x:Name="saveButton"
+                               Header="Save"
+                               Fluent:KeyTip.Keys="S"
+                               cal:Message.Attach="[Event Click] = [Action Save()]"
+                               Icon="{StaticResource CommentIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Visibility="Hidden"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Save (Ctrl+S)"
+                                          Text="Saves the current document"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>

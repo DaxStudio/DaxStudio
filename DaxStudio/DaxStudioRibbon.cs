@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Reflection;
-using System.Threading;
-//using System.Windows;
-using System.Windows.Threading;
-using Caliburn.Micro;
-using DaxStudio.Interfaces;
-//using DaxStudio.UI;
-//using DaxStudio.UI.ViewModels;
 using Microsoft.Office.Tools.Ribbon;
 using Microsoft.Owin.Hosting;
-using System.Net.Http;
 using System.Diagnostics;
-using Microsoft.Office.Interop.Excel;
 using Microsoft.Win32;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -27,10 +17,10 @@ namespace DaxStudio
     {
         
         //private static Thread _launcherThread;
-        private static CancellationTokenSource _cancelToken;
-        private static AutoResetEvent _showWindow;
+//        private static CancellationTokenSource _cancelToken;
+//        private static AutoResetEvent _showWindow;
         //private Application _application;
-        private static AutoResetEvent _shutdownSync;
+//        private static AutoResetEvent _shutdownSync;
         private IDisposable webapp;
         private Process _client;
         private int _port;
@@ -38,7 +28,7 @@ namespace DaxStudio
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
-    
+    /*
         public CancellationTokenSource CancelToken
         {
             get { return _cancelToken; }
@@ -48,11 +38,12 @@ namespace DaxStudio
         {
             get { return _shutdownSync; }
         }
+      */
         private void Ribbon1Load(object sender, RibbonUIEventArgs e)
         {
-            _showWindow = new AutoResetEvent(false);
-            _cancelToken = new CancellationTokenSource();
-            _shutdownSync = new AutoResetEvent(false);
+     //       _showWindow = new AutoResetEvent(false);
+     //       _cancelToken = new CancellationTokenSource();
+     //       _shutdownSync = new AutoResetEvent(false);
 
 //            _launcherThread = new Thread(() => ShowWindow(_showWindow, _cancelToken));
 //            _launcherThread.SetApartmentState(ApartmentState.STA);
@@ -148,7 +139,7 @@ namespace DaxStudio
 
                 Log.Information("DaxStudio Host started on port {port}", _port);
                 System.Diagnostics.EventLog appLog =new System.Diagnostics.EventLog();
-                appLog.Source = "Application";
+                appLog.Source = "DaxStudio";
                 appLog.WriteEntry( string.Format("DaxStudio Excel Add-in Listening on port {0}",_port),EventLogEntryType.Information);
 
                 //if not Find free port and start it
@@ -167,12 +158,20 @@ namespace DaxStudio
             
             var path = "";
             // try to get path from LocalMachine registry
-            path = (string)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\DaxStudio", "Path", null);
+            path = (string)Registry.LocalMachine.GetValue("Software\\DaxStudio");
+            Log.Verbose("{Class} {Method} HKLM Value1: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = (string)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\DaxStudio", "Path", null);
+                Log.Verbose("{Class} {Method} HKLM Value2: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
+            }
             // otherwise get path from HKCU registry
-            if (path == null)
+            if (string.IsNullOrWhiteSpace(path))
             {
                 path = (string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\DaxStudio", "Path", "");
+                Log.Verbose("{Class} {Method} HKCU Value: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
             }
+
             Log.Debug("About to launch DaxStudio on path: {path}", path);
             // start Dax Studio process
             _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
@@ -188,115 +187,6 @@ namespace DaxStudio
                 ShowWinForm();
             }
              * */
-        }
-
-        
-        //[STAThread()]
-        private static void ShowWpfForm()
-        {
-            _showWindow.Set();
-            //var appProv = IoC.GetInstance( typeof(ApplicationProvider),"") as ApplicationProvider;
-            //appProv.ExcelApplication = Globals.ThisAddIn.Application;
-          /*  
-            var thread = new Thread(ShowWpfWindowAsync);
-            thread.SetApartmentState( ApartmentState.STA);
-            thread.IsBackground = true;
-            
-            thread.Start();
-*/
-            /*
-            if (_wpfWindow != null )
-            {
-                _wpfWindow.Close();
-                _wpfWindow = null;
-            }
-             */ 
-            //_wpfWindow = new DaxStudioWindow(Globals.ThisAddIn.Application);
-                //_wpfWindow.Application = Globals.ThisAddIn.Application;
-                // use WindowInteropHelper to set the Owner of our WPF window to the Excel application window
-            //    var hwndOwner = new IntPtr(Globals.ThisAddIn.Application.Hwnd);
-               // var hwndHelper = new System.Windows.Interop.WindowInteropHelper(_wpfWindow);
-               // hwndHelper.Owner = hwndOwner;
-                //var hook = new System.Windows.Interop.HwndSourceHook()
-            
-
-            // show our window
-            //UserForm.ShowUserForm(new DaxStudioExcelHost(Globals.ThisAddIn.Application)); //, hwndOwner);
-            //_wpfWindow.Show();
-            
-        }
-
-        // Technique taken from http://stackoverflow.com/questions/5869359/wpf-modeless-dialog-from-ms-excel-add-in
-        // in order to work around an issue where the focus would stay in the excel cell
-        // if the DAX Studio window is run as Modeless
-//        [STAThread()]
-        private static void ShowWpfWindowAsync()
-        {
-            _showWindow.Set();
-
-            Process p = new Process();
-            p.Start();
-            
-            /*
-            var thread = new Thread(() =>
-            {
-
-                var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioExcelHost)), false);
-                bootstrapper.Start();
-
-                windowManager = IoC.Get<IWindowManager>();
-                var eventAggregator = IoC.Get<IEventAggregator>();
-                var ribbonViewModel = IoC.Get<RibbonViewModel>();
-                var conductor = IoC.Get<IConductor>();
-                //windowManager.ShowDialog(new ShellViewModel(windowManager,eventAggregator, ribbonViewModel, conductor  ));
-                var shell = new ShellViewModel(windowManager, eventAggregator, ribbonViewModel, conductor);
-                //windowManager.ShowWindow(new ShellViewModel(windowManager, eventAggregator, ribbonViewModel, conductor));
-                windowManager.ShowDialog(shell);
-                
-                //var win = ((Window) shell.GetView());
-                //win.Closed += (sender2, e2) => win.Dispatcher.InvokeShutdown();
-
-                //Dispatcher.Run();
-            });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            */
-
-            //_launcherThread.Start();    
-            /*
-            _bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioExcelHost)), false);
-            //            bootstrapper.Start();
-            _bootstrapper.Start();
-
-            _windowManager = IoC.Get<IWindowManager>();
-            var eventAggregator = IoC.Get<IEventAggregator>();
-            var ribbonViewModel = IoC.Get<RibbonViewModel>();
-            var conductor = IoC.Get<IConductor>();
-            //windowManager.ShowDialog(new ShellViewModel(windowManager,eventAggregator, ribbonViewModel, conductor  ));
-            if (_shell == null)
-            {
-                _shell = new ShellViewModel(_windowManager, eventAggregator, ribbonViewModel, conductor);
-                _windowManager.ShowDialog(_shell);
-            }
-            else
-            {
-                conductor.ActivateItem(_shell);
-            }
-             */
-            //var win = (Window)_shell.GetView();
-            //var hwndOwner = new IntPtr(Globals.ThisAddIn.Application.Hwnd);
-            //var hwndHelper = new System.Windows.Interop.WindowInteropHelper(win);
-            //hwndHelper.Owner = hwndOwner;
-            //var hook = new System.Windows.Interop.HwndSourceHook()
-
-
-
-            //conductor.DeactivateItem(_shell,true);
-            //_shell = null;
-
-
-            //Dispatcher.Run();
         }
 
         private void StartWebHost(int port)
@@ -322,10 +212,14 @@ namespace DaxStudio
             //}
         }
 
+        /// <summary>
+        /// Finds an available TCP/IP port in the range between the Start and End params
+        /// </summary>
+        /// <param name="portStartIndex">Port Number to start searching from</param>
+        /// <param name="portEndIndex">Port Number to finish searching at</param>
+        /// <returns>an available tcp/ip port that does not currently have an active listener</returns>
         private int GetOpenPort(int portStartIndex, int portEndIndex)
         {
-            //int PortStartIndex = 1000;
-            //int PortEndIndex = 2000;
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
             IPEndPoint[] tcpEndPoints = properties.GetActiveTcpListeners();
 
@@ -357,12 +251,11 @@ namespace DaxStudio
                     _client.CloseMainWindow();
                 }
             }
-            _cancelToken.Cancel();
-            _shutdownSync.Dispose();
-            _showWindow.Dispose();
-            _cancelToken.Dispose();
+ //           _cancelToken.Cancel();
+ //           _shutdownSync.Dispose();
+ //           _showWindow.Dispose();
+ //           _cancelToken.Dispose();
         }
 
-        
     }
 }

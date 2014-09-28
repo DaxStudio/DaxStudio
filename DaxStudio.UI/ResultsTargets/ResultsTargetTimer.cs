@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Model
                 var res = runner.ExecuteQuery(dq);
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
-                runner.OutputMessage(string.Format("Query Completed ({0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
+                runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
                 runner.QueryCompleted();
                 runner.ActivateOutput();
             }

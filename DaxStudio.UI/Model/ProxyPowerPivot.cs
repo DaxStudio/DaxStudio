@@ -14,16 +14,20 @@ using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model
 {
-    public class ProxyPowerPivot : IDaxStudioProxy
+    public class ProxyPowerPivot 
+        : IDaxStudioProxy
+        , IHandle<ActivateDocumentEvent>
     {
         private readonly int _port;
         private readonly Uri _baseUri;
         private IEventAggregator _eventAggregator;
+        private ViewModels.DocumentViewModel _activeDocument;
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
         {
             _port = port;
             _baseUri = new Uri(string.Format("http://localhost:{0}/",port));
             _eventAggregator = eventAggregator;
+            _eventAggregator.Subscribe(this);
         }
 
         internal HttpClient GetHttpClient()
@@ -52,7 +56,8 @@ namespace DaxStudio.UI.Model
 
         public bool HasPowerPivotModel
         {
-            get { 
+            get {
+                var doc = _activeDocument;
                 using (var client = GetHttpClient())
                 {
                     try
@@ -65,7 +70,8 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        _eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
+                        //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
+                        doc.OutputError(string.Format("Error checking if active Excel workbook has a PowerPivot ({0})", ex.Message));
                     }
 
 
@@ -83,7 +89,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                 
+                var doc = _activeDocument;
                 using (var client = GetHttpClient())
                 {
                     try { 
@@ -95,7 +101,8 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        _eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
+                        //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
+                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel", ex.Message));
                     }
 
                     return "<Workbook not found>";
@@ -108,6 +115,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
+                var doc = _activeDocument;
                 try
                 {
                     using (var client = GetHttpClient())
@@ -122,7 +130,8 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
+                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
+                    doc.OutputError(string.Format("Error getting Worksheet list from Excel ({0})", ex.Message));
                 }
                 
                 return new string[] { };
@@ -132,6 +141,7 @@ namespace DaxStudio.UI.Model
 
         public async Task OutputStaticResultAsync(System.Data.DataTable results, string sheetName)
         {
+            var doc = _activeDocument;
             using (var client = GetHttpClient())
             {
                 try { 
@@ -151,24 +161,26 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
             }
         }
 
-        public async Task OutputLinkedResultAsync(string daxQuery, string sheetName)
+        public async Task OutputLinkedResultAsync(string daxQuery, string sheetName, string connectionString)
         {
+            var doc = _activeDocument;
             using (var client = GetHttpClient())
             {
                 try
                 {
-                    await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName) as ILinkedQueryResult);
-                    
+                    await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult);
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
             }
@@ -184,9 +196,10 @@ namespace DaxStudio.UI.Model
         {
             throw new NotImplementedException();
         }
+
+        public void Handle(ActivateDocumentEvent message)
+        {
+            _activeDocument = message.Document;
+        }
     }
-
-    
-
-
 }
