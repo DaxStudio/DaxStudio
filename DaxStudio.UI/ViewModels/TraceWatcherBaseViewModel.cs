@@ -6,11 +6,16 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices;
 using Serilog;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
     [InheritedExport(typeof(ITraceWatcher)), PartCreationPolicy(CreationPolicy.NonShared)]
-    public abstract class TraceWatcherBaseViewModel : PropertyChangedBase, IToolWindow, ITraceWatcher, IHandle<ConnectionChangedEvent>
+    public abstract class TraceWatcherBaseViewModel 
+        : PropertyChangedBase
+        , IToolWindow
+        , ITraceWatcher
+        , IHandle<DocumentConnectionUpdateEvent>
     {
         private List<TraceEventArgs> _events;
         private readonly IEventAggregator _eventAggregator;
@@ -113,20 +118,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public void Handle(DocumentConnectionUpdateEvent message)
         {
             CheckEnabled(message.Connection);
         }
 
-        public void CheckEnabled(ADOTabular.ADOTabularConnection _connection)
+        public void CheckEnabled(IConnection _connection)
         {
             if (_connection == null) {
-                IsEnabled = false; 
-                IsChecked = false; 
+                IsEnabled = false;
+                IsChecked = false;
                 return; 
             }
-            if (_connection.State == System.Data.ConnectionState.Closed
-                || _connection.State == System.Data.ConnectionState.Broken)
+            if (_connection.IsConnected)
             {
                 // if connection has been closed or broken then uncheck and disable
                 IsEnabled = false;
@@ -134,7 +138,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            IsEnabled = (!_connection.IsPowerPivot && _connection.SPID != -1);
+            IsEnabled = (!_connection.IsPowerPivot && _connection.Spid != -1);
         }
     }
 }

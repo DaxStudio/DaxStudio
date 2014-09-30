@@ -76,6 +76,11 @@ namespace DaxStudio.UI.ViewModels {
             _eventAggregator.Publish(new NewDocumentEvent());
         }
 
+        public void OpenDocument()
+        {
+            _eventAggregator.Publish(new OpenFileEvent());
+        }
+
         public void SelectionToUpper()
         {
             _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToUpper));

@@ -43,8 +43,9 @@ namespace ADOTabular
         {
             _cols.Clear();
         }
-        private readonly Dictionary<string, ADOTabularColumn> _cols;
- 
+        //private readonly Dictionary<string, ADOTabularColumn> _cols;
+        private readonly SortedDictionary<string, ADOTabularColumn> _cols;
+
         public ADOTabularColumn this[string index]
         {
             get { return _cols[index]; }

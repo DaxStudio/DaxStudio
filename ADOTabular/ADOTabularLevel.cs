@@ -6,7 +6,7 @@ using System.Text;
 namespace ADOTabular
 {
     
-    public class ADOTabularLevel
+    public class ADOTabularLevel: IADOTabularObject
     {
         
 
@@ -20,5 +20,15 @@ namespace ADOTabular
         public string LevelName { get; set; }
         public string LevelCaption { get; set; }
 
+
+        public string Caption
+        {
+            get { return LevelCaption; }
+        }
+
+        public string DaxName
+        {
+            get { return Column.DaxName; }
+        }
     }
 }

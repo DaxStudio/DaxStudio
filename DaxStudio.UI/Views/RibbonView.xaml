@@ -341,29 +341,29 @@
                                               DisableReason="Paste is currently not available."
                                               Width="190" />
                     </Fluent:Button.ToolTip>
-                    
                 </Fluent:Button>
-
             </Fluent:RibbonGroupBox>
 
-
             <Fluent:RibbonGroupBox Header="Connect" Margin="4,0">
-                <Fluent:Button x:Name="Connect" Header="Connect"
-LargeIcon="{StaticResource ConnectIconLarger}" Width="60" Margin="4,0,12,0"
-                              cal:Message.Attach="[Event Click] = [Action Connect()]" />
+                <Fluent:Button x:Name="Connect" 
+                               Header="Connect"
+                               LargeIcon="{StaticResource ConnectIconLarger}" 
+                               Width="60" Margin="4,0,12,0"
+                               cal:Message.Attach="[Event Click] = [Action Connect()]" />
                 <TextBlock Text="Database:" Padding="0,6,0,0"/>
                 <Fluent:ComboBox x:Name="Database" 
                                  SelectedItem="{Binding SelectedDatabase}"
                                  ItemsSource="{Binding Databases}"   
-                                 MinWidth="160" MaxWidth="200" 
+                                 MinWidth="160" 
+                                 MaxWidth="250" 
                                  IsEditable="False"
                                  IsSynchronizedWithCurrentItem="True" 
                                  IsEnabled="{Binding CanSelectDatabase}" 
-                                 Margin="0,8,8,0">
+                                 Margin="0,8,8,0" ToolTip="{Binding SelectedDatabase}">
                     <Fluent:ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{StaticResource DatabaseIcon}" ></Image>
+                                <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
                                 <TextBlock Text="{Binding}" Margin="4,0" ></TextBlock>    
                             </StackPanel>
                         </DataTemplate>

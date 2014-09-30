@@ -4,9 +4,9 @@ namespace ADOTabular
 {
     public interface IMetaDataVisitor
     {
-        Dictionary<string,ADOTabularModel> Visit(ADOTabularModelCollection models);
+        SortedDictionary<string,ADOTabularModel> Visit(ADOTabularModelCollection models);
         void Visit(ADOTabularTableCollection tables);
-        Dictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns);
+        SortedDictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns);
         void Visit(ADOTabularFunctionGroupCollection functionGroups);
     }
 }

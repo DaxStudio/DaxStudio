@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AnalysisServices;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -12,6 +13,6 @@ namespace DaxStudio.UI.Model
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
 
-        void CheckEnabled(ADOTabular.ADOTabularConnection _connection);
+        void CheckEnabled(IConnection connection);
     }
 }

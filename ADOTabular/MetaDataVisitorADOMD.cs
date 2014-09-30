@@ -12,9 +12,9 @@ namespace ADOTabular
         {
             _conn = conn;
         }
-        public Dictionary<string, ADOTabularModel> Visit(ADOTabularModelCollection models)
+        public SortedDictionary<string, ADOTabularModel> Visit(ADOTabularModelCollection models)
         {
-            var ret = new Dictionary<string, ADOTabularModel>();
+            var ret = new SortedDictionary<string, ADOTabularModel>();
             var resColl = new AdomdRestrictionCollection { { "CUBE_SOURCE", 1 } };
             var dtModels = _conn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
             foreach (DataRow dr in dtModels.Rows)
@@ -51,9 +51,9 @@ namespace ADOTabular
             
         }
 
-        public Dictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns)
+        public SortedDictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns)
         {
-            var ret = new Dictionary<string, ADOTabularColumn>();
+            var ret = new SortedDictionary<string, ADOTabularColumn>();
             var resColl = new AdomdRestrictionCollection
                               {
                                   {"HIERARCHY_ORIGIN", 2},

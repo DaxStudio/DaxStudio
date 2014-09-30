@@ -49,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateConnectionEvent> // ,IDropTarget    
         , IQueryRunner
         , IHaveShutdownTask
-
+        , IConnection
     {
         private ADOTabularConnection _connection;
         private IWindowManager _windowManager;
@@ -281,6 +281,22 @@ namespace DaxStudio.UI.ViewModels
 
         public IDaxStudioHost Host { get { return _host; } }
         public string SelectedWorksheet { get; set; }
+        public string SelectedDatabase { get { return _selectedDatabase; }
+            set
+            {
+                if (value != _selectedDatabase)
+                {
+                    _selectedDatabase = value;
+                    using (NewStatusBarMessage("Refreshing Metadata..."))
+                    {
+                        Connection.ChangeDatabase(value);
+                        UpdateConnections(Connection, value);
+                    }
+                    _eventAggregator.Publish(new DocumentConnectionUpdateEvent(this));
+                    NotifyOfPropertyChange(() => SelectedDatabase);
+                }
+            }
+        }
         public string ConnectionString { get { return _connection.ConnectionString; } }
 
         public MetadataPaneViewModel MetadataPane
@@ -361,7 +377,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        public ADOTabularConnection Connection
+        private ADOTabularConnection Connection
         {
             get { return _connection; }
             set
@@ -394,20 +410,21 @@ namespace DaxStudio.UI.ViewModels
             using (NewStatusBarMessage("Connecting..."))
             {
                 if (value == null) return;
+                /*
                 if (_connection != null)
                 {
                     if (value.Database.Name == _connection.Database.Name
                         && (selectedDatabase == "" || value.Database.Name != selectedDatabase)
                         && value.ServerName == _connection.ServerName) return;
                 }
-
+                */
                 _connection = value;
 
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
                 {
                     //TODO - can we enable traces on PowerPivot
-                    traceWatcher.CheckEnabled(_connection);
+                    traceWatcher.CheckEnabled(this);
                     
                 }
                 MetadataPane.Connection = _connection;
@@ -967,7 +984,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 UpdateConnections(message.Connection, message.DatabaseName);
             }
-            
+            _eventAggregator.Publish(new DocumentConnectionUpdateEvent(this));
             /*
             Execute.BeginOnUIThread(() =>
             {
@@ -1142,24 +1159,66 @@ namespace DaxStudio.UI.ViewModels
                         Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => { 
                             Connection = cnn;
                             Connection.IsPowerPivot = message.PowerPivotModeSelected;
+                            this.IsPowerPivot = message.PowerPivotModeSelected;
+                            this.Spid = cnn.SPID;
+                            this.SelectedDatabase = cnn.Database.Name;
                             CurrentWorkbookName = message.WorkbookName;
+                            Databases = CopyDatabaseList(cnn);
+
+                            if (Connection == null)
+                            { ServerName = "<Not Connected>"; }
+                            else
+                            {
+
+                                if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
+                                { ServerName = "<Not Connected>"; }
+                                else
+                                {
+                                    ServerName = Connection.ServerName;
+                                }
+                            }
+
                         }));
                     }
                     else
                     {
                         Connection = cnn;
                         Connection.IsPowerPivot = message.PowerPivotModeSelected;
+                        this.IsPowerPivot = message.PowerPivotModeSelected;
+                        this.Spid = cnn.SPID;
+                        this.SelectedDatabase = cnn.Database.Name;
                         CurrentWorkbookName = message.WorkbookName;
+                        Databases = CopyDatabaseList(cnn);
                     }
                     
                 }).ContinueWith((antecendant) =>
                     {
-                        _eventAggregator.Publish(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
+                        _eventAggregator.Publish(new DocumentConnectionUpdateEvent(this));//,IsPowerPivotConnection));
+                        _eventAggregator.Publish(new ActivateDocumentEvent(this));
                         msg.Dispose(); //reset the status message
                     });
             
         }
-
+        
+        private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)
+        {
+            var ss = new SortedSet<string>();
+            foreach (var dbname in cnn.Databases)
+            { ss.Add(dbname); }
+            return ss;
+        }
+        public SortedSet<string> Databases { get; private set; }
+        public void ClearDatabaseCache()
+        {
+            var sw = Stopwatch.StartNew();
+            Connection.Database.ClearCache();
+            OutputMessage(string.Format("Evalating Calculation Script for Database: {0}", SelectedDatabase));
+            ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) => {
+                sw.Stop();
+                var duration = sw.ElapsedMilliseconds;
+                OutputMessage(string.Format("Cache Cleared for Database: {0}",SelectedDatabase),duration);
+            });
+        }
         public void Handle(CancelConnectEvent message)
         {
             // refresh the other views with the existing connection details
@@ -1250,14 +1309,15 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return Connection.IsPowerPivot; } 
         }
-        public string Spid
+        /*public string Spid
         {
             get {
                 return Connection==null ?"":Connection.SPID.ToString(); 
             }
-        }
+        }*/
 
         private string _statusBarMessage;
+        private string _selectedDatabase;
         public string StatusBarMessage
         {
             get
@@ -1273,15 +1333,7 @@ namespace DaxStudio.UI.ViewModels
              */
         }
         public string ServerName
-        {
-            get 
-            {
-                if (Connection == null) return "<Not Connected>";
-                Connection.Ping();
-                if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Broken) return "<Not Connected>";
-                return Connection.ServerName; 
-            }
-        }
+        { get; private set;  }
 
         public IStatusBarMessage NewStatusBarMessage(string message)
         {
@@ -1294,6 +1346,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => StatusBarMessage);
         }
 
+
+        public int Spid { get; private set; }
+
+        public bool IsPowerPivot {get; private set; }
     }
 
     

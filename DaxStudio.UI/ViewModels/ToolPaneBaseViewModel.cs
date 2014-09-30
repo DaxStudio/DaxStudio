@@ -60,8 +60,11 @@ namespace DaxStudio.UI.ViewModels
     
         public void MouseDoubleClick(IADOTabularObject item)
         {
-            var txt = item.DaxName;
-            EventAggregator.Publish(new SendTextToEditor(txt) );
+            if (item != null)
+            {
+                var txt = item.DaxName;
+                EventAggregator.Publish(new SendTextToEditor(txt));
+            }
         }
 
         public IADOTabularObject SelectedItem { get; set; }
@@ -75,9 +78,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void StartDrag(IDragInfo dragInfo)
         {
-            dragInfo.Data = ((IADOTabularObject) dragInfo.SourceItem).DaxName;
-            dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
-            dragInfo.Effects = DragDropEffects.Move;
+            if (dragInfo.SourceItem as IADOTabularObject != null)
+            {
+                dragInfo.Data = ((IADOTabularObject)dragInfo.SourceItem).DaxName;
+                dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
+                dragInfo.Effects = DragDropEffects.Move;
+            }
+            else
+            { dragInfo.Effects = DragDropEffects.None; }
         }
 
         public void Dropped(IDropInfo dropInfo)

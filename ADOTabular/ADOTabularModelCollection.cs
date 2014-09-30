@@ -18,7 +18,7 @@ namespace ADOTabular
             //_models = _adoTabConn.Visitor.Visit(this);
         }
 
-        private Dictionary<string,ADOTabularModel> InternalModelCollection
+        private SortedDictionary<string,ADOTabularModel> InternalModelCollection
         {
             get
             {
@@ -33,7 +33,7 @@ namespace ADOTabular
         public void Add(ADOTabularModel model)
         {
             if (_models == null)
-                _models = new Dictionary<string, ADOTabularModel>();
+                _models = new SortedDictionary<string, ADOTabularModel>();
             _models.Add(model.Name, model);
         }
 
@@ -89,7 +89,7 @@ namespace ADOTabular
             return GetEnumerator(); 
         }
 
-        private Dictionary<string,ADOTabularModel> _models;  
+        private SortedDictionary<string,ADOTabularModel> _models;  
 
         public IEnumerator<ADOTabularModel> GetEnumerator()
         {

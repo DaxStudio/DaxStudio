@@ -21,17 +21,17 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
         , IHandle<ConnectionPendingEvent>
-        , IHandle<UpdateConnectionEvent>
+        //, IHandle<UpdateConnectionEvent>
         , IHandle<ActivateDocumentEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<NewDocumentEvent>
         , IHandle<ApplicationActivatedEvent>
         , IHandle<TraceChangingEvent>
         , IHandle<TraceChangedEvent>
+        , IHandle<DocumentConnectionUpdateEvent>
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
-        private ADOTabularConnection _connection;
         private bool _databaseComboChanging = false;
 
         private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
@@ -147,16 +147,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            var doc = ActiveDocument;
-            var sw = Stopwatch.StartNew();
-            _connection.Database.ClearCache();
-            //_eventAggregator.Publish(new OutputInformationMessageEvent(string.Format("Evalating Calculation Script for Database: {0}", _connection.Database.Name)));
-            doc.OutputMessage(string.Format("Evalating Calculation Script for Database: {0}", _connection.Database.Name));
-            ActiveDocument.ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) => {
-                sw.Stop();
-                var duration = sw.ElapsedMilliseconds;
-                doc.OutputMessage(string.Format("Cache Cleared for Database: {0}",_connection.Database.Name),duration);
-            });
+            ActiveDocument.ClearDatabaseCache();
         }
 
         public void Save()
@@ -195,19 +186,16 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Publish(new OpenFileEvent());
         }
 
-        public void Handle(UpdateConnectionEvent message)
-        {
-            RefreshConnectionDetails(message.Connection, message.DatabaseName);
-        }
+//        public void Handle(UpdateConnectionEvent message)
+//        {
+//            RefreshConnectionDetails(message .Connection, message.DatabaseName);
+//        }
 
-        private void RefreshConnectionDetails(ADOTabularConnection connection, string databaseName)
+        private void RefreshConnectionDetails(IConnection connection, string databaseName)
         {
             var doc = ActiveDocument;
-            //if (connection != null)
-            //{
-                _connection = connection;
-            //}
-            if (_connection == null)
+            
+            if (connection == null)
             {
                 Databases = null;
                 SelectedDatabase = null;
@@ -220,15 +208,15 @@ namespace DaxStudio.UI.ViewModels
             }
             try
             {
-                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", _connection.ConnectionString, databaseName);
-                Databases = _connection.Databases;
+                Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName, databaseName);
+                Databases = doc.Databases;
 
                 _databaseComboChanging = true;
                 NotifyOfPropertyChange(() => Databases);
                 //NotifyOfPropertyChange(() => SelectedDatabase);
                 _databaseComboChanging = false;
 
-                SelectedDatabase = _connection.Database.Name;
+                SelectedDatabase = doc.SelectedDatabase;
                 NotifyOfPropertyChange(()=>SelectedDatabase);
             }
             catch (Exception ex)
@@ -250,6 +238,8 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedDatabase; }
             set
             {
+                // TODO - can't change database if query is running
+
                 var doc = ActiveDocument;
                 //Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set", value);
                 if (_databaseComboChanging) return;
@@ -263,19 +253,20 @@ namespace DaxStudio.UI.ViewModels
                 
                 _selectedDatabase = value;
 
-                var msg = doc.NewStatusBarMessage("Loading Metadata...");
+                //var msg = doc.NewStatusBarMessage("Loading Metadata...");
                 //_eventAggregator.Publish(new StatusBarMessage("Loading Metadata..."));
                 
 
                 //Task.Factory.StartNew(() =>  {
                 //Execute.OnUIThreadAsync(() => {
-                    if (_connection != null && _selectedDatabase != null)
+                    if (doc.IsConnected)
                     {
-                        if (!_connection.Database.Name.Equals(_selectedDatabase))
+                        if (!doc.SelectedDatabase.Equals(_selectedDatabase))
                         {
                             Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set (changing)", value);
-                            _connection.ChangeDatabase(_selectedDatabase);
-                            _eventAggregator.Publish(new UpdateConnectionEvent(_connection, _selectedDatabase));//, ActiveDocument.IsPowerPivotConnection));
+                            doc.SelectedDatabase = _selectedDatabase;
+                            //doc.Connection.ChangeDatabase(_selectedDatabase);
+                            _eventAggregator.Publish(new DocumentConnectionUpdateEvent(doc));//, ActiveDocument.IsPowerPivotConnection));
                         }
                     }
 
@@ -283,7 +274,6 @@ namespace DaxStudio.UI.ViewModels
 
                 //}).ContinueWith((x) =>
                 //{
-                    msg.Dispose();
                     //msg.Dispose();
                     _databaseComboChanging = false;
                 //}); 
@@ -312,7 +302,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IObservableCollection<ITraceWatcher> TraceWatchers { get { return ActiveDocument == null ? null : ActiveDocument.TraceWatchers; } } 
 
-        public ADOTabularDatabaseCollection Databases { get; set; }
+        public SortedSet<string> Databases { get; set; }
         public void Handle(ActivateDocumentEvent message)
         {
             Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
@@ -330,7 +320,7 @@ namespace DaxStudio.UI.ViewModels
         //}
 
 
-            if (ActiveDocument.Connection == null)
+            if (!ActiveDocument.IsConnected)
             {
                 _selectedDatabase = null;
                 NotifyOfPropertyChange(() => SelectedDatabase);
@@ -340,11 +330,11 @@ namespace DaxStudio.UI.ViewModels
             }
             try
             {
-                if (ActiveDocument.Connection.State == System.Data.ConnectionState.Open)
+                //if (ActiveDocument.Connection.State == System.Data.ConnectionState.Open)
                 {
                     Databases = null;
                     _selectedDatabase = null;
-                    RefreshConnectionDetails(ActiveDocument.Connection, ActiveDocument.Connection.Database.Name);
+                    RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
                     // TODO - do we still need to check trace watchers if we are not connected??
                     UpdateTraceWatchers();
                 }
@@ -364,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // TODO - can we enable traces for PowerPivot?
                 //    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
-                tw.CheckEnabled(ActiveDocument.Connection);
+                tw.CheckEnabled(ActiveDocument);
             }
         }
 
@@ -439,6 +429,11 @@ namespace DaxStudio.UI.ViewModels
         {
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
+        }
+
+        public void Handle(DocumentConnectionUpdateEvent message)
+        {
+            RefreshConnectionDetails(message.Connection, message.Connection.SelectedDatabase);
         }
     }
 }

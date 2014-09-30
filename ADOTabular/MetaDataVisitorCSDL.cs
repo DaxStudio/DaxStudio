@@ -16,9 +16,9 @@ namespace ADOTabular
             _conn = conn;
         }
         
-        Dictionary<string, ADOTabularModel> IMetaDataVisitor.Visit(ADOTabularModelCollection models)
+        SortedDictionary<string, ADOTabularModel> IMetaDataVisitor.Visit(ADOTabularModelCollection models)
         {
-            var ret = new Dictionary<string, ADOTabularModel>();
+            var ret = new SortedDictionary<string, ADOTabularModel>();
             var resColl = new AdomdRestrictionCollection { { "CUBE_SOURCE", 1 } };
             var dtModels = _conn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
             foreach (DataRow dr in dtModels.Rows)
@@ -424,9 +424,9 @@ namespace ADOTabular
              
         }
 
-        Dictionary<string, ADOTabularColumn> IMetaDataVisitor.Visit(ADOTabularColumnCollection columns)
+        SortedDictionary<string, ADOTabularColumn> IMetaDataVisitor.Visit(ADOTabularColumnCollection columns)
         {
-            return new Dictionary<string, ADOTabularColumn>();
+            return new SortedDictionary<string, ADOTabularColumn>();
         }
 
         public void Visit(ADOTabularFunctionGroupCollection functionGroups)

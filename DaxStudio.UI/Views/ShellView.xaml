@@ -85,9 +85,23 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="X" Modifiers="Alt"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="RunQuery"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="N" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="NewDocument"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding   Key="O" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="OpenDocument"/>
         </local:InputBindingTrigger>
 
         <local:InputBindingTrigger>

@@ -12,8 +12,8 @@ namespace DaxStudio.UI.ViewModels
     public class StatusBarViewModel:PropertyChangedBase
         //, IHandle<StatusBarMessageEvent>
         , IHandle<EditorPositionChangedMessage>
-        , IHandle<UpdateConnectionEvent>
-        , IHandle<UpdateTimerTextEvent>
+        , IHandle<DocumentConnectionUpdateEvent>
+        //, IHandle<UpdateTimerTextEvent>
         , IHandle<ActivateDocumentEvent>
     {
         //private ADOTabularConnection _connection;
@@ -22,18 +22,7 @@ namespace DaxStudio.UI.ViewModels
         {
             eventAggregator.Subscribe(this);
         }
-        /*
-        public ADOTabularConnection Connection
-        {
-            get { return _connection; }
-            set
-            {
-                _connection = value;
-                if (_connection != null)
-                    _connection.ConnectionChanged += ConnectionOnConnectionChanged;
-            }
-        }
-        */
+
         public bool Working { get; set; }
 
         /*private void ConnectionOnConnectionChanged(object sender, EventArgs eventArgs)
@@ -57,6 +46,8 @@ namespace DaxStudio.UI.ViewModels
             set { 
                 _message = value;
                 NotifyOfPropertyChange(() => Message);
+                Working = (Message != "Ready");
+                NotifyOfPropertyChange(() => Working) ;
             }
         }
         private string _serverName = "";
@@ -94,14 +85,15 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=>PositionText);
         }
 
-        public void Handle(UpdateConnectionEvent message)
+        public void Handle(DocumentConnectionUpdateEvent message)
         {
+            
             if (message != null)
             {
                 if (message.Connection != null)
                 {
                     ServerName = message.Connection.IsPowerPivot?"<Power Pivot>": message.Connection.ServerName;
-                    Spid = message.Connection.SPID.ToString(CultureInfo.InvariantCulture);
+                    Spid = message.Connection.Spid.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -111,11 +103,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateTimerTextEvent message)
-        {
-            TimerText = message.TimerText;
-            
-        }
+        //public void Handle(UpdateTimerTextEvent message)
+        //{
+        //    TimerText = message.TimerText;
+        //}
 
         public void Handle(ActivateDocumentEvent message)
         {
@@ -132,7 +123,7 @@ namespace DaxStudio.UI.ViewModels
             TimerText = message.Document.ElapsedQueryTime;
             NotifyOfPropertyChange(() => TimerText);
             NotifyOfPropertyChange(() => ActiveDocument);
-            Spid = ActiveDocument.Spid;
+            Spid = ActiveDocument.Spid.ToString() ;
             ServerName = ActiveDocument.ServerName;
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
@@ -142,8 +133,8 @@ namespace DaxStudio.UI.ViewModels
         {
             switch (e.PropertyName)
             {
-                case "Message":
-                    NotifyOfPropertyChange(() => Message);
+                case "StatusBarMessage":
+                    Message = ActiveDocument.StatusBarMessage;
                     break;
                 case "Spid":
                     NotifyOfPropertyChange(() => Spid);
@@ -151,8 +142,8 @@ namespace DaxStudio.UI.ViewModels
                 case "ServerName":
                     NotifyOfPropertyChange(() => ServerName);
                     break;
-                case "TimerText":
-                    NotifyOfPropertyChange(() => TimerText);
+                case "ElapsedQueryTime":
+                    TimerText = ActiveDocument.ElapsedQueryTime;
                     break;
             }
         }
