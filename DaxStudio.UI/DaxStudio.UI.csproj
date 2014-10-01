@@ -313,6 +313,7 @@
     <Compile Include="Utils\JsonDataTableConverter.cs" />
     <Compile Include="Utils\MessageBoxEx.cs" />
     <Compile Include="Utils\PaneStyleSelector.cs" />
+    <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
     <Compile Include="ViewModels\DmvPaneViewModel.cs" />
     <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
@@ -354,6 +355,9 @@
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\HelpAboutView.xaml.cs">
+      <DependentUpon>HelpAboutView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MetadataPaneView.xaml.cs">
       <DependentUpon>MetadataPaneView.xaml</DependentUpon>
     </Compile>
@@ -375,6 +379,10 @@
     <Compile Include="Views\StatusBarView.xaml.cs">
       <DependentUpon>StatusBarView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Views\HelpAboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -37,7 +37,7 @@
                     </Grid>
                     <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="5,0,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowMissingModelWarning}"/>
                 </StackPanel>
-                <Grid>
+                <Grid FocusManager.FocusedElement="{Binding Path=cboServers}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="130" />
                         <ColumnDefinition Width="*"/>

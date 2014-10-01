@@ -32,6 +32,7 @@ namespace DaxStudio.UI.ViewModels
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IWindowManager _windowManager;
         private bool _databaseComboChanging = false;
 
         private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
@@ -39,12 +40,12 @@ namespace DaxStudio.UI.ViewModels
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 
         [ImportingConstructor]
-        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator )
+        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager )
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             _host = host;
-            
+            _windowManager = windowManager;
         }
 
         public Visibility OutputGroupIsVisible
@@ -434,6 +435,12 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(DocumentConnectionUpdateEvent message)
         {
             RefreshConnectionDetails(message.Connection, message.Connection.SelectedDatabase);
+        }
+
+        public void ShowHelpAbout()
+        {
+            var about = new HelpAboutViewModel();
+            _windowManager.ShowDialog(about);
         }
     }
 }

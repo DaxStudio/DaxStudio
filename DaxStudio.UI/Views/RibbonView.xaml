@@ -67,6 +67,7 @@
         <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo@16x16.png"></BitmapImage>
         <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
         <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
+        <BitmapImage x:Key="InformationIcon"  UriSource="..\images\information.circle.png"></BitmapImage>
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -535,6 +536,18 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Analysis Services Forum"
                                           Text="Link to the Analysis Services MSDN Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpAbout"
+                               Header="About DaxStudio"
+                               cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
+                               Icon="{StaticResource InformationIcon}"
+                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Help About"
+                                          Text="Shows version information"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
