@@ -18,10 +18,12 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IEventAggregator _eventAggregator;
         private readonly string _connectionString;
-        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel )
+        private readonly DocumentViewModel _activeDocument;
+        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel, DocumentViewModel document )
         {
             _eventAggregator = eventAggregator;
             _connectionString = connectionString;
+            _activeDocument = document;
             PowerPivotEnabled = true;
             Host = host;
             ServerModeSelected = true;
@@ -270,14 +272,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
                 }
-                _eventAggregator.Publish(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName));
+                _eventAggregator.PublishOnUIThread(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName));
             }
             catch (Exception ex)
             {
-                _eventAggregator.Publish(
-                    new OutputMessage(MessageType.Error
-                        , String.Format("Could not connect to '{0}': {1}", DataSource, ex.Message))
-                    );
+                _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", DataSource, ex.Message));
+                _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }
             finally
             {
@@ -287,7 +287,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
-            _eventAggregator.Publish(new CancelConnectEvent());
+            _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
         }
     }
         

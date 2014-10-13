@@ -95,7 +95,7 @@
       <HintPath>C:\Program Files\Microsoft.NET\ADOMD.NET\110\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Excel.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>d:\codeplex_x64\daxstudio\lib\Microsoft.Excel.AdomdClient.dll</HintPath>
+      <HintPath>d:\codeplex\daxstudio\lib\Microsoft.Excel.AdomdClient.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Aliases>ExcelAdomdClientReference</Aliases>
       <Private>False</Private>

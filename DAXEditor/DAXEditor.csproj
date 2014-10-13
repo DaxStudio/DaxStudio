@@ -94,31 +94,36 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.AvalonEdit, Version=4.4.0.9727, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+    <Reference Include="ICSharpCode.AvalonEdit, Version=4.4.2.9744, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AvalonEdit.4.4.0.9727\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+      <HintPath>..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit.CodeCompletion">
-      <HintPath>..\packages\SharpDevelopCodeCompletion.1.28.0.0\lib\ICSharpCode.AvalonEdit.CodeCompletion.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ICSharpCode.AvalonEdit.CodeCompletion, Version=1.33.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpDevelopCodeCompletion.1.33.2.0\lib\ICSharpCode.AvalonEdit.CodeCompletion.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.NRefactory, Version=0.0.0.0, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDevelopCodeCompletion.1.21.0.0\lib\ICSharpCode.NRefactory.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpDevelopCodeCompletion.1.33.2.0\lib\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpDevelop.Dom, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDevelopCodeCompletion.1.21.0.0\lib\ICSharpCode.SharpDevelop.Dom.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpDevelopCodeCompletion.1.33.2.0\lib\ICSharpCode.SharpDevelop.Dom.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpDevelopCodeCompletion.1.33.2.0\lib\Mono.Cecil.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">

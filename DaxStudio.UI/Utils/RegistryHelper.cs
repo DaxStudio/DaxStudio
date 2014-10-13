@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 //using System.Windows.Forms;
 using Microsoft.Win32;
 //using ComboBox = System.Windows.Forms.ComboBox;
+using System;
 
 namespace DaxStudio.UI
 {
@@ -10,6 +11,9 @@ namespace DaxStudio.UI
     {
     
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2005";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2005";
+
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
             return GetMRUListFromRegistry("Server");
@@ -75,5 +79,52 @@ namespace DaxStudio.UI
                 }
             }
         }
+
+
+        public static void SetLastVersionCheck(DateTime value)
+        {
+            string path = registryRootKey + "\\DaxStudio";
+            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
+            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+            settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, value, RegistryValueKind.String);
+            settingKey.Close();
+        }
+
+        public static DateTime GetLastVersionCheck()
+        {
+            DateTime dtReturnVal = DateTime.MinValue;
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            if (rk != null)
+            {
+                DateTime.TryParse((string)rk.GetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, DateTime.MinValue.ToShortDateString()), out dtReturnVal);
+                rk.Close();
+            }
+
+            return dtReturnVal;
+        }
+
+
+        public static string GetDismissedVersion()
+        {
+            string sReturnVal = string.Empty;
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            if (rk != null)
+            {
+                sReturnVal = (string)rk.GetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, string.Empty);
+                rk.Close();
+            }
+
+            return sReturnVal;
+        }
+
+        public static void SetDismissedVersion(string value)
+        {
+            string path = registryRootKey;
+            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
+            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+            settingKey.SetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, value, RegistryValueKind.String);
+            settingKey.Close();
+        }
+
     }
 }

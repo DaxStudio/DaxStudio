@@ -216,8 +216,12 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
-    <Reference Include="Caliburn.Micro, Version=1.5.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\Caliburn.Micro.dll</HintPath>
+    <Reference Include="Caliburn.Micro, Version=2.0.1.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Caliburn.Micro.Core.2.0.1\lib\net45\Caliburn.Micro.dll</HintPath>
+    </Reference>
+    <Reference Include="Caliburn.Micro.Platform">
+      <HintPath>..\packages\Caliburn.Micro.2.0.1\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -297,8 +301,9 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.1.2\lib\net45\System.Web.Http.Owin.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -470,7 +475,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="solveAliasProblem">
-    <ConvertToAbsolutePath Paths="d:\codeplex\daxstudio\daxstudio\daxstudio\lib\Microsoft.Excel.AdomdClient.dll">
+    <ConvertToAbsolutePath Paths="..\lib\Microsoft.Excel.AdomdClient.dll">
       <Output TaskParameter="AbsolutePaths" PropertyName="FullPathOriginal" />
     </ConvertToAbsolutePath>
     <ItemGroup>

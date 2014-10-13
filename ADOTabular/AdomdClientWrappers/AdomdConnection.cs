@@ -112,6 +112,8 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void ChangeDatabase(string database)
         {
+            if (database == null) return; 
+            if (database.Trim().Length == 0) return;
             if (_type == AdomdType.AnalysisServices)
             {
                 _conn.ChangeDatabase(database);

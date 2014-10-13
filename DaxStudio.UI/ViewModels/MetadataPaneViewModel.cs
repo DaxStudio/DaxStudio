@@ -24,8 +24,11 @@ namespace DaxStudio.UI.ViewModels
             switch (propertyChangedEventArgs.PropertyName)
             {
                 case "ModelList":
-                    SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
-                    Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList", Connection.Database.Models.BaseModel.Name);          
+                    if (ModelList.Count > 0)
+                    {
+                        SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                    }
+                    Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);          
                     break;
             }
         }

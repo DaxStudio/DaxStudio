@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
@@ -92,7 +92,9 @@
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
-                <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}" Fluent:RibbonAttachedProperties.RibbonSize="Large"  ClickMode="Press" Width="Auto" 
+                <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                     SizeDefinition="Large" 
+                                     ClickMode="Press" Width="Auto" 
                                      Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
                                      IsEnabled="{Binding IsEnabled}">
@@ -154,7 +156,7 @@
                                            BorderThickness="1" 
                                            LargeIcon="{StaticResource BrowseIconLarger}"
                                            Header="Browse"
-                                           Fluent:RibbonAttachedProperties.RibbonSize="Large"
+                                           SizeDefinition="Large"
                                            Height="100" Width="100" Foreground="Black">
                                            
                                         <i:Interaction.Triggers>
@@ -265,7 +267,7 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Clear Cache"
                                           Text="Clears the cache for the current database"
-                                          DisableReason="A Query is currently running"
+                                          DisableReason="{Binding ClearCacheDisableReason}"
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -312,7 +314,7 @@
                                    Fluent:KeyTip.Keys="X"
                                    Header="Cut"
                                    Icon="{StaticResource CutIconLarger}"
-                                   Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                                   SizeDefinition="Middle,Small"
                                    Command="Cut"
                                    >
                     <Fluent:Button.ToolTip>
@@ -327,13 +329,13 @@
                                    Fluent:KeyTip.Keys="C"
                                    Header="Copy"
                                    Icon="{StaticResource CopyIconLarger}"
-                                   Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                                   SizeDefinition="Middle,Small"
                                Command="Copy" />
                 <Fluent:Button x:Name="pasteButton"
                                    Fluent:KeyTip.Keys="X"
                                    Header="Paste"
                                    Icon="{StaticResource PasteIconLarger}"
-                                   Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                                   SizeDefinition="Middle,Small"
                                    Command="Paste">
                     
                     <Fluent:Button.ToolTip>
@@ -397,7 +399,7 @@
                                Header="To Upper"
                                cal:Message.Attach="[Event Click] = [Action ToUpper()]"
                                Icon="{StaticResource ToUpperIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
@@ -409,7 +411,7 @@
                                Header="To Lower"
                                cal:Message.Attach="[Event Click] = [Action ToLower()]"
                                Icon="{StaticResource ToLowerIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
@@ -423,7 +425,7 @@
                                Header="Comment"
                                cal:Message.Attach="[Event Click] = [Action CommentSelection()]"
                                Icon="{StaticResource CommentIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Comment (Ctrl+Alt C)"
@@ -435,7 +437,7 @@
                                Header="Uncomment"
                                cal:Message.Attach="[Event Click] = [Action UncommentSelection()]"
                                Icon="{StaticResource UncommentIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
@@ -451,7 +453,7 @@
                                Fluent:KeyTip.Keys="Z"
                                cal:Message.Attach="[Event Click] = [Action Undo()]"
                                Icon="{StaticResource UndoIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Undo (Ctrl+Z)"
@@ -464,7 +466,7 @@
                                Fluent:KeyTip.Keys="Y"
                                cal:Message.Attach="[Event Click] = [Action Redo()]"
                                Icon="{StaticResource RedoIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Redo (Ctrl+Y)"
@@ -476,7 +478,7 @@
                                Header="Merge Parameters"
                                cal:Message.Attach="[Event Click] = [Action MergeParameters()]"
                                Icon="{StaticResource ParameterIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Merge Parameters"
@@ -489,7 +491,7 @@
                                Fluent:KeyTip.Keys="S"
                                cal:Message.Attach="[Event Click] = [Action Save()]"
                                Icon="{StaticResource CommentIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Visibility="Hidden"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
@@ -507,7 +509,7 @@
                                Header="DAX Studio Help"
                                cal:Message.Attach="[Event Click] = [Action LinkToDaxStudioWiki()]"
                                Icon="{StaticResource ExternalLinkIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="DAX Studio Help"
@@ -519,7 +521,7 @@
                                Header="Power Pivot Forum"
                                cal:Message.Attach="[Event Click] = [Action LinkToPowerPivotForum()]"
                                Icon="{StaticResource ExternalLinkIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Power Pivot Forum"
@@ -531,7 +533,7 @@
                                Header="Analysis Services Forum"
                                cal:Message.Attach="[Event Click] = [Action LinkToSsasForum()]"
                                Icon="{StaticResource ExternalLinkIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Analysis Services Forum"
@@ -543,7 +545,7 @@
                                Header="About DaxStudio"
                                cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
                                Icon="{StaticResource InformationIcon}"
-                               Fluent:RibbonAttachedProperties.RibbonSizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Help About"

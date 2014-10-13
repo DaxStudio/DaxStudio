@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Windows;
 using ADOTabular;
-using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Properties;
 using System.Linq;
+using ADOTabular.AdomdClientWrappers;
 using Microsoft.Win32;
 using Serilog;
 using System.Diagnostics;
@@ -55,12 +55,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewQuery()
         {
-            _eventAggregator.Publish(new NewDocumentEvent());
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent());
         }
 
         public void CommentSelection()
         {
-            _eventAggregator.Publish(new CommentEvent(true));
+            _eventAggregator.PublishOnUIThread(new CommentEvent(true));
         }
 
         public void MergeParameters()
@@ -80,17 +80,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void UncommentSelection()
         {
-            _eventAggregator.Publish(new CommentEvent(false));
+            _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
 
         public void ToUpper()
         {
-            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
 
         public void ToLower()
         {
-            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
 
         public void RunQuery()
@@ -99,7 +99,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
-            _eventAggregator.Publish(new RunQueryEvent(SelectedTarget,SelectedWorksheet) );
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget,SelectedWorksheet) );
 
         }
 
@@ -133,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CancelQuery()
         {
-            _eventAggregator.Publish(new CancelQueryEvent());
+            _eventAggregator.PublishOnUIThread(new CancelQueryEvent());
         }
 
         public bool CanCancelQuery
@@ -143,7 +143,16 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanClearCache
         {
-            get { return CanRunQuery; }
+            get { return CanRunQuery && ActiveDocument.IsAdminConnection; }
+        }
+
+        public string ClearCacheDisableReason
+        {
+            get 
+            { 
+                if (!ActiveDocument.IsAdminConnection) return "Only a server administrator can run the clear cache command";
+                return "Cannot clear the cache while a query is currently running";
+            }
         }
 
         public void ClearCache()
@@ -184,7 +193,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Open()
         {
-            _eventAggregator.Publish(new OpenFileEvent());
+            _eventAggregator.PublishOnUIThread(new OpenFileEvent());
         }
 
 //        public void Handle(UpdateConnectionEvent message)
@@ -222,7 +231,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                //_eventAggregator.Publish(new OutputMessage(MessageType.Error, ex.Message));
+                //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
                 doc.OutputError(ex.Message);
             }
             finally
@@ -255,7 +264,7 @@ namespace DaxStudio.UI.ViewModels
                 _selectedDatabase = value;
 
                 //var msg = doc.NewStatusBarMessage("Loading Metadata...");
-                //_eventAggregator.Publish(new StatusBarMessage("Loading Metadata..."));
+                //_eventAggregator.PublishOnUIThread(new StatusBarMessage("Loading Metadata..."));
                 
 
                 //Task.Factory.StartNew(() =>  {
@@ -267,7 +276,7 @@ namespace DaxStudio.UI.ViewModels
                             Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set (changing)", value);
                             doc.SelectedDatabase = _selectedDatabase;
                             //doc.Connection.ChangeDatabase(_selectedDatabase);
-                            _eventAggregator.Publish(new DocumentConnectionUpdateEvent(doc));//, ActiveDocument.IsPowerPivotConnection));
+                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(doc));//, ActiveDocument.IsPowerPivotConnection));
                         }
                     }
 
@@ -342,7 +351,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (AdomdConnectionException ex)
             {
-                //_eventAggregator.Publish(new OutputMessage(MessageType.Error, ex.Message));
+                //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
                 Log.Error("{Exception}", ex);
                 doc.OutputError(ex.Message);
             }
@@ -439,7 +448,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ShowHelpAbout()
         {
-            var about = new HelpAboutViewModel();
+            var about = new HelpAboutViewModel(_eventAggregator);
             _windowManager.ShowDialog(about);
         }
     }

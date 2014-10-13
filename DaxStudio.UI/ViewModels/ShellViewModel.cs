@@ -5,15 +5,20 @@ using System.ComponentModel.Composition;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
+using DaxStudio.UI.Model;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels {
     [Export(typeof (IShell))]
-    public class ShellViewModel : Screen, IShell
+    public class ShellViewModel : 
+        Screen, 
+        IShell,
+        IHandle<NewVersionEvent>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
+        private readonly NotifyIcon notifyIcon;
         private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host)
@@ -23,6 +28,7 @@ namespace DaxStudio.UI.ViewModels {
             StatusBar = statusBar;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
+            _eventAggregator.Subscribe(this);
             Tabs = (DocumentTabViewModel) conductor;
             Tabs.ConductWith(this);
             Tabs.CloseStrategy = new ApplicationCloseStrategy();
@@ -35,7 +41,9 @@ namespace DaxStudio.UI.ViewModels {
             {
                 Tabs.NewQueryDocument();
             }
-            DisplayName = string.Format("DaxStudio - {0}.{1}", Version.Major, Version.Minor);
+            DisplayName = string.Format("DaxStudio - {0}", Version.ToString());
+            notifyIcon = new NotifyIcon();
+            
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
             Log.Verbose("============ Application Launch =============");
@@ -48,11 +56,14 @@ namespace DaxStudio.UI.ViewModels {
         public void ContentRendered()
         { }
 
-        public override void TryClose()
+        public override void TryClose(bool? dialogResult = null)
         {
-            base.TryClose();
-
+            base.TryClose(dialogResult);
         }
+        //public override void TryClose()
+        //{
+        //    base.TryClose();
+        //}
 
         protected override void OnDeactivate(bool close)
         {
@@ -73,32 +84,32 @@ namespace DaxStudio.UI.ViewModels {
 
         public void NewDocument()
         {
-            _eventAggregator.Publish(new NewDocumentEvent());
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent());
         }
 
         public void OpenDocument()
         {
-            _eventAggregator.Publish(new OpenFileEvent());
+            _eventAggregator.PublishOnUIThread(new OpenFileEvent());
         }
 
         public void SelectionToUpper()
         {
-            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
 
         public void SelectionToLower()
         {
-            _eventAggregator.Publish(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
         
         public void UncommentSelection()
         {
-            _eventAggregator.Publish(new CommentEvent(false));
+            _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
 
         public void CommentSelection()
         {
-            _eventAggregator.Publish(new CommentEvent(true));
+            _eventAggregator.PublishOnUIThread(new CommentEvent(true));
         }
 
         public void Undo()
@@ -114,14 +125,21 @@ namespace DaxStudio.UI.ViewModels {
         protected override void OnActivate()
         {
             base.OnActivate();
-            _eventAggregator.Publish(new ApplicationActivatedEvent());
+            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
         }
 
         public override void CanClose(Action<bool> callback)
         {
-            //base.CanClose(callback);
             Tabs.CanClose(callback);
         }
+
+        public void Handle(NewVersionEvent message)
+        {           
+            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion);
+            notifyIcon.Notify(newVersionText, message.DownloadUrl);
+        }
+
+
     }
 
 

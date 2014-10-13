@@ -69,9 +69,9 @@ namespace DaxStudio.UI.ViewModels
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
                 NotifyOfPropertyChange(()=>ActiveDocument);
-            //    _eventAggregator.Publish(new ActivateDocumentEvent(_activeDocument));
+            //    _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(_activeDocument));
             // TODO - is this causing excess metadata refreshes
-            //    _eventAggregator.Publish(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
+            //    _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(ActiveDocument.Connection)); //,ActiveDocument.IsPowerPivotConnection));
             }
         }
 
@@ -95,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
             
             if (fileName != string.Empty)
             {
-            //    _eventAggregator.Publish(new LoadFileEvent(fileName));
+            //    _eventAggregator.PublishOnUIThread(new LoadFileEvent(fileName));
                 newDoc.DisplayName = "Opening...";
                 //newDoc.OpenFile(fileName);
                 newDoc.FileName = fileName;

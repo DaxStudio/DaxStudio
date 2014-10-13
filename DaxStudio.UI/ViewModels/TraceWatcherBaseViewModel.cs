@@ -112,7 +112,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _isChecked = value;
                     NotifyOfPropertyChange(() => IsChecked);
-                    _eventAggregator.Publish(new TraceWatcherToggleEvent(this, value));
+                    _eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
                 }
             }
@@ -130,7 +130,7 @@ namespace DaxStudio.UI.ViewModels
                 IsChecked = false;
                 return; 
             }
-            if (_connection.IsConnected)
+            if (!_connection.IsConnected)
             {
                 // if connection has been closed or broken then uncheck and disable
                 IsEnabled = false;
@@ -138,7 +138,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            IsEnabled = (!_connection.IsPowerPivot && _connection.Spid != -1);
+            IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
         }
     }
 }

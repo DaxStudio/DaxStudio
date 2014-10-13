@@ -70,7 +70,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
+                        //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
                         doc.OutputError(string.Format("Error checking if active Excel workbook has a PowerPivot ({0})", ex.Message));
                     }
 
@@ -101,7 +101,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
+                        //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
                         doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel", ex.Message));
                     }
 
@@ -130,7 +130,7 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
+                    //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
                     doc.OutputError(string.Format("Error getting Worksheet list from Excel ({0})", ex.Message));
                 }
                 
@@ -161,7 +161,7 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
                     doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
@@ -179,7 +179,7 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.Publish(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
                     doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 

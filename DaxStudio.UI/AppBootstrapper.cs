@@ -28,7 +28,7 @@ namespace DaxStudio.UI
 	    public AppBootstrapper(Assembly hostAssembly, bool useApplication) : base(useApplication)
 	    {
 	        _hostAssembly = hostAssembly;
-            base.Start();
+            base.Initialize();
 	    }
 
         protected override void OnStartup(object sender, StartupEventArgs e)

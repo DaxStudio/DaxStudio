@@ -17,7 +17,7 @@ namespace DaxStudio.UI.Utils {
         [Import]
         public IShell Shell { get; set; }
 
-        public void Execute(ActionExecutionContext context) {
+        public void Execute(CoroutineExecutionContext context) {
             var documentWorkspace = screen.Parent as IDocumentWorkspace;
             if (documentWorkspace != null)
                 documentWorkspace.Activate(screen);

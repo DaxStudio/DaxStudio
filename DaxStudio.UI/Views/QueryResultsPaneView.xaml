@@ -11,7 +11,10 @@
     </UserControl.Resources>
     
     <ListView x:Name="ResultsDataView" 
-              View="{Binding Path=ResultsDataView,  Converter={StaticResource DynamicGridViewConverter},Mode=OneWay, UpdateSourceTrigger=PropertyChanged }"  >
+              View="{Binding Path=ResultsDataView,  
+                    Converter={StaticResource DynamicGridViewConverter},
+                    Mode=OneWay, 
+                    UpdateSourceTrigger=PropertyChanged }"  >
         <ListView.Resources>
             <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
                 <Setter Property="RecognizesAccessKey" Value="False"/>

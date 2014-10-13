@@ -46,6 +46,7 @@ namespace DAXEditor
     public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
     {
         private BracketRenderer.BracketHighlightRenderer _bracketRenderer;
+
         protected override void OnInitialized(EventArgs e)
         {
             
@@ -56,8 +57,9 @@ namespace DAXEditor
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
             //SetValue(TextBoxControllerProperty, new TextBoxController());
             TextArea.Caret.PositionChanged += Caret_PositionChanged;
-            //TextArea.Caret.PositionChanged += HighlightBrackets;
 
+            //TextArea.Caret.PositionChanged += HighlightBrackets;
+            //TextArea.DragOver += textEditor
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
             using (var s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
             {
@@ -79,7 +81,7 @@ namespace DAXEditor
             this.ShowLineNumbers = true;            
         }
 
-        void Caret_PositionChanged(object sender, EventArgs e)
+               void Caret_PositionChanged(object sender, EventArgs e)
         {
             try{
                 HighlightBrackets();

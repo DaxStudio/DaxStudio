@@ -43,7 +43,7 @@ namespace DaxStudio.UI.Utils {
                         //if(!e.WasCancelled)
                         //Evaluate(!e.WasCancelled);
                     };
-                    sequential.Execute(new ActionExecutionContext());
+                    sequential.Execute(new CoroutineExecutionContext());
                 }
                 else callback(true, new List<IScreen>());
             //}

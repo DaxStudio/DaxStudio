@@ -146,6 +146,8 @@ namespace DaxStudio
                 StartWebHost(_port);
             }
 
+            //todo - can I search for DaxStudio.exe and set _client if found (would need to send it a message with the port number) ??
+            
             // activate DAX Studio if it's already running
             if (_client != null)
             {

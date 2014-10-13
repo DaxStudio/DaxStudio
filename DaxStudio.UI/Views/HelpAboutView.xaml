@@ -4,11 +4,45 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300" d:DesignWidth="400"
+             Height="450"
              DataContext="{Binding}"
+             
              >
+    <UserControl.Resources>
+        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-logo_150x150.png"></BitmapImage>
+    </UserControl.Resources>
     <Grid>
-        <Label Content="Version Number:"/>
-        <Label x:Name="FullVersionNumber" Width="100"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="28" />
+        </Grid.RowDefinitions>
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top"/>
+            <StackPanel Orientation="Vertical">
+                <TextBlock FontSize="48">DAX Studio</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Version Number:"/>
+                    <Label x:Name="FullVersionNumber" Width="100"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+            
+                <DataGrid x:Name="ReferencedAssemblies" 
+                          Grid.Row="1"
+                  ClipboardCopyMode="IncludeHeader"
+                  SelectionMode="Single"       
+                  AlternatingRowBackground="LightGray"  
+                  VerticalGridLinesBrush="LightGray" 
+                  HorizontalGridLinesBrush="LightGray"
+                          VerticalScrollBarVisibility="Visible">
+                    
+                </DataGrid>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" Margin="0,0,5,0">
+            <Button x:Name="ok" Width="75" Height="23">Ok</Button>
+        </StackPanel>
+        
     </Grid>
 </UserControl>
