@@ -24,8 +24,26 @@ namespace ADOTabular.AdomdClientWrappers
 
         protected static string RetrieveAdomdClientAssemblyPath()
         {
+            string directoryName = RetrieveAdomdAssemblyFolder();
+            return Path.Combine(directoryName, "Microsoft.Excel.AdomdClient.dll");
+        }
+
+        public static string RetrieveAdomdAssemblyFolder()
+        {
+            try
+            {
+                return RetrieveAdomdAssemblyFolderInternal("msolap110_xl.dll");
+            }
+            catch
+            {
+                return RetrieveAdomdAssemblyFolderInternal("msmdlocal_xl.dll");
+            }
+        }
+
+        public static string RetrieveAdomdAssemblyFolderInternal(string dllName)
+        {
             //IntPtr moduleHandle = GetModuleHandle("msmdlocal_xl.dll");
-            IntPtr moduleHandle = GetModuleHandle("msolap110_xl.dll");
+            IntPtr moduleHandle = GetModuleHandle(dllName);
             if (moduleHandle == IntPtr.Zero)
             {
                 int error = Marshal.GetLastWin32Error();
@@ -38,7 +56,7 @@ namespace ADOTabular.AdomdClientWrappers
                 throw new Win32Exception(num3);
             }
             string directoryName = Path.GetDirectoryName(lpFilename.ToString());
-            return Path.Combine(directoryName, "Microsoft.Excel.AdomdClient.dll");
+            return directoryName;
         }
 
         public static Assembly ExcelAdomdClientAssembly

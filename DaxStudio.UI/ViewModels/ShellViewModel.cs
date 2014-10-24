@@ -21,7 +21,7 @@ namespace DaxStudio.UI.ViewModels {
         private readonly NotifyIcon notifyIcon;
         private ILogger log;
         [ImportingConstructor]
-        public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host)
+        public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
         {
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
@@ -43,6 +43,7 @@ namespace DaxStudio.UI.ViewModels {
             }
             DisplayName = string.Format("DaxStudio - {0}", Version.ToString());
             notifyIcon = new NotifyIcon();
+            VersionChecker = versionCheck;
             
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
@@ -56,9 +57,14 @@ namespace DaxStudio.UI.ViewModels {
         public void ContentRendered()
         { }
 
+        public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
         {
             base.TryClose(dialogResult);
+            if (dialogResult == true )
+            {
+                notifyIcon.Dispose();
+            }
         }
         //public override void TryClose()
         //{
@@ -139,7 +145,7 @@ namespace DaxStudio.UI.ViewModels {
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }
 
-
+        
     }
 
 

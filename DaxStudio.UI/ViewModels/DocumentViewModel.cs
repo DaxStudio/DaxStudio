@@ -472,7 +472,14 @@ namespace DaxStudio.UI.ViewModels
                         Execute.BeginOnUIThread(() =>
                         {
                             var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel,this);
-                            _windowManager.ShowDialog(connDialog);
+                            _windowManager.ShowDialog(connDialog, settings: new Dictionary<string, object>
+                                                {
+                                                    { "WindowStyle", WindowStyle.None},
+                                                    { "ShowInTaskbar", false},
+                                                    { "ResizeMode", ResizeMode.NoResize},
+                                                    { "Background", System.Windows.Media.Brushes.Transparent},
+                                                    { "AllowsTransparency",true}
+                                                });
                         });
                     }
                 //    )
@@ -1174,7 +1181,14 @@ namespace DaxStudio.UI.ViewModels
                                 { ServerName = "<Not Connected>"; }
                                 else
                                 {
-                                    ServerName = Connection.ServerName;
+                                    if (Connection.IsPowerPivot)
+                                    {
+                                        ServerName = string.Format("<PowerPivot>  {0}", Connection.ServerVersion);
+                                    }
+                                    else
+                                    {
+                                    ServerName = string.Format("{0}  {1}",Connection.ServerName , Connection.ServerVersion) ;
+                                    }
                                 }
                             }
 

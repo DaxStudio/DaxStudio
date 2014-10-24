@@ -4,8 +4,15 @@
         DataContext="{Binding}"
         >
     <UserControl.Resources>
+        <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
+        <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
+    <Border Padding="10">
+        <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect Color="Gray" ShadowDepth="8" BlurRadius="8"/>
+            </Border.Effect>
     <Grid Width="431" Height="426">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="298*"/>
@@ -105,8 +112,10 @@
             </Grid>
         </GroupBox>
         <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165">
-            <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Click="btnConnect_Click" Height="23" VerticalAlignment="Bottom" />
+            <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Height="23" VerticalAlignment="Bottom" />
             <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
         </StackPanel>
     </Grid>
+        </Border>
+    </Border>
 </UserControl>

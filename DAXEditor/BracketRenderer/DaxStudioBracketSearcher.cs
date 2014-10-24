@@ -21,7 +21,7 @@ namespace DAXEditor.BracketRenderer
     /// <param name="document"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset)
+    public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
 
 
@@ -35,7 +35,7 @@ namespace DAXEditor.BracketRenderer
 
         index = closingBrackets.IndexOf(c);
         if (index > -1)
-          otherOffset = SearchBracketBackward(document, offset - 2, openingBrackets[index], closingBrackets[index]);
+          otherOffset = SearchBracketBackward(document, offset -1, openingBrackets[index], closingBrackets[index]);
 
         if (otherOffset > -1)
           return new BracketSearchResult(Math.Min(offset - 1, otherOffset), 1,
@@ -48,7 +48,7 @@ namespace DAXEditor.BracketRenderer
 
     #region methods
     #region SearchBracket helper functions
-    private static int ScanLineStart(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset)
+    private static int ScanLineStart(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
       for (int i = offset - 1; i > 0; --i)
       {
@@ -65,7 +65,7 @@ namespace DAXEditor.BracketRenderer
     /// 2 = String<br/>
     /// Block comments and multiline strings are not supported.
     /// </summary>
-    private static int GetStartType(ICSharpCode.AvalonEdit.Document.TextDocument document, int linestart, int offset)
+    private static int GetStartType(ICSharpCode.AvalonEdit.Document.ITextSource document, int linestart, int offset)
     {
       bool inString = false;
       bool inChar = false;
@@ -82,6 +82,15 @@ namespace DAXEditor.BracketRenderer
               {
                 result = 1;
               }
+            }
+            break;
+          case '-':
+            if (!inString && !inChar && i + 1 < document.TextLength)
+            {
+                if (document.GetCharAt(i + 1) == '-')
+                {
+                    result = 1;
+                }
             }
             break;
           case '"':
@@ -121,12 +130,12 @@ namespace DAXEditor.BracketRenderer
     #endregion
 
     #region SearchBracketBackward
-    private int SearchBracketBackward(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset, char openBracket, char closingBracket)
+    private int SearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
 
 
-      if (offset + 1 >= document.TextLength) return -1;
-      // this method parses a c# document backwards to find the matching bracket
+      if (offset  >= document.TextLength) return -1;
+      // this method parses a DAX document backwards to find the matching bracket
 
       // first try "quick find" - find the matching bracket if there is no string/comment in the way
       int quickResult = QuickSearchBracketBackward(document, offset, openBracket, closingBracket);
@@ -143,7 +152,7 @@ namespace DAXEditor.BracketRenderer
         return -1; // start position is in a comment
       }
 
-      // I don't see any possibility to parse a C# document backwards...
+      // I don't see any possibility to parse a DAX document backwards...
       // We have to do it forwards and push all bracket positions on a stack.
       Stack<int> bracketStack = new Stack<int>();
       bool blockComment = false;
@@ -152,7 +161,7 @@ namespace DAXEditor.BracketRenderer
       bool inString = false;
       bool verbatim = false;
 
-      for (int i = 0; i <= offset; ++i)
+      for (int i = 0; i < offset; ++i)
       {
         char ch = document.GetCharAt(i);
         switch (ch)
@@ -162,6 +171,15 @@ namespace DAXEditor.BracketRenderer
             lineComment = false;
             inChar = false;
             if (!verbatim) inString = false;
+            break;
+          case '-':
+                if (!inString && !inChar && !blockComment && i != document.TextLength )
+                {
+                    if (document.GetCharAt(i - 1) == '-')
+                    {
+                        lineComment = true;
+                    }
+                }
             break;
           case '/':
             if (blockComment)
@@ -235,13 +253,13 @@ namespace DAXEditor.BracketRenderer
             break;
         }
       }
-      if (bracketStack.Count > 0) return (int)bracketStack.Pop();
+      if (bracketStack.Count > 0 && !inString && !inChar && !lineComment && !blockComment) return (int)bracketStack.Pop();
       return -1;
     }
     #endregion
 
     #region SearchBracketForward
-    private  int SearchBracketForward(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset, char openBracket, char closingBracket)
+    private  int SearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
       bool inString = false;
       bool inChar = false;
@@ -276,6 +294,12 @@ namespace DAXEditor.BracketRenderer
             lineComment = false;
             inChar = false;
             if (!verbatim) inString = false;
+            break;
+          case '-':
+            if (!inString && !blockComment && document.GetCharAt(offset - 1) == '-')
+            {
+                lineComment = true;
+            }
             break;
           case '/':
             if (blockComment)
@@ -358,9 +382,9 @@ namespace DAXEditor.BracketRenderer
     }
     #endregion
 
-    private int QuickSearchBracketBackward(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset, char openBracket, char closingBracket)
+    private int QuickSearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
-      int brackets = -1;
+      int brackets = 0;
       // first try "quick find" - find the matching bracket if there is no string/comment in the way
       for (int i = offset; i >= 0; --i)
       {
@@ -387,11 +411,15 @@ namespace DAXEditor.BracketRenderer
           if (document.GetCharAt(i - 1) == '/') break;
           if (document.GetCharAt(i - 1) == '*') break;
         }
+        else if (ch == '-' && i > 0)
+        {
+            if (document.GetCharAt(i - 1) == '-') break;
+        }
       }
       return -1;
     }
 
-    private int QuickSearchBracketForward(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset, char openBracket, char closingBracket)
+    private int QuickSearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
       int brackets = 1;
       // try "quick find" - find the matching bracket if there is no string/comment in the way
@@ -418,6 +446,10 @@ namespace DAXEditor.BracketRenderer
         else if (ch == '/' && i > 0)
         {
           if (document.GetCharAt(i - 1) == '/') break;
+        }
+        else if (ch == '-' && i > 0)
+        {
+            if (document.GetCharAt(i - 1) == '-') break;
         }
         else if (ch == '*' && i > 0)
         {

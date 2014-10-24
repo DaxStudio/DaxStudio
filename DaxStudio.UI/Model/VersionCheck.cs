@@ -6,28 +6,30 @@ namespace DaxStudio.UI.Model
     using System.Xml;
     using DaxStudio.UI.Events;
     using Caliburn.Micro;
-    public class VersionCheck
+    using DaxStudio.Interfaces;
+    using System.ComponentModel.Composition;
+
+    [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.NonShared)]
+    public class VersionCheck : PropertyChangedBase, IVersionCheck
     {
 
-
-        private static string CURRENT_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/CurrentReleaseVersion.xml";
-
-
-        public static string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
+        private const string CURRENT_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
+        private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
         private const int CHECK_EVERY_DAYS = 7;
-        private const int CHECK_SECONDS_AFTER_STARTUP = 60;
+        private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         private BackgroundWorker worker = new BackgroundWorker();
-        private readonly EventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
         /// </summary>
-        private string serverVersion;
+        private Version serverVersion;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
         /// </summary>
         /// <param name="eventAggregator">A reference to the event aggregator so we can publish an event when a new version is found.</param>
-        public VersionCheck(EventAggregator eventAggregator)
+        [ImportingConstructor]
+        public VersionCheck(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
 
@@ -56,7 +58,7 @@ namespace DaxStudio.UI.Model
         {
             try
             {
-                if (!VersionIsLatest(LocalVersion, ServerVersion) && ServerVersion != DismissedVersion)
+                if (!VersionIsLatest && ServerVersion != DismissedVersion)
                 {
                     _eventAggregator.PublishOnUIThread(new NewVersionEvent(ServerVersion, DAXSTUDIO_RELEASE_URL));
                 }
@@ -81,27 +83,27 @@ namespace DaxStudio.UI.Model
         }
 
 
-        public string DismissedVersion
+        public Version DismissedVersion
         {
             get
             {
-                return RegistryHelper.GetDismissedVersion();
+                return Version.Parse(RegistryHelper.GetDismissedVersion());
             }
             set
             {
-                RegistryHelper.SetDismissedVersion(value);
+                RegistryHelper.SetDismissedVersion(value.ToString());
             }
         }
 
-        public static string LocalVersion
+        public Version LocalVersion
         {
             get
             {
-                return typeof(VersionCheck).Assembly.GetName().Version.ToString();
+                return typeof(VersionCheck).Assembly.GetName().Version;
             }
         }
 
-        public string ServerVersion
+        public Version ServerVersion
         {
             get
             {
@@ -109,53 +111,72 @@ namespace DaxStudio.UI.Model
                 {
                     return this.serverVersion;
                 }
-
+                VersionStatus = "Checking for updates...";
+                NotifyOfPropertyChange(() => VersionStatus);
+         
                 System.Net.WebClient http = new System.Net.WebClient();
                 //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
                 http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
-
-                MemoryStream ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                MemoryStream ms;
+                try { 
+                    ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                }    
+                catch (System.Net.WebException wex)
+                {
+                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                    {
+                        // assume proxy auth error and re-try with current user credentials
+                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                        ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 XmlReader reader = XmlReader.Create(ms);
                 XmlDocument doc = new XmlDocument();
                 doc.Load(reader);
-                this.serverVersion = doc.DocumentElement.SelectSingleNode("Version").InnerText;
+                this.serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
                 ms.Close();
                 reader.Close();
+                
+                if (LocalVersion.CompareTo(serverVersion) > 0)
+                    { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString());}
+                else if (LocalVersion.CompareTo(serverVersion) == 0)
+                    { VersionStatus = "(Latest Official Release)"; }
+                else
+                    { VersionStatus = string.Format("(New Version available - {0})", serverVersion.ToString()); }
+            
+                NotifyOfPropertyChange(() => VersionStatus);
 
                 return this.serverVersion;
             }
         }
 
-        public static bool VersionIsLatest(string sLocalVersion, string sServerVersion)
+        public bool VersionIsLatest
         {
-            string[] arrLocalVersion = sLocalVersion.Split('.');
-            string[] arrServerVersion = sServerVersion.Split('.');
-
-            for (int i = 0; i < Math.Max(arrLocalVersion.Length, arrServerVersion.Length); i++)
+            get
             {
-                int iLocal = 0;
-                if (arrLocalVersion.Length > i) iLocal = int.Parse(arrLocalVersion[i]);
-                int iServer = 0;
-                if (arrServerVersion.Length > i) iServer = int.Parse(arrServerVersion[i]);
-                if (iLocal < iServer)
-                {
-                    return false;
-                }
-                else if (iLocal > iServer)
-                {
-                    return true;
-                }
+                return LocalVersion.CompareTo(ServerVersion) >= 0;
             }
-
-            return true;
         }
 
-        public static void OpenBidsHelperReleasePageInBrowser()
+        public string VersionStatus { get; set; }
+
+        public static void OpenDaxStudioReleasePageInBrowser()
         {
             // Open URL in Browser
             System.Diagnostics.Process.Start(DAXSTUDIO_RELEASE_URL);
         }
+        public void Update()
+        {
+            if (serverVersion != null) return;
+            var ver = this.ServerVersion;
 
+        }
+
+        
     }
 }
 

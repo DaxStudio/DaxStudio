@@ -14,16 +14,18 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void GetReferencedAssemblies()
         {
-            Caliburn.Micro.IEventAggregator stub = new Caliburn.Micro.EventAggregator();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stub);
+            Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
+            var stubVerChk = new VersionCheckMock();
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk );
             var ra = hlp.ReferencedAssemblies;
             Assert.AreEqual(30, ra.Count);
         }
         [TestMethod]
         public void GetAssemblyList()
         {
-            Caliburn.Micro.IEventAggregator stub = new Caliburn.Micro.EventAggregator();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stub);
+            Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
+            var stubVerChk = new VersionCheckMock();
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk);
             var ra = hlp.ReferencedAssemblies;
             foreach (var a in ra)
             {
@@ -32,5 +34,64 @@ namespace DaxStudio.Tests
 
             Assert.IsTrue( ra["DaxStudio.Interfaces"].Length > 0);
         }
+    }
+
+    public class VersionCheckMock: DaxStudio.Interfaces.IVersionCheck
+    {
+        public void CheckVersion()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Version DismissedVersion
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public DateTime LastVersionCheck
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public Version ServerVersion
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public Version LocalVersion
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool VersionIsLatest
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string VersionStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void Update()
+        {
+            throw new NotImplementedException();
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 }

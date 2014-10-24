@@ -8,25 +8,34 @@ using System.Windows;
 
 namespace DaxStudio.UI.Model
 {
-    public class NotifyIcon
+    public class NotifyIcon : IDisposable
     {
         private readonly TaskbarIcon icon;
+        private string BalloonMessage;
 
-        public NotifyIcon()
+        public NotifyIcon() 
         {
+            BalloonTitle = "DaxStudio";
             Uri iconUri = new Uri("pack://application:,,,/DaxStudio.UI;component/Images/DaxStudio.Ico");
+            System.Drawing.Icon ico;
             using (var strm = Application.GetResourceStream(iconUri).Stream)
             {
-                var ico = new System.Drawing.Icon(strm);
-                icon = new TaskbarIcon
-                {
-                    Name = "NotifyIcon",
-                    Icon = ico,
-                    Visibility = Visibility.Collapsed
-                };
-                icon.TrayBalloonTipClicked += icon_TrayBalloonTipClicked;
+                ico = new System.Drawing.Icon(strm);
             }
-           
+            icon = new TaskbarIcon
+            {
+                Name = "NotifyIcon",
+                Icon = ico,
+                Visibility = Visibility.Collapsed
+            };
+            icon.TrayBalloonTipClicked += icon_TrayBalloonTipClicked;
+            icon.TrayLeftMouseDown += icon_TrayMouseDown;
+            icon.TrayRightMouseDown += icon_TrayMouseDown;
+        }
+
+        private void icon_TrayMouseDown(object sender, RoutedEventArgs e)
+        {
+            icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info);
         }
 
         private void icon_TrayBalloonTipClicked(object sender, RoutedEventArgs e)
@@ -39,8 +48,18 @@ namespace DaxStudio.UI.Model
         public void Notify(string message, string downloadUrl)
         {
             DownloadUrl = downloadUrl;
+            BalloonMessage = message;
             icon.Visibility = Visibility.Visible;
-            icon.ShowBalloonTip("DaxStudio", message, BalloonIcon.None); //TODO - get current version for title
+            icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info); //TODO - get current version for title
+        }
+        public string BalloonTitle { get; set; }
+
+        public void Dispose()
+        {
+            icon.TrayBalloonTipClicked -= icon_TrayBalloonTipClicked;
+            icon.TrayLeftMouseDown -= icon_TrayMouseDown;
+            icon.TrayRightMouseDown -= icon_TrayMouseDown;
+            icon.Dispose();
         }
     }
 }

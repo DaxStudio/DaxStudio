@@ -285,8 +285,8 @@
                         MinItemsInRow="1"
                         MaxItemsInRow="4"
                         Orientation="Horizontal"
-                        ItemWidth="100"
-                        ItemHeight="100"
+                        ItemWidth="80"
+                        ItemHeight="80"
                         ItemsSource="{Binding ResultsTargets}"
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}">
@@ -504,7 +504,7 @@
         </Fluent:RibbonTabItem>
         <!-- Help Tab -->
         <Fluent:RibbonTabItem Header="Help">
-            <Fluent:RibbonGroupBox Header="Help" Margin="0,0,4,0">
+            <Fluent:RibbonGroupBox Header="Links" Margin="0,0,4,0">
                 <Fluent:Button Name="helpDaxStudioWiki"
                                Header="DAX Studio Help"
                                cal:Message.Attach="[Event Click] = [Action LinkToDaxStudioWiki()]"
@@ -541,11 +541,14 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="" Margin="0,0,4,0">
                 <Fluent:Button Name="hlpAbout"
                                Header="About DaxStudio"
                                cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
                                Icon="{StaticResource InformationIcon}"
-                               SizeDefinition="Middle,Small"
+                               LargeIcon="{StaticResource InformationIcon}"
+                               SizeDefinition="Large,Middle"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Help About"

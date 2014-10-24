@@ -446,10 +446,22 @@ namespace DaxStudio.UI.ViewModels
             RefreshConnectionDetails(message.Connection, message.Connection.SelectedDatabase);
         }
 
+        [Import]
+        HelpAboutViewModel aboutDialog { get; set; }
+
         public void ShowHelpAbout()
         {
-            var about = new HelpAboutViewModel(_eventAggregator);
-            _windowManager.ShowDialog(about);
+            //var about = new HelpAboutViewModel(_eventAggregator);
+            _windowManager.ShowDialog(aboutDialog , 
+                settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+                
+                });
         }
     }
 }

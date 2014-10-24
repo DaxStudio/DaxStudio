@@ -21,7 +21,7 @@ namespace DaxStudio
             CreateRibbonObjects();
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
-            Log.Verbose("============ Excel Add-in Startup =============");
+            Log.Information("============ Excel Add-in Startup =============");
         }
 
         private DaxStudioRibbon _ribbon;
@@ -38,12 +38,21 @@ namespace DaxStudio
         {
             try
             {
+                Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name);
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
                 if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
-                {return ExcelAdoMdConnections.ExcelAdomdClientAssembly;}
+                {
+                    var ass  = ExcelAdoMdConnections.ExcelAdomdClientAssembly;
+                    Log.Verbose("{class} {method} {assembly}", "ThisAddin", "currentDomain_AssemblyResolve", "Microsoft.Excel.AdomdClient Resolved");
+                    return ass;
+                }
 
                 if (args.Name.Contains("Microsoft.Excel.Amo"))
-                { return Xmla.ExcelAmoWrapper.ExcelAmoAssembly; }
+                {
+                    var ass = Xmla.ExcelAmoWrapper.ExcelAmoAssembly;
+                    Log.Verbose("{class} {method} {assembly}", "ThisAddin", "currentDomain_AssemblyResolve", "Microsoft.Excel.Amo Resolved");
+                    return ass;
+                }
 
 
                 return null;
@@ -52,8 +61,12 @@ namespace DaxStudio
             {
                 if (!_inShutdown)
                 {
+                    Log.Error("{class} {method} {args_Name} {ex_Message}","ThisAddIn","currentDomain_AssemblyResolve",args.Name,ex.Message);
                     MessageBox.Show(
-                        "Problem during AssemblyResolve in Dax Studio:\r\n" + ex.Message + "\r\n" + ex.StackTrace,
+                        string.Format("Problem during AssemblyResolve in Dax Studio\r\nFor Assembly {0} :\r\n{1}\r\n{2} "
+                            , args.Name
+                            , ex.Message 
+                            , ex.StackTrace),
                         "Dax Studio");
                 }
                 return null;
@@ -63,7 +76,7 @@ namespace DaxStudio
 
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {
-            Log.Verbose("============ Excel Add-in Shutdown =============");
+            Log.Information("============ Excel Add-in Shutdown =============");
             // this forces the wpf RibbonWindow to shutdown correctly
             // see http://go4answers.webhost4life.com/Example/ribbonribbonwindow-microsoft-ribbon-74444.aspx
             try
@@ -71,12 +84,12 @@ namespace DaxStudio
                 _inShutdown = true;
                 
                 //_ribbon.CancelToken.Cancel();
-                Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
+                //Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
                 // wait upto 5 secs for app to shutdown
                 //_ribbon.ShutDownSync.WaitOne(3000);
                 //GC.Collect();
                 //GC.WaitForPendingFinalizers();
-                Debug.WriteLine(string.Format("{0} ===>>> app shutdown", DateTime.Now ));
+                //Debug.WriteLine(string.Format("{0} ===>>> app shutdown", DateTime.Now ));
                 //    Dispatcher.CurrentDispatcher.InvokeShutdown();
             }
             catch (Exception ex)

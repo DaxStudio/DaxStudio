@@ -145,26 +145,35 @@ namespace DaxStudio
         {
             var wb = _app.ActiveWorkbook;
             if (_app.ActiveWorkbook == null) return false;
+            
+            if (IsExcel2013OrLater)
+            {
+                var conns = wb.Connections;
+                var wbc = conns["ThisWorkbookDataModel"];
+                if (wbc != null)  return true;
+
+                return false;
+            }
+
+            // if Excel 2010
             PivotCaches pvtcaches = wb.PivotCaches();
-            
-                if (pvtcaches.Count == 0)
-                    return false;
-                if (IsExcel2013OrLater)
-                {
-                    var conns = wb.Connections;
-                    var wbc = conns["ThisWorkbookDataModel"];
-                    if (wbc != null)  return true;
+            if (pvtcaches.Count == 0)
+                return false;   // without a pivot table cache we have no way of "waking up" the data model
 
-                    return false;
-
-                }
-                return (from PivotCache pvtc in pvtcaches
-                        let conn = pvtc.Connection.ToString()
-                        where pvtc.OLAP
-                              && pvtc.CommandType == XlCmdType.xlCmdCube
-                              && ((string) conn).Contains("Data Source=$Embedded$")
-                        select pvtc).Any();
+            var ptc = (from PivotCache pvtc in pvtcaches
+                    let conn = pvtc.Connection.ToString()
+                    where pvtc.OLAP
+                            && pvtc.CommandType == XlCmdType.xlCmdCube
+                            && ((string)conn).Contains("Data Source=$Embedded$")
+                    select pvtc).First();// Any();
             
+            if (ptc != null)
+            {
+                ptc.Refresh();
+                return true;
+            }
+
+            return false;
         }
 
 

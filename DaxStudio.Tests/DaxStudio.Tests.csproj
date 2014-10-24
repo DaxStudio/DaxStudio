@@ -47,6 +47,10 @@
     <Reference Include="Caliburn.Micro.Platform">
       <HintPath>..\packages\Caliburn.Micro.2.0.1\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=4.4.2.9744, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -64,6 +68,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ADOTabularTests.cs" />
@@ -73,6 +78,14 @@
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
+      <Project>{ee4788c1-dca6-465f-8049-28ceace6586f}</Project>
+      <Name>DAXEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
+      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
+      <Name>DaxStudio.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>

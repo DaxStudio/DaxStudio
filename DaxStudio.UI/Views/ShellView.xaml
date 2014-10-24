@@ -13,6 +13,7 @@
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
+                     
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
         Style="{DynamicResource MetroWindowStyle}"
@@ -37,7 +38,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
-
+            <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
+            
             <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
             <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>

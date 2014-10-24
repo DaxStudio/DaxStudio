@@ -5,7 +5,7 @@ namespace DAXEditor.BracketRenderer
   {
     public static readonly DefaultBracketSearcher DefaultInstance = new DefaultBracketSearcher();
 
-    public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.TextDocument document, int offset)
+    public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
       return null;
     }
