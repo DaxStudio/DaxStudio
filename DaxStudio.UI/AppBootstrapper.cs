@@ -15,11 +15,15 @@ namespace DaxStudio.UI
 	using Caliburn.Micro;
     using System.Windows.Markup;
     using System.Globalization;
+    using System.Windows.Controls;
+    using System.Windows.Media;
+    using Serilog;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
 		CompositionContainer _container;
 	    private Assembly _hostAssembly;
+        private Func<DependencyObject, IEnumerable<FrameworkElement>> defaultElementLookup;
 	    /*
         public AppBootstrapper():base(true)
         {
@@ -40,6 +44,7 @@ namespace DaxStudio.UI
         {
             base.OnUnhandledException(sender, e);
             Debug.WriteLine(e.Exception);
+            Log.Error("{Class} {Method} {Exception", "AppBootstrapper", "OnUnhandledException", e);
         }
 	    /// <summary>
 		/// By default, we are configured to use MEF
@@ -49,6 +54,22 @@ namespace DaxStudio.UI
             {
                 var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
                 splashScreen.Show(true);
+
+                // Tell Caliburn Micro how to find controls in Fluent Ribbon
+                /*
+                defaultElementLookup = BindingScope.GetNamedElements;
+                BindingScope.GetNamedElements = new Func<System.Windows.DependencyObject, IEnumerable<System.Windows.FrameworkElement>>(
+                    k =>
+                    {
+                        List<FrameworkElement> namedElements = new List<FrameworkElement>();
+                        namedElements.AddRange(defaultElementLookup(k));
+                        Fluent.Ribbon ribbon = LookForRibbon(k);
+                        if (null != ribbon)
+                            AppendRibbonNamedItem(ribbon, namedElements);
+                        return namedElements;
+                    }
+                    );
+                */
 
                 // Fixes the default datetime format in the results listview
                 // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
@@ -77,6 +98,9 @@ namespace DaxStudio.UI
 
 	            // TODO - not working
 	            //VisibilityBindingConvention.Install();
+
+
+
 
 	            LogManager.GetLog = type => new DebugLogger(type);
 	        }
@@ -125,6 +149,57 @@ namespace DaxStudio.UI
                 };
         }
 
+        private Fluent.Ribbon LookForRibbon(DependencyObject k)
+        {
+            Fluent.Ribbon foundRibbon = null;
+            var contentControl = k as ContentControl;
+            if (null != contentControl)
+            {
+                var child = contentControl.Content as DependencyObject;
+                if (null != child)
+                {
+                    foundRibbon = child as Fluent.Ribbon;
+                    if (null != foundRibbon)
+                    {
+                        return foundRibbon;
+                    }
+                    else
+                    {
+                        foundRibbon = LookForRibbon(child);
+                        if (null != foundRibbon)
+                            return foundRibbon;
+                    }
+                }
+                    //return LookForRibbon(child);
+            }
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(k); ++i)
+            {
+                var child = VisualTreeHelper.GetChild(k, i);
+                foundRibbon = child as Fluent.Ribbon;
+                if (null != foundRibbon)
+                {
+                    return foundRibbon;
+                }
+                else
+                {
+                    foundRibbon = LookForRibbon(child);
+                    if (null != foundRibbon)
+                        return foundRibbon;
+                }
+            }
+            return null;
+        }
+
+        private void AppendRibbonNamedItem(Fluent.Ribbon ribbon, List<FrameworkElement> namedElements)
+        {
+            foreach (var ti in ribbon.Tabs)
+            {
+                foreach (var group in ti.Groups)
+                {
+                    namedElements.AddRange(defaultElementLookup(group));
+                }
+            }
+        }
 
 	}
 }

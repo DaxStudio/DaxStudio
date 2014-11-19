@@ -7,6 +7,8 @@
              xmlns:ado="clr-namespace:ADOTabular;assembly=ADOTabular"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
@@ -65,9 +67,11 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]" Margin="0,2,0,-2"
                   >
-
+            <i:Interaction.Behaviors>
+                <beh:TreeViewClipboardBehavior />
+            </i:Interaction.Behaviors>
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularTable}" ItemsSource="{Binding Columns}">
                     <!-- Table Template -->

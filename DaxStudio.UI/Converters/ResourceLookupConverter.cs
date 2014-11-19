@@ -12,6 +12,8 @@ namespace DaxStudio.UI.Converters
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null) return null;
+
             string key;
             key = value as string;
             if (key == null)

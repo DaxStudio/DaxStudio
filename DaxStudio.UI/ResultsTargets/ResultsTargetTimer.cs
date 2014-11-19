@@ -17,7 +17,7 @@ namespace DaxStudio.UI.Model
     {
         public string Name {get { return "Timer"; } }
         public string Group {get { return "Standard"; } }
-
+        
         public void OutputResults(IQueryRunner runner)
         {
             try
@@ -29,6 +29,7 @@ namespace DaxStudio.UI.Model
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
+                runner.SetResultsMessage("Query timings sent to output tab", OutputTargets.Timer);
                 runner.QueryCompleted();
                 runner.ActivateOutput();
             }

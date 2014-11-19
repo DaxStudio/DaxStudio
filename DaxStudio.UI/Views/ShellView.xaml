@@ -33,7 +33,7 @@
                 <!--<ResourceDictionary Source="/DaxStudio;Component/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/DaxStudio;Component/Themes/ColorsWhite.xaml" />-->
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
-                <!--<ResourceDictionary  Source="/Resources/ResourceDictionaryMetadata.xaml" />-->
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
 

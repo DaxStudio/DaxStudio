@@ -8,10 +8,17 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
              d:DesignHeight="137" d:DesignWidth="654">
     <UserControl.Resources>
-
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        
+        
+<!--
         <conv:ResourceLookupConverter x:Key="OutputIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
@@ -20,7 +27,7 @@
                 <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
-
+-->
         <conv:ResourceLookupConverter x:Key="TraceIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
@@ -35,39 +42,7 @@
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
-        <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
-        <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="CancelIconLarger"  UriSource="..\images\icon-cancel@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="ClearCacheIconLarger"  UriSource="..\images\icon-clearcache@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="DatabaseIcon"  UriSource="..\images\icon-database.png"></BitmapImage>
-        <BitmapImage x:Key="TimerIcon"  UriSource="..\images\icon-timer.png"></BitmapImage>
-        <BitmapImage x:Key="TimerIconLarger"  UriSource="..\images\icon-timer@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="CutIcon"  UriSource="..\images\icon-cut.png"></BitmapImage>
-        <BitmapImage x:Key="CutIconLarger"  UriSource="..\images\icon-cut@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="CopyIcon"  UriSource="..\images\icon-copy.png"></BitmapImage>
-        <BitmapImage x:Key="CopyIconLarger"  UriSource="..\images\icon-copy@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="PasteIcon"  UriSource="..\images\icon-paste.png"></BitmapImage>
-        <BitmapImage x:Key="PasteIconLarger"  UriSource="..\images\icon-paste@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="ConnectIcon"  UriSource="..\images\icon-connection.png"></BitmapImage>
-        <BitmapImage x:Key="ConnectIconLarger"  UriSource="..\images\icon-connection@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="PlanIcon"  UriSource="..\images\icon-plan.png"></BitmapImage>
-        <BitmapImage x:Key="PlanIconLarger"  UriSource="..\images\icon-plan@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="PlanIconSmall"  UriSource="..\images\icon-plan@17px.png"></BitmapImage>
-        <BitmapImage x:Key="TimingsIcon"  UriSource="..\images\icon-timings.png"></BitmapImage>
-        <BitmapImage x:Key="TimingsIconLarger"  UriSource="..\images\icon-timings@96ppi.png"></BitmapImage>
-        <BitmapImage x:Key="TimingsIconSmall"  UriSource="..\images\icon-timings@17px.png"></BitmapImage>
-        <BitmapImage x:Key="BrowseIconLarger"  UriSource="..\images\icon-open.png"></BitmapImage>
-        <BitmapImage x:Key="SaveIcon"  UriSource="..\images\icon-save.png"></BitmapImage>
-        <BitmapImage x:Key="CommentIcon"  UriSource="..\images\icon-comment.png"></BitmapImage>
-        <BitmapImage x:Key="UncommentIcon"  UriSource="..\images\icon-uncomment.png"></BitmapImage>
-        <BitmapImage x:Key="ToUpperIcon"  UriSource="..\images\icon-to-upper.png"></BitmapImage>
-        <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
-        <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
-        <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
-        <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo@16x16.png"></BitmapImage>
-        <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
-        <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
-        <BitmapImage x:Key="InformationIcon"  UriSource="..\images\information.circle.png"></BitmapImage>
+        
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -85,10 +60,10 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
-
+        </ResourceDictionary>
     </UserControl.Resources>
-
-    <Fluent:Ribbon Height="Auto">    
+            
+        <Fluent:Ribbon Height="Auto">    
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
@@ -123,7 +98,6 @@
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
                                    Icon="{StaticResource NewIconSmall}">
-                        
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
                                 <cal:ActionMessage MethodName="NewQuery">
@@ -131,16 +105,8 @@
                                 </cal:ActionMessage>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
-
                     </Fluent:Button>
-                    <!--
-                    <Fluent:SplitButton Header="RunTo" IsButtonEnabled="True">
-                        <StackPanel>
-                            <Fluent:Button Header="Grid"></Fluent:Button>
-                            <Fluent:Button Header="Timer"></Fluent:Button>
-                        </StackPanel>
-                    </Fluent:SplitButton>
-                    -->
+
                     <Fluent:BackstageTabItem Header="Open"  >
                         
                         <!-- Right-side content here -->
@@ -226,9 +192,28 @@
                                         IsChecked="True"/>
             <Fluent:QuickAccessMenuItem Target="{Binding ElementName=saveButton}" 
                                         Command="{Binding Save}"
+                                        Icon="{StaticResource SaveIcon}"
                                         IsChecked="True"
                                         IsDefinitive="True"/>
-        </Fluent:Ribbon.QuickAccessItems>
+                <Fluent:QuickAccessMenuItem 
+                                        Icon="{StaticResource PasteIcon}"
+                                        FocusManager.IsFocusScope="True"
+                                        Command="Paste"
+                                        IsChecked="True"
+                                        IsDefinitive="True"/>
+                <Fluent:QuickAccessMenuItem 
+                                        Command="Copy"
+                                        Icon="{StaticResource CopyIcon}"
+                                        FocusManager.IsFocusScope="True"
+                                        IsChecked="True"
+                                        IsDefinitive="True"/>
+                <Fluent:QuickAccessMenuItem 
+                                        Command="Cut"
+                                        FocusManager.IsFocusScope="True"
+                                        Icon="{StaticResource CutIcon}"
+                                        IsChecked="True"
+                                        IsDefinitive="True"/>
+            </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
         <Fluent:RibbonTabItem Header="Home">
@@ -301,47 +286,57 @@
                                                            Groups="Excel" />
                         </Fluent:Gallery.Filters>
 
-
                     </Fluent:Gallery>
                 </Fluent:DropDownButton>
                 
             </Fluent:RibbonGroupBox>
 
             <Fluent:RibbonGroupBox Header="Edit" Padding="0" Margin="4,0">
-   
-                       
-                <Fluent:Button x:Name="cutButton"
-                                   Fluent:KeyTip.Keys="X"
-                                   Header="Cut"
-                                   Icon="{StaticResource CutIconLarger}"
-                                   SizeDefinition="Middle,Small"
-                                   Command="Cut"
-                                   >
-                    <Fluent:Button.ToolTip>
+              
+                <Fluent:ToggleButton x:Name="Cut"
+                                Fluent:KeyTip.Keys="X"
+                                Header="Cut"
+                                Icon="{StaticResource CutIconLarger}"
+                                SizeDefinition="Middle,Small"
+                                Command="Cut"
+                                FocusManager.IsFocusScope="True"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Cut (Ctrl+X)"
-                                              Text="Cut the contents to the Clipboard."
-                                              DisableReason="Cut is currently not available."
+                                          Text="Cut the contents to the Clipboard."
+                                          DisableReason="Nothing is currently selected"
+                                          Width="190" />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+                <Fluent:ToggleButton x:Name="Copy"
+                               Fluent:KeyTip.Keys="C"
+                               Header="Copy"
+                               Icon="{StaticResource CopyIconLarger}"
+                               SizeDefinition="Middle,Small"
+                               Command="ApplicationCommands.Copy"
+                               FocusManager.IsFocusScope="True"
+                               >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Copy (Ctrl+C)"
+                                              Text="Copy the contents to the Clipboard."
+                                              DisableReason="Nothing is currently selected"
                                               Width="190" />
-                    </Fluent:Button.ToolTip>
-             
-                </Fluent:Button>
-                <Fluent:Button x:Name="copyButton"
-                                   Fluent:KeyTip.Keys="C"
-                                   Header="Copy"
-                                   Icon="{StaticResource CopyIconLarger}"
-                                   SizeDefinition="Middle,Small"
-                               Command="Copy" />
-                <Fluent:Button x:Name="pasteButton"
-                                   Fluent:KeyTip.Keys="X"
-                                   Header="Paste"
-                                   Icon="{StaticResource PasteIconLarger}"
-                                   SizeDefinition="Middle,Small"
-                                   Command="Paste">
-                    
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+
+                <Fluent:Button x:Name="Paste"
+                               Fluent:KeyTip.Keys="V"
+                               Header="Paste"
+                               Icon="{StaticResource PasteIconLarger}"
+                               SizeDefinition="Middle,Small"
+                               Command="Paste"
+                               IsEnabled="True"
+                               FocusManager.IsFocusScope="True"
+                               >
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Paste (Ctrl+V)"
-                                              Text="Paste the contents to the Clipboard."
-                                              DisableReason="Paste is currently not available."
+                                              Text="Paste the contents from the Clipboard."
+                                              DisableReason="The currently selected control does not support Paste or the clipboard is empty"
                                               Width="190" />
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -582,4 +577,5 @@
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>
     </Fluent:Ribbon>
+
 </UserControl>

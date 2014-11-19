@@ -24,6 +24,7 @@ namespace DaxStudio.UI.Model
         public string Group {get { return "Excel"; }
         }
 
+        /*
         public void OutputResults(IQueryRunner runner)
         {
 
@@ -31,6 +32,7 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
+                    runner.ResultsTable = null;
                     runner.OutputMessage("Query Started");
                     var sw = Stopwatch.StartNew();
 
@@ -45,17 +47,14 @@ namespace DaxStudio.UI.Model
                         runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet).ContinueWith((ascendant) =>
                         {
                             //runner.ResultsTable = res;
-
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
+                                string.Format("Query Completed ({0:N0} row{1} returned to Excel ({2}))", res.Rows.Count,
+                                              res.Rows.Count == 1 ? "" : "s", runner.SelectedWorksheet) , durationMs);
                             runner.ActivateOutput();
+                            runner.SetResultsMessage("Static results sent to Excel", "Excel");
                             runner.QueryCompleted();
                         });
-
-                        
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -63,41 +62,41 @@ namespace DaxStudio.UI.Model
                     runner.OutputError(ex.Message);
                 }
             });
-            /*
+            //
 
-            try
-            {
-                runner.OutputMessage("Query Started");
-                var start = DateTime.Now;
+            //try
+            //{
+            //    runner.OutputMessage("Query Started");
+            //    var start = DateTime.Now;
                 
-                var dq = runner.QueryText;
-                runner.ExecuteQueryAsync(dq).ContinueWith((antecendant) => 
-                    {
-                        var end = DateTime.Now;
-                        var durationMs = (end - start).TotalMilliseconds;
-                        var res = antecendant;
+            //    var dq = runner.QueryText;
+            //    runner.ExecuteQueryAsync(dq).ContinueWith((antecendant) => 
+            //        {
+            //            var end = DateTime.Now;
+            //            var durationMs = (end - start).TotalMilliseconds;
+            //            var res = antecendant;
 
-                        // TODO write results to Excel
-                        await runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet).ContinueWith(() =>
-                        {
-                            //runner.ResultsTable = res;
+            //            // TODO write results to Excel
+            //            await runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet).ContinueWith(() =>
+            //            {
+            //                //runner.ResultsTable = res;
 
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.ActivateResults();
-                            runner.QueryCompleted();
-                        });
-                    },TaskScheduler.FromCurrentSynchronizationContext());
-            }
-            catch (Exception ex)
-            {
-                runner.ActivateOutput();
-                runner.OutputError(ex.Message);
-            }
-            */
+            //                runner.OutputMessage(
+            //                    string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
+            //                                  res.Rows.Count == 1 ? "" : "s"), durationMs);
+            //                runner.ActivateResults();
+            //                runner.QueryCompleted();
+            //            });
+            //        },TaskScheduler.FromCurrentSynchronizationContext());
+            //}
+            //catch (Exception ex)
+            //{
+            //    runner.ActivateOutput();
+            //    runner.OutputError(ex.Message);
+            //}
+            //
         }
-
+    */
         public Task OutputResultsAsync(IQueryRunner runner)
         {
             return Task.Factory.StartNew(() =>
@@ -122,6 +121,7 @@ namespace DaxStudio.UI.Model
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.ActivateOutput();
+                            runner.SetResultsMessage("Static results sent to Excel", OutputTargets.Static);
                             runner.QueryCompleted();
                         });
                     }

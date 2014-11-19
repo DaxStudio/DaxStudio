@@ -197,16 +197,18 @@ namespace DAXEditor
             }
              * */
         }
-        const string COMMENT_DELIM="//";
+        const string COMMENT_DELIM_SLASH="//";
+        const string COMMENT_DELIM_DASH = "--";
         private bool IsLineCommented(DocumentLine line)
         {
             var trimmed =  this.Document.GetText(line.Offset,line.Length).Trim();
-            return trimmed.IndexOf( COMMENT_DELIM).Equals(0);
+            return trimmed.IndexOf(COMMENT_DELIM_DASH).Equals(0) || trimmed.IndexOf(COMMENT_DELIM_SLASH).Equals(0);
         }
 
         #region "Commenting/Uncommenting"
 
-        private Regex rxUncomment = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM), RegexOptions.Compiled | RegexOptions.Multiline);
+        private Regex rxUncommentSlashes = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
+        private Regex rxUncommentDashes = new Regex(string.Format("^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
         private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
 
         private void SelectFullLines()
@@ -219,20 +221,17 @@ namespace DAXEditor
 
         public void CommentSelectedLines()
         {
-            if (SelectedText != "")
-            {
             SelectFullLines();
-            SelectedText = rxComment.Replace(SelectedText, string.Format("{0}$1",COMMENT_DELIM));
-            }
+            SelectedText = rxComment.Replace(SelectedText, string.Format("{0}$1",COMMENT_DELIM_SLASH));
         }
 
         public void UncommentSelectedLines()
         {
-            if (SelectedText != "" )
-            {
             SelectFullLines();
-            SelectedText = rxUncomment.Replace(SelectedText, "$1");
-            }
+            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_SLASH))
+            {  SelectedText = rxUncommentSlashes.Replace(SelectedText, "$1"); }
+            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_DASH))
+            { SelectedText = rxUncommentDashes.Replace(SelectedText, "$1"); }
         }
 
         #endregion

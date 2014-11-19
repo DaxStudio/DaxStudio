@@ -1,0 +1,13 @@
+﻿<Window x:Class="DaxStudio.UI.Experiments.Message"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Message" Height="300" Width="488.06">
+    <!--<Grid HorizontalAlignment="Center" VerticalAlignment="Center">-->
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel  Margin="20,10,20,10" VerticalAlignment="Bottom" Orientation="Horizontal">
+            <Image Width="30" Margin="10"/>
+            <TextBlock Margin="10">Results sent to Excel</TextBlock>
+        </StackPanel>
+    </StackPanel>
+    <!--</Grid>-->
+</Window>

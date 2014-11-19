@@ -12,6 +12,11 @@
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
     xmlns:local="clr-namespace:DaxStudio.UI.Utils">
     <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        
         <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
             <Setter Property="Template">
                 <Setter.Value>
@@ -190,6 +195,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
     <!--
 <i:Interaction.Triggers>    
@@ -277,9 +283,9 @@
                         
                             <avalondock:LayoutDocumentPane DockHeight="Auto"  >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
-                                
-                                
-                                    <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"                                    
+
+
+                                <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"                                    
                                                    VerticalAlignment="Top" MinWidth="100" MinHeight="80"
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    AllowDrop="True"
@@ -288,9 +294,24 @@
                                                    EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
-                                                   EditorCaretOffset="{Binding CaretOffset}" 
-                                                   />
-                            
+                                                   EditorCaretOffset="{Binding CaretOffset}" >
+                                    <ContextMenuService.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
+                                                      cal:Message.Attach="Cut()"></MenuItem>
+                                            <MenuItem x:Name="Copy" Header="Copy" Icon="{StaticResource CopyIcon}"
+                                                      cal:Message.Attach="Copy()"></MenuItem>
+                                            <MenuItem x:Name="Paste" Header="Paste" Icon="{StaticResource PasteIcon}"
+                                                      cal:Message.Attach="Paste()"></MenuItem>
+                                            <Separator />
+                                            <MenuItem x:Name="CommentSelection" Header="Comment" Icon="{StaticResource CommentIcon}"
+                                                      cal:Message.Attach="CommentSelection()"></MenuItem>
+                                            <MenuItem x:Name="UncommentSelection" Header="Uncomment" Icon="{StaticResource UncommentIcon}"
+                                                      cal:Message.Attach="UnCommentSelection()"></MenuItem>
+                                        </ContextMenu>
+                                    </ContextMenuService.ContextMenu>
+                                </dax:DAXEditor>
+                                                                               
                             </avalondock:LayoutDocument>
                         </avalondock:LayoutDocumentPane>
                     

@@ -2,7 +2,7 @@
 
 namespace DaxStudio.UI.Model
 {
-    public class ToolWindowBase:PropertyChangedBase , IToolWindow
+    public class ToolWindowBase:Screen , IToolWindow
     {
         public virtual string Title { get; set; }
         public virtual string DefaultDockingPane { get; set; }

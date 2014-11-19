@@ -5,6 +5,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Events;
 using System.Diagnostics;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -24,6 +25,7 @@ namespace DaxStudio.UI.ResultsTargets
         public string Group {get { return "Excel"; }
         }
 
+        /*
         public void OutputResults(IQueryRunner runner)
         {
 
@@ -31,11 +33,12 @@ namespace DaxStudio.UI.ResultsTargets
             {
                 try
                 {
+                    runner.ResultsTable = null; // clear results table
                     runner.OutputMessage("Query Started");
                     var sw = Stopwatch.StartNew(); 
 
                     var dq = runner.QueryText;
-                    var res = runner.ExecuteQuery(dq);
+                    //var res = runner.ExecuteQuery(dq);
 
                     using (runner.NewStatusBarMessage("Executing Query..."))
                     {
@@ -48,10 +51,13 @@ namespace DaxStudio.UI.ResultsTargets
                         {
                             
                             // TODO - what message should we output here?
+                            //runner.OutputMessage(
+                            //    string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
+                            //                  res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
+                                string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
                             runner.ActivateOutput();
+                            runner.SetResultsMessage("Query sent to Excel for execution", "Excel");
                             runner.QueryCompleted();
                         });
 
@@ -67,7 +73,7 @@ namespace DaxStudio.UI.ResultsTargets
             });
            
         }
-
+        */
         public Task OutputResultsAsync(IQueryRunner runner)
         {
             return Task.Factory.StartNew(() =>
@@ -76,24 +82,22 @@ namespace DaxStudio.UI.ResultsTargets
                     {
                         runner.OutputMessage("Query Started");
                         var sw = Stopwatch.StartNew();
-
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteQuery(dq);
-
-                        sw.Stop();
-                        var durationMs = sw.ElapsedMilliseconds;
-
+                                                
                         //  write results to Excel
                         runner.Host.Proxy.OutputLinkedResultAsync(dq
                             , runner.SelectedWorksheet
                             , runner.ConnectedToPowerPivot?"":runner.ConnectionString).ContinueWith((ascendant) => {
 
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.ActivateOutput();
-                            runner.QueryCompleted();
-                        });
+                                sw.Stop();
+                                var durationMs = sw.ElapsedMilliseconds;
+                     
+                                runner.OutputMessage(
+                                    string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
+                                runner.ActivateOutput();
+                                runner.SetResultsMessage("Query sent to Excel for execution", OutputTargets.Linked);
+                                runner.QueryCompleted();
+                            });
                     }
                     catch (Exception ex)
                     {
@@ -102,7 +106,6 @@ namespace DaxStudio.UI.ResultsTargets
                     }
                 });
         }
-
 
         public bool IsDefault
         {

@@ -163,8 +163,8 @@ namespace DaxStudio
             var ptc = (from PivotCache pvtc in pvtcaches
                     let conn = pvtc.Connection.ToString()
                     where pvtc.OLAP
-                            && pvtc.CommandType == XlCmdType.xlCmdCube
-                            && ((string)conn).Contains("Data Source=$Embedded$")
+                       && pvtc.CommandType == XlCmdType.xlCmdCube
+                       && (((string)conn).IndexOf("Data Source=$Embedded$", StringComparison.InvariantCultureIgnoreCase) >= 0)
                     select pvtc).First();// Any();
             
             if (ptc != null)
@@ -277,6 +277,7 @@ namespace DaxStudio
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 DaxQueryTable(excelSheet, daxQuery);
+                return;
             }
 
             if (IsExcel2013OrLater)
@@ -390,8 +391,9 @@ namespace DaxStudio
             to.AdjustColumnWidth = true;
             //to.ListObject.DisplayName = "DAX query";
             var oleCnn = to.WorkbookConnection.OLEDBConnection;
-            oleCnn.CommandText = new string[] { daxQuery };
             oleCnn.CommandType = XlCmdType.xlCmdDAX;
+            string[] qryArray = daxQuery.Split(new char[]{'\r'},StringSplitOptions.RemoveEmptyEntries);
+            oleCnn.CommandText = qryArray;
             oleCnn.Refresh();
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }

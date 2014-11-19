@@ -108,7 +108,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
             catch (Exception ex)
             {
-                return Ok( ex );
+                return BadRequest(ex.Message);
             }
         }
 

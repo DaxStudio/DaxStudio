@@ -1,0 +1,27 @@
+﻿<Window x:Class="DaxStudio.UI.Experiments.GridStyles"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GridStyles" Height="300" Width="300">
+    <Grid>
+        <DataGrid HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Height="198" Width="292">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}"/>
+                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}" Header="Test 1"/>
+            </DataGrid.Columns>
+            <DataGrid.AlternatingRowBackground>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FFE8EBF0" Offset="1"/>
+                    <GradientStop Color="#FFD2D9E2"/>
+                </LinearGradientBrush>
+            </DataGrid.AlternatingRowBackground>
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="FontWeight"
+                  Value="Bold" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+        </DataGrid>
+        <Label Content="Label" HorizontalAlignment="Left" Margin="59,233,0,0" VerticalAlignment="Top" Width="150" FontWeight="SemiBold"/>
+
+    </Grid>
+</Window>

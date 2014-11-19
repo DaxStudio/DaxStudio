@@ -3,6 +3,13 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Interfaces
 {
+    public enum OutputTargets
+    {
+        Grid,
+        Timer,
+        Linked,
+        Static
+    }
     public interface IQueryRunner
     {
         string QueryText { get; }
@@ -21,6 +28,7 @@ namespace DaxStudio.Interfaces
         string ConnectionString { get; }
         bool ConnectedToPowerPivot { get; }
 
+        void SetResultsMessage(string message, OutputTargets icon);
         IStatusBarMessage NewStatusBarMessage(string message);
     }
 }

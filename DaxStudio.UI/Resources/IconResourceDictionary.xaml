@@ -1,0 +1,71 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="clr-namespace:DaxStudio.UI.Converters">
+    <conv:ResourceLookupConverter x:Key="OutputIcons">
+        <ResourceDictionary>
+            <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
+            <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer@96ppi.png"/>
+            <BitmapImage x:Key="Static" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
+            <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>
+
+    <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
+    <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="CancelIconLarger"  UriSource="..\images\icon-cancel@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="ClearCacheIconLarger"  UriSource="..\images\icon-clearcache@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="DatabaseIcon"  UriSource="..\images\icon-database.png"></BitmapImage>
+    <BitmapImage x:Key="TimerIcon"  UriSource="..\images\icon-timer.png"></BitmapImage>
+    <BitmapImage x:Key="TimerIconLarger"  UriSource="..\images\icon-timer@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="CutIcon"  UriSource="..\images\icon-cut.png"></BitmapImage>
+    <BitmapImage x:Key="CutIconLarger"  UriSource="..\images\icon-cut@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="CopyIcon"  UriSource="..\images\icon-copy.png"></BitmapImage>
+    <BitmapImage x:Key="CopyIconLarger"  UriSource="..\images\icon-copy@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="PasteIcon"  UriSource="..\images\icon-paste.png"></BitmapImage>
+    <BitmapImage x:Key="PasteIconLarger"  UriSource="..\images\icon-paste@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="ConnectIcon"  UriSource="..\images\icon-connection.png"></BitmapImage>
+    <BitmapImage x:Key="ConnectIconLarger"  UriSource="..\images\icon-connection@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="PlanIcon"  UriSource="..\images\icon-plan.png"></BitmapImage>
+    <BitmapImage x:Key="PlanIconLarger"  UriSource="..\images\icon-plan@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="PlanIconSmall"  UriSource="..\images\icon-plan@17px.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsIcon"  UriSource="..\images\icon-timings.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsIconLarger"  UriSource="..\images\icon-timings@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsIconSmall"  UriSource="..\images\icon-timings@17px.png"></BitmapImage>
+    <BitmapImage x:Key="BrowseIconLarger"  UriSource="..\images\icon-open.png"></BitmapImage>
+    <BitmapImage x:Key="SaveIcon"  UriSource="..\images\icon-save.png"></BitmapImage>
+    <BitmapImage x:Key="CommentIcon"  UriSource="..\images\icon-comment.png"></BitmapImage>
+    <BitmapImage x:Key="UncommentIcon"  UriSource="..\images\icon-uncomment.png"></BitmapImage>
+    <BitmapImage x:Key="ToUpperIcon"  UriSource="..\images\icon-to-upper.png"></BitmapImage>
+    <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
+    <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
+    <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="InformationIcon"  UriSource="..\images\information.circle.png"></BitmapImage>
+    
+    <!--
+    <Style x:Key="DaxMetadataIcons" TargetType="Image">
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ColumnType}" Value="Column"></Condition>
+                    <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter Property="Source" Value="Resources/Column.png"></Setter>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ColumnType}" Value="Measure"></Condition>
+                    <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter Property="Source" Value="Resources/Measure.png"></Setter>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+    -->
+</ResourceDictionary>

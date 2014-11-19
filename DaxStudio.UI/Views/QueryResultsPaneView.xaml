@@ -4,29 +4,91 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:ui="clr-namespace:DaxStudio.UI"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-<UserControl.Resources>
-        <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
+            <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
     </UserControl.Resources>
     
-    <ListView x:Name="ResultsDataView" 
-              View="{Binding Path=ResultsDataView,  
-                    Converter={StaticResource DynamicGridViewConverter},
-                    Mode=OneWay, 
-                    UpdateSourceTrigger=PropertyChanged }"  >
-        <ListView.Resources>
-            <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
-                <Setter Property="RecognizesAccessKey" Value="False"/>
-            </Style>
-        </ListView.Resources>
-    </ListView>    
-    
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
 <!--
-    <DataGrid x:Name="ResultsDataView" 
-              ClipboardCopyMode="IncludeHeader"
-              SelectionMode="Single"       AlternatingRowBackground="LightGray"  VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"     >
+            <ListView x:Name="ResultsDataView"  
+                      Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
+                      View="{Binding Path=ResultsDataView,  
+                      Converter={StaticResource DynamicGridViewConverter},
+                      Mode=OneWay,  
+                      UpdateSourceTrigger=PropertyChanged }" 
+                      SelectionMode="Extended"  
+                      >
+                <ListView.Resources>
+                    <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
+                        <Setter Property="RecognizesAccessKey" Value="False"/>
+                    </Style>
+                </ListView.Resources>
+                
+            </ListView>
+-->
+            
+            <DataGrid x:Name="ResultsDataView" 
+                      Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
+                      ItemsSource="{Binding ResultsDataView}"
+                      ClipboardCopyMode="IncludeHeader"
+                      SelectionMode="Extended"       
+                      SelectionUnit="Cell"
+                      
+                      VerticalGridLinesBrush="Gray" 
+                      HorizontalGridLinesBrush="Gray"
+                      
+                      AutoGenerateColumns="False" 
+                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=ResultsDataView}"
+                      >
+                <DataGrid.AlternatingRowBackground>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FFE8EBF0" Offset="1"/>
+                        <GradientStop Color="#FFD2D9E2"/>
+                    </LinearGradientBrush>
+                </DataGrid.AlternatingRowBackground>
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                        <Setter Property="FontWeight"
+                  Value="SemiBold" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                    </ContextMenu>
+                
+                </DataGrid.ContextMenu>
+            </DataGrid>
+
+        </Grid>
         
-    </DataGrid>
-    -->
+
+        
+            <Grid HorizontalAlignment="Center"
+                  Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsMessage}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image VerticalAlignment="Top"
+                       Source="{Binding ResultsIcon, Converter={StaticResource OutputIcons}}"
+                       Stretch="None"
+                       Width="Auto"
+                       Height="Auto"
+                       Margin="10"
+                       />
+                    <TextBlock x:Name="ResultsMessage" VerticalAlignment="Center"></TextBlock>
+                </StackPanel>
+            </Grid>
+        
+    </Grid>
 </UserControl>

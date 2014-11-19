@@ -94,6 +94,7 @@ namespace DaxStudio
             }
             catch (Exception ex)
             {
+                Log.Error("{class} {method} Error: {message}", "ThisAddin", "ThisAddin_Shutdown", ex.Message);
                 Debug.WriteLine(ex.Message);
             }
             

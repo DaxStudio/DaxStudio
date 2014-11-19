@@ -8,7 +8,7 @@ namespace DaxStudio.UI.Model
     {
         string Name { get; }
         string Group { get; }
-        void OutputResults(IQueryRunner runner );
+        //void OutputResults(IQueryRunner runner );
         Task OutputResultsAsync(IQueryRunner runner);
         bool IsDefault { get; }
         bool IsEnabled { get; }

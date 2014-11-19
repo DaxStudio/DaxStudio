@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows;
 using System.Windows.Input;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -20,6 +21,7 @@ namespace DaxStudio.UI.ViewModels
         public QueryResultsPaneViewModel(DataTable resultsTable)
         {
             _resultsTable = resultsTable;
+            
         }
 
         public override string Title
@@ -31,6 +33,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _resultsTable; }
             set { _resultsTable = value;
+            ShowResultsTable = true;
             NotifyOfPropertyChange(()=> ResultsDataView);}
         }
 
@@ -61,6 +64,55 @@ namespace DaxStudio.UI.ViewModels
             {
                 DataGridBoundColumn dataGridBoundColumn = e.Column as DataGridBoundColumn;
                 dataGridBoundColumn.Binding = new Binding("[" + e.PropertyName + "]");
+            }
+        }
+
+        private bool _showResultsTable;
+        public bool ShowResultsTable
+        {
+            get
+            {
+                return _showResultsTable;
+            }
+            private set
+            {
+                _showResultsTable = value;
+                _showResultsMessage = !value;
+                NotifyOfPropertyChange(() => ShowResultsTable);
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            }
+        }
+
+        private string _resultsMessage;
+        public string ResultsMessage
+        {
+            get { return _resultsMessage; }
+            set
+            {
+                _resultsMessage = value;
+                ShowResultsTable = false;
+                NotifyOfPropertyChange(() => ResultsMessage);
+            }
+        }
+
+        private bool _showResultsMessage;
+        public bool ShowResultsMessage
+        {
+            get { return _showResultsMessage; }
+            private set
+            {
+                _showResultsMessage = value;
+                NotifyOfPropertyChange(() => ShowResultsMessage);
+            }
+        }
+        private OutputTargets _icon;
+        public OutputTargets ResultsIcon
+        {
+            get { return _icon; }
+            set
+            {
+                _icon = value;
+                NotifyOfPropertyChange(() => ResultsIcon);
             }
         }
 

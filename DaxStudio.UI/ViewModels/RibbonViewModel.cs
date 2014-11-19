@@ -15,6 +15,7 @@ using Microsoft.Win32;
 using Serilog;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -46,6 +47,9 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Subscribe(this);
             _host = host;
             _windowManager = windowManager;
+            CanCut = true;
+            CanCopy = true;
+            CanPaste = true;
         }
 
         public Visibility OutputGroupIsVisible
@@ -219,11 +223,9 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName, databaseName);
-                Databases = doc.Databases;
-
+                
                 _databaseComboChanging = true;
-                NotifyOfPropertyChange(() => Databases);
-                //NotifyOfPropertyChange(() => SelectedDatabase);
+                Databases = doc.Databases;
                 _databaseComboChanging = false;
 
                 SelectedDatabase = doc.SelectedDatabase;
@@ -271,7 +273,7 @@ namespace DaxStudio.UI.ViewModels
                 //Execute.OnUIThreadAsync(() => {
                     if (doc.IsConnected)
                     {
-                        if (!doc.SelectedDatabase.Equals(_selectedDatabase))
+                        if (_selectedDatabase == null || !doc.SelectedDatabase.Equals(_selectedDatabase))
                         {
                             Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set (changing)", value);
                             doc.SelectedDatabase = _selectedDatabase;
@@ -310,9 +312,18 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=>SelectedTarget);}
         }
 
-        public IObservableCollection<ITraceWatcher> TraceWatchers { get { return ActiveDocument == null ? null : ActiveDocument.TraceWatchers; } } 
+        public IObservableCollection<ITraceWatcher> TraceWatchers { get { return ActiveDocument == null ? null : ActiveDocument.TraceWatchers; } }
 
-        public SortedSet<string> Databases { get; set; }
+        private SortedSet<string> _databases = new SortedSet<string>();
+        public SortedSet<string> Databases
+        {
+            get { return _databases; }
+            set
+            {
+                _databases = value;
+                NotifyOfPropertyChange(() => Databases);
+            }
+        }
         public void Handle(ActivateDocumentEvent message)
         {
             Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
@@ -367,8 +378,35 @@ namespace DaxStudio.UI.ViewModels
                 tw.CheckEnabled(ActiveDocument);
             }
         }
+        private DocumentViewModel _activeDocument;
+        protected DocumentViewModel ActiveDocument
+        {
+            get { return _activeDocument; }
+            set { _activeDocument = value;
+            //_activeDocument.PropertyChanged += OnActiveDocumentPropertyChanged;
+            }
+        }
+        /*
+        void OnActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch ( e.PropertyName)
+            {
+                case "CanPaste":
+                    this.CanPaste = ActiveDocument.CanPaste;
+                    NotifyOfPropertyChange(() => CanPaste);
+                    break;
+                case "CanCopy":
+                    this.CanCopy = ActiveDocument.CanCopy;
+                    NotifyOfPropertyChange(() => CanCopy);
+                    break;
+                case "CanCut":
+                    this.CanCut = ActiveDocument.CanCut;
+                    NotifyOfPropertyChange(() => CanCut);
+                    break;
+            }
 
-        protected DocumentViewModel ActiveDocument { get; set; }
+        }
+         */ 
         // TODO - should this be an observable collection??
         public IEnumerable<string> Worksheets
         {
@@ -445,7 +483,15 @@ namespace DaxStudio.UI.ViewModels
         {
             RefreshConnectionDetails(message.Connection, message.Connection.SelectedDatabase);
         }
+        
+        public bool CanCut { get; set; }
+        //public void Cut() { ActiveDocument.Cut(); }
+        public bool CanCopy { get;set; }
+        //public void Copy() { ActiveDocument.Copy(); }
+        public bool CanPaste { get; set; }
 
+        //public void Paste() { ActiveDocument.Paste(); }
+        
         [Import]
         HelpAboutViewModel aboutDialog { get; set; }
 
