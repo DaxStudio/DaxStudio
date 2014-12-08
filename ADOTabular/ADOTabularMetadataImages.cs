@@ -18,6 +18,8 @@ namespace ADOTabular
         DmvTable,
         Model,
         Database,
-        Perspective 
+        Perspective,
+        Hierarchy,
+        Kpi
     }
 }

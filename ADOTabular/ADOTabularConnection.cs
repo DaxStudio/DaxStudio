@@ -46,6 +46,7 @@ namespace ADOTabular
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
             _adomdConn = new AdomdConnection(ConnectionString,connectionType);
+            
          //   _adomdConn.ConnectionString = connectionString;
             
             //_adomdConn.Open();
@@ -107,6 +108,8 @@ namespace ADOTabular
         {
             get { return _adomdConn.Type; }
         }
+
+        
 
         public bool SupportsQueryTable
         {
@@ -369,6 +372,7 @@ namespace ADOTabular
                 if (_svrVersion == null)
                 {
                     _svrVersion = _adomdConn.ServerVersion;
+                    
                 }
                 return _svrVersion;
             }

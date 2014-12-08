@@ -18,12 +18,10 @@ namespace ADOTabular
         public ADOTabularColumn Column {get; private set;}
 
         public string LevelName { get; set; }
-        public string LevelCaption { get; set; }
-
-
-        public string Caption
-        {
-            get { return LevelCaption; }
+        private string _caption;
+        public string Caption { 
+            get {return string.IsNullOrEmpty(_caption) ? LevelName : _caption;} 
+            set { _caption = value; } 
         }
 
         public string DaxName

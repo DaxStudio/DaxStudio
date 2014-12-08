@@ -36,7 +36,10 @@ namespace ADOTabular
             if (tables.Model.IsPerspective)
                 resColl.Add(new AdomdRestriction("PERSPECTIVE_NAME",tables.Model.Name));
             // if we are SQL 2012 SP1 or greater ask for v1.1 of the Metadata (includes KPI & Hierarchy information)
-            if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0"))
+
+            if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3368.0"))
+                resColl.Add(new AdomdRestriction("VERSION", "2.0"));
+            else if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0"))
                 resColl.Add(new AdomdRestriction("VERSION", "1.1"));
             var ds = _conn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", resColl);
             string csdl = ds.Tables[0].Rows[0]["Metadata"].ToString();
@@ -92,10 +95,11 @@ namespace ADOTabular
 
         private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet)
         {
-            string caption = "";
+            string caption = null;
             string description = "";
+            string refname = null;
             bool isVisible = true;
-            string daxname = "";
+            string name = null;
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntitySet))
             {
@@ -103,6 +107,9 @@ namespace ADOTabular
                 {
                     switch (rdr.LocalName)
                     {
+                        case "ReferenceName":
+                            name = rdr.Value;
+                            break;
                         case "Caption":
                             caption = rdr.Value;
                             break;
@@ -113,16 +120,23 @@ namespace ADOTabular
                             isVisible = !bool.Parse(rdr.Value);
                             break;
                         case "Name":
-                            daxname = rdr.Value;
+                            refname = rdr.Value;
                             break;
                     }
                 }
                 rdr.Read();
             }
-            if (caption.Length == 0)
-                caption = daxname;
-            var tab = new ADOTabularTable(_conn, caption, description, isVisible);
-            tab.InternalId = daxname;
+
+            // the names of the properties in the CSDL metadata are somewhat confusing
+            // Name           - cannot contain spaces and is used for internally referencing
+            //                - maps to InternalReference in ADOTabular
+            // Reference Name - this is the name used by DAX queries/expressions 
+            //                - will be blank if Name does not contain spaces
+            //                - if this is missing the Name property is used
+            // Caption        - this is what the end user sees (may be translated)
+            //                - if this is missing the Name property is used
+            var tab = new ADOTabularTable(_conn, refname, name, caption, description, isVisible);
+            
             return tab;
         }
 
@@ -150,6 +164,7 @@ namespace ADOTabular
             string caption = "";
             string description = "";
             bool isVisible = true;
+            string name = null;
             string refName = "";
             string tableId = "";
             string dataType = "";
@@ -207,6 +222,9 @@ namespace ADOTabular
                             case "Name":
                                 refName = rdr.Value;
                                 break;
+                            case "ReferenceName":  // reference name will always come after the Name and will override it if present
+                                name = rdr.Value;
+                                break;
                             case "Type":
                                 dataType = rdr.Value;
                                 break;
@@ -243,14 +261,14 @@ namespace ADOTabular
                         var tab = tables.GetById(tableId);
                         if (kpi.IsBlank())
                         {
-                            var col = new ADOTabularColumn(tab, refName, caption, description, isVisible, colType, contents);
+                            var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents);
                             col.DataType = Type.GetType(string.Format("System.{0}", dataType));
                             tab.Columns.Add(col); 
                         }
                         else
                         {
                             colType = ADOTabularColumnType.KPI;
-                            var kpiCol = new ADOTabularKpi(tab, refName, caption, description, isVisible, colType, contents,kpi);
+                            var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents,kpi);
                             kpiCol.DataType = Type.GetType(string.Format("System.{0}", dataType));
                             tab.Columns.Add(kpiCol); 
                         }
@@ -261,6 +279,7 @@ namespace ADOTabular
                     kpi = new KpiDetails();
                     refName = "";
                     caption = "";
+                    name = null;
                     description = "";
                     isVisible = true;
                     contents = "";
@@ -339,6 +358,7 @@ namespace ADOTabular
         private void ProcessHierarchy(XmlReader rdr, ADOTabularTable table,string eEntityType)
         {
             var hierName = "";
+            string hierCap = null;
             var hierHidden = false;
             ADOTabularHierarchy hier = null;
             ADOTabularLevel lvl = null;
@@ -361,11 +381,13 @@ namespace ADOTabular
                                 break;
                             case "Name":
                                 hierName = rdr.Value;
-                                    
+                                break;
+                            case "Caption":
+                                hierCap = rdr.Value;
                                 break;
                         }
                     }
-                    hier = new ADOTabularHierarchy(table, hierName,hierName, "", hierHidden, ADOTabularColumnType.Hierarchy, "");
+                    hier = new ADOTabularHierarchy(table, hierName,hierName,hierCap??hierName, "", hierHidden, ADOTabularColumnType.Hierarchy, "");
                     table.Columns.Add(hier);
                     rdr.Read();
                 }
@@ -407,9 +429,9 @@ namespace ADOTabular
                     rdr.Read();
                 } //End of Level
                     
-                lvl = new ADOTabularLevel(table.Columns[lvlRef]);
+                lvl = new ADOTabularLevel(table.Columns.GetByPropertyRef(lvlRef));
                 lvl.LevelName = lvlName;
-                lvl.LevelCaption = lvlCaption;
+                lvl.Caption = lvlCaption;
                 hier.Levels.Add(lvl);
                 lvlName = "";
                 lvlCaption = "";

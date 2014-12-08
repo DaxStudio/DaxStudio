@@ -14,24 +14,27 @@ namespace ADOTabular
             ColumnType = colType;
             if (colType == ADOTabularColumnType.Column)
             {
-                Caption = dr["HIERARCHY_NAME"].ToString();
+                Caption = dr["HIERARCHY_CAPTION"].ToString();
+                Name = dr["HIERARCHY_NAME"].ToString();
                 IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
                 Description = dr["DESCRIPTION"].ToString();
             }
             else
             {
-                Caption = dr["MEASURE_NAME"].ToString();
+                Caption = dr["MEASURE_CAPTION"].ToString();
+                Name = dr["MEASURE_NAME"].ToString();
                 IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
                 Description = dr["DESCRIPTION"].ToString();
             }
         }
 
-        public ADOTabularColumn( ADOTabularTable table, string internalReference, string caption,  string description,
+        public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
                                 bool isVisible, ADOTabularColumnType columnType, string contents)
         {
             Table = table;
             InternalReference = internalReference;
-            Caption = caption;
+            Name = name ?? internalReference;
+            Caption = caption ?? name ?? internalReference;
             Description = description;
             IsVisible = isVisible;
             ColumnType = columnType;
@@ -45,6 +48,7 @@ namespace ADOTabular
         public ADOTabularTable Table { get; private set; }
 
         public string Caption { get; private set; }
+        public string Name { get; private set; }
 
         public string Contents { get; private set; }
 
@@ -53,8 +57,8 @@ namespace ADOTabular
             {
                 // for measures we exclude the table name
                 return ColumnType == ADOTabularColumnType.Column  
-                    ? string.Format("{0}[{1}]", Table.DaxName, Caption)
-                    : string.Format("[{0}]",Caption);
+                    ? string.Format("{0}[{1}]", Table.DaxName, Name)
+                    : string.Format("[{0}]",Name);
             }
         }
 
@@ -70,13 +74,22 @@ namespace ADOTabular
         {
             get
             {
-                if (ColumnType == ADOTabularColumnType.Column)
+                switch (ColumnType)
                 {
-                    return IsVisible ? MetadataImages.Column : MetadataImages.HiddenColumn;
-                }
-                else
-                {
-                    return IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;
+                    case ADOTabularColumnType.Column:
+                        return IsVisible ? MetadataImages.Column : MetadataImages.HiddenColumn;
+                    case ADOTabularColumnType.Hierarchy:
+                        return MetadataImages.Hierarchy;
+                    case ADOTabularColumnType.KPI:
+                        return MetadataImages.Kpi;
+                    case ADOTabularColumnType.Level:
+                        return MetadataImages.Column;
+                    case ADOTabularColumnType.KPIGoal:
+                    case ADOTabularColumnType.KPIStatus:
+                        return MetadataImages.Measure;
+                    default:
+                        return IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;
+                
                 }
             }
         }

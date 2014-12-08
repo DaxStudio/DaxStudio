@@ -74,7 +74,7 @@ namespace ADOTabular
         {
             foreach (var t in InternalTableCollection.Values)
             {
-                if (t.InternalId == internalId)
+                if (t.InternalReference == internalId)
                 {
                     return t;
                 }
