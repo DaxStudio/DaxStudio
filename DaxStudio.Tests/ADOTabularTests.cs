@@ -96,6 +96,22 @@ namespace DaxStudio.Tests
             Assert.AreEqual(8, tabs["Sales"].Columns.Count());
         }
 
+        [TestMethod]
+        public void TestCSDLColumnTranslations()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\advwrkscsdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Reseller"];
+            var cmpyCol = cmpyTab.Columns["Reseller Name"];
+
+            Assert.AreEqual("Reseller Cap", cmpyTab.Caption, "Table Name is translated");
+            Assert.AreEqual("Reseller Name Cap", cmpyCol.Caption, "Column Name is translated");
+            
+        }
 
         [TestMethod]
         public void TestADOTabularCSDLVisitorHierarchies()
@@ -130,7 +146,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(15, tabs.Count);
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
-            var k = (ADOTabularKpi)(tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.KPI).First());
+            var k = tabs["Sales Territory"].Columns["Total Current Quarter Sales Performance"] as ADOTabularKpi;
             Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);
             Assert.AreEqual("_Total Current Quarter Sales Performance Goal", k.Goal.Caption);
             Assert.AreEqual("_Total Current Quarter Sales Performance Status", k.Status.Caption);

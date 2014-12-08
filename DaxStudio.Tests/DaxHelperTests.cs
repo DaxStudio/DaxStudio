@@ -144,7 +144,7 @@ SUMMARIZE (
         public void TestPreProcessQuery()
         {
             var finalQry = DaxHelper.PreProcessQuery(testQuery + "\n" + testParam);
-            Assert.AreEqual(expectedQry, finalQry.Replace("\r", ""));
+            Assert.AreEqual(expectedQry.Replace("\n", ""), finalQry);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[0], (int)finalQry.ToCharArray()[0]);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[5], (int)finalQry.ToCharArray()[5]);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[8], (int)finalQry.ToCharArray()[8]);

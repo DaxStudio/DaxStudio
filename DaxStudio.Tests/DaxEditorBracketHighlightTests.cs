@@ -87,8 +87,7 @@ table1
             Assert.AreEqual(1, res.OpeningBracketOffset, "Test forward Matching Start Bracket");
             Assert.AreEqual(2, res.ClosingBracketOffset, "Test forward Matching End Bracket");
             res = srchr.SearchBracket(mockDoc, 1);
-            Assert.AreEqual(1, res.OpeningBracketOffset, "Test forward Matching Start Bracket");
-            Assert.AreEqual(-1, res.ClosingBracketOffset, "Test forward Matching End Bracket");
+            Assert.IsNull(res, "non-existant end Bracket");
             
         }
     }

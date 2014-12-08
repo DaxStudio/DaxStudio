@@ -36,7 +36,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularColumn column)
         {
-            _cols.Add(column.InternalReference,column);
+            _cols.Add(column.Name,column);
         }
 
         public void Clear()
@@ -60,6 +60,18 @@ namespace ADOTabular
                 return _cols[sKeys[index]];
             }
             //set { _cols[index] = value; }
+        }
+
+        public ADOTabularColumn GetByPropertyRef(string referenceName)
+        {
+            foreach (var c in _cols)
+            {
+                if (c.Value.InternalReference.Equals(referenceName, System.StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return c.Value;
+                }
+            }
+            return null;
         }
         public IEnumerator<ADOTabularColumn> GetEnumerator()
         {

@@ -46,7 +46,7 @@ namespace ADOTabular
             {
                 _tables = new SortedDictionary<string, ADOTabularTable>();
             }
-            _tables.Add(table.Caption, table);
+            _tables.Add(table.Name, table);
         }
 
         public ADOTabularTable this[string index]

@@ -18,7 +18,7 @@ namespace DaxStudio.Tests
             var stubVerChk = new VersionCheckMock();
             var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk );
             var ra = hlp.ReferencedAssemblies;
-            Assert.AreEqual(30, ra.Count);
+            Assert.IsTrue(ra.Count >= 32);
         }
         [TestMethod]
         public void GetAssemblyList()

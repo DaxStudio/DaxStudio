@@ -7,9 +7,9 @@ namespace ADOTabular
 {
     public class ADOTabularStandardColumn: ADOTabularColumn
     {
-                public ADOTabularStandardColumn( ADOTabularTable table, string internalName, string caption,  string description,
+                public ADOTabularStandardColumn( ADOTabularTable table, string internalName, string name, string caption,  string description,
                                 bool isVisible, ADOTabularColumnType columnType, string contents)
-        :base(table,internalName,caption,description,isVisible,columnType,contents)
+        :base(table,internalName,name, caption,description,isVisible,columnType,contents)
 
     {}
     }

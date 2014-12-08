@@ -43,6 +43,8 @@ namespace ADOTabular
             {
                 tables.Add(
                     new ADOTabularTable(_conn, dr["DIMENSION_NAME"].ToString()
+                        ,dr["DIMENSION_NAME"].ToString()
+                        ,dr["DIMENSION_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString())
                     )
@@ -68,6 +70,7 @@ namespace ADOTabular
                     , new ADOTabularColumn(columns.Table
                         ,dr["HIERARCHY_NAME"].ToString()
                         ,dr["HIERARCHY_NAME"].ToString()
+                        , dr["HIERARCHY_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString())
                         ,ADOTabularColumnType.Column
@@ -92,6 +95,7 @@ namespace ADOTabular
                     , new ADOTabularColumn(columns.Table
                         ,dr["MEASURE_NAME"].ToString()
                         ,dr["MEASURE_NAME"].ToString()
+                        , dr["MEASURE_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
                         ,ADOTabularColumnType.Measure

@@ -17,22 +17,25 @@ namespace ADOTabular
             _model = model;
         }
 
-        public ADOTabularTable(ADOTabularConnection adoTabConn, string name, string description, bool isVisible)
+        public ADOTabularTable(ADOTabularConnection adoTabConn, string referenceName, string name, string caption, string description, bool isVisible)
         {
             _adoTabConn = adoTabConn;
-            Caption = name;
+            Caption = caption;
+            InternalId = referenceName;
+            Name = name;
             Description = description;
             IsVisible = isVisible;
         }
 
         public string DaxName
         {
-            get { return string.Format("'{0}'", Caption); }
+            get { return string.Format("'{0}'", InternalId); }
         }
 
         public string InternalId { get; set; }
 
         public string Caption { get; private set; }
+        public string Name { get; private set; }
 
         public string Description { get; private set; }
 

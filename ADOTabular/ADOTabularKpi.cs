@@ -18,9 +18,9 @@ namespace ADOTabular
     public class ADOTabularKpi: ADOTabularColumn
     {
         private KpiDetails _kpi;
-        public ADOTabularKpi( ADOTabularTable table,string internalName, string caption,  string description,
+        public ADOTabularKpi( ADOTabularTable table,string internalName, string name, string caption,  string description,
                                 bool isVisible, ADOTabularColumnType columnType, string contents, KpiDetails kpi)
-        :base(table, internalName,caption,description,isVisible,columnType,contents)
+        :base(table, internalName,name, caption,description,isVisible,columnType,contents)
         {
             _kpi = kpi;
             
@@ -37,8 +37,8 @@ namespace ADOTabular
                     _components = new List<ADOTabularKpiComponent>();
                     _components.AddRange(new[] 
                     {new ADOTabularKpiComponent(this,KpiComponentType.Value ),
-                    new ADOTabularKpiComponent(this.Table.Columns[_kpi.Goal], KpiComponentType.Goal),
-                    new ADOTabularKpiComponent(this.Table.Columns[_kpi.Status], KpiComponentType.Status)
+                    new ADOTabularKpiComponent(this.Table.Columns.GetByPropertyRef(_kpi.Goal), KpiComponentType.Goal),
+                    new ADOTabularKpiComponent(this.Table.Columns.GetByPropertyRef(_kpi.Status), KpiComponentType.Status)
                 });
                 }
                 return _components;
@@ -48,14 +48,14 @@ namespace ADOTabular
             get {
                 if (_kpi.IsBlank()) return null;
                 if (string.IsNullOrEmpty(_kpi.Goal)) return null;
-                return Table.Columns[_kpi.Goal];
+                return Table.Columns.GetByPropertyRef(_kpi.Goal);
             }
         }
         public ADOTabularColumn Status { 
             get {
                 if (_kpi.IsBlank()) return null;
                 if (string.IsNullOrEmpty(_kpi.Status)) return null;
-                return Table.Columns[_kpi.Status];
+                return Table.Columns.GetByPropertyRef(_kpi.Status);
             } 
         }
 
