@@ -8,9 +8,11 @@ namespace DaxStudio.UI.ViewModels
     public class OutputPaneViewModel:ToolWindowBase
     {
         private readonly BindableCollection<OutputMessage> _messages;
+        private readonly IEventAggregator _eventAggregator;
         [ImportingConstructor]
-        public OutputPaneViewModel ()
+        public OutputPaneViewModel(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             _messages = new BindableCollection<OutputMessage>();
         }
 
@@ -43,7 +45,13 @@ namespace DaxStudio.UI.ViewModels
             get { return "Output"; }
         }
 
-        
+        public void GoToLocation(OutputMessage message)
+        {
+            if (message.Row >=0 && message.Column >= 0)
+            {
+                _eventAggregator.PublishOnUIThread(new NavigateToLocationEvent(message.Row, message.Column));
+            }
+        }
     }
 
 

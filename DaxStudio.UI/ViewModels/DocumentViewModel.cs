@@ -1,6 +1,7 @@
 ﻿using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
+using DAXEditor;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
@@ -43,6 +44,8 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SendTextToEditor>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateConnectionEvent> 
+        , IHandle<NavigateToLocationEvent>
+        , IHandle<OutputMessage>
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
@@ -63,8 +66,8 @@ namespace DaxStudio.UI.ViewModels
         {
             Init(windowManager, eventAggregator);
             _host = host;
-            State = DocumentState.New;    
-               
+            State = DocumentState.New;
+              
         }
 
         public void Init(IWindowManager windowManager, IEventAggregator eventAggregator)
@@ -78,10 +81,10 @@ namespace DaxStudio.UI.ViewModels
             MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator);
-            OutputPane = new OutputPaneViewModel();
+            OutputPane = new OutputPaneViewModel(_eventAggregator);
             QueryResultsPane = new QueryResultsPaneViewModel();
             Document = new TextDocument();
-
+            FindReplaceDialog = new FindReplaceDialogViewModel(this.GetEditor());
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
 
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
@@ -115,9 +118,11 @@ namespace DaxStudio.UI.ViewModels
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
-            var _editor = GetEditor();
+            _editor = GetEditor();
             if (_editor != null)
             {
+                FindReplaceDialog.Editor = _editor;
+                SetDefaultHighlightFunction(); 
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.DragOver += OnDragOver;
@@ -461,14 +466,16 @@ namespace DaxStudio.UI.ViewModels
                         Execute.BeginOnUIThread(() =>
                         {
                             var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel,this);
+                            
                             _windowManager.ShowDialog(connDialog, settings: new Dictionary<string, object>
                                                 {
+                                                    {"Top", 40},
                                                     { "WindowStyle", WindowStyle.None},
                                                     { "ShowInTaskbar", false},
                                                     { "ResizeMode", ResizeMode.NoResize},
                                                     { "Background", System.Windows.Media.Brushes.Transparent},
                                                     { "AllowsTransparency",true}
-                                                });
+                                                }); 
                         });
                     }
                 //    )
@@ -1187,14 +1194,22 @@ namespace DaxStudio.UI.ViewModels
         public SortedSet<string> Databases { get; private set; }
         public void ClearDatabaseCache()
         {
-            var sw = Stopwatch.StartNew();
-            Connection.Database.ClearCache();
-            OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-            ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) => {
-                sw.Stop();
-                var duration = sw.ElapsedMilliseconds;
-                OutputMessage(string.Format("Cache Cleared for Database: {0}",SelectedDatabase),duration);
-            });
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                Connection.Database.ClearCache();
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
+                ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
+                {
+                    sw.Stop();
+                    var duration = sw.ElapsedMilliseconds;
+                    OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
+                });
+            }
+            catch (Exception ex)
+            {
+                OutputError(ex.Message);
+            }
         }
         public void Handle(CancelConnectEvent message)
         {
@@ -1324,6 +1339,99 @@ namespace DaxStudio.UI.ViewModels
         {
             QueryResultsPane.ResultsMessage = message;
             QueryResultsPane.ResultsIcon = icon;
+        }
+
+        public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
+
+        #region Highlighting
+
+        //private HighlightDelegate _defaultHighlightFunction;
+
+        private List<HighlightPosition> InternalDefaultHighlightFunction(string text, int startOffset, int endOffset)
+        {
+            if (string.IsNullOrWhiteSpace(TextToHighlight)) return null; ;
+            var list = new List<HighlightPosition>();
+            var start = 0;
+            var selStart = _editor.SelectionStart;
+            var lineSelStart = -1;
+            if (selStart >= startOffset && selStart <= endOffset)
+            {
+                lineSelStart = selStart - startOffset;
+            }
+            while (true)
+            {
+                var idx = text.IndexOf(TextToHighlight,start,StringComparison.InvariantCultureIgnoreCase);
+                if (idx == -1) break;
+                start = idx + 1;
+                if (idx == lineSelStart) continue; // skip the currently selected text
+                list.Add(new HighlightPosition() { Index = idx, Length = TextToHighlight.Length });
+            }
+            return list;
+        }
+
+        private void SetDefaultHighlightFunction()
+        {
+            SetHighlightFunction(InternalDefaultHighlightFunction );
+        }
+
+        private void SetHighlightFunction(HighlightDelegate highlightFunction)
+        {
+            _editor.HighlightFunction = highlightFunction;
+        }
+        #endregion
+
+        public string TextToHighlight { get { return _editor.SelectedText; } }
+
+        public void Find()
+        {
+            if (!string.IsNullOrWhiteSpace(SelectedText))
+            {
+                FindReplaceDialog.TextToFind = SelectedText;
+            }
+            FindReplaceDialog.ShowReplace = false;
+            FindReplaceDialog.IsVisible = true;
+        }
+        public void Replace()
+        {
+            if (!string.IsNullOrWhiteSpace(SelectedText))
+            {
+                FindReplaceDialog.TextToFind = SelectedText;
+            }
+            FindReplaceDialog.ShowReplace = true;
+            FindReplaceDialog.IsVisible = true;
+        }
+
+        public void Handle(OutputMessage message)
+        {
+            switch (message.MessageType)
+            {
+                case MessageType.Error:
+                        OutputError(message.Text);
+                        break;
+                case MessageType.Warning:
+                        OutputWarning(message.Text);
+                        break;
+                case MessageType.Information:
+                        OutputMessage(message.Text);
+                        break;
+            }
+        }
+
+        public void Handle(NavigateToLocationEvent message)
+        {
+            var lineOffset = 0;
+            var colOffset = 0;
+            
+            if (_editor.SelectionLength > 0)
+            {
+                // need to position this in relation to the current selection...
+                var selstart = _editor.Document.GetLocation(_editor.SelectionStart);
+                lineOffset = selstart.Line;
+                colOffset = selstart.Column;
+            }
+            var caret = _editor.TextArea.Caret;
+            caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
+            caret.BringCaretToView();
         }
     }
 

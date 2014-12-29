@@ -54,6 +54,44 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Aero.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Metro.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.MetroAccent">
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.MetroAccent.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.MetroAccent.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Office2007">
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Office2007.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Office2007.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.VS2010.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Themes">
+      <HintPath>..\packages\Xceed.Wpf.Themes.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Themes.Metro">
+      <HintPath>..\packages\Xceed.Wpf.Themes.Metro.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Themes.Office2007">
+      <HintPath>..\packages\Xceed.Wpf.Themes.Office2007.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.Office2007.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.Toolkit.2.4.14475.10340\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -61,6 +99,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="CopyPaste.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FindReplace.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -72,12 +114,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="AdventureWorksDW2012DataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AdventureWorksDW2012DataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CopyPaste.xaml.cs">
       <DependentUpon>CopyPaste.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FindReplace.xaml.cs">
+      <DependentUpon>FindReplace.xaml</DependentUpon>
     </Compile>
     <Compile Include="GridStyles.xaml.cs">
       <DependentUpon>GridStyles.xaml</DependentUpon>
@@ -112,6 +162,17 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="AdventureWorksDW2012DataSet.xsc">
+      <DependentUpon>AdventureWorksDW2012DataSet.xsd</DependentUpon>
+    </None>
+    <None Include="AdventureWorksDW2012DataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>AdventureWorksDW2012DataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="AdventureWorksDW2012DataSet.xss">
+      <DependentUpon>AdventureWorksDW2012DataSet.xsd</DependentUpon>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -127,6 +188,13 @@
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
+      <Project>{EE4788C1-DCA6-465F-8049-28CEACE6586F}</Project>
+      <Name>DAXEditor</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\spinnermask.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

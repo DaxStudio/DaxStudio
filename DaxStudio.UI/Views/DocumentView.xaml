@@ -10,6 +10,7 @@
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
+    xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -32,7 +33,10 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <avalondock:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" FlowDirection="LeftToRight" IsItemsHost="True" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1" />
+                                <avalondock:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" FlowDirection="LeftToRight" IsItemsHost="True" 
+                                                                 
+                                                                 Grid.Row="0" KeyboardNavigation.TabIndex="1" />
+                                    <!-- Margin="2,2,2,0" -->
                                 <avalondock:DropDownButton x:Name="MenuDropDownButton" Grid.Column="1" Focusable="False" Visibility="Hidden">
                                     <avalondock:DropDownButton.DropDownContextMenu>
                                         <avalondock:ContextMenuEx>
@@ -197,6 +201,9 @@
         </Style>
         </ResourceDictionary>
     </UserControl.Resources>
+    <i:Interaction.Behaviors>
+        <beh:FindReplaceBehavior />
+    </i:Interaction.Behaviors>
     <!--
 <i:Interaction.Triggers>    
         <i:EventTrigger EventName="ContentRendered">
@@ -283,9 +290,19 @@
                         
                             <avalondock:LayoutDocumentPane DockHeight="Auto"  >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
+                                
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
 
-
-                                <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"                                    
+                                    <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"
+                                                   Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="2"
                                                    VerticalAlignment="Top" MinWidth="100" MinHeight="80"
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    AllowDrop="True"
@@ -295,7 +312,8 @@
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" >
-                                    <ContextMenuService.ContextMenu>
+                                        
+                                        <ContextMenuService.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
                                                       cal:Message.Attach="Cut()"></MenuItem>
@@ -310,8 +328,16 @@
                                                       cal:Message.Attach="UnCommentSelection()"></MenuItem>
                                         </ContextMenu>
                                     </ContextMenuService.ContextMenu>
+                                    
                                 </dax:DAXEditor>
-                                                                               
+                                <ContentControl x:Name="FindReplaceDialog" 
+                                                HorizontalAlignment="Right" 
+                                                VerticalAlignment="Top"
+                                                Width="300"
+                                                Margin="0,2,21,0" 
+                                                Grid.Column="1" Grid.Row="0"
+                                                cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>
+                                </Grid>
                             </avalondock:LayoutDocument>
                         </avalondock:LayoutDocumentPane>
                     

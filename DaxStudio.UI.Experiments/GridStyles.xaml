@@ -1,7 +1,11 @@
-﻿<Window x:Class="DaxStudio.UI.Experiments.GridStyles"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Properties="clr-namespace:DaxStudio.UI.Experiments.Properties" x:Class="DaxStudio.UI.Experiments.GridStyles"
         Title="GridStyles" Height="300" Width="300">
+    <Window.DataContext>
+        <Properties:Resources/>
+    </Window.DataContext>
     <Grid>
         <DataGrid HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" Height="198" Width="292">
             <DataGrid.Columns>
@@ -17,7 +21,7 @@
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="{x:Type DataGridColumnHeader}">
                     <Setter Property="FontWeight"
-                  Value="Bold" />
+						Value="Bold" />
                 </Style>
             </DataGrid.ColumnHeaderStyle>
         </DataGrid>

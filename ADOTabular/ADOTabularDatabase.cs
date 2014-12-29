@@ -13,7 +13,17 @@ namespace ADOTabular
             _adoTabConn = adoTabConn;
             _databaseName = databaseName;
         }
-
+        /*
+        public string Id
+        {
+            get {
+                var resColl = new AdomdClientWrappers.AdomdRestrictionCollection();
+                resColl.Add( new AdomdClientWrappers.AdomdRestriction("ObjectExpansion", "ExpandObject"))
+                var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",resColl); 
+            
+            }
+        }
+        */
         public string Name
         {
             get { return _databaseName; }

@@ -37,13 +37,42 @@ namespace DaxStudio.UI.Converters
                     hdrTemplate.VisualTree = contentPresenter;
                     
                     var cellTemplate = new DataTemplate();
-                    var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
-                    // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                    cellTxtBlock.SetBinding(TextBlock.TextProperty, new Binding("[" + item.ColumnName + "]") );
-                    cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
-                    
-                    cellTemplate.VisualTree = cellTxtBlock;
+                    if (item.DataType == typeof(Byte[]))
+                    {
+                        var style = new Style { TargetType = typeof(ToolTip) };
+                        
+                        //style.Setters.Add(new Setter { Property = TemplateProperty, Value = GetToolTip(dataTable) });
+                        //style.Setters.Add(new Setter { Property = OverridesDefaultStyleProperty, Value = true });
+                        //style.Setters.Add(new Setter { Property = System.Windows.Controls.ToolTip.HasDropShadowProperty, Value = true });
+                        //Resources.Add(typeof(ToolTip), style);
 
+                        var cellImgBlock = new FrameworkElementFactory(typeof(Image));
+                        var cellTooltip = new FrameworkElementFactory(typeof(ToolTip));
+                        var cellImgTooltip = new FrameworkElementFactory(typeof(Image));
+                        cellImgTooltip.SetValue(Image.WidthProperty, 150d);
+                        
+                        cellImgBlock.SetValue(FrameworkContentElement.ToolTipProperty, cellTooltip);
+                        cellTooltip.SetValue(ToolTip.ContentProperty, cellImgTooltip);
+
+                        // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
+                        
+                        cellImgBlock.SetBinding(Image.SourceProperty, new Binding("[" + item.ColumnName + "]"));
+                        cellImgTooltip.SetBinding(Image.SourceProperty, new Binding("[" + item.ColumnName + "]"));
+                        cellImgBlock.SetValue(Image.WidthProperty, 50d);
+                        //cellImgBlock.SetValue(FrameworkElement.ToolTipProperty, cellImgTooltip);
+                        
+                        cellTemplate.VisualTree = cellImgBlock;
+                    }
+                    else
+                    {
+                        var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
+                        // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
+                        var colBinding = new Binding("[" + item.ColumnName + "]");
+                        cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
+                        cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                        cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
+                        cellTemplate.VisualTree = cellTxtBlock;
+                    }
                     var dgc = new DataGridTemplateColumn
                     {
                         CellTemplate = cellTemplate,
@@ -61,6 +90,7 @@ namespace DaxStudio.UI.Converters
             }
             return Binding.DoNothing;
         }
+
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {

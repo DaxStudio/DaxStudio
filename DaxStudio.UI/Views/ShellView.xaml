@@ -34,13 +34,15 @@
                 <ResourceDictionary Source="/DaxStudio;Component/Themes/ColorsWhite.xaml" />-->
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <!--
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
             <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
             
-            <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
+            
             <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
@@ -55,6 +57,8 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Background" Value="White" />
             </Style>
+            -->
+            
         <!--<DataTemplate x:Key="DragAdorner">
             <Border Background="Silver"
                     BorderBrush="Gray"
@@ -154,6 +158,20 @@
                 <KeyBinding  Key="Z" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Undo"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="F3" />
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Find"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="F3" Modifiers="Shift"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="FindPrev"/>
         </local:InputBindingTrigger>
 
     </i:Interaction.Triggers>

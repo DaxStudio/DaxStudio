@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ADOTabular;
 using DaxStudio.Interfaces;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.Views
 {
@@ -16,6 +17,13 @@ namespace DaxStudio.UI.Views
         public ConnectionDialogView()
         {
             InitializeComponent();
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            cboServers.Focusable = true;
+            cboServers.Focus();
+            Keyboard.Focus(cboServers);
         }
 
     }

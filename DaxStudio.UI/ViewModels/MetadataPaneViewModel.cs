@@ -8,6 +8,10 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using GongSolutions.Wpf.DragDrop;
 using Serilog;
+using DaxStudio.UI.Model;
+using System.Collections.Generic;
+using DaxStudio.UI.Events;
+using System;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
                 case "ModelList":
                     if (ModelList.Count > 0)
                     {
+                        // if connected server is MD then reconnect with CUBE=ModelName on conn string.
                         SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
                     }
                     Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);          
@@ -51,6 +56,8 @@ namespace DaxStudio.UI.ViewModels
                 if (_selectedModel != value)
                 {
                     _selectedModel = value;
+                    _treeViewTables = null; 
+                    
                     NotifyOfPropertyChange(() => SelectedModel);
                     NotifyOfPropertyChange(() => Tables);
                 }
@@ -87,10 +94,26 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => Connection);
         }
 
-        public ADOTabularTableCollection Tables {
+        //public ADOTabularTableCollection Tables {
+        private IEnumerable<FilterableTreeViewItem> _treeViewTables;
+        public IEnumerable<FilterableTreeViewItem> Tables {
             get
             {
-                return SelectedModel == null ? null : SelectedModel.Tables;
+                if (SelectedModel == null) return null;
+                if (_treeViewTables == null)
+                {
+                    try
+                    {
+                        _treeViewTables = SelectedModel.TreeViewTables();
+                    }
+                    catch (Exception ex)
+                    {
+                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error,ex.Message));
+                    }
+                }
+                return _treeViewTables;
+                //return SelectedModel == null ? null : SelectedModel.TreeViewTables();
+                
             }
         }
 
@@ -118,6 +141,32 @@ namespace DaxStudio.UI.ViewModels
                 
             }
         }
-        
+
+        private string _currentCriteria = string.Empty;
+        public string CurrentCriteria  { 
+            get { return _currentCriteria; }
+            set { _currentCriteria = value;
+                NotifyOfPropertyChange(() => CurrentCriteria);
+                NotifyOfPropertyChange(() => HasCriteria);
+                ApplyFilter();
+            }
+        }
+
+        public bool HasCriteria
+        {
+            get { return _currentCriteria.Length > 0; }
+        }
+
+        public void ClearCriteria()
+        {
+            CurrentCriteria = string.Empty;
+        }
+        private void ApplyFilter()
+        {
+            if (Tables == null) return;
+            foreach (var node in Tables)
+                node.ApplyCriteria(CurrentCriteria, new Stack<FilterableTreeViewItem>());
+        }
+
     }
 }

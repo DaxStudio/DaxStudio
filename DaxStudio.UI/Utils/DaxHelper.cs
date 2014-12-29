@@ -59,6 +59,16 @@ namespace DaxStudio.UI.Utils
             {
                 d.Add(n["Name"].InnerText, n["Value"].InnerText);
             }
+
+            // if we did not find the proper namespace try searching for just the raw names
+            if (d.Count == 0)
+            {
+                foreach (System.Xml.XmlNode n in doc.SelectNodes("/Parameters/Parameter", nsMgr))
+                {
+                    d.Add(n["Name"].InnerText, n["Value"].InnerText);
+                }
+
+            }
             return d;
         }
 

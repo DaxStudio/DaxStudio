@@ -5,7 +5,7 @@ using System.Text;
 namespace DaxStudio.Tests
 {
     [TestClass]
-    public class DaxHelperTests
+    public class DaxParameterTests
     {
         string testParam = @"<Parameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:schemas-microsoft-com:xml-analysis"">
         <Parameter>
@@ -161,6 +161,25 @@ SUMMARIZE (
         <Parameter>
           <Name>Test1</Name>
           <Value xsi:type=""xsd:string"">Value2</Value>
+        </Parameter></Parameters>";
+            var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
+            var dict = DaxHelper.ParseParams(testAmbiguousParam);
+            var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
+
+            Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", finalQuery);
+        }
+
+        [TestMethod]
+        public void TestParamsWithNoNamespace()
+        {
+            string testAmbiguousParam = @"<Parameters>
+        <Parameter>
+          <Name>Test</Name>
+          <Value>Value1</Value>
+        </Parameter>
+        <Parameter>
+          <Name>Test1</Name>
+          <Value>Value2</Value>
         </Parameter></Parameters>";
             var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
             var dict = DaxHelper.ParseParams(testAmbiguousParam);

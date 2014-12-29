@@ -180,20 +180,23 @@
       <HintPath>..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog">
-      <HintPath>..\packages\Serilog.1.4.7\lib\net45\Serilog.dll</HintPath>
+    <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Extras.AppSettings">
       <HintPath>..\packages\Serilog.Extras.AppSettings.1.4.7\lib\net45\Serilog.Extras.AppSettings.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog.FullNetFx">
-      <HintPath>..\packages\Serilog.1.4.7\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    <Reference Include="Serilog.FullNetFx, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.FullNetFx.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -215,33 +218,50 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="UnitComboLib">
       <HintPath>..\lib\UnitComboLib\UnitComboLib.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=2.1.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=2.1.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Aero.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=2.1.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Metro.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=2.1.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.MetroAccent">
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.MetroAccent.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.MetroAccent.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Office2007">
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.Office2007.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.Office2007.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.Themes.VS2010.2.4.14475.10340\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.DataGrid">
       <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.1.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    <Reference Include="Xceed.Wpf.Themes">
+      <HintPath>..\packages\Xceed.Wpf.Themes.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Themes.Metro">
+      <HintPath>..\packages\Xceed.Wpf.Themes.Metro.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Themes.Office2007">
+      <HintPath>..\packages\Xceed.Wpf.Themes.Office2007.2.4.14475.10340\lib\net40\Xceed.Wpf.Themes.Office2007.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=2.4.14475.10340, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Xceed.Wpf.Toolkit.2.4.14475.10340\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -249,17 +269,30 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
+    <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
+    <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
+    <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
+    <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
+    <Compile Include="Controls\TextBoxEx.cs" />
+    <Compile Include="Controls\TreeViewEx.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
+    <Compile Include="Converters\BoolToThicknessConverter.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
+    <Compile Include="Converters\DataBindingDebugConverter.cs" />
+    <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
     <Compile Include="Converters\DynamicGridViewConverter.cs" />
+    <Compile Include="Converters\MultiplyConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
@@ -272,6 +305,7 @@
     <Compile Include="Events\DocumentConnectionUpdateEvent.cs" />
     <Compile Include="Events\EditorPositionChangedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
+    <Compile Include="Events\NavigateToLocationEvent.cs" />
     <Compile Include="Events\NewVersionEvent.cs" />
     <Compile Include="Events\OpenFileEvent.cs" />
     <Compile Include="Events\OutputMessage.cs">
@@ -294,12 +328,17 @@
     <Compile Include="Model\StaticQueryResult.cs" />
     <Compile Include="Model\StatusBarMessage.cs" />
     <Compile Include="Model\TraceWatcherCollection.cs" />
+    <Compile Include="Model\TreeViewTables.cs" />
     <Compile Include="Model\VersionCheck.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelLinked.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelStatic.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="Model\TraceEventFactory.cs" />
+    <Compile Include="Triggers\EnterKeyTrigger.cs" />
+    <Compile Include="Triggers\InputBindingTrigger.cs" />
+    <Compile Include="Triggers\KeyBindingTrigger.cs" />
+    <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
     <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
@@ -320,6 +359,8 @@
     <Compile Include="Utils\JsonDataTableConverter.cs" />
     <Compile Include="Utils\MessageBoxEx.cs" />
     <Compile Include="Utils\PaneStyleSelector.cs" />
+    <Compile Include="Utils\UIHelper.cs" />
+    <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
     <Compile Include="ViewModels\DmvPaneViewModel.cs" />
@@ -352,6 +393,9 @@
     </Compile>
     <Compile Include="Views\DmvPaneView.xaml.cs">
       <DependentUpon>DmvPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FindReplaceDialogView.xaml.cs">
+      <DependentUpon>FindReplaceDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FunctionPaneView.xaml.cs">
       <DependentUpon>FunctionPaneView.xaml</DependentUpon>
@@ -389,9 +433,33 @@
     <Compile Include="Views\ucSpinner.xaml.cs">
       <DependentUpon>ucSpinner.xaml</DependentUpon>
     </Compile>
-    <Page Include="Views\HelpAboutView.xaml">
+    <Page Include="Controls\Themes\TextBoxEx.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\DaxStudioResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\MetaDataPaneViewStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\SearchBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\FindReplaceDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\HelpAboutView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MetadataPaneView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>
@@ -432,10 +500,6 @@
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MetadataPaneView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OutputPaneView.xaml">
       <SubType>Designer</SubType>
@@ -495,19 +559,10 @@
     <Resource Include="Resources\Column.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\DataSource.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\Folder.ico" />
     <Resource Include="Resources\Function.png" />
     <Resource Include="Resources\Measure.png" />
-    <Resource Include="Resources\play.png" />
-    <Resource Include="Resources\PlayGrid.png" />
     <Resource Include="Resources\Table.png" />
-    <Resource Include="Resources\run_icon.png" />
-    <Resource Include="Resources\question1.ico" />
-    <Resource Include="Resources\question_button.png" />
-    <Resource Include="Resources\PlayIco.bmp" />
     <Resource Include="Resources\HiddenMeasure.png" />
     <Resource Include="Resources\HiddenColumn.png" />
   </ItemGroup>
@@ -532,31 +587,7 @@
     <None Include="Resources\button_white_help1.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\DataSource1.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\daxstudio-logo_32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\play1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PlayDiscard.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PlayGrid1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PlayStatic.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PlayTable.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\PlayTable1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\question_button1.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Table.png" />
@@ -592,9 +623,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\daxstudio-splashscreen.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\DaxStudioSplashScreen.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\daxstudio-logo_250x250.png" />
@@ -702,6 +730,57 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\daxstudio-logo_150x150.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Styles\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\Search.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Controls\Resources\clear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\SearchActive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\WholeWord.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\RegEx.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-replace_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-replace-all_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\CaseSensitive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\FindNext.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\FindPrev.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\Close_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\Wildcard.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\Close_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\CaretUp_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\FindReplace\CaretDown_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-find_x16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -18,10 +18,14 @@
         <avalondock:DockingManager 
             x:Name="Items"
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
+            
              >
-
+            <!--
+            <avalondock:DockingManager.Theme>
+                <avalondock:GenericTheme />
+            </avalondock:DockingManager.Theme>
+            -->
             <!-- Note the Binding to "Content". This is how AvalonDock holds the model -->
-
             <!-- Header Template used for both solutions. Note that AvalonDock has default Templates itself -->
             
             <avalondock:DockingManager.DocumentHeaderTemplate>

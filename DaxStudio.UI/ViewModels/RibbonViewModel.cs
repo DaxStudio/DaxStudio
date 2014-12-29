@@ -123,7 +123,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return ActiveDocument.IsConnected;
+                return ActiveDocument.IsConnected && !ActiveDocument.IsPowerPivot ;
             }
         }
 
@@ -508,6 +508,27 @@ namespace DaxStudio.UI.ViewModels
                     { "AllowsTransparency",true}
                 
                 });
+        }
+
+        public void Find()
+        {
+            _activeDocument.Find();
+        }
+
+        public void Replace()
+        {
+            _activeDocument.Replace();
+        }
+
+        internal void FindNow()
+        {
+            _activeDocument.FindReplaceDialog.SearchUp = false;
+            _activeDocument.FindReplaceDialog.FindText();
+        }
+        internal void FindPrevNow()
+        {
+            _activeDocument.FindReplaceDialog.SearchUp = true;
+            _activeDocument.FindReplaceDialog.FindText();
         }
     }
 }

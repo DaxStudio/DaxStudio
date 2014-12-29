@@ -1,121 +1,320 @@
 ﻿<UserControl x:Class="DaxStudio.UI.Views.ConnectionDialogView" 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        DataContext="{Binding}"
-        >
+        xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+        xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        DataContext="{Binding}" 
+        FocusManager.FocusedElement="{Binding ElementName=cboServers}" 
+        Loaded="UserControl_Loaded" 
+        Width="500">
     <UserControl.Resources>
         <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
         <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <conv:MultiplyConverter x:Key="multiplyConverter" />
+
+        <ControlTemplate x:Key="AnimatedExpanderButtonTemp" TargetType="{x:Type ToggleButton}">
+            <Border x:Name="ExpanderButtonBorder"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Padding="{TemplateBinding Padding}"
+                    >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Fill="Transparent"
+                               Grid.ColumnSpan="2"/>
+                    <Ellipse Name="Circle"
+                         Grid.Column="0"
+                         Stroke="DarkGray"
+                         Width="20"
+                         Height="20"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         />
+                    <Path x:Name="Arrow"
+                      Grid.Column="0"
+                      Data="M 1,1.5 L 4.5,5 8,1.5"
+                      Stroke="#FF666666"
+                      StrokeThickness="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      RenderTransformOrigin="0.5,0.5"
+                      >
+                        <Path.RenderTransform>
+                            <RotateTransform Angle="0"/>
+                        </Path.RenderTransform>
+                    </Path>
+                    <ContentPresenter x:Name="HeaderContent"
+                                      Grid.Column="1"
+                                      Margin="4,0,0,0"
+                                      ContentSource="Content" 
+                                      />
+
+
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <!-- Animate arrow when toggled-->
+                <Trigger Property="IsChecked"
+                         Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                 To="180"
+                                                 Duration="0:0:0.4"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                 To="0"
+                                                 Duration="0:0:0.4"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+
+                <!-- MouseOver, Pressed behaviours-->
+                <Trigger Property="IsMouseOver"
+                                 Value="true">
+                    <Setter Property="Stroke"
+                                    Value="#FF3C7FB1"
+                                    TargetName="Circle"/>
+                    <Setter Property="Stroke"
+                                    Value="#222"
+                                    TargetName="Arrow"/>
+                </Trigger>
+                <Trigger Property="IsPressed"
+                                 Value="true">
+                    <Setter Property="Stroke"
+                                    Value="#FF526C7B"
+                                    TargetName="Circle"/>
+                    <Setter Property="StrokeThickness"
+                                    Value="1.5"
+                                    TargetName="Circle"/>
+                    <Setter Property="Stroke"
+                                    Value="#FF003366"
+                                    TargetName="Arrow"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+
+        <ControlTemplate x:Key="RevealExpanderTemp" TargetType="{x:Type Expander}">
+            <DockPanel>
+                <ToggleButton x:Name="ExpanderButton" 
+                              DockPanel.Dock="Top"
+                              Template="{StaticResource AnimatedExpanderButtonTemp}"
+                              Content="{TemplateBinding Header}"
+                              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                              OverridesDefaultStyle="True"
+                              Padding="1.5,0">
+                </ToggleButton>
+                
+                <ScrollViewer x:Name="ExpanderContentScrollView" DockPanel.Dock="Bottom"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Hidden"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Bottom"
+                              Opacity="0"
+                              >
+                    <ScrollViewer.Tag>
+                        <sys:Double>0.0</sys:Double>
+                    </ScrollViewer.Tag>
+                    <ScrollViewer.Height>
+                        <MultiBinding Converter="{StaticResource multiplyConverter}">
+                            <Binding Path="ActualHeight" ElementName="ExpanderContent"/>
+                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
+                        </MultiBinding>
+                    </ScrollViewer.Height>
+                    <ContentPresenter x:Name="ExpanderContent" ContentSource="Content"/>
+                </ScrollViewer>
+            </DockPanel>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsExpanded" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
+                                                 Storyboard.TargetProperty="Tag"                                                 
+                                                 To="1"
+                                                 Duration="0:0:0.4"/>
+
+                                <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
+												Storyboard.TargetProperty="(UIElement.Opacity)"
+												To="1" Duration="0:0:0.3" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard AutoReverse="False">
+                                <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
+                                                 Storyboard.TargetProperty="Tag"                                                 
+                                                 To="0"
+                                                 Duration="0:0:0.4"/>
+                                <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
+												Storyboard.TargetProperty="(UIElement.Opacity)"
+												To="0" Duration="0:0:0.3" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
     </UserControl.Resources>
-    <Border Padding="10">
+    <Border Padding="10,10,10,250"  >
         <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="10">
             <Border.Effect>
                 <DropShadowEffect Color="Gray" ShadowDepth="8" BlurRadius="8"/>
             </Border.Effect>
-    <Grid Width="431" Height="426">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="298*"/>
-            <ColumnDefinition Width="24*"/>
-            <ColumnDefinition Width="109*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <!-- MinHeight="131"-->
-            <RowDefinition Height="60*"/>
-            <RowDefinition Height="73*"/>
-            <RowDefinition Height="Auto" MinHeight="29"/>
-        </Grid.RowDefinitions>
-        <GroupBox Header="Data Source"  HorizontalAlignment="Left" Margin="10,10,0,0" Name="grpServer" VerticalAlignment="Top" Width="411" Grid.Row="0" Grid.ColumnSpan="3">
-            <StackPanel Orientation="Vertical">
-                <StackPanel>
-                    <Grid Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=HostIsExcel}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="130" />
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}"/>
-                        <Label Content="{Binding WorkbookName}" Height="28" Margin="0,5,5,0" Name="lblWorkBook" VerticalAlignment="Top"  Grid.Column="1" />
-
-                    </Grid>
-                    <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="5,0,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowMissingModelWarning}"/>
-                </StackPanel>
-                <Grid FocusManager.FocusedElement="{Binding Path=cboServers}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="130" />
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
-                    <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  ItemsSource="{Binding Path=RecentServers}" Text="{Binding DataSource}" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1">
-                        <ComboBox.Resources>
-                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
-                                <VisualBrush.Visual>
-                                    <TextBlock FontStyle="Italic" Text="Type or select from list"/>
-                                </VisualBrush.Visual>
-                            </VisualBrush>
-                        </ComboBox.Resources>
-                        <ComboBox.Style>
-                            <Style TargetType="ComboBox">
-                                <Style.Triggers>
-                                    <Trigger Property="Text" Value="{x:Null}">
-                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
-                                    </Trigger>
-                                    <Trigger Property="Text" Value="">
-                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ComboBox.Style>
-                    </ComboBox>
-                </Grid>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox Header="Server Options" Margin="10,10,10,0" Name="grpOptions" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2">
-            <Grid Height="Auto">
+            <Grid  Height="Auto">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="130"/>
-                    <ColumnDefinition Width="120*"/>
-                    <ColumnDefinition Width="149*"/>
+                    <ColumnDefinition Width="298*"/>
+
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!-- MinHeight="131"-->
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+
+                    <RowDefinition Height="Auto" MinHeight="29"/>
                 </Grid.RowDefinitions>
-                <Label Content="Direct Query Mode: " Height="27" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" Name="lblDirectQuery" VerticalAlignment="Top" Width="116" />
-                <ComboBox Height="23" Grid.Column="1" Grid.Row="0" Name="cboDirectQuery" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.ColumnSpan="2">
-                    <ComboBoxItem Name="default" IsSelected="True">Default</ComboBoxItem>
-                    <ComboBoxItem Name="direct" >Direct Query</ComboBoxItem>
-                    <ComboBoxItem Name="inMemory">In-Memory</ComboBoxItem>
-                </ComboBox>
+                <GroupBox Header="Data Source" Margin="10,10,10,0" Name="grpServer" VerticalAlignment="Top"  MinWidth="420" Grid.Row="0">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel>
+                            <Grid Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=HostIsExcel}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}">
+                                    
+                                </RadioButton>
+                                <Label Content="{Binding WorkbookName}" Height="28" Margin="0,5,5,0" Name="lblWorkBook" VerticalAlignment="Top"  Grid.Column="1" />
 
-                <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
-                <ComboBox Height="23"  Name="cboMdxCompat" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Text="{Binding Path=MdxCompatibility}" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">
-                    <ComboBoxItem Name="type_0" Content="0 - Equivalent to 1"  />
-                    <ComboBoxItem Name="type_1" Content="1 - Placeholder members are exposed" />
-                    <ComboBoxItem Name="type_2" Content="2 - Placeholder members are not exposed" />
-                    <ComboBoxItem Name="type_3" Content="3- (Default) Placeholder members are not exposed" IsSelected="True" />
-                </ComboBox>
+                            </Grid>
+                            <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="5,0,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowMissingModelWarning}"/>
+                        </StackPanel>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
+                            <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  
+                                      ItemsSource="{Binding Path=RecentServers}" 
+                                      Text="{Binding DataSource}" 
+                                      IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Column="1"
+                                      ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=SelectedServerSetFocus}"
+                                      >
+                                <ComboBox.Resources>
+                                    <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
+                                        <VisualBrush.Visual>
+                                            <TextBlock FontStyle="Italic" Text="Type or select from list"/>
+                                        </VisualBrush.Visual>
+                                    </VisualBrush>
+                                </ComboBox.Resources>
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="{x:Null}">
+                                                <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.Style>
+                                <i:Interaction.Behaviors>
+                                    <beh:BindableFocusBehavior HasFocus="{Binding ElementName=rdoTabularServer, Path=IsChecked}"/>
+                                </i:Interaction.Behaviors>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </GroupBox>
+                <Expander Name="myExpander" Header="Advanced Options"
+                          ExpandDirection="Down" IsExpanded="False" 
+                          Template="{StaticResource RevealExpanderTemp}"
+                          Grid.Row="1" Grid.Column="0"  Margin="10,10,5,0">
+                    <Expander.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock FontWeight="SemiBold" Margin="0,10,0,10" FontSize="13">Advanced Options</TextBlock>
+                        </DataTemplate>
+                    </Expander.HeaderTemplate>
+                    <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
+                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,20,10" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="120*"/>
 
-                <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
-                <TextBox Height="23"  Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}"  Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2"/>
-                <Label Content="Roles: " Height="28" HorizontalAlignment="Left" Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
-                <TextBox Height="23"  Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" />
-                <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
-                <TextBox Name="txtAdditionalOptions" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="Direct Query Mode: " Height="27" Grid.Column="0" Grid.Row="0" 
+                               HorizontalAlignment="Left" Name="lblDirectQuery" VerticalAlignment="Top" Width="116" />
+                        <ComboBox Height="23" Grid.Column="1" Grid.Row="0" Name="cboDirectQuery" 
+                                  VerticalAlignment="Top" 
+                                  IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}"
+                                  SelectedValue="{Binding Path=DirectQueryMode}"
+                                  ItemsSource="{Binding Path=DirectQueryModeOptions}">
+                        </ComboBox>
+
+                        <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
+                        <ComboBox Height="23"  Name="cboMdxCompat" VerticalAlignment="Top" 
+                                  IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" 
+                                  
+                                  SelectedItem="{Binding Path=MdxCompatibility}"
+                                  Grid.Column="1" Grid.Row="1" 
+                                  ItemsSource="{Binding Path=MdxCompatibilityOptions}">
+                        <!--  
+                            Text="{Binding Path=MdxCompatibility}" 
+                            <ComboBoxItem Name="type_0" Tag="0" Content="0 - Equivalent to 1"  />
+                            <ComboBoxItem Name="type_1" Tag="1" Content="1 - Placeholder members are exposed" />
+                            <ComboBoxItem Name="type_2" Tag="2" Content="2 - Placeholder members are not exposed" />
+                            <ComboBoxItem Name="type_3" Tag="3" Content="3- (Default) Placeholder members are not exposed" IsSelected="True" /> 
+                        -->
+                        </ComboBox>
+
+                        <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
+                        <TextBox Height="23"  Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}"  Grid.Column="1" Grid.Row="2"/>
+                        <Label Content="Roles: " Height="28" HorizontalAlignment="Left" Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
+                        <TextBox Height="23"  Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="3" Grid.Column="1"  />
+                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
+                        <TextBox Name="AdditionalOptions" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="4" Grid.Column="1" MinHeight="85"/>
+                    </Grid>
+                    <!--</GroupBox>-->
+                </Expander>
+                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">
+                    <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Height="23" VerticalAlignment="Bottom" />
+                    <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
+                </StackPanel>
             </Grid>
-        </GroupBox>
-        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165">
-            <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Height="23" VerticalAlignment="Bottom" />
-            <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
-        </StackPanel>
-    </Grid>
         </Border>
     </Border>
 </UserControl>

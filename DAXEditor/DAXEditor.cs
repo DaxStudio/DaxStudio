@@ -11,6 +11,8 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System.Text.RegularExpressions;
 using DAXEditor.BracketRenderer;
+using ICSharpCode.AvalonEdit.Search;
+using System.Windows.Media;
 
 namespace DAXEditor
 {
@@ -43,10 +45,30 @@ namespace DAXEditor
     ///     <MyNamespace:CustomControl1/>
     ///
     /// </summary>
-    public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor
+    /// 
+    public struct HighlightPosition { public int Index; public int Length; 
+        
+    }
+    public delegate List<HighlightPosition> HighlightDelegate(string text, int startOffset, int endOffset); 
+    public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor , IEditor
     {
         private BracketRenderer.BracketHighlightRenderer _bracketRenderer;
+        private WordHighlighTransformer _wordHighlighter;
+        
+        public DAXEditor() 
+        {
+            //SearchPanel.Install(this.TextArea);
+            var brush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#C8FFA55F")); //orange // grey FFE6E6E6
+            HighlightBackgroundBrush = brush;
+            this.TextArea.SelectionChanged += textEditor_TextArea_SelectionChanged;
+        }
 
+     
+
+    void textEditor_TextArea_SelectionChanged(object sender, EventArgs e)
+    {
+        this.TextArea.TextView.Redraw();
+    }
         protected override void OnInitialized(EventArgs e)
         {
             
@@ -88,6 +110,24 @@ namespace DAXEditor
             }
             catch {}
         }
+
+        public Brush HighlightBackgroundBrush { get; set; }
+
+        private HighlightDelegate _hightlightFunction;
+        public HighlightDelegate HighlightFunction
+               {
+                   get { return _hightlightFunction; }
+                   set {
+                       if (_hightlightFunction != null)
+                       { 
+                           // remove the old function before adding the new one
+                           this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter); 
+                       }
+                       _hightlightFunction = value;
+                        _wordHighlighter = new WordHighlighTransformer(_hightlightFunction, HighlightBackgroundBrush);
+                        this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
+                   }
+               }
 
         private double _defaultFontSize = 11.0;
         public double DefaultFontSize {
@@ -291,5 +331,79 @@ namespace DAXEditor
             }
         }
 */
+        /*
+        public ICompletionListWindow ActiveCompletionWindow
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IInsightWindow ActiveInsightWindow
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public ITextEditorCaret Caret
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+
+
+        public FileName FileName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IEnumerable<ICompletionItem> GetSnippets()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void JumpTo(int line, int column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public event KeyEventHandler KeyPress;
+
+        public new ILanguageBinding Language
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public new ITextEditorOptions Options
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public ITextEditor PrimaryView
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public event EventHandler SelectionChanged;
+
+        public ICompletionListWindow ShowCompletionWindow(ICompletionItemList data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IInsightWindow ShowInsightWindow(IEnumerable<IInsightItem> items)
+        {
+            throw new NotImplementedException();
+        }
+        */
+
+      
+
+        TextLocation IEditor.DocumentGetLocation(int offset)
+        {
+            return this.Document.GetLocation(offset);
+        }
+
+        void IEditor.DocumentReplace(int offset, int length, string newText)
+        {
+            this.Document.Replace(offset, length, newText);
+        }
     }
 }

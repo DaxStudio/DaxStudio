@@ -14,34 +14,7 @@
     </UserControl.Resources>
     
     <Grid >
-        <!--Style="{StaticResource DaxMetadataIcons}"-->
-        <!--
-        <Grid.Style>
-        <Style TargetType="Image">
-            <Style.Triggers>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding ColumnType}" Value="Column"></Condition>
-                        <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.Setters>
-                        <Setter Property="Source" Value="Resources/Column.png"></Setter>
-                    </MultiDataTrigger.Setters>
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding ColumnType}" Value="Measure"></Condition>
-                        <Condition Binding="{Binding IsHidded}" Value="False"></Condition>
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.Setters>
-                        <Setter Property="Source" Value="Resources/Measure.png"></Setter>
-                    </MultiDataTrigger.Setters>
-                </MultiDataTrigger>
-            </Style.Triggers>
-        </Style>
-        </Grid.Style> -->
         
-        <!--<ListView ItemsSource="{Binding Tables,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></ListView>-->
         <TreeView Grid.Row="1" x:Name="FunctionGroups" Height="Auto"  ItemsSource="{Binding FunctionGroups}"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 

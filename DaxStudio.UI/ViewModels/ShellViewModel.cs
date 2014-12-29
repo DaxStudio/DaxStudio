@@ -128,6 +128,16 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.Redo();
         }
 
+        public void Find()
+        {
+            Ribbon.FindNow();
+        }
+
+        public void FindPrev()
+        {
+            Ribbon.FindPrevNow();
+        }
+
         protected override void OnActivate()
         {
             base.OnActivate();

@@ -72,8 +72,9 @@
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ADOTabularTests.cs" />
-    <Compile Include="DaxHelperTests.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="DaxParameterTests.cs" />
+    <Compile Include="DaxFormatterTests.cs" />
+    <Compile Include="FindReplaceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">

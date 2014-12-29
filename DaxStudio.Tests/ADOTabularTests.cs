@@ -97,6 +97,36 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestADOTabularGetDatabaseID()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            //MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            //ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\discover_xml_metadata.xml");
+            //var tabs = new ADOTabularTableCollection(c, m);
+            //v.GenerateTablesFromXmlReader(tabs, xr);
+            var dbs = DiscoverXmlParser.Databases(xr);
+
+            Assert.AreEqual("AdventureWorksID", dbs["AdventureWorks"]);
+            //Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+        }
+
+        [TestMethod]
+        public void TestADOTabularGetServerMode()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            //MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            //ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\discover_xml_metadata.xml");
+            //var tabs = new ADOTabularTableCollection(c, m);
+            //v.GenerateTablesFromXmlReader(tabs, xr);
+            var props = DiscoverXmlParser.ServerProperties(xr);
+
+            Assert.AreEqual("Tabular", props["ServerMode"]);
+            //Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+        }
+
+        [TestMethod]
         public void TestCSDLColumnTranslations()
         {
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
@@ -111,6 +141,23 @@ namespace DaxStudio.Tests
             Assert.AreEqual("Reseller Cap", cmpyTab.Caption, "Table Name is translated");
             Assert.AreEqual("Reseller Name Cap", cmpyCol.Caption, "Column Name is translated");
             
+        }
+
+
+        [TestMethod]
+        public void TestCSDLTablesWithSpaces()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\advwrkscsdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Sales Quota"];
+            
+
+            Assert.AreEqual("Sales Quota", cmpyTab.Caption, "Table Name is translated");
+
         }
 
         [TestMethod]

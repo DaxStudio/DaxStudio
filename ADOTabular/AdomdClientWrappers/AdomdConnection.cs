@@ -62,6 +62,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
+        
         public void Open()
         {
             

@@ -4,6 +4,7 @@
   <Color name="Identifier" foreground="Black" />
   <Color name="Operator" foreground="Magenta"/>
 	<Color name="Regex" foreground="#FFFF6600" />
+  <Color name="Parameter" foreground="#FFE00587" />
   <Color name="Function" foreground="Blue" /> <!-- fontWeight="bold" />-->
   <Color name="Kword" foreground="Teal" />  <!--fontWeight="bold"/>-->
 	<RuleSet ignoreCase="true">
@@ -41,7 +42,15 @@
         <Span begin="\\" end="." />
       </RuleSet>
     </Span>
-
+    
+    <Span color="Parameter">
+      <Begin>@\w*</Begin>
+      <End>\s|\)|\$</End>
+      <RuleSet>
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+    
     <!-- EVALUATE is defined as a keyword - should it be a separate one?
 		<Keywords foreground="DarkCyan" fontWeight="bold">
       <Word>evaluate</Word>
@@ -50,9 +59,9 @@
     <Keywords color="Operator">
       <Word>&amp;&amp;</Word>
       <Word>||</Word>
-      <Word>&gt;</Word>
+      <!--<Word>&gt;</Word>
       <Word>&lt;</Word>
-      <!--<Word>=</Word>
+      <Word>=</Word>
       <Word>+</Word>
       <Word>-</Word>
       <Word>\*</Word>

@@ -7,6 +7,7 @@ using DaxStudio.Interfaces;
 using Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Data;
+using System.Globalization;
 
 namespace DaxStudio 
 {
@@ -137,7 +138,7 @@ namespace DaxStudio
         internal bool IsExcel2013OrLater
         {
             get {
-                return float.Parse(_app.Version) >= 15;
+                return float.Parse(_app.Version, CultureInfo.InvariantCulture) >= 15;
             }
         }
 

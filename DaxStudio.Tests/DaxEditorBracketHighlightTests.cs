@@ -81,14 +81,36 @@ table1
             var qry = @"(()";
             var mockDoc = new DocumentMock(qry);
             var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
-            var res = srchr.SearchBracket(mockDoc, 1);
-            Assert.IsNull(res);
-            res = srchr.SearchBracket(mockDoc, 3);
+            
+            var res = srchr.SearchBracket(mockDoc, 3);
             Assert.AreEqual(1, res.OpeningBracketOffset, "Test forward Matching Start Bracket");
             Assert.AreEqual(2, res.ClosingBracketOffset, "Test forward Matching End Bracket");
             res = srchr.SearchBracket(mockDoc, 1);
-            Assert.IsNull(res, "non-existant end Bracket");
+            Assert.AreEqual(0, res.ClosingBracketLength, "non-existant end Bracket");
             
+        }
+
+        [TestMethod]
+        public void TestMultiLineQuery()
+        {
+            var qry = @"
+EVALUATE
+    CALCULATETABLE(
+    'Product Subcategory',
+    'Product Category'[Product Category Name] = @Category 
+    ))
+";
+            var mockDoc = new DocumentMock(qry);
+            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var res = srchr.SearchBracket(mockDoc, 1);
+            Assert.IsNull(res, "no match found at start of string");
+            res = srchr.SearchBracket(mockDoc, 31);
+            Assert.AreEqual(125, res.ClosingBracketOffset, "Found End Bracket");
+            res = srchr.SearchBracket(mockDoc, 126);
+            Assert.AreEqual(30, res.OpeningBracketOffset, "Found End Bracket");
+            res = srchr.SearchBracket(mockDoc, 127);
+            Assert.AreEqual(126, res.OpeningBracketOffset, "Found End Bracket");
+            Assert.AreEqual(0, res.ClosingBracketOffset, "No Start Bracket");
         }
     }
 

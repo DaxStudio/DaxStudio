@@ -10,6 +10,9 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Controls;
+using DaxStudio.UI.Views;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -27,6 +30,9 @@ namespace DaxStudio.UI.ViewModels
             PowerPivotEnabled = true;
             Host = host;
             ServerModeSelected = true;
+
+            ParseConnectionString(); // load up dialog with values from ConnStr
+            
             if (Host.IsExcel)
             {
                 //using (new StatusBarMessage("Checking for PowerPivot model 2..."))
@@ -45,11 +51,10 @@ namespace DaxStudio.UI.ViewModels
             
             WorkbookName = host.Proxy.WorkbookName;
             DisplayName = "Connect To";
-            MdxCompatibility = "3- (Default) Placeholder members are not exposed";
+            //MdxCompatibility = "3 - (Default) Placeholder members are not exposed";
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }
-
      
         public async Task<bool> HasPowerPivotModelAsync() {
 
@@ -112,7 +117,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void ConnectionDialogLoad(object sender, EventArgs e)
+        private void ParseConnectionString()
         {
             if (_connectionString != String.Empty)
             {
@@ -137,18 +142,9 @@ namespace DaxStudio.UI.ViewModels
                             case "effectiveusername":
                                 EffectiveUserName = p.Value;
                                 break;
-                                /*
-                        case "mdx compatibility":
-                            KeyValuePair<string, string> p1 = p;
-                            foreach (
-                                var compat in
-                                    cboMdxCompat.Items.Cast<string>().Where(
-                                        compat => compat.StartsWith(p1.Value)))
-                            {
-                                cboMdxCompat.Text = compat;
-                            }
-                            break;
-                                */
+                            case "mdx compatibility":
+                                MdxCompatibility = MdxCompatibilityOptions.Find(x => x.StartsWith(p.Value));
+                                break;
                             case "directquerymode":
                                 DirectQueryMode = p.Value;
                                 break;
@@ -165,10 +161,25 @@ namespace DaxStudio.UI.ViewModels
                 {
                     ServerModeSelected = true;
                 }
+                if (RecentServers.Count > 0)
+                { DataSource = RecentServers[0]; }
             }           
         }
 
-        public string DataSource { get; set; }
+        public string AdditionalOptions { get; set; }
+
+        private string _dataSource;
+        public string DataSource { 
+            get { 
+                if (RecentServers.Count > 0 && String.IsNullOrWhiteSpace(_dataSource))
+                { _dataSource = RecentServers[0]; }
+                return  _dataSource; } 
+            set{ _dataSource=value;
+                NotifyOfPropertyChange(()=> DataSource);
+                SelectedServerSetFocus = true;
+            }
+        }
+
         private string _roles;
         public string Roles {
             get {
@@ -181,8 +192,22 @@ namespace DaxStudio.UI.ViewModels
             set { _roles = value; }
         }
         public string EffectiveUserName { get; set; }
-        public string DirectQueryMode { get; set; }
-        public StringBuilder AdditionalProperties { get; set; }
+
+        private string _directQueryMode;
+        public string DirectQueryMode { 
+            get { 
+                if (string.IsNullOrWhiteSpace(_directQueryMode))
+                    {_directQueryMode = "Default";}
+                return _directQueryMode;
+            }
+            set { 
+                _directQueryMode = value;
+                NotifyOfPropertyChange(() => DirectQueryMode);
+            }
+        }
+
+        StringBuilder _additionalProperties = new StringBuilder();
+        public StringBuilder AdditionalProperties { get {return _additionalProperties;  }}
 
         private Dictionary<string, string> SplitConnectionString(string connectionString)
         {
@@ -191,11 +216,43 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (prop.Trim().Length == 0) continue;
                 var p = prop.Split('=');
+
                 props.Add(p[0], p[1]);
             }
             return props;
         }
 
+        private List<string> _directQueryModeOptions;
+        public List<string> DirectQueryModeOptions
+        {
+            get
+            {
+                if (_directQueryModeOptions == null)
+                {
+                    _directQueryModeOptions = new List<string>();
+                    _directQueryModeOptions.Add("Default");
+                    _directQueryModeOptions.Add("InMemory");
+                    _directQueryModeOptions.Add("DirectQuery");
+                }
+                return _directQueryModeOptions;
+            }
+        }
+
+        private List<string> _mdxCompatibilityOptions;
+        public List<string> MdxCompatibilityOptions
+        {
+            get { 
+                if (_mdxCompatibilityOptions == null)
+                {   
+                    _mdxCompatibilityOptions = new List<string>() ;
+                    _mdxCompatibilityOptions.Add("0 - Equivalent to 1");
+                    _mdxCompatibilityOptions.Add("1 - Placeholder members are exposed");
+                    _mdxCompatibilityOptions.Add("2 - Placeholder members are not exposed");
+                    _mdxCompatibilityOptions.Add("3 - (Default) Placeholder members are not exposed");        
+                }
+                return _mdxCompatibilityOptions;
+            }
+        }
 
         public ObservableCollection<string> RecentServers
         {
@@ -215,7 +272,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetDirectQueryMode()
         {
-            return DirectQueryMode == string.Empty ? string.Empty : string.Format("DirectQueryMode={0}", DirectQueryMode);
+            return DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default" ? string.Empty : string.Format("DirectQueryMode={0}", DirectQueryMode);
         }
 
         private string GetMdxCompatibilityMode()
@@ -223,7 +280,19 @@ namespace DaxStudio.UI.ViewModels
             return string.Format("MDX Compatibility={0};", MdxCompatibility.Substring(0, 1));
         }
 
-        public string MdxCompatibility { get; set; }
+        private string _mdxCompatibility;
+        private bool _selectedServerSetFocus;
+        public string MdxCompatibility { 
+            get { 
+                if (string.IsNullOrWhiteSpace(_mdxCompatibility))
+                    {_mdxCompatibility = MdxCompatibilityOptions.Find(x=> x.StartsWith("3"));}
+                return _mdxCompatibility;
+            }
+            set {
+                _mdxCompatibility = value;
+                 NotifyOfPropertyChange(()=> MdxCompatibility);
+           }
+        }
 
         public string ConnectionString
         {
@@ -236,11 +305,12 @@ namespace DaxStudio.UI.ViewModels
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4}", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4};{5}", DataSource
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
-                                 , AdditionalProperties);
+                                 , AdditionalProperties
+                                 , AdditionalOptions);
         }
 
         /*
@@ -276,11 +346,12 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", DataSource, ex.Message));
+                _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
                 _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }
             finally
             {
+                SelectedServerSetFocus = false;
                 TryClose(true);
             }
         }
@@ -288,6 +359,25 @@ namespace DaxStudio.UI.ViewModels
         public void Cancel()
         {
             _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
+        }
+
+        protected override void OnViewLoaded(object view)
+        {
+ 	        base.OnViewLoaded(view);
+            //((UserControl)view).MoveFocus(new  TraversalRequest( FocusNavigationDirection.Next));
+            ((ConnectionDialogView)view).cboServers.Focus();
+        }
+
+        // This property is used to trigger all the text to be selected in the server name
+        // combobox when the connection dialog is first shown.
+        public bool SelectedServerSetFocus
+        {
+            get { return _selectedServerSetFocus; }
+            set
+            {
+                _selectedServerSetFocus = value;
+                NotifyOfPropertyChange(() => SelectedServerSetFocus);
+            }
         }
     }
         

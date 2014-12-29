@@ -171,6 +171,7 @@
     <Compile Include="DAXEditor_TextController.cs" />
     <Compile Include="IEditor.cs" />
     <Compile Include="TextBoxController.cs" />
+    <Compile Include="WordHighlighTransformer.cs" />
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

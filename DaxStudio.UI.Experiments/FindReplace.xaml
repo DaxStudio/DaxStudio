@@ -1,0 +1,11 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:DAXEditor="clr-namespace:DAXEditor;assembly=DAXEditor" x:Class="DaxStudio.UI.Experiments.FindReplace"
+        Title="FindReplace" Height="300" Width="300">
+    <Grid>
+
+        <TextBox >This is some sample text</TextBox>
+        <Border Background="#FFE6E6E6" Margin="0,4,4,0" HorizontalAlignment="Right" Width="100" Height="30" VerticalAlignment="Top" />
+    </Grid>
+</Window>

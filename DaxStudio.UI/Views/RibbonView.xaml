@@ -341,7 +341,32 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-
+            
+            <Fluent:RibbonGroupBox Header="Find" Margin="4,0">
+                <Fluent:Button Header="Find" 
+                               Command="Find"
+                               Icon="{StaticResource FindIconSmall}"
+                               SizeDefinition="Middle,Small"
+                               Fluent:KeyTip.Keys="F"
+                               FocusManager.IsFocusScope="True">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Find" Text="Find text within the current query" Width ="190"/>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <!-- cal:Message.Attach="[Event Click] = [Action Find()]" -->
+                <Fluent:Button Header="Replace" 
+                               Command="Replace"
+                               Icon="{StaticResource ReplaceIconSmall}"
+                               SizeDefinition="Middle,Small"
+                               Fluent:KeyTip.Keys="H"
+                               FocusManager.IsFocusScope="True">
+                <!-- cal:Message.Attach="[Event Click] = [Action Replace()]" -->
+                <Fluent:Button.ToolTip>
+                    <Fluent:ScreenTip Title="Find" Text="Replace text within the current query" Width ="190"/>
+                </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
             <Fluent:RibbonGroupBox Header="Connect" Margin="4,0">
                 <Fluent:Button x:Name="Connect" 
                                Header="Connect"
@@ -371,13 +396,14 @@
             
           
             <Fluent:RibbonGroupBox Header="Output" x:Name="OutputGroup" Visibility="{Binding OutputGroupIsVisible}" >
-
+                <TextBlock Text="Worksheet:" Padding="0,6,0,0"/>
                 <Fluent:ComboBox Name="cboOutputTo" 
                                  Text="&lt;Output Sheet&gt;" 
                                  MinWidth="120" MaxWidth="200" 
                                  IsEditable="False" 
                                  ItemsSource="{Binding Worksheets}" 
-                                 SelectedItem="{Binding SelectedWorksheet}">
+                                 SelectedItem="{Binding SelectedWorksheet}"
+                                 Margin="0,8,8,0">
                     
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>

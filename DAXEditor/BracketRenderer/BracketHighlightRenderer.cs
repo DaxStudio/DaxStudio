@@ -24,6 +24,7 @@ namespace DAXEditor.BracketRenderer
     //public static readonly Color DefaultBackground = Color.FromArgb(100, 0, 0, 255);
     public static readonly Color DefaultBackground = Color.FromArgb(200, 255, 200, 0);
     public static readonly Color DefaultBorder = Color.FromArgb(128, 255, 0, 0);
+    public static readonly Color InvalidBackground = Color.FromArgb(200, 255, 90, 90);
 
     public const string BracketHighlight = "Bracket highlight";
     #endregion fields
@@ -88,6 +89,10 @@ namespace DAXEditor.BracketRenderer
 
       if (borderPen == null)
         this.UpdateColors(DefaultBackground, DefaultBackground);
+      if (result.ClosingBracketLength == 0)
+          this.UpdateColors(InvalidBackground, InvalidBackground);
+      else
+          this.UpdateColors(DefaultBackground, DefaultBackground);
 
       if (geometry != null)
       {

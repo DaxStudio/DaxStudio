@@ -11,8 +11,8 @@ namespace DaxStudio.UI
     {
     
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
-        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2005";
-        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2005";
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheckUTC";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
 
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
@@ -83,11 +83,14 @@ namespace DaxStudio.UI
 
         public static void SetLastVersionCheck(DateTime value)
         {
-            string path = registryRootKey + "\\DaxStudio";
+            string path = registryRootKey;
             RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
             if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-            settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, value, RegistryValueKind.String);
-            settingKey.Close();
+            using (settingKey)
+            {
+                var strDate = value.ToUniversalTime().ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+                settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, strDate, RegistryValueKind.String);
+            }
         }
 
         public static DateTime GetLastVersionCheck()
@@ -96,11 +99,13 @@ namespace DaxStudio.UI
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
             if (rk != null)
             {
-                DateTime.TryParse((string)rk.GetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, DateTime.MinValue.ToShortDateString()), out dtReturnVal);
-                rk.Close();
+                using (rk)
+                {
+                    DateTime.TryParse((string)rk.GetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, DateTime.MinValue.ToShortDateString()), out dtReturnVal);
+                }
             }
 
-            return dtReturnVal;
+            return dtReturnVal.ToLocalTime();
         }
 
 
@@ -114,7 +119,7 @@ namespace DaxStudio.UI
                 rk.Close();
             }
 
-            return sReturnVal;
+            return string.IsNullOrEmpty(sReturnVal)?"0.0.0.0":sReturnVal;
         }
 
         public static void SetDismissedVersion(string value)

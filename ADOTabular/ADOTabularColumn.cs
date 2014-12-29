@@ -34,7 +34,7 @@ namespace ADOTabular
             Table = table;
             InternalReference = internalReference;
             Name = name ?? internalReference;
-            Caption = caption ?? name ?? internalReference;
+            Caption = caption ?? internalReference ?? name;
             Description = description;
             IsVisible = isVisible;
             ColumnType = columnType;

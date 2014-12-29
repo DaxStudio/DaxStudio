@@ -8,32 +8,94 @@
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
+             xmlns:model="clr-namespace:DaxStudio.UI.Model"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
-        <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/icon-model@16px.png" />
-        <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
-        <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Kpi.png"/>
-        <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
-        <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
-        <conv:ResourceLookupConverter x:Key="MetadataIcons">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
-                <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenTable.png"/>
-                <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
-                <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenColumn.png" />
-                <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
-                <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
-                <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/model.png" />
-                <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
-                <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
-            </ResourceDictionary>
-        </conv:ResourceLookupConverter>
-        <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
+            <conv:OffsetConverter x:Key="OffsetConverter" />
+            <conv:DataBindingDebugConverter x:Key="DebugConverter" />
+            
+            <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Controls/Resources/clear.png" />
+
+            <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
+            <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
+            <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/icon-model@16px.png" />
+            <conv:ResourceLookupConverter x:Key="MetadataIcons">
+                <ResourceDictionary>
+                    <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
+                    <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenTable.png"/>
+                    <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
+                    <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenColumn.png" />
+                    <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
+                    <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
+                    <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/model.png" />
+                    <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
+                    <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
+                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Kpi.png"/>        
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
+            <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
+            
+            <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
+            <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
+
+            <Storyboard x:Key="SearchIn">
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Width)" 
+                                 Storyboard.TargetName="srchBox" 
+                                 EasingFunction="{StaticResource ResourceKey=easeInEase}"
+                                 To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth,Converter={StaticResource OffsetConverter}, ConverterParameter='5' }" 
+                                 Duration="0:0:1.0"/>
+                <!--  -->
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" EasingFunction="{StaticResource ResourceKey=easeInEase}" To="28" Duration="0:0:1.0"/>
+                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
+                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,32,0,0"/>
+                </ThicknessAnimationUsingKeyFrames>
+                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="SearchIcon">
+                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="2,2,2,2"/>
+                </ThicknessAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="CurrentCriteria"
+												Storyboard.TargetProperty="(UIElement.Opacity)"
+												To="1" Duration="0:0:0.2" />
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchSpacer" Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.15" Duration="0">
+                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Collapsed}" />
+                </ObjectAnimationUsingKeyFrames>
+            </Storyboard>
+
+            <Storyboard x:Key="SearchOut">
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Width)" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
+                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
+                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,2,0,0"/>
+                </ThicknessAnimationUsingKeyFrames>
+                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="SearchIcon">
+                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,0,0,0"/>
+                </ThicknessAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="CurrentCriteria"
+												Storyboard.TargetProperty="(UIElement.Opacity)"
+												To="0" Duration="0:0:0.2" />
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchSpacer" Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.2" Duration="0">
+                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Visible}" />
+                </ObjectAnimationUsingKeyFrames>
+            </Storyboard>
+
+
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid >
+    <Grid Margin="2 2 2 0" >
         
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -44,12 +106,11 @@
                   IsEditable="False"
                   IsEnabled="{Binding IsConnected, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
-                  SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   
-                  Style="{DynamicResource MetroComboBox}"
                    IsSynchronizedWithCurrentItem="True"
                   >
-            <!--  -->
+            <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
@@ -58,149 +119,152 @@
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
-            
+            <ComboBox.Resources>
+                <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
+                    <VisualBrush.Visual>
+                        <TextBlock FontStyle="Italic" Text="Type or select from list"/>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </ComboBox.Resources>
+            <ComboBox.Style>
+                <Style TargetType="ComboBox">
+                    <Style.Triggers>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="">
+                            <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ComboBox.Style>
         </ComboBox>
     
         
         <!-- Tables -->
-        <TreeView Grid.Row="1" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
+        <ctrl:TreeViewEx Grid.Row="1" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
+                  Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]" Margin="0,2,0,-2"
-                  >
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]" 
+                  Margin="0,2,0,-2">
             <i:Interaction.Behaviors>
                 <beh:TreeViewClipboardBehavior />
             </i:Interaction.Behaviors>
             <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularTable}" ItemsSource="{Binding Columns}">
+                <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                     <!-- Table Template -->
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                        <TextBlock  Text="{Binding Caption}" >
+                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" Text="{Binding CriteriaMatched}"/>
                             <TextBlock.ToolTip>
                                 <StackPanel Orientation="Vertical" MaxWidth="250">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                         <TextBlock Text="{Binding Caption}"></TextBlock>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Description}"></TextBlock>
+                                    <TextBlock Text="{Binding Description}"  Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDescription}"/>
                                 </StackPanel>
                             </TextBlock.ToolTip>    
                         </TextBlock>
                     </StackPanel>
-                    <!-- Column Template -->
-
-                    <!-- TODO -->
-
                 </HierarchicalDataTemplate>
 
-                <!-- Hierarchies -->
-                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularHierarchy}" ItemsSource="{Binding Levels}">
-                    <StackPanel Orientation="Horizontal" >
-                        <Image Source="{StaticResource Hierarchy}" Margin="2,1,5,1" />
-                        <TextBlock Text="{Binding Caption}">
-                            <TextBlock.ToolTip>
-                                <StackPanel Orientation="Vertical" MaxWidth="250">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{StaticResource Hierarchy}" Margin="2,1,5,1"/>
-                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" [hierarchy]"/>
-                                    </StackPanel>
-                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
-                                </StackPanel>
-                            </TextBlock.ToolTip>    
-                                </TextBlock>
-                    </StackPanel>
-
-                </HierarchicalDataTemplate>
-
-                <!-- Levels -->
-                <DataTemplate DataType="{x:Type ado:ADOTabularLevel}">
-                    <StackPanel Orientation="Horizontal" >
-                        <Image Source="{StaticResource ResourceKey=Column}" Margin="2,1,5,1" />
-                        <TextBlock Text="{Binding Column.Caption}">
-                            <TextBlock.ToolTip>
-                                <StackPanel Orientation="Vertical" MaxWidth="250">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{StaticResource ResourceKey=Column}" Margin="2,1,5,1"/>
-                                        <TextBlock FontWeight="Bold" Text="{Binding Column.Caption}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding Column.DataTypeName}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                    </StackPanel>
-                                    <TextBlock FontStyle="Italic" Text="{Binding Column.Description}"></TextBlock>
-                                </StackPanel>
-                            </TextBlock.ToolTip>    
-                                </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-
+                
                 <!-- Column Template -->
-                <DataTemplate DataType="{x:Type ado:ADOTabularColumn}">
+                <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}"
+                                          >
                     <StackPanel Orientation="Horizontal" >
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                         <TextBlock Text="{Binding Caption}">
+                            
                             <TextBlock.ToolTip>
-                                <StackPanel Orientation="Vertical" MaxWidth="250">
-                                    <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Vertical" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                         <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
                                         <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
                                         <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
                                         <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
                                     </StackPanel>
-                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
+                                    <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
                                 </StackPanel>
                             </TextBlock.ToolTip>    
-                                </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-
-                <!-- KPI -->
-                <HierarchicalDataTemplate DataType="{x:Type ado:ADOTabularKpi}" ItemsSource="{Binding Components}">
-                    <StackPanel Orientation="Horizontal" >
-                        <Image Source="{StaticResource ResourceKey=Kpi}" Margin="2,1,5,1" />
-                        <TextBlock Text="{Binding Caption}">
-                            <TextBlock.ToolTip>
-                                <StackPanel Orientation="Vertical" MaxWidth="250">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{StaticResource Kpi}" Margin="2,1,5,1"/>
-                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                    </StackPanel>
-                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
-                                </StackPanel>
-                            </TextBlock.ToolTip>    
+                            
                                 </TextBlock>
                     </StackPanel>
                 </HierarchicalDataTemplate>
-
-                <!-- KpiComponent Template -->
-                <DataTemplate DataType="{x:Type ado:ADOTabularKpiComponent}">
-                    <StackPanel Orientation="Horizontal" >
-                        <Image Source="{StaticResource Measure}" Margin="2,1,5,1" />
-                        <TextBlock Text="{Binding Caption}">
-                            <TextBlock.ToolTip>
-                                <StackPanel Orientation="Vertical" MaxWidth="250">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{StaticResource Measure}" Margin="2,1,5,1"/>
-                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                    </StackPanel>
-                                    <TextBlock FontStyle="Italic" Text="{Binding Description}"></TextBlock>
-                                </StackPanel>
-                            </TextBlock.ToolTip>    
-                                </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
             </TreeView.Resources>
+        </ctrl:TreeViewEx>
 
-        </TreeView>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
+        <Border Style="{StaticResource ResourceKey=searchBox}" Grid.Row="1" x:Name="srchBox">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image x:Name="SearchIcon" Grid.Column="0"> 
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasCriteria}" Value="false">
+                                    <Setter Property="Source" Value="{StaticResource Search}"/>
+                                </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasCriteria}" Value="true">
+                                        <Setter Property="Source" Value="{StaticResource SearchActive}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <TextBox Grid.Column="1"
+                         x:Name="CurrentCriteria"
+                         Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged}"
+                         Opacity="0"
+                         Padding="2 2 24 0">
+                    <i:Interaction.Triggers>
+                        <trig:InputBindingTrigger>
+                            <trig:InputBindingTrigger.InputBinding>
+                                <KeyBinding Key="Escape"/>
+                            </trig:InputBindingTrigger.InputBinding>
+                            <cal:ActionMessage MethodName="ClearCriteria"/>
+                        </trig:InputBindingTrigger>
+                    </i:Interaction.Triggers>
+                    
+                </TextBox>
+                <Button Margin="5" Grid.Column="1" HorizontalAlignment="Right"
+                        Visibility="{Binding Path=HasCriteria, Converter={StaticResource BoolToVisibilityConverter}}"
+                        BorderThickness="0"
+                        Background="Transparent">
+                    <Image Source="{StaticResource Clear}" />
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="ClearCriteria" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Button>
 
+            </Grid>
+            <Border.Triggers>
+                
+                <EventTrigger RoutedEvent="Mouse.MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource SearchIn}"/>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="Mouse.MouseLeave" >
+                    <BeginStoryboard Storyboard="{StaticResource SearchOut}"/>
+                </EventTrigger>
+            </Border.Triggers>
+        </Border>
+            <Border x:Name="SearchSpacer" 
+                    BorderThickness="0" 
+                    Height="1" 
+                    IsHitTestVisible="False"
+                    Background="Transparent"
+                    Width="{Binding ElementName=Tables, Path=ScrollBarWidth}">
+            </Border>
+        </StackPanel>
+        
     </Grid>
 </UserControl>

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Xml;
 using System.Xml.Serialization;
 using Serilog;
+using System.Globalization;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -42,7 +43,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 
                 Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "defaulting to Microsoft.AnalysisServices");
                 AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
-                if (float.Parse(app.Version) >= 15)
+                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= 15)
                 {
                     amoType = AmoWrapper.AmoType.Excel;
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
@@ -54,20 +55,27 @@ namespace DaxStudio.ExcelAddin.Xmla
                 // STEP 1: send the request to server.
                 System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
                 
-                System.Xml.XmlReader xmlaResponseFromServer; // will be used to parse the XML/A response from server
-
+                System.Xml.XmlReader xmlaResponseFromServer=null; // will be used to parse the XML/A response from server
+                string fullEnvelopeResponseFromServer = "";
                 try
                 {
                     xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
+                    // STEP 2: read/parse the XML/A response from server.
+                    xmlaResponseFromServer.MoveToContent();
+                    fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
+                    //result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                    //result.Content = new StringContent(String.Format("An unexpected error occurred (sending XMLA request): \n{0}", ex.Message));
                 }
                 finally
                 {
                     streamWithXmlaRequest.Close();
                 }
 
-                // STEP 2: read/parse the XML/A response from server.
-                xmlaResponseFromServer.MoveToContent();
-                string fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
+                
 
                 HttpResponseMessage result;
                 try
@@ -84,12 +92,15 @@ namespace DaxStudio.ExcelAddin.Xmla
                 {
                     Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
                     result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    result.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex.Message));
+                    result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex.Message));
                 }
                 finally
                 {
                 // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
-                xmlaResponseFromServer.Close();
+                    if (xmlaResponseFromServer != null)
+                    {
+                        xmlaResponseFromServer.Close();
+                    }
                 }
                 return result;
             }

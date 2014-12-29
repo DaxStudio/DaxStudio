@@ -86,7 +86,8 @@ namespace DaxStudio.UI.Behaviours
             var item = AssociatedObject.SelectedItem as TreeViewItem;
             if (item != null)
             {
-                //e.CanExecute = item.CanCutToClipboard;
+                // disable cut for metadata
+                e.CanExecute = false;
                 e.Handled = true;
             }
         }
@@ -107,7 +108,8 @@ namespace DaxStudio.UI.Behaviours
             var item = AssociatedObject.SelectedItem as TreeViewItem;
             if (item != null)
             {
-                //e.CanExecute = item.CanPasteFromClipboard;
+                // paste is not supported
+                e.CanExecute = false;
                 e.Handled = true;
             }
         }

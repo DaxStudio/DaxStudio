@@ -8,14 +8,15 @@ namespace DaxStudio.UI.Model
     using Caliburn.Micro;
     using DaxStudio.Interfaces;
     using System.ComponentModel.Composition;
+    using Serilog;
 
-    [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.NonShared)]
+    [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.Shared)]
     public class VersionCheck : PropertyChangedBase, IVersionCheck
     {
 
         private const string CURRENT_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
         private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
-        private const int CHECK_EVERY_DAYS = 7;
+        private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
@@ -50,7 +51,8 @@ namespace DaxStudio.UI.Model
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.Threading.Thread.Sleep(CHECK_SECONDS_AFTER_STARTUP * 1000); //give BIDS a little time to get started up so we don't impede work people are doing with this version check
+            System.Threading.Thread.Sleep(CHECK_SECONDS_AFTER_STARTUP * 1000); //give DaxStudio a little time to get started up so we don't impede work people are doing with this version check
+            LastVersionCheck = DateTime.Now;
             CheckVersion();
         }
 
@@ -66,6 +68,7 @@ namespace DaxStudio.UI.Model
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
+                Log.Error("Class: {0} Method: {1} Exception: {2} Stacktrace: {3}", "VersionCheck", "CheckVersion", ex.Message, ex.StackTrace);
             }
         }
 
@@ -173,10 +176,8 @@ namespace DaxStudio.UI.Model
         {
             if (serverVersion != null) return;
             var ver = this.ServerVersion;
-
         }
 
-        
     }
 }
 

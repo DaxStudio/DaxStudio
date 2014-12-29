@@ -37,9 +37,17 @@ namespace DAXEditor.BracketRenderer
         if (index > -1)
           otherOffset = SearchBracketBackward(document, offset -1, openingBrackets[index], closingBrackets[index]);
 
-        if (otherOffset > -1)
+        // if we found the other bracket
+        if (otherOffset > -1 )
           return new BracketSearchResult(Math.Min(offset - 1, otherOffset), 1,
                                          Math.Max(offset - 1, otherOffset), 1);
+
+        if (otherOffset == -2) // in string
+            return null;
+
+        // if we are on a bracket, but did not find a match
+        if (index >= 0 || openingBrackets.IndexOf(c) >= 0)
+          return new BracketSearchResult(offset - 1, 1, 0, 0);
       }
 
       return null;
@@ -149,7 +157,7 @@ namespace DAXEditor.BracketRenderer
       int starttype = GetStartType(document, linestart, offset + 1);
       if (starttype == 1)
       {
-        return -1; // start position is in a comment
+        return -2; // start position is in a comment
       }
 
       // I don't see any possibility to parse a DAX document backwards...
@@ -175,9 +183,12 @@ namespace DAXEditor.BracketRenderer
           case '-':
                 if (!inString && !inChar && !blockComment && i != document.TextLength )
                 {
-                    if (document.GetCharAt(i - 1) == '-')
+                    if (i > 0)
                     {
-                        lineComment = true;
+                        if (document.GetCharAt(i - 1) == '-')
+                        {
+                            lineComment = true;
+                        }
                     }
                 }
             break;
@@ -254,6 +265,7 @@ namespace DAXEditor.BracketRenderer
         }
       }
       if (bracketStack.Count > 0 && !inString && !inChar && !lineComment && !blockComment) return (int)bracketStack.Pop();
+      if (inString || inChar || lineComment || blockComment) return -2;
       return -1;
     }
     #endregion
@@ -378,6 +390,7 @@ namespace DAXEditor.BracketRenderer
         }
         ++offset;
       }
+      if (inString || inChar || lineComment || blockComment) return -2;
       return -1;
     }
     #endregion

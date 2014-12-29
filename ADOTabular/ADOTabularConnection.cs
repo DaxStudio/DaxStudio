@@ -67,7 +67,9 @@ namespace ADOTabular
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
-            get { return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database); }
+            get { 
+                //_adomdConn.UnderlyingConnection.Databases
+                return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database); }
         }
 
         public void Open()

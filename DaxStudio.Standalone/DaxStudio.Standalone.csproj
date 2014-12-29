@@ -139,7 +139,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
@@ -162,8 +164,36 @@
     <Reference Include="Caliburn.Micro.Platform">
       <HintPath>..\packages\Caliburn.Micro.2.0.1\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="Loggly">
+      <HintPath>..\packages\loggly-csharp.3.5.1\lib\net35\Loggly.dll</HintPath>
+    </Reference>
+    <Reference Include="Loggly.Config">
+      <HintPath>..\packages\loggly-csharp-config.3.5.1\lib\net35\Loggly.Config.dll</HintPath>
+    </Reference>
+    <Reference Include="NBug">
+      <HintPath>..\packages\NBug.1.2.2\lib\net40-client\NBug.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Extras.AppSettings, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.Extras.AppSettings.1.4.7\lib\net45\Serilog.Extras.AppSettings.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.Loggly">
+      <HintPath>..\packages\Serilog.Sinks.Loggly.1.4.76\lib\net45\Serilog.Sinks.Loggly.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
@@ -177,6 +207,7 @@
   <ItemGroup>
     <SplashScreen Include="daxstudio-logo_250x250.png" />
     <Content Include="DaxStudio.ico" />
+    <None Include="Loggly.user.config" />
     <None Include="packages.config" />
     <None Include="Resources\SplashScreen.png" />
   </ItemGroup>
