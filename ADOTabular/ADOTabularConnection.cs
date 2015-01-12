@@ -475,12 +475,33 @@ namespace ADOTabular
 
         private static void FixColumnNaming(DataTable dataTable)
         {
+            const string MEASURES_MDX = "[Measures].";
+
+            // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
+            bool isMdxResult = (from DataColumn col in dataTable.Columns
+                                where col.ColumnName.IndexOf("].[") > 0
+                                select col).Count() > 0;
             foreach (DataColumn col in dataTable.Columns)
             {
+                bool removeCaption = false;
                 string name = col.ColumnName;
-                int firstBracket = name.IndexOf('[')+1;
-                name = firstBracket==0 ? name: name.Substring(firstBracket,name.Length - firstBracket-1);
-                col.Caption = name;
+                bool removeSquareBrackets = !isMdxResult;
+                if (isMdxResult) {
+                    if (name.IndexOf(MEASURES_MDX) >= 0) {
+                        name = name.Replace(MEASURES_MDX, "");
+                        removeSquareBrackets = true;
+                    }
+                    else {
+                        removeCaption = true;
+                    }
+                }
+
+                if (removeSquareBrackets) {
+                    // Format column naming for DAX result or if it is a measure name
+                    int firstBracket = name.IndexOf('[') + 1;
+                    name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
+                }
+                col.Caption = (removeCaption) ? "" : name;
                 col.ColumnName = name.Replace(' ', '_');
             }
 

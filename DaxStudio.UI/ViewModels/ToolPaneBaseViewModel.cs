@@ -90,6 +90,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Dropped(IDropInfo dropInfo)
         {
+            System.Diagnostics.Debug.WriteLine("dropped");
             // do nothing
         }
 

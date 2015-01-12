@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Linq;
 
 namespace ADOTabular
 {
@@ -27,9 +28,28 @@ namespace ADOTabular
             IsVisible = isVisible;
         }
 
+        private static readonly string[] specialNames = { "DATE" };
+
         public string DaxName
         {
-            get { return string.Format("'{0}'", Name); }
+            get { 
+                const string VALID_NAME_START = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+                const string STANDARD_NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+
+                bool goodFirstCharacter = VALID_NAME_START.IndexOf(Name[0]) >= 0;
+                bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
+                string nameUpper = Name.ToUpper();
+                bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
+                if (Name.Length > 0
+                    && goodFirstCharacter
+                    && noSpecialCharacters
+                    && noSpecialName) {
+                    return Name;
+                }
+                else {
+                    return string.Format("'{0}'", Name); 
+                }
+            }
         }
 
         public string InternalReference { get; private set; }

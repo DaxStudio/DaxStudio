@@ -38,7 +38,8 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.ActivateResults();
+                            // Disabled on 2014-12-30 by marco - we should activate the result only when Counters are not selected...
+                            // runner.ActivateResults();
                             runner.QueryCompleted();
                         }
                     }); //,TaskScheduler.FromCurrentSynchronizationContext());
@@ -73,7 +74,8 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                                 res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.ActivateResults();
+                            // Disabled on 2014-12-30 by marco - we should activate the result only when Counters are not selected...
+                            // runner.ActivateResults();
                             runner.QueryCompleted();
                         }
                         

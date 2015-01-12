@@ -7,7 +7,6 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Views;
-using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.AnalysisServices;
@@ -125,13 +124,28 @@ namespace DaxStudio.UI.ViewModels
                 SetDefaultHighlightFunction(); 
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
-                _editor.DragOver += OnDragOver;
+             //   _editor.DragOver += OnDragOver;
+             //   _editor.AllowDrop = true;
+                //_editor.Drop += OnDrop;
+                _editor.PreviewDrop += OnDrop;
+             //   _editor.DragEnter += OnDragEnter;
+
+             //   _editor.TextArea.Drop += OnDrop;
+             //   _editor.TextArea.AllowDrop = true;
+                
             }
             if (this.State == DocumentState.LoadPending)
             {
                 OpenFile();
             }
 
+        }
+
+        private void OnDrop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+            var data = (string)e.Data.GetData(typeof(string));
+            InsertTextAtSelection(data);
         }
 
         void OnEditorLostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
@@ -144,10 +158,8 @@ namespace DaxStudio.UI.ViewModels
         void OnEditorGotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
             this.CanCopy = true;
-            
             this.CanPaste = true;
             this.CanCut = true;
-            
         }
 
         void OnDragOver(object sender, DragEventArgs e)
@@ -857,14 +869,6 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void DragOver(IDropInfo dropInfo)
-        {
-            if (dropInfo.Data is ADOTabularTable || dropInfo.Data is ADOTabularColumn)
-            {
-                dropInfo.Effects = DragDropEffects.Move;
-            }
-        }
-        
         private void InsertTextAtSelection(string text)
         {
             
@@ -1433,6 +1437,7 @@ namespace DaxStudio.UI.ViewModels
             caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
             caret.BringCaretToView();
         }
+
     }
 
 }

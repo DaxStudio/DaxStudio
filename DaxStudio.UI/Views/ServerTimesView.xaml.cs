@@ -23,5 +23,10 @@ namespace DaxStudio.UI.Views
         {
             InitializeComponent();
         }
+
+        private void DataGrid_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e) {
+            e.Handled = true;
+        }
+
     }
 }

@@ -32,6 +32,7 @@ namespace DaxStudio.UI.Model
                 case TraceEventClass.QuerySubcubeVerbose:
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     trc.Columns.Add(TraceColumn.Duration);
+                    trc.Columns.Add(TraceColumn.CpuTime);
                     break;
                 case TraceEventClass.Error:
                     trc.Columns.Add(TraceColumn.Error);

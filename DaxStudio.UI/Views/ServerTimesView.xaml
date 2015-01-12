@@ -3,31 +3,169 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"             
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
-    
-    <Grid Background="White" >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:EventSubclassConverter x:Key="EventSubclass"></conv:EventSubclassConverter>
+            <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
+            <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="Total Server Duration:" Grid.Row="0" Grid.Column="0" Padding="5,5,0,0"/>
-        <TextBlock Text="SE Duration:" Grid.Row="1" Padding="5,5,0,0"/>
-        <TextBlock Text="SE Queries:" Grid.Row="2" Padding="5,5,0,0"/>
-        <TextBlock Text="SE Cache Matches:" Grid.Row="3" Padding="5,5,0,0"/>
-        
-        <TextBlock x:Name="TotalDuration" Text="0" Grid.Row="0" Grid.Column="1" Padding="5,5,0,0" />
-        <TextBlock x:Name="StorageEngineDuration" Text="0" Grid.Row="1" Grid.Column="1" Padding="5,5,0,0"/>
-        <TextBlock x:Name="StorageEngineQueryCount" Text="0" Grid.Row="2" Grid.Column="1" Padding="5,5,0,0" />
-        <TextBlock x:Name="VertipaqCacheMatches" Text="0" Grid.Row="3" Grid.Column="1" Padding="5,5,0,0" />
+        <ScrollViewer Background="White" VerticalScrollBarVisibility="Auto" Grid.Column="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Background="White" Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="46" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Total Duration ms:" Grid.Row="0" Grid.Column="0" Padding="5,5,0,0"/>
+                    <TextBlock Text="FE Duration ms:" Grid.Row="1" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Duration ms:" Grid.Row="2" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE CPU ms:" Grid.Row="3" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Queries #:" Grid.Row="4" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Cache Matches #:" Grid.Row="5" Padding="5,5,0,0"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding TotalDuration, StringFormat='#,0'}" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding FormulaEngineDuration, StringFormat='#,0'}" />
+                    <TextBlock Grid.Row="1" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right"
+                   Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding StorageEngineDuration, StringFormat='#,0'}" />
+                    <TextBlock Grid.Row="2" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right"
+                   Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0'}" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right" 
+                   Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"/>
+                </Grid>
+                <Rectangle Width="Auto" Height="5" Grid.Row="1" Fill="WhiteSmoke"
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch" >
+
+                </Rectangle>
+                <TextBox Grid.Row="2" Padding="5,5,5,5"
+                     TextWrapping="Wrap"
+                     Text="{Binding ElementName=ListEvents, Path=SelectedItem.Query, Mode=OneWay}"
+                         BorderThickness="0"
+                         IsReadOnly="True">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                            <Separator/>
+                            <MenuItem Command="SelectAll"></MenuItem>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+            </Grid>
+        </ScrollViewer>
+        <GridSplitter Width="5" Grid.Column="1" 
+                      ResizeDirection="Columns" 
+                      Grid.Row="0"
+                      Height="Auto" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch" 
+                    Margin="0"/>
+        <DataGrid Name="ListEvents" Grid.Column="2" SelectedItem="{Binding SelectedEvent}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
+                  behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
+                  ItemsSource="{Binding StorageEngineEvents}" 
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  ClipboardCopyMode="IncludeHeader"
+                  ScrollViewer.CanContentScroll="False"
+                  FrozenColumnCount="1"
+                  GridLinesVisibility="None" >
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <ContextMenu.ItemsSource>
+                        <CompositeCollection>
+                            <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                            <Separator/>
+                            <MenuItem Command="SelectAll"></MenuItem>
+                            <Separator />
+                            <MenuItem Header="Cache" IsCheckable="True" IsChecked="{Binding CacheVisible}" />
+                            <MenuItem Header="Internal" IsCheckable="True" IsChecked="{Binding InternalVisible}" />
+                        </CompositeCollection>
+                    </ContextMenu.ItemsSource>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                    <Setter Property="HorizontalAlignment" Value="Right" />
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="5,0,5,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Border Padding="{TemplateBinding Padding}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        Background="{TemplateBinding Background}" 
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Line" Width="40" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding Subclass, Converter={StaticResource EventSubclass}}" />
+                <DataGridTextColumn Header="Durat." IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto" 
+                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"/>
+
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
-    
 </UserControl>

@@ -11,6 +11,7 @@
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+    xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -305,13 +306,14 @@
                                                    Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="2"
                                                    VerticalAlignment="Top" MinWidth="100" MinHeight="80"
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                   AllowDrop="True"
+                                                   
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    
                                                    EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
-                                                   EditorCaretOffset="{Binding CaretOffset}" >
+                                                   EditorCaretOffset="{Binding CaretOffset}" 
+                                                   >
                                         
                                         <ContextMenuService.ContextMenu>
                                         <ContextMenu>

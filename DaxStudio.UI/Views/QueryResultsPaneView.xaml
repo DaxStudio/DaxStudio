@@ -18,7 +18,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+    <Grid VerticalAlignment="Top" HorizontalAlignment="Stretch">
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
 <!--
@@ -66,9 +66,8 @@
                 </DataGrid.ColumnHeaderStyle>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
                     </ContextMenu>
-                
                 </DataGrid.ContextMenu>
             </DataGrid>
 

@@ -50,7 +50,7 @@ namespace DaxStudio.UI.AttachedProperties
                 var scrollToEndHandler = new NotifyCollectionChangedEventHandler(
                     (s1, e1) =>
                         {
-                            if (listView.Items.Count > 0)
+                            if (listView.Items.Count > 0 && e1 != null && e1.NewItems != null) // fix for error in certain conditions
                             {
                                 //object lastItem = listView.Items[listView.Items.Count - 1];
                                 var lastItem = e1.NewItems[0];
