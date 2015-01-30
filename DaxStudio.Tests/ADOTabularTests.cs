@@ -199,5 +199,13 @@ namespace DaxStudio.Tests
             Assert.AreEqual("_Total Current Quarter Sales Performance Status", k.Status.Caption);
         }
 
+        [TestMethod]
+        public void TestDatabaseParser()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            var dd = c.Databases.GetDatabaseDictionary();
+            Assert.AreEqual(4, dd.Count, "has 2 databases");
+        }
+
     }
 }

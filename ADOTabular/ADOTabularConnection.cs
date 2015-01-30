@@ -69,7 +69,7 @@ namespace ADOTabular
         {
             get { 
                 //_adomdConn.UnderlyingConnection.Databases
-                return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database); }
+                return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database, Databases.GetDatabaseDictionary()[_adomdConn.Database]); }
         }
 
         public void Open()
@@ -309,6 +309,7 @@ namespace ADOTabular
             AdomdCommand cmd = _adomdConn.CreateCommand();
             cmd.CommandType = CommandType.Text;
             cmd.CommandText = command;
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             return cmd.ExecuteNonQuery();
         }
 

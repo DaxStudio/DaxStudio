@@ -138,6 +138,11 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.FindPrevNow();
         }
 
+        public void FormatQuery()
+        {
+            Ribbon.FormatQuery();
+        }
+
         protected override void OnActivate()
         {
             base.OnActivate();

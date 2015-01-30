@@ -6,21 +6,36 @@ namespace ADOTabular
     {
         private readonly ADOTabularConnection _adoTabConn;
         private readonly string _databaseName;
+        private readonly string _databaseId;
         private ADOTabularModelCollection _modelColl;
 
-        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName)
+        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId)
         {
             _adoTabConn = adoTabConn;
             _databaseName = databaseName;
+            _databaseId = databaseId;
         }
+
+        public string Id
+        {
+            get { return _databaseId; }
+        }
+
+        // TODO - get database ID
         /*
+        private string _id = string.Empty;
         public string Id
         {
             get {
+                if (_id == string.Empty)
+                {
+
                 var resColl = new AdomdClientWrappers.AdomdRestrictionCollection();
                 resColl.Add( new AdomdClientWrappers.AdomdRestriction("ObjectExpansion", "ExpandObject"))
                 var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",resColl); 
-            
+                _id = "blah";
+                }
+                return _id;
             }
         }
         */
@@ -49,7 +64,7 @@ namespace ADOTabular
                     </Object>
                    </ClearCache>
                  </Batch>
-                ", _adoTabConn.Database.Name));
+                ", _adoTabConn.Database.Id));
         }
         public MetadataImages MetadataImage
         {

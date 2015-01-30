@@ -144,6 +144,45 @@ namespace DaxStudio.Tests
             Assert.AreEqual(expected, output);
         }
 
+        [TestMethod]
+        public async void TestDaxFormatterProxyWithInvalidQuery()
+        {
+            var qry = "evaluate values(tatatata ";
+            //var req = new DaxStudio.UI.Model.DaxFormatterRequest();
+            //req.Dax = qry;
 
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDax(qry);
+            Assert.AreEqual(0, res.FormattedDax.Length);
+            Assert.AreEqual(1, res.errors.Count);
+        }
+
+        [TestMethod]
+        public async void TestDaxFormatterProxyWithLongQuery()
+        {
+            var qry = @"
+EVALUATE
+CALCULATETABLE(
+ADDCOLUMNS (
+    GENERATE (
+        GENERATE (
+            VALUES ( 'SalesTerritory'[SalesTerritory Country] ),
+            VALUES ( 'Product'[Colour] )
+        ),
+        VALUES ( 'Reseller'[BusinessType] )
+    ),
+    ""Sales Amt"", [Sale Amt]
+), 
+'Date'[Calendar Year] = 2006,
+FILTER(VALUES('Product'[Colour]), 
+PATHCONTAINS(""BLACK|Blue|Multi"", 'Product'[Colour]))
+)
+ORDER BY 'SalesTerritory'[SalesTerritory Country] desc, 'Product'[Colour]
+";
+            
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDax(qry);
+            Assert.AreEqual(563, res.FormattedDax.Length, "Query length does not match");
+            Assert.IsNull(res.errors);
+            
+        }
     }
 }

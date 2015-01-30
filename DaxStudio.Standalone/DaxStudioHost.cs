@@ -21,7 +21,7 @@ namespace DaxStudio.Standalone
         private IDaxStudioProxy _proxy;
         private IEventAggregator _eventAggregator;
         private string _commandLineFileName = string.Empty;
-        private UI.ViewModels.DocumentViewModel _activeDocument;
+        //private UI.ViewModels.DocumentViewModel _activeDocument;
         [ImportingConstructor]
         public DaxStudioHost(IEventAggregator eventAggregator)
         {

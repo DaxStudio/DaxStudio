@@ -6,14 +6,16 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
 {
     public class QueryPlanRow {
-        public string Operation { get; private set; }
-        public string IndentedOperation { get; private set; }
-        public int Level { get; private set; }
-        public int RowNumber { get; private set; }
+        public string Operation { get;  set; }
+        public string IndentedOperation { get;  set; }
+        public int Level { get;  set; }
+        public int RowNumber { get;  set; }
 
         private const int SPACE_PER_LEVEL = 4;
         public virtual void PrepareQueryPlanRow(string line, int rowNumber) {
@@ -22,10 +24,10 @@ namespace DaxStudio.UI.ViewModels
             Operation = line.Trim();
             IndentedOperation = new string(' ', Level * SPACE_PER_LEVEL) + Operation;
         }
-        static public IEnumerable<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
+        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
             where T : QueryPlanRow, new() {
             int rowNumber = 0;
-            return (
+            return new BindableCollection<T>((
                 from row in physicalQueryPlan.Split(new[] { '\r', '\n' })
                 where row.Trim().Length > 0
                 select row)
@@ -33,12 +35,12 @@ namespace DaxStudio.UI.ViewModels
                 var operation = new T();
                 operation.PrepareQueryPlanRow(line, ++rowNumber);
                 return operation; 
-            }).ToList();
+            }).ToList());
         }
     }
 
     public class PhysicalQueryPlanRow : QueryPlanRow {
-        public long? Records { get; private set; }
+        public long? Records { get; set; }
 
         private const string RecordsPrefix = @"#Records=";
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
@@ -58,7 +60,7 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel
+    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, ISaveState
     {
         [ImportingConstructor]
         public QueryPlanTraceViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
@@ -117,8 +119,8 @@ namespace DaxStudio.UI.ViewModels
         public string LogicalQueryPlanText { get; private set; }
         public long TotalDuration { get; private set; }
 
-        private IEnumerable<PhysicalQueryPlanRow> _physicalQueryPlanRows;
-        private IEnumerable<LogicalQueryPlanRow> _logicalQueryPlanRows;
+        private BindableCollection<PhysicalQueryPlanRow> _physicalQueryPlanRows;
+        private BindableCollection<LogicalQueryPlanRow> _logicalQueryPlanRows;
 
         private PhysicalQueryPlanRow _selectedPhysicalRow;
         public PhysicalQueryPlanRow SelectedPhysicalRow {
@@ -142,20 +144,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public IObservableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {
+        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {
             get {
-                var pqp = from r in _physicalQueryPlanRows
-                          select r;
-                return new BindableCollection<PhysicalQueryPlanRow>(pqp);
+                //var pqp = from r in _physicalQueryPlanRows
+                //          select r;
+                //return new BindableCollection<PhysicalQueryPlanRow>(pqp);
+                return _physicalQueryPlanRows;
             }
+            private set { _physicalQueryPlanRows = value; }
         }
 
-        public IObservableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
+        public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
             get {
-                var lqp = from r in _logicalQueryPlanRows
-                          select r;
-                return new BindableCollection<LogicalQueryPlanRow>(lqp);
+                //var lqp = from r in _logicalQueryPlanRows
+                //          select r;
+                //return new BindableCollection<LogicalQueryPlanRow>(lqp);
+                return _logicalQueryPlanRows;
             }
+            private set { _logicalQueryPlanRows = value; }
         }
         
         // IToolWindow interface
@@ -164,6 +170,34 @@ namespace DaxStudio.UI.ViewModels
             get { return "Query Plan"; }
             set { }
         }
-        
+
+
+        void ISaveState.Save(string filename)
+        {
+            var m = new QueryPlanModel()
+            {
+                PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
+                LogicalQueryPlanRows = this.LogicalQueryPlanRows
+            };
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            File.WriteAllText(filename + ".queryPlans", json);
+        }
+
+        void ISaveState.Load(string filename)
+        {
+            filename = filename + ".queryPlans";
+            if (!File.Exists(filename)) return;
+
+            this.IsChecked = true;
+            string data = File.ReadAllText(filename);
+            QueryPlanModel m = JsonConvert.DeserializeObject<QueryPlanModel>(data);
+
+            PhysicalQueryPlanRows = m.PhysicalQueryPlanRows;
+            LogicalQueryPlanRows = m.LogicalQueryPlanRows;
+
+            
+            NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
+            NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+        }
     }
 }

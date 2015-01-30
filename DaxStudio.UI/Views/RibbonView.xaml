@@ -507,6 +507,20 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                <Fluent:Button Name="FormatQuery"
+                               Header="Format Query"
+                               cal:Message.Attach="[Event Click] = [Action FormatQuery()]"
+                               Icon="{StaticResource ParameterIcon}"
+                               SizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Format Query"
+                                          Text="Uses DaxFormatter.com to provide a nicely formatted query"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+
+
                 <Fluent:Button x:Name="saveButton"
                                Header="Save"
                                Fluent:KeyTip.Keys="S"

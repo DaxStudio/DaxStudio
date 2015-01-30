@@ -1042,6 +1042,16 @@ namespace DaxStudio.UI.ViewModels
                     tw.Write(GetEditor().Text);
                     tw.Close();
                 }
+                foreach (var tw in ToolWindows)
+                {
+                    var saver = tw as ISaveState;
+                    if (saver != null)
+                    {
+                        saver.Save(FileName);
+                    }
+
+                }
+
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
             }
@@ -1079,20 +1089,40 @@ namespace DaxStudio.UI.ViewModels
         {    
             Execute.OnUIThread(() =>
             {
-                Task.Run(() => {
+                Task.Run(() =>
+                {
                     Execute.OnUIThread(() => { LoadFile(); });
-                    }).ContinueWith((previous) => {
-                        Execute.OnUIThread(() => { ChangeConnection(); });
-                        }).ContinueWith((previous) => {
-                            Execute.OnUIThread(() => { IsDirty = false; });
+                }).ContinueWith((previous) =>
+                {
+                    Execute.OnUIThread(() => { ChangeConnection(); });
+                }).ContinueWith((previous) =>
+                {
+                    Execute.OnUIThread(() => { IsDirty = false; });
+
                 });
             }) ;
             
         }
 
+        private void LoadState()
+        {
+            if (!_isLoadingFile) return;
+            // we can only load trace watchers if we are connected to a server
+            if (!this.IsConnected) return;
+
+            foreach (var tw in TraceWatchers)
+            {
+                var loader = tw as ISaveState;
+                if (loader == null) continue;
+                loader.Load(FileName);
+            }
+            _isLoadingFile = false;
+        }
+
         
         public void LoadFile()
         {
+            _isLoadingFile = true;
             _displayName = Path.GetFileName(FileName);
             IsDiskFileName = true;
             using (TextReader tr = new StreamReader(FileName, true))
@@ -1101,6 +1131,15 @@ namespace DaxStudio.UI.ViewModels
                 GetEditor().Text = tr.ReadToEnd();
                 tr.Close();
             }
+            
+            /*
+            foreach (var tw in ToolWindows)
+            {
+                var loader = tw as ISaveState;
+                if (loader == null) continue;
+                loader.Load(FileName);
+            }
+             */ 
             IsDirty = false;
             State = DocumentState.Loaded;
         }
@@ -1183,6 +1222,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this));//,IsPowerPivotConnection));
                         _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
+                        LoadState();
                         msg.Dispose(); //reset the status message
                     });
             
@@ -1201,6 +1241,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var sw = Stopwatch.StartNew();
+
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
                 ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
@@ -1328,6 +1369,7 @@ namespace DaxStudio.UI.ViewModels
             } }
         public void Cut() { this.GetEditor().Cut(); }
         private bool _canPaste = true;
+        private bool _isLoadingFile;
         public bool CanPaste
         {
             get { return _canPaste; }
@@ -1436,6 +1478,14 @@ namespace DaxStudio.UI.ViewModels
             var caret = _editor.TextArea.Caret;
             caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
             caret.BringCaretToView();
+        }
+
+        public async void FormatQuery()
+        {
+            using (var m = new StatusBarMessage(this,"Formatting Query..."))
+            { 
+                await Model.DaxFormatterProxy.FormatQuery(this,_editor );
+            }
         }
 
     }

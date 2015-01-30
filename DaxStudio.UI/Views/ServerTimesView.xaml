@@ -17,6 +17,7 @@
             <conv:EventSubclassConverter x:Key="EventSubclass"></conv:EventSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
+            <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -41,6 +42,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -48,29 +50,33 @@
                         <ColumnDefinition Width="46" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Total Duration ms:" Grid.Row="0" Grid.Column="0" Padding="5,5,0,0"/>
-                    <TextBlock Text="FE Duration ms:" Grid.Row="1" Padding="5,5,0,0"/>
-                    <TextBlock Text="SE Duration ms:" Grid.Row="2" Padding="5,5,0,0"/>
-                    <TextBlock Text="SE CPU ms:" Grid.Row="3" Padding="5,5,0,0"/>
-                    <TextBlock Text="SE Queries #:" Grid.Row="4" Padding="5,5,0,0"/>
-                    <TextBlock Text="SE Cache Matches #:" Grid.Row="5" Padding="5,5,0,0"/>
+                    <TextBlock Text="Total CPU Duration ms:" Grid.Row="1" Grid.Column="0" Padding="5,5,0,0"/>
+                    <TextBlock Text="FE Duration ms:" Grid.Row="2" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Duration ms:" Grid.Row="3" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE CPU ms:" Grid.Row="4" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Queries #:" Grid.Row="5" Padding="5,5,0,0"/>
+                    <TextBlock Text="SE Cache Matches #:" Grid.Row="6" Padding="5,5,0,0"/>
 
                     <TextBlock Grid.Row="0" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
                        Text="{Binding TotalDuration, StringFormat='#,0'}" />
                     <TextBlock Grid.Row="1" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
-                       Text="{Binding FormulaEngineDuration, StringFormat='#,0'}" />
-                    <TextBlock Grid.Row="1" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right"
-                   Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"/>
+                       Text="{Binding TotalCpuDuration, StringFormat='#,0'}" />
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
-                       Text="{Binding StorageEngineDuration, StringFormat='#,0'}" />
+                       Text="{Binding FormulaEngineDuration, StringFormat='#,0'}" />
                     <TextBlock Grid.Row="2" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right"
-                   Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"/>
+                   Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"/>
                     <TextBlock Grid.Row="3" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
-                       Text="{Binding StorageEngineCpu, StringFormat='#,0'}" />
+                       Text="{Binding StorageEngineDuration, StringFormat='#,0'}" />
+                    <TextBlock Grid.Row="3" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right"
+                   Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"/>
+                    
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
-                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0'}" />
                     <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
+                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Padding="0,5,2,0" HorizontalAlignment="Right"
                        Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}"/>
-                    <TextBlock Grid.Row="5" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right" 
+                    <TextBlock Grid.Row="6" Grid.Column="2" Padding="0,5,2,0" HorizontalAlignment="Right" 
                    Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"/>
                 </Grid>
                 <Rectangle Width="Auto" Height="5" Grid.Row="1" Fill="WhiteSmoke"

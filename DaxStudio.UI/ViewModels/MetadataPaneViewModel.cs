@@ -10,7 +10,6 @@ using GongSolutions.Wpf.DragDrop;
 using Serilog;
 using DaxStudio.UI.Model;
 using System.Collections.Generic;
-using DaxStudio.UI.Events;
 using System;
 
 namespace DaxStudio.UI.ViewModels

@@ -6,15 +6,19 @@ using DaxStudio.UI.Model;
 using System.Linq;
 using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
+using System.IO;
+using System;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
 {
     public class TraceStorageEngineEvent {
-        public TraceEventSubclass Subclass { get; private set; }
-        public string Query { get; private set; }
-        public long Duration { get; private set; }
-        public long CpuTime { get; private set; }
-        public int RowNumber { get; private set; }
+        public TraceEventSubclass Subclass { get;  set; }
+        public string Query { get;  set; }
+        public long Duration { get;  set; }
+        public long CpuTime { get;  set; }
+        public int RowNumber { get;  set; }
 
         public TraceStorageEngineEvent( TraceEventArgs ev, int rowNumber ) {
             RowNumber = rowNumber;
@@ -26,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
                 CpuTime = ev.CpuTime;
             }
         }
+        public TraceStorageEngineEvent() { }
     }
 
     public static class TraceStorageEngineExtensions {
@@ -75,7 +80,7 @@ namespace DaxStudio.UI.ViewModels
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     class ServerTimesViewModel
-        : TraceWatcherBaseViewModel 
+        : TraceWatcherBaseViewModel, ISaveState
         
     {
         [ImportingConstructor]
@@ -99,6 +104,7 @@ namespace DaxStudio.UI.ViewModels
         {
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;
+            TotalCpuDuration = 0;
             StorageEngineCpu = 0;
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;
@@ -120,7 +126,8 @@ namespace DaxStudio.UI.ViewModels
                 if (traceEvent.EventClass == TraceEventClass.QueryEnd)
                 {
                     TotalDuration = traceEvent.Duration;
-                    FormulaEngineDuration = traceEvent.CpuTime;
+                    TotalCpuDuration = traceEvent.CpuTime;
+                    //FormulaEngineDuration = traceEvent.CpuTime;
                 }
                 if (traceEvent.EventClass == TraceEventClass.VertiPaqSEQueryCacheMatch)
                 {
@@ -128,17 +135,20 @@ namespace DaxStudio.UI.ViewModels
                     _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent,_storageEngineEvents.Count()+1));
                 }
             }
+
+            FormulaEngineDuration = TotalDuration - StorageEngineDuration;
+            
             Events.Clear();
-            NotifyOfPropertyChange(() => StorageEngineDuration);
-            NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
-            NotifyOfPropertyChange(() => FormulaEngineDuration);
-            NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
-            NotifyOfPropertyChange(() => StorageEngineCpu);
-            NotifyOfPropertyChange(() => TotalDuration);
-            NotifyOfPropertyChange(() => VertipaqCacheMatches);
-            NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
-            NotifyOfPropertyChange(() => StorageEngineQueryCount);
+            
             NotifyOfPropertyChange(() => StorageEngineEvents);
+        }
+
+        private long _totalCpuDuration = 0;
+        public long TotalCpuDuration { 
+            get { return _totalCpuDuration; } 
+            set { _totalCpuDuration = value;
+            NotifyOfPropertyChange(() => TotalCpuDuration);
+            } 
         }
 
         public double StorageEngineDurationPercentage {
@@ -159,12 +169,53 @@ namespace DaxStudio.UI.ViewModels
                 return StorageEngineQueryCount == 0 ? 0 : (double)VertipaqCacheMatches / (double)StorageEngineQueryCount;
             }
         }
-        public long TotalDuration { get; private set; }
-        public long FormulaEngineDuration { get; private set; }
-        public long StorageEngineDuration { get; private set; }
-        public long StorageEngineCpu { get; private set; }
-        public long StorageEngineQueryCount { get; private set; }
-        public int VertipaqCacheMatches { get; set; }
+        private long _totalDuration = 0;
+        public long TotalDuration { get { return _totalDuration; }
+            private set { _totalDuration = value;
+            NotifyOfPropertyChange(() => TotalDuration);
+            NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
+            NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
+            NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
+            }
+        }
+        private long _formulaEngineDuration = 0;
+        public long FormulaEngineDuration { get { return _formulaEngineDuration; }
+            private set { _formulaEngineDuration = value;
+                NotifyOfPropertyChange(() => FormulaEngineDuration);
+                NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
+            }
+        }
+        private long _storageEngineDuration = 0;
+        public long StorageEngineDuration { get { return _storageEngineDuration; }
+            private set {
+                _storageEngineDuration = value;
+                NotifyOfPropertyChange(() => StorageEngineDuration);
+                NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
+            }
+        }
+        private long _storageEngineCpu = 0;
+        public long StorageEngineCpu { get { return _storageEngineCpu; }
+            private set {
+                _storageEngineCpu = value;
+                NotifyOfPropertyChange(() => StorageEngineCpu);
+            }
+        }
+        private long _storageEngineQueryCount = 0;
+        public long StorageEngineQueryCount { get { return _storageEngineQueryCount; }
+            private set {
+                _storageEngineQueryCount = value;
+                NotifyOfPropertyChange(() => StorageEngineQueryCount);
+            }
+        }
+
+        private int _vertipaqCacheMatches = 0;
+        public int VertipaqCacheMatches { get { return _vertipaqCacheMatches; } 
+            set {
+                _vertipaqCacheMatches = value;
+                NotifyOfPropertyChange(() => VertipaqCacheMatches);
+                NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
+            }
+        }
  
         private readonly BindableCollection<TraceStorageEngineEvent> _storageEngineEvents;
 
@@ -213,5 +264,46 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
+
+        void ISaveState.Save(string filename)
+        {
+            var m = new ServerTimesModel()
+            {
+                FormulaEngineDuration = this.FormulaEngineDuration,
+                StorageEngineDuration = this.StorageEngineDuration,
+                StorageEngineCpu = this.StorageEngineCpu,
+                TotalDuration = this.TotalDuration,
+                VertipaqCacheMatches = this.VertipaqCacheMatches,
+                StorageEngineQueryCount = this.StorageEngineQueryCount,                
+                StoreageEngineEvents =  this._storageEngineEvents,
+                TotalCpuDuration = this.TotalCpuDuration
+            };
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            File.WriteAllText(filename + ".serverTimings" , json);
+
+        }
+
+        void ISaveState.Load(string filename)
+        {
+            filename = filename + ".serverTimings";
+            if (!File.Exists(filename)) return;
+
+            this.IsChecked = true;
+            string data = File.ReadAllText(filename);
+            ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data);
+
+            FormulaEngineDuration = m.FormulaEngineDuration;
+            StorageEngineDuration = m.StorageEngineDuration;
+            StorageEngineCpu = m.StorageEngineCpu;
+            TotalDuration = m.TotalDuration;
+            VertipaqCacheMatches = m.VertipaqCacheMatches;
+            StorageEngineQueryCount = m.StorageEngineQueryCount;
+            TotalCpuDuration = m.TotalCpuDuration;
+
+            this._storageEngineEvents.Clear();
+            this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
+            NotifyOfPropertyChange(() => StorageEngineEvents);
+            
+        }
     }
 }
