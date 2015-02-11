@@ -69,9 +69,11 @@ namespace DaxStudio.UI.Converters
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
                         var colBinding = new Binding("[" + item.ColumnName + "]");
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
+                        
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
                         cellTemplate.VisualTree = cellTxtBlock;
+                        
                     }
                     var dgc = new DataGridTemplateColumn
                     {
@@ -79,7 +81,8 @@ namespace DaxStudio.UI.Converters
                     //    Width = Double.NaN,    
                         HeaderTemplate = hdrTemplate,
                         Header = item.Caption,
-                        ClipboardContentBinding = new Binding(item.Caption)
+                        
+                        ClipboardContentBinding = new Binding(item.ColumnName)
                     };
 
                     columns.Add(dgc);
