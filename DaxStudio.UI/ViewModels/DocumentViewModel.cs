@@ -26,6 +26,7 @@ using System.Windows.Threading;
 using UnitComboLib.Unit;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -65,8 +66,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Init(windowManager, eventAggregator);
             _host = host;
-            State = DocumentState.New;
-              
+            State = DocumentState.New;           
         }
 
         public void Init(IWindowManager windowManager, IEventAggregator eventAggregator)
@@ -132,7 +132,7 @@ namespace DaxStudio.UI.ViewModels
 
              //   _editor.TextArea.Drop += OnDrop;
              //   _editor.TextArea.AllowDrop = true;
-                
+
             }
             if (this.State == DocumentState.LoadPending)
             {
@@ -140,6 +140,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+
 
         private void OnDrop(object sender, DragEventArgs e)
         {
@@ -298,7 +299,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void ActivateResults()
         {
-            QueryResultsPane.Activate();
+            if (!TraceWatchers.Any(tw => tw.IsChecked))
+            {
+                // only activate if no trace watchers are active
+                // otherwise we assume that the user will want to keep the
+                QueryResultsPane.Activate();
+            }
         }
 
         public void ActivateOutput()
@@ -360,7 +366,13 @@ namespace DaxStudio.UI.ViewModels
             base.OnActivate();
             _eventAggregator.Subscribe(this);
             var loc = Document.GetLocation(0);
-            
+
+            if (HasDatabaseSchemaChanged())
+            {
+                RefreshMetadata();
+                OutputMessage("Model schema change detected - Metadata refreshed");
+            }
+
             try
             {
                 _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(loc.Column, loc.Line));
@@ -865,6 +877,11 @@ namespace DaxStudio.UI.ViewModels
         public void OutputError(string error)
         {
             OutputPane.AddError(error);
+        }
+
+        public void OutputError(string error, int row, int column)
+        {
+            OutputPane.AddError(error,row,column);
         }
 
         #endregion
@@ -1467,17 +1484,20 @@ namespace DaxStudio.UI.ViewModels
         {
             var lineOffset = 0;
             var colOffset = 0;
-            
-            if (_editor.SelectionLength > 0)
+            var editor = GetEditor();
+
+            if (editor.SelectionLength > 0)
             {
                 // need to position this in relation to the current selection...
                 var selstart = _editor.Document.GetLocation(_editor.SelectionStart);
                 lineOffset = selstart.Line;
                 colOffset = selstart.Column;
             }
-            var caret = _editor.TextArea.Caret;
+            var caret = editor.TextArea.Caret;
             caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
             caret.BringCaretToView();
+            
+            InsertTextAtSelection("><");
         }
 
         public async void FormatQuery()
@@ -1488,6 +1508,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
+        public bool HasDatabaseSchemaChanged()
+        {
+            if (Connection == null) return false;
+            if (Connection.Database == null) return false;
+            return Connection.Database.HasSchemaChanged();
+        }
+
+        internal void RefreshMetadata()
+        {
+            this.MetadataPane.ModelList = this.Connection.Database.Models;
+        }
+        private bool _isFocused;
+        public bool IsFocused { get { return _isFocused; } set { _isFocused = value; NotifyOfPropertyChange(()=>IsFocused); } }
     }
 
 }

@@ -75,6 +75,8 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public abstract string Title { get; set; }
 
+        public abstract string ToolTipText { get; set; }
+
         public virtual string DefaultDockingPane
         {
             get { return "DockBottom"; }

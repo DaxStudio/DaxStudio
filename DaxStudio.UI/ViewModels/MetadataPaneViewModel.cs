@@ -167,5 +167,7 @@ namespace DaxStudio.UI.ViewModels
                 node.ApplyCriteria(CurrentCriteria, new Stack<FilterableTreeViewItem>());
         }
 
+        
+
     }
 }

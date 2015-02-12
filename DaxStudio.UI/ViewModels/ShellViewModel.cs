@@ -7,6 +7,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Model;
 using Serilog;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels {
     [Export(typeof (IShell))]
@@ -23,6 +24,7 @@ namespace DaxStudio.UI.ViewModels {
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
         {
+
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
@@ -44,11 +46,22 @@ namespace DaxStudio.UI.ViewModels {
             DisplayName = string.Format("DaxStudio - {0}", Version.ToString());
             notifyIcon = new NotifyIcon();
             VersionChecker = versionCheck;
+            Application.Current.Activated += OnApplicationActivated; 
             
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             Log.Logger = log;
             Log.Verbose("============ Application Launch =============");
         }
+
+        private void OnApplicationActivated(object sender, EventArgs e)
+        {
+            Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
+            //_eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
+            System.Diagnostics.Debug.WriteLine("OnApplicationActivated");
+        }
+
+        
 
         public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
         public DocumentTabViewModel Tabs { get; set; }

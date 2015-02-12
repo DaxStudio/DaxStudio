@@ -44,7 +44,9 @@
     <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
     <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
     <BitmapImage x:Key="InformationIcon"  UriSource="..\images\information.circle.png"></BitmapImage>
+    <BitmapImage x:Key="RefreshIcon"  UriSource="..\images\icon-refresh@17px.png"></BitmapImage>
+    <BitmapImage x:Key="RefreshIconLarger"  UriSource="..\images\icon-refresh@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="ReplaceIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-replace_x16.png"/>
     <BitmapImage x:Key="FindIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-find_x16.png"/>
-
+    <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-daxformatter@16px.png"></BitmapImage>
 </ResourceDictionary>

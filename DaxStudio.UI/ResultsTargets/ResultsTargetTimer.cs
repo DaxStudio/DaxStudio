@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Model
         public string Name {get { return "Timer"; } }
         public string Group {get { return "Standard"; } }
         
-        public void OutputResults(IQueryRunner runner)
+        private void OutputResults(IQueryRunner runner)
         {
             try
             {

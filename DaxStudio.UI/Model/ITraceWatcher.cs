@@ -14,5 +14,8 @@ namespace DaxStudio.UI.Model
         bool IsChecked { get; set; }
 
         void CheckEnabled(IConnection connection);
+
+        string ToolTipText { get; }
+        
     }
 }

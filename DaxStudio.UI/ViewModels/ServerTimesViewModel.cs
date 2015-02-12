@@ -264,6 +264,14 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
+        public override string ToolTipText
+        {
+            get
+            {
+                return "Runs a server trace to record detailed timing information for performance profiling";
+            }
+            set { }
+        }
 
         void ISaveState.Save(string filename)
         {

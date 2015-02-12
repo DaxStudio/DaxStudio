@@ -223,6 +223,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanSelectDatabase);
+                NotifyOfPropertyChange(() => CanRefreshMetadata);
                 return;
             }
             try
@@ -247,6 +248,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanSelectDatabase);
+                NotifyOfPropertyChange(() => CanRefreshMetadata);
             }
         }
 
@@ -283,7 +285,7 @@ namespace DaxStudio.UI.ViewModels
                             Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set (changing)", value);
                             doc.SelectedDatabase = _selectedDatabase;
                             //doc.Connection.ChangeDatabase(_selectedDatabase);
-                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(doc));//, ActiveDocument.IsPowerPivotConnection));
+                            //_eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(doc));//, ActiveDocument.IsPowerPivotConnection));
                         }
                     }
 
@@ -314,6 +316,7 @@ namespace DaxStudio.UI.ViewModels
         public IResultsTarget SelectedTarget {
             get { return _selectedTarget ?? AvailableResultsTargets.Where(x => x.IsDefault).First<IResultsTarget>(); }
             set { _selectedTarget = value;
+            Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value.Name);
             NotifyOfPropertyChange(()=>SelectedTarget);}
         }
 
@@ -458,12 +461,22 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Handle(ApplicationActivatedEvent message)
         {
-            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "DocumentViewModel", "ApplicationActivatedEvent", message);
+            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:Start", message);
+            if (ActiveDocument != null)
+            {
+                if (ActiveDocument.HasDatabaseSchemaChanged())
+                {
+                    ActiveDocument.RefreshMetadata();
+                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
+                }
+            }
+            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:MetadataChecked", message);
             if (_host.IsExcel)
             {
                 //TODO - refresh workbooks and powerpivot conn if the host is excel
                 NotifyOfPropertyChange(() => Worksheets);
             }
+            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:End", message);
         }
 
         public void Handle(NewDocumentEvent message)
@@ -523,6 +536,16 @@ namespace DaxStudio.UI.ViewModels
         public void Replace()
         {
             _activeDocument.Replace();
+        }
+
+        public void RefreshMetadata()
+        {
+            _activeDocument.RefreshMetadata();
+        }
+
+        public bool CanRefreshMetadata
+        {
+            get { return ActiveDocument.IsConnected; }
         }
 
         internal void FindNow()

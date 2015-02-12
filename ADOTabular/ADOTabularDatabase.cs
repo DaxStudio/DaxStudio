@@ -8,12 +8,26 @@ namespace ADOTabular
         private readonly string _databaseName;
         private readonly string _databaseId;
         private ADOTabularModelCollection _modelColl;
+        private DateTime? _lastUpdate = null;
 
-        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId)
+        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate)
         {
             _adoTabConn = adoTabConn;
             _databaseName = databaseName;
             _databaseId = databaseId;
+            _lastUpdate = lastUpdate;
+        }
+
+        public bool HasSchemaChanged()
+        {
+            var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(true);
+            var dd = ddColl[_databaseName];
+            if (dd.LastUpdate > _lastUpdate)
+            {
+                _lastUpdate = dd.LastUpdate;
+                return true;
+            }
+            return false;
         }
 
         public string Id

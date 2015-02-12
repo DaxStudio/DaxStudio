@@ -17,6 +17,7 @@ namespace DaxStudio.UI.Model
         public string Group {get { return "Standard"; }
         }
 
+        /*
         public void OutputResults(IQueryRunner runner)
         {
             
@@ -38,11 +39,11 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            // Disabled on 2014-12-30 by marco - we should activate the result only when Counters are not selected...
-                            // runner.ActivateResults();
+                            // activate the result only when Counters are not selected...
+                            runner.ActivateResults();
                             runner.QueryCompleted();
                         }
-                    }); //,TaskScheduler.FromCurrentSynchronizationContext());
+                    }); 
             }
             catch (Exception ex)
             {
@@ -50,6 +51,7 @@ namespace DaxStudio.UI.Model
                 runner.OutputError(ex.Message);
             }
         }
+         */ 
         public int DisplayOrder
         {
             get { return 10; }
@@ -74,8 +76,8 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                                 res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            // Disabled on 2014-12-30 by marco - we should activate the result only when Counters are not selected...
-                            // runner.ActivateResults();
+                            // activate the result only when Counters are not selected...
+                            runner.ActivateResults();
                             runner.QueryCompleted();
                         }
                         

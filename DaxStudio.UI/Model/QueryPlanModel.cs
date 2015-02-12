@@ -10,6 +10,7 @@ namespace DaxStudio.UI.Model
 {
     public class QueryPlanModel
     {
+        public int FileFormatVersion { get { return 1; } }
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {get;set;}
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows { get; set; }
     }

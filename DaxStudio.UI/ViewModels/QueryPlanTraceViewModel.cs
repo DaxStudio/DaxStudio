@@ -171,7 +171,14 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
-
+        public override string ToolTipText
+        {
+            get
+            {
+                return "Runs a server trace to capture the Logical and Physical DAX Query Plans";
+            }
+            set { }
+        }
         void ISaveState.Save(string filename)
         {
             var m = new QueryPlanModel()

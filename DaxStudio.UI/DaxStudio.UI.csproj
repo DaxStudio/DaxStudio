@@ -202,6 +202,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.Net.Http.Formatting, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -219,9 +220,6 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="UIAutomationProvider" />
-    <Reference Include="UnitComboLib">
-      <HintPath>..\lib\UnitComboLib\UnitComboLib.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -269,6 +267,7 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
@@ -366,6 +365,7 @@
     <Compile Include="Utils\JsonDataTableConverter.cs" />
     <Compile Include="Utils\MessageBoxEx.cs" />
     <Compile Include="Utils\PaneStyleSelector.cs" />
+    <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
@@ -551,7 +551,9 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -585,6 +587,10 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnitComboLib\UnitComboLib.csproj">
+      <Project>{c8c325ad-d7ab-4e56-8a6b-7e8b11eb5443}</Project>
+      <Name>UnitComboLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -788,6 +794,22 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-find_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-refresh%4017px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-refresh%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-excel%4024px.png" />
+    <Resource Include="Images\icon-powerBI%4024px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-database%4024px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-daxformatter%4016px.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

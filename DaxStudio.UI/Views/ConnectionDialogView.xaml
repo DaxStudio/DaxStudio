@@ -124,7 +124,7 @@
                               OverridesDefaultStyle="True"
                               Padding="1.5,0">
                 </ToggleButton>
-                
+
                 <ScrollViewer x:Name="ExpanderContentScrollView" DockPanel.Dock="Bottom"
                               HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Hidden"
@@ -200,27 +200,53 @@
                         <StackPanel>
                             <Grid Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=HostIsExcel}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="150" />
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <RadioButton Content="PowerPivot Model" Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}">
-                                    
+                                <RadioButton  Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!--<Image Source="D:\Codeplex\DaxStudio\DaxStudio.UI\Images\icon-excel@24px.png" Margin="0,0,5,0"/>-->
+                                        <TextBlock Text="PowerPivot Model" />
+                                    </StackPanel>
                                 </RadioButton>
                                 <Label Content="{Binding WorkbookName}" Height="28" Margin="0,5,5,0" Name="lblWorkBook" VerticalAlignment="Top"  Grid.Column="1" />
 
                             </Grid>
                             <Label Content="The active workbook does not contain a PowerPivot model" Height="26" HorizontalAlignment="Left" Margin="5,0,0,0" Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowMissingModelWarning}"/>
+                            <Grid Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=PowerBIDesignerDetected}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,12,5,0" Name="rdoPowerBI" VerticalAlignment="Top" IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding PowerBIDesignerDetected}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!--<Image  Source="D:\Codeplex\DaxStudio\DaxStudio.UI\Images\icon-powerBI@24px.png" Margin="0,0,5,0"/>-->
+                                        <TextBlock Text="Power BI Designer"></TextBlock>
+                                    </StackPanel>
+                                </RadioButton>
+                                <Label Content="" Height="28" Margin="0,5,5,0" Name="lblPowerBI" VerticalAlignment="Top"  Grid.Column="1" />
+
+                            </Grid>
                         </StackPanel>
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="130" />
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton Content="Tabular Server" Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" />
+                            <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,10,5,5" Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType">
+                                <StackPanel Orientation="Horizontal">
+                                    <!--<Image Source="D:\Codeplex\DaxStudio\DaxStudio.UI\Images\icon-database@24px.png" Margin="0,0,5,0" />-->
+                                    <TextBlock Text="Tabular Server" />
+                                </StackPanel>
+                            </RadioButton>
                             <ComboBox Height="23" Margin="0,5,5,5" Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  
                                       ItemsSource="{Binding Path=RecentServers}" 
                                       Text="{Binding DataSource}" 
@@ -292,7 +318,7 @@
                                   SelectedItem="{Binding Path=MdxCompatibility}"
                                   Grid.Column="1" Grid.Row="1" 
                                   ItemsSource="{Binding Path=MdxCompatibilityOptions}">
-                        <!--  
+                            <!--  
                             Text="{Binding Path=MdxCompatibility}" 
                             <ComboBoxItem Name="type_0" Tag="0" Content="0 - Equivalent to 1"  />
                             <ComboBoxItem Name="type_1" Tag="1" Content="1 - Placeholder members are exposed" />
@@ -306,7 +332,7 @@
                         <Label Content="Roles: " Height="28" HorizontalAlignment="Left" Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
                         <TextBox Height="23"  Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="3" Grid.Column="1"  />
                         <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
-                        <TextBox Name="AdditionalOptions" IsEnabled="{Binding ElementName=rdoTabularServer, Path=IsChecked}" Grid.Row="4" Grid.Column="1" MinHeight="85"/>
+                        <TextBox Name="AdditionalOptions" Grid.Row="4" Grid.Column="1" MinHeight="85"/>
                     </Grid>
                     <!--</GroupBox>-->
                 </Expander>

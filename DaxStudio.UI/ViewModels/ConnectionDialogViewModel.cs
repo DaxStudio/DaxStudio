@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Controls;
 using DaxStudio.UI.Views;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -30,6 +31,13 @@ namespace DaxStudio.UI.ViewModels
             PowerPivotEnabled = true;
             Host = host;
             ServerModeSelected = true;
+
+            PowerBIHelper.Refresh();
+            if ( PowerBIHelper.Port != 0)
+            {
+                PowerBIDesignerDetected = true;
+                NotifyOfPropertyChange(() => PowerBIDesignerDetected);
+            }
 
             ParseConnectionString(); // load up dialog with values from ConnStr
             
@@ -125,16 +133,26 @@ namespace DaxStudio.UI.ViewModels
                 // if data source = $Embedded$ then mark Ppvt option as selected 
                 if (_connectionProperties["Data Source"] == "$Embedded$")
                 {
+                    PowerBIModeSelected = false;
+                    ServerModeSelected = false;
                     PowerPivotModeSelected = true;
+                    NotifyOfPropertyChange(() => PowerPivotModeSelected);
                 }
                 else
                 {
+                    if (_connectionProperties["Application Name"] == "DAX Studio (PowerBI)")
+                    {
+                        PowerPivotModeSelected = false;
+                        ServerModeSelected = false;
+                        PowerBIModeSelected = true;
+                        NotifyOfPropertyChange(() => PowerBIModeSelected);
+                    }
                     foreach (var p in _connectionProperties)
                     {
                         switch (p.Key.ToLower())
                         {
                             case "data source":
-                                DataSource = p.Value;
+                                DataSource = PowerBIModeSelected ? "": p.Value;
                                 break;
                             case "roles":
                                 Roles = p.Value;
@@ -298,14 +316,28 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return PowerPivotModeSelected ? BuildPowerPivotConnection() : BuildServerConnection();
+
+                if (PowerPivotModeSelected) return BuildPowerPivotConnection();
+                if (PowerBIModeSelected) return BuildPowerBIDesignerConnection();
+                return BuildServerConnection();
+                
             }
+        }
+
+        private string BuildPowerBIDesignerConnection()
+        {
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name=DAX Studio (PowerBI)", PowerBIHelper.Port
+                                 , GetMdxCompatibilityMode()
+                                 , GetDirectQueryMode()
+                                 , GetRolesProperty()
+                                 , AdditionalProperties
+                                 , AdditionalOptions);
         }
 
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4};{5}", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4};{5};Application Name=DAX Studio (SSAS)", DataSource
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
@@ -336,7 +368,6 @@ namespace DaxStudio.UI.ViewModels
                 using (var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
                 {
                     c.Open();
-                    
                 }
                 if (ServerModeSelected)
                 {
@@ -379,6 +410,10 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SelectedServerSetFocus);
             }
         }
+
+        public bool PowerBIDesignerDetected { get; private set; }
+
+        public bool PowerBIModeSelected { get; set; }
     }
         
 }

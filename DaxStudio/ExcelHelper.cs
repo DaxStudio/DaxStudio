@@ -315,8 +315,9 @@ namespace DaxStudio
             else
             {
                 lo = listObjs.AddEx(0
-                    , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source={0};Location={1};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue"
+                    , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source={0};Location={1};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Initial Catalog={1}"
                                 , "$Embedded$"
+                                , "Microsoft_SQLServer_AnalysisServices"
                                 , path)
                 , Type.Missing
                 , XlYesNoGuess.xlGuess

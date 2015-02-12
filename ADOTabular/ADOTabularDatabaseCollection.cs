@@ -8,6 +8,12 @@ using System.IO;
 
 namespace ADOTabular
 {
+    public class DatabaseDetails
+    {
+        public string Name {get;set;}
+        public string Id {get;set;}
+        public DateTime LastUpdate {get;set;}
+    }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
         private DataSet _dsDatabases;
@@ -30,11 +36,17 @@ namespace ADOTabular
             return _dsDatabases.Tables[0];
         }
 
-        private Dictionary<string, string> _databaseDictionary;
-        public Dictionary<string,string> GetDatabaseDictionary()
+        private Dictionary<string, DatabaseDetails> _databaseDictionary;
+
+        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary()
         {
+            return GetDatabaseDictionary(false);
+        }
+        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(bool refresh)
+        {
+            if (refresh) _databaseDictionary = null;
             if (_databaseDictionary != null) return _databaseDictionary;
-            _databaseDictionary = new Dictionary<string, string>();
+            _databaseDictionary = new Dictionary<string, DatabaseDetails>();
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection
@@ -50,6 +62,7 @@ namespace ADOTabular
                     var eDatabase = rdr.NameTable.Add("Database");
                     var eName = rdr.NameTable.Add("Name");
                     var eId = rdr.NameTable.Add("ID");
+                    var eLastUpdate = rdr.NameTable.Add("LastUpdate");
                     while (rdr.Read())
                     {
                         if (rdr.NodeType == XmlNodeType.Element
@@ -57,7 +70,7 @@ namespace ADOTabular
                         {
                             string name = "";
                             string id = "";
-
+                            string lastUpdate = "";
                             while (rdr.Read())
                             {
                                 if (rdr.NodeType == XmlNodeType.Element
@@ -70,10 +83,15 @@ namespace ADOTabular
                                 {
                                     id = rdr.ReadElementContentAsString();
                                 }
+                                if (rdr.NodeType == XmlNodeType.Element
+                                    && rdr.LocalName == eLastUpdate)
+                                {
+                                    lastUpdate = rdr.ReadElementContentAsString();
+                                }
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    _databaseDictionary.Add(name,id);
+                                    _databaseDictionary.Add(name, new DatabaseDetails { Name = name, Id = id, LastUpdate = DateTime.Parse(lastUpdate) });
                                     break;
                                 }
 

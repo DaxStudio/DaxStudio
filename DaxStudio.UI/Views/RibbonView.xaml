@@ -73,6 +73,9 @@
                                      Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
                                      IsEnabled="{Binding IsEnabled}">
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" />
+                    </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>
             </DataTemplate>
 
@@ -287,6 +290,9 @@
                         </Fluent:Gallery.Filters>
 
                     </Fluent:Gallery>
+                    <Fluent:DropDownButton.ToolTip>
+                        <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
+                    </Fluent:DropDownButton.ToolTip>
                 </Fluent:DropDownButton>
                 
             </Fluent:RibbonGroupBox>
@@ -372,7 +378,13 @@
                                Header="Connect"
                                LargeIcon="{StaticResource ConnectIconLarger}" 
                                Width="60" Margin="4,0,12,0"
-                               cal:Message.Attach="[Event Click] = [Action Connect()]" />
+                               cal:Message.Attach="[Event Click] = [Action Connect()]" >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Connect" Text="Changes the connection for the current query" Width="190"/>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                                
+                
                 <TextBlock Text="Database:" Padding="0,6,0,0"/>
                 <Fluent:ComboBox x:Name="Database" 
                                  SelectedItem="{Binding SelectedDatabase}"
@@ -392,6 +404,20 @@
                         </DataTemplate>
                     </Fluent:ComboBox.ItemTemplate>
                 </Fluent:ComboBox>
+                <Fluent:Button Name="RefreshMetadata"
+                               Header="Refresh Metadata"
+                               cal:Message.Attach="[Event Click] = [Action RefreshMetadata()]"
+                               Icon="{StaticResource RefreshIcon}"
+                               LargeIcon="{StaticResource RefreshIconLarger}"
+                               Margin="4,0"
+                               >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Refresh Metadata"
+                                          Text="Refreshes the table and column metadata for the current database"
+                                          DisableReason="{Binding ClearCacheDisableReason}"
+                                          ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             
           
@@ -510,7 +536,7 @@
                 <Fluent:Button Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQuery()]"
-                               Icon="{StaticResource ParameterIcon}"
+                               Icon="{StaticResource DaxFormatterIcon}"
                                SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>

@@ -69,7 +69,10 @@ namespace ADOTabular
         {
             get { 
                 //_adomdConn.UnderlyingConnection.Databases
-                return _adomdConn==null ? null : new ADOTabularDatabase(this, _adomdConn.Database, Databases.GetDatabaseDictionary()[_adomdConn.Database]); }
+                if (_adomdConn == null) return null;
+                
+                var dd = Databases.GetDatabaseDictionary()[_adomdConn.Database];                
+                return new ADOTabularDatabase(this, _adomdConn.Database, dd.Id, dd.LastUpdate) ; }
         }
 
         public void Open()

@@ -162,6 +162,13 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="Delete" Modifiers="Alt"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="Undo"/>
+        </local:InputBindingTrigger>
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F3" />
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Find"/>
