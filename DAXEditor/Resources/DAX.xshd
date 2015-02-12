@@ -72,7 +72,7 @@
       <Word>ADDCOLUMNS</Word>
       <Word>ALL</Word>
       <Word>ALLEXCEPT</Word>
-      <Word>ALLNONBLANKROW</Word>
+      <Word>ALLNOBLANKROW</Word>
       <Word>ALLSELECTED</Word>
       <Word>AND</Word>
       <Word>AVERAGE</Word>
@@ -126,6 +126,7 @@
       <Word>FIXED</Word>
       <Word>FLOOR</Word>
       <Word>FORMAT</Word>
+      <Word>FROM</Word>
       <Word>GENERATE</Word>
       <Word>GENERATEALL</Word>
       <Word>HASONEFILTER</Word>
@@ -202,6 +203,7 @@
       <Word>SAMEPERIODLASTYEAR</Word>
       <Word>SEARCH</Word>
       <Word>SECOND</Word>
+      <Word>SELECT</Word>
       <Word>SIGN</Word>
       <Word>SQRT</Word>
       <Word>STARTOFMONTH</Word>
