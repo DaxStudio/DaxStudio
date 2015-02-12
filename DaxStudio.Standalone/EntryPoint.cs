@@ -14,6 +14,9 @@ namespace DaxStudio.Standalone
         {
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
+#if DEBUG
+            Serilog.Debugging.SelfLog.Out = Console.Out;
+#endif
             Log.Logger = log;
             Log.Information("============ DaxStudio Startup =============");
             //AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;

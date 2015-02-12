@@ -45,7 +45,8 @@
                       ClipboardCopyMode="IncludeHeader"
                       SelectionMode="Extended"       
                       SelectionUnit="Cell"
-                      
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
                       VerticalGridLinesBrush="Gray" 
                       HorizontalGridLinesBrush="Gray"
                       

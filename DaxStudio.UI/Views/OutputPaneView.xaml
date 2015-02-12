@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
@@ -28,7 +29,8 @@
     <Grid>
         <ListView x:Name="Messages" HorizontalAlignment="Stretch"  
             behaviours:GridViewColumnResize.Enabled="True"
-            extenders:ListViewExtenders.AutoScrollToEnd="True">
+            extenders:ListViewExtenders.AutoScrollToEnd="True"
+                  Focusable="False">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="" Width="Auto">
@@ -59,9 +61,17 @@
                         
                         <GridViewColumn.CellTemplate>
                             <DataTemplate x:Name="Text">
-                                <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" TextTrimming="None" 
-                                           Text="{Binding Text}"
-                                           Foreground="{Binding MessageType, Converter={StaticResource OutputColor}}"/>
+                                 
+                                <Label 
+                                       cal:Message.Attach="[Event MouseDoubleClick] = [Action MessageDoubleClick($dataContext)]"
+                                           Background="Transparent"
+                                           Foreground="{Binding MessageType, Converter={StaticResource OutputColor}}"
+                                           >
+                                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" TextTrimming="None" 
+                                       
+                                           Text="{Binding Text}"/>
+                                </Label>
+                                
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

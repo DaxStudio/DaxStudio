@@ -12,7 +12,8 @@
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-    xmlns:local="clr-namespace:DaxStudio.UI.Utils">
+    xmlns:local="clr-namespace:DaxStudio.UI.Utils"
+    xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -313,6 +314,7 @@
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
+                                                   attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    >
                                         
                                         <ContextMenuService.ContextMenu>

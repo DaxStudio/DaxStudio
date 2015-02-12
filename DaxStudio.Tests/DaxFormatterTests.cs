@@ -151,7 +151,7 @@ namespace DaxStudio.Tests
             //var req = new DaxStudio.UI.Model.DaxFormatterRequest();
             //req.Dax = qry;
 
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDax(qry);
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
             Assert.AreEqual(0, res.FormattedDax.Length);
             Assert.AreEqual(1, res.errors.Count);
         }
@@ -179,7 +179,7 @@ PATHCONTAINS(""BLACK|Blue|Multi"", 'Product'[Colour]))
 ORDER BY 'SalesTerritory'[SalesTerritory Country] desc, 'Product'[Colour]
 ";
             
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDax(qry);
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
             Assert.AreEqual(563, res.FormattedDax.Length, "Query length does not match");
             Assert.IsNull(res.errors);
             

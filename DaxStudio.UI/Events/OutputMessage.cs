@@ -42,6 +42,11 @@ namespace DaxStudio.UI.Events
                 return _durationMs.ToString("#,##0");
             }
         }
+
+        public void MessageDoubleClick()
+        {
+            System.Diagnostics.Debug.WriteLine("message double click");
+        }
     }
 
     public enum MessageType

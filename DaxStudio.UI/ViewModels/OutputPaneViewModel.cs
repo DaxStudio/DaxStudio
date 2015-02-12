@@ -40,18 +40,25 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage( MessageType.Error,message));
         }
 
+        public void AddError(string message,int row, int column)
+        {
+            _messages.Add(new OutputMessage(MessageType.Error, message,row,column ));
+        }
+
         public override string Title
         {
             get { return "Output"; }
         }
 
-        public void GoToLocation(OutputMessage message)
+
+        public void MessageDoubleClick(OutputMessage message)
         {
-            if (message.Row >=0 && message.Column >= 0)
+            if (message.Row >= 0 && message.Column >= 0)
             {
                 _eventAggregator.PublishOnUIThread(new NavigateToLocationEvent(message.Row, message.Column));
             }
         }
+
     }
 
 

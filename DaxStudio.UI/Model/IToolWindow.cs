@@ -1,4 +1,5 @@
-﻿namespace DaxStudio.UI.Model
+﻿using Caliburn.Micro;
+namespace DaxStudio.UI.Model
 {
     public interface IToolWindow
     {
