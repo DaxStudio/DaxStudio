@@ -105,6 +105,7 @@
       <Word>DATESYTD</Word>
       <Word>DATEVALUE</Word>
       <Word>DAY</Word>
+      <Word>DIVIDE</Word>
       <Word>DISTINCT</Word>
       <Word>DISTINCTCOUNT</Word>
       <Word>EARLIER</Word>
@@ -137,13 +138,16 @@
       <Word>INT</Word>
       <Word>ISBLANK</Word>
       <Word>ISCROSSFILTERED</Word>
+      <Word>ISEMPTY</Word>
       <Word>ISERROR</Word>
       <Word>ISFILTERED</Word>
       <Word>ISLOGICAL</Word>
       <Word>ISNONTEXT</Word>
       <Word>ISNUMBER</Word>
       <Word>ISO</Word>
+      <Word>ISSUBTOTAL</Word>
       <Word>ISTEXT</Word>
+      <Word>KEEPFILTERS</Word>
       <Word>LASTDATE</Word>
       <Word>LASTNONBLANK</Word>
       <Word>LEFT</Word>
@@ -196,11 +200,14 @@
       <Word>REPLACE</Word>
       <Word>REPT</Word>
       <Word>RIGHT</Word>
+      <Word>ROLLUP</Word>
+      <Word>ROLLUPGROUP</Word>
       <Word>ROUND</Word>
       <Word>ROUNDDOWN</Word>
       <Word>ROUNDUP</Word>
       <Word>ROW</Word>
       <Word>SAMEPERIODLASTYEAR</Word>
+      <Word>SAMPLE</Word>
       <Word>SEARCH</Word>
       <Word>SECOND</Word>
       <Word>SELECT</Word>
@@ -228,7 +235,8 @@
       <Word>TRIM</Word>
       <Word>TRUE</Word>
       <Word>TRUNC</Word>
-      <Word>UPPER </Word>
+      <Word>UPPER</Word>
+      <Word>USERELATIONSHIP</Word>
       <Word>USERNAME</Word>
       <Word>VALUE</Word>
       <Word>VALUES</Word>
