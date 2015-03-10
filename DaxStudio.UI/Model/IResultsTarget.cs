@@ -13,5 +13,8 @@ namespace DaxStudio.UI.Model
         bool IsDefault { get; }
         bool IsEnabled { get; }
         int DisplayOrder { get; }
+
+        string Message { get; }
+        OutputTargets Icon { get; }
     }
 }

@@ -11,6 +11,7 @@ using Caliburn.Micro;
 using Newtonsoft.Json;
 using System.Net.Http.Formatting;
 using DaxStudio.UI.Events;
+using Serilog;
 
 namespace DaxStudio.UI.Model
 {
@@ -57,20 +58,27 @@ namespace DaxStudio.UI.Model
         public bool HasPowerPivotModel
         {
             get {
+                Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Start");
                 var doc = _activeDocument;
                 using (var client = GetHttpClient())
                 {
                     try
                     {
+                        //HACK: see if this helps with the PowerPivot client spinning issue
+                        client.Timeout = new TimeSpan(0,0, 30); // set 30 second timeout
+
                         HttpResponseMessage response = client.GetAsync("workbook/hasdatamodel").Result;
+                        Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Got Response");
                         if (response.IsSuccessStatusCode)
                         {
+                            Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
                             return response.Content.ReadAsAsync<bool>().Result;
                         }
                     }
                     catch (Exception ex)
                     {
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
+                        Log.Error("{class} {method} {exception} {stacktrace}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", ex.Message, ex.StackTrace );
                         doc.OutputError(string.Format("Error checking if active Excel workbook has a PowerPivot ({0})", ex.Message));
                     }
 

@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Model
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
                 runner.SetResultsMessage("Query timings sent to output tab", OutputTargets.Timer);
-                runner.QueryCompleted();
+                //runner.QueryCompleted();
                 runner.ActivateOutput();
             }
             catch (Exception ex)
@@ -58,6 +58,17 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder
         {
             get { return 20; }
+        }
+
+
+        public string Message
+        {
+            get { return "Query timings sent to output tab"; }
+        }
+
+        public OutputTargets Icon
+        {
+            get { return OutputTargets.Timer; }
         }
     }
 }

@@ -348,9 +348,9 @@
                         
                     <!-- Bottom Output panes -->
                         
-                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="100" DockHeight="200">
+                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="170" DockHeight="260">
 
-                            <avalondock:LayoutAnchorablePane Name="DockBottom">
+                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
                                 <!--
                                 <avalondock:LayoutAnchorable x:Name="OutputAnchorable"  Title="Output"   CanClose="False" CanHide="False" AutoHideMinHeight="100">
                                     <ContentControl x:Name="Output" cal:View.Model="{Binding OutputPane}" cal:View.ApplyConventions="true"></ContentControl>

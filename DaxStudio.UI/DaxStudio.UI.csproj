@@ -164,9 +164,9 @@
     <Reference Include="Caliburn.Micro.Platform">
       <HintPath>..\packages\Caliburn.Micro.2.0.1\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="Fluent, Version=3.0.3.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
+    <Reference Include="Fluent, Version=3.3.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Fluent.Ribbon.3.0.3\lib\net45\Fluent.dll</HintPath>
+      <HintPath>..\packages\Fluent.Ribbon.3.3.0\lib\net45\Fluent.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=0.1.3.11, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -184,19 +184,21 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.dll</HintPath>
+      <HintPath>..\packages\Serilog.1.4.139\lib\net45\Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog.Extras.AppSettings">
-      <HintPath>..\packages\Serilog.Extras.AppSettings.1.4.7\lib\net45\Serilog.Extras.AppSettings.dll</HintPath>
+    <Reference Include="Serilog.Extras.AppSettings, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Serilog.Extras.AppSettings.1.4.139\lib\net45\Serilog.Extras.AppSettings.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.FullNetFx, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.FullNetFx.dll</HintPath>
+      <HintPath>..\packages\Serilog.1.4.139\lib\net45\Serilog.FullNetFx.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -204,12 +206,12 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.1.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fluent.Ribbon.3.0.3\lib\net45\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\Fluent.Ribbon.3.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -296,6 +298,7 @@
     <Compile Include="Converters\QueryMultiLineConverter.cs" />
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
+    <Compile Include="Converters\WorkbookNameConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
     <Compile Include="Events\ApplicationActivatedEvent.cs" />
@@ -314,7 +317,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Events\QueryFinishedEvent.cs" />
+    <Compile Include="Events\QueryResultsPaneMessageEvent.cs" />
     <Compile Include="Events\SelectionChangeCaseEvent.cs" />
+    <Compile Include="Events\ServerTimingDetailsUpdatedEvent.cs" />
+    <Compile Include="Events\SetSelectedWorksheetEvent.cs" />
     <Compile Include="Events\TraceChangedEvent.cs" />
     <Compile Include="Events\TraceChangingEvent.cs" />
     <Compile Include="Events\TraceWatcherToggleEvent.cs" />
@@ -338,6 +344,7 @@
     <Compile Include="Model\VersionCheck.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelLinked.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelStatic.cs" />
+    <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="Model\TraceEventFactory.cs" />
@@ -387,6 +394,7 @@
     <Compile Include="ViewModels\QueryResultsPaneViewModel.cs" />
     <Compile Include="ResultsTargets\ResultsTargetGrid.cs" />
     <Compile Include="ViewModels\ServerTimesViewModel.cs" />
+    <Compile Include="ViewModels\ServerTimingDetailsViewModel.cs" />
     <Compile Include="ViewModels\StatusBarViewModel.cs" />
     <Compile Include="ViewModels\ToolPaneBaseViewModel.cs" />
     <Compile Include="ViewModels\DocumentTabViewModel.cs" />
@@ -455,6 +463,14 @@
     <Page Include="Resources\Styles\SearchBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\BusyPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\LabelSpinnerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FindReplaceDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -562,20 +578,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\button_white_help.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Column.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Folder.ico" />
-    <Resource Include="Resources\Function.png" />
-    <Resource Include="Resources\Measure.png" />
-    <Resource Include="Resources\Table.png" />
-    <Resource Include="Resources\HiddenMeasure.png" />
-    <Resource Include="Resources\HiddenColumn.png" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
@@ -597,25 +599,22 @@
     <Resource Include="Images\DaxStudio.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\button_white_help1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\daxstudio-logo_32x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Table.png" />
+    <Resource Include="Images\Metadata\Table.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Folder.ico" />
     <Resource Include="Images\Function.png" />
-    <Resource Include="Images\HiddenMeasure.png" />
-    <Resource Include="Images\Measure.png" />
+    <Resource Include="Images\Metadata\HiddenMeasure.png" />
+    <Resource Include="Images\Metadata\Measure.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Column.png" />
-    <Resource Include="Images\DmvTable.png" />
-    <Resource Include="Images\HiddenColumn.png" />
-    <Resource Include="Images\HiddenTable.png" />
+    <Resource Include="Images\Metadata\Column.png" />
+    <Resource Include="Images\Metadata\DmvTable.png" />
+    <Resource Include="Images\Metadata\HiddenColumn.png" />
+    <Resource Include="Images\Metadata\HiddenTable.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\error.circle.png" />
@@ -627,7 +626,7 @@
     <Resource Include="Images\warning.triangle.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\metro\model.png" />
+    <Resource Include="Images\Metadata\model.png" />
     <Resource Include="Images\metro\run.png" />
     <Resource Include="Images\metro\timer.png" />
   </ItemGroup>
@@ -694,7 +693,7 @@
     <Resource Include="Images\status-spid.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\metro\icon-model%4016px.png" />
+    <Resource Include="Images\Metadata\icon-model%4016px.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-clearcache%4096ppi.png" />
@@ -727,10 +726,10 @@
     <Resource Include="Images\icon-externalLink%4017px.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\hierarchy.png" />
+    <Resource Include="Images\Metadata\hierarchy.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\kpi.png" />
+    <Resource Include="Images\Metadata\kpi.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-redo%4016x16.png" />
@@ -745,13 +744,13 @@
     <Resource Include="Images\daxstudio-logo_150x150.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Styles\" />
+    <Folder Include="Controls\Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\FindReplace\Search.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Controls\Resources\clear.png" />
+    <Resource Include="Images\Metadata\clear.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\FindReplace\SearchActive.png" />
@@ -810,6 +809,46 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-daxformatter%4016px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\daxstudio-splash%4096ppi.png" />
+    <Resource Include="Images\daxstudio-splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-bottompane.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-bottompane%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-cancel.png" />
+    <Resource Include="Images\icon-clearcache.png" />
+    <Resource Include="Images\icon-daxformatter%4096ppi.png" />
+    <Resource Include="Images\icon-daxformatter.png" />
+    <Resource Include="Images\icon-info%4096ppi.png" />
+    <Resource Include="Images\icon-info.png" />
+    <Resource Include="Images\icon-merge%4096ppi.png" />
+    <Resource Include="Images\icon-merge.png" />
+    <Resource Include="Images\icon-redo%4096ppi.png" />
+    <Resource Include="Images\icon-redo.png" />
+    <Resource Include="Images\icon-refresh.png" />
+    <Resource Include="Images\icon-rightpane%4096ppi.png" />
+    <Resource Include="Images\icon-rightpane.png" />
+    <Resource Include="Images\icon-showcache%4096ppi.png" />
+    <Resource Include="Images\icon-showcache.png" />
+    <Resource Include="Images\icon-showinternal%4096ppi.png" />
+    <Resource Include="Images\icon-showinternal.png" />
+    <Resource Include="Images\icon-undo%4096ppi.png" />
+    <Resource Include="Images\icon-undo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="daxstudio-splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-file.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-table%4096ppi2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -16,6 +16,8 @@ namespace DaxStudio.UI.ViewModels
         , IToolWindow
         , ITraceWatcher
         , IHandle<DocumentConnectionUpdateEvent>
+        , IHandle<RunQueryEvent>
+        , IHandle<CancelQueryEvent>
     {
         private List<TraceEventArgs> _events;
         private readonly IEventAggregator _eventAggregator;
@@ -61,6 +63,7 @@ namespace DaxStudio.UI.ViewModels
             if (eventArgs.EventClass == WaitForEvent)
             {
                 ProcessResults();
+                IsBusy = false;
             }
         }
 
@@ -69,9 +72,11 @@ namespace DaxStudio.UI.ViewModels
         public void Reset()
         {
             Events.Clear();
+            OnReset();
         }
 
-        
+        public abstract void OnReset();
+       
         // IToolWindow interface
         public abstract string Title { get; set; }
 
@@ -141,6 +146,26 @@ namespace DaxStudio.UI.ViewModels
             }
 
             IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
+        }
+
+        private bool _isBusy = false;
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set { _isBusy = value;
+            NotifyOfPropertyChange(() => IsBusy);
+            }
+        }
+
+        public void Handle(RunQueryEvent message)
+        {
+            IsBusy = true;
+        }
+
+        public void Handle(CancelQueryEvent message)
+        {
+            IsBusy = false;
+            Reset();
         }
     }
 }

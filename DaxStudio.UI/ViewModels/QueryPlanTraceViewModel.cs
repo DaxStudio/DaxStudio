@@ -104,6 +104,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public override void OnReset() { }
+
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
             _physicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan);

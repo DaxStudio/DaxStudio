@@ -8,6 +8,6 @@ namespace DaxStudio.Interfaces
 {
     public interface IStatusBarMessage: IDisposable
     {
-        
+        bool IsDisposed { get; }
     }
 }

@@ -75,7 +75,7 @@ namespace DaxStudio
                 Log.Verbose("{Class} {Method} HKCU Value: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
             }
 
-            Log.Debug("About to launch DaxStudio on path: {path}", path);
+            Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process
             _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
             

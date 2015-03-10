@@ -10,6 +10,7 @@ using System.IO;
 using System;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -87,6 +88,7 @@ namespace DaxStudio.UI.ViewModels
         public ServerTimesViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
+            //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
         protected override List<TraceEventClass> GetMonitoredEvents()
@@ -224,11 +226,11 @@ namespace DaxStudio.UI.ViewModels
             get {
                 var fse = from e in _storageEngineEvents
                           where
-                          (e.Subclass == TraceEventSubclass.VertiPaqScanInternal && InternalVisible)
+                          (e.Subclass == TraceEventSubclass.VertiPaqScanInternal && ServerTimingDetails.ShowInternal)
                           ||
-                          (e.Subclass == TraceEventSubclass.VertiPaqCacheExactMatch && CacheVisible)
+                          (e.Subclass == TraceEventSubclass.VertiPaqCacheExactMatch && ServerTimingDetails.ShowCache)
                           ||
-                          (e.Subclass != TraceEventSubclass.VertiPaqCacheExactMatch && e.Subclass != TraceEventSubclass.VertiPaqScanInternal)
+                          ((e.Subclass != TraceEventSubclass.VertiPaqCacheExactMatch && e.Subclass != TraceEventSubclass.VertiPaqScanInternal) && ServerTimingDetails.ShowScan)
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
@@ -245,9 +247,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        /*
         // Filter for visualization 
         private bool _cacheVisible;
         private bool _internalVisible;
+        private bool _scanVisible = true;
         public bool CacheVisible {
             get { return _cacheVisible; }
             set { _cacheVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
@@ -256,7 +260,13 @@ namespace DaxStudio.UI.ViewModels
             get { return _internalVisible; }
             set { _internalVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
         }
-    
+        public bool ScanVisible 
+        {
+            get { return _scanVisible; }
+            set { _scanVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
+        }
+    */
+
         // IToolWindow interface
         public override string Title
         {
@@ -273,6 +283,9 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
+        public override void OnReset() { }
+
+        #region ISaveState methods
         void ISaveState.Save(string filename)
         {
             var m = new ServerTimesModel()
@@ -313,5 +326,42 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => StorageEngineEvents);
             
         }
+
+        #endregion
+
+        #region Properties to handle layout changes
+
+        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?2:0; } }
+        public int TextGridRowSpan { get { return ServerTimingDetails.LayoutBottom? 1:3; } }
+        public int TextGridColumn { get { return ServerTimingDetails.LayoutBottom?2:4; } }
+
+        public GridLength TextColumnWidth { get { return ServerTimingDetails.LayoutBottom ? new GridLength(0) : new GridLength(1, GridUnitType.Star); }  }
+
+        private ServerTimingDetailsViewModel _serverTimingDetails;
+        public ServerTimingDetailsViewModel ServerTimingDetails { get { return _serverTimingDetails; } set {
+            if (_serverTimingDetails != null) { _serverTimingDetails.PropertyChanged -= ServerTimingDetails_PropertyChanged; }
+                _serverTimingDetails = value;
+                _serverTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
+                NotifyOfPropertyChange(() => ServerTimingDetails);
+            } 
+        }
+        private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "LayoutBottom":
+                case "LayoutRight":
+                    NotifyOfPropertyChange(() => TextGridColumn);
+                    NotifyOfPropertyChange(() => TextGridRow);
+                    NotifyOfPropertyChange(() => TextGridRowSpan);
+                    NotifyOfPropertyChange(() => TextColumnWidth);
+                    break;
+                default:
+                    NotifyOfPropertyChange(() => StorageEngineEvents);
+                    break;
+            }
+        }
+
+        #endregion
     }
 }

@@ -9,6 +9,7 @@ using DaxStudio.Interfaces;
 using System.Diagnostics;
 using System.Web.Http.ModelBinding;
 using DaxStudio.Xmla;
+using Serilog;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -49,20 +50,29 @@ namespace DaxStudio.ExcelAddin.Xmla
         [Route("Worksheets")]
         public IHttpActionResult GetWorksheets()
         {
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            var addin = Globals.ThisAddIn;
-            var app = addin.Application;
-            var wb = app.ActiveWorkbook;
-            var shts = new List<string>();
-
-            shts.Add(WorksheetDaxResults);
-            shts.Add(WorksheetNew);
-            foreach (Worksheet sht in wb.Worksheets)
+            try
             {
-                shts.Add(sht.Name);
-            }
+                Log.Verbose("{class} {method} {event}", "WorkbookController", "GetWorksheets", "Start");
+                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
+                var addin = Globals.ThisAddIn;
+                var app = addin.Application;
+                var wb = app.ActiveWorkbook;
+                var shts = new List<string>();
 
-            return Ok(shts.ToArray()); 
+                shts.Add(WorksheetDaxResults);
+                shts.Add(WorksheetNew);
+                foreach (Worksheet sht in wb.Worksheets)
+                {
+                    shts.Add(sht.Name);
+                }
+                Log.Verbose("{class} {method} {event}", "WorkbookController", "GetWorksheets", "End");
+                return Ok(shts.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "WorkbookController", "GetWorksheets", ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
 
         private string WorksheetDaxResults
@@ -79,6 +89,7 @@ namespace DaxStudio.ExcelAddin.Xmla
         [Route("HasDataModel")]
         public IHttpActionResult GetHasDatamodel()
         {
+            Log.Verbose("{class} {method} {event}", "WorkbookController", "GetHasDataModel", "Start");
             var xl = new ExcelHelper(Globals.ThisAddIn.Application);
             if (xl.HasPowerPivotData())
                 return Ok(true);
@@ -90,9 +101,11 @@ namespace DaxStudio.ExcelAddin.Xmla
         [Route("StaticQueryResult")]
         public void PostStaticResult(StaticQueryResult results)
         {
+            Log.Verbose("{class} {method} {event}", "WorkbookController", "PostStaticResult", "Start");
             var xl = new ExcelHelper(Globals.ThisAddIn.Application);
             var sht = xl.GetTargetWorksheet(results.TargetSheet);
             xl.CopyDataTableToRange(results.QueryResults, sht);
+            Log.Verbose("{class} {method} {event}", "WorkbookController", "PostStaticResult", "End");
         }
 
         [HttpPost]
@@ -101,13 +114,16 @@ namespace DaxStudio.ExcelAddin.Xmla
         {
             try
             {
+                Log.Verbose("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "Start");
                 var xl = new ExcelHelper(Globals.ThisAddIn.Application);
                 var sht = xl.GetTargetWorksheet(results.TargetSheet);
                 xl.DaxQueryTable(sht, results.DaxQuery, results.ConnectionString);
+                Log.Verbose("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "End");
                 return Ok();
             }
             catch (Exception ex)
             {
+                Log.Error("{class} {method} {message} {stacktrace}", "WorkbookController", "PostLinkedQueryResult", ex.Message, ex.StackTrace);
                 return BadRequest(ex.Message);
             }
         }

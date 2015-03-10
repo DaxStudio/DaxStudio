@@ -40,6 +40,9 @@ namespace DaxStudio.Xmla
                 }
             });*/
             config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
+            config.Formatters.Clear();
+            config.Formatters.Add(new JsonMediaTypeFormatter());
+
             appBuilder.UseWebApi(config);
         }
     }

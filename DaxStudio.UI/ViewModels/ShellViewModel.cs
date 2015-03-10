@@ -43,14 +43,14 @@ namespace DaxStudio.UI.ViewModels {
             {
                 Tabs.NewQueryDocument();
             }
-            DisplayName = string.Format("DaxStudio - {0}", Version.ToString());
+            DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
             notifyIcon = new NotifyIcon();
             VersionChecker = versionCheck;
             Application.Current.Activated += OnApplicationActivated; 
             
-            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
-            Log.Logger = log;
-            Log.Verbose("============ Application Launch =============");
+            //log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+            //Log.Logger = log;
+            Log.Verbose("============ Shell Started =============");
         }
 
         private void OnApplicationActivated(object sender, EventArgs e)
@@ -103,7 +103,7 @@ namespace DaxStudio.UI.ViewModels {
 
         public void NewDocument()
         {
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent());
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(Ribbon.SelectedTarget));
         }
 
         public void OpenDocument()
@@ -169,7 +169,9 @@ namespace DaxStudio.UI.ViewModels {
 
         public void Handle(NewVersionEvent message)
         {           
+            
             var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion);
+            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }
 

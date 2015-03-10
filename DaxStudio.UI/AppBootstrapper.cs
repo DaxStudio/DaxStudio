@@ -54,7 +54,7 @@ namespace DaxStudio.UI
 		protected override void Configure() {
             try
             {
-                var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-logo_250x250.png");
+                var splashScreen = new SplashScreen(Assembly.GetAssembly(typeof(AppBootstrapper)), "daxstudio-splash.png");
                 splashScreen.Show(true);
 
                 // Tell Caliburn Micro how to find controls in Fluent Ribbon

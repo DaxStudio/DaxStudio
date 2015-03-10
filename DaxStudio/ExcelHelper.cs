@@ -8,6 +8,7 @@ using Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Data;
 using System.Globalization;
+using Serilog;
 
 namespace DaxStudio 
 {
@@ -144,37 +145,48 @@ namespace DaxStudio
 
         public bool HasPowerPivotData()
         {
-            var wb = _app.ActiveWorkbook;
-            if (_app.ActiveWorkbook == null) return false;
-            
-            if (IsExcel2013OrLater)
+            Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "Start");
+            try
             {
-                var conns = wb.Connections;
-                var wbc = conns["ThisWorkbookDataModel"];
-                if (wbc != null)  return true;
+                var wb = _app.ActiveWorkbook;
+                if (_app.ActiveWorkbook == null) return false;
 
+                if (IsExcel2013OrLater)
+                {
+                    var conns = wb.Connections;
+                    var wbc = conns["ThisWorkbookDataModel"];
+                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2013)");
+                    return (wbc != null);
+                }
+
+                // if Excel 2010
+                PivotCaches pvtcaches = wb.PivotCaches();
+                if (pvtcaches.Count == 0)
+                    return false;   // without a pivot table cache we have no way of "waking up" the data model
+
+                // TODO - at this point can I try creating a pivottable cache and refreshing it???
+
+                var ptc = (from PivotCache pvtc in pvtcaches
+                           let conn = pvtc.Connection.ToString()
+                           where pvtc.OLAP
+                              && pvtc.CommandType == XlCmdType.xlCmdCube
+                              && (((string)conn).IndexOf("Data Source=$Embedded$", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                           select pvtc).First();// Any();
+
+                if (ptc != null)
+                {
+                    ptc.Refresh();
+                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - true");
+                    return true;
+                }
+                Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - false");
                 return false;
             }
-
-            // if Excel 2010
-            PivotCaches pvtcaches = wb.PivotCaches();
-            if (pvtcaches.Count == 0)
-                return false;   // without a pivot table cache we have no way of "waking up" the data model
-
-            var ptc = (from PivotCache pvtc in pvtcaches
-                    let conn = pvtc.Connection.ToString()
-                    where pvtc.OLAP
-                       && pvtc.CommandType == XlCmdType.xlCmdCube
-                       && (((string)conn).IndexOf("Data Source=$Embedded$", StringComparison.InvariantCultureIgnoreCase) >= 0)
-                    select pvtc).First();// Any();
-            
-            if (ptc != null)
+            catch(Exception ex)
             {
-                ptc.Refresh();
-                return true;
+                Log.Error("{Class} {method} {exception} {stacktrace}", "ExcelHelper", "HasPowerPivotData", ex.Message, ex.StackTrace);
+                throw;
             }
-
-            return false;
         }
 
 

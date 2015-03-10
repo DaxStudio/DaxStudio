@@ -29,12 +29,14 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ApplicationActivatedEvent>
         , IHandle<TraceChangingEvent>
         , IHandle<TraceChangedEvent>
+        , IHandle<TraceWatcherToggleEvent>
         , IHandle<DocumentConnectionUpdateEvent>
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
         private bool _databaseComboChanging = false;
+        private bool _isDocumentActivating = false;
 
         private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -57,9 +59,19 @@ namespace DaxStudio.UI.ViewModels
             get { return _host.IsExcel?Visibility.Visible : Visibility.Collapsed; }
         }
 
+        public Visibility ServerTimingsIsChecked
+        {
+            get 
+            {
+                // TODO - Check if ServerTiming Trace is checked - Update on check change
+                //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
+                return Visibility.Visible;
+            }
+        }
+
         public void NewQuery()
         {
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent());
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget));
         }
 
         public void CommentSelection()
@@ -108,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget,SelectedWorksheet) );
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget) );
 
         }
 
@@ -123,7 +135,7 @@ namespace DaxStudio.UI.ViewModels
                 return "not disabled";
             }
         }
-
+        /*
         public bool CanSelectDatabase
         {
             get
@@ -131,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
                 return ActiveDocument.IsConnected && !ActiveDocument.IsPowerPivot ;
             }
         }
-
+        */
         public bool CanRunQuery
         {
             get
@@ -216,13 +228,13 @@ namespace DaxStudio.UI.ViewModels
             
             if (connection == null)
             {
-                Databases = null;
-                SelectedDatabase = null;
+            //    Databases = null;
+            //    SelectedDatabase = null;
                 Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", "<null>", "<null>");
                 CanConnect = true;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
-                NotifyOfPropertyChange(() => CanSelectDatabase);
+            //    NotifyOfPropertyChange(() => CanSelectDatabase);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 return;
             }
@@ -230,12 +242,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName, databaseName);
                 
-                _databaseComboChanging = true;
-                Databases = doc.Databases;
-                _databaseComboChanging = false;
+            //    _databaseComboChanging = true;
+            //    Databases = doc.Databases;
+            //    _databaseComboChanging = false;
 
-                SelectedDatabase = doc.SelectedDatabase;
-                NotifyOfPropertyChange(()=>SelectedDatabase);
+            //    SelectedDatabase = doc.SelectedDatabase;
+            //    NotifyOfPropertyChange(()=>SelectedDatabase);
             }
             catch (Exception ex)
             {
@@ -247,11 +259,11 @@ namespace DaxStudio.UI.ViewModels
                 CanConnect = true;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
-                NotifyOfPropertyChange(() => CanSelectDatabase);
+            //    NotifyOfPropertyChange(() => CanSelectDatabase);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
             }
         }
-
+        /*
         private string _selectedDatabase; 
         public string SelectedDatabase {
             get { return _selectedDatabase; }
@@ -298,7 +310,7 @@ namespace DaxStudio.UI.ViewModels
                 //}); 
             }
         }
-
+        */
         [ImportMany]
         public IEnumerable<IResultsTarget> AvailableResultsTargets {get; set; }
 
@@ -316,12 +328,21 @@ namespace DaxStudio.UI.ViewModels
         public IResultsTarget SelectedTarget {
             get { return _selectedTarget ?? AvailableResultsTargets.Where(x => x.IsDefault).First<IResultsTarget>(); }
             set { _selectedTarget = value;
-            Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value.Name);
-            NotifyOfPropertyChange(()=>SelectedTarget);}
+                Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value.Name);
+                if (_selectedTarget is IActivateResults)
+                    _activeDocument.ActivateResults();
+                NotifyOfPropertyChange(()=>SelectedTarget);
+                if (!_isDocumentActivating)
+                {
+                    _eventAggregator.BeginPublishOnUIThread(new QueryResultsPaneMessageEvent(_selectedTarget));
+                }
+                if (_selectedTarget is IActivateResults) { ActiveDocument.ActivateResults(); }
+                
+            }
         }
 
         public IObservableCollection<ITraceWatcher> TraceWatchers { get { return ActiveDocument == null ? null : ActiveDocument.TraceWatchers; } }
-
+        /*
         private SortedSet<string> _databases = new SortedSet<string>();
         public SortedSet<string> Databases
         {
@@ -332,11 +353,14 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => Databases);
             }
         }
+         */ 
         public void Handle(ActivateDocumentEvent message)
         {
             Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
+            _isDocumentActivating = true;
             ActiveDocument = message.Document;
             var doc = ActiveDocument;
+            SelectedTarget = ActiveDocument.SelectedTarget;
             //ActiveDocument.PropertyChanged += ActiveDocumentOnPropertyChanged;   
             
         //if (ActiveDocument.IsQueryRunning != _queryRunning)
@@ -345,24 +369,26 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
-            NotifyOfPropertyChange(() => CanSelectDatabase);
+            //NotifyOfPropertyChange(() => CanSelectDatabase);
         //}
 
 
             if (!ActiveDocument.IsConnected)
             {
-                _selectedDatabase = null;
-                NotifyOfPropertyChange(() => SelectedDatabase);
+            //    _selectedDatabase = null;
+            //    NotifyOfPropertyChange(() => SelectedDatabase);
                 UpdateTraceWatchers();
                 NotifyOfPropertyChange(() => TraceWatchers);
+                NotifyOfPropertyChange(() => ServerTimingsChecked);
+                NotifyOfPropertyChange(() => ServerTimingDetails);
                 return;
             }
             try
             {
                 //if (ActiveDocument.Connection.State == System.Data.ConnectionState.Open)
                 {
-                    Databases = null;
-                    _selectedDatabase = null;
+                //    Databases = null;
+                //    _selectedDatabase = null;
                     RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
                     // TODO - do we still need to check trace watchers if we are not connected??
                     UpdateTraceWatchers();
@@ -374,7 +400,13 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error("{Exception}", ex);
                 doc.OutputError(ex.Message);
             }
+            finally
+            {
+                _isDocumentActivating = false;
+            }
             NotifyOfPropertyChange(() => TraceWatchers);
+            NotifyOfPropertyChange(() => ServerTimingsChecked);
+            NotifyOfPropertyChange(() => ServerTimingDetails);
         }
 
         private void UpdateTraceWatchers()
@@ -387,6 +419,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         private DocumentViewModel _activeDocument;
+        private ServerTimingDetailsViewModel _serverTimingDetails;
         protected DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
@@ -416,6 +449,7 @@ namespace DaxStudio.UI.ViewModels
         }
          */ 
         // TODO - should this be an observable collection??
+        /*
         public IEnumerable<string> Worksheets
         {
             get { return _host.Proxy.Worksheets; }
@@ -424,7 +458,7 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedWorksheet {
             get { return ActiveDocument.SelectedWorksheet; } 
             set { ActiveDocument.SelectedWorksheet = value; } }
-
+        */
         // TODO - configure MRU list
         public System.Collections.Specialized.StringCollection RecentDocuments
         {
@@ -470,19 +504,14 @@ namespace DaxStudio.UI.ViewModels
                     ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
                 }
             }
-            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:MetadataChecked", message);
-            if (_host.IsExcel)
-            {
-                //TODO - refresh workbooks and powerpivot conn if the host is excel
-                NotifyOfPropertyChange(() => Worksheets);
-            }
+           
             Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:End", message);
         }
 
         public void Handle(NewDocumentEvent message)
         {
-            Databases = null;
-            SelectedDatabase = null;
+            //Databases = null;
+            //SelectedDatabase = null;
         }
 
         public void Handle(TraceChangingEvent message)
@@ -557,6 +586,18 @@ namespace DaxStudio.UI.ViewModels
         {
             _activeDocument.FindReplaceDialog.SearchUp = true;
             _activeDocument.FindReplaceDialog.FindText();
+        }
+
+        public bool ServerTimingsChecked { get { return ActiveDocument.ServerTimingsChecked; } }
+
+        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument.ServerTimingDetails; } }
+
+        public void Handle(TraceWatcherToggleEvent message)
+        {
+            if (message.TraceWatcher is ServerTimesViewModel)
+            {
+                NotifyOfPropertyChange(() => ServerTimingsChecked);
+            }
         }
     }
 }

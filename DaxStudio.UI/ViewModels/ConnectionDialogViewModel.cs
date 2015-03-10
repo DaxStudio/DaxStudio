@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using ADOTabular;
@@ -10,10 +9,9 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Controls;
 using DaxStudio.UI.Views;
 using DaxStudio.UI.Utils;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,41 +23,48 @@ namespace DaxStudio.UI.ViewModels
         private readonly DocumentViewModel _activeDocument;
         public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel, DocumentViewModel document )
         {
-            _eventAggregator = eventAggregator;
-            _connectionString = connectionString;
-            _activeDocument = document;
-            PowerPivotEnabled = true;
-            Host = host;
-            ServerModeSelected = true;
-
-            PowerBIHelper.Refresh();
-            if ( PowerBIHelper.Port != 0)
+            try
             {
-                PowerBIDesignerDetected = true;
-                NotifyOfPropertyChange(() => PowerBIDesignerDetected);
-            }
+                _eventAggregator = eventAggregator;
+                _connectionString = connectionString;
+                _activeDocument = document;
+                PowerPivotEnabled = true;
+                Host = host;
+                ServerModeSelected = true;
 
-            ParseConnectionString(); // load up dialog with values from ConnStr
-            
-            if (Host.IsExcel)
-            {
-                //using (new StatusBarMessage("Checking for PowerPivot model 2..."))
-                //{
+                PowerBIHelper.Refresh();
+                if (PowerBIHelper.Port != 0)
+                {
+                    PowerBIDesignerDetected = true;
+                    NotifyOfPropertyChange(() => PowerBIDesignerDetected);
+                }
+
+                ParseConnectionString(); // load up dialog with values from ConnStr
+
+                if (Host.IsExcel)
+                {
+                    //using (new StatusBarMessage("Checking for PowerPivot model 2..."))
+                    //{
                     //bool hasPpvt = false;
                     //HasPowerPivotModelAsync().ContinueWith(t => hasPpvt = t.Result).Wait(); 
-                    
+
                     if (hasPowerPivotModel)
                     {
                         ServerModeSelected = false;
                         PowerPivotModeSelected = true;
                     }
-                   
-                //}
+
+                    //}
+                }
+
+                WorkbookName = host.Proxy.WorkbookName;
+                DisplayName = "Connect To";
+                //MdxCompatibility = "3 - (Default) Placeholder members are not exposed";
             }
-            
-            WorkbookName = host.Proxy.WorkbookName;
-            DisplayName = "Connect To";
-            //MdxCompatibility = "3 - (Default) Placeholder members are not exposed";
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "ConnectionDialogViewModel", "ctor", ex.Message, ex.StackTrace);
+            }
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }

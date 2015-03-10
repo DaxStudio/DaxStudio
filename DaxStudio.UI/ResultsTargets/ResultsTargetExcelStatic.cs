@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Model
     // This is the target which writes the static results out to
     // a range in Excel
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetExcelStatic: IResultsTarget
+    public class ResultsTargetExcelStatic: IResultsTarget, IActivateResults
     {
         private IDaxStudioHost _host;
         [ImportingConstructor]
@@ -146,6 +146,21 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder
         {
             get { return 110; }
+        }
+
+
+        public string Message
+        {
+            get {
+            return "Static Results will be sent to Excel";
+            }
+        }
+        public OutputTargets Icon
+        {
+            get
+            {
+                return OutputTargets.Static;
+            }
         }
     }
 

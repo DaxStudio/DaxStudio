@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Model
         void Reset();
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
-
+        bool IsBusy { get; set; }
         void CheckEnabled(IConnection connection);
 
         string ToolTipText { get; }

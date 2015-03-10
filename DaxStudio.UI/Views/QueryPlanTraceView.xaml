@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" BorderThickness="1" BorderBrush="DimGray">
@@ -10,8 +11,12 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
         </ResourceDictionary>
+        
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -27,7 +32,7 @@
                   HeadersVisibility="Column"
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
-                  GridLinesVisibility="None" >
+                  GridLinesVisibility="None" BorderBrush="#FFABADB3" >
 
             <DataGrid.Resources>
                 <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -89,7 +94,7 @@
                   HeadersVisibility="Column"
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
-                  GridLinesVisibility="None" >
+                  GridLinesVisibility="None" BorderBrush="#FFABADB3" >
 
             <DataGrid.Resources>
                 <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -136,7 +141,21 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
-        
 
+        <!-- Busy overlay -->
+        <Border 
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+                Grid.RowSpan="3" Style="{StaticResource BusyPanel}">
+            <Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!--
+                    <Views:ucSpinner Foreground="White" Margin="0,0,10,0" />
+                    <TextBlock Margin="0" TextWrapping="Wrap" Text="Running Query..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#7E000000"/>
+                    -->
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">Running Query...</Label>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

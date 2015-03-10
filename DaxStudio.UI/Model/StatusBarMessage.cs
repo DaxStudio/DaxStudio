@@ -18,5 +18,10 @@ namespace DaxStudio.UI.Model
             _document.SetStatusBarMessage("Ready");
             _document = null;
         }
+
+        public bool IsDisposed
+        {
+            get { return _document == null; }
+        }
     }
 }

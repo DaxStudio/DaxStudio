@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +21,7 @@ namespace DaxStudio.UI.Views
     /// </summary>
     public partial class ucSpinner : UserControl
     {
-        public ucSpinner()
-        {
-            InitializeComponent();
-        }
+
+
     }
 }

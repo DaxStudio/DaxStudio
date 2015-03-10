@@ -8,12 +8,10 @@ namespace DaxStudio.UI.Events
 {
     public class RunQueryEvent
     {
-        public RunQueryEvent(IResultsTarget target, string selectedWorksheet)
+        public RunQueryEvent(IResultsTarget target)
         {
             ResultsTarget = target;
-            SelectedWorksheet = selectedWorksheet;
         }
         public IResultsTarget ResultsTarget { get; set; }
-        public string SelectedWorksheet { get; set; }
     }
 }

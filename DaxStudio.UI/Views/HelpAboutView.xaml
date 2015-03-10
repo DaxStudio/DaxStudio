@@ -16,14 +16,12 @@
              >
     <UserControl.Resources>
         <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
-        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-logo_150x150.png"/>
+        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
     <Border Padding="10">
-    <Border Background="White" CornerRadius="10" Padding="5" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1">
-        <Border.Effect>
-            <DropShadowEffect Color="Gray" ShadowDepth="8" />
-        </Border.Effect>
+    <Border Background="White" CornerRadius="0" Padding="5" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1">
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -32,7 +30,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="0,0,20,0"/>
+            <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="20,0,10,0"/>
             <StackPanel Orientation="Vertical">
                 <TextBlock Padding="5" FontSize="48"><Run Text="DAX Studio"/></TextBlock>
                 <TextBlock Padding="5"><Hyperlink NavigateUri="http://daxstudio.codeplex.com" custom:HyperlinkExtensions.IsExternal="true"><Run Text="http://daxstudio.codeplex.com"/></Hyperlink></TextBlock>

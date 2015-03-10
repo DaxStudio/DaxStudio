@@ -6,17 +6,33 @@ using System.Windows.Data;
 using System.Windows;
 using System.Windows.Input;
 using DaxStudio.Interfaces;
+using Caliburn.Micro;
+using DaxStudio.UI.Events;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(IToolWindow))]
     public class QueryResultsPaneViewModel: ToolWindowBase
+        , IHandle<QueryResultsPaneMessageEvent>
+        , IHandle<ActivateDocumentEvent>
+        , IHandle<NewDocumentEvent>
+        , IHandle<RunQueryEvent>
+        , IHandle<CancelQueryEvent>
+        , IHandle<QueryFinishedEvent>
     {
         private DataTable _resultsTable;
+        private string _selectedWorksheet;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IDaxStudioHost _host;
 
         [ImportingConstructor]
-        public QueryResultsPaneViewModel() : this(new DataTable("Empty"))
-        {}
+        public QueryResultsPaneViewModel(IEventAggregator eventAggregator, IDaxStudioHost host) : this(new DataTable("Empty"))
+        {
+            _eventAggregator = eventAggregator;
+            //_eventAggregator.Subscribe(this);
+            _host = host;
+        }
 
         public QueryResultsPaneViewModel(DataTable resultsTable)
         {
@@ -90,7 +106,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _resultsMessage = value;
-                ShowResultsTable = false;
+                ShowResultsTable = string.IsNullOrEmpty(_resultsMessage);
                 NotifyOfPropertyChange(() => ResultsMessage);
             }
         }
@@ -113,8 +129,82 @@ namespace DaxStudio.UI.ViewModels
             {
                 _icon = value;
                 NotifyOfPropertyChange(() => ResultsIcon);
+                NotifyOfPropertyChange(() => ShowWorksheets);
             }
         }
 
+
+        public void Handle(QueryResultsPaneMessageEvent message)
+        {
+            ResultsIcon = message.Target.Icon;
+            ResultsMessage = message.Target.Message;
+        }
+
+        public IEnumerable<string> Worksheets
+        {
+            get { return _host.Proxy.Worksheets; }
+        }
+
+        public string SelectedWorksheet
+        {
+            get { return _selectedWorksheet; }
+            set { _selectedWorksheet = value;
+            _eventAggregator.PublishOnBackgroundThread(new SetSelectedWorksheetEvent(_selectedWorksheet));
+            }
+        }
+
+        public void Handle(ActivateDocumentEvent message)
+        {
+            if (_host.IsExcel)
+            {
+            
+                SelectedWorksheet = message.Document.SelectedWorksheet;
+                //TODO - refresh workbooks and powerpivot conn if the host is excel
+                NotifyOfPropertyChange(() => Worksheets);
+            }
+        }
+
+        public void Handle(NewDocumentEvent message)
+        {
+            _eventAggregator.PublishOnUIThread(new QueryResultsPaneMessageEvent(message.Target));
+            if (message.Target is IActivateResults) { this.Activate(); }
+            //ResultsIcon = message.Target.Icon;
+            //ResultsMessage = message.Target.Message;
+        }
+
+        public bool ShowWorksheets
+        {
+            get
+            {
+                // Only show the worksheets option if the output is one of the Excel Targets
+                return ResultsIcon == OutputTargets.Linked || ResultsIcon == OutputTargets.Static;
+            }
+        }
+
+        private bool _isBusy = false;
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set { _isBusy = value;
+            NotifyOfPropertyChange(() => IsBusy);
+            }
+        }
+
+        public void Handle(RunQueryEvent message)
+        {
+            IsBusy = true;
+        }
+
+        public void Handle(CancelQueryEvent message)
+        {
+            IsBusy = false;
+            // clear out any data if the query is cancelled
+            ResultsDataTable = new DataTable("Empty");
+        }
+
+        public void Handle(QueryFinishedEvent message)
+        {
+            IsBusy = false;
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using System.Diagnostics;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Model
 {
@@ -12,6 +13,13 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetGrid: IResultsTarget 
     {
+        private IEventAggregator _eventAggregator;
+
+        [ImportingConstructor]
+        public ResultsTargetGrid(IEventAggregator eventAggregator)
+        {
+            _eventAggregator = eventAggregator;
+        }
         public string Name {get { return "Grid"; }
         }
         public string Group {get { return "Standard"; }
@@ -78,7 +86,7 @@ namespace DaxStudio.UI.Model
                                                 res.Rows.Count == 1 ? "" : "s"), durationMs);
                             // activate the result only when Counters are not selected...
                             runner.ActivateResults();
-                            runner.QueryCompleted();
+                            //runner.QueryCompleted();
                         }
                         
                     }
@@ -101,6 +109,16 @@ namespace DaxStudio.UI.Model
         public bool IsEnabled
         {
             get { return true; }
+        }
+
+
+        public string Message
+        {
+            get { return string.Empty;}
+        }
+        public OutputTargets Icon
+        {
+            get { return OutputTargets.Grid; }
         }
     }
 

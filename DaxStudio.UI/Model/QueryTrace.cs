@@ -271,21 +271,22 @@ namespace DaxStudio.UI.Model
         {
             Status = QueryTraceStatus.Stopping;
             
-            //Execute.OnUIThread(() =>
-            //    {
-                    _trace.OnEvent -= OnTraceEventInternal;
-                    try
-                    {
+            if (_trace != null)
+            {
+                _trace.OnEvent -= OnTraceEventInternal;
+                try
+                {
                     //    _trace.Stop();
-                        _trace.Drop();
-                        _trace = null;
-                        Status = QueryTraceStatus.Stopped;
-                    }
-                    catch (Exception e)
-                    {
-                        System.Diagnostics.Debug.WriteLine(e);
-                    }
-             //   });
+                    _trace.Drop();
+                    _trace = null;
+                    Status = QueryTraceStatus.Stopped;
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e);
+                }
+            }
+             
             _traceStarted = false;
         }
     }

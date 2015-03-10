@@ -19,9 +19,9 @@
         Style="{DynamicResource MetroWindowStyle}"
         MinHeight="400"
         MinWidth="400"                    
-        Height="700"
-        Width="1024"
-        Top="10"
+        Height="720"
+        Width="1120"
+        Top="5"
         >
     <!--Fluent:MetroColors.ThemeColorKey="#FF0072C6"-->
     <Fluent:RibbonWindow.Resources>
@@ -196,7 +196,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <!--<RowDefinition Height="24"/>-->
         </Grid.RowDefinitions>
         
         <ContentControl x:Name="Ribbon"

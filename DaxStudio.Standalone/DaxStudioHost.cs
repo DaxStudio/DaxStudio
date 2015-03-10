@@ -9,6 +9,7 @@ using DaxStudio.Interfaces;
 using System.Data;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using Serilog;
 
 namespace DaxStudio.Standalone
 {
@@ -33,11 +34,13 @@ namespace DaxStudio.Standalone
             }
             if (_port > 0)
             {
+                Log.Debug("{class} {method} {message} {port}", "DaxStudioHost", "ctor", "Constructing ProxyPowerPivot", _port);
                 _proxy = new DaxStudio.UI.Model.ProxyPowerPivot(_eventAggregator, _port);
             }
             else
             {
                 // pass along commandline to UI
+                Log.Debug("{class} {method} {message}", "DaxStudioHost", "ctor", "constructing ProxyStandalone");
                 if (args.Length > 1) _commandLineFileName = args[1];
                 _proxy = new DaxStudio.UI.Model.ProxyStandalone();
             }

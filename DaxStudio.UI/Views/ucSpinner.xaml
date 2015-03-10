@@ -23,7 +23,9 @@
                         <RotateTransform x:Name="rotateTransform"/>
                     </TransformGroup>
                 </Grid.RenderTransform>
-                <Ellipse Fill="{DynamicResource SpinnerColorBrush}">
+                <Ellipse Fill="{TemplateBinding Foreground }">
+                    <!--<Ellipse Fill="{DynamicResource SpinnerColorBrush}">-->
+                    
                     <Ellipse.OpacityMask>
                         <ImageBrush ImageSource="../Images/SpinnerMask.png" Stretch="None"/>
                     </Ellipse.OpacityMask>
@@ -39,7 +41,7 @@
 
     </UserControl.Resources>
     <Grid>
-        <StackPanel Orientation="Horizontal">
+        <Grid Background="Transparent">
             <!--    <ContentControl x:Name="Spinner"></ContentControl> -->
             <Grid Name="LayoutRoot" RenderTransformOrigin="0.5,0.5" Width="14" Height="14" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid.RenderTransform>
@@ -47,7 +49,8 @@
                         <RotateTransform x:Name="rotateTransform"/>
                     </TransformGroup>
                 </Grid.RenderTransform>
-                <Ellipse Fill="{DynamicResource SpinnerColorBrush}">
+                <!--<Ellipse Fill="{DynamicResource SpinnerColorBrush}">-->
+                <Ellipse Fill="White">
                     <Ellipse.OpacityMask>
                         <ImageBrush ImageSource="../Images/SpinnerMask.png" Stretch="None"/>
                     </Ellipse.OpacityMask>
@@ -71,6 +74,6 @@
                     </EventTrigger>
                 </Grid.Triggers>
             </Grid>
-        </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

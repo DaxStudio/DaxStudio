@@ -8,7 +8,8 @@ namespace DaxStudio.Interfaces
         Grid,
         Timer,
         Linked,
-        Static
+        Static,
+        File
     }
     public interface IQueryRunner
     {

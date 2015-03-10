@@ -199,7 +199,7 @@
             <StatusBarItem Grid.Column="2">
                     <!--<ProgressBar Orientation="Horizontal" Visibility="Visible" IsIndeterminate="True" Width="55" Height="15" />-->
                 
-                <TextBlock x:Name="Message" >Ready</TextBlock>
+                <TextBlock x:Name="Message1" Text="{Binding ActiveDocument.StatusBarMessage}" ></TextBlock>
                 
             </StatusBarItem>
             <Separator Grid.Column="3"/>

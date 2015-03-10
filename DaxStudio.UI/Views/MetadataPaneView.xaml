@@ -17,28 +17,28 @@
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
         <ResourceDictionary>
+
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
             
-            <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Controls/Resources/clear.png" />
-
+            <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/clear.png" />
             <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
             <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
-            <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/icon-model@16px.png" />
+            <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/icon-model@16px.png" />
             <conv:ResourceLookupConverter x:Key="MetadataIcons">
                 <ResourceDictionary>
-                    <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png"/>
-                    <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenTable.png"/>
-                    <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Column.png" />
-                    <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenColumn.png" />
-                    <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Measure.png" />
-                    <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/HiddenMeasure.png" />
-                    <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metro/model.png" />
-                    <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Table.png" />
-                    <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Hierarchy.png"/>
-                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Kpi.png"/>        
+                    <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/Table.png"/>
+                    <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
+                    <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
+                    <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
+                    <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Measure.png" />
+                    <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenMeasure.png" />
+                    <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/model.png" />
+                    <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Table.png" />
+                    <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
+                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>        
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
             <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
@@ -90,6 +90,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
         </ResourceDictionary>
@@ -99,16 +100,36 @@
         
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
+        <!-- database Dropdown -->
+        <ComboBox Grid.Row="0" x:Name="Database" 
+            SelectedItem="{Binding SelectedDatabase}"
+            ItemsSource="{Binding Databases}"   
+            MinWidth="160" 
+            Template="{DynamicResource MetroComboBoxControlTemplate}"
+            IsEditable="False"
+            IsSynchronizedWithCurrentItem="True" 
+            IsEnabled="{Binding CanSelectDatabase}" 
+            Margin="0,0,0,2" ToolTip="{Binding SelectedDatabase}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
+                        <TextBlock Text="{Binding}" Margin="4,0" ></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
         <!-- Model Dropdown -->
-        <ComboBox Grid.Row="0" 
+        <ComboBox Grid.Row="1" 
                   IsEditable="False"
                   IsEnabled="{Binding IsConnected, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   
-                   IsSynchronizedWithCurrentItem="True"
+                   IsSynchronizedWithCurrentItem="True" Template="{DynamicResource MetroComboBoxControlTemplate}"
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>
@@ -142,7 +163,7 @@
     
         
         <!-- Tables -->
-        <ctrl:TreeViewEx Grid.Row="1" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
+        <ctrl:TreeViewEx Grid.Row="2" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                   Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
@@ -198,7 +219,7 @@
             </TreeView.Resources>
         </ctrl:TreeViewEx>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
         <Border Style="{StaticResource ResourceKey=searchBox}" Grid.Row="1" x:Name="srchBox">
             <Grid>
                 <Grid.ColumnDefinitions>

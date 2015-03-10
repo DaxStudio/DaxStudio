@@ -15,7 +15,9 @@ using System;
 namespace DaxStudio.UI.ViewModels
 {
     [Export]
-    public class MetadataPaneViewModel:ToolPaneBaseViewModel, IDragSource
+    public class MetadataPaneViewModel:ToolPaneBaseViewModel
+        , IDragSource
+
     {
         private string _modelName;
         
@@ -78,7 +80,9 @@ namespace DaxStudio.UI.ViewModels
                 return;
             if (ModelList == Connection.Database.Models)
                 return;
-            
+
+            Databases = Connection.Databases.ToSortedSet();
+
             var ml = Connection.Database.Models;
             Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);          
             if (Dispatcher.CurrentDispatcher.CheckAccess())
@@ -91,6 +95,7 @@ namespace DaxStudio.UI.ViewModels
             }
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => Connection);
+            NotifyOfPropertyChange(() => CanSelectDatabase);
         }
 
         //public ADOTabularTableCollection Tables {
@@ -167,7 +172,63 @@ namespace DaxStudio.UI.ViewModels
                 node.ApplyCriteria(CurrentCriteria, new Stack<FilterableTreeViewItem>());
         }
 
+        // Database Dropdown Properties
+        private SortedSet<string> _databases = new SortedSet<string>();
+        public SortedSet<string> Databases
+        {
+            get { return _databases; }
+            set
+            {
+                _databases = value;
+                NotifyOfPropertyChange(() => Databases);
+            }
+        }
         
+        private string _selectedDatabase;
+        public string SelectedDatabase
+        {
+            get { return _selectedDatabase; }
+            set
+            {
+                // TODO - can't change database if query is running
 
+                //var doc = ActiveDocument;
+                //Log.Debug("{Class} {Event} {selectedDatabase}", "RibbonViewModel", "SelectedDatabase:Set", value);
+                //if (_databaseComboChanging) return;
+                if (value == _selectedDatabase)
+                {
+                    NotifyOfPropertyChange(() => SelectedDatabase);
+                    return;
+                }
+
+                //_databaseComboChanging = true;
+
+                _selectedDatabase = value;
+                
+                if (Connection != null)
+                {
+                    if (_selectedDatabase == null || !Connection.Database.Equals(_selectedDatabase))
+                    {
+                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
+                        Connection.ChangeDatabase( _selectedDatabase);
+                        ModelList = Connection.Database.Models;
+                    }
+                }
+
+                NotifyOfPropertyChange(() => SelectedDatabase);
+
+            }
+        }
+
+        public bool CanSelectDatabase
+        {
+            get
+            {
+                return Connection != null && !Connection.IsPowerPivot;
+            }
+        }
+
+
+        
     }
 }

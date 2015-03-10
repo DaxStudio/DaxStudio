@@ -4,10 +4,11 @@
     
     <conv:ResourceLookupConverter x:Key="OutputIcons">
         <ResourceDictionary>
-            <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
+            <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi2.png"/>
             <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer@96ppi.png"/>
             <BitmapImage x:Key="Static" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
             <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
+            <BitmapImage x:Key="File" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-file.png"/>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
 
@@ -40,13 +41,18 @@
     <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
     <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
     <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
-    <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo@16x16.png"></BitmapImage>
-    <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo.png"></BitmapImage>
+    <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo.png"></BitmapImage>
     <BitmapImage x:Key="ParameterIcon"  UriSource="..\images\icon-parameter@16x16.png"></BitmapImage>
-    <BitmapImage x:Key="InformationIcon"  UriSource="..\images\information.circle.png"></BitmapImage>
-    <BitmapImage x:Key="RefreshIcon"  UriSource="..\images\icon-refresh@17px.png"></BitmapImage>
+    <BitmapImage x:Key="InformationIcon"  UriSource="..\images\icon-info@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="RefreshIcon"  UriSource="..\images\icon-refresh.png"></BitmapImage>
     <BitmapImage x:Key="RefreshIconLarger"  UriSource="..\images\icon-refresh@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="ReplaceIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-replace_x16.png"/>
     <BitmapImage x:Key="FindIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-find_x16.png"/>
-    <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-daxformatter@16px.png"></BitmapImage>
+    <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-daxformatter@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="MergeIcon"  UriSource="..\images\icon-merge.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsInternal"  UriSource="..\images\icon-showinternal.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsCache"  UriSource="..\images\icon-showcache.png"></BitmapImage>
+    <BitmapImage x:Key="RightPane"  UriSource="..\images\icon-rightpane.png"></BitmapImage>
+    <BitmapImage x:Key="BottomPane"  UriSource="..\images\icon-bottompane.png"></BitmapImage>
 </ResourceDictionary>

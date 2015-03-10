@@ -45,7 +45,16 @@
                         <GridViewColumn.Header>
                             <StackPanel Orientation="Horizontal" ToolTip="Client Duration - includes network transfer and rendering time">
                                 <TextBlock Text="Duration" />
-                                <TextBlock Text=" i" FontFamily="WebDings"/>
+                                <TextBlock Text=" i" FontFamily="WebDings" FontSize="11" RenderTransformOrigin="0.5,0.5">
+                                    <TextBlock.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform/>
+                                            <RotateTransform/>
+                                            <TranslateTransform Y="4"/>
+                                        </TransformGroup>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
                             </StackPanel>
                         </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>

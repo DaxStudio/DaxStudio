@@ -9,15 +9,27 @@ using Serilog;
 
 namespace DaxStudio.UI.Utils
 {
+    public class PowerBIInstance
+    {
+        public PowerBIInstance(string name, int port)
+        {
+            Port = port;
+            Name = name;
+        }
+        public int Port { get; private set; }
+        public string Name { get; private set; }
+    }
+
     public class PowerBIHelper
     {
         private static int _port = 0;
         private static bool _portSet = false;
-
+        private static List<PowerBIInstance> _instances = new List<PowerBIInstance>();
         public static void Refresh()
         {
             _port = 0;
             _portSet = false;
+            _instances.Clear();
 
             ManagementClass mgmtClass = new ManagementClass("Win32_Process");
             foreach (ManagementObject process in mgmtClass.GetInstances())
@@ -29,7 +41,12 @@ namespace DaxStudio.UI.Utils
                     
                     // get the process pid
                     System.UInt32 pid = (System.UInt32)process["ProcessId"];
-
+                    var parentPid = int.Parse(process["ParentProcessId"].ToString());
+                    var parentTitle = "";
+                    if (parentPid > 0)
+                    {
+                        parentTitle = Process.GetProcessById(parentPid).MainWindowTitle;
+                    }
                     // Get the command line - can be null if we don't have permissions
                     // but should have permission for PowerBI msmdsrv as it will have been
                     // launched by the current user.
@@ -47,10 +64,12 @@ namespace DaxStudio.UI.Utils
                             if (System.IO.File.Exists(portFile))
                             {
                                 string sPort = System.IO.File.ReadAllText(portFile, Encoding.Unicode);
-                                _port = int.Parse(sPort);
+                                var port = int.Parse(sPort);
+                                _port = port;
                                 _portSet = true;
+                                _instances.Add(new PowerBIInstance(parentTitle, port));
                                 Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
-                                break;
+                                continue;
                             }
                         }
                         catch (Exception ex)
@@ -59,6 +78,15 @@ namespace DaxStudio.UI.Utils
                         }
                     }
                 }
+            }
+        }
+
+        public static List<PowerBIInstance> Instances
+        {
+            get
+            {
+                if (!_portSet) { Refresh(); }
+                return _instances;
             }
         }
 

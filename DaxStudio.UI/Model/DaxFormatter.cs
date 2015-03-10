@@ -43,12 +43,16 @@ namespace DaxStudio.UI.Model
     {
         const string DaxFormatUri =  "http://www.daxformatter.com/api/daxformatter/DaxFormat";
         const string DaxFormatVerboseUri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
+        const int REQUEST_TIMEOUT = 10000;
+
         private static string redirectUrl = null;  // cache the redirected URL
         private static string redirectHost = null;
         public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
         {
             try
             {
+                int colOffset = 1;
+                int rowOffset = 1;
                 Log.Verbose("{class} {method}", "DaxFormatter", "FormatQuery:Begin");
                 // todo - do I want to disable the editor control while formatting is in progress???
 
@@ -69,6 +73,9 @@ namespace DaxStudio.UI.Model
                     }
                     else
                     {
+                        var loc = editor.Document.GetLocation(editor.SelectionStart);
+                        colOffset = loc.Column;
+                        rowOffset = loc.Line;
                         //editor.Document.UndoStack.StartUndoGroup();
                         editor.SelectedText = res.FormattedDax.TrimEnd();
                         //editor.Document.UndoStack.EndUndoGroup();
@@ -82,7 +89,8 @@ namespace DaxStudio.UI.Model
                     {
                         // write error 
                         // note: daxformatter.com returns 0 based coordinates so we add 1 to them
-                        doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", err.line+1, err.column+1, err.message),err.line+1, err.column+1);
+                        
+                        doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", err.line + rowOffset, err.column + colOffset, err.message),err.line + rowOffset, err.column + colOffset);
 
                         // show waveline under error
                         // editor
@@ -135,72 +143,87 @@ namespace DaxStudio.UI.Model
         private static async Task<string> CallDaxFormatterAsync(string uri, string query)
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
-            DaxFormatterRequest req = new DaxFormatterRequest();
-            req.Dax = query;
-
-            var data = JsonConvert.SerializeObject(req);
-
-            var enc = System.Text.Encoding.UTF8;
-            var data1 = enc.GetBytes(data);
-            Uri redirectUri;
-
-            //TODO - figure out when to use proxy
-            var proxy = System.Net.WebRequest.GetSystemWebProxy();
-            proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-
-            if (redirectHost == null)
+            try
             {
-                // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                // The following 2 requests are doing manual POST re-direct
-                var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
-                redirectRequest.AllowAutoRedirect = false;
 
-                redirectRequest.Proxy = proxy;
+                DaxFormatterRequest req = new DaxFormatterRequest();
+                req.Dax = query;
 
-                using (var netResponse = await redirectRequest.GetResponseAsync())
+                var data = JsonConvert.SerializeObject(req);
+
+                var enc = System.Text.Encoding.UTF8;
+                var data1 = enc.GetBytes(data);
+                Uri redirectUri;
+
+                //TODO - figure out when to use proxy
+                var proxy = System.Net.WebRequest.GetSystemWebProxy();
+                proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+
+                Log.Verbose("Proxy: {proxyAddress}", proxy.GetProxy(new Uri(uri)).AbsolutePath);
+
+                if (redirectHost == null)
                 {
-                    var redirectResponse = (HttpWebResponse)netResponse;
-                    redirectUrl = redirectResponse.Headers["Location"];
-                    redirectUri = new Uri(redirectUrl);
-                    redirectHost = redirectUri.Host;
-                    Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
-                    System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
-                }
-            }
-            Uri originalUri = new Uri(uri);
-            var actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
-            
-            
-            var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(actualUrl);
+                    // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
+                    // The following 2 requests are doing manual POST re-direct
+                    var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
+                    redirectRequest.AllowAutoRedirect = false;
+                    redirectRequest.Timeout = REQUEST_TIMEOUT;
+                    redirectRequest.Proxy = proxy;
 
-            wr.ContentType = "application/json";
-            wr.Method = "POST";
-            wr.Accept = "application/json, text/javascript, */*; q=0.01";
-            wr.Headers.Add("Accept-Encoding", "gzip,deflate");
-            wr.Headers.Add("Accept-Language", "en-US,en;q=0.8");
-            wr.ContentType = "application/json; charset=UTF-8";
-            wr.AutomaticDecompression = DecompressionMethods.GZip;
-
-            //todo 
-            wr.Proxy = proxy;
-
-            string output = "";
-            using (var strm = await wr.GetRequestStreamAsync())
-            {
-                strm.Write(data1, 0, data1.Length);
-
-                using (var resp = wr.GetResponse())
-                {
-                    //var outStrm = new System.IO.Compression.GZipStream(resp.GetResponseStream(), System.IO.Compression.CompressionMode.Decompress);
-                    var outStrm = resp.GetResponseStream();
-                    using (var reader = new System.IO.StreamReader(outStrm))
+                    using (var netResponse = await redirectRequest.GetResponseAsync())
                     {
-                        output = reader.ReadToEnd();
+                        var redirectResponse = (HttpWebResponse)netResponse;
+                        redirectUrl = redirectResponse.Headers["Location"];
+                        redirectUri = new Uri(redirectUrl);
+                        redirectHost = redirectUri.Host;
+                        Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
+                        System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
                     }
                 }
+                Uri originalUri = new Uri(uri);
+                var actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
+
+
+                var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(actualUrl);
+                wr.Timeout = REQUEST_TIMEOUT;
+                wr.ContentType = "application/json";
+                wr.Method = "POST";
+                wr.Accept = "application/json, text/javascript, */*; q=0.01";
+                wr.Headers.Add("Accept-Encoding", "gzip,deflate");
+                wr.Headers.Add("Accept-Language", "en-US,en;q=0.8");
+                wr.ContentType = "application/json; charset=UTF-8";
+                wr.AutomaticDecompression = DecompressionMethods.GZip;
+
+                //todo 
+                wr.Proxy = proxy;
+
+                string output = "";
+                using (var strm = await wr.GetRequestStreamAsync())
+                {
+                    strm.Write(data1, 0, data1.Length);
+
+                    using (var resp = wr.GetResponse())
+                    {
+                        //var outStrm = new System.IO.Compression.GZipStream(resp.GetResponseStream(), System.IO.Compression.CompressionMode.Decompress);
+                        var outStrm = resp.GetResponseStream();
+                        using (var reader = new System.IO.StreamReader(outStrm))
+                        {
+                            output = reader.ReadToEnd();
+                        }
+                    }
+                }
+
+                return output;
             }
-            Log.Verbose("{class} {method}", "DaxFormatter", "CallDaxFormatterAsync:End");
-            return output;
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "DaxFormatter", "CallDaxFormatterAsync", ex.Message);
+            }
+            finally
+            {
+                Log.Verbose("{class} {method}", "DaxFormatter", "CallDaxFormatterAsync:End");
+            }
+            return "";
         }
     }
 }

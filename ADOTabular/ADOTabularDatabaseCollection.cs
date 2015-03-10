@@ -140,5 +140,13 @@ namespace ADOTabular
         {
             return GetDatabaseTable().Rows.Contains(databaseName);
         }
+
+        public SortedSet<string> ToSortedSet()
+        {
+            var ss = new SortedSet<string>();
+            foreach (var dbname in this)
+            { ss.Add(dbname); }
+            return ss;
+        }
     }
 }
