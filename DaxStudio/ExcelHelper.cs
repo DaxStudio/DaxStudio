@@ -172,7 +172,17 @@ namespace DaxStudio
                               && pvtc.CommandType == XlCmdType.xlCmdCube
                               && (((string)conn).IndexOf("Data Source=$Embedded$", StringComparison.InvariantCultureIgnoreCase) >= 0)
                            select pvtc).First();// Any();
+                /*
+                 //TODO - try creating a pivot cache or connection
+                if (ptc == null)
+                {
 
+                    ptc = pvtcaches.Create(XlPivotTableSourceType.xlExternal);
+                    ptc.CommandType = XlCmdType.xlCmdCube;
+
+                    ptc.Connection = new AdomdConnection( )
+                }
+                 */ 
                 if (ptc != null)
                 {
                     ptc.Refresh();
@@ -370,6 +380,7 @@ namespace DaxStudio
                 Debug.WriteLine("WorkbookConnection: " + c.Name);
                 if (!c.InModel) continue;
                 if (c.Type == XlConnectionType.xlConnectionTypeMODEL) continue;
+                //if (c.Name == "ThisWorkbookDataModel") continue;
                 if (c.ModelTables == null) continue;
                 if (c.ModelTables.Count == 0) continue;
                 
@@ -394,7 +405,7 @@ namespace DaxStudio
 
             var listObjs = ws.ListObjects;
             var r = ws.Cells[1, 1];
-            var lo = listObjs.Add(SourceType: XlListObjectSourceType.xlSrcModel
+            var lo = listObjs.Add( SourceType: XlListObjectSourceType.xlSrcModel
                 , Source: wbc
                 , Destination: r);
 

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Formatting;
 using DaxStudio.UI.Events;
 using Serilog;
+using System.IO;
 
 namespace DaxStudio.UI.Model
 {
@@ -183,7 +184,14 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult);
+                    var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult);
+                    if (resp.StatusCode != System.Net.HttpStatusCode.OK)
+                    {
+                        var str = await resp.Content.ReadAsStringAsync();
+                        var msg = (string)Newtonsoft.Json.Linq.JObject.Parse(str)["Message"];
+                        
+                        doc.OutputError(string.Format("Error sending results to Excel ({0})", msg));
+                    }
                 }
                 catch (Exception ex)
                 {

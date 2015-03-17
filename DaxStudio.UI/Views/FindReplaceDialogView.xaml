@@ -14,7 +14,7 @@
              d:DesignWidth="300" 
              d:DesignHeight="100"
              Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
-             Opacity="0.65"
+             Opacity="0.80"
              >
     <UserControl.Resources>
         <ResourceDictionary>

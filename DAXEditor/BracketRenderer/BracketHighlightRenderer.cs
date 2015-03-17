@@ -83,7 +83,7 @@ namespace DAXEditor.BracketRenderer
       builder.AddSegment(textView, new TextSegment() { StartOffset = result.ClosingBracketOffset, Length = result.ClosingBracketLength });
     
       Geometry geometry = builder.CreateGeometry();
-
+        
       //Transform highlightFixTransform = new TranslateTransform(0, 2);
       //geometry.Transform.Value.OffsetY = 2;
 
@@ -96,7 +96,7 @@ namespace DAXEditor.BracketRenderer
 
       if (geometry != null)
       {
-        drawingContext.DrawGeometry(backgroundBrush, borderPen, geometry);
+        drawingContext.DrawGeometry(backgroundBrush, borderPen, geometry );
       }
     }
 

@@ -48,6 +48,11 @@ namespace DaxStudio.UI.ViewModels
 
         public string FullVersionNumber
         {
+            get { return System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(3); }
+        }
+
+        public string BuildNumber
+        {
             get { return System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(); }
         }
 

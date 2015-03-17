@@ -106,6 +106,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        public int LocalBuild
+        {
+            get
+            {
+                return typeof(VersionCheck).Assembly.GetName().Version.Build;
+            }
+        }
+
         public Version ServerVersion
         {
             get
@@ -145,11 +153,11 @@ namespace DaxStudio.UI.Model
                 reader.Close();
                 
                 if (LocalVersion.CompareTo(serverVersion) > 0)
-                    { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString());}
+                    { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString(3));}
                 else if (LocalVersion.CompareTo(serverVersion) == 0)
                     { VersionStatus = "(Latest Official Release)"; }
                 else
-                    { VersionStatus = string.Format("(New Version available - {0})", serverVersion.ToString()); }
+                    { VersionStatus = string.Format("(New Version available - {0})", serverVersion.ToString(3)); }
             
                 NotifyOfPropertyChange(() => VersionStatus);
 

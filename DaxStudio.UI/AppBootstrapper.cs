@@ -46,7 +46,8 @@ namespace DaxStudio.UI
         {
             base.OnUnhandledException(sender, e);
             Debug.WriteLine(e.Exception);
-            Log.Error("{Class} {Method} {Exception", "AppBootstrapper", "OnUnhandledException", e);
+            Log.Error("{Class} {Method} {Exception}", "AppBootstrapper", "OnUnhandledException", e.Exception);
+            Log.Error("{Class} {Method} {InnerException}", "AppBootstrapper", "OnUnhandledException-InnerException", e.Exception.InnerException);
         }
 	    /// <summary>
 		/// By default, we are configured to use MEF

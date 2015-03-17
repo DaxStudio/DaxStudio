@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.Model
 {
@@ -49,22 +50,27 @@ namespace DaxStudio.UI.Model
         private static string redirectHost = null;
         public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
         {
+            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
+            int colOffset = 1;
+            int rowOffset = 1;
+            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Getting Query Text");
+            // todo - do I want to disable the editor control while formatting is in progress???
+            string qry;
+            // if there is a selection send that to daxformatter.com otherwise send all the text
+            qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
+
+            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "About to Call daxformatter.com");
+
+            var res = await FormatDaxAsync(qry);
+
+            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "daxformatter.com call complete");
+    
             try
-            {
-                int colOffset = 1;
-                int rowOffset = 1;
-                Log.Verbose("{class} {method}", "DaxFormatter", "FormatQuery:Begin");
-                // todo - do I want to disable the editor control while formatting is in progress???
-
-                // if there is a selection send that to daxformatter.com otherwise send all the text
-                var qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
-
-                var res = await FormatDaxAsync(qry);
+            {  
                 if (res.errors == null)
                 {
                     if (editor.SelectionLength == 0)
                     {
-                        //editor.Document.UndoStack.StartContinuedUndoGroup("DaxFormatter");
                         editor.IsEnabled = false;
                         editor.Document.BeginUpdate();
                         editor.Document.Text = res.FormattedDax.TrimEnd();
@@ -76,10 +82,9 @@ namespace DaxStudio.UI.Model
                         var loc = editor.Document.GetLocation(editor.SelectionStart);
                         colOffset = loc.Column;
                         rowOffset = loc.Line;
-                        //editor.Document.UndoStack.StartUndoGroup();
                         editor.SelectedText = res.FormattedDax.TrimEnd();
-                        //editor.Document.UndoStack.EndUndoGroup();
                     }
+                    Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
                     doc.OutputMessage("Query Formatted via daxformatter.com");
                 }
                 else
@@ -89,11 +94,21 @@ namespace DaxStudio.UI.Model
                     {
                         // write error 
                         // note: daxformatter.com returns 0 based coordinates so we add 1 to them
+                        int errLine = err.line + rowOffset;
+                        int errCol = err.column + colOffset;
                         
-                        doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", err.line + rowOffset, err.column + colOffset, err.message),err.line + rowOffset, err.column + colOffset);
+                        // if the error is at the end of text then we need to move in 1 character
+                        var errOffset = editor.Document.GetOffset(errLine, errCol);
+                        if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
+                        {
+                            editor.Document.Insert(errOffset, " ");
+                        }
 
-                        // show waveline under error
-                        // editor
+                        // TODO - need to figure out if more than 1 character should be highlighted
+                        doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
+                        doc.ActivateOutput();
+
+                        Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Error markings set");
                     }
 
                 }
@@ -101,11 +116,11 @@ namespace DaxStudio.UI.Model
             catch (Exception ex)
             {
                 Log.Error("{Class} {Event} {Exception}", "DaxFormatter", "FormatQuery", ex.Message);
-                doc.OutputError(string.Format("DaxFormatter.com Error: {0}", ex.Message ));
+                doc.OutputError(string.Format("DaxFormatter.com Error: {0}", ex.Message));
             }
             finally
             {
-                Log.Verbose("{class} {method}", "DaxFormatter", "FormatDax:End");
+                Log.Verbose("{class} {method} {end}", "DaxFormatter", "FormatDax:End");
             }
         }
 
@@ -136,7 +151,7 @@ namespace DaxStudio.UI.Model
             {
                 res2.FormattedDax = o2;
             }
-            Log.Verbose("{class} {method}", "DaxFormatter", "FormatDaxAsync:End");
+            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
 
@@ -153,33 +168,13 @@ namespace DaxStudio.UI.Model
 
                 var enc = System.Text.Encoding.UTF8;
                 var data1 = enc.GetBytes(data);
-                Uri redirectUri;
+                
 
                 //TODO - figure out when to use proxy
-                var proxy = System.Net.WebRequest.GetSystemWebProxy();
-                proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                var proxy = GetProxy(uri);
 
-                Log.Verbose("Proxy: {proxyAddress}", proxy.GetProxy(new Uri(uri)).AbsolutePath);
+                await PrimeConnectionAsync(uri);
 
-                if (redirectHost == null)
-                {
-                    // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                    // The following 2 requests are doing manual POST re-direct
-                    var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
-                    redirectRequest.AllowAutoRedirect = false;
-                    redirectRequest.Timeout = REQUEST_TIMEOUT;
-                    redirectRequest.Proxy = proxy;
-
-                    using (var netResponse = await redirectRequest.GetResponseAsync())
-                    {
-                        var redirectResponse = (HttpWebResponse)netResponse;
-                        redirectUrl = redirectResponse.Headers["Location"];
-                        redirectUri = new Uri(redirectUrl);
-                        redirectHost = redirectUri.Host;
-                        Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
-                        System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
-                    }
-                }
                 Uri originalUri = new Uri(uri);
                 var actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
 
@@ -208,7 +203,7 @@ namespace DaxStudio.UI.Model
                         var outStrm = resp.GetResponseStream();
                         using (var reader = new System.IO.StreamReader(outStrm))
                         {
-                            output = reader.ReadToEnd();
+                            output = await reader.ReadToEndAsync();
                         }
                     }
                 }
@@ -218,12 +213,59 @@ namespace DaxStudio.UI.Model
             catch (Exception ex)
             {
                 Log.Error("{class} {method} {message}", "DaxFormatter", "CallDaxFormatterAsync", ex.Message);
+                throw;
             }
             finally
             {
                 Log.Verbose("{class} {method}", "DaxFormatter", "CallDaxFormatterAsync:End");
             }
-            return "";
+        }
+
+        private static IWebProxy GetProxy(string uri)
+        {
+            var proxy = System.Net.WebRequest.GetSystemWebProxy();
+            proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+
+            Log.Verbose("Proxy: {proxyAddress}", proxy.GetProxy(new Uri(uri)).AbsolutePath);
+            return proxy;
+        }
+
+        public static async Task PrimeConnectionAsync()
+        {
+            await PrimeConnectionAsync(DaxFormatUri);
+        }
+
+        public static async Task PrimeConnectionAsync(string uri)
+        {
+            await Task.Factory.StartNew(() =>
+            {
+                Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
+                if (redirectHost == null)
+                {
+                    var proxy = GetProxy(uri);
+
+                    // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
+                    // The following 2 requests are doing manual POST re-direct
+                    var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
+                    redirectRequest.AllowAutoRedirect = false;
+                    redirectRequest.Timeout = REQUEST_TIMEOUT;
+                    redirectRequest.Proxy = proxy;
+
+                    using (var netResponse = redirectRequest.GetResponse())
+                    {
+                        var redirectResponse = (HttpWebResponse)netResponse;
+                        redirectUrl = redirectResponse.Headers["Location"];
+                        var redirectUri = new Uri(redirectUrl);
+
+                        // set the shared redirectHost variable
+                        redirectHost = redirectUri.Host;
+                        Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
+                        System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
+                    }
+                }
+                Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "End");
+            });
+
         }
     }
 }

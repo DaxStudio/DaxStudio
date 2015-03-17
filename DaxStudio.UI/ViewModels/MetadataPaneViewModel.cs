@@ -20,9 +20,25 @@ namespace DaxStudio.UI.ViewModels
 
     {
         private string _modelName;
-        
-        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator):base(connection,eventAggregator)
-        {  }
+        private readonly DocumentViewModel _activeDocument;
+        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document):base(connection,eventAggregator)
+        {
+            _activeDocument = document;
+            _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
+            NotifyOfPropertyChange(() => ActiveDocument);
+        }
+
+        private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsQueryRunning")
+            {
+                NotifyOfPropertyChange(() => CanSelectDatabase);
+                NotifyOfPropertyChange(() => CanSelectModel);
+            }
+        }
+
+        public DocumentViewModel ActiveDocument { get { return _activeDocument; }  }
+
 
         public override void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
@@ -96,6 +112,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => Connection);
             NotifyOfPropertyChange(() => CanSelectDatabase);
+            NotifyOfPropertyChange(() => CanSelectModel);
         }
 
         //public ADOTabularTableCollection Tables {
@@ -204,6 +221,7 @@ namespace DaxStudio.UI.ViewModels
                 //_databaseComboChanging = true;
 
                 _selectedDatabase = value;
+                ActiveDocument.SelectedDatabase = value;
                 
                 if (Connection != null)
                 {
@@ -223,8 +241,16 @@ namespace DaxStudio.UI.ViewModels
         public bool CanSelectDatabase
         {
             get
+            {    
+                return Connection != null && !Connection.IsPowerPivot && !ActiveDocument.IsQueryRunning;
+            }
+        }
+
+        public bool CanSelectModel
+        {
+            get
             {
-                return Connection != null && !Connection.IsPowerPivot;
+                return Connection != null && !ActiveDocument.IsQueryRunning;
             }
         }
 

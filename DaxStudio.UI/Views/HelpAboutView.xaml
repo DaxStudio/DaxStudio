@@ -24,8 +24,9 @@
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="6*"/>
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
@@ -53,7 +54,12 @@
                                             <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
 												Storyboard.TargetProperty="(UIElement.Opacity)"
 												To="1" Duration="0:0:1" />
-                                        </Storyboard>
+                                                    <Storyboard AutoReverse="False">
+                                                        <DoubleAnimation Storyboard.TargetName="BuildNumberPanel"
+												Storyboard.TargetProperty="(UIElement.Opacity)"
+												To="1" Duration="0:0:1" />
+                                                    </Storyboard>
+                                                </Storyboard>
                                     </Storyboard>
                                 </BeginStoryboard>
 
@@ -81,9 +87,14 @@
                 </StackPanel>
             </StackPanel>
         </StackPanel>
-
-        <DataGrid x:Name="ReferencedAssemblies" 
-			Grid.Row="1"
+                <StackPanel Orientation="Vertical" Grid.Row="1"  Opacity="0" x:Name="BuildNumberPanel">
+                    <StackPanel Orientation="Horizontal" Margin="5,10,0,0">
+                        <TextBlock Margin="0,0,5,0">Build: </TextBlock>
+                        <TextBlock x:Name="BuildNumber"/>
+                    </StackPanel>
+                </StackPanel>
+                <DataGrid x:Name="ReferencedAssemblies" 
+			Grid.Row="2"
 			ClipboardCopyMode="IncludeHeader"
 			SelectionMode="Single"       
 			AlternatingRowBackground="LightGray"  
@@ -91,7 +102,8 @@
 			HorizontalGridLinesBrush="LightGray"
 			VerticalScrollBarVisibility="Visible"
 			Opacity="0"       />
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" Margin="0,0,5,5">
+                
+                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Margin="0,0,5,5">
             <Button x:Name="Ok" Width="75" Height="23" Content="Ok" IsDefault="True" IsCancel="True"/>
         </StackPanel>
 

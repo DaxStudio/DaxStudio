@@ -27,6 +27,8 @@ using UnitComboLib.Unit;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -63,7 +65,7 @@ namespace DaxStudio.UI.ViewModels
         private string _displayName = "";
         private ILog _logger;
         private RibbonViewModel _ribbon;
-
+        private Regex _rexQueryError;
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails)
         {
@@ -73,7 +75,7 @@ namespace DaxStudio.UI.ViewModels
             _ribbon = ribbon;
             Init(_ribbon);
             ServerTimingDetails = serverTimingDetails;
-           
+            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$",RegexOptions.Compiled);
         }
 
         public void Init(RibbonViewModel ribbon)
@@ -84,7 +86,7 @@ namespace DaxStudio.UI.ViewModels
             this.SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
 
             // Initialize default Tool Windows
-            MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator);
+            MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator, this);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator);
             OutputPane = new OutputPaneViewModel(_eventAggregator);
@@ -95,6 +97,9 @@ namespace DaxStudio.UI.ViewModels
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
+
+            var t = DaxFormatterProxy.PrimeConnectionAsync();
+            
         }
 
         
@@ -349,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
                     //using (NewStatusBarMessage("Refreshing Metadata..."))
                     //{
                         Connection.ChangeDatabase(value);
-                        UpdateConnections(Connection, value);
+                        //UpdateConnections(Connection, value);
                     //}
                     _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases));
                     NotifyOfPropertyChange(() => SelectedDatabase);
@@ -902,11 +907,30 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputError(string error)
         {
-            OutputPane.AddError(error);
+
+            //"Query ( , )"
+            var m = _rexQueryError.Match(error);
+            if (m.Success)
+            {
+                int line = 0;
+                int.TryParse(m.Groups["line"].Value, out line);
+                int col = 0;
+                int.TryParse(m.Groups["col"].Value, out col);
+                OutputError(error , line, col);
+            }
+            else
+            {
+                OutputPane.AddError(error);
+            }
         }
 
         public void OutputError(string error, int row, int column)
         {
+            _editor.Dispatcher.Invoke(() =>
+            {
+                _editor.DisplayErrorMarkings(row, column, 1, error);
+            });
+                
             OutputPane.AddError(error,row,column);
         }
 
@@ -1518,11 +1542,21 @@ namespace DaxStudio.UI.ViewModels
             var caret = editor.TextArea.Caret;
             caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
             caret.BringCaretToView();
-            
-            InsertTextAtSelection("><");
-        }
 
-        public async void FormatQuery()
+            
+            editor.Dispatcher.BeginInvoke( new System.Threading.ThreadStart( () =>
+            {
+                editor.Focus();
+                editor.TextArea.Focus();
+                editor.TextArea.TextView.Focus();
+                Keyboard.Focus(editor);
+            }), DispatcherPriority.Input);
+            
+
+            //InsertTextAtSelection("><");
+        }
+        /*
+        public async void FormatQuery_()
         {
             var msg = new StatusBarMessage(this,"Formatting Query...");
 
@@ -1531,6 +1565,104 @@ namespace DaxStudio.UI.ViewModels
                     msg.Dispose();
                 });
             
+        }
+        */
+
+        public void FormatQuery()
+        {
+            var msg = new StatusBarMessage(this, "Formatting Query...");
+
+            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Start");
+            int colOffset = 1;
+            int rowOffset = 1;
+            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Getting Query Text");
+            // todo - do I want to disable the editor control while formatting is in progress???
+            string qry;
+            // if there is a selection send that to DocumentViewModel.com otherwise send all the text
+            qry = _editor.SelectionLength == 0 ? _editor.Text : _editor.SelectedText;
+
+            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
+
+            DaxFormatterProxy.FormatDaxAsync(qry).ContinueWith((res) => {
+                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
+
+                try
+                {
+                    if (res.Result.errors == null)
+                    {
+
+                        _editor.Dispatcher.Invoke(()=>{
+                            _editor.IsReadOnly = true;
+                            if (_editor.SelectionLength == 0)
+                            {
+                                _editor.IsEnabled = false;
+                                _editor.Document.BeginUpdate();
+                                _editor.Document.Text = res.Result.FormattedDax.TrimEnd();
+                                _editor.Document.EndUpdate();
+                                _editor.IsEnabled = true;
+                            }
+                            else
+                            {
+                                var loc = _editor.Document.GetLocation(_editor.SelectionStart);
+                                colOffset = loc.Column;
+                                rowOffset = loc.Line;
+                                _editor.SelectedText = res.Result.FormattedDax.TrimEnd();
+                            }
+                            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Query Text updated");
+                            OutputMessage("Query Formatted via daxformatter.com");
+                        });
+                    }
+                    else
+                    {
+
+                        foreach (var err in res.Result.errors)
+                        {
+                            // write error 
+                            // note: daxformatter.com returns 0 based coordinates so we add 1 to them
+                            int errLine = err.line + rowOffset;
+                            int errCol = err.column + colOffset;
+
+                            _editor.Dispatcher.Invoke(() => { 
+                                // if the error is at the end of text then we need to move in 1 character
+                                var errOffset = _editor.Document.GetOffset(errLine, errCol);
+                                if (errOffset == _editor.Document.TextLength && !_editor.Text.EndsWith(" "))
+                                {
+                                    _editor.Document.Insert(errOffset, " ");
+                                }
+
+                                // TODO - need to figure out if more than 1 character should be highlighted
+                            
+                                OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
+                                ActivateOutput();
+                            });
+                            
+                            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Error markings set");
+                        }
+                        
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var exMsg = ex.Message;
+                    if (ex is AggregateException)
+                    {
+                        exMsg = ex.InnerException.Message;
+                    }
+                    Log.Error("{Class} {Event} {Exception}", "DocumentViewModel", "FormatQuery", ex.Message);
+                    Dispatcher.CurrentDispatcher.Invoke(() => { 
+                        OutputError(string.Format("DaxFormatter.com Error: {0}", exMsg)); 
+                    });
+                }
+                finally
+                {
+                    _editor.Dispatcher.Invoke(() => { 
+                        _editor.IsReadOnly = false;
+                    });
+                    msg.Dispose();
+                    Log.Verbose("{class} {method} {end}", "DocumentViewModel", "FormatDax:End");
+                }
+            });
+        
         }
 
 

@@ -167,6 +167,7 @@
     <Compile Include="BracketRenderer\DaxStudioBracketSearcher.cs" />
     <Compile Include="DAXEditor_TextController.cs" />
     <Compile Include="IEditor.cs" />
+    <Compile Include="Renderers\TextMarkerService.cs" />
     <Compile Include="TextBoxController.cs" />
     <Compile Include="WordHighlighTransformer.cs" />
     <Page Include="Themes\Generic.xaml">
