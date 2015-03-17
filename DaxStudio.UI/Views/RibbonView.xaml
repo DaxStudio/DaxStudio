@@ -182,6 +182,7 @@
         </Fluent:Ribbon.Menu>
 
         <Fluent:Ribbon.QuickAccessItems>
+<!--
             <Fluent:QuickAccessMenuItem Header="New" 
                                         IsChecked="True"
                                         Target="{Binding ElementName=NewQueryQat}"
@@ -211,7 +212,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </Fluent:QuickAccessMenuItem>
-            
+    -->        
             </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
