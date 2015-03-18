@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.Model
 {
     public class NotifyIcon : IDisposable
     {
-        private readonly TaskbarIcon icon;
+        private TaskbarIcon icon;
         private string BalloonMessage;
 
         public NotifyIcon() 
@@ -22,15 +23,18 @@ namespace DaxStudio.UI.Model
             {
                 ico = new System.Drawing.Icon(strm);
             }
-            icon = new TaskbarIcon
+            Dispatcher.CurrentDispatcher.Invoke(new System.Action(() =>
             {
-                Name = "NotifyIcon",
-                Icon = ico,
-                Visibility = Visibility.Collapsed
-            };
-            icon.TrayBalloonTipClicked += icon_TrayBalloonTipClicked;
-            icon.TrayLeftMouseDown += icon_TrayMouseDown;
-            icon.TrayRightMouseDown += icon_TrayMouseDown;
+                icon = new TaskbarIcon
+                {
+                    Name = "NotifyIcon",
+                    Icon = ico,
+                    Visibility = Visibility.Collapsed
+                };
+                icon.TrayBalloonTipClicked += icon_TrayBalloonTipClicked;
+                icon.TrayLeftMouseDown += icon_TrayMouseDown;
+                icon.TrayRightMouseDown += icon_TrayMouseDown;
+            }));
         }
 
         private void icon_TrayMouseDown(object sender, RoutedEventArgs e)

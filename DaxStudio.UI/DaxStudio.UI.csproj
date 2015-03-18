@@ -607,7 +607,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Folder.ico" />
-    <Resource Include="Images\Function.png" />
+    <Resource Include="Images\Metadata\Function.png" />
     <Resource Include="Images\Metadata\HiddenMeasure.png" />
     <Resource Include="Images\Metadata\Measure.png" />
   </ItemGroup>

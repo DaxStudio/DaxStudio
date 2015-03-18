@@ -10,7 +10,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
-        <BitmapImage x:Key="DmvQuery" UriSource="pack://application:,,,/DaxStudio.UI;component/images/DmvTable.png"/>
+        <BitmapImage x:Key="DmvQuery" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/DmvTable.png"/>
     </UserControl.Resources>
     
     <Grid >

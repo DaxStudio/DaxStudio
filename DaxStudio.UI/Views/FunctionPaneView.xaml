@@ -10,7 +10,7 @@
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
         <BitmapImage x:Key="FunctionGroup" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Folder.ico"/>
-        <BitmapImage x:Key="Function" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Function.png" />
+        <BitmapImage x:Key="Function" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png" />
     </UserControl.Resources>
     
     <Grid >
