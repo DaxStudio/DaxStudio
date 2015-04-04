@@ -74,9 +74,17 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _selectedModel = value;
                     _treeViewTables = null;
-                    if (Connection.ServerMode == "Multidimensional")
+                    if (Connection.ServerMode == "Multidimensional" )
                     {
-                        Connection.SetCube(_selectedModel.Name);
+                        if (Connection.Is2012SP1OrLater)
+                        {
+                            Connection.SetCube(_selectedModel.Name);
+                        }
+                        else
+                        {
+                            _activeDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
+                                , Connection.ServerVersion));
+                        }
                     }
                     NotifyOfPropertyChange(() => SelectedModel);
                     NotifyOfPropertyChange(() => Tables);

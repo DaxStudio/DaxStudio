@@ -545,6 +545,14 @@ namespace ADOTabular
             _adomdConn.Close();
             _adomdConn = new AdomdConnection(string.Format("{0};Cube={1}", ConnectionString, cubeName ), _connectionType);
         }
+
+        public bool Is2012SP1OrLater
+        {
+            get
+            {
+                return Version.Parse(ServerVersion) >= new Version(11, 0, 3368, 0);
+            }
+        }
     }
 
 }
