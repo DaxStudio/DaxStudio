@@ -1667,18 +1667,34 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (IsQueryRunning) return false; // if query is running schema cannot have changed (and this connection will be busy with the query)
                 if (Connection == null) return false;
+                if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName ))
+                {
+                    OutputError(string.Format("Error Connecting to server: {0}", ServerName));
+                    ServerName = string.Empty; // clear the server name so that we don't throw this error again
+                    ActivateOutput();
+                    // need to reset ribbon buttons if there is an error on the connection
+                    NotifyOfPropertyChange(() => IsConnected);
+                    NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => IsQueryRunning);
+
+                    _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
+                    return false;
+                }
+                if (!IsConnected) return false;
                 if (Connection.Database == null) return false;
                 return Connection.Database.HasSchemaChanged();
             }
             catch (Exception ex)
             {
                 OutputError(string.Format("Error Connecting to server: {0}", ex.Message));
+                ServerName = string.Empty; // clear the server name so that we don't throw this error again
                 ActivateOutput();
                 // need to reset ribbon buttons if there is an error on the connection
                 NotifyOfPropertyChange(() => IsConnected);
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => IsQueryRunning);
-                
+
+                _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
                 return false;
             }
         }

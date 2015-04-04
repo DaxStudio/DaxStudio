@@ -239,7 +239,7 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Cancel Query (Esc)"
                                           Text="Sends a cancel command to a currently running query"
-                                          DisableReason="No Query is currently running"
+                                          DisableReason="{Binding CancelQueryDisableReason}"
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>

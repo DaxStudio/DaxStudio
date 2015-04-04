@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using DaxStudio.UI.Views;
 using DaxStudio.UI.Utils;
 using Serilog;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -21,6 +22,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly string _connectionString;
         private readonly DocumentViewModel _activeDocument;
+        private readonly Regex _ppvtRegex;
         public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel, DocumentViewModel document )
         {
             try
@@ -28,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator = eventAggregator;
                 _connectionString = connectionString;
                 _activeDocument = document;
+                _ppvtRegex = new Regex(@"http://localhost:\d{4}/xmla", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 PowerPivotEnabled = true;
                 Host = host;
                 ServerModeSelected = true;
@@ -136,7 +139,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 _connectionProperties = SplitConnectionString(_connectionString);
                 // if data source = $Embedded$ then mark Ppvt option as selected 
-                if (_connectionProperties["Data Source"] == "$Embedded$")
+                var dataSrc = _connectionProperties["Data Source"];
+
+                if (_ppvtRegex.Match(dataSrc).Success) // if we are connected to PowerPivot
                 {
                     PowerBIModeSelected = false;
                     ServerModeSelected = false;
@@ -145,12 +150,15 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
-                    if (_connectionProperties["Application Name"] == "DAX Studio (PowerBI)")
+                    if (_connectionProperties.ContainsKey("Application Name"))
                     {
-                        PowerPivotModeSelected = false;
-                        ServerModeSelected = false;
-                        PowerBIModeSelected = true;
-                        NotifyOfPropertyChange(() => PowerBIModeSelected);
+                        if (_connectionProperties["Application Name"] == "DAX Studio (PowerBI)")
+                        {
+                            PowerPivotModeSelected = false;
+                            ServerModeSelected = false;
+                            PowerBIModeSelected = true;
+                            NotifyOfPropertyChange(() => PowerBIModeSelected);
+                        }
                     }
                     foreach (var p in _connectionProperties)
                     {

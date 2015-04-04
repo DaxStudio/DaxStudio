@@ -22,7 +22,7 @@ namespace DaxStudio
         }
         public static int Start(int port)
         {
-            if (webApp != null) return 0;   // exit here if we are already running
+            if (webApp != null) return _port;   // exit here if we are already running
             if (IsPortUsed(port) && port != 0) return port; // exit here if the specified port is in use (assume that another instance is running)
             
             if (port == 0) { port = GetOpenPort(9000,9999); } // find a free port if one was not specified

@@ -27,7 +27,7 @@ namespace DaxStudio.ExcelAddin
             // if we find one try to start a WebHost for it
             var client = DaxStudioStandalone.GetClient();
             var port = 0;
-            if (_client == null)
+            if (_client == null && client != null)
             {
                 _client = client.Process;
                 port = client.Port;

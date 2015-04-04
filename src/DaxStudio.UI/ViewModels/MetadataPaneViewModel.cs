@@ -47,7 +47,6 @@ namespace DaxStudio.UI.ViewModels
                 case "ModelList":
                     if (ModelList.Count > 0)
                     {
-                        // if connected server is MD then reconnect with CUBE=ModelName on conn string.
                         SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
                     }
                     Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);          
@@ -61,6 +60,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value == _modelName)
                     return;
                 _modelName = value;
+                
                NotifyOfPropertyChange(() => ModelName);
             }
         }
@@ -73,8 +73,11 @@ namespace DaxStudio.UI.ViewModels
                 if (_selectedModel != value)
                 {
                     _selectedModel = value;
-                    _treeViewTables = null; 
-                    
+                    _treeViewTables = null;
+                    if (Connection.ServerMode == "Multidimensional")
+                    {
+                        Connection.SetCube(_selectedModel.Name);
+                    }
                     NotifyOfPropertyChange(() => SelectedModel);
                     NotifyOfPropertyChange(() => Tables);
                 }
@@ -115,7 +118,6 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanSelectModel);
         }
 
-        //public ADOTabularTableCollection Tables {
         private IEnumerable<FilterableTreeViewItem> _treeViewTables;
         public IEnumerable<FilterableTreeViewItem> Tables {
             get
@@ -248,28 +250,5 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
-
-
-        bool IDragSource.CanStartDrag(IDragInfo dragInfo)
-        {
-            return true;
-//            throw new NotImplementedException();
-        }
-
-        void IDragSource.DragCancelled()
-        {
-//            throw new NotImplementedException();
-        }
-
-        void IDragSource.Dropped(IDropInfo dropInfo)
-        {
-//            throw new NotImplementedException();
-        }
-
-        void IDragSource.StartDrag(IDragInfo dragInfo)
-        {
-//            throw new NotImplementedException();
-        }
     }
 }

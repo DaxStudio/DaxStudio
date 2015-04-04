@@ -13,6 +13,7 @@ namespace DaxStudio.UI.ViewModels
         //, IHandle<StatusBarMessageEvent>
         , IHandle<EditorPositionChangedMessage>
         , IHandle<DocumentConnectionUpdateEvent>
+        , IHandle<ConnectionClosedEvent>
         //, IHandle<UpdateTimerTextEvent>
         , IHandle<ActivateDocumentEvent>
     {
@@ -149,5 +150,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DocumentViewModel ActiveDocument { get; set; }
+
+        public void Handle(ConnectionClosedEvent message)
+        {
+            ServerName = string.Empty;
+        }
     }
 }

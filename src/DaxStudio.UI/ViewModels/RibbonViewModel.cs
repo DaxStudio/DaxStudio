@@ -118,6 +118,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
+            NotifyOfPropertyChange(() => CanRefreshMetadata);
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget) );
 
         }
@@ -133,7 +134,19 @@ namespace DaxStudio.UI.ViewModels
                 return "not disabled";
             }
         }
-        
+
+        public string CancelQueryDisableReason
+        {
+            get
+            {
+                if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
+                if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
+                if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
+                if (!_queryRunning) return "A query is not currently executing";
+                return "not disabled";
+            }
+        }
+
         public bool CanRunQuery
         {
             get
@@ -162,6 +175,10 @@ namespace DaxStudio.UI.ViewModels
             get 
             { 
                 if (!ActiveDocument.IsAdminConnection) return "Only a server administrator can run the clear cache command";
+                if (_queryRunning) return "A query is currently executing";
+                if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
+                if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
+                if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
                 return "Cannot clear the cache while a query is currently running";
             }
         }
@@ -282,7 +299,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
-
+            NotifyOfPropertyChange(() => CanRefreshMetadata);
             if (!ActiveDocument.IsConnected)
             {
                 UpdateTraceWatchers();
@@ -342,6 +359,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
+            NotifyOfPropertyChange(() => CanRefreshMetadata);
         }
 
         public void LinkToDaxStudioWiki()

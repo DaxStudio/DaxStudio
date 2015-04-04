@@ -27,7 +27,8 @@ namespace ADOTabular
         private AdomdCommand _runningCommand;
 
         public event EventHandler ConnectionChanged;
-        private readonly AdomdConnection _adomdConn; 
+        private AdomdConnection _adomdConn; 
+        private readonly AdomdType _connectionType;
         public ADOTabularConnection(string connectionString, AdomdType connectionType) 
             : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
         { }
@@ -46,7 +47,7 @@ namespace ADOTabular
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
             _adomdConn = new AdomdConnection(ConnectionString,connectionType);
-            
+            _connectionType = connectionType;    
          //   _adomdConn.ConnectionString = connectionString;
             
             //_adomdConn.Open();
@@ -70,9 +71,17 @@ namespace ADOTabular
             get { 
                 //_adomdConn.UnderlyingConnection.Databases
                 if (_adomdConn == null) return null;
-                
-                var dd = Databases.GetDatabaseDictionary()[_adomdConn.Database];                
-                return new ADOTabularDatabase(this, _adomdConn.Database, dd.Id, dd.LastUpdate) ; }
+                if (_adomdConn.State != ConnectionState.Open)
+                {
+                    _adomdConn.Open();
+                }
+                var dd = Databases.GetDatabaseDictionary();
+                if (!dd.ContainsKey(_adomdConn.Database))
+                {
+                    dd = Databases.GetDatabaseDictionary(true);
+                }
+                var db = dd[_adomdConn.Database];                
+                return new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate) ; }
         }
 
         public void Open()
@@ -200,7 +209,9 @@ namespace ADOTabular
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection)
         {
             if (_adomdConn.State != ConnectionState.Open)
+            {
                 _adomdConn.Open();
+            }
             return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
         }
 
@@ -392,7 +403,20 @@ namespace ADOTabular
             get { return _adomdConn.SessionID; }
         }
 
-        public string GetServerMode()
+        private string _serverMode;
+        public string ServerMode
+        {
+            get
+            {
+                if (_serverMode == null)
+                {
+                    _serverMode = GetServerMode();
+                }
+                return _serverMode;
+            }
+        }
+
+        private string GetServerMode()
         {
             
             var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
@@ -514,6 +538,12 @@ namespace ADOTabular
         void IDisposable.Dispose()
         {
             Close();
+        }
+
+        public void SetCube(string cubeName)
+        {
+            _adomdConn.Close();
+            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1}", ConnectionString, cubeName ), _connectionType);
         }
     }
 
