@@ -61,6 +61,7 @@ namespace DAXEditor
         private readonly TextMarkerService textMarkerService;
         private ToolTip toolTip;
         private bool syntaxErrorDisplayed;
+        private IHighlighter documentHighlighter;
 
         public DAXEditor() 
         {
@@ -87,7 +88,38 @@ namespace DAXEditor
             textView.MouseHover += TextEditorMouseHover;
             textView.MouseHoverStopped += TextEditorMouseHoverStopped;
             textView.VisualLinesChanged += VisualLinesChanged;
-    
+
+            //textView.PreviewKeyUp += TextArea_PreviewKeyUp;
+            // add the stub Intellisense provider
+            IntellisenseProvider = new IntellisenseProviderStub();
+
+            this.DocumentChanged += DaxEditor_DocumentChanged;
+            
+        }
+
+        private void DaxEditor_DocumentChanged(object sender, EventArgs e)
+        {
+            if (this.Document == null ) return;
+            if (this.SyntaxHighlighting == null) return;
+            documentHighlighter = new DocumentHighlighter(this.Document, this.SyntaxHighlighting.MainRuleSet);
+        }
+
+
+
+        public bool IsInComment(int offset)
+        {
+            var loc = this.Document.GetLocation(offset);
+            return IsInComment(loc);
+        }
+
+        public bool IsInComment(TextLocation loc)
+        {
+            var pos = this.Document.GetOffset(loc);
+            HighlightedLine result = documentHighlighter.HighlightLine(loc.Line);
+            bool isInComment = result.Sections.Any(
+                s => s.Offset <= pos && s.Offset + s.Length >= pos
+                     && s.Color.Name == "Comment");
+            return isInComment;
         }
 
         void textEditor_TextArea_SelectionChanged(object sender, EventArgs e)
@@ -102,7 +134,8 @@ namespace DAXEditor
             base.Unloaded += OnUnloaded;
             TextArea.TextEntering += textEditor_TextArea_TextEntering;
             TextArea.TextEntered += textEditor_TextArea_TextEntered;
-            //SetValue(TextBoxControllerProperty, new TextBoxController());
+            TextArea.PreviewKeyDown += TextArea_PreviewKeyDown;
+
             TextArea.Caret.PositionChanged += Caret_PositionChanged;
             this.TextChanged += TextArea_TextChanged;
 
@@ -120,6 +153,11 @@ namespace DAXEditor
             this.DefaultFontSize = 11.0;
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;
+        }
+
+        void TextArea_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            IntellisenseProvider.ProcessKeyDown(sender, e);
         }
 
         private void TextArea_TextChanged(object sender, EventArgs e)
@@ -228,42 +266,15 @@ namespace DAXEditor
             }
         }
 
+        public IIntellisenseProvider IntellisenseProvider { get; set; }
 
         CompletionWindow completionWindow;
 
         void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
-            /*  TODO - temporarily commented out - we need a DAX parser before we can 
-             *         properly implement intellisense like functionality
-             *         
-            if (e.Text == "(" || e.Text == " ")
-            {
-                
-                // Open code completion after the user has pressed dot:
-                completionWindow = new CompletionWindow(this.TextArea);
-
-                // TODO - load completion data from metadata
-                IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                data.Add(new MyCompletionData("Calculate", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("CalculateTable", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Earlier", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Earliest", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Filter", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Max", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Min", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Related", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("RelatedTable", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Values", CodeCompletionType.Function));
-                data.Add(new MyCompletionData("Summarize", CodeCompletionType.Function));
-
-                completionWindow.Show();
-                completionWindow.Closed += delegate
-                {
-                    completionWindow = null;
-                };
-            }
-             * */
+            IntellisenseProvider.ProcessTextEntered(sender, e,ref completionWindow);
         }
+
         const string COMMENT_DELIM_SLASH="//";
         const string COMMENT_DELIM_DASH = "--";
         private bool IsLineCommented(DocumentLine line)
@@ -305,17 +316,7 @@ namespace DAXEditor
 
         void textEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
         {
-            if (e.Text.Length > 0 && completionWindow != null)
-            {
-                if (!char.IsLetterOrDigit(e.Text[0]))
-                {
-                    // Whenever a non-letter is typed while the completion window is open,
-                    // insert the currently selected element.
-                    completionWindow.CompletionList.RequestInsertion(e);
-                }
-            }
-            // Do not set e.Handled=true.
-            // We still want to insert the character that was typed.
+            IntellisenseProvider.ProcessTextEntering(sender, e, ref completionWindow);
         }
 
         
@@ -419,6 +420,9 @@ namespace DAXEditor
                 toolTip.IsOpen = false;
             }
         }
-
+        public void DisposeCompletionWindow()
+        {
+            completionWindow = null;
+        }
     }
 }

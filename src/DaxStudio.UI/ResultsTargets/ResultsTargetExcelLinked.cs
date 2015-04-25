@@ -6,6 +6,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

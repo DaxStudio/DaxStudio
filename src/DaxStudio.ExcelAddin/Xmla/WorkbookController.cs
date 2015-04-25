@@ -25,7 +25,8 @@ namespace DaxStudio.ExcelAddin.Xmla
             var addin = Globals.ThisAddIn;
             var app = addin.Application;
             var wb = app.ActiveWorkbook;
-            
+
+            System.Diagnostics.Debug.WriteLine(string.Format("Workbook: {0}", wb.FullName));
             return Ok(wb.FullName);
         }
         

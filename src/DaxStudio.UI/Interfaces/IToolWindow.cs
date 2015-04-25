@@ -1,5 +1,5 @@
 ﻿using Caliburn.Micro;
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Interfaces
 {
     public interface IToolWindow
     {

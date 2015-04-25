@@ -40,7 +40,6 @@ namespace DaxStudio.UI.Utils
 
 		    if (sbParams.Length > 0)
 		    {
-		        // TODO 
 			    var paramDictionary = ParseParams(sbParams.ToString());
                 return replaceParamsInQuery(sbQuery, paramDictionary);
 		    }
@@ -49,7 +48,6 @@ namespace DaxStudio.UI.Utils
 
         public static Dictionary<string,string> ParseParams(string paramString)
         {
-            //TODO
             var d = new Dictionary<string,string>();
             System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
             doc.LoadXml(paramString);

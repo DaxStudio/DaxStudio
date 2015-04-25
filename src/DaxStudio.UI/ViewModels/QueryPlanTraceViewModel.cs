@@ -8,6 +8,8 @@ using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
 using System.IO;
 using Newtonsoft.Json;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.QueryTrace;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -84,19 +86,21 @@ namespace DaxStudio.UI.ViewModels
 
             foreach (var traceEvent in Events)
             {
-                if (traceEvent.EventClass == TraceEventClass.DAXQueryPlan && traceEvent.EventSubclass == TraceEventSubclass.DAXVertiPaqLogicalPlan)
+                if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
+                    && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqLogicalPlan)
                 {
                     LogicalQueryPlanText = traceEvent.TextData;
                     PrepareLogicalQueryPlan(traceEvent.TextData);
                     NotifyOfPropertyChange(() => LogicalQueryPlanText);
                 }
-                if (traceEvent.EventClass == TraceEventClass.DAXQueryPlan && traceEvent.EventSubclass == TraceEventSubclass.DAXVertiPaqPhysicalPlan)
+                if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan 
+                    && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqPhysicalPlan)
                 {
                     PhysicalQueryPlanText = traceEvent.TextData;
                     PreparePhysicalQueryPlan(traceEvent.TextData);
                     NotifyOfPropertyChange(() => PhysicalQueryPlanText);
                 }
-                if (traceEvent.EventClass == TraceEventClass.QueryEnd)
+                if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
                 {
                     TotalDuration = traceEvent.Duration;
                     NotifyOfPropertyChange(() => TotalDuration);

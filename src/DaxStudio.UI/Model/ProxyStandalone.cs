@@ -54,6 +54,7 @@ namespace DaxStudio.UI.Model
             throw new NotImplementedException();
         }
 
+        public int Port { get { return 0; } }
         public void Dispose()
         {
             

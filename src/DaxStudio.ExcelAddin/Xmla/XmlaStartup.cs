@@ -1,10 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using DaxStudio.Interfaces;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.Owin;
+using Microsoft.Owin.Hosting;
+using Newtonsoft.Json;
 using Owin;
 using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -16,35 +20,23 @@ namespace DaxStudio.ExcelAddin.Xmla
         {
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
-            /*
-            config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
-            config.Routes.MapHttpRoute(
-                name: "WorkbookApi",
-                routeTemplate: "api/{controller}/{action}", 
-                defaults: new { id = RouteParameter.Optional}
-                );
-             */
-            config.MapHttpAttributeRoutes();
-            /*config.Formatters.Add(new JsonMediaTypeFormatter
+
+            appBuilder.Map("/signalr", map =>
             {
-                SerializerSettings = new JsonSerializerSettings
+                var hubConfiguration = new HubConfiguration
                 {
-                    Converters = new List<JsonConverter>
-                    {
-                        //list of your converters
-                        new JsonDataTableConverter()
-                    }
-                }
-            });*/
+                    EnableDetailedErrors = true
+                };
+                map.RunSignalR(hubConfiguration);
+            });
+
+            config.MapHttpAttributeRoutes();            
             config.Services.Add( typeof(IExceptionLogger), new TraceExceptionLogger());
             config.Formatters.Clear();
             config.Formatters.Add(new JsonMediaTypeFormatter());
-
+            config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
             appBuilder.UseWebApi(config);
+            
         }
     }
 }

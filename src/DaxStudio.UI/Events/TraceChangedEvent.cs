@@ -1,4 +1,6 @@
-﻿using DaxStudio.UI.Model;
+﻿using DaxStudio.Interfaces;
+using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.UI.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

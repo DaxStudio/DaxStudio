@@ -63,12 +63,13 @@ namespace ADOTabular
                 ConnectionChanged(this, new EventArgs());
         }
 
-        
+        private ADOTabularDatabase _db;
 
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
-            get { 
+            get
+            {
                 //_adomdConn.UnderlyingConnection.Databases
                 if (_adomdConn == null) return null;
                 if (_adomdConn.State != ConnectionState.Open)
@@ -80,8 +81,13 @@ namespace ADOTabular
                 {
                     dd = Databases.GetDatabaseDictionary(true);
                 }
-                var db = dd[_adomdConn.Database];                
-                return new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate) ; }
+                var db = dd[_adomdConn.Database];
+                if (_db == null || db.Id != _db.Id)
+                {
+                    _db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
+                }
+                return _db;
+            }
         }
 
         public void Open()
@@ -189,15 +195,20 @@ namespace ADOTabular
             }
         }
         
-
+        public int Count
+        {
+            get
+            {
+                return _adoTabDatabaseColl.Count;
+            }
+        }
         public DataSet GetSchemaDataSet(string schemaName)
         {
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             return _adomdConn.GetSchemaDataSet(schemaName, null);
         }
 
-        //TODO
-        public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
+         public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
         {
             return Task.Factory.StartNew(() =>
                 {
@@ -215,7 +226,6 @@ namespace ADOTabular
             return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
         }
 
-        //TODO
         public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
         {
             
@@ -226,16 +236,7 @@ namespace ADOTabular
                     return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
                 });
         }
-        /*
-        public AdomdDataReader ExecuteDaxReader(string query)
-        {
-            AdomdCommand cmd = _adomdConn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = query;
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return cmd.ExecuteReader();
-        }
-        */
+
         public void ExecuteNonQuery(string command)
         {
             var cmd = _adomdConn.CreateCommand();
@@ -303,7 +304,6 @@ namespace ADOTabular
             return dt;
         }
 
-        //TODO
         public DataTable ExecuteDaxQueryAsync(string query)
         {
             AdomdCommand cmd = _adomdConn.CreateCommand();

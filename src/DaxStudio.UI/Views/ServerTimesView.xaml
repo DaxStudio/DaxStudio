@@ -55,48 +55,50 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
       
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding TotalDuration, StringFormat='#,0 ms'}" />
 
-                    <TextBlock Text="Total CPU" Grid.Row="0" Grid.Column="1" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Text="Total CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding TotalCpuDuration, StringFormat='#,0 ms'}"  />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                   Text="{Binding TotalCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
 
 
-                    <TextBlock Text="FE" Grid.Row="2" Grid.Column="0" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
+                    <TextBlock Text="FE" Grid.Row="3" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}" />
-                    <TextBlock Grid.Row="4" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Grid.Row="5" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="#3571AD" />
 
-                    <TextBlock Text="SE" Grid.Row="2" Grid.Column="1" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
+                    <TextBlock Text="SE" Grid.Row="3" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}" />
-                    <TextBlock Grid.Row="4" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
 
-
-                    <TextBlock Text="SE CPU" Grid.Row="5" Grid.Column="0" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="6" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
-
-                    <TextBlock Text="SE Queries" Grid.Row="5" Grid.Column="1" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="6" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Text="SE Queries" Grid.Row="6" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="7" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
                     
-                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="0" Padding="0,8,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-
-                    <TextBlock Grid.Row="8" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
+                    <TextBlock Text="SE Cache" Grid.Row="6" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}" />
-                    <TextBlock Grid.Row="9" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center" 
+                    <TextBlock Grid.Row="8" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
                    Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
+
+                    <TextBlock Text="SE CPU" Grid.Row="9" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="10" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
+
                 </Grid>
                 
                 
@@ -233,7 +235,7 @@
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
                 Grid.RowSpan="3" 
             Grid.ColumnSpan="5"
-            Style="{StaticResource BusyPanel}">
+            Style="{StaticResource BusyPanel}" d:IsHidden="True">
                 
             <Grid>
 

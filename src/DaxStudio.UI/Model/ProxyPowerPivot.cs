@@ -208,6 +208,7 @@ namespace DaxStudio.UI.Model
             return new ADOTabular.ADOTabularConnection(connstr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
         }
 
+        public int Port { get { return _port; } }
         public void Dispose()
         {
             throw new NotImplementedException();

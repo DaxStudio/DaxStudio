@@ -321,15 +321,14 @@
     <Compile Include="Events\UpdateTimerTextEvent.cs" />
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Model\Enums.cs" />
-    <Compile Include="Model\ISaveState.cs" />
+    <Compile Include="Interfaces\ISaveState.cs" />
     <Compile Include="Model\LinkedQueryResult.cs" />
     <Compile Include="Model\NotifyIcon.cs" />
     <Compile Include="Model\ProxyPowerPivot.cs" />
     <Compile Include="Model\ProxyStandalone.cs" />
     <Compile Include="Model\QueryPlanModel.cs" />
-    <Compile Include="Model\QueryTrace.cs" />
-    <Compile Include="Model\IToolWindow.cs" />
-    <Compile Include="Model\ITraceWatcher.cs" />
+    <Compile Include="Interfaces\IToolWindow.cs" />
+    <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Model\ServerTimesModel.cs" />
     <Compile Include="Model\StaticQueryResult.cs" />
     <Compile Include="Model\StatusBarMessage.cs" />
@@ -343,7 +342,9 @@
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="Model\TraceEventFactory.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
-    <Compile Include="Triggers\InputBindingTrigger.cs" />
+    <Compile Include="Triggers\InputBindingTrigger.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
@@ -357,12 +358,18 @@
     <Compile Include="Events\SaveDocumentEvent.cs" />
     <Compile Include="Events\SendTextToEditor.cs" />
     <Compile Include="Events\UpdateConnectionEvent.cs" />
-    <Compile Include="Model\IResultsTarget.cs" />
+    <Compile Include="Interfaces\IResultsTarget.cs" />
+    <Compile Include="Utils\Intellisense\DaxCompletionData.cs" />
     <Compile Include="Utils\DaxHelper.cs" />
+    <Compile Include="Utils\Intellisense\DaxIntellisenseProvider.cs" />
+    <Compile Include="Utils\Intellisense\DaxLineParser.cs" />
     <Compile Include="Utils\DaxStudioLayoutStrategy.cs" />
     <Compile Include="Utils\EventExtension.cs" />
-    <Compile Include="Utils\IDocumentWorkspace.cs" />
-    <Compile Include="Utils\IHaveShutdownTask.cs" />
+    <Compile Include="Interfaces\IDocumentWorkspace.cs" />
+    <Compile Include="Interfaces\IHaveShutdownTask.cs" />
+    <Compile Include="Utils\InputBindingTrigger.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Utils\JsonDataTableConverter.cs" />
     <Compile Include="Utils\MessageBoxEx.cs" />
     <Compile Include="Utils\PaneStyleSelector.cs" />
@@ -374,7 +381,6 @@
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
     <Compile Include="ViewModels\DmvPaneViewModel.cs" />
     <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
-    <Compile Include="Utils\InputBindingTrigger.cs" />
     <Compile Include="Utils\DebugLogger.cs" />
     <Compile Include="IShell.cs" />
     <Compile Include="Utils\RegistryHelper.cs" />
@@ -585,6 +591,10 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
+      <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>
+      <Name>DaxStudio.QueryTrace</Name>
     </ProjectReference>
     <ProjectReference Include="..\UnitComboLib\UnitComboLib.csproj">
       <Project>{c8c325ad-d7ab-4e56-8a6b-7e8b11eb5443}</Project>

@@ -29,6 +29,9 @@ using UnitComboLib.ViewModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.QueryTrace;
+using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -99,7 +102,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
             var t = DaxFormatterProxy.PrimeConnectionAsync();
-            
+                        
         }
 
         
@@ -137,7 +140,8 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
-             
+                IntellisenseProvider = new DaxIntellisenseProvider(this, _editor);
+                _editor.IntellisenseProvider = IntellisenseProvider;
             }
             if (this.State == DocumentState.LoadPending)
             {
@@ -206,29 +210,71 @@ namespace DaxStudio.UI.ViewModels
         }
     
 
-        private QueryTrace _tracer;
+        private IQueryTrace _tracer;
 
-        public QueryTrace Tracer
+        public IQueryTrace Tracer
         {
             get
             {
-                if (_tracer == null && _connection.Type != AdomdType.Excel)
+                if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
-                    _tracer = new QueryTrace(_connection, this);
-                    _tracer.TraceEvent += TracerOnTraceEvent;
+                    if (_connection.IsPowerPivot)
+                    {
+                        
+                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers),Host.Proxy.Port);
+                    }
+                    else
+                    {
+                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers));
+                    }
+                    //_tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
                     _tracer.TraceCompleted += TracerOnTraceCompleted;
+                    _tracer.TraceError += TracerOnTraceError;
                 }
                 return _tracer;
             }
         }
 
-        private void TracerOnTraceCompleted(object sender, EventArgs e)
+        private void TracerOnTraceError(object sender, string e)
         {
-        //    _tracer.Stop();
+            OutputError(e);
         }
 
-        private void TracerOnTraceStarted(object sender, TraceStartedEventArgs e)
+        private List<TraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
+        {
+            var events = new List<TraceEventClass>();
+            foreach (var tw in traceWatchers)
+            {
+                foreach (var e in tw.MonitoredEvents)
+                {
+                    if (!events.Contains(e))
+                    {
+                        events.Add(e);
+                    }
+                }
+            }
+            return events;
+        }
+
+        private void TracerOnTraceCompleted(object sender, DaxStudioTraceEventArgs[] capturedEvents)
+        {
+            TracerOnTraceCompleted(sender, capturedEvents.ToList<DaxStudioTraceEventArgs>());
+        }
+
+        private void TracerOnTraceCompleted(object sender, IList<DaxStudioTraceEventArgs> capturedEvents)
+        {
+            var checkedTraceWatchers = from tw in TraceWatchers
+                                       where tw.IsChecked == true
+                                       select tw;
+
+            foreach (var tw in checkedTraceWatchers)
+            {
+                tw.ProcessAllEvents(capturedEvents);
+            }
+        }
+
+        private void TracerOnTraceStarted(object sender, EventArgs e)
         {
             Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", "DocumentViewModel", "TracerOnTraceStarted", e);
             Execute.OnUIThread(() => { 
@@ -237,13 +283,17 @@ namespace DaxStudio.UI.ViewModels
             }); 
         }
 
-        private void TracerOnTraceEvent(object sender, TraceEventArgs traceEventArgs)
-        {
-            foreach (var tw in Tracer.CheckedTraceWatchers)
-            {
-                tw.ProcessEvent(traceEventArgs);
-            }
-        }
+        //private void TracerOnTraceEvent(object sender, TraceEventArgs traceEventArgs)
+        //{
+        //    var checkedTraceWatchers = from tw in TraceWatchers 
+        //                               where tw.IsChecked == true
+        //                               select tw;
+                
+        //    foreach (var tw in checkedTraceWatchers)
+        //    {
+        //        tw.ProcessEvent(traceEventArgs);
+        //    }
+        //}
 
         // Use MEF to give us a collection of TraceWatcher factory objects
         // used to create unique instances of each TraceWatcher type per document
@@ -430,7 +480,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        private ADOTabularConnection Connection
+        internal ADOTabularConnection Connection
         {
             get { return _connection; }
             set
@@ -837,7 +887,7 @@ namespace DaxStudio.UI.ViewModels
             IsQueryRunning = true;
             //SelectedWorksheet = message.SelectedWorksheet;
             NotifyOfPropertyChange(()=>CanRunQuery);
-            RegisterTraceWatchers();  // CHECK - is this required now that we are starting the trace as soon as one watcher is enabled...?
+            //RegisterTraceWatchers();  // CHECK - is this required now that we are starting the trace as soon as one watcher is enabled...?
             RunQueryInternal(message);
         }
 
@@ -858,18 +908,18 @@ namespace DaxStudio.UI.ViewModels
 
         public StatusBarViewModel StatusBar { get; set; }
         
-        public void RegisterTraceWatchers()
-        {
-            if (TraceWatchers == null)
-                return;
-            foreach (var tw in TraceWatchers)
-            {
-                if (tw.IsEnabled)
-                {
-                    Tracer.RegisterTraceWatcher(tw);
-                }
-            }
-        }
+        //public void RegisterTraceWatchers()
+        //{
+        //    if (TraceWatchers == null)
+        //        return;
+        //    foreach (var tw in TraceWatchers)
+        //    {
+        //        if (tw.IsEnabled)
+        //        {
+        //            Tracer.RegisterTraceWatcher(tw);
+        //        }
+        //    }
+        //}
 
 
         public DataTable ResultsTable
@@ -1744,6 +1794,16 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ServerTimingDetails);
                 } 
         }
-    }
 
+        private DaxIntellisenseProvider _intellisenseProvider;
+        
+        public DaxIntellisenseProvider IntellisenseProvider
+        {
+            get { return _intellisenseProvider; }
+            set
+            {
+                _intellisenseProvider = value;
+            }
+        }
+    }
 }

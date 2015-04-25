@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

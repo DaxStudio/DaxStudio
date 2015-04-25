@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

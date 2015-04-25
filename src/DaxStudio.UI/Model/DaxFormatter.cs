@@ -168,7 +168,10 @@ namespace DaxStudio.UI.Model
 
                 var enc = System.Text.Encoding.UTF8;
                 var data1 = enc.GetBytes(data);
-                
+
+                // this should allow DaxFormatter to work through http 1.0 proxies
+                // see: http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
+                //System.Net.ServicePointManager.Expect100Continue = false;
 
                 //TODO - figure out when to use proxy
                 var proxy = GetProxy(uri);
@@ -187,9 +190,10 @@ namespace DaxStudio.UI.Model
                 wr.Headers.Add("Accept-Encoding", "gzip,deflate");
                 wr.Headers.Add("Accept-Language", "en-US,en;q=0.8");
                 wr.ContentType = "application/json; charset=UTF-8";
+                
                 wr.AutomaticDecompression = DecompressionMethods.GZip;
 
-                //todo 
+                //todo - how to check that this works with different proxies...??
                 wr.Proxy = proxy;
 
                 string output = "";

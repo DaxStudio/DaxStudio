@@ -9,6 +9,7 @@ namespace DaxStudio.Interfaces
     {
         IDaxStudioProxy Proxy { get; }
         bool IsExcel { get; }
+        ADOTabular.AdomdClientWrappers.AdomdType ConnectionType { get; }
 
         string CommandLineFileName { get; }
     }

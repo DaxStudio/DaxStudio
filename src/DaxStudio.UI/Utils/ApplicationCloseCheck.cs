@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
 using System;
 using System.ComponentModel.Composition;
 

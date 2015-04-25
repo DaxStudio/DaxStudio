@@ -7,6 +7,8 @@ using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices;
 using Serilog;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.QueryTrace;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -19,7 +21,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryStartedEvent>
         , IHandle<CancelQueryEvent>
     {
-        private List<TraceEventArgs> _events;
+        private List<DaxStudioTraceEventArgs> _events;
         private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
@@ -41,9 +43,9 @@ namespace DaxStudio.UI.ViewModels
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
-        public List<TraceEventArgs> Events
+        public List<DaxStudioTraceEventArgs> Events
         {
-            get { return _events ?? (_events = new List<TraceEventArgs>()); }
+            get { return _events ?? (_events = new List<DaxStudioTraceEventArgs>()); }
         }
 
         protected abstract List<TraceEventClass> GetMonitoredEvents();
@@ -54,6 +56,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         // This method is called as events are raised
+        /*
         public void ProcessEvent(TraceEventArgs eventArgs)
         {
             if (MonitoredEvents.Contains(eventArgs.EventClass))
@@ -65,6 +68,20 @@ namespace DaxStudio.UI.ViewModels
                 ProcessResults();
                 IsBusy = false;
             }
+        }
+        */
+        public void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents)
+        {
+            foreach (var e in capturedEvents)
+            {
+                if (MonitoredEvents.Contains((TraceEventClass)e.EventClass))
+                {
+                    Events.Add(e);
+                }
+            }
+            ProcessResults();
+            IsBusy = false;
+            
         }
 
         // This method is called before a trace starts which gives you a chance to 
@@ -145,7 +162,8 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
+            //IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
+            IsEnabled = (_connection.IsAdminConnection && _connection.IsConnected);
         }
 
         private bool _isBusy = false;
@@ -160,6 +178,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryStartedEvent message)
         {
             IsBusy = true;
+            Reset();
         }
 
         public void Handle(CancelQueryEvent message)

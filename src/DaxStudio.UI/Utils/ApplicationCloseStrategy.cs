@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Utils {
     public class ApplicationCloseStrategy : ICloseStrategy<IScreen> {

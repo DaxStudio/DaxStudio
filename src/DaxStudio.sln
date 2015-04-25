@@ -13,6 +13,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.ExcelAddin", "DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj", "{C8769178-B109-4155-ABC2-F4E4587642DB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5EFEFF14-3052-4DC1-B020-8E259062B899} = {5EFEFF14-3052-4DC1-B020-8E259062B899}
+		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443} = {C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}
 		{EE4788C1-DCA6-465F-8049-28CEACE6586F} = {EE4788C1-DCA6-465F-8049-28CEACE6586F}
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6} = {F92E0BFC-F721-4A08-A4FA-77DC019B14F6}
 	EndProjectSection
@@ -40,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{077223
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.QueryTrace", "DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj", "{A7912ABB-E3AD-45C4-A8A7-183828DB300E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.QueryTrace.Excel", "DaxStudio.QueryTrace.Excel\DaxStudio.QueryTrace.Excel.csproj", "{30B02415-0085-4CEB-9C74-EFDA677C6C88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -135,8 +140,8 @@ Global
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug Excel 2013|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|x64.ActiveCfg = Debug Standalone|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug Excel 2013|x86.ActiveCfg = Debug Standalone|Any CPU
-		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.Build.0 = Debug|x86
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|x64.ActiveCfg = Debug|x86
@@ -205,6 +210,42 @@ Global
 		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}.Release|x64.ActiveCfg = Release|Any CPU
 		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}.Release|x86.ActiveCfg = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|Any CPU.Build.0 = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|x64.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug Excel 2013|x86.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|x64.ActiveCfg = Release|Any CPU
+		{A7912ABB-E3AD-45C4-A8A7-183828DB300E}.Release|x86.ActiveCfg = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|Any CPU.Build.0 = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|Mixed Platforms.Build.0 = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|x64.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug Excel 2013|x86.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|x64.ActiveCfg = Release|Any CPU
+		{30B02415-0085-4CEB-9C74-EFDA677C6C88}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

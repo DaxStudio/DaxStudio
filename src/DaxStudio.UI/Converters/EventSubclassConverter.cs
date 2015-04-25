@@ -2,18 +2,19 @@
 using System.Globalization;
 using System.Windows.Data;
 using Microsoft.AnalysisServices;
+using DaxStudio.QueryTrace;
 
 namespace DaxStudio.UI.Converters {
     class EventSubclassConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            var sc = value as TraceEventSubclass?;
+            var sc = value as DaxStudioTraceEventSubclass?;
             if (sc != null) {
-                switch ((TraceEventSubclass)sc) {
-                    case TraceEventSubclass.VertiPaqCacheExactMatch:
+                switch ((DaxStudioTraceEventSubclass)sc) {
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
                         return "Cache";
-                    case TraceEventSubclass.VertiPaqScanInternal:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
                         return "Internal";
-                    case TraceEventSubclass.VertiPaqScan:
+                    case DaxStudioTraceEventSubclass.VertiPaqScan:
                         return "Scan";
                     default:
                         return sc.ToString();

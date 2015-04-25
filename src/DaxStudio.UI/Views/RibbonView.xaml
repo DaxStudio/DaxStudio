@@ -492,13 +492,10 @@
                     <Fluent:ScreenTip Title="Find" Text="Replace text within the current query" Width ="190"/>
                 </Fluent:Button.ToolTip>
                 </Fluent:Button>
-
-               
             </Fluent:RibbonGroupBox>
             
             
-            
-          
+                   
             
             <Fluent:RibbonGroupBox Header="Traces" ItemsSource="{Binding TraceWatchers}"
                                    ItemTemplate="{DynamicResource TraceWatcherTemplate}">

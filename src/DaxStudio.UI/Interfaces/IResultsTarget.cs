@@ -2,7 +2,7 @@
 using DaxStudio.Interfaces;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Interfaces
 {
     public interface IResultsTarget
     {

@@ -1,4 +1,5 @@
 ﻿using DaxStudio.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using System;
 using System.Collections.Generic;

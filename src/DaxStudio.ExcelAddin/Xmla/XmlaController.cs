@@ -35,7 +35,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 var wb = app.ActiveWorkbook;
 
                 loc = wb.FullName;  //@"D:\Data\Presentations\Drop Your DAX\demos\02 DAX filter similar.xlsx";
-                connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={0}", loc);
+                connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{0}\"", loc);
                 //connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={0}", loc);
                 // 2010 conn str
                 //connStr = string.Format("Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location={0}", loc);
@@ -87,6 +87,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                     //XmlaStream xs = new XmlaStream(xmlaResponseFromServer);
                     //result.Content = new PushStreamContent((strm, http, ctx) => xs.OutputXmlaStream(strm,http, ctx));
                     result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
+                    result.Headers.TransferEncodingChunked = true;
                 }
                 catch (Exception ex)
                 {
@@ -116,7 +117,7 @@ namespace DaxStudio.ExcelAddin.Xmla
 
         
     }
-
+    /*
     internal class XmlaStream
     {
         private readonly XmlReader _reader;
@@ -124,7 +125,7 @@ namespace DaxStudio.ExcelAddin.Xmla
         {
             _reader = reader;
         }
-        /*
+       
         internal async Task OutputXmlaStream(Stream outputStream, HttpContent httpContent, TransportContext transportContext)
         {
             try
@@ -190,6 +191,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 outputStream.Close();
             }
         }
-        */
+      
     }
+*/
 }

@@ -1,0 +1,1693 @@
+<Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+	<EntityContainer Name="Sandbox">
+		<EntitySet Name="Currency" EntityType="Sandbox.Currency">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Customer" EntityType="Sandbox.Customer">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Date" EntityType="Sandbox.Date">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Employee" EntityType="Sandbox.Employee">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Geography" EntityType="Sandbox.Geography">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Product" EntityType="Sandbox.Product">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Product_Category" EntityType="Sandbox.Product_Category">
+			<bi:EntitySet Caption="Product Category" ReferenceName="Product Category" />
+		</EntitySet>
+		<EntitySet Name="Product_Subcategory" EntityType="Sandbox.Product_Subcategory">
+			<bi:EntitySet Caption="Product Subcategory" ReferenceName="Product Subcategory" />
+		</EntitySet>
+		<EntitySet Name="Promotion" EntityType="Sandbox.Promotion">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Reseller" EntityType="Sandbox.Reseller">
+			<bi:EntitySet Caption="Reseller Cap" />
+		</EntitySet>
+		<EntitySet Name="Sales_Territory" EntityType="Sandbox.Sales_Territory">
+			<bi:EntitySet Caption="Sales Territory" ReferenceName="Sales Territory" />
+		</EntitySet>
+		<EntitySet Name="Internet_Sales" EntityType="Sandbox.Internet_Sales">
+			<bi:EntitySet Caption="Internet Sales" ReferenceName="Internet Sales" />
+		</EntitySet>
+		<EntitySet Name="Product_Inventory" EntityType="Sandbox.Product_Inventory">
+			<bi:EntitySet Caption="Product Inventory" ReferenceName="Product Inventory" />
+		</EntitySet>
+		<EntitySet Name="Reseller_Sales" EntityType="Sandbox.Reseller_Sales">
+			<bi:EntitySet Caption="Reseller Sales" ReferenceName="Reseller Sales" />
+		</EntitySet>
+		<EntitySet Name="Sales_Quota" EntityType="Sandbox.Sales_Quota">
+			<bi:EntitySet Caption="Sales Quota" ReferenceName="Sales Quota" />
+		</EntitySet>
+		<AssociationSet Name="Customer_Geography_Geography_GeographyKey" Association="Sandbox.Customer_Geography_Geography_GeographyKey">
+			<End EntitySet="Customer" />
+			<End EntitySet="Geography" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Employee_Sales_Territory_Sales_Territory_SalesTerritoryKey" Association="Sandbox.Employee_Sales_Territory_Sales_Territory_SalesTerritoryKey">
+			<End EntitySet="Employee" />
+			<End EntitySet="Sales_Territory" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Geography_Sales_Territory_Sales_Territory_SalesTerritoryKey2" Association="Sandbox.Geography_Sales_Territory_Sales_Territory_SalesTerritoryKey2">
+			<End EntitySet="Geography" />
+			<End EntitySet="Sales_Territory" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Product_Product_Subcategory_Product_Subcategory_ProductSubcategoryKey" Association="Sandbox.Product_Product_Subcategory_Product_Subcategory_ProductSubcategoryKey">
+			<End EntitySet="Product" />
+			<End EntitySet="Product_Subcategory" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Product_Subcategory_Product_Category_Product_Category_ProductCategoryKey" Association="Sandbox.Product_Subcategory_Product_Category_Product_Category_ProductCategoryKey">
+			<End EntitySet="Product_Subcategory" />
+			<End EntitySet="Product_Category" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Geography_Geography_GeographyKey2" Association="Sandbox.Reseller_Geography_Geography_GeographyKey2">
+			<End EntitySet="Reseller" />
+			<End EntitySet="Geography" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Currency_Currency_CurrencyKey" Association="Sandbox.Internet_Sales_Currency_Currency_CurrencyKey">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Currency" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Customer_Customer_CustomerKey" Association="Sandbox.Internet_Sales_Customer_Customer_CustomerKey">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Customer" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Date_Date_DateKey" Association="Sandbox.Internet_Sales_Date_Date_DateKey">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Date_Date_DateKey2" Association="Sandbox.Internet_Sales_Date_Date_DateKey2">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Date_Date_DateKey3" Association="Sandbox.Internet_Sales_Date_Date_DateKey3">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Product_Product_ProductKey" Association="Sandbox.Internet_Sales_Product_Product_ProductKey">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Product" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Promotion_Promotion_PromotionKey" Association="Sandbox.Internet_Sales_Promotion_Promotion_PromotionKey">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Promotion" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Internet_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey3" Association="Sandbox.Internet_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey3">
+			<End EntitySet="Internet_Sales" />
+			<End EntitySet="Sales_Territory" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Product_Inventory_Date_Date_DateKey4" Association="Sandbox.Product_Inventory_Date_Date_DateKey4">
+			<End EntitySet="Product_Inventory" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Product_Inventory_Product_Product_ProductKey2" Association="Sandbox.Product_Inventory_Product_Product_ProductKey2">
+			<End EntitySet="Product_Inventory" />
+			<End EntitySet="Product" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Currency_Currency_CurrencyKey2" Association="Sandbox.Reseller_Sales_Currency_Currency_CurrencyKey2">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Currency" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Date_Date_DateKey5" Association="Sandbox.Reseller_Sales_Date_Date_DateKey5">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Date_Date_DateKey6" Association="Sandbox.Reseller_Sales_Date_Date_DateKey6">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Date_Date_DateKey7" Association="Sandbox.Reseller_Sales_Date_Date_DateKey7">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Employee_Employee_EmployeeKey" Association="Sandbox.Reseller_Sales_Employee_Employee_EmployeeKey">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Employee" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Product_Product_ProductKey3" Association="Sandbox.Reseller_Sales_Product_Product_ProductKey3">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Product" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Promotion_Promotion_PromotionKey2" Association="Sandbox.Reseller_Sales_Promotion_Promotion_PromotionKey2">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Promotion" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Reseller_Reseller_ResellerKey" Association="Sandbox.Reseller_Sales_Reseller_Reseller_ResellerKey">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Reseller" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Reseller_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey4" Association="Sandbox.Reseller_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey4">
+			<End EntitySet="Reseller_Sales" />
+			<End EntitySet="Sales_Territory" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Sales_Quota_Date_Date_DateKey8" Association="Sandbox.Sales_Quota_Date_Date_DateKey8">
+			<End EntitySet="Sales_Quota" />
+			<End EntitySet="Date" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Sales_Quota_Employee_Employee_EmployeeKey2" Association="Sandbox.Sales_Quota_Employee_Employee_EmployeeKey2">
+			<End EntitySet="Sales_Quota" />
+			<End EntitySet="Employee" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<bi:EntityContainer Caption="AdvWrks2012Tab_c950497_376ec9da-f6d2-4788-94d7-7f11039cc00e" Culture="en-US">
+			<bi:CompareOptions IgnoreCase="true" />
+			<bi:ModelCapabilities>
+				<bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+			</bi:ModelCapabilities>
+		</bi:EntityContainer>
+	</EntityContainer>
+	<EntityType Name="Currency">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="CurrencyKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Currency_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Currency Code" ReferenceName="Currency Code" />
+		</Property>
+		<Property Name="CurrencyName" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Customer">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="CustomerKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="GeographyKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Customer_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Customer Id" ReferenceName="Customer Id" />
+		</Property>
+		<Property Name="Title" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="First_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="First Name" ReferenceName="First Name" />
+		</Property>
+		<Property Name="Middle_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Middle Name" ReferenceName="Middle Name" />
+		</Property>
+		<Property Name="Last_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Last Name" ReferenceName="Last Name" />
+		</Property>
+		<Property Name="Name_Style" Type="Boolean">
+			<bi:Property Caption="Name Style" ReferenceName="Name Style" />
+		</Property>
+		<Property Name="Birth_Date" Type="DateTime">
+			<bi:Property Caption="Birth Date" ReferenceName="Birth Date" />
+		</Property>
+		<Property Name="Marital_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Marital Status" ReferenceName="Marital Status" />
+		</Property>
+		<Property Name="Suffix" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Gender" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Email_Address" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Email Address" ReferenceName="Email Address" />
+		</Property>
+		<Property Name="Yearly_Income" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Yearly Income" ReferenceName="Yearly Income" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Total_Children" Type="Int64">
+			<bi:Property Caption="Total Children" ReferenceName="Total Children" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Number_of_Children_At_Home" Type="Int64">
+			<bi:Property Caption="Number of Children At Home" ReferenceName="Number of Children At Home" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Education" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Occupation" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Owns_House" Type="Boolean">
+			<bi:Property Caption="Owns House" ReferenceName="Owns House" FormatString="&quot;TRUE&quot;;&quot;TRUE&quot;;&quot;FALSE&quot;" />
+		</Property>
+		<Property Name="Total_Cars_Owned" Type="Int64">
+			<bi:Property Caption="Total Cars Owned" ReferenceName="Total Cars Owned" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Address_Line_1" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Address Line 1" ReferenceName="Address Line 1" />
+		</Property>
+		<Property Name="Address_Line_2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Address Line 2" ReferenceName="Address Line 2" />
+		</Property>
+		<Property Name="Phone" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Date_Of_First_Purchase" Type="DateTime">
+			<bi:Property Caption="Date Of First Purchase" ReferenceName="Date Of First Purchase" />
+		</Property>
+		<Property Name="Commute_Distance" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Commute Distance" ReferenceName="Commute Distance" />
+		</Property>
+		<NavigationProperty Name="Geography_GeographyKey" Relationship="Sandbox.Customer_Geography_Geography_GeographyKey" FromRole="Customer_GeographyKey" ToRole="Geography_GeographyKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Date">
+		<Key>
+			<PropertyRef Name="Date2" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="DateKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Date2" Type="DateTime" Nullable="false">
+			<bi:Property Caption="Date" ReferenceName="Date" />
+		</Property>
+		<Property Name="Day_Number_Of_Week" Type="Int64">
+			<bi:Property Caption="Day Number Of Week" ReferenceName="Day Number Of Week" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Day_Name_Of_Week" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Day Name Of Week" ReferenceName="Day Name Of Week">
+				<bi:OrderBy>
+					<bi:PropertyRef Name="Day_Number_Of_Week" />
+				</bi:OrderBy>
+			</bi:Property>
+		</Property>
+		<Property Name="Day_Of_Month" Type="Int64">
+			<bi:Property Caption="Day Of Month" ReferenceName="Day Of Month" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Day_Of_Year" Type="Int64">
+			<bi:Property Caption="Day Of Year" ReferenceName="Day Of Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Week_Of_Year" Type="Int64">
+			<bi:Property Caption="Week Of Year" ReferenceName="Week Of Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Month_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Month Name" ReferenceName="Month Name">
+				<bi:OrderBy>
+					<bi:PropertyRef Name="Month" />
+				</bi:OrderBy>
+			</bi:Property>
+		</Property>
+		<Property Name="Month" Type="Int64">
+			<bi:Property DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Calendar_Quarter" Type="Int64">
+			<bi:Property Caption="Calendar Quarter" ReferenceName="Calendar Quarter" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Calendar_Year" Type="Int64">
+			<bi:Property Caption="Calendar Year" ReferenceName="Calendar Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Calendar_Semester" Type="Int64">
+			<bi:Property Caption="Calendar Semester" ReferenceName="Calendar Semester" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Fiscal_Quarter" Type="Int64">
+			<bi:Property Caption="Fiscal Quarter" ReferenceName="Fiscal Quarter" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Fiscal_Year" Type="Int64">
+			<bi:Property Caption="Fiscal Year" ReferenceName="Fiscal Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Fiscal_Semester" Type="Int64">
+			<bi:Property Caption="Fiscal Semester" ReferenceName="Fiscal Semester" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Days_In_Current_Quarter_to_Date" Type="Int64">
+			<bi:Measure Caption="Days In Current Quarter to Date" ReferenceName="Days In Current Quarter to Date" />
+		</Property>
+		<Property Name="Days_In_Current_Quarter" Type="Int64">
+			<bi:Measure Caption="Days In Current Quarter" ReferenceName="Days In Current Quarter" />
+		</Property>
+		<bi:EntityType Contents="Time">
+			<bi:Hierarchy Name="Calendar" Caption="Calendar Cap">
+				<bi:Level Name="Year">
+					<bi:Source>
+						<bi:PropertyRef Name="Calendar_Year" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Semester">
+					<bi:Source>
+						<bi:PropertyRef Name="Calendar_Semester" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Quarter">
+					<bi:Source>
+						<bi:PropertyRef Name="Calendar_Quarter" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Month">
+					<bi:Source>
+						<bi:PropertyRef Name="Month_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Day">
+					<bi:Source>
+						<bi:PropertyRef Name="Day_Of_Month" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+			<bi:Hierarchy Name="Fiscal">
+				<bi:Level Name="Fiscal_Year" Caption="Fiscal Year" ReferenceName="Fiscal Year">
+					<bi:Source>
+						<bi:PropertyRef Name="Fiscal_Year" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Fiscal_Semester" Caption="Fiscal Semester" ReferenceName="Fiscal Semester">
+					<bi:Source>
+						<bi:PropertyRef Name="Fiscal_Semester" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Fiscal_Quarter" Caption="Fiscal Quarter" ReferenceName="Fiscal Quarter">
+					<bi:Source>
+						<bi:PropertyRef Name="Fiscal_Quarter" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Month">
+					<bi:Source>
+						<bi:PropertyRef Name="Month_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Day">
+					<bi:Source>
+						<bi:PropertyRef Name="Day_Of_Month" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+			<bi:Hierarchy Name="Production_Calendar" Caption="Production Calendar" ReferenceName="Production Calendar">
+				<bi:Level Name="Year">
+					<bi:Source>
+						<bi:PropertyRef Name="Calendar_Year" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Week">
+					<bi:Source>
+						<bi:PropertyRef Name="Week_Of_Year" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Week_Day" Caption="Week Day" ReferenceName="Week Day">
+					<bi:Source>
+						<bi:PropertyRef Name="Day_Name_Of_Week" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Employee">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="EmployeeKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="ParentEmployeeKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Employee_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Employee Id" ReferenceName="Employee Id" />
+		</Property>
+		<Property Name="SalesTerritoryKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="First_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="First Name" ReferenceName="First Name" />
+		</Property>
+		<Property Name="Last_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Last Name" ReferenceName="Last Name" />
+		</Property>
+		<Property Name="Middle_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Middle Name" ReferenceName="Middle Name" />
+		</Property>
+		<Property Name="NameStyle" Type="Boolean">
+			<bi:Property />
+		</Property>
+		<Property Name="Title" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Hire_Date" Type="DateTime">
+			<bi:Property Caption="Hire Date" ReferenceName="Hire Date" />
+		</Property>
+		<Property Name="Birth_Date" Type="DateTime">
+			<bi:Property Caption="Birth Date" ReferenceName="Birth Date" />
+		</Property>
+		<Property Name="Login" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Email" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Phone" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Marital_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Marital Status" ReferenceName="Marital Status" />
+		</Property>
+		<Property Name="Emergency_Contact_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Emergency Contact Name" ReferenceName="Emergency Contact Name" />
+		</Property>
+		<Property Name="Emergency_Contact_Phone" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Emergency Contact Phone" ReferenceName="Emergency Contact Phone" />
+		</Property>
+		<Property Name="Is_Salaried" Type="Boolean">
+			<bi:Property Caption="Is Salaried" ReferenceName="Is Salaried" />
+		</Property>
+		<Property Name="Gender" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Pay_Frequency" Type="Int64">
+			<bi:Property Caption="Pay Frequency" ReferenceName="Pay Frequency" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Base_Rate" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Base Rate" ReferenceName="Base Rate" />
+		</Property>
+		<Property Name="Vacation_Hours" Type="Int64">
+			<bi:Property Caption="Vacation Hours" ReferenceName="Vacation Hours" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Sick_Leave_Hours" Type="Int64">
+			<bi:Property Caption="Sick Leave Hours" ReferenceName="Sick Leave Hours" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Is_Current" Type="Boolean">
+			<bi:Property Caption="Is Current" ReferenceName="Is Current" />
+		</Property>
+		<Property Name="Is_Sales_Person" Type="Boolean">
+			<bi:Property Caption="Is Sales Person" ReferenceName="Is Sales Person" />
+		</Property>
+		<Property Name="Department_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Department Name" ReferenceName="Department Name" />
+		</Property>
+		<Property Name="Start_Date" Type="DateTime">
+			<bi:Property Caption="Start Date" ReferenceName="Start Date" />
+		</Property>
+		<Property Name="End_Date" Type="DateTime">
+			<bi:Property Caption="End Date" ReferenceName="End Date" />
+		</Property>
+		<Property Name="Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Employee_Photo" Type="Binary" MaxLength="Max" FixedLength="false">
+			<bi:Property Caption="Employee Photo" ReferenceName="Employee Photo" />
+		</Property>
+		<NavigationProperty Name="Sales_Territory_SalesTerritoryKey" Relationship="Sandbox.Employee_Sales_Territory_Sales_Territory_SalesTerritoryKey" FromRole="Employee_SalesTerritoryKey" ToRole="Sales_Territory_SalesTerritoryKey">
+			<bi:NavigationProperty ReferenceName="Sales Territory_SalesTerritoryKey" />
+		</NavigationProperty>
+		<bi:EntityType>
+			<bi:DefaultImage>
+				<bi:MemberRef Name="Employee_Photo" />
+			</bi:DefaultImage>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Geography">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="GeographyKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="City" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="State_Province_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="State Province Code" ReferenceName="State Province Code" />
+		</Property>
+		<Property Name="State_Province_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="State Province Name" ReferenceName="State Province Name" />
+		</Property>
+		<Property Name="Country_Region_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Country Region Code" ReferenceName="Country Region Code" />
+		</Property>
+		<Property Name="Country_Region_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Country Region Name" ReferenceName="Country Region Name" />
+		</Property>
+		<Property Name="Postal_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Postal Code" ReferenceName="Postal Code" />
+		</Property>
+		<Property Name="SalesTerritoryKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<NavigationProperty Name="Sales_Territory_SalesTerritoryKey2" Relationship="Sandbox.Geography_Sales_Territory_Sales_Territory_SalesTerritoryKey2" FromRole="Geography_SalesTerritoryKey" ToRole="Sales_Territory_SalesTerritoryKey2">
+			<bi:NavigationProperty ReferenceName="Sales Territory_SalesTerritoryKey2" />
+		</NavigationProperty>
+		<bi:EntityType>
+			<bi:Hierarchy Name="Geography2" Caption="Geography" ReferenceName="Geography">
+				<bi:Level Name="Country_Region" Caption="Country Region" ReferenceName="Country Region">
+					<bi:Source>
+						<bi:PropertyRef Name="Country_Region_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="State_Province" Caption="State Province" ReferenceName="State Province">
+					<bi:Source>
+						<bi:PropertyRef Name="State_Province_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="City">
+					<bi:Source>
+						<bi:PropertyRef Name="City" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Product">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Product_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Id" ReferenceName="Product Id" />
+		</Property>
+		<Property Name="ProductSubcategoryKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Weight_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Weight Unit Code" ReferenceName="Weight Unit Code" />
+		</Property>
+		<Property Name="Size_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Size Unit Code" ReferenceName="Size Unit Code" />
+		</Property>
+		<Property Name="Product_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Name" ReferenceName="Product Name" />
+		</Property>
+		<Property Name="Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Standard Cost" ReferenceName="Standard Cost" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Is_Finished_Goods" Type="Boolean">
+			<bi:Property Caption="Is Finished Goods" ReferenceName="Is Finished Goods" />
+		</Property>
+		<Property Name="Color" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Safety_Stock_Level" Type="Int64">
+			<bi:Property Caption="Safety Stock Level" ReferenceName="Safety Stock Level" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Reorder_Point" Type="Int64">
+			<bi:Property Caption="Reorder Point" ReferenceName="Reorder Point" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="List_Price" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="List Price" ReferenceName="List Price" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Size" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Size_Range" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Size Range" ReferenceName="Size Range" />
+		</Property>
+		<Property Name="Weight" Type="Double">
+			<bi:Property DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Days_To_Manufacture" Type="Int64">
+			<bi:Property Caption="Days To Manufacture" ReferenceName="Days To Manufacture" />
+		</Property>
+		<Property Name="Product_Line" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Line" ReferenceName="Product Line" />
+		</Property>
+		<Property Name="Dealer_Price" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Dealer Price" ReferenceName="Dealer Price" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Class" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Style" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Model_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Model Name" ReferenceName="Model Name" />
+		</Property>
+		<Property Name="LargePhoto" Type="Binary" MaxLength="Max" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Description" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Product_Start_Date" Type="DateTime">
+			<bi:Property Caption="Product Start Date" ReferenceName="Product Start Date" />
+		</Property>
+		<Property Name="Product_End_Date" Type="DateTime">
+			<bi:Property Caption="Product End Date" ReferenceName="Product End Date" />
+		</Property>
+		<Property Name="Product_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Status" ReferenceName="Product Status" />
+		</Property>
+		<Property Name="Product_SubCategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product SubCategory Name" ReferenceName="Product SubCategory Name" />
+		</Property>
+		<Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Category Name" ReferenceName="Product Category Name" />
+		</Property>
+		<NavigationProperty Name="Product_Subcategory_ProductSubcategoryKey" Relationship="Sandbox.Product_Product_Subcategory_Product_Subcategory_ProductSubcategoryKey" FromRole="Product_ProductSubcategoryKey" ToRole="Product_Subcategory_ProductSubcategoryKey">
+			<bi:NavigationProperty ReferenceName="Product Subcategory_ProductSubcategoryKey" />
+		</NavigationProperty>
+		<bi:EntityType>
+			<bi:DisplayKey>
+				<bi:MemberRef Name="Product_Name" />
+			</bi:DisplayKey>
+			<bi:DefaultImage>
+				<bi:MemberRef Name="LargePhoto" />
+			</bi:DefaultImage>
+			<bi:Hierarchy Name="Category">
+				<bi:Level Name="Category2" Caption="Category" ReferenceName="Category">
+					<bi:Source>
+						<bi:PropertyRef Name="Product_Category_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="SubCategory">
+					<bi:Source>
+						<bi:PropertyRef Name="Product_SubCategory_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Model">
+					<bi:Source>
+						<bi:PropertyRef Name="Model_Name" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Product">
+					<bi:Source>
+						<bi:PropertyRef Name="Product_Name" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Product_Category">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductCategoryKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Category Name" ReferenceName="Product Category Name" />
+		</Property>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Product_Subcategory">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductSubcategoryKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Product_Subcategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Subcategory Name" ReferenceName="Product Subcategory Name" />
+		</Property>
+		<Property Name="ProductCategoryKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<NavigationProperty Name="Product_Category_ProductCategoryKey" Relationship="Sandbox.Product_Subcategory_Product_Category_Product_Category_ProductCategoryKey" FromRole="Product_Subcategory_ProductCategoryKey" ToRole="Product_Category_ProductCategoryKey">
+			<bi:NavigationProperty ReferenceName="Product Category_ProductCategoryKey" />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Promotion">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="PromotionKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Promotion_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Promotion Name" ReferenceName="Promotion Name" />
+		</Property>
+		<Property Name="DiscountPct" Type="Double">
+			<bi:Property FormatString="0.00" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Promotion_Type" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Promotion Type" ReferenceName="Promotion Type" />
+		</Property>
+		<Property Name="Promotion_Category" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Promotion Category" ReferenceName="Promotion Category" />
+		</Property>
+		<Property Name="Promotion_Start_Date" Type="DateTime">
+			<bi:Property Caption="Promotion Start Date" ReferenceName="Promotion Start Date" />
+		</Property>
+		<Property Name="Promotion_End_Date" Type="DateTime">
+			<bi:Property Caption="Promotion End Date" ReferenceName="Promotion End Date" />
+		</Property>
+		<Property Name="Min_Quantity" Type="Int64">
+			<bi:Property Caption="Min Quantity" ReferenceName="Min Quantity" />
+		</Property>
+		<Property Name="Max_Quantity" Type="Int64">
+			<bi:Property Caption="Max Quantity" ReferenceName="Max Quantity" />
+		</Property>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Reseller">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ResellerKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="GeographyKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Reseller_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Reseller Id" ReferenceName="Reseller Id" />
+		</Property>
+		<Property Name="Reseller_Phone" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Reseller Phone" ReferenceName="Reseller Phone" />
+		</Property>
+		<Property Name="Business_Type" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Business Type" ReferenceName="Business Type" />
+		</Property>
+		<Property Name="Reseller_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Reseller Name Cap" ReferenceName="Reseller Name" />
+		</Property>
+		<Property Name="Number_Employees" Type="Int64">
+			<bi:Property Caption="Number Employees" ReferenceName="Number Employees" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Order_Frequency" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Order Frequency" ReferenceName="Order Frequency" />
+		</Property>
+		<Property Name="Order_Month" Type="Int64">
+			<bi:Property Caption="Order Month" ReferenceName="Order Month" />
+		</Property>
+		<Property Name="First_Order_Year" Type="Int64">
+			<bi:Property Caption="First Order Year" ReferenceName="First Order Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Last_Order_Year" Type="Int64">
+			<bi:Property Caption="Last Order Year" ReferenceName="Last Order Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Product_Line" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Product Line" ReferenceName="Product Line" />
+		</Property>
+		<Property Name="Address_Line_1" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Address Line 1" ReferenceName="Address Line 1" />
+		</Property>
+		<Property Name="Address_Line_2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Address Line 2" ReferenceName="Address Line 2" />
+		</Property>
+		<Property Name="Annual_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Annual Sales" ReferenceName="Annual Sales" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Bank_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Bank Name" ReferenceName="Bank Name" />
+		</Property>
+		<Property Name="Min_Payment_Type" Type="Int64">
+			<bi:Property Caption="Min Payment Type" ReferenceName="Min Payment Type" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Min_Payment_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Min Payment Amount" ReferenceName="Min Payment Amount" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Annua_Revenue" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Annua Revenue" ReferenceName="Annua Revenue" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Year_Opened" Type="Int64">
+			<bi:Property Caption="Year Opened" ReferenceName="Year Opened" DefaultAggregateFunction="None" />
+		</Property>
+		<NavigationProperty Name="Geography_GeographyKey2" Relationship="Sandbox.Reseller_Geography_Geography_GeographyKey2" FromRole="Reseller_GeographyKey" ToRole="Geography_GeographyKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<bi:EntityType>
+			<bi:DisplayKey>
+				<bi:MemberRef Name="Reseller_Name" />
+			</bi:DisplayKey>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Sales_Territory">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="SalesTerritoryKey" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Sales_Territory_Region" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Sales Territory Region" ReferenceName="Sales Territory Region" />
+		</Property>
+		<Property Name="Sales_Territory_Country" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Sales Territory Country" ReferenceName="Sales Territory Country" />
+		</Property>
+		<Property Name="Sales_Territory_Group" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Sales Territory Group" ReferenceName="Sales Territory Group" />
+		</Property>
+		<Property Name="Sales_Territory_Image" Type="Binary" MaxLength="Max" FixedLength="false">
+			<bi:Property Caption="Sales Territory Image" ReferenceName="Sales Territory Image" />
+		</Property>
+		<Property Name="Distinct_Count_Sales_Orders" Type="Int64">
+			<bi:Measure Caption="Distinct Count Sales Orders" ReferenceName="Distinct Count Sales Orders" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Sales" ReferenceName="Total Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Discount_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Discount Amount" ReferenceName="Total Discount Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Products_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Products Cost" ReferenceName="Total Products Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Tax_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Tax Amount" ReferenceName="Total Tax Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Freight" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Freight" ReferenceName="Total Freight" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Gross Profit" ReferenceName="Total Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Units_Sold" Type="Int64">
+			<bi:Measure Caption="Total Units Sold" ReferenceName="Total Units Sold" FormatString="#,0" />
+		</Property>
+		<Property Name="Order_Lines_Count" Type="Int64">
+			<bi:Measure Caption="Order Lines Count" ReferenceName="Order Lines Count" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Previous_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Previous Quarter Gross Profit" ReferenceName="Total Previous Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Current_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Current Quarter Gross Profit" ReferenceName="Total Current Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Previous_Quarter_Gross_Profit_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Previous Quarter Gross Profit Proportion to QTD" ReferenceName="Total Previous Quarter Gross Profit Proportion to QTD" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Previous_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Previous Quarter Sales" ReferenceName="Total Previous Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Current_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Current Quarter Sales" ReferenceName="Total Current Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Previous_Quarter_Sales_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Previous Quarter Sales Proportion to QTD" ReferenceName="Total Previous Quarter Sales Proportion to QTD" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Sales___Sales_Territory_sliced_by_Employee" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Sales - Sales Territory sliced by Employee" ReferenceName="Total Sales - Sales Territory sliced by Employee" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Current_Quarter_Sales_Performance" Type="Double">
+			<bi:Measure Caption="Total Current Quarter Sales Performance" ReferenceName="Total Current Quarter Sales Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Total_Current_Quarter_Sales_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Total_Current_Quarter_Sales_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Total_Current_Quarter_Sales_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Total Current Quarter Sales Performance Goal" Hidden="true" ReferenceName="_Total Current Quarter Sales Performance Goal" />
+		</Property>
+		<Property Name="v_Total_Current_Quarter_Sales_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Total Current Quarter Sales Performance Status" Hidden="true" ReferenceName="_Total Current Quarter Sales Performance Status" />
+		</Property>
+		<Property Name="Total_Current_Quarter_Gross_Profit_Performance" Type="Double">
+			<bi:Measure Caption="Total Current Quarter Gross Profit Performance" ReferenceName="Total Current Quarter Gross Profit Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Total_Current_Quarter_Gross_Profit_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Total_Current_Quarter_Gross_Profit_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Total_Current_Quarter_Gross_Profit_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Total Current Quarter Gross Profit Performance Goal" Hidden="true" ReferenceName="_Total Current Quarter Gross Profit Performance Goal" />
+		</Property>
+		<Property Name="v_Total_Current_Quarter_Gross_Profit_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Total Current Quarter Gross Profit Performance Status" Hidden="true" ReferenceName="_Total Current Quarter Gross Profit Performance Status" />
+		</Property>
+		<bi:EntityType>
+			<bi:DisplayKey>
+				<bi:MemberRef Name="Sales_Territory_Region" />
+			</bi:DisplayKey>
+			<bi:DefaultImage>
+				<bi:MemberRef Name="Sales_Territory_Image" />
+			</bi:DefaultImage>
+			<bi:Hierarchy Name="Territory">
+				<bi:Level Name="Group">
+					<bi:Source>
+						<bi:PropertyRef Name="Sales_Territory_Group" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Country">
+					<bi:Source>
+						<bi:PropertyRef Name="Sales_Territory_Country" />
+					</bi:Source>
+				</bi:Level>
+				<bi:Level Name="Region">
+					<bi:Source>
+						<bi:PropertyRef Name="Sales_Territory_Region" />
+					</bi:Source>
+				</bi:Level>
+			</bi:Hierarchy>
+		</bi:EntityType>
+	</EntityType>
+	<EntityType Name="Internet_Sales">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="OrderDateKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="DueDateKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="ShipDateKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="CustomerKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="PromotionKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="CurrencyKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="SalesTerritoryKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Sales_Order_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Sales Order Number" ReferenceName="Sales Order Number" />
+		</Property>
+		<Property Name="Sales_Order_Line_Number" Type="Int64">
+			<bi:Property Caption="Sales Order Line Number" ReferenceName="Sales Order Line Number" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Revision_Number" Type="Int64">
+			<bi:Property Caption="Revision Number" ReferenceName="Revision Number" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Order_Quantity" Type="Int64">
+			<bi:Property Caption="Order Quantity" ReferenceName="Order Quantity" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Unit_Price" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Unit Price" ReferenceName="Unit Price" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Extended_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Extended Amount" ReferenceName="Extended Amount" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Unit_Price_Discount_Pct" Type="Double">
+			<bi:Property Caption="Unit Price Discount Pct" ReferenceName="Unit Price Discount Pct" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Discount_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Discount Amount" ReferenceName="Discount Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Product_Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Product Standard Cost" ReferenceName="Product Standard Cost" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Total Product Cost" ReferenceName="Total Product Cost" />
+		</Property>
+		<Property Name="Sales_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Sales Amount" ReferenceName="Sales Amount" />
+		</Property>
+		<Property Name="Tax_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Tax Amount" ReferenceName="Tax Amount" />
+		</Property>
+		<Property Name="Freight" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property />
+		</Property>
+		<Property Name="Carrier_Tracking_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Carrier Tracking Number" ReferenceName="Carrier Tracking Number" />
+		</Property>
+		<Property Name="Customer_PO_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Customer PO Number" ReferenceName="Customer PO Number" />
+		</Property>
+		<Property Name="Order_Date" Type="DateTime">
+			<bi:Property Caption="Order Date" ReferenceName="Order Date" />
+		</Property>
+		<Property Name="Due_Date" Type="DateTime">
+			<bi:Property Caption="Due Date" ReferenceName="Due Date" />
+		</Property>
+		<Property Name="Ship_Date" Type="DateTime">
+			<bi:Property Caption="Ship Date" ReferenceName="Ship Date" />
+		</Property>
+		<Property Name="Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Gross Profit" ReferenceName="Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Distinct_Count_Sales_Order" Type="Int64">
+			<bi:Measure Caption="Internet Distinct Count Sales Order" ReferenceName="Internet Distinct Count Sales Order" FormatString="#,0" />
+		</Property>
+		<Property Name="Internet_Total_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Sales" ReferenceName="Internet Total Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Discount_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Discount Amount" ReferenceName="Internet Total Discount Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Product Cost" ReferenceName="Internet Total Product Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Tax_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Tax Amount" ReferenceName="Internet Total Tax Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Freight" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Freight" ReferenceName="Internet Total Freight" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Total Gross Profit" ReferenceName="Internet Total Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Total_Units" Type="Int64">
+			<bi:Measure Caption="Internet Total Units" ReferenceName="Internet Total Units" FormatString="#,0" />
+		</Property>
+		<Property Name="Internet_Order_Lines_Count" Type="Int64">
+			<bi:Measure Caption="Internet Order Lines Count" ReferenceName="Internet Order Lines Count" FormatString="#,0" />
+		</Property>
+		<Property Name="Internet_Previous_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Previous Quarter Gross Profit" ReferenceName="Internet Previous Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Current_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Current Quarter Gross Profit" ReferenceName="Internet Current Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Previous_Quarter_Gross_Profit_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Previous Quarter Gross Profit Proportion to QTD" ReferenceName="Internet Previous Quarter Gross Profit Proportion to QTD" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Previous_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Previous Quarter Sales" ReferenceName="Internet Previous Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Current_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Current Quarter Sales" ReferenceName="Internet Current Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Previous_Quarter_Sales_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Internet Previous Quarter Sales Proportion to QTD" ReferenceName="Internet Previous Quarter Sales Proportion to QTD" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Internet_Current_Quarter_Sales_Performance" Type="Double">
+			<bi:Measure Caption="Internet Current Quarter Sales Performance" ReferenceName="Internet Current Quarter Sales Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Internet_Current_Quarter_Sales_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Internet Current Quarter Sales Performance Goal" Hidden="true" ReferenceName="_Internet Current Quarter Sales Performance Goal" />
+		</Property>
+		<Property Name="v_Internet_Current_Quarter_Sales_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Internet Current Quarter Sales Performance Status" Hidden="true" ReferenceName="_Internet Current Quarter Sales Performance Status" />
+		</Property>
+		<Property Name="Internet_Current_Quarter_Gross_Profit_Performance" Type="Double">
+			<bi:Measure Caption="Internet Current Quarter Gross Profit Performance" ReferenceName="Internet Current Quarter Gross Profit Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Internet_Current_Quarter_Gross_Profit_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Internet_Current_Quarter_Gross_Profit_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Internet_Current_Quarter_Gross_Profit_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Internet Current Quarter Gross Profit Performance Goal" Hidden="true" ReferenceName="_Internet Current Quarter Gross Profit Performance Goal" />
+		</Property>
+		<Property Name="v_Internet_Current_Quarter_Gross_Profit_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Internet Current Quarter Gross Profit Performance Status" Hidden="true" ReferenceName="_Internet Current Quarter Gross Profit Performance Status" />
+		</Property>
+		<NavigationProperty Name="Currency_CurrencyKey" Relationship="Sandbox.Internet_Sales_Currency_Currency_CurrencyKey" FromRole="Internet_Sales_CurrencyKey" ToRole="Currency_CurrencyKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Customer_CustomerKey" Relationship="Sandbox.Internet_Sales_Customer_Customer_CustomerKey" FromRole="Internet_Sales_CustomerKey" ToRole="Customer_CustomerKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey" Relationship="Sandbox.Internet_Sales_Date_Date_DateKey" FromRole="Internet_Sales_OrderDateKey" ToRole="Date_DateKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey2" Relationship="Sandbox.Internet_Sales_Date_Date_DateKey2" FromRole="Internet_Sales_DueDateKey" ToRole="Date_DateKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey3" Relationship="Sandbox.Internet_Sales_Date_Date_DateKey3" FromRole="Internet_Sales_ShipDateKey" ToRole="Date_DateKey3">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Product_ProductKey" Relationship="Sandbox.Internet_Sales_Product_Product_ProductKey" FromRole="Internet_Sales_ProductKey" ToRole="Product_ProductKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Promotion_PromotionKey" Relationship="Sandbox.Internet_Sales_Promotion_Promotion_PromotionKey" FromRole="Internet_Sales_PromotionKey" ToRole="Promotion_PromotionKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Sales_Territory_SalesTerritoryKey3" Relationship="Sandbox.Internet_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey3" FromRole="Internet_Sales_SalesTerritoryKey" ToRole="Sales_Territory_SalesTerritoryKey3">
+			<bi:NavigationProperty ReferenceName="Sales Territory_SalesTerritoryKey3" />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Product_Inventory">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="DateKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Movement_Date" Type="DateTime">
+			<bi:Property Caption="Movement Date" ReferenceName="Movement Date" FormatString="d" />
+		</Property>
+		<Property Name="Unit_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Unit Cost" ReferenceName="Unit Cost" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Units_In" Type="Int64">
+			<bi:Property Caption="Units In" ReferenceName="Units In" />
+		</Property>
+		<Property Name="Units_Out" Type="Int64">
+			<bi:Property Caption="Units Out" ReferenceName="Units Out" />
+		</Property>
+		<Property Name="Units_Balance" Type="Int64">
+			<bi:Property Caption="Units Balance" ReferenceName="Units Balance" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Product_Date_Inventory_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Product-Date Inventory Value" ReferenceName="Product-Date Inventory Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Product_Date_Optimal_Inventory_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Product-Date Optimal Inventory Value" ReferenceName="Product-Date Optimal Inventory Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Product_Date_Max_Inventory_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Product-Date Max Inventory Value" ReferenceName="Product-Date Max Inventory Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Product_Date_OverStocked" Type="Int64">
+			<bi:Property Caption="Product-Date OverStocked" ReferenceName="Product-Date OverStocked" />
+		</Property>
+		<Property Name="Product_Date_UnderStocked" Type="Int64">
+			<bi:Property Caption="Product-Date UnderStocked" ReferenceName="Product-Date UnderStocked" />
+		</Property>
+		<Property Name="Product_Date_Negative_Stock" Type="Int64">
+			<bi:Property Caption="Product-Date Negative Stock" ReferenceName="Product-Date Negative Stock" />
+		</Property>
+		<Property Name="Total_Units_In" Type="Int64">
+			<bi:Measure Caption="Total Units In" ReferenceName="Total Units In" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Units_Out" Type="Int64">
+			<bi:Measure Caption="Total Units Out" ReferenceName="Total Units Out" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Units_Movement" Type="Int64">
+			<bi:Measure Caption="Total Units Movement" ReferenceName="Total Units Movement" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Units" Type="Int64">
+			<bi:Measure Caption="Total Units" ReferenceName="Total Units" FormatString="#,0" />
+		</Property>
+		<Property Name="Total_Inventory_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Inventory Value" ReferenceName="Total Inventory Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Inventory_Optimal_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Inventory Optimal Value" ReferenceName="Total Inventory Optimal Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Inventory_Maximum_Value" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Total Inventory Maximum Value" ReferenceName="Total Inventory Maximum Value" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Total_Inventory_Value_Performance" Type="Double">
+			<bi:Measure Caption="Total Inventory Value Performance" ReferenceName="Total Inventory Value Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Total_Inventory_Value_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Total_Inventory_Value_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Total_Inventory_Value_Performance_Goal" Type="Int64">
+			<bi:Measure Caption="_Total Inventory Value Performance Goal" Hidden="true" ReferenceName="_Total Inventory Value Performance Goal" />
+		</Property>
+		<Property Name="v_Total_Inventory_Value_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Total Inventory Value Performance Status" Hidden="true" ReferenceName="_Total Inventory Value Performance Status" />
+		</Property>
+		<Property Name="Products_OverStocked" Type="Int64">
+			<bi:Measure Caption="Products OverStocked" ReferenceName="Products OverStocked">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Products_OverStocked_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Products_OverStocked_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Products_OverStocked_Goal" Type="Int64">
+			<bi:Measure Caption="_Products OverStocked Goal" Hidden="true" ReferenceName="_Products OverStocked Goal" />
+		</Property>
+		<Property Name="v_Products_OverStocked_Status" Type="Int64">
+			<bi:Measure Caption="_Products OverStocked Status" Hidden="true" ReferenceName="_Products OverStocked Status" />
+		</Property>
+		<Property Name="Products_UnderStocked" Type="Int64">
+			<bi:Measure Caption="Products UnderStocked" ReferenceName="Products UnderStocked">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Products_UnderStocked_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Products_UnderStocked_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Products_UnderStocked_Goal" Type="Int64">
+			<bi:Measure Caption="_Products UnderStocked Goal" Hidden="true" ReferenceName="_Products UnderStocked Goal" />
+		</Property>
+		<Property Name="v_Products_UnderStocked_Status" Type="Int64">
+			<bi:Measure Caption="_Products UnderStocked Status" Hidden="true" ReferenceName="_Products UnderStocked Status" />
+		</Property>
+		<Property Name="Products_with_Negative_Stock" Type="Int64">
+			<bi:Measure Caption="Products with Negative Stock" ReferenceName="Products with Negative Stock">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Products_with_Negative_Stock_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Products_with_Negative_Stock_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Products_with_Negative_Stock_Goal" Type="Int64">
+			<bi:Measure Caption="_Products with Negative Stock Goal" Hidden="true" ReferenceName="_Products with Negative Stock Goal" />
+		</Property>
+		<Property Name="v_Products_with_Negative_Stock_Status" Type="Int64">
+			<bi:Measure Caption="_Products with Negative Stock Status" Hidden="true" ReferenceName="_Products with Negative Stock Status" />
+		</Property>
+		<NavigationProperty Name="Date_DateKey4" Relationship="Sandbox.Product_Inventory_Date_Date_DateKey4" FromRole="Product_Inventory_DateKey" ToRole="Date_DateKey4">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Product_ProductKey2" Relationship="Sandbox.Product_Inventory_Product_Product_ProductKey2" FromRole="Product_Inventory_ProductKey" ToRole="Product_ProductKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Reseller_Sales">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="ProductKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="OrderDateKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="DueDateKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="ShipDateKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="ResellerKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="EmployeeKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="PromotionKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="CurrencyKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="SalesTerritoryKey" Type="Int64">
+			<bi:Property Hidden="true" />
+		</Property>
+		<Property Name="Sales_Order_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Sales Order Number" ReferenceName="Sales Order Number" />
+		</Property>
+		<Property Name="Sales_Order_Line_Number" Type="Int64">
+			<bi:Property Caption="Sales Order Line Number" ReferenceName="Sales Order Line Number" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Revision_Number" Type="Int64">
+			<bi:Property Caption="Revision Number" ReferenceName="Revision Number" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Order_Quantity" Type="Int64">
+			<bi:Property Caption="Order Quantity" ReferenceName="Order Quantity" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Unit_Price" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Unit Price" ReferenceName="Unit Price" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Extended_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Extended Amount" ReferenceName="Extended Amount" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Unit_Price_Discount_Pct" Type="Double">
+			<bi:Property Caption="Unit Price Discount Pct" ReferenceName="Unit Price Discount Pct" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Discount_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Discount Amount" ReferenceName="Discount Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Product_Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Product Standard Cost" ReferenceName="Product Standard Cost" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Total Product Cost" ReferenceName="Total Product Cost" />
+		</Property>
+		<Property Name="Sales_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Sales Amount" ReferenceName="Sales Amount" />
+		</Property>
+		<Property Name="Tax_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Tax Amount" ReferenceName="Tax Amount" />
+		</Property>
+		<Property Name="Freight" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property />
+		</Property>
+		<Property Name="Carrier_Tracking_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Carrier Tracking Number" ReferenceName="Carrier Tracking Number" />
+		</Property>
+		<Property Name="Reseller_PO_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Reseller PO Number" ReferenceName="Reseller PO Number" />
+		</Property>
+		<Property Name="Order_Date" Type="DateTime">
+			<bi:Property Caption="Order Date" ReferenceName="Order Date" FormatString="d" />
+		</Property>
+		<Property Name="Due_Date" Type="DateTime">
+			<bi:Property Caption="Due Date" ReferenceName="Due Date" FormatString="d" />
+		</Property>
+		<Property Name="Ship_Date" Type="DateTime">
+			<bi:Property Caption="Ship Date" ReferenceName="Ship Date" FormatString="d" />
+		</Property>
+		<Property Name="Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Gross Profit" ReferenceName="Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Distinct_Count_Sales_Order" Type="Int64">
+			<bi:Measure Caption="Reseller Distinct Count Sales Order" ReferenceName="Reseller Distinct Count Sales Order" FormatString="#,0" />
+		</Property>
+		<Property Name="Reseller_Total_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Sales" ReferenceName="Reseller Total Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Discount_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Discount Amount" ReferenceName="Reseller Total Discount Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Product Cost" ReferenceName="Reseller Total Product Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Tax_Amount" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Tax Amount" ReferenceName="Reseller Total Tax Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Freight" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Freight" ReferenceName="Reseller Total Freight" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Gross Profit" ReferenceName="Reseller Total Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Units" Type="Int64">
+			<bi:Measure Caption="Reseller Total Units" ReferenceName="Reseller Total Units" FormatString="#,0" />
+		</Property>
+		<Property Name="Reseller_Order_Lines_Count" Type="Int64">
+			<bi:Measure Caption="Reseller Order Lines Count" ReferenceName="Reseller Order Lines Count" FormatString="#,0" />
+		</Property>
+		<Property Name="Reseller_Previous_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Previous Quarter Gross Profit" ReferenceName="Reseller Previous Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Current_Quarter_Gross_Profit" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Current Quarter Gross Profit" ReferenceName="Reseller Current Quarter Gross Profit" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Previous_Quarter_Gross_Profit_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Previous Quarter Gross Profit Proportion to QTD" ReferenceName="Reseller Previous Quarter Gross Profit Proportion to QTD" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Previous_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Previous Quarter Sales" ReferenceName="Reseller Previous Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Current_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Current Quarter Sales" ReferenceName="Reseller Current Quarter Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Previous_Quarter_Sales_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Previous Quarter Sales Proportion to QTD" ReferenceName="Reseller Previous Quarter Sales Proportion to QTD" />
+		</Property>
+		<Property Name="Reseller_Total_Sales___Sales_Territory_sliced_by_Employee" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Sales - Sales Territory sliced by Employee" ReferenceName="Reseller Total Sales - Sales Territory sliced by Employee" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Total_Sales___Sales_Territory_sliced_by_Reseller" Type="Decimal" Precision="19" Scale="4">
+			<bi:Measure Caption="Reseller Total Sales - Sales Territory sliced by Reseller" ReferenceName="Reseller Total Sales - Sales Territory sliced by Reseller" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+		</Property>
+		<Property Name="Reseller_Current_Quarter_Sales_Performance" Type="Double">
+			<bi:Measure Caption="Reseller Current Quarter Sales Performance" ReferenceName="Reseller Current Quarter Sales Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Reseller_Current_Quarter_Sales_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Reseller_Current_Quarter_Sales_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Reseller_Current_Quarter_Sales_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Reseller Current Quarter Sales Performance Goal" Hidden="true" ReferenceName="_Reseller Current Quarter Sales Performance Goal" />
+		</Property>
+		<Property Name="v_Reseller_Current_Quarter_Sales_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Reseller Current Quarter Sales Performance Status" Hidden="true" ReferenceName="_Reseller Current Quarter Sales Performance Status" />
+		</Property>
+		<Property Name="Reseller_Current_Quarter_Gross_Profit_Performance" Type="Double">
+			<bi:Measure Caption="Reseller Current Quarter Gross Profit Performance" ReferenceName="Reseller Current Quarter Gross Profit Performance">
+				<bi:Kpi StatusGraphic="Three Symbols UnCircled Colored">
+					<bi:KpiGoal>
+						<bi:PropertyRef Name="v_Reseller_Current_Quarter_Gross_Profit_Performance_Goal" />
+					</bi:KpiGoal>
+					<bi:KpiStatus>
+						<bi:PropertyRef Name="v_Reseller_Current_Quarter_Gross_Profit_Performance_Status" />
+					</bi:KpiStatus>
+				</bi:Kpi>
+			</bi:Measure>
+		</Property>
+		<Property Name="v_Reseller_Current_Quarter_Gross_Profit_Performance_Goal" Type="Double">
+			<bi:Measure Caption="_Reseller Current Quarter Gross Profit Performance Goal" Hidden="true" ReferenceName="_Reseller Current Quarter Gross Profit Performance Goal" />
+		</Property>
+		<Property Name="v_Reseller_Current_Quarter_Gross_Profit_Performance_Status" Type="Int64">
+			<bi:Measure Caption="_Reseller Current Quarter Gross Profit Performance Status" Hidden="true" ReferenceName="_Reseller Current Quarter Gross Profit Performance Status" />
+		</Property>
+		<NavigationProperty Name="Currency_CurrencyKey2" Relationship="Sandbox.Reseller_Sales_Currency_Currency_CurrencyKey2" FromRole="Reseller_Sales_CurrencyKey" ToRole="Currency_CurrencyKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey5" Relationship="Sandbox.Reseller_Sales_Date_Date_DateKey5" FromRole="Reseller_Sales_OrderDateKey" ToRole="Date_DateKey5">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey6" Relationship="Sandbox.Reseller_Sales_Date_Date_DateKey6" FromRole="Reseller_Sales_DueDateKey" ToRole="Date_DateKey6">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Date_DateKey7" Relationship="Sandbox.Reseller_Sales_Date_Date_DateKey7" FromRole="Reseller_Sales_ShipDateKey" ToRole="Date_DateKey7">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Employee_EmployeeKey" Relationship="Sandbox.Reseller_Sales_Employee_Employee_EmployeeKey" FromRole="Reseller_Sales_EmployeeKey" ToRole="Employee_EmployeeKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Product_ProductKey3" Relationship="Sandbox.Reseller_Sales_Product_Product_ProductKey3" FromRole="Reseller_Sales_ProductKey" ToRole="Product_ProductKey3">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Promotion_PromotionKey2" Relationship="Sandbox.Reseller_Sales_Promotion_Promotion_PromotionKey2" FromRole="Reseller_Sales_PromotionKey" ToRole="Promotion_PromotionKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Reseller_ResellerKey" Relationship="Sandbox.Reseller_Sales_Reseller_Reseller_ResellerKey" FromRole="Reseller_Sales_ResellerKey" ToRole="Reseller_ResellerKey">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Sales_Territory_SalesTerritoryKey4" Relationship="Sandbox.Reseller_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey4" FromRole="Reseller_Sales_SalesTerritoryKey" ToRole="Sales_Territory_SalesTerritoryKey4">
+			<bi:NavigationProperty ReferenceName="Sales Territory_SalesTerritoryKey4" />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Sales_Quota">
+		<Key>
+			<PropertyRef Name="RowNumber" />
+		</Key>
+		<Property Name="RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="SalesQuotaKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="EmployeeKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="DateKey" Type="Int64">
+			<bi:Property Hidden="true" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Calendar_Year" Type="Int64">
+			<bi:Property Caption="Calendar Year" ReferenceName="Calendar Year" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Calendar_Quarter" Type="Int64">
+			<bi:Property Caption="Calendar Quarter" ReferenceName="Calendar Quarter" DefaultAggregateFunction="None" />
+		</Property>
+		<Property Name="Sales_Amount_Quota" Type="Decimal" Precision="19" Scale="4">
+			<bi:Property Caption="Sales Amount Quota" ReferenceName="Sales Amount Quota" />
+		</Property>
+		<Property Name="Date" Type="DateTime">
+			<bi:Property FormatString="d" />
+		</Property>
+		<NavigationProperty Name="Date_DateKey8" Relationship="Sandbox.Sales_Quota_Date_Date_DateKey8" FromRole="Sales_Quota_DateKey" ToRole="Date_DateKey8">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Employee_EmployeeKey2" Relationship="Sandbox.Sales_Quota_Employee_Employee_EmployeeKey2" FromRole="Sales_Quota_EmployeeKey" ToRole="Employee_EmployeeKey2">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<Association Name="Customer_Geography_Geography_GeographyKey">
+		<End Role="Customer_GeographyKey" Type="Sandbox.Customer" Multiplicity="*" />
+		<End Role="Geography_GeographyKey" Type="Sandbox.Geography" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Employee_Sales_Territory_Sales_Territory_SalesTerritoryKey">
+		<End Role="Employee_SalesTerritoryKey" Type="Sandbox.Employee" Multiplicity="*" />
+		<End Role="Sales_Territory_SalesTerritoryKey" Type="Sandbox.Sales_Territory" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Geography_Sales_Territory_Sales_Territory_SalesTerritoryKey2">
+		<End Role="Geography_SalesTerritoryKey" Type="Sandbox.Geography" Multiplicity="*" />
+		<End Role="Sales_Territory_SalesTerritoryKey2" Type="Sandbox.Sales_Territory" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Product_Product_Subcategory_Product_Subcategory_ProductSubcategoryKey">
+		<End Role="Product_ProductSubcategoryKey" Type="Sandbox.Product" Multiplicity="*" />
+		<End Role="Product_Subcategory_ProductSubcategoryKey" Type="Sandbox.Product_Subcategory" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Product_Subcategory_Product_Category_Product_Category_ProductCategoryKey">
+		<End Role="Product_Subcategory_ProductCategoryKey" Type="Sandbox.Product_Subcategory" Multiplicity="*" />
+		<End Role="Product_Category_ProductCategoryKey" Type="Sandbox.Product_Category" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Geography_Geography_GeographyKey2">
+		<End Role="Reseller_GeographyKey" Type="Sandbox.Reseller" Multiplicity="*" />
+		<End Role="Geography_GeographyKey2" Type="Sandbox.Geography" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Currency_Currency_CurrencyKey">
+		<End Role="Internet_Sales_CurrencyKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Currency_CurrencyKey" Type="Sandbox.Currency" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Customer_Customer_CustomerKey">
+		<End Role="Internet_Sales_CustomerKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Customer_CustomerKey" Type="Sandbox.Customer" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Date_Date_DateKey">
+		<End Role="Internet_Sales_OrderDateKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Date_Date_DateKey2">
+		<End Role="Internet_Sales_DueDateKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey2" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Date_Date_DateKey3">
+		<End Role="Internet_Sales_ShipDateKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey3" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Product_Product_ProductKey">
+		<End Role="Internet_Sales_ProductKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Product_ProductKey" Type="Sandbox.Product" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Promotion_Promotion_PromotionKey">
+		<End Role="Internet_Sales_PromotionKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Promotion_PromotionKey" Type="Sandbox.Promotion" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Internet_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey3">
+		<End Role="Internet_Sales_SalesTerritoryKey" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+		<End Role="Sales_Territory_SalesTerritoryKey3" Type="Sandbox.Sales_Territory" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Product_Inventory_Date_Date_DateKey4">
+		<End Role="Product_Inventory_DateKey" Type="Sandbox.Product_Inventory" Multiplicity="*" />
+		<End Role="Date_DateKey4" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Product_Inventory_Product_Product_ProductKey2">
+		<End Role="Product_Inventory_ProductKey" Type="Sandbox.Product_Inventory" Multiplicity="*" />
+		<End Role="Product_ProductKey2" Type="Sandbox.Product" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Currency_Currency_CurrencyKey2">
+		<End Role="Reseller_Sales_CurrencyKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Currency_CurrencyKey2" Type="Sandbox.Currency" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Date_Date_DateKey5">
+		<End Role="Reseller_Sales_OrderDateKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey5" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Date_Date_DateKey6">
+		<End Role="Reseller_Sales_DueDateKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey6" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Date_Date_DateKey7">
+		<End Role="Reseller_Sales_ShipDateKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Date_DateKey7" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Employee_Employee_EmployeeKey">
+		<End Role="Reseller_Sales_EmployeeKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Employee_EmployeeKey" Type="Sandbox.Employee" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Product_Product_ProductKey3">
+		<End Role="Reseller_Sales_ProductKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Product_ProductKey3" Type="Sandbox.Product" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Promotion_Promotion_PromotionKey2">
+		<End Role="Reseller_Sales_PromotionKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Promotion_PromotionKey2" Type="Sandbox.Promotion" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Reseller_Reseller_ResellerKey">
+		<End Role="Reseller_Sales_ResellerKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Reseller_ResellerKey" Type="Sandbox.Reseller" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Reseller_Sales_Sales_Territory_Sales_Territory_SalesTerritoryKey4">
+		<End Role="Reseller_Sales_SalesTerritoryKey" Type="Sandbox.Reseller_Sales" Multiplicity="*" />
+		<End Role="Sales_Territory_SalesTerritoryKey4" Type="Sandbox.Sales_Territory" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Sales_Quota_Date_Date_DateKey8">
+		<End Role="Sales_Quota_DateKey" Type="Sandbox.Sales_Quota" Multiplicity="*" />
+		<End Role="Date_DateKey8" Type="Sandbox.Date" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Sales_Quota_Employee_Employee_EmployeeKey2">
+		<End Role="Sales_Quota_EmployeeKey" Type="Sandbox.Sales_Quota" Multiplicity="*" />
+		<End Role="Employee_EmployeeKey2" Type="Sandbox.Employee" Multiplicity="0..1" />
+	</Association>
+</Schema>

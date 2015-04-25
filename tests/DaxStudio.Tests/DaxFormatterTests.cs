@@ -52,10 +52,10 @@ namespace DaxStudio.Tests
             var reader = new System.IO.StreamReader(outStrm);
             var output = reader.ReadToEnd();
 
-            Assert.AreEqual("\"EVALUATE FILTER ( tatatata, blah[x] = 1 )\\r\\n\\r\\n\"", output);
+            Assert.AreEqual("\"EVALUATE\\r\\nFILTER ( tatatata, blah[x] = 1 )\\r\\n\\r\\n\"", output);
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestInvalidDax()
         {
             var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
@@ -83,7 +83,7 @@ namespace DaxStudio.Tests
             Assert.AreNotEqual("\"\"", output);
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestInvalidDaxVerbose()
         {
             var uri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
@@ -145,13 +145,15 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
-        public async void TestDaxFormatterProxyWithInvalidQuery()
+        public void TestDaxFormatterProxyWithInvalidQuery()
         {
             var qry = "evaluate values(tatatata ";
             //var req = new DaxStudio.UI.Model.DaxFormatterRequest();
             //req.Dax = qry;
 
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            var t = DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            t.Wait();
+            DaxStudio.UI.Model.DaxFormatterResult res = t.Result;
             Assert.AreEqual(0, res.FormattedDax.Length);
             Assert.AreEqual(1, res.errors.Count);
         }

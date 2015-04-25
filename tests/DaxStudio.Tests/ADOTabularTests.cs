@@ -88,7 +88,7 @@ namespace DaxStudio.Tests
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\csdl.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml");
             var tabs = new ADOTabularTableCollection(c,m);
             v.GenerateTablesFromXmlReader(tabs, xr);
 
@@ -102,7 +102,7 @@ namespace DaxStudio.Tests
             //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             //MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             //ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\discover_xml_metadata.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\discover_xml_metadata.xml");
             //var tabs = new ADOTabularTableCollection(c, m);
             //v.GenerateTablesFromXmlReader(tabs, xr);
             var dbs = DiscoverXmlParser.Databases(xr);
@@ -117,7 +117,7 @@ namespace DaxStudio.Tests
             //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             //MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             //ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\discover_xml_metadata.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\discover_xml_metadata.xml");
             //var tabs = new ADOTabularTableCollection(c, m);
             //v.GenerateTablesFromXmlReader(tabs, xr);
             var props = DiscoverXmlParser.ServerProperties(xr);
@@ -132,7 +132,7 @@ namespace DaxStudio.Tests
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\advwrkscsdl.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\advwrkscsdl.xml");
             var tabs = new ADOTabularTableCollection(c, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Reseller"];
@@ -150,7 +150,7 @@ namespace DaxStudio.Tests
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\advwrkscsdl.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\advwrkscsdl.xml");
             var tabs = new ADOTabularTableCollection(c, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Sales Quota"];
@@ -165,7 +165,7 @@ namespace DaxStudio.Tests
         {
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\AdvWrks.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\AdvWrks.xml");
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(c,m);
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -185,7 +185,7 @@ namespace DaxStudio.Tests
         {
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader("..\\..\\AdvWrks.xml");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\AdvWrks.xml");
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(c, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -204,7 +204,7 @@ namespace DaxStudio.Tests
         {
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             var dd = c.Databases.GetDatabaseDictionary();
-            Assert.AreEqual(4, dd.Count, "has 2 databases");
+            Assert.AreEqual(c.Databases.Count, dd.Count, "has 2 databases");
         }
 
     }

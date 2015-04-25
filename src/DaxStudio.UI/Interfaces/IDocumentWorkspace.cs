@@ -1,4 +1,4 @@
-namespace DaxStudio.UI.Utils {
+namespace DaxStudio.UI.Interfaces {
     public interface IDocumentWorkspace  {
         void Activate(object document);
     }

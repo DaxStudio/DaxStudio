@@ -8,6 +8,9 @@ using ADOTabular;
 using Caliburn.Micro;
 using Microsoft.AnalysisServices;
 using DaxStudio.UI.ViewModels;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.Interfaces;
+using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -31,7 +34,7 @@ namespace DaxStudio.UI.Model
         //public IResultsTarget ResultsTarget { get; private set; }
 
     }
-
+    /*
     public enum QueryTraceStatus
     {
         Stopped,
@@ -39,7 +42,7 @@ namespace DaxStudio.UI.Model
         Started,
         Starting
     }
-
+    */
     public class QueryTrace
     {
         public delegate void TraceStartedHandler(object sender, TraceStartedEventArgs eventArgs);

@@ -5,6 +5,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

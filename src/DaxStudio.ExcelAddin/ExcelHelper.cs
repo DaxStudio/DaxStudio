@@ -154,9 +154,17 @@ namespace DaxStudio.ExcelAddin
                 if (IsExcel2013OrLater)
                 {
                     var conns = wb.Connections;
-                    var wbc = conns["ThisWorkbookDataModel"];
-                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2013)");
-                    return (wbc != null);
+                    foreach (Microsoft.Office.Interop.Excel.WorkbookConnection c in conns)
+                    {
+                        if (c.Name == "ThisWorkbookDataModel")
+                        {
+                            Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:true", "End (2013)");
+                            return true;
+                        }
+                    }
+                    
+                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:false", "End (2013)");
+                    return false;
                 }
 
                 // if Excel 2010
@@ -221,7 +229,7 @@ namespace DaxStudio.ExcelAddin
                 var modelCnn = wbc.ModelConnection;
                 var cnn = modelCnn.ADOConnection;
                 connStr = cnn.ConnectionString;
-                connStr = string.Format("{0};location={1}", connStr, wb.FullName);
+                connStr = string.Format("{0};location=\"{1}\"", connStr, wb.FullName);
                 // for connections to Excel 2013 or later we need to use the Excel version of ADOMDClient
                 return new ADOTabularConnection(connStr, AdomdType.Excel);
             }
@@ -238,7 +246,7 @@ namespace DaxStudio.ExcelAddin
                 var cnn = oledbCnn.Connection;
 
                 connStr = cnn.Replace("OLEDB;","");
-                connStr = string.Format("{0};location={1}", connStr, wb.FullName);
+                connStr = string.Format("{0};location=\"{1}\"", connStr, wb.FullName);
                 // for connections to Excel 2010 we need to use the AnalysisServices version of ADOMDClient
                 return new ADOTabularConnection(connStr, AdomdType.AnalysisServices);
             }
@@ -337,7 +345,7 @@ namespace DaxStudio.ExcelAddin
             else
             {
                 lo = listObjs.AddEx(0
-                    , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source={0};Location={1};MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Initial Catalog={1}"
+                    , string.Format("OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source={0};Location=\"{1}\";MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Initial Catalog={1}"
                                 , "$Embedded$"
                                 , "Microsoft_SQLServer_AnalysisServices"
                                 , path)

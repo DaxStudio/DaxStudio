@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
 using System.Diagnostics;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

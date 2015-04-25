@@ -9,6 +9,7 @@ using DaxStudio.UI.Utils;
 using Microsoft.Win32;
 using DaxStudio.UI.Model;
 using Serilog;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

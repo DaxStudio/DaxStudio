@@ -1,0 +1,158 @@
+<Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="1.0" Namespace="Sandbox">
+	<EntityContainer Name="Sandbox">
+		<EntitySet Name="Sales" EntityType="Sandbox.Sales">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Company" EntityType="Sandbox.Company">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="CompanyFilter" EntityType="Sandbox.CompanyFilter">
+			<bi:EntitySet />
+		</EntitySet>
+		<EntitySet Name="Dates" EntityType="Sandbox.Dates">
+			<bi:EntitySet />
+		</EntitySet>
+		<AssociationSet Name="Sales_Company_Company_CompanyID" Association="Sandbox.Sales_Company_Company_CompanyID">
+			<End EntitySet="Sales" />
+			<End EntitySet="Company" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Sales_Dates_Dates_Date" Association="Sandbox.Sales_Dates_Dates_Date">
+			<End EntitySet="Sales" />
+			<End EntitySet="Dates" />
+			<bi:AssociationSet />
+		</AssociationSet>
+		<AssociationSet Name="Sales_CompanyFilter_CompanyFilter_CompanyID" Association="Sandbox.Sales_CompanyFilter_CompanyFilter_CompanyID">
+			<End EntitySet="Sales" />
+			<End EntitySet="CompanyFilter" />
+			<bi:AssociationSet State="Inactive" />
+		</AssociationSet>
+		<bi:EntityContainer Caption="Microsoft_SQLServer_AnalysisServices" Culture="en-AU">
+			<bi:CompareOptions IgnoreCase="true" />
+		</bi:EntityContainer>
+	</EntityContainer>
+	<EntityType Name="Sales">
+		<Key>
+			<PropertyRef Name="v__XL_RowNumber" />
+		</Key>
+		<Property Name="CompanyID" Type="Int64">
+			<bi:Property />
+		</Property>
+		<Property Name="Date" Type="DateTime">
+			<Documentation>
+				<Summary>Date of Sale</Summary>
+			</Documentation>
+			<bi:Property />
+		</Property>
+		<Property Name="Sales2" Type="Int64">
+			<Documentation>
+				<Summary>Sales Amount (including Tax)</Summary>
+			</Documentation>
+			<bi:Property Caption="Sales" ReferenceName="Sales" />
+		</Property>
+		<Property Name="v__XL_RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Caption="__XL_RowNumber" Hidden="true" ReferenceName="__XL_RowNumber" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<Property Name="Selected_Sector" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Measure Caption="Selected Sector" ReferenceName="Selected Sector" />
+		</Property>
+		<Property Name="Sales_Amount" Type="Int64">
+			<bi:Measure Caption="Sales Amount" ReferenceName="Sales Amount" />
+		</Property>
+		<Property Name="Sales_YTD" Type="Int64">
+			<bi:Measure Caption="Sales YTD" ReferenceName="Sales YTD" />
+		</Property>
+		<Property Name="Company_Filter_Sales" Type="Int64">
+			<bi:Measure Caption="Company Filter Sales" ReferenceName="Company Filter Sales" />
+		</Property>
+		<Property Name="Sector_Sales" Type="Int64">
+			<bi:Measure Caption="Sector Sales" ReferenceName="Sector Sales" />
+		</Property>
+		<NavigationProperty Name="Company_CompanyID" Relationship="Sandbox.Sales_Company_Company_CompanyID" FromRole="Sales_CompanyID" ToRole="Company_CompanyID">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="Dates_Date" Relationship="Sandbox.Sales_Dates_Dates_Date" FromRole="Sales_Date" ToRole="Dates_Date">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<NavigationProperty Name="CompanyFilter_CompanyID" Relationship="Sandbox.Sales_CompanyFilter_CompanyFilter_CompanyID" FromRole="Sales_CompanyID2" ToRole="CompanyFilter_CompanyID">
+			<bi:NavigationProperty />
+		</NavigationProperty>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Company">
+		<Key>
+			<PropertyRef Name="v__XL_RowNumber" />
+		</Key>
+		<Property Name="CompanyID" Type="Int64" Nullable="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Company2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property Caption="Company Cap" ReferenceName="Company Ref" />
+		</Property>
+		<Property Name="Sector" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<Documentation>
+				<Summary>Industry Sector </Summary>
+			</Documentation>
+			<bi:Property />
+		</Property>
+		<Property Name="v__XL_RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Caption="__XL_RowNumber" Hidden="true" ReferenceName="__XL_RowNumber" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="CompanyFilter">
+		<Key>
+			<PropertyRef Name="v__XL_RowNumber" />
+		</Key>
+		<Property Name="CompanyID" Type="Int64" Nullable="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Company" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Sector" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property />
+		</Property>
+		<Property Name="v__XL_RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Caption="__XL_RowNumber" Hidden="true" ReferenceName="__XL_RowNumber" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<bi:EntityType />
+	</EntityType>
+	<EntityType Name="Dates">
+		<Key>
+			<PropertyRef Name="Date" />
+		</Key>
+		<Property Name="Date" Type="DateTime" Nullable="false">
+			<bi:Property />
+		</Property>
+		<Property Name="Month" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+			<bi:Property>
+				<bi:OrderBy>
+					<bi:PropertyRef Name="MonthNumber" />
+				</bi:OrderBy>
+			</bi:Property>
+		</Property>
+		<Property Name="MonthNumber" Type="Int64">
+			<bi:Property />
+		</Property>
+		<Property Name="Year" Type="Int64">
+			<bi:Property />
+		</Property>
+		<Property Name="v__XL_RowNumber" Type="Int64" Nullable="false">
+			<bi:Property Caption="__XL_RowNumber" Hidden="true" ReferenceName="__XL_RowNumber" Contents="RowNumber" Stability="RowNumber" />
+		</Property>
+		<bi:EntityType Contents="Time" />
+	</EntityType>
+	<Association Name="Sales_Company_Company_CompanyID">
+		<End Role="Sales_CompanyID" Type="Sandbox.Sales" Multiplicity="*" />
+		<End Role="Company_CompanyID" Type="Sandbox.Company" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Sales_Dates_Dates_Date">
+		<End Role="Sales_Date" Type="Sandbox.Sales" Multiplicity="*" />
+		<End Role="Dates_Date" Type="Sandbox.Dates" Multiplicity="0..1" />
+	</Association>
+	<Association Name="Sales_CompanyFilter_CompanyFilter_CompanyID">
+		<End Role="Sales_CompanyID2" Type="Sandbox.Sales" Multiplicity="*" />
+		<End Role="CompanyFilter_CompanyID" Type="Sandbox.CompanyFilter" Multiplicity="0..1" />
+	</Association>
+</Schema>

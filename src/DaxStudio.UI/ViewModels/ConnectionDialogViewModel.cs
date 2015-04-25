@@ -36,10 +36,13 @@ namespace DaxStudio.UI.ViewModels
                 ServerModeSelected = true;
 
                 PowerBIHelper.Refresh();
-                if (PowerBIHelper.Port != 0)
+                if (PowerBIHelper.Instances.Count > 0)
                 {
                     PowerBIDesignerDetected = true;
+                    SelectedPowerBIInstance = PowerBIHelper.Instances[0];
                     NotifyOfPropertyChange(() => PowerBIDesignerDetected);
+                    NotifyOfPropertyChange(() => PowerBIDesignerInstances);
+                    NotifyOfPropertyChange(() => SelectedPowerBIInstance);
                 }
 
                 ParseConnectionString(); // load up dialog with values from ConnStr
@@ -339,7 +342,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
-            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name=DAX Studio (PowerBI)", PowerBIHelper.Port
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name=DAX Studio (PowerBI)", SelectedPowerBIInstance.Port
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
@@ -424,7 +427,10 @@ namespace DaxStudio.UI.ViewModels
 
         public bool PowerBIDesignerDetected { get; private set; }
 
+        public List<PowerBIInstance> PowerBIDesignerInstances { get { return PowerBIHelper.Instances; } }
         public bool PowerBIModeSelected { get; set; }
+
+        public PowerBIInstance SelectedPowerBIInstance { get; set; }
     }
         
 }

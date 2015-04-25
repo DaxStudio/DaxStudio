@@ -55,20 +55,8 @@ namespace DaxStudio.ExcelAddin
             }
             
             var path = "";
-            // try to get path from LocalMachine registry
-            path = (string)Registry.LocalMachine.GetValue("Software\\DaxStudio");
-            Log.Verbose("{Class} {Method} HKLM Value1: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                path = (string)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\DaxStudio", "Path", null);
-                Log.Verbose("{Class} {Method} HKLM Value2: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
-            }
-            // otherwise get path from HKCU registry
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                path = (string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\DaxStudio", "Path", "");
-                Log.Verbose("{Class} {Method} HKCU Value: {Value}", "DaxStudioRibbon", "BtnDaxClick", path);
-            }
+            // look for daxstudio.exe in the same folder as daxstudio.dll
+            path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
 
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process

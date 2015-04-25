@@ -141,6 +141,8 @@ namespace ADOTabular
             return GetDatabaseTable().Rows.Contains(databaseName);
         }
 
+        public int Count { get { return GetDatabaseTable().Rows.Count; } }
+
         public SortedSet<string> ToSortedSet()
         {
             var ss = new SortedSet<string>();

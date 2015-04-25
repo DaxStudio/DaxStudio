@@ -128,8 +128,7 @@
                   IsEnabled="{Binding CanSelectModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
-                  
-                   IsSynchronizedWithCurrentItem="True" Template="{DynamicResource MetroComboBoxControlTemplate}"
+                  IsSynchronizedWithCurrentItem="True" Template="{DynamicResource MetroComboBoxControlTemplate}"
                   
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->

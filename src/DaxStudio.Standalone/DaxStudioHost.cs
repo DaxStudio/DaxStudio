@@ -65,5 +65,11 @@ namespace DaxStudio.Standalone
             
         }
 
+
+
+        public ADOTabular.AdomdClientWrappers.AdomdType ConnectionType
+        {
+            get { return ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices; }
+        }
     }
 }

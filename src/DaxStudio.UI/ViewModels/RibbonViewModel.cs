@@ -7,7 +7,7 @@ using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Properties;
 using System.Linq;
 using ADOTabular.AdomdClientWrappers;
@@ -16,6 +16,7 @@ using Serilog;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

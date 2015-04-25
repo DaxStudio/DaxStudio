@@ -9,6 +9,7 @@ using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -111,6 +112,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
+
         private bool _showResultsMessage;
         public bool ShowResultsMessage
         {
@@ -157,7 +160,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_host.IsExcel)
             {
-            
+                SelectedWorkbook = _host.Proxy.WorkbookName;
                 SelectedWorksheet = message.Document.SelectedWorksheet;
                 //TODO - refresh workbooks and powerpivot conn if the host is excel
                 NotifyOfPropertyChange(() => Worksheets);
@@ -205,6 +208,11 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryFinishedEvent message)
         {
             IsBusy = false;
+        }
+        private string _selectedWorkbook = "";
+        public string SelectedWorkbook { 
+            get { return _selectedWorkbook; } 
+            set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 
         }
     }
 }

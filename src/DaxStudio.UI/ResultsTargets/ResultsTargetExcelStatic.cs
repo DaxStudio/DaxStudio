@@ -5,6 +5,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Events;
 using System.Diagnostics;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
