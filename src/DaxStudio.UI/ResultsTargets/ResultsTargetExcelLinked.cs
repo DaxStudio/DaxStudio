@@ -25,56 +25,7 @@ namespace DaxStudio.UI.ResultsTargets
         }
         public string Group {get { return "Excel"; }
         }
-
-        /*
-        public void OutputResults(IQueryRunner runner)
-        {
-
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    runner.ResultsTable = null; // clear results table
-                    runner.OutputMessage("Query Started");
-                    var sw = Stopwatch.StartNew(); 
-
-                    var dq = runner.QueryText;
-                    //var res = runner.ExecuteQuery(dq);
-
-                    using (runner.NewStatusBarMessage("Executing Query..."))
-                    {
-                        sw.Stop();
-                        var durationMs = sw.ElapsedMilliseconds;
-                        runner.Host.Proxy.OutputLinkedResultAsync(
-                            dq
-                            , runner.SelectedWorksheet
-                            , runner.ConnectedToPowerPivot?"":runner.ConnectionString).ContinueWith((ascendant) =>
-                        {
-                            
-                            // TODO - what message should we output here?
-                            //runner.OutputMessage(
-                            //    string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                            //                  res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.OutputMessage(
-                                string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
-                            runner.ActivateOutput();
-                            runner.SetResultsMessage("Query sent to Excel for execution", "Excel");
-                            runner.QueryCompleted();
-                        });
-
-                        
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    runner.ActivateOutput();
-                    runner.OutputError(ex.Message);
-                }
-            });
-           
-        }
-        */
+        
         public Task OutputResultsAsync(IQueryRunner runner)
         {
             return Task.Factory.StartNew(() =>

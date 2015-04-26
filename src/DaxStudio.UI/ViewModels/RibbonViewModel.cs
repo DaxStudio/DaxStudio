@@ -333,8 +333,6 @@ namespace DaxStudio.UI.ViewModels
         {
             foreach (var tw in TraceWatchers)
             {
-                // TODO - can we enable traces for PowerPivot?
-                //    tw.IsEnabled = (ActiveDocument.Connection.Type == AdomdType.AnalysisServices);
                 tw.CheckEnabled(ActiveDocument);
             }
         }

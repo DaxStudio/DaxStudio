@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.QueryTrace
+﻿namespace DaxStudio.QueryTrace
 {
+    // Copied from Microsoft.AnalysisServices 11.0
+    // could possibly be trimmed down as we only use a small subset of these
     public enum DaxStudioTraceEventClass
     {
         NotAvailable = 0,

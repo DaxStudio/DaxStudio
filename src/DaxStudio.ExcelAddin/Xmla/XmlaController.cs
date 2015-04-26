@@ -75,17 +75,12 @@ namespace DaxStudio.ExcelAddin.Xmla
                     streamWithXmlaRequest.Close();
                 }
 
-                
-
                 HttpResponseMessage result;
                 try
                 {
                     result = new HttpResponseMessage(HttpStatusCode.OK);
                     result.Content = new StringContent(fullEnvelopeResponseFromServer);
 
-                    // TODO - can we stream content rather than buffering it all as a string?
-                    //XmlaStream xs = new XmlaStream(xmlaResponseFromServer);
-                    //result.Content = new PushStreamContent((strm, http, ctx) => xs.OutputXmlaStream(strm,http, ctx));
                     result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
                     result.Headers.TransferEncodingChunked = true;
                 }
@@ -112,86 +107,9 @@ namespace DaxStudio.ExcelAddin.Xmla
                 expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex.Message));
                 return expResult;
             }
-            //return null;
-        }
 
+        }
         
     }
-    /*
-    internal class XmlaStream
-    {
-        private readonly XmlReader _reader;
-        public XmlaStream(XmlReader reader)
-        {
-            _reader = reader;
-        }
-       
-        internal async Task OutputXmlaStream(Stream outputStream, HttpContent httpContent, TransportContext transportContext)
-        {
-            try
-            {
-                XmlReader reader = _reader;
-                // Create a DB connection
-                using (XmlWriter xw = new XmlTextWriter(outputStream, System.Text.Encoding.Unicode))
-                {
-                    XmlNamespaceManager ns = new XmlNamespaceManager(reader.NameTable);
-                    
-                    // Read rows asynchronously, put data into buffer and write asynchronously    
-                    while ( reader.Read())
-                    {
-                        switch (reader.NodeType)
-                        {
-                            case XmlNodeType.Element:
-                                xw.WriteStartElement(reader.Prefix, reader.LocalName,reader.NamespaceURI);
-                                break;
-                            case XmlNodeType.Text:
-                                xw.WriteString(reader.Value);
-                                break;
-                            case XmlNodeType.CDATA:
-                                xw.WriteCData(reader.Value);
-                                break;
-                            case XmlNodeType.ProcessingInstruction:
-                                xw.WriteProcessingInstruction(reader.Name, reader.Value);
-                                break;
-                            case XmlNodeType.Comment:
-                                xw.WriteComment(reader.Value);
-                                break;
-                            case XmlNodeType.XmlDeclaration:
-                                xw.WriteRaw("<?xml version='1.0'?>");
-                                break;
-                            case XmlNodeType.Document:
-                                break;
-                            case XmlNodeType.DocumentType:
-                                xw.WriteDocType(reader.Name, reader.Value, null, null);
-                                break;
-                            case XmlNodeType.EntityReference:
-                                xw.WriteEntityRef(reader.Name);
-                                break;
-                            case XmlNodeType.EndElement:
-                                xw.WriteEndElement();
-                                break;
-                            case XmlNodeType.Attribute:
-                                xw.WriteStartAttribute(reader.Prefix, reader.LocalName, reader.NamespaceURI);
-                                xw.WriteEndAttribute();
-                                //xw.WriteAttributes(reader,false);
-                                break;
-                            default:
-                                throw new ArgumentException(string.Format("Unhandled NodeType - {0}", reader.NodeType));
-                                
-                        }
-
-                    }
-                    
-                }
-            }
-            finally
-            {
-                _reader.Close();
-                // Close output stream as we are done
-                outputStream.Close();
-            }
-        }
-      
-    }
-*/
+    
 }

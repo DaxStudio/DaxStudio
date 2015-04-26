@@ -104,9 +104,6 @@ namespace DaxStudio.UI
 	            // TODO - not working
 	            //VisibilityBindingConvention.Install();
 
-
-
-
 	            LogManager.GetLog = type => new DebugLogger(type);
 	        }
 	        catch (Exception e)

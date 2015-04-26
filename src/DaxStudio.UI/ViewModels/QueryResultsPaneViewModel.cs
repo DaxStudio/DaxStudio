@@ -160,9 +160,9 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_host.IsExcel)
             {
+                // refresh workbooks and worksheet properties if the host is excel
                 SelectedWorkbook = _host.Proxy.WorkbookName;
                 SelectedWorksheet = message.Document.SelectedWorksheet;
-                //TODO - refresh workbooks and powerpivot conn if the host is excel
                 NotifyOfPropertyChange(() => Worksheets);
             }
         }

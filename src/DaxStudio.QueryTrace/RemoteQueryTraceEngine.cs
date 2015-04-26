@@ -1,19 +1,11 @@
 ﻿using ADOTabular.AdomdClientWrappers;
-using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
-using Microsoft.AnalysisServices;
-//using AMOTabular;
-//using AMOTabular.AmoWrapper;
 using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
 
 namespace DaxStudio.QueryTrace
 {
@@ -34,8 +26,6 @@ namespace DaxStudio.QueryTrace
             //writer.AutoFlush = true;
             //hubConnection.TraceLevel = TraceLevels.All;
             //hubConnection.TraceWriter = writer;
-
-            //var localConnStr = Regex.Replace(connectionString,@"http://localhost:\d+/xmla","$Embedded$");
             
             queryTraceHubProxy.On("OnTraceStarted", () => {OnTraceStarted();});
             queryTraceHubProxy.On("OnTraceComplete", (e) => { OnTraceComplete(e); });
@@ -76,12 +66,12 @@ namespace DaxStudio.QueryTrace
             { TraceCompleted(this, capturedEvents.ToList<DaxStudioTraceEventArgs>()); }
         }
 
+        
         public void OnTraceComplete(JArray myArray)
-        {
-            
-            
+        {            
+            // HACK: not sure why we have to explicitly cast the argument from a JArray, I thought Signalr should do this for us
             var e = myArray.ToObject<DaxStudioTraceEventArgs[]>();
-            //var e = Newtonsoft.Json.JsonConvert.DeserializeObject<DaxStudioTraceEventArgs[]>(json);
+            
             if (TraceCompleted != null)
             { TraceCompleted(this, e); }
         }
@@ -107,7 +97,6 @@ namespace DaxStudio.QueryTrace
                 return _status;
             }
         }
-
 
         public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
         {

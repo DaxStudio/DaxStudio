@@ -14,9 +14,7 @@ namespace DaxStudio.QueryTrace
         private string _eventSubclassName;
         private DaxStudioTraceEventClass _eventClass = DaxStudioTraceEventClass.NotAvailable;
         private DaxStudioTraceEventSubclass _eventSubclass = DaxStudioTraceEventSubclass.NotAvailable;
-        // TODO - clean up comments
-        //private Microsoft.AnalysisServices.TraceEventArgs e;
-        //private xlAmo.TraceEventArgs xe;
+        
         public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e)
         {
             // not all events have CpuTime
@@ -48,17 +46,7 @@ namespace DaxStudio.QueryTrace
             EventClassName = eventClass;
             EventSubclassName = eventSubclass;
         }
-        /*
-        public DaxStudioTraceEventArgs(ExcelAmo::Microsoft.AnalysisServices.TraceEventArgs e)
-        {
-            // TODO: Complete member initialization
-            this.xe = e;
-
-            throw new NotImplementedException("DaxStudioTraceEventArgs");
-        }
-        */
-
-        //TODO - implement DaxStudioTraceEventArgs
+        
         public string EventClassName { 
             get { return _eventClassName; } 
             set { _eventClassName = value;

@@ -70,7 +70,6 @@ namespace DaxStudio.UI.Utils
     {
         private static Regex MeasureDefRegex = new Regex(@"\bmeasure\s*(?:'.*'|[^\s]*)\[?[^\]]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        // TODO - return start and end pos of token the caret is inside
         public static DaxLineState ParseLine(string line, int offset )
         {
             StringBuilder sbTableName = new StringBuilder();

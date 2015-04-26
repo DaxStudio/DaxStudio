@@ -36,7 +36,7 @@ namespace DaxStudio.ExcelAddin
             // Copy the values to the object array
             for (int col = 0; col < dt.Columns.Count; col++)
             {
-                if ( dt.Columns[col].DataType.Name == "Byte[]" ) // TODO: there must be a better way to do this
+                if ( dt.Columns[col].DataType.Name == "Byte[]" ) // TODO: there must be a better way to do this than to compare to a type name as a string
                     continue; // ignore this column 
 
                 for (int row = 0; row < dt.Rows.Count; row++)

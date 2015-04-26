@@ -160,7 +160,7 @@ namespace DaxStudio.QueryTrace
             // until the trace events start to fire.
             if (_startingTimer == null)
                 _startingTimer = new Timer();
-            _startingTimer.Interval = 300;  //TODO - make time interval shorter
+            _startingTimer.Interval = 300;  //TODO - make time interval shorter?
             _startingTimer.Elapsed += OnTimerElapsed;
             _startingTimer.Enabled = true;
             _startingTimer.Start();
@@ -188,31 +188,12 @@ namespace DaxStudio.QueryTrace
 
                   _server = new xlAmo.Server();
                   _server.Connect(_connectionString);
-            
                   _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
-                  //TODO - filter on session id
-                  // _trace.Filter = GetSpidFilter();
                   _trace.Filter = GetSessionIdFilter(_sessionId);
                   _trace.OnEvent += OnTraceEventInternal;
               }
               return _trace;
         }
-/*
-        public GetServer()
-        {
-
-            AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
-                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= 15)
-                {
-                    amoType = AmoWrapper.AmoType.Excel;
-                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
-                }
-
-                var svr = new AmoWrapper.AmoServer(amoType);
-                svr.Connect(connStr);
-
-        }
-        */
 
         public void OnTraceEvent( DaxStudioTraceEventArgs e)
         {

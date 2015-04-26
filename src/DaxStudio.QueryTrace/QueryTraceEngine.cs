@@ -68,9 +68,6 @@ namespace DaxStudio.QueryTrace
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
-        //public delegate void TraceStartedHandler(object sender);//, TraceStartedEventArgs eventArgs);
-
-        
         public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
         {
             Status = QueryTraceStatus.Stopped;
@@ -92,9 +89,6 @@ namespace DaxStudio.QueryTrace
             // Add QueryEnd so we know when to stop the trace
             if (trace.Events.Find(TraceEventClass.QueryEnd)==null)
                 trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
-
-            //reset the watcher so it can clear any cached events 
-            ///watcher.Reset();
             
             // catch the events in the ITraceWatcher
             foreach (DaxStudioTraceEventClass eventClass in events)
@@ -131,12 +125,6 @@ namespace DaxStudio.QueryTrace
             return doc;
         }
 
-        //public void Clear()
-        //{
-        //    _trace.Events.Clear();
-        //}
-
-
         public void Start()
         {
             if (_trace != null)
@@ -155,7 +143,7 @@ namespace DaxStudio.QueryTrace
             // until the trace events start to fire.
             if (_startingTimer == null)
                 _startingTimer = new Timer();
-            _startingTimer.Interval = 300;  //TODO - make time interval shorter
+            _startingTimer.Interval = 300;  //TODO - make time interval shorter?
             _startingTimer.Elapsed += OnTimerElapsed;
             _startingTimer.Enabled = true;
             _startingTimer.Start();
@@ -185,29 +173,11 @@ namespace DaxStudio.QueryTrace
                   _server.Connect(_connectionString);
             
                   _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
-                  //TODO - filter on session id
-                  // _trace.Filter = GetSpidFilter();
                   _trace.Filter = GetSessionIdFilter(_sessionId);
                   _trace.OnEvent += OnTraceEventInternal;
               }
               return _trace;
         }
-/*
-        public GetServer()
-        {
-
-            AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
-                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= 15)
-                {
-                    amoType = AmoWrapper.AmoType.Excel;
-                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
-                }
-
-                var svr = new AmoWrapper.AmoServer(amoType);
-                svr.Connect(connStr);
-
-        }
-        */
 
         public void OnTraceEvent( TraceEventArgs e)
         {
@@ -260,7 +230,6 @@ namespace DaxStudio.QueryTrace
         }
 
 #endregion
-
 
     }
 }

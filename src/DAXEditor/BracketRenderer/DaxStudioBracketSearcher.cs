@@ -24,7 +24,6 @@ namespace DAXEditor.BracketRenderer
     public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
 
-
       if (offset > 0)
       {
         char c = document.GetCharAt(offset - 1);
@@ -73,7 +72,8 @@ namespace DAXEditor.BracketRenderer
     /// 2 = String<br/>
     /// Block comments and multiline strings are not supported.
     /// </summary>
-    private static int GetStartType(ICSharpCode.AvalonEdit.Document.ITextSource document, int linestart, int offset)
+    //TODO: this should return an enum not an int
+      private static int GetStartType(ICSharpCode.AvalonEdit.Document.ITextSource document, int linestart, int offset)
     {
       bool inString = false;
       bool inChar = false;

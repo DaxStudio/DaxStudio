@@ -16,7 +16,7 @@ namespace DaxStudio.UI.Model
 
         public NotifyIcon() 
         {
-            BalloonTitle = "DaxStudio";
+            BalloonTitle = "DaxStudio"; //TODO - get current version for title
             Uri iconUri = new Uri("pack://application:,,,/DaxStudio.UI;component/Images/DaxStudio.Ico");
             System.Drawing.Icon ico;
             using (var strm = Application.GetResourceStream(iconUri).Stream)
@@ -54,7 +54,7 @@ namespace DaxStudio.UI.Model
             DownloadUrl = downloadUrl;
             BalloonMessage = message;
             icon.Visibility = Visibility.Visible;
-            icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info); //TODO - get current version for title
+            icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info); 
         }
         public string BalloonTitle { get; set; }
 

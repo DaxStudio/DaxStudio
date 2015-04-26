@@ -30,22 +30,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             return Ok(wb.FullName);
         }
         
-        /*
-        [HttpGet]
-        //[ActionName("FileName")]
-        [Route("DataModelConnectionString")]
-        public async Task<IHttpActionResult> GetDataModelConnectionString()
-        {
-            //TODO - 
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            xl.GetPowerPivotConnection
-            var addin = Globals.ThisAddIn;
-            var app = addin.Application;
-            var wb = app.ActiveWorkbook;
-            return Ok(wb.FullName);
-        }
-        */
-
+        
         [HttpGet]
         [ActionName("worksheets")]
         [Route("Worksheets")]

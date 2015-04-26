@@ -256,11 +256,11 @@ namespace DaxStudio.UI.ViewModels
             }
             return events;
         }
-
-        private void TracerOnTraceCompleted(object sender, DaxStudioTraceEventArgs[] capturedEvents)
-        {
-            TracerOnTraceCompleted(sender, capturedEvents.ToList<DaxStudioTraceEventArgs>());
-        }
+        // TODO - remove this method
+        //private void TracerOnTraceCompleted(object sender, DaxStudioTraceEventArgs[] capturedEvents)
+        //{
+        //    TracerOnTraceCompleted(sender, capturedEvents.ToList<DaxStudioTraceEventArgs>());
+        //}
 
         private void TracerOnTraceCompleted(object sender, IList<DaxStudioTraceEventArgs> capturedEvents)
         {
@@ -272,6 +272,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.ProcessAllEvents(capturedEvents);
             }
+            _eventAggregator.PublishOnUIThread(new QueryTraceCompletedEvent());
         }
 
         private void TracerOnTraceStarted(object sender, EventArgs e)
@@ -370,15 +371,7 @@ namespace DaxStudio.UI.ViewModels
         {
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
-            // update busy status of child windows
             QueryResultsPane.IsBusy = false;
-            foreach(var tw in TraceWatchers)
-            {
-                if (tw.IsChecked)
-                {
-                    tw.IsBusy = false;
-                }
-            }
         }
 
         public IDaxStudioHost Host { get { return _host; } }
@@ -510,9 +503,7 @@ namespace DaxStudio.UI.ViewModels
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
                 {
-                    //TODO - can we enable traces on PowerPivot
-                    traceWatcher.CheckEnabled(this);
-                    
+                    traceWatcher.CheckEnabled(this);   
                 }
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;

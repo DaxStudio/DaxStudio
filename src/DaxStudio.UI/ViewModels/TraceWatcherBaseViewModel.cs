@@ -20,6 +20,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<QueryStartedEvent>
         , IHandle<CancelQueryEvent>
+        //, IHandle<QueryTraceCompletedEvent>
     {
         private List<DaxStudioTraceEventArgs> _events;
         private readonly IEventAggregator _eventAggregator;
@@ -29,7 +30,6 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator = eventAggregator;
             WaitForEvent = TraceEventClass.QueryEnd;
-            //todo - add abstract method
             Init();
             //_eventAggregator.Subscribe(this); 
         }
@@ -54,22 +54,6 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected abstract void ProcessResults();
 
-
-        // This method is called as events are raised
-        /*
-        public void ProcessEvent(TraceEventArgs eventArgs)
-        {
-            if (MonitoredEvents.Contains(eventArgs.EventClass))
-            {
-                Events.Add(eventArgs);
-            }
-            if (eventArgs.EventClass == WaitForEvent)
-            {
-                ProcessResults();
-                IsBusy = false;
-            }
-        }
-        */
         public void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents)
         {
             foreach (var e in capturedEvents)
@@ -81,7 +65,6 @@ namespace DaxStudio.UI.ViewModels
             }
             ProcessResults();
             IsBusy = false;
-            
         }
 
         // This method is called before a trace starts which gives you a chance to 
@@ -186,5 +169,6 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = false;
             Reset();
         }
+
     }
 }

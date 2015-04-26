@@ -376,7 +376,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="QueryTraceHub.cs" />
+    <Compile Include="SignalR\QueryTraceHub.cs" />
     <Compile Include="WebHost.cs" />
     <Compile Include="Xmla\ExcelAmoWrapper.cs" />
     <Compile Include="Xmla\JsonDataTableConverter.cs" />

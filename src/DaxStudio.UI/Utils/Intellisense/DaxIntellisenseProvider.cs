@@ -82,6 +82,7 @@ namespace DaxStudio.UI.Utils
                         }
                         break;
                     case "'":
+                        if (daxState.LineState == LineState.TableDelimiter) break; // end of quoted table name - do nothing
                         PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
                         break;
                     default:
@@ -134,7 +135,7 @@ namespace DaxStudio.UI.Utils
 
         void completionWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // TODO cancel closing if part way into a table or column name
+            // cancel closing if part way into a table or column name
             var lineState = ParseLine();
             if (SpacePressed && (lineState.LineState == LineState.Column || lineState.LineState == LineState.Table)) e.Cancel = true;
         }
@@ -259,7 +260,7 @@ namespace DaxStudio.UI.Utils
         {
             if (e.Key == System.Windows.Input.Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
             {
-                //TODO show intellisense
+                //TODO show intellisense on ctrl-space
                 System.Diagnostics.Debug.WriteLine("show intellisense");
                 e.Handled = true;  //swallow keystroke
             }

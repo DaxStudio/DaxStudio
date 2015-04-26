@@ -312,6 +312,7 @@
     </Compile>
     <Compile Include="Events\QueryFinishedEvent.cs" />
     <Compile Include="Events\QueryResultsPaneMessageEvent.cs" />
+    <Compile Include="Events\QueryTraceCompletedEvent.cs" />
     <Compile Include="Events\SelectionChangeCaseEvent.cs" />
     <Compile Include="Events\ServerTimingDetailsUpdatedEvent.cs" />
     <Compile Include="Events\SetSelectedWorksheetEvent.cs" />
@@ -335,6 +336,11 @@
     <Compile Include="Model\TraceWatcherCollection.cs" />
     <Compile Include="Model\TreeViewTables.cs" />
     <Compile Include="Model\VersionCheck.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="ResultsTargets\ResultsTargetExcelLinked.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelStatic.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
@@ -554,11 +560,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
