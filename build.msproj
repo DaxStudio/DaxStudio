@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <SourceExeConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.standalone\app.config</SourceExeConfigFile>
+    <DestExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</DestExeConfigFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SourceDllConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.exceladdin\app.config</SourceDllConfigFile>
+    <DestDllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</DestDllConfigFile>
+  </PropertyGroup>
+
+  <Target Name="Build">
+    <Message Text="Building DaxStudio.Standalone" />
+    <MSBuild Projects=".\src\daxstudio.standalone\daxstudio.standalone.csproj" Targets="Build" />
+  </Target>
+  
+  <UsingTask TaskName="TransformXml"
+    AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v12.0\Web\Microsoft.Web.Publishing.Tasks.dll" />
+  
+  <Target Name="Configs2014" DependsOnTargets="Build" >
+      <Message Text="Creating configs for SQL 2014 dependencies"/>
+    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
+      <TransformXml Source="$(SourceExeConfigFile)"
+                  Transform="app.2014.config"
+                  Destination="$(DestExeConfigFile)" />
+      <TransformXml Source="$(SourceDllConfigFile)"
+                      Transform="app.2014.config"
+                      Destination="$(DestDllConfigFile)" />
+  </Target>
+
+  <Target Name="Installer" DependsOnTargets="Configs2014">
+    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+          
+  </Target>
+  
+</Project>
