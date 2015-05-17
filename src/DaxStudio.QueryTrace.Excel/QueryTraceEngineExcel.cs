@@ -75,19 +75,20 @@ namespace DaxStudio.QueryTrace
         //public delegate void TraceStartedHandler(object sender);//, TraceStartedEventArgs eventArgs);
 
         
-        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
+        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
         {
             Status = QueryTraceStatus.Stopped;
-            ConfigureTrace(connectionString, connectionType, sessionId, events);
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, events);
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
+        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
         {
             _connectionString = string.Format("{0};SessionId={1}",connectionString,sessionId);
             _connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
             _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
             _connectionType = connectionType;
             _sessionId = sessionId;
+            _applicationName = applicationName;
             _eventsToCapture = events;
         }
         private void SetupTrace(xlAmo.Trace trace, List<DaxStudioTraceEventClass> events)
@@ -208,6 +209,7 @@ namespace DaxStudio.QueryTrace
         }
 
         private bool _traceStarted;
+        private string _applicationName;
         
         private void OnTraceEventInternal(object sender, xlAmo.TraceEventArgs e)
         {

@@ -99,7 +99,7 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
+        public void ConfigureTrace(string connectionString, AdomdType connectionType, string applicationName, string sessionId, List<DaxStudioTraceEventClass> events)
         {
             throw new InvalidOperationException("ConfigureTrace should not be called directly on the SignalR hub");
         }

@@ -31,7 +31,7 @@ namespace DaxStudio.QueryTrace
                 try
                 {
                     _trace.Drop();
-                    _trace = null;
+                    Dispose();
                     Status = QueryTraceStatus.Stopped;
                 }
                 catch (Exception e)
@@ -69,15 +69,15 @@ namespace DaxStudio.QueryTrace
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
         {
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
-            ConfigureTrace(connectionString, connectionType, sessionId, events);
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, events);
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End");
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
+        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
         {
             Log.Verbose("{class} {method} {event} ConnStr: {connectionString} SessionId: {sessionId}", "QueryTraceEngine", "ConfigureTrace", "Start",connectionString, sessionId);
             _connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
@@ -85,6 +85,7 @@ namespace DaxStudio.QueryTrace
             _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
             _connectionType = connectionType;
             _sessionId = sessionId;
+            _applicationName = applicationName;
             _eventsToCapture = events;
             Log.Verbose("{class} {method} {event} EventCount: {eventcount}", "QueryTraceEngine", "ConfigureTrace", "End", events.Count);
         }
@@ -121,12 +122,18 @@ namespace DaxStudio.QueryTrace
             return doc;
         }
 
-        private XmlNode GetSessionIdFilter(string sessionId)
+        private XmlNode GetSessionIdFilter(string sessionId, string applicationName)
         {
+            string filterTemplate = "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
+                        "<Equal><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>" +
+                        "<Equal><ColumnID>{2}</ColumnID><Value>{3}</Value></Equal>" +
+                        "</Or>";
             var filterXml = string.Format(
-                "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>"
+                filterTemplate
                 , (int)TraceColumn.SessionID
-                , sessionId);
+                , sessionId
+                , (int)TraceColumn.ApplicationName
+                , applicationName);
             var doc = new XmlDocument();
             doc.LoadXml(filterXml);
             return doc;
@@ -186,8 +193,8 @@ namespace DaxStudio.QueryTrace
                   _server = new Server();
                   _server.Connect(_connectionString);
             
-                  _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
-                  _trace.Filter = GetSessionIdFilter(_sessionId);
+                  _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
+                  _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
                   _trace.OnEvent += OnTraceEventInternal;
                   _trace.Audit = true;
               }
@@ -206,6 +213,7 @@ namespace DaxStudio.QueryTrace
         }
 
         private bool _traceStarted;
+        private string _applicationName;
         
         private void OnTraceEventInternal(object sender, TraceEventArgs e)
         {
@@ -247,7 +255,9 @@ namespace DaxStudio.QueryTrace
 
         public void Dispose()
         {
+            if (_trace == null) return; // exit here if trace has already been disposed
             _trace.Dispose();
+            _trace = null;
         }
     }
 }

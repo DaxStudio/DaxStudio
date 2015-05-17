@@ -22,7 +22,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         Task StartAsync();
         void Stop();
 
-        void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events);
+        void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events);
 
         //event TraceEventHandler TraceEvent;
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;

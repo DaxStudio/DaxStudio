@@ -34,7 +34,7 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.Excel;
                         Log.Verbose("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngineExcel");
-                        _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, eventsToCapture);
+                        _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture);
                         _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
@@ -44,7 +44,7 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
                         Log.Verbose("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, eventsToCapture);
+                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture);
                         _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });

@@ -5,6 +5,7 @@ using System.Data;
 using System.Threading.Tasks;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
+using System.Collections.Generic;
 
 namespace ADOTabular
 {
@@ -145,6 +146,7 @@ namespace ADOTabular
         }
 
         private string _connectionString="";
+        private Dictionary<string, string> _connectionProps;
         public string ConnectionString
         {
             get
@@ -171,8 +173,24 @@ namespace ADOTabular
                 }
                 return connstr;
             }
-            set { _connectionString = value; }
+            set { _connectionString = value;
+                _connectionProps = SplitConnectionString(_connectionString);
+            }
         }
+
+        private Dictionary<string, string> SplitConnectionString(string connectionString)
+        {
+            var props = new Dictionary<string, string>();
+            foreach (var prop in connectionString.Split(';'))
+            {
+                if (prop.Trim().Length == 0) continue;
+                var p = prop.Split('=');
+
+                props.Add(p[0], p[1]);
+            }
+            return props;
+        }
+
 
         // In ADO we set the current DB in the connection string
         // so having a collection of database objects may not be 
@@ -554,6 +572,15 @@ namespace ADOTabular
             get
             {
                 return Version.Parse(ServerVersion) >= new Version(11, 0, 3368, 0);
+            }
+        }
+
+        public string ApplicationName
+        {
+            get { 
+                if (_connectionProps == null) return "";
+                if (!_connectionProps.ContainsKey("Application Name")) return "";
+                return _connectionProps["Application Name"];
             }
         }
     }
