@@ -3,6 +3,7 @@ using DAXEditor;
 using DaxStudio.UI.ViewModels;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace DaxStudio.UI.Utils
     public class DaxIntellisenseProvider:IIntellisenseProvider
     {
         private DAXEditor.DAXEditor _editor;
+        private DaxLineState _daxState;
         private bool SpacePressed;
         
         public DaxIntellisenseProvider (DocumentViewModel activeDocument, DAXEditor.DAXEditor editor)
@@ -35,10 +37,19 @@ namespace DaxStudio.UI.Utils
         #region Public IIntellisenseProvider Interface
         public void ProcessTextEntered(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
         {
-            // close the completion window if it has no items
+
             if (completionWindow != null)
             {
-                if (!completionWindow.CompletionList.ListBox.HasItems) completionWindow.Close();
+                // close the completion window if it has no items
+                if (!completionWindow.CompletionList.ListBox.HasItems) {
+                    completionWindow.Close();
+                    return;
+                }
+                // close the completion window if the current text is a 100% match for the current item
+                var txt = ((TextArea)sender).Document.GetText(new TextSegment() { StartOffset = completionWindow.StartOffset, EndOffset = completionWindow.EndOffset });
+                var selectedItem = completionWindow.CompletionList.SelectedItem;
+                if (string.Compare( selectedItem.Text, txt,true)==0 || string.Compare(selectedItem.Content.ToString(), txt, true)==0) completionWindow.Close();
+
                 return;
             }
 
@@ -49,8 +60,8 @@ namespace DaxStudio.UI.Utils
                 if (completionWindow != null) return;
 
                 // exit if we are inside a string or comment
-                var daxState = ParseLine();
-                var lineState = daxState.LineState;
+                _daxState = ParseLine();
+                var lineState = _daxState.LineState;
                 if (lineState == LineState.String || lineState == LineState.Comment)  return;
 
                 // don't show intellisense if we are in the measure name of a DEFINE block
@@ -64,7 +75,7 @@ namespace DaxStudio.UI.Utils
                 {
                     // if the window was opened by a letter or digit include it in the match segment
                     //completionWindow.StartOffset -= 1;
-                    completionWindow.StartOffset = daxState.StartOffset;
+                    completionWindow.StartOffset = _daxState.StartOffset;
                 }
                 
                 IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
@@ -82,15 +93,13 @@ namespace DaxStudio.UI.Utils
                         }
                         break;
                     case "'":
-                        if (daxState.LineState == LineState.TableDelimiter) break; // end of quoted table name - do nothing
                         PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
                         break;
                     default:
-                        switch (daxState.LineState)
+                        switch (_daxState.LineState)
                         { 
                             case LineState.Column:
-                                //string tableName2 = GetPreceedingTableName();
-                                PopulateCompletionData(data,IntellisenseMetadataTypes.Columns,daxState.TableName);
+                                PopulateCompletionData(data,IntellisenseMetadataTypes.Columns,_daxState.TableName);
                                 break;
                             case LineState.Table:
                                 PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
@@ -108,8 +117,8 @@ namespace DaxStudio.UI.Utils
                 {
                     var line = GetCurrentLine();
                     
-                    System.Diagnostics.Debug.Assert(line.Length >= daxState.EndOffset);
-                    var txt = line.Substring(daxState.StartOffset,daxState.EndOffset - daxState.StartOffset);
+                    System.Diagnostics.Debug.Assert(line.Length >= _daxState.EndOffset);
+                    var txt = line.Substring(_daxState.StartOffset,_daxState.EndOffset - _daxState.StartOffset);
                     completionWindow.CompletionList.SelectItem(txt);
                     completionWindow.Show();
                     completionWindow.Closing += completionWindow_Closing;
@@ -127,10 +136,21 @@ namespace DaxStudio.UI.Utils
 
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            var completionWindow = (CompletionWindow)sender;
+            var segmentLength = completionWindow.EndOffset - completionWindow.StartOffset;
             SpacePressed = e.Key == Key.Space;
             // close window if F5 or F6 are pressed
             if (e.Key == Key.F5
-                || e.Key == Key.F6) { ((CompletionWindow)sender).Close(); }
+                || e.Key == Key.F6) 
+            { 
+                completionWindow.Close(); 
+                return;
+            }
+            // insert the current item when the right arrow is pressed
+            if (e.Key == Key.Right)
+            {
+                completionWindow.CompletionList.RequestInsertion(null);
+            }
         }
 
         void completionWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -142,17 +162,7 @@ namespace DaxStudio.UI.Utils
 
         public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
         {
-            if (e.Text.Length > 0 && completionWindow != null)
-            {
-                if (!char.IsLetterOrDigit(e.Text[0]) && (e.Text[0] != ' '))
-                {
-                    // Whenever a non-letter is typed while the completion window is open,
-                    // insert the currently selected element.
-                   completionWindow.CompletionList.RequestInsertion(e);
-                }
-            }
-            // Do not set e.Handled=true.
-            // We still want to insert the character that was typed.
+            
         }
         #endregion
 

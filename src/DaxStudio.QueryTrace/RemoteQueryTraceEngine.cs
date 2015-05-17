@@ -17,6 +17,7 @@ namespace DaxStudio.QueryTrace
 
         public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port)
         {
+            
             // connect to hub
             hubConnection = new HubConnection(string.Format("http://localhost:{0}/",port));
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");
@@ -82,7 +83,7 @@ namespace DaxStudio.QueryTrace
         }
 
 
-        public event Microsoft.AnalysisServices.TraceEventHandler TraceEvent;
+        //public event Microsoft.AnalysisServices.TraceEventHandler TraceEvent;
 
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
 
@@ -101,6 +102,12 @@ namespace DaxStudio.QueryTrace
         public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
         {
             throw new InvalidOperationException("ConfigureTrace should not be called directly on the SignalR hub");
+        }
+
+
+        public void Dispose()
+        {
+            queryTraceHubProxy.Invoke("Dispose");
         }
     }
 }

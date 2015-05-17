@@ -202,9 +202,9 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public ADOTabular.ADOTabularConnection GetPowerPivotConnection()
+        public ADOTabular.ADOTabularConnection GetPowerPivotConnection(string applicationName)
         {
-            var connstr = string.Format("Data Source=http://localhost:{0}/xmla", _port);
+            var connstr = string.Format("Data Source=http://localhost:{0}/xmla;Application Name={1}", _port,applicationName);
             return new ADOTabular.ADOTabularConnection(connstr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
         }
 

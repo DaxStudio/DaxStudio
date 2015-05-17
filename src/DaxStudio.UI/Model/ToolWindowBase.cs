@@ -16,10 +16,10 @@ namespace DaxStudio.UI.Model
             DefaultDockingPane = "DockBottom";
         }
 
-        public  bool CanClose { get; set; }
+        public new bool CanClose { get; set; }
         public  bool CanHide { get; set; }
         public virtual int AutoHideMinHeight { get; set; }
-        public bool IsActive { get; set; }
+        public new  bool IsActive { get; set; }
         private bool _isSelected;
         public bool IsSelected {
             get { return _isSelected; }

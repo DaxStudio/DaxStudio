@@ -19,5 +19,7 @@ namespace DaxStudio.UI.Interfaces
 
 
         void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents);
+
+        void QueryCompleted(bool isCancelled);
     }
 }

@@ -76,10 +76,10 @@ namespace ADOTabular
                 {
                     _adomdConn.Open();
                 }
-                var dd = Databases.GetDatabaseDictionary();
+                var dd = Databases.GetDatabaseDictionary(this.SPID);
                 if (!dd.ContainsKey(_adomdConn.Database))
                 {
-                    dd = Databases.GetDatabaseDictionary(true);
+                    dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 var db = dd[_adomdConn.Database];
                 if (_db == null || db.Id != _db.Id)
@@ -150,6 +150,8 @@ namespace ADOTabular
             get
             {
                 var connstr = _connectionString;
+                // TODO - do we need to set the initial catalog here??
+                /* 
                 if (!connstr.Contains("Initial Catalog") && Database != null)
                 {
                     connstr = 
@@ -158,6 +160,7 @@ namespace ADOTabular
                                 ? "{0}Initial Catalog={1}"
                                 : "{0};Initial Catalog={1}", connstr, Database.Name);
                 }
+                 */ 
                 if (!connstr.Contains("Show Hidden Cubes") && ShowHiddenObjects)
                 {
                     connstr =

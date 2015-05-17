@@ -46,6 +46,11 @@ namespace DaxStudio.UI.Utils
                     if (parentPid > 0)
                     {
                         parentTitle = Process.GetProcessById(parentPid).MainWindowTitle;
+                        if (parentTitle.Length == 0)
+                        {
+                            // for minimized windows we need to use some Win32 api calls to get the title
+                            parentTitle = GetWindowTitle(parentPid);
+                        }
                     }
                     // Get the command line - can be null if we don't have permissions
                     // but should have permission for PowerBI msmdsrv as it will have been
@@ -90,13 +95,61 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public static int Port { 
-            get {
-                if (!_portSet) { Refresh();}
-                return _port;
-            }
+        //public static int Port { 
+        //    get {
+        //        if (!_portSet) { Refresh();}
+        //        return _port;
+        //    }
+        //}
+
+        #region PInvoke calls to get the window title of a minimize window
+
+        delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        static extern bool IsWindowVisible(IntPtr hWnd);
+
+
+        [DllImport("user32.dll")]
+        static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
+            IntPtr lParam);
+
+        private static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+                EnumThreadWindows(thread.Id,
+                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+
+            return handles;
         }
-            
-        
+
+        private const uint WM_GETTEXT = 0x000D;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam,
+            StringBuilder lParam);
+
+        private static string GetWindowTitle(int procId)
+        {
+            foreach (var handle in EnumerateProcessWindowHandles(procId))
+            {
+                StringBuilder message = new StringBuilder(1000);
+                if (IsWindowVisible(handle))
+                {
+                    SendMessage(handle, WM_GETTEXT, message.Capacity, message);
+                    if (message.Length > 0) return message.ToString();
+                }
+
+            }
+            return "";
+        }
+
+
+
+        #endregion
+
+
     }
 }

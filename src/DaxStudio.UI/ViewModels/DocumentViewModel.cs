@@ -69,6 +69,8 @@ namespace DaxStudio.UI.ViewModels
         private ILog _logger;
         private RibbonViewModel _ribbon;
         private Regex _rexQueryError;
+        private Guid _uniqueId;
+
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails)
         {
@@ -79,6 +81,7 @@ namespace DaxStudio.UI.ViewModels
             Init(_ribbon);
             ServerTimingDetails = serverTimingDetails;
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$",RegexOptions.Compiled);
+            _uniqueId = Guid.NewGuid();
         }
 
         public void Init(RibbonViewModel ribbon)
@@ -220,11 +223,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_connection.IsPowerPivot)
                     {
-                        
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
                         _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers),Host.Proxy.Port);
                     }
                     else
                     {
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
                         _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers));
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
@@ -369,9 +373,18 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted()
         {
+            QueryCompleted(false);
+        }
+
+        public void QueryCompleted(bool isCancelled)
+        {
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             QueryResultsPane.IsBusy = false;
+            foreach(var tw in TraceWatchers)
+            {
+                if (tw.IsChecked) tw.QueryCompleted(isCancelled);
+            }
         }
 
         public IDaxStudioHost Host { get { return _host; } }
@@ -847,8 +860,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var c = Connection;
                     c.Cancel();
-                    QueryCompleted();
-                    //_eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
+                    QueryCompleted(true);
                     OutputWarning("Query Cancelled");
                 }
             }
@@ -1135,9 +1147,16 @@ namespace DaxStudio.UI.ViewModels
                 OutputMessage("Stopping Trace");
                 // spin down trace is no tracewatchers are active
                 Tracer.Stop();
+                ResetTracer();
                 OutputMessage("Trace Stopped");
                 _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
             }
+        }
+
+        private void ResetTracer()
+        {
+            Tracer.Dispose();
+            _tracer = null;
         }
 
         public void Save()
@@ -1269,9 +1288,9 @@ namespace DaxStudio.UI.ViewModels
             
             Task.Factory.StartNew(() =>
                 {
-
+                    
                     var cnn = message.PowerPivotModeSelected
-                                     ? Host.Proxy.GetPowerPivotConnection()
+                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType)
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
@@ -1744,6 +1763,7 @@ namespace DaxStudio.UI.ViewModels
         {
             this.MetadataPane.Databases = CopyDatabaseList(this.Connection);
             this.MetadataPane.ModelList = this.Connection.Database.Models;
+            OutputMessage("Metadata Refreshed");
         }
         private bool _isFocused;
         public bool IsFocused { get { return _isFocused; } set { _isFocused = value; NotifyOfPropertyChange(()=>IsFocused); } }
@@ -1796,5 +1816,7 @@ namespace DaxStudio.UI.ViewModels
                 _intellisenseProvider = value;
             }
         }
+
+        public object UniqueID { get { return _uniqueId; } }
     }
 }

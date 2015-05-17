@@ -203,7 +203,7 @@ namespace DaxStudio.Tests
         public void TestDatabaseParser()
         {
             ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
-            var dd = c.Databases.GetDatabaseDictionary();
+            var dd = c.Databases.GetDatabaseDictionary(c.SPID);
             Assert.AreEqual(c.Databases.Count, dd.Count, "has 2 databases");
         }
 

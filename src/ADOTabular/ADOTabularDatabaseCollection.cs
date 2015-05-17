@@ -38,14 +38,41 @@ namespace ADOTabular
 
         private Dictionary<string, DatabaseDetails> _databaseDictionary;
 
-        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary()
+        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid)
         {
-            return GetDatabaseDictionary(false);
+            return GetDatabaseDictionary(spid, false);
         }
-        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(bool refresh)
+        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
             if (refresh) _databaseDictionary = null;
             if (_databaseDictionary != null) return _databaseDictionary;
+
+            if (spid != -1)
+                _databaseDictionary = GetDatabaseDictionaryFromXML();
+            else
+                _databaseDictionary = GetDatabaseDictionaryFromDMV();
+            return _databaseDictionary;
+        }
+
+        private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
+        {
+
+            _databaseDictionary = new Dictionary<string, DatabaseDetails>();
+            var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
+            foreach( DataRow row in ds.Tables[0].Rows)
+            {
+                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails()
+                {
+                    Name = row["CATALOG_NAME"].ToString(),
+                    LastUpdate = DateTime.Parse(row["DATE_MODIFIED"].ToString())
+                });
+            }
+            return _databaseDictionary;
+        }
+
+        private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXML()
+        {
+            
             _databaseDictionary = new Dictionary<string, DatabaseDetails>();
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",

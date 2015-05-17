@@ -10,6 +10,7 @@ using System.Timers;
 using Caliburn.Micro;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.QueryTrace.Interfaces;
+using Serilog;
 
 namespace DaxStudio.QueryTrace
 {
@@ -70,16 +71,22 @@ namespace DaxStudio.QueryTrace
 
         public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
         {
+            Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
             ConfigureTrace(connectionString, connectionType, sessionId, events);
+            Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End");
         }
 
         public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events)
         {
-            _connectionString = string.Format("{0};SessionId={1}",connectionString,sessionId);
+            Log.Verbose("{class} {method} {event} ConnStr: {connectionString} SessionId: {sessionId}", "QueryTraceEngine", "ConfigureTrace", "Start",connectionString, sessionId);
+            _connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
+            _connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
+            _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
             _connectionType = connectionType;
             _sessionId = sessionId;
             _eventsToCapture = events;
+            Log.Verbose("{class} {method} {event} EventCount: {eventcount}", "QueryTraceEngine", "ConfigureTrace", "End", events.Count);
         }
         private void SetupTrace(Trace trace, List<DaxStudioTraceEventClass> events)
         {
@@ -127,28 +134,35 @@ namespace DaxStudio.QueryTrace
 
         public void Start()
         {
-            if (_trace != null)
-                if (_trace.IsStarted)
-                    throw new InvalidOperationException("Cannot start a new trace as one is already running");
+            try
+            {
+                if (_trace != null)
+                    if (_trace.IsStarted || Status == QueryTraceStatus.Starting)
+                        return; // exit here if trace is already started
 
-            if (Status != QueryTraceStatus.Started)
-                Status = QueryTraceStatus.Starting;
-            _connection = new ADOTabular.ADOTabularConnection(_connectionString, _connectionType);
-            _connection.Open();
-            _trace = GetTrace();
-            SetupTrace(_trace, _eventsToCapture);
-            _trace.Start();
-            
-            // create timer to "ping" the server with DISCOVER_SESSION requests
-            // until the trace events start to fire.
-            if (_startingTimer == null)
-                _startingTimer = new Timer();
-            _startingTimer.Interval = 300;  //TODO - make time interval shorter?
-            _startingTimer.Elapsed += OnTimerElapsed;
-            _startingTimer.Enabled = true;
-            _startingTimer.Start();
-            utcPingStart = DateTime.UtcNow;
-            // Wait for Trace to become active
+                if (Status != QueryTraceStatus.Started)  Status = QueryTraceStatus.Starting;
+                Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "Start", "Connecting to: " + _connectionString);
+                _connection = new ADOTabular.ADOTabularConnection(_connectionString, _connectionType);
+                _connection.Open();
+                _trace = GetTrace();
+                SetupTrace(_trace, _eventsToCapture);
+                _trace.Start();
+
+                // create timer to "ping" the server with DISCOVER_SESSION requests
+                // until the trace events start to fire.
+                if (_startingTimer == null)
+                    _startingTimer = new Timer();
+                _startingTimer.Interval = 300;  //TODO - make time interval shorter?
+                _startingTimer.Elapsed += OnTimerElapsed;
+                _startingTimer.Enabled = true;
+                _startingTimer.Start();
+                utcPingStart = DateTime.UtcNow;
+                // Wait for Trace to become active
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}","QueryTraceEngine" , "Start", ex.Message);
+            }
         }
 
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
@@ -175,6 +189,7 @@ namespace DaxStudio.QueryTrace
                   _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
                   _trace.Filter = GetSessionIdFilter(_sessionId);
                   _trace.OnEvent += OnTraceEventInternal;
+                  _trace.Audit = true;
               }
               return _trace;
         }
@@ -191,9 +206,7 @@ namespace DaxStudio.QueryTrace
         }
 
         private bool _traceStarted;
-        private ADOTabular.ADOTabularConnection connection;
-        private List<TraceEventClass> eventsToCapture;
-
+        
         private void OnTraceEventInternal(object sender, TraceEventArgs e)
         {
             // we are using CommandBegin as a "heartbeat" to check if the trace
@@ -208,6 +221,7 @@ namespace DaxStudio.QueryTrace
             }
             else
             {
+                System.Diagnostics.Debug.Print("TraceEvent: {0}", e.EventClass.ToString());
                 OnTraceEvent(e);
                 _capturedEvents.Add(new DaxStudioTraceEventArgs(e));
                 if (e.EventClass == TraceEventClass.QueryEnd)
@@ -231,5 +245,9 @@ namespace DaxStudio.QueryTrace
 
 #endregion
 
+        public void Dispose()
+        {
+            _trace.Dispose();
+        }
     }
 }

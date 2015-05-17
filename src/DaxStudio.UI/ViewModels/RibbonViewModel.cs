@@ -34,7 +34,6 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
-        private bool _databaseComboChanging = false;
         private bool _isDocumentActivating = false;
 
         private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
@@ -317,7 +316,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (AdomdConnectionException ex)
             {
-                Log.Error("{Exception}", ex);
+                Log.Error("{class} {method} {Exception}", "RibbonViewModel", "Handle(ActivateDocumentEvent)", ex);
                 doc.OutputError(ex.Message);
             }
             finally
@@ -336,8 +335,9 @@ namespace DaxStudio.UI.ViewModels
                 tw.CheckEnabled(ActiveDocument);
             }
         }
+
         private DocumentViewModel _activeDocument;
-        private ServerTimingDetailsViewModel _serverTimingDetails;
+
         protected DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }

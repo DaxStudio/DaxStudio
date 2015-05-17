@@ -4,10 +4,10 @@ using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 //using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 namespace DaxStudio.QueryTrace
 {
-    public  static partial class TraceEventFactory
+    public  static partial class TraceEventFactoryExcel
     {
 
-        public static xlAmo.TraceEvent CreateExcelTrace(xlAmo.TraceEventClass eventClass)
+        public static xlAmo.TraceEvent CreateTrace(xlAmo.TraceEventClass eventClass)
         {
             xlAmo.TraceEvent trc = new xlAmo.TraceEvent(eventClass);
             trc.Columns.Add(xlAmo.TraceColumn.EventClass);

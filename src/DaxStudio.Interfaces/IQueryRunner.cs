@@ -25,6 +25,7 @@ namespace DaxStudio.Interfaces
         void ActivateOutput();
         //bool IsOutputActive { get; }
         void QueryCompleted();
+        void QueryCompleted(bool isCancelled);
         IDaxStudioHost Host { get; }
         string SelectedWorksheet { get; set; }
         string ConnectionString { get; }

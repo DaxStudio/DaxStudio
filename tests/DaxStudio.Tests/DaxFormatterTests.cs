@@ -58,7 +58,7 @@ namespace DaxStudio.Tests
         [TestMethod,Ignore]
         public void TestInvalidDax()
         {
-            var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
+            //var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
             var uri2 = "http://daxtest02.azurewebsites.net/api/daxformatter/daxformat";
             var data = "{Dax:'evaluate values(tatatata', ListSeparator:',', DecimalSeparator:'.'}";
             var enc = System.Text.Encoding.UTF8;

@@ -155,7 +155,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_connectionProperties.ContainsKey("Application Name"))
                     {
-                        if (_connectionProperties["Application Name"] == "DAX Studio (PowerBI)")
+                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (PowerBI)"))
                         {
                             PowerPivotModeSelected = false;
                             ServerModeSelected = false;
@@ -342,23 +342,30 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
-            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name=DAX Studio (PowerBI)", SelectedPowerBIInstance.Port
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name={6}", SelectedPowerBIInstance.Port
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
                                  , AdditionalProperties
-                                 , AdditionalOptions);
+                                 , AdditionalOptions
+                                 , GetApplicationName("Power BI"));
         }
 
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4};{5};Application Name=DAX Studio (SSAS)", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4};{5};Application Name={6}", DataSource
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
                                  , AdditionalProperties
-                                 , AdditionalOptions);
+                                 , AdditionalOptions
+                                 , GetApplicationName("SSAS"));
+        }
+
+        private string GetApplicationName(string connectionType)
+        {
+            return string.Format("DAX Studio ({0}) - {1}", connectionType, _activeDocument.UniqueID);
         }
 
         /*
@@ -369,7 +376,7 @@ namespace DaxStudio.UI.ViewModels
         */
         private string BuildPowerPivotConnection()
         {    
-            return Host.Proxy.GetPowerPivotConnection().ConnectionString;
+            return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot")).ConnectionString;
             
         }
 
@@ -387,7 +394,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
                 }
-                _eventAggregator.PublishOnUIThread(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName));
+                _eventAggregator.PublishOnUIThread(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType)));
             }
             catch (Exception ex)
             {
@@ -431,6 +438,13 @@ namespace DaxStudio.UI.ViewModels
         public bool PowerBIModeSelected { get; set; }
 
         public PowerBIInstance SelectedPowerBIInstance { get; set; }
+
+        public string ConnectionType { get {
+            if (ServerModeSelected) return "SSAS";
+            if (PowerBIModeSelected) return "Power BI";
+            if (PowerPivotModeSelected) return "Power Pivot";
+            return "Unknown";
+        } }
     }
         
 }

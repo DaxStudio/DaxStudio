@@ -295,7 +295,11 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
-        public override void OnReset() { }
+        public override void OnReset() {
+            IsBusy = false;
+            Events.Clear();
+            ProcessResults();
+        }
 
         #region ISaveState methods
         void ISaveState.Save(string filename)

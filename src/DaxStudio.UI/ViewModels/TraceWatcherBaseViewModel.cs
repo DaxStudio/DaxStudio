@@ -9,6 +9,7 @@ using Serilog;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
+using System.Timers;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -56,6 +57,13 @@ namespace DaxStudio.UI.ViewModels
 
         public void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents)
         {
+            if (_timeout != null)
+            {
+                _timeout.Stop();
+                _timeout.Dispose();
+                _timeout = null;
+            }
+
             foreach (var e in capturedEvents)
             {
                 if (MonitoredEvents.Contains((TraceEventClass)e.EventClass))
@@ -104,7 +112,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isEnabled ;
         public bool IsEnabled { get { return _isEnabled; }
             set { _isEnabled = value;
-            NotifyOfPropertyChange("IsEnabled");} 
+            NotifyOfPropertyChange(()=> IsEnabled);} 
         }
 
         public bool IsActive { get; set; }
@@ -119,6 +127,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _isChecked = value;
                     NotifyOfPropertyChange(() => IsChecked);
+                    if (!_isChecked) Reset();
                     _eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
                 }
@@ -154,7 +163,15 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _isBusy; }
             set { _isBusy = value;
+            BusyMessage = "Query Running...";
             NotifyOfPropertyChange(() => IsBusy);
+            }
+        }
+
+        private string _busyMessage;
+        public string BusyMessage { get { return _busyMessage; }
+            set { _busyMessage = value;
+            NotifyOfPropertyChange(() => BusyMessage);
             }
         }
 
@@ -170,5 +187,26 @@ namespace DaxStudio.UI.ViewModels
             Reset();
         }
 
+        Timer _timeout;
+        
+
+        public void QueryCompleted(bool isCancelled)
+        {
+            if (isCancelled) return;
+
+            // start timer, if timer elapses then print warning and set IsBusy = false
+            _timeout = new Timer(5000);
+            _timeout.AutoReset = false;
+            _timeout.Elapsed += QueryEndEventTimeout;
+            _timeout.Start();
+            BusyMessage = "Waiting for Query End event...";
+        }
+
+        private void QueryEndEventTimeout(object sender, ElapsedEventArgs e)
+        {
+            Reset();
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not recieved - Tracing timeout exceeded"));
+        }
+        
     }
 }

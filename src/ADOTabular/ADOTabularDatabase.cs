@@ -20,7 +20,7 @@ namespace ADOTabular
 
         public bool HasSchemaChanged()
         {
-            var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(true);
+            var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(_adoTabConn.SPID, true);
             var dd = ddColl[_databaseName];
             if (dd.LastUpdate > _lastUpdate)
             {

@@ -85,6 +85,7 @@ namespace DaxStudio.QueryTrace
         {
             _connectionString = string.Format("{0};SessionId={1}",connectionString,sessionId);
             _connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
+            _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
             _connectionType = connectionType;
             _sessionId = sessionId;
             _eventsToCapture = events;
@@ -93,10 +94,10 @@ namespace DaxStudio.QueryTrace
         {
             // Add CommandBegin so we can catch the heartbeat events
             if (trace.Events.Find(xlAmo.TraceEventClass.CommandBegin) == null)
-                trace.Events.Add(TraceEventFactory.CreateExcelTrace(xlAmo.TraceEventClass.CommandBegin));
+                trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.CommandBegin));
             // Add QueryEnd so we know when to stop the trace
             if (trace.Events.Find(xlAmo.TraceEventClass.QueryEnd)==null)
-                trace.Events.Add(TraceEventFactory.CreateExcelTrace(xlAmo.TraceEventClass.QueryEnd));
+                trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.QueryEnd));
 
             //reset the watcher so it can clear any cached events 
             ///watcher.Reset();
@@ -108,7 +109,7 @@ namespace DaxStudio.QueryTrace
                 if (trace.Events.Find(amoEventClass) != null)
                     continue;
 
-                xlAmo.TraceEvent trcEvent = TraceEventFactory.CreateExcelTrace(amoEventClass);
+                xlAmo.TraceEvent trcEvent = TraceEventFactoryExcel.CreateTrace(amoEventClass);
                 trace.Events.Add(trcEvent);
             }
             trace.Update();   
@@ -145,11 +146,11 @@ namespace DaxStudio.QueryTrace
         public void Start()
         {
             if (_trace != null)
-                if (_trace.IsStarted)
-                    throw new InvalidOperationException("Cannot start a new trace as one is already running");
+                if (_trace.IsStarted || Status == QueryTraceStatus.Starting )
+                    return; // if the trace is already running exit here
+                    
 
-            if (Status != QueryTraceStatus.Started)
-                Status = QueryTraceStatus.Starting;
+            if (Status != QueryTraceStatus.Started)  Status = QueryTraceStatus.Starting;
             _connection = new ADOTabular.ADOTabularConnection(_connectionString, _connectionType);
             _connection.Open();
             _trace = GetTrace();
@@ -207,9 +208,7 @@ namespace DaxStudio.QueryTrace
         }
 
         private bool _traceStarted;
-        private ADOTabular.ADOTabularConnection connection;
-        private List<DaxStudioTraceEventClass> eventsToCapture;
-
+        
         private void OnTraceEventInternal(object sender, xlAmo.TraceEventArgs e)
         {
             // we are using CommandBegin as a "heartbeat" to check if the trace
@@ -279,5 +278,9 @@ namespace DaxStudio.QueryTrace
             return dsEvent;
         }
 
+        public void Dispose()
+        {
+            _trace.Dispose();
+        }
     }
 }

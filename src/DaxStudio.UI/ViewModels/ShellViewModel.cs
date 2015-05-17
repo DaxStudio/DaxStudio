@@ -20,7 +20,7 @@ namespace DaxStudio.UI.ViewModels {
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
         private readonly NotifyIcon notifyIcon;
-        private ILogger log;
+        //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
         {
@@ -48,9 +48,7 @@ namespace DaxStudio.UI.ViewModels {
             VersionChecker = versionCheck;
             Application.Current.Activated += OnApplicationActivated; 
             
-            //log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
-            //Log.Logger = log;
-            Log.Verbose("============ Shell Started =============");
+            Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
         }
 
         private void OnApplicationActivated(object sender, EventArgs e)

@@ -9,6 +9,7 @@ using Office = Microsoft.Office.Core;
 using System.Data;
 using System.Globalization;
 using Serilog;
+using System.Collections.Generic;
 
 namespace DaxStudio.ExcelAddin 
 {
@@ -17,6 +18,11 @@ namespace DaxStudio.ExcelAddin
         // ReSharper disable InconsistentNaming
         const string NEW_SHEET = "<New Sheet>";
         const string DAX_RESULTS_SHEET = "<Query Results Sheet>";
+
+        // Excel 2013
+        const string Excel2013ConnStr = "Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;location=\"{0}\";Show Hidden Cubes=true";
+        // Excel 2010
+        const string Excel2010ConnStr = "Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;Safety Options=2;MDX Missing Member Mode=Error;ConnectTo=11.0;Optimize Response=3;location=\"{0}\";Show Hidden Cubes=true";
         // ReSharper restore InconsistentNaming
 
         //private QueryTable _qryTable;
@@ -169,10 +175,8 @@ namespace DaxStudio.ExcelAddin
 
                 // if Excel 2010
                 PivotCaches pvtcaches = wb.PivotCaches();
-                if (pvtcaches.Count == 0)
-                    return false;   // without a pivot table cache we have no way of "waking up" the data model
-
-                // TODO - at this point can I try creating a pivottable cache and refreshing it???
+                
+                if (pvtcaches.Count == 0) CreateHiddenPivotTable(wb);   // create a hidden pivottable so we can "wake up" the data model
 
                 var ptc = (from PivotCache pvtc in pvtcaches
                            let conn = pvtc.Connection.ToString()
@@ -207,18 +211,29 @@ namespace DaxStudio.ExcelAddin
             }
         }
 
-
+        public string GetPowerPivotConnectionString()
+        {
+            if (IsExcel2013OrLater)
+                return string.Format(Excel2013ConnStr, _app.ActiveWorkbook.FullName);
+            else
+                return string.Format(Excel2010ConnStr, _app.ActiveWorkbook.FullName);
+        }
 
         //((dynamic)pc.WorkbookConnection).ModelConnection.ADOConnection.ConnectionString
+        // Excel 2013
         //"Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7"
+        // Excel 2010
+        // Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;ConnectTo=11.0;Optimize Response=3;Cell Error Mode=TextValue;location=\"C:\Users\Test\Documents\Products.xlsx\";Show Hidden Cubes=true"
+        /*
         public ADOTabularConnection GetPowerPivotConnection()
         {
             PivotCache pc;
             string connStr;
             var wb = _app.ActiveWorkbook;
-            PivotCaches pvtcaches = wb.PivotCaches();
+            
             if (IsExcel2013OrLater)
             {
+                PivotCaches pvtcaches = wb.PivotCaches();
                 pc = (from PivotCache pvtc in pvtcaches
                                  let conn = pvtc.Connection.ToString()
                                  where pvtc.OLAP
@@ -227,6 +242,9 @@ namespace DaxStudio.ExcelAddin
                                  select pvtc).First();
                 var wbc = ((dynamic)pc.WorkbookConnection);
                 var modelCnn = wbc.ModelConnection;
+                
+                //var wbkCnn = FindPowerPivotConnection(wb);
+                //var modelCnn = wbkCnn.ModelConnection;
                 var cnn = modelCnn.ADOConnection;
                 connStr = cnn.ConnectionString;
                 connStr = string.Format("{0};location=\"{1}\"", connStr, wb.FullName);
@@ -235,12 +253,15 @@ namespace DaxStudio.ExcelAddin
             }
             else
             {
+                // Excel 2010
+                PivotCaches pvtcaches = wb.PivotCaches();
                 pc = (from PivotCache pvtc in pvtcaches
                                  let conn = pvtc.Connection.ToString()
                                  where pvtc.OLAP
                                        && pvtc.CommandType == XlCmdType.xlCmdCube
                                        //&& (int)pvtc.WorkbookConnection.Type == 7
                                  select pvtc).First();
+                if (pc == null) pc = CreateHiddenPivotTable(wb);
                 var wbc = ((dynamic) pc.WorkbookConnection);
                 var oledbCnn = wbc.OLEDBConnection;
                 var cnn = oledbCnn.Connection;
@@ -250,6 +271,33 @@ namespace DaxStudio.ExcelAddin
                 // for connections to Excel 2010 we need to use the AnalysisServices version of ADOMDClient
                 return new ADOTabularConnection(connStr, AdomdType.AnalysisServices);
             }
+        }
+        */
+        private PivotCache CreateHiddenPivotTable(Workbook wb)
+        {
+            Worksheet sht = null;
+            try
+            {
+                sht = wb.Sheets["DaxStudioConnectionHelper"];
+            }
+            catch { } // swallow any exception if the sheet is not found
+
+
+            if (sht == null) {
+                sht = wb.Sheets.Add();
+                sht.Name = "DaxStudioConnectionHelper";
+                sht.Visible = XlSheetVisibility.xlSheetVeryHidden;
+            }
+            
+            //PivotTable pt;
+            PivotCaches pivotCaches;
+            pivotCaches = wb.PivotCaches();
+            var pc = pivotCaches.Create(XlPivotTableSourceType.xlExternal, wb.Connections["PowerPivot Data"], XlPivotTableVersionList.xlPivotTableVersion14);
+            pc.CreatePivotTable(sht.Cells[1,1], "DaxStudioConnectionPivot", Type.Missing, XlPivotTableVersionList.xlPivotTableVersion14);
+            return pc;
+            
+            //pc = wb.PivotCaches.Create(  SourceType= xlExternal, SourceData:= wb.Connections["PowerPivot Data"], Version:=xlPivotTableVersion14)
+            //pt = pc.CreatePivotTable(TableDestination:="DaxStudioConnectionHelper!R1C1", TableName:= "DaxStudioConnectionPivotTable", DefaultVersion:=xlPivotTableVersion14);
         }
 
         public void EnsurePowerPivotDataIsLoaded()
@@ -270,15 +318,23 @@ namespace DaxStudio.ExcelAddin
         {
             var wb = _app.ActiveWorkbook;
             PivotCaches pvtcaches = wb.PivotCaches();
-            if (pvtcaches.Count == 0)
-                return;
+
+            var olapPivotCaches = from PivotCache pvtc in pvtcaches
+                                  let conn = pvtc.Connection.ToString()
+                                  where pvtc.OLAP
+                                      && pvtc.CommandType == XlCmdType.xlCmdCube
+                                      && ((string)conn).Contains("Data Source=$Embedded$")
+                                      && !pvtc.IsConnected
+                                  select pvtc;
+
+            if (olapPivotCaches.Count() == 0) {
+                var pc = CreateHiddenPivotTable(wb); // automatically generate a hidden pivot table 
+                var cache = new List<PivotCache>();
+                cache.Add(pc);
+                olapPivotCaches = cache;
+            }
             
-            foreach (PivotCache pvtc in from PivotCache pvtc in pvtcaches let conn = pvtc.Connection.ToString() 
-            where pvtc.OLAP 
-                && pvtc.CommandType == XlCmdType.xlCmdCube 
-                && ((string) conn).Contains("Data Source=$Embedded$") 
-                && !pvtc.IsConnected 
-            select pvtc)
+            foreach (PivotCache pvtc in olapPivotCaches)
             {
                 pvtc.Refresh();
             }
@@ -464,7 +520,7 @@ namespace DaxStudio.ExcelAddin
             {
                 Debug.WriteLine("ERROR");
                 Debug.WriteLine(ex.Message);
-                Log.Error(ex.Message);
+                Log.Error("{class} {method} {message}", "ExcelHelper", "DaxQueryTable2013", ex.Message);
             }
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }

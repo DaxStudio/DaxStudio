@@ -38,7 +38,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <Label Content="Version: "  HorizontalAlignment="Left"/>
                     <Label x:Name="FullVersionNumber" />
-                    <local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>
+                            <local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>
                     <Label x:Name="UpdateStatus" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" >

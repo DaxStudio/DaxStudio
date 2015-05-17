@@ -35,5 +35,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTracedStarted();
         */
         QueryTraceStatus Status {get;}
+
+        void Dispose();
     }
 }

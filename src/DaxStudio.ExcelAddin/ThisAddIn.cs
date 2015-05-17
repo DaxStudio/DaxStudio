@@ -64,7 +64,7 @@ namespace DaxStudio.ExcelAddin
             {
                 if (!_inShutdown)
                 {
-                    Log.Error("{class} {method} {args_Name} {ex_Message}","ThisAddIn","currentDomain_AssemblyResolve",args.Name,ex.Message);
+                    Log.Error("{class} {method} {args_Name} {ex_Message}","ThisAddIn","currentDomain_AssemblyResolve",args.Name,ex.Message + "\n" + ex.StackTrace);
                     MessageBox.Show(
                         string.Format("Problem during AssemblyResolve in Dax Studio\r\nFor Assembly {0} :\r\n{1}\r\n{2} "
                             , args.Name
@@ -80,20 +80,10 @@ namespace DaxStudio.ExcelAddin
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {
             Log.Information("============ Excel Add-in Shutdown =============");
-            // this forces the wpf RibbonWindow to shutdown correctly
-            // see http://go4answers.webhost4life.com/Example/ribbonribbonwindow-microsoft-ribbon-74444.aspx
             try
             {
                 _inShutdown = true;
                 
-                //_ribbon.CancelToken.Cancel();
-                //Debug.WriteLine(string.Format("{0} ===>>> waiting for app shutdown", DateTime.Now));
-                // wait upto 5 secs for app to shutdown
-                //_ribbon.ShutDownSync.WaitOne(3000);
-                //GC.Collect();
-                //GC.WaitForPendingFinalizers();
-                //Debug.WriteLine(string.Format("{0} ===>>> app shutdown", DateTime.Now ));
-                //    Dispatcher.CurrentDispatcher.InvokeShutdown();
             }
             catch (Exception ex)
             {
