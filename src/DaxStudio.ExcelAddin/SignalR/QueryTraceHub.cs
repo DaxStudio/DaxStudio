@@ -136,7 +136,7 @@ namespace DaxStudio
             Clients.Caller.OnTraceStopped();
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             if (_xlEngine != null) _xlEngine.Dispose();
             if (_engine != null) _engine.Dispose();

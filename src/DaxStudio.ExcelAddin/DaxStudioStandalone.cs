@@ -51,14 +51,12 @@ namespace DaxStudio
                             int.TryParse(m[0].Groups["port"].Captures[0].Value, out port);
 
                             Log.Debug("{class} {method} DaxStudio standalone found listening on port: {port}", "DaxStudioStandalone", "GetPort", port);
-                            return new DaxStudioClient(Process.GetProcessById(pid), port);
-                            return null;      
+                            return new DaxStudioClient(Process.GetProcessById(pid), port);     
                         }
                         catch (Exception ex)
                         {
                             Log.Error("{class} {Method} {Error}", "DaxStudioStandalone", "GetPort", ex.Message);
                         }
-                        
                         
                     }
                     

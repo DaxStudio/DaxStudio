@@ -91,7 +91,9 @@ namespace DaxStudio.Tests
         {
             throw new NotImplementedException();
         }
-
+#pragma warning disable 0169
+        // required for implementing the interface, but not used for these tests
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore 0169
     }
 }

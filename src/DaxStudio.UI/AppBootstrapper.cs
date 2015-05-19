@@ -25,7 +25,7 @@ namespace DaxStudio.UI
 	{
 		CompositionContainer _container;
 	    private Assembly _hostAssembly;
-        private Func<DependencyObject, IEnumerable<FrameworkElement>> defaultElementLookup;
+        //private Func<DependencyObject, IEnumerable<FrameworkElement>> defaultElementLookup;
 	    /*
         public AppBootstrapper():base(true)
         {
@@ -192,16 +192,16 @@ namespace DaxStudio.UI
             return null;
         }
 
-        private void AppendRibbonNamedItem(Fluent.Ribbon ribbon, List<FrameworkElement> namedElements)
-        {
-            foreach (var ti in ribbon.Tabs)
-            {
-                foreach (var group in ti.Groups)
-                {
-                    namedElements.AddRange(defaultElementLookup(group));
-                }
-            }
-        }
+        //private void AppendRibbonNamedItem(Fluent.Ribbon ribbon, List<FrameworkElement> namedElements)
+        //{
+        //    foreach (var ti in ribbon.Tabs)
+        //    {
+        //        foreach (var group in ti.Groups)
+        //        {
+        //            namedElements.AddRange(defaultElementLookup(group));
+        //        }
+        //    }
+        //}
 
         private void ConfigureKeyBindings()
         {
