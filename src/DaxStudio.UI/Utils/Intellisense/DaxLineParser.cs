@@ -17,7 +17,6 @@ namespace DaxStudio.UI.Utils
         Column,
         Measure,
         LetterOrDigit,
-        Comment,
         Other,
         NotSet,
         TableDelimiter
@@ -28,21 +27,23 @@ namespace DaxStudio.UI.Utils
         private int _endOffset=0;
         private int _startOffset=0;
         private int _caretOffset;
+        private int _startOfLineOffset = 0;
         private Utils.LineState _state;
         private LineState _endState;
         private string _tableName;
 
-        public DaxLineState(LineState lineState,int caretOffset, int startOffset, int endOffset)
+        public DaxLineState(LineState lineState,int caretOffset, int startOffset, int endOffset, int startOfLineOffset)
         {
             _state = lineState;
             _caretOffset = caretOffset;
             _startOffset = startOffset;
             _endOffset = endOffset;
             _endState = Utils.LineState.NotSet;
+            _startOfLineOffset = startOfLineOffset;
         }
         public LineState LineState { get { return _state; } }
-        public int StartOffset { get { return _startOffset; } }
-        public int EndOffset { get { return _endOffset; } set { _endOffset = value; } }
+        public int StartOffset { get { return _startOffset + _startOfLineOffset; } }
+        public int EndOffset { get { return (_endOffset==0?_caretOffset:_endOffset) + _startOfLineOffset; } }
         public string TableName { get { return _tableName; } set { _tableName = value; } }
         public void SetState(LineState newState, int pos)
         {
@@ -70,11 +71,11 @@ namespace DaxStudio.UI.Utils
     {
         private static Regex MeasureDefRegex = new Regex(@"\bmeasure\s*(?:'.*'|[^\s]*)\[?[^\]]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static DaxLineState ParseLine(string line, int offset )
+        public static DaxLineState ParseLine(string line, int offset, int startOfLineOffset )
         {
             StringBuilder sbTableName = new StringBuilder();
             //LineState daxState.LineState = LineState.Other;
-            DaxLineState daxState = new DaxLineState(LineState.NotSet, offset, 0, 0);
+            DaxLineState daxState = new DaxLineState(LineState.NotSet, offset, 0, 0, startOfLineOffset);
             for (var i = 0; i < line.Length; i++)
             {
                 switch (line[i])
@@ -128,7 +129,7 @@ namespace DaxStudio.UI.Utils
                 }
 
             }
-            if (daxState.EndOffset == 0) daxState.EndOffset = offset;
+            
             daxState.TableName = sbTableName.ToString();
             return daxState;
         }

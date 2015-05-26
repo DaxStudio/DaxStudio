@@ -13,6 +13,7 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
@@ -106,7 +107,7 @@
         <!-- database Dropdown -->
         <ComboBox Grid.Row="0" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase}"
-            ItemsSource="{Binding Databases}"   
+            ItemsSource="{Binding DatabasesView}"   
             MinWidth="160" 
             Template="{DynamicResource MetroComboBoxControlTemplate}"
             IsEditable="False"

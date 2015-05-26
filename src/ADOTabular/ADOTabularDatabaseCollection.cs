@@ -5,6 +5,7 @@ using System.Collections;
 using ADOTabular.AdomdClientWrappers;
 using System.Xml;
 using System.IO;
+using System.Collections.ObjectModel;
 
 namespace ADOTabular
 {
@@ -169,13 +170,15 @@ namespace ADOTabular
         }
 
         public int Count { get { return GetDatabaseTable().Rows.Count; } }
-
+        /*
         public SortedSet<string> ToSortedSet()
         {
             var ss = new SortedSet<string>();
             foreach (var dbname in this)
             { ss.Add(dbname); }
             return ss;
-        }
+        }*/
+        
+
     }
 }

@@ -1301,7 +1301,7 @@ namespace DaxStudio.UI.ViewModels
                             this.Spid = cnn.SPID;
                             this.SelectedDatabase = cnn.Database.Name;
                             CurrentWorkbookName = message.WorkbookName;
-                            Databases = CopyDatabaseList(cnn);
+                            Databases = cnn.Databases.ToBindableCollection();
 
                             if (Connection == null)
                             { ServerName = "<Not Connected>"; }
@@ -1333,7 +1333,7 @@ namespace DaxStudio.UI.ViewModels
                         this.Spid = cnn.SPID;
                         this.SelectedDatabase = cnn.Database.Name;
                         CurrentWorkbookName = message.WorkbookName;
-                        Databases = CopyDatabaseList(cnn);
+                        Databases = cnn.Databases.ToBindableCollection();
                     }
                     
                 }).ContinueWith((antecendant) =>
@@ -1346,14 +1346,8 @@ namespace DaxStudio.UI.ViewModels
             
         }
         
-        private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)
-        {
-            var ss = new SortedSet<string>();
-            foreach (var dbname in cnn.Databases)
-            { ss.Add(dbname); }
-            return ss;
-        }
-        public SortedSet<string> Databases { get; private set; }
+
+        public BindableCollection<string> Databases { get; private set; }
         public void ClearDatabaseCache()
         {
             try
@@ -1761,8 +1755,11 @@ namespace DaxStudio.UI.ViewModels
 
         internal void RefreshMetadata()
         {
-            this.MetadataPane.Databases = CopyDatabaseList(this.Connection);
+            this.Connection.Refresh();
+            this.MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
+            this.Databases = MetadataPane.Databases;
             this.MetadataPane.ModelList = this.Connection.Database.Models;
+            this.MetadataPane.Refresh();
             OutputMessage("Metadata Refreshed");
         }
         private bool _isFocused;

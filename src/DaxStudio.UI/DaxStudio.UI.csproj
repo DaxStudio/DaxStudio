@@ -174,8 +174,9 @@
     <Reference Include="Hardcodet.Wpf.TaskbarNotification">
       <HintPath>..\..\packages\Hardcodet.NotifyIcon.Wpf.1.0.5\lib\net45\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>..\..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=5.0.1.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\AvalonEdit.5.0.2\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\lib\Microsoft.AnalysisServices.DLL</HintPath>
@@ -357,6 +358,7 @@
     <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
     <Compile Include="Converters\BoolToHiddenConverter.cs" />
+    <Compile Include="Utils\DatabaseCollectionExtensions.cs" />
     <Compile Include="Utils\DataSetExtensions.cs" />
     <Compile Include="DaxStudioDockingManager.cs" />
     <Compile Include="Events\ConnectionChangedEvent.cs" />

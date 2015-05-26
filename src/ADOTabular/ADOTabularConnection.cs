@@ -583,6 +583,13 @@ namespace ADOTabular
                 return _connectionProps["Application Name"];
             }
         }
+
+        public void Refresh()
+        {
+            _adoTabDatabaseColl = null;
+            _db = null;
+            _adomdConn.RefreshMetadata();
+        }
     }
 
 }

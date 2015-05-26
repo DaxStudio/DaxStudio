@@ -27,7 +27,8 @@ namespace DaxStudio.UI.Utils
         private DAXEditor.DAXEditor _editor;
         private DaxLineState _daxState;
         private bool SpacePressed;
-        
+        private bool HasThrownException;
+
         public DaxIntellisenseProvider (DocumentViewModel activeDocument, DAXEditor.DAXEditor editor)
         {
             Document = activeDocument;
@@ -37,100 +38,116 @@ namespace DaxStudio.UI.Utils
         #region Public IIntellisenseProvider Interface
         public void ProcessTextEntered(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
         {
+            if (HasThrownException) return; // exit here if intellisense has previous thrown and exception
 
-            if (completionWindow != null)
+            try
             {
-                // close the completion window if it has no items
-                if (!completionWindow.CompletionList.ListBox.HasItems) {
-                    completionWindow.Close();
+                if (completionWindow != null)
+                {
+                    // close the completion window if it has no items
+                    if (!completionWindow.CompletionList.ListBox.HasItems)
+                    {
+                        completionWindow.Close();
+                        return;
+                    }
+                    // close the completion window if the current text is a 100% match for the current item
+                    var txt = ((TextArea)sender).Document.GetText(new TextSegment() { StartOffset = completionWindow.StartOffset, EndOffset = completionWindow.EndOffset });
+                    var selectedItem = completionWindow.CompletionList.SelectedItem;
+                    if (string.Compare(selectedItem.Text, txt, true) == 0 || string.Compare(selectedItem.Content.ToString(), txt, true) == 0) completionWindow.Close();
+
                     return;
                 }
-                // close the completion window if the current text is a 100% match for the current item
-                var txt = ((TextArea)sender).Document.GetText(new TextSegment() { StartOffset = completionWindow.StartOffset, EndOffset = completionWindow.EndOffset });
-                var selectedItem = completionWindow.CompletionList.SelectedItem;
-                if (string.Compare( selectedItem.Text, txt,true)==0 || string.Compare(selectedItem.Content.ToString(), txt, true)==0) completionWindow.Close();
 
-                return;
-            }
-
-            if (char.IsLetterOrDigit(e.Text[0]) ||  "\'[".Contains(e.Text[0]))
-            {
-                
-                // exit if the completion window is already showing
-                if (completionWindow != null) return;
-
-                // exit if we are inside a string or comment
-                _daxState = ParseLine();
-                var lineState = _daxState.LineState;
-                if (lineState == LineState.String || lineState == LineState.Comment)  return;
-
-                // don't show intellisense if we are in the measure name of a DEFINE block
-                if (DaxLineParser.IsLineMeasureDefinition(GetCurrentLine()))  return;
-
-                
-                completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
-                completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
-                
-                if (char.IsLetterOrDigit(e.Text[0]))
+                if (char.IsLetterOrDigit(e.Text[0]) || "\'[".Contains(e.Text[0]))
                 {
-                    // if the window was opened by a letter or digit include it in the match segment
-                    //completionWindow.StartOffset -= 1;
-                    completionWindow.StartOffset = _daxState.StartOffset;
-                }
-                
-                IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
 
-                switch (e.Text)
-                { 
-                    case "[":
-                        
-                        string tableName = GetPreceedingTableName();
-                        if (string.IsNullOrWhiteSpace(tableName))  {
-                            PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
-                        }
-                        else {
-                            PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, tableName);
-                        }
-                        break;
-                    case "'":
-                        PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
-                        break;
-                    default:
-                        switch (_daxState.LineState)
-                        { 
-                            case LineState.Column:
-                                PopulateCompletionData(data,IntellisenseMetadataTypes.Columns,_daxState.TableName);
-                                break;
-                            case LineState.Table:
-                                PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
-                                break;
-                            case LineState.Measure:
+                    // exit if the completion window is already showing
+                    if (completionWindow != null) return;
+
+                    // exit if we are inside a string or comment
+                    _daxState = ParseLine();
+                    var lineState = _daxState.LineState;
+                    if (lineState == LineState.String || _editor.IsInComment()) return;
+
+                    // don't show intellisense if we are in the measure name of a DEFINE block
+                    if (DaxLineParser.IsLineMeasureDefinition(GetCurrentLine())) return;
+
+
+                    completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
+
+                    if (char.IsLetterOrDigit(e.Text[0]))
+                    {
+                        // if the window was opened by a letter or digit include it in the match segment
+                        //completionWindow.StartOffset -= 1;
+                        completionWindow.StartOffset = _daxState.StartOffset;
+                        System.Diagnostics.Debug.WriteLine("Setting Completion Offset: {0}", _daxState.StartOffset);
+                    }
+
+                    IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+
+                    switch (e.Text)
+                    {
+                        case "[":
+
+                            string tableName = GetPreceedingTableName();
+                            if (string.IsNullOrWhiteSpace(tableName))
+                            {
                                 PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
-                                break;
-                            default:
-                                PopulateCompletionData(data,IntellisenseMetadataTypes.ALL);
-                                break;
-                        }
-                        break;
+                            }
+                            else
+                            {
+                                PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, tableName);
+                            }
+                            break;
+                        case "'":
+                            PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
+                            break;
+                        default:
+                            switch (_daxState.LineState)
+                            {
+                                case LineState.Column:
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState.TableName);
+                                    break;
+                                case LineState.Table:
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
+                                    break;
+                                case LineState.Measure:
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
+                                    break;
+                                default:
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.ALL);
+                                    break;
+                            }
+                            break;
+                    }
+                    if (data.Count > 0)
+                    {
+                        //var line = GetCurrentLine();
+                        //System.Diagnostics.Debug.Assert(line.Length >= _daxState.EndOffset);
+                        var txt = _editor.Document.GetText(new TextSegment() { StartOffset = _daxState.StartOffset, EndOffset = _daxState.EndOffset });
+                        //var txt = line.Substring(_daxState.StartOffset,_daxState.EndOffset - _daxState.StartOffset);
+
+                        completionWindow.CompletionList.SelectItem(txt);
+                        completionWindow.Show();
+                        completionWindow.Closing += completionWindow_Closing;
+                        completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
+                        completionWindow.Closed += delegate
+                        {
+                            _editor.DisposeCompletionWindow();
+                        };
+                    }
+                    else
+                    {
+                        completionWindow = null;
+                    }
                 }
-                if (data.Count > 0)
-                {
-                    var line = GetCurrentLine();
-                    
-                    System.Diagnostics.Debug.Assert(line.Length >= _daxState.EndOffset);
-                    var txt = line.Substring(_daxState.StartOffset,_daxState.EndOffset - _daxState.StartOffset);
-                    completionWindow.CompletionList.SelectItem(txt);
-                    completionWindow.Show();
-                    completionWindow.Closing += completionWindow_Closing;
-                    completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
-                    completionWindow.Closed += delegate {
-                        _editor.DisposeCompletionWindow();
-                    };
-                }
-                else
-                {
-                    completionWindow = null;
-                }
+            }
+            catch(Exception ex)
+            {
+                HasThrownException = true;
+                Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
+                Document.OutputError(ex.Message);
             }
         }
 
@@ -173,7 +190,8 @@ namespace DaxStudio.UI.Utils
             string line = GetCurrentLine();
             int pos = _editor.CaretOffset - 1;
             var loc = _editor.Document.GetLocation(pos);
-            return DaxLineParser.ParseLine(line, loc.Column);
+            var docLine = _editor.Document.GetLineByOffset(pos);
+            return DaxLineParser.ParseLine(line, loc.Column, docLine.Offset);
         }
         
         private void PopulateCompletionData(IList<ICompletionData> data, IntellisenseMetadataTypes metadataType)
@@ -265,9 +283,10 @@ namespace DaxStudio.UI.Utils
         }
 
 
-
+        // TODO - do we need a way of triggering intellisense manually (ctrl-space) ??
         public void ProcessKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (HasThrownException) return;
             if (e.Key == System.Windows.Input.Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
             {
                 //TODO show intellisense on ctrl-space

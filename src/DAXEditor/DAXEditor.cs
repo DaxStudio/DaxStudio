@@ -101,10 +101,13 @@ namespace DAXEditor
         {
             if (this.Document == null ) return;
             if (this.SyntaxHighlighting == null) return;
-            documentHighlighter = new DocumentHighlighter(this.Document, this.SyntaxHighlighting.MainRuleSet);
+            documentHighlighter = new DocumentHighlighter( this.Document, this.SyntaxHighlighting);
         }
 
-
+        public bool IsInComment()
+        {
+            return IsInComment(this.TextArea.Caret.Offset);
+        }
 
         public bool IsInComment(int offset)
         {

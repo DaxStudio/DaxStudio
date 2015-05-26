@@ -11,6 +11,11 @@ using Serilog;
 using DaxStudio.UI.Model;
 using System.Collections.Generic;
 using System;
+using System.Collections.ObjectModel;
+using System.Windows.Data;
+using System.Collections;
+using System.Threading.Tasks;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -67,6 +72,14 @@ namespace DaxStudio.UI.ViewModels
 
         private ADOTabularModel _selectedModel;
 
+        public void Refresh()
+        {
+            var _tmpModel = _selectedModel;
+            _selectedModel = null;
+            SelectedModel = _tmpModel;
+        }
+
+
         public ADOTabularModel SelectedModel {
             get { return _selectedModel; } 
             set {
@@ -107,9 +120,9 @@ namespace DaxStudio.UI.ViewModels
                 return;
             if (ModelList == Connection.Database.Models)
                 return;
-
-            Databases = Connection.Databases.ToSortedSet();
-
+            Execute.OnUIThread(() => { 
+                Databases = Connection.Databases.ToBindableCollection();
+            });
             var ml = Connection.Database.Models;
             Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);          
             if (Dispatcher.CurrentDispatcher.CheckAccess())
@@ -169,7 +182,6 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 _modelList = value;
                 NotifyOfPropertyChange(() => ModelList);
-                
             }
         }
 
@@ -200,13 +212,16 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // Database Dropdown Properties
-        private SortedSet<string> _databases = new SortedSet<string>();
-        public SortedSet<string> Databases
+        private BindableCollection<string> _databases = new BindableCollection<string>();
+        public BindableCollection<string> Databases
         {
             get { return _databases; }
             set
             {
                 _databases = value;
+                _databasesView = CollectionViewSource.GetDefaultView(_databases) as ListCollectionView;
+                _databasesView.CustomSort = new DatabaseComparer();
+                NotifyOfPropertyChange(() => DatabasesView);
                 NotifyOfPropertyChange(() => Databases);
             }
         }
@@ -258,5 +273,62 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void RefreshDatabases()
+        {
+                    
+            this.Connection.Refresh();
+            var sourceSet = this.Connection.Databases.ToBindableCollection();
+
+            var deletedItems = this.Databases.Except(sourceSet);
+            var newItems = sourceSet.Except(this.Databases);
+            // remove deleted items
+            for(var i = deletedItems.Count()-1;i>=0;i--)
+            {
+                var tmp = deletedItems.ElementAt(i);
+                // Your Action Code
+                Execute.OnUIThread(()=>{
+                    this.Databases.Remove(tmp);
+                });
+            }
+            // add new items
+            foreach (var itm in newItems)
+            {
+                Execute.OnUIThread(()=>{
+                    // Your Action Code
+                    this.Databases.Add(itm);
+                });
+            }
+            _databasesView.Refresh();
+            //NotifyOfPropertyChange(() => Databases);
+                    
+        }
+
+        private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)
+        {
+            var ss = new SortedSet<string>();
+            foreach (var dbname in cnn.Databases)
+            { ss.Add(dbname); }
+            return ss;
+        }
+
+        private ListCollectionView _databasesView;
+        public ICollectionView DatabasesView
+        {
+            get { 
+                return _databasesView; 
+            }
+        }
     }
+
+
+    public class DatabaseComparer : IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            String custX = x as String;
+            String custY = y as String;
+            return custX.CompareTo(custY);
+        }
+    }
+
 }

@@ -339,6 +339,25 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
+        public void RefreshMetadata()
+        {
+            if (_type == AdomdType.AnalysisServices)
+            {
+                if (_conn != null)
+                    _conn.RefreshMetadata();
+            }
+            else
+            {
+                ExcelAdoMdConnections.VoidDelegate f = delegate
+                {
+                    if (_connExcel != null)
+                        _connExcel.RefreshMetadata();
+                };
+                f();
+                
+            }
+        }
+
         public void Dispose()
         {
             if (_type == AdomdType.AnalysisServices)

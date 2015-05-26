@@ -165,6 +165,51 @@ EVALUATE
         {
             get { return _text.Length; }
         }
+
+        public System.IO.TextReader CreateReader(int offset, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetText(ICSharpCode.AvalonEdit.Document.ISegment segment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int IndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int IndexOf(char c, int startIndex, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int LastIndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int LastIndexOf(char c, int startIndex, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICSharpCode.AvalonEdit.Document.ITextSourceVersion Version
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void WriteTextTo(System.IO.TextWriter writer, int offset, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteTextTo(System.IO.TextWriter writer)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

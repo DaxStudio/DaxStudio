@@ -47,7 +47,6 @@ namespace DaxStudio.UI.ViewModels {
             notifyIcon = new NotifyIcon();
             VersionChecker = versionCheck;
             Application.Current.Activated += OnApplicationActivated; 
-            
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
         }
 
