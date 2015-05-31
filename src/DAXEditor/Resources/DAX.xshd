@@ -1,12 +1,14 @@
 ﻿<SyntaxDefinition name="DAX" extensions=".dax" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
-	<Color name="Comment" foreground="Green" />
-	<Color name="String" foreground="Red" />
+	<Color name="Comment"    foreground="Green" />
+	<Color name="String"     foreground="Red"        fontStyle="normal"/>
   <Color name="Identifier" foreground="Black" />
-  <Color name="Operator" foreground="Magenta"/>
-	<Color name="Regex" foreground="#FFFF6600" />
-  <Color name="Parameter" foreground="#FFE00587" />
-  <Color name="Function" foreground="Blue" /> <!-- fontWeight="bold" />-->
-  <Color name="Kword" foreground="Teal" />  <!--fontWeight="bold"/>-->
+  <Color name="Operator"   foreground="Magenta"/>
+	<Color name="Regex"      foreground="#FFFF6600" />
+  <Color name="Parameter"  foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Function"   foreground="Blue" /> <!-- fontWeight="bold" />-->
+  <Color name="Kword"      foreground="Teal" />  <!--fontWeight="bold"/>-->
+  <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
+  
 	<RuleSet ignoreCase="true">
 		<Span color="Comment" multiline="false">
       <Begin>//</Begin>
@@ -21,6 +23,7 @@
 			<Begin>/\*</Begin>
 			<End>\*/</End>
 		</Span>
+      
 		<Span color="String">
 			<Begin>"</Begin>
 			<End>"</End>
@@ -28,26 +31,37 @@
         <Span begin="\\" end="." />
       </RuleSet>
 		</Span>
+  
     <Span color="Identifier">
 			<Begin>'</Begin>
 			<End>'</End>
-			<RuleSet>
-				<Span begin="\\" end="." />
-			</RuleSet>
 		</Span>
     <Span color="Identifier">
       <Begin>\w*\[\w*</Begin>
       <End>\]</End>
-      <RuleSet>
-        <Span begin="\\" end="." />
-      </RuleSet>
     </Span>
     
-    <Span color="Parameter">
-      <Begin>@\w*</Begin>
-      <End>\s|\)|\$</End>
+    <Rule color="Parameter">@([\w]+)</Rule>
+    
+    <!-- Xmla Parameter blocks -->
+    <Span color="Xmla" multiline="true">
+      <Begin>^\s*(&lt;[^(&gt;&lt;)])</Begin>
+      <End>&gt;\s*$</End>  
       <RuleSet>
-        <Span begin="\\" end="." />
+        <Span>
+          <Begin>ame&gt;</Begin>
+          <End>&lt;/Name&gt;</End>
+          <RuleSet>
+            <Rule color="Parameter">[^(&gt;|&lt;)]+</Rule>
+          </RuleSet>
+        </Span>
+        <Span>
+          <Begin>alue&gt;</Begin>
+          <End>&lt;/Value&gt;</End>
+          <RuleSet>
+            <Rule color="String">[^(&gt;|&lt;)]+</Rule>
+          </RuleSet>
+        </Span>
       </RuleSet>
     </Span>
     
@@ -127,7 +141,6 @@
       <Word>FIXED</Word>
       <Word>FLOOR</Word>
       <Word>FORMAT</Word>
-      <Word>FROM</Word>
       <Word>GENERATE</Word>
       <Word>GENERATEALL</Word>
       <Word>HASONEFILTER</Word>
@@ -210,7 +223,6 @@
       <Word>SAMPLE</Word>
       <Word>SEARCH</Word>
       <Word>SECOND</Word>
-      <Word>SELECT</Word>
       <Word>SIGN</Word>
       <Word>SQRT</Word>
       <Word>STARTOFMONTH</Word>
@@ -250,14 +262,18 @@
       <Word>YEARFRAC</Word>
     </Keywords>
     <Keywords color="Kword">
+      <Word>$SYSTEM</Word>
       <Word>ASC</Word>
       <Word>BY</Word>
       <Word>CREATE</Word>
       <Word>DEFINE</Word>
       <Word>DESC</Word>
       <Word>EVALUATE</Word>
+      <Word>FROM</Word>
       <Word>MEASURE</Word>
       <Word>ORDER</Word>
+      <Word>SELECT</Word>
+      <Word>WHERE</Word>
       <!-- These are both keyword and functions...
       <Word>DAY</Word>
       <Word>MONTH</Word>

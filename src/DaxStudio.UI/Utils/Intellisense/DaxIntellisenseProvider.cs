@@ -147,7 +147,7 @@ namespace DaxStudio.UI.Utils
             {
                 HasThrownException = true;
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
-                Document.OutputError(ex.Message);
+                Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
         }
 

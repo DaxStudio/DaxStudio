@@ -9,14 +9,23 @@ namespace ADOTabular
     public class ADOTabularHierarchy:ADOTabularColumn
     {
         private List<ADOTabularLevel> _levels;
+        private string _structure;
+
         public ADOTabularHierarchy( ADOTabularTable table, string internalName,string name, string caption,  string description,
-                                bool isVisible, ADOTabularColumnType columnType, string contents)
+                                bool isVisible, ADOTabularColumnType columnType, string contents, string structure)
         :base(table,internalName,name, caption,description,isVisible,columnType,contents)
         {
             _levels = new List<ADOTabularLevel>();
+            _structure = structure;
+            if (structure != "Natural")
+            {
+                if (description.Length > 0) Description += '\n';
+                Description += "WARNING: Unnatural Hierarchy - may have a negative performance impact";
+                ColumnType = ADOTabularColumnType.UnnaturalHierarchy;
+            }
         }
         public List<ADOTabularLevel> Levels { get { return _levels; } }
-
+        public string Structure { get { return _structure; } }
         public override string DaxName
         {
             get

@@ -254,17 +254,22 @@ namespace DaxStudio.UI.Model
                     redirectRequest.AllowAutoRedirect = false;
                     redirectRequest.Timeout = REQUEST_TIMEOUT;
                     redirectRequest.Proxy = proxy;
+                    try {
+                        using (var netResponse = redirectRequest.GetResponse())
+                        {
+                            var redirectResponse = (HttpWebResponse)netResponse;
+                            redirectUrl = redirectResponse.Headers["Location"];
+                            var redirectUri = new Uri(redirectUrl);
 
-                    using (var netResponse = redirectRequest.GetResponse())
+                            // set the shared redirectHost variable
+                            redirectHost = redirectUri.Host;
+                            Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
+                            System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
+                        }
+                    }
+                    catch (Exception ex)
                     {
-                        var redirectResponse = (HttpWebResponse)netResponse;
-                        redirectUrl = redirectResponse.Headers["Location"];
-                        var redirectUri = new Uri(redirectUrl);
-
-                        // set the shared redirectHost variable
-                        redirectHost = redirectUri.Host;
-                        Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter", "CallDaxFormatterAsync", uri.ToString());
-                        System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
+                        Log.Error("{class} {method} {error}", "DaxFormatter", "PrimeConnectionAsync", ex.Message);
                     }
                 }
                 Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "End");

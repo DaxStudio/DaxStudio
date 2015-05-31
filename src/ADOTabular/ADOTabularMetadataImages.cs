@@ -20,6 +20,7 @@ namespace ADOTabular
         Database,
         Perspective,
         Hierarchy,
-        Kpi
+        Kpi,
+        UnnaturalHierarchy
     }
 }

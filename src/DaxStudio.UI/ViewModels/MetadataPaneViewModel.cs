@@ -72,7 +72,7 @@ namespace DaxStudio.UI.ViewModels
 
         private ADOTabularModel _selectedModel;
 
-        public void Refresh()
+        public void RefreshMetadata()
         {
             var _tmpModel = _selectedModel;
             _selectedModel = null;
@@ -222,7 +222,7 @@ namespace DaxStudio.UI.ViewModels
                 _databasesView = CollectionViewSource.GetDefaultView(_databases) as ListCollectionView;
                 _databasesView.CustomSort = new DatabaseComparer();
                 NotifyOfPropertyChange(() => DatabasesView);
-                NotifyOfPropertyChange(() => Databases);
+                //NotifyOfPropertyChange(() => Databases);
             }
         }
         

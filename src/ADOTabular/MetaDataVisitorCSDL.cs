@@ -10,6 +10,7 @@ namespace ADOTabular
     public class MetaDataVisitorCSDL : IMetaDataVisitor
     {
         private readonly ADOTabularConnection _conn;
+        private  Dictionary<string, Dictionary<string, string>> _hierStructure;
 
         public MetaDataVisitorCSDL(ADOTabularConnection conn)
         {
@@ -51,6 +52,30 @@ namespace ADOTabular
                 outfile.Write(csdl);
             }
             */
+
+            // get hierarchy structure
+            var hierResCol = new AdomdRestrictionCollection { {"CATALOG_NAME", _conn.Database.Name }, {"CUBE_NAME", _conn.Database.Models.BaseModel.Name} };
+            var dsHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", hierResCol);
+
+            _hierStructure = new Dictionary<string,Dictionary<string,string>>();
+            foreach (DataRow row in dsHier.Tables[0].Rows)
+            {
+                var dimUName = row["DIMENSION_UNIQUE_NAME"].ToString();
+                var dimName = dimUName.Substring(1,dimUName.Length-2); // remove square brackets
+                var hierName = row["HIERARCHY_NAME"].ToString();
+                Dictionary<string,string> hd;
+                if (!_hierStructure.ContainsKey(dimName))
+                {
+                    hd =  new Dictionary<string,string>();
+
+                    _hierStructure.Add(dimName, hd);
+                }
+                else
+                {
+                    hd = _hierStructure[dimName];
+                }
+                hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
+            }
 
             using (XmlReader rdr = new XmlTextReader(new StringReader(csdl)))
             {
@@ -387,7 +412,7 @@ namespace ADOTabular
                                 break;
                         }
                     }
-                    hier = new ADOTabularHierarchy(table, hierName,hierName,hierCap??hierName, "", hierHidden, ADOTabularColumnType.Hierarchy, "");
+                    hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierHidden, ADOTabularColumnType.Hierarchy, "", _hierStructure[table.Caption][hierCap ?? hierName]);
                     table.Columns.Add(hier);
                     rdr.Read();
                 }

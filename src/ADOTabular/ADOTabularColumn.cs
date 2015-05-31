@@ -62,7 +62,7 @@ namespace ADOTabular
             }
         }
 
-        public string Description { get; private set; }
+        public string Description { get; set; }
 
         public bool IsVisible { get; private set; }
  
@@ -87,6 +87,8 @@ namespace ADOTabular
                     case ADOTabularColumnType.KPIGoal:
                     case ADOTabularColumnType.KPIStatus:
                         return MetadataImages.Measure;
+                    case ADOTabularColumnType.UnnaturalHierarchy:
+                        return MetadataImages.UnnaturalHierarchy;
                     default:
                         return IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;
                 

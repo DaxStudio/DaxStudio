@@ -39,7 +39,8 @@
                     <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/model.png" />
                     <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Table.png" />
                     <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
-                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>        
+                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>
+                    <BitmapImage x:Key="UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
             <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />

@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Utils
 	        var sbQuery = new StringBuilder();
 	        foreach (var line in lines)
 	        {
-		        if (line.Trim().StartsWith("<Parameters "))
+		        if (line.Trim().StartsWith("<Parameters"))
 		        {
 			        inParams = true;
 		        }

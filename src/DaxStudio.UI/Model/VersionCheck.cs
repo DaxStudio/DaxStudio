@@ -9,12 +9,15 @@ namespace DaxStudio.UI.Model
     using DaxStudio.Interfaces;
     using System.ComponentModel.Composition;
     using Serilog;
+    using System.Threading.Tasks;
+    using Newtonsoft.Json.Linq;
 
     [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.Shared)]
     public class VersionCheck : PropertyChangedBase, IVersionCheck
     {
 
-        private const string CURRENT_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
+        private const string CURRENT_CODEPLEX_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
+        private const string CURRENT_GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/CurrentReleaseVersion.json";
         private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
         private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
@@ -124,34 +127,8 @@ namespace DaxStudio.UI.Model
                 }
                 VersionStatus = "Checking for updates...";
                 NotifyOfPropertyChange(() => VersionStatus);
-         
-                System.Net.WebClient http = new System.Net.WebClient();
-                //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
-                http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
-                MemoryStream ms;
-                try { 
-                    ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
-                }    
-                catch (System.Net.WebException wex)
-                {
-                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
-                    {
-                        // assume proxy auth error and re-try with current user credentials
-                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                        ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                XmlReader reader = XmlReader.Create(ms);
-                XmlDocument doc = new XmlDocument();
-                doc.Load(reader);
-                this.serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
-                ms.Close();
-                reader.Close();
-                
+
+                PopulateServerVersionFromCodeplex();
                 if (LocalVersion.CompareTo(serverVersion) > 0)
                     { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString(3));}
                 else if (LocalVersion.CompareTo(serverVersion) == 0)
@@ -162,6 +139,71 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(() => VersionStatus);
 
                 return this.serverVersion;
+            }
+        }
+
+        private void PopulateServerVersionFromCodeplex()
+        {
+            System.Net.WebClient http = new System.Net.WebClient();
+            //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
+            http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
+            MemoryStream ms;
+            try
+            {
+                ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_CODEPLEX_VERSION_URL)));
+            }
+            catch (System.Net.WebException wex)
+            {
+                if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                {
+                    // assume proxy auth error and re-try with current user credentials
+                    http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                    ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_CODEPLEX_VERSION_URL)));
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            XmlReader reader = XmlReader.Create(ms);
+            XmlDocument doc = new XmlDocument();
+            doc.Load(reader);
+            this.serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
+            ms.Close();
+            reader.Close();
+
+        }
+
+
+        private async Task PopulateServerVersionFromGithub()
+        {
+            using (System.Net.WebClient http = new System.Net.WebClient())
+            {
+                //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
+                http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
+                string json;
+                try
+                {
+                    json = http.DownloadString( new Uri(CURRENT_GITHUB_VERSION_URL));
+                    
+                }
+                catch (System.Net.WebException wex)
+                {
+                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                    {
+                        // assume proxy auth error and re-try with current user credentials
+                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                        json = http.DownloadString(new Uri(CURRENT_GITHUB_VERSION_URL));
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
+                JObject jobj = JObject.Parse(json);
+
+                this.serverVersion = Version.Parse((string)jobj["Version"]);
             }
         }
 

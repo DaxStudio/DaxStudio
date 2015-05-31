@@ -13,7 +13,8 @@ namespace ADOTabular
         KPIStatus,
         KPIGoal,
         Hierarchy,
-        Level
+        Level,
+        UnnaturalHierarchy
     }
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>

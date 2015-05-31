@@ -182,6 +182,9 @@ namespace DaxStudio.UI.ViewModels
                             case "directquerymode":
                                 DirectQueryMode = p.Value;
                                 break;
+                            case "application name":
+                                ApplicationName = p.Value;
+                                break;
                             default:
                                 AdditionalProperties.Append(string.Format("{0}={1};", p.Key, p.Value));
                                 break;
@@ -226,6 +229,7 @@ namespace DaxStudio.UI.ViewModels
             set { _roles = value; }
         }
         public string EffectiveUserName { get; set; }
+        public string ApplicationName { get; set; }
 
         private string _directQueryMode;
         public string DirectQueryMode { 
