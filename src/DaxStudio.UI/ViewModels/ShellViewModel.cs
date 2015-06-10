@@ -167,7 +167,7 @@ namespace DaxStudio.UI.ViewModels {
         public void Handle(NewVersionEvent message)
         {           
             
-            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion);
+            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }

@@ -17,10 +17,15 @@ namespace DaxStudio.UI.Model
     {
 
         private const string CURRENT_CODEPLEX_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
-        private const string CURRENT_GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/CurrentReleaseVersion.json";
+#if DEBUG
+        private const string CURRENT_GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
+#else
+        private const string CURRENT_GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
+#endif
         private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
         private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
+        
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
         /// <summary>
@@ -128,7 +133,7 @@ namespace DaxStudio.UI.Model
                 VersionStatus = "Checking for updates...";
                 NotifyOfPropertyChange(() => VersionStatus);
 
-                PopulateServerVersionFromCodeplex();
+                PopulateServerVersionFromGithub();
                 if (LocalVersion.CompareTo(serverVersion) > 0)
                     { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString(3));}
                 else if (LocalVersion.CompareTo(serverVersion) == 0)
@@ -175,31 +180,33 @@ namespace DaxStudio.UI.Model
         }
 
 
-        private async Task PopulateServerVersionFromGithub()
+        private void PopulateServerVersionFromGithub()
         {
             using (System.Net.WebClient http = new System.Net.WebClient())
             {
                 //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
                 http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
-                string json;
-                try
-                {
-                    json = http.DownloadString( new Uri(CURRENT_GITHUB_VERSION_URL));
+                string json = "";
+                //await Task.Run(() => {
+                    try
+                    {
+                         json = http.DownloadString(new Uri(CURRENT_GITHUB_VERSION_URL)); 
                     
-                }
-                catch (System.Net.WebException wex)
-                {
-                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
-                    {
-                        // assume proxy auth error and re-try with current user credentials
-                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                        json = http.DownloadString(new Uri(CURRENT_GITHUB_VERSION_URL));
                     }
-                    else
+                    catch (System.Net.WebException wex)
                     {
-                        throw;
+                        if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                        {
+                            // assume proxy auth error and re-try with current user credentials
+                            http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                            json = http.DownloadString(new Uri(CURRENT_GITHUB_VERSION_URL));
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
-                }
+                //});
 
                 JObject jobj = JObject.Parse(json);
 
