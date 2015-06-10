@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace DaxStudio.Tests
 {
@@ -159,7 +160,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
-        public async void TestDaxFormatterProxyWithLongQuery()
+        public async Task TestDaxFormatterProxyWithLongQuery()
         {
             var qry = @"
 EVALUATE
@@ -180,9 +181,33 @@ PATHCONTAINS(""BLACK|Blue|Multi"", 'Product'[Colour]))
 )
 ORDER BY 'SalesTerritory'[SalesTerritory Country] desc, 'Product'[Colour]
 ";
-            
+
+            var formattedQry = @"EVALUATE
+CALCULATETABLE (
+    ADDCOLUMNS (
+        GENERATE (
+            GENERATE (
+                VALUES ( 'SalesTerritory'[SalesTerritory Country] ),
+                VALUES ( 'Product'[Colour] )
+            ),
+            VALUES ( 'Reseller'[BusinessType] )
+        ),
+        ""Sales Amt"", [Sale Amt]
+    ),
+    'Date'[Calendar Year] = 2006,
+    FILTER (
+        VALUES ( 'Product'[Colour] ),
+        PATHCONTAINS ( ""BLACK|Blue|Multi"", 'Product'[Colour] )
+    )
+)
+ORDER BY
+    'SalesTerritory'[SalesTerritory Country] DESC,
+    'Product'[Colour]
+
+";
             DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
-            Assert.AreEqual(563, res.FormattedDax.Length, "Query length does not match");
+            Assert.AreEqual(573, res.FormattedDax.Length, "Query length does not match");
+            Assert.AreEqual(formattedQry, res.FormattedDax, "Formatted Query does not match expected format");
             Assert.IsNull(res.errors);
             
         }

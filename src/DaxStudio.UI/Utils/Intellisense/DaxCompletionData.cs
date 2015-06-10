@@ -44,6 +44,14 @@ namespace DaxStudio.UI.Utils
             _priority = 50.0;
         }
 
+        public DaxCompletionData(ADOTabular.ADOTabularDynamicManagementView dmv)
+        {
+            _text = dmv.Caption;
+            _content = dmv.Caption;
+            _description = "";  //TODO - maybe add restrictions list??
+            _image = GetMetadataImage(dmv.MetadataImage);
+            _priority = 50.0;
+        }
         public DaxCompletionData(ADOTabular.ADOTabularFunction function)
         {
             _text = function.DaxName;
@@ -127,7 +135,9 @@ namespace DaxStudio.UI.Utils
                 case ADOTabular.MetadataImages.Column:
                     return new BitmapImage(new Uri("pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" ));
                 case ADOTabular.MetadataImages.Database:
+                    break;
                 case ADOTabular.MetadataImages.DmvTable:
+                    return new BitmapImage(new Uri("pack://application:,,,/DaxStudio.UI;component/images/Metadata/DmvTable.png"));
                 case ADOTabular.MetadataImages.Folder:
                     break;
                 case ADOTabular.MetadataImages.Function:

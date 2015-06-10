@@ -105,13 +105,28 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void MultiLineParsing()
         {
-            var dax = "\r\n\r\n\r\n e";
             var daxState = DaxLineParser.ParseLine(" e", 2,6);
             Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState);
             Assert.AreEqual(7, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
         }
 
-        
+        [TestMethod]
+        public void DmvParsing()
+        {
+            var dax = "SELECT * FROM $SYSTEM.dis";
+            var daxState = DaxLineParser.ParseLine(dax, 24, 0);
+            Assert.AreEqual(LineState.Dmv, daxState.LineState);
+            Assert.AreEqual(22, daxState.StartOffset, "StartOffset");
+        }
+
+        [TestMethod]
+        public void SimpleDmvParsing()
+        {
+            var dax = "$SYSTEM.dis";
+            var daxState = DaxLineParser.ParseLine(dax, 11, 0);
+            Assert.AreEqual(LineState.Dmv, daxState.LineState);
+            Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
+        }
     }
 }

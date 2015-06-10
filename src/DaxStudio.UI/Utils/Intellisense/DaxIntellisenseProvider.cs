@@ -19,6 +19,7 @@ namespace DaxStudio.UI.Utils
         Keywords=4,
         Measures = 8,
         Tables = 16,
+        DMV = 32,
         ALL = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
     }
 
@@ -115,6 +116,9 @@ namespace DaxStudio.UI.Utils
                                 case LineState.Measure:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
                                     break;
+                                case LineState.Dmv:
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.DMV);
+                                    break;
                                 default:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.ALL);
                                     break;
@@ -129,13 +133,22 @@ namespace DaxStudio.UI.Utils
                         //var txt = line.Substring(_daxState.StartOffset,_daxState.EndOffset - _daxState.StartOffset);
 
                         completionWindow.CompletionList.SelectItem(txt);
-                        completionWindow.Show();
-                        completionWindow.Closing += completionWindow_Closing;
-                        completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
-                        completionWindow.Closed += delegate
+                        // only show the completion window if we have valid items to display
+                        if (completionWindow.CompletionList.ListBox.HasItems)
+                        {
+                            completionWindow.Show();
+                            completionWindow.Closing += completionWindow_Closing;
+                            completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
+                            completionWindow.Closed += delegate
+                            {
+                                _editor.DisposeCompletionWindow();
+                            };
+                        }
+                        else
                         {
                             _editor.DisposeCompletionWindow();
-                        };
+                            completionWindow = null;
+                        }
                     }
                     else
                     {
@@ -242,15 +255,27 @@ namespace DaxStudio.UI.Utils
                 }
             }
 
+            if (metadataType.HasFlag(IntellisenseMetadataTypes.DMV))
+            {
+                foreach (var dmv in Document.Connection.DynamicManagementViews)
+                {
+                    tmpData.Add(new DaxCompletionData(dmv));
+                }
+            }
+
             // add keywords
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Keywords))
             {
-                tmpData.Add( new DaxCompletionData("EVALUATE", 200.0));
-                tmpData.Add( new DaxCompletionData("MEASURE", 200.0));
-                tmpData.Add( new DaxCompletionData("DEFINE", 200.0));
-                tmpData.Add( new DaxCompletionData("ORDER BY", 200.0));
-                tmpData.Add( new DaxCompletionData("ASC", 200.0));
-                tmpData.Add( new DaxCompletionData("DESC", 200.0));
+                tmpData.Add(new DaxCompletionData("EVALUATE", 200.0));
+                tmpData.Add(new DaxCompletionData("MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData("DEFINE", 200.0));
+                tmpData.Add(new DaxCompletionData("ORDER BY", 200.0));
+                tmpData.Add(new DaxCompletionData("ASC", 200.0));
+                tmpData.Add(new DaxCompletionData("DESC", 200.0));
+                tmpData.Add(new DaxCompletionData("SELECT", 200.0));
+                tmpData.Add(new DaxCompletionData("FROM", 200.0));
+                tmpData.Add(new DaxCompletionData("WHERE", 200.0));
+                tmpData.Add(new DaxCompletionData("$SYSTEM", 200.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
             {

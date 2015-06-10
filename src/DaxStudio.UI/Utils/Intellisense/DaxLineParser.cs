@@ -19,7 +19,8 @@ namespace DaxStudio.UI.Utils
         LetterOrDigit,
         Other,
         NotSet,
-        TableDelimiter
+        TableDelimiter,
+        Dmv
     }
 
     public class DaxLineState
@@ -109,18 +110,51 @@ namespace DaxStudio.UI.Utils
                     case '\'':
                         if (daxState.LineState != LineState.String && daxState.LineState != LineState.Table)
                         {
-                            daxState.SetState(LineState.Table,i);
+                            daxState.SetState(LineState.Table,i+1);
                             sbTableName.Clear();
                             break;
                         }
                         if (daxState.LineState == LineState.Table)
                             daxState.SetState( LineState.TableDelimiter,i);
                         break;
-                    default:
+                    case '(':
+                    case '=':
+                    case '-':
+                    case '\\':
+                    case '*':
+                    case '>':
+                    case '<':
+                    case '^':
+                    case '%':
+                    case '&':
+                    case '|':
+                    case ',':
+                    case ' ':
                         if (daxState.LineState != LineState.String 
                             && daxState.LineState != LineState.Table 
                             && daxState.LineState != LineState.TableDelimiter
                             && daxState.LineState != LineState.Column )
+                        
+                        //if (daxState.LineState == LineState.Dmv)
+                        {
+                            daxState.SetState(char.IsLetterOrDigit(line[i]) ? LineState.LetterOrDigit : LineState.Other, i);
+                        }
+                        if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
+                        break;
+                    case '.':
+                        if (GetPreceedingWord(line.Substring(0,i)).ToUpper() == "$SYSTEM") {
+                            if (daxState.LineState != LineState.String && daxState.LineState != LineState.Table)
+                            {
+                                daxState.SetState(LineState.Dmv, i+1);
+                            }
+                        }
+                        break;
+                    default:
+                        if (daxState.LineState != LineState.String 
+                            && daxState.LineState != LineState.Table 
+                            && daxState.LineState != LineState.TableDelimiter
+                            && daxState.LineState != LineState.Column 
+                            && daxState.LineState != LineState.Dmv)
                         {
                             daxState.SetState( char.IsLetterOrDigit(line[i])?LineState.LetterOrDigit:LineState.Other ,i);
                         }
@@ -173,8 +207,15 @@ namespace DaxStudio.UI.Utils
         
         public static ISegment GetPreceedingWordSegment(TextDocument document, int endOffset, string line)
         {
+            string word = GetPreceedingWord(line);
+            var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document,endOffset - word.Length, word.Length);
+            return segment;
+        }
+
+        public static string GetPreceedingWord(string line)
+        {
             string word = "";
-            int pos=0;
+            int pos = 0;
             char c;
             bool inStr = false;
             bool inCol = false;
@@ -196,8 +237,9 @@ namespace DaxStudio.UI.Utils
                     case '&':
                     case '|':
                     case ',':
+                    case '.':
                     case ' ':
-                        if (!inStr && !inTab && !inCol) { word = ""; pos = i+1; }
+                        if (!inStr && !inTab && !inCol) { word = ""; pos = i + 1; }
                         else word += c;
                         break;
                     case '[':
@@ -222,8 +264,7 @@ namespace DaxStudio.UI.Utils
                 }
             }
             System.Diagnostics.Debug.Assert((line.Length - pos) == word.Length);
-            var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document,endOffset - word.Length, word.Length);
-            return segment;
+            return word;
         }
 
         public static bool IsLineMeasureDefinition(string line)
