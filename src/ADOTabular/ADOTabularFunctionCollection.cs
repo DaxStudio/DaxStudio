@@ -19,19 +19,6 @@ namespace ADOTabular
             _functions = new Dictionary<string, ADOTabularFunction>();
         }
 
-        /*
-        private DataSet _dsFuncs;
-        private DataSet GetFunctionsTable()
-        {
-            if (_dsFuncs == null)
-            {
-                _dsFuncs = _adoTabConn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS");
-            }
-
-            return _dsFuncs;
-        }
-        */
-
         public int Count
         {
             get { return _functions.Count; }

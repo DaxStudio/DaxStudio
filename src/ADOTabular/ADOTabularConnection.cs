@@ -226,7 +226,7 @@ namespace ADOTabular
         public DataSet GetSchemaDataSet(string schemaName)
         {
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return _adomdConn.GetSchemaDataSet(schemaName, null);
+            return _adomdConn.GetSchemaDataSet(schemaName, null,true);
         }
 
          public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
@@ -234,7 +234,7 @@ namespace ADOTabular
             return Task.Factory.StartNew(() =>
                 {
                     if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-                    return _adomdConn.GetSchemaDataSet(schemaName, null);
+                    return _adomdConn.GetSchemaDataSet(schemaName, null,true);
                 });
         }
 
@@ -244,7 +244,17 @@ namespace ADOTabular
             {
                 _adomdConn.Open();
             }
-            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
+            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection,true);
+        }
+
+        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection, bool throwOnInlineErrors)
+        {
+            if (_adomdConn.State != ConnectionState.Open)
+            {
+                _adomdConn.Open();
+            }
+            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection, throwOnInlineErrors);
+            
         }
 
         public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
@@ -254,7 +264,7 @@ namespace ADOTabular
                 {
                     if (_adomdConn.State != ConnectionState.Open)
                         _adomdConn.Open();
-                    return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection);
+                    return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection,true);
                 });
         }
 
@@ -444,7 +454,7 @@ namespace ADOTabular
                                                  new AdomdRestrictionCollection
                                                      {
                                                          new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
-                                                     });
+                                                     },true);
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
             
             using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)))

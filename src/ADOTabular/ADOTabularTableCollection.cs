@@ -15,7 +15,7 @@ namespace ADOTabular
         {
             _adoTabConn = adoTabConn;
             _model = model;
-            
+
         }
 
         private SortedDictionary<string,ADOTabularTable> InternalTableCollection
@@ -55,6 +55,11 @@ namespace ADOTabular
             {
                 return InternalTableCollection[index];
             }
+        }
+
+        public bool ContainsKey(string index)
+        {
+            return InternalTableCollection.ContainsKey(index);
         }
 
         public ADOTabularTable this[int index]

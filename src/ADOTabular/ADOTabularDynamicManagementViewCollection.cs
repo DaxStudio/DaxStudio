@@ -20,7 +20,8 @@ namespace ADOTabular
             {
                 _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
             }
-            return _dsDmvs.Tables[0];
+            _dsDmvs.Tables[0].DefaultView.Sort = "SchemaName";
+            return _dsDmvs.Tables[0].DefaultView.ToTable();
         }
 
         public IEnumerator<ADOTabularDynamicManagementView> GetEnumerator()

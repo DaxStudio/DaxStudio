@@ -478,7 +478,7 @@ namespace ADOTabular
 
         public void Visit(ADOTabularFunctionGroupCollection functionGroups)
         {
-            DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS").Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
+            DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS",null,false).Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
             foreach (DataRow dr in drFuncs)
             {
                 functionGroups.AddFunction(dr);

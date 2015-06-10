@@ -298,7 +298,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions)
+        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions, bool throwOnInlineErrors)
         {
             if (_type == AdomdType.AnalysisServices)
             {
@@ -315,7 +315,7 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     _conn.Open();
                 }
-                return _conn.GetSchemaDataSet(schemaName, coll);
+                return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
             }
             else
             {
@@ -333,7 +333,7 @@ namespace ADOTabular.AdomdClientWrappers
                     {
                         _connExcel.Open();
                     }
-                    return _connExcel.GetSchemaDataSet(schemaName, coll);
+                    return _connExcel.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
                 };
                 return f();
             }

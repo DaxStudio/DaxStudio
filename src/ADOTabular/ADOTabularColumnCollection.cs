@@ -40,6 +40,11 @@ namespace ADOTabular
             _cols.Add(column.Name,column);
         }
 
+        public bool ContainsKey(string index)
+        {
+            return _cols.ContainsKey(index);
+        }
+
         public void Clear()
         {
             _cols.Clear();
