@@ -34,6 +34,7 @@ namespace DaxStudio.UI.Utils
         {
             Document = activeDocument;
             _editor = editor;
+            
         }
 
         #region Public IIntellisenseProvider Interface
@@ -73,8 +74,12 @@ namespace DaxStudio.UI.Utils
                     // don't show intellisense if we are in the measure name of a DEFINE block
                     if (DaxLineParser.IsLineMeasureDefinition(GetCurrentLine())) return;
 
-
+                    // TODO add insights window for Function parameters
+                    //InsightWindow insightWindow = new InsightWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    
                     completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    completionWindow.CloseAutomatically = false;
+                    
                     completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
 
                     if (char.IsLetterOrDigit(e.Text[0]))

@@ -412,7 +412,10 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
-        public string ConnectionString { get { return _connection.ConnectionString; } }
+
+        //public string ConnectionString { get { return _connection.ConnectionString; } }
+
+        public string ConnectionStringWithInitialCatalog { get { return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase ); } }
 
         public MetadataPaneViewModel MetadataPane
         {

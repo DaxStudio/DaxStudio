@@ -70,6 +70,11 @@ namespace DaxStudio.UI.Utils
     }
     public static class DaxLineParser
     {
+        //                                 " ,;(+-*^%=<>\\"
+        //                                 " ,;(+-*^%=<>\\%&|.\""
+        private const string Punctuation = " ,;(+-*^%=<>\\%&|.";
+ 
+
         private static Regex MeasureDefRegex = new Regex(@"\bmeasure\s*(?:'.*'|[^\s]*)\[?[^\]]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static DaxLineState ParseLine(string line, int offset, int startOfLineOffset )
@@ -129,6 +134,7 @@ namespace DaxStudio.UI.Utils
                     case '&':
                     case '|':
                     case ',':
+                    case ';':
                     case ' ':
                         if (daxState.LineState != LineState.String 
                             && daxState.LineState != LineState.Table 
@@ -183,7 +189,7 @@ namespace DaxStudio.UI.Utils
                 if (line.Length == 0) return " "; // return a space if we are at the start of a line
 
                 var lastChar = line[line.Length - 1];
-                if ("+\\*(,-><=^ ".Contains(lastChar)) return " "; //
+                if (Punctuation.Contains(lastChar)) return " "; //
 
                 if (line.EndsWith("\'"))
                 {
@@ -193,7 +199,7 @@ namespace DaxStudio.UI.Utils
                 for (var i = line.Length - 1; i >= 0; i--)
                 {
                     if (line[i] == separator) break;
-                    if (separator == ' ' && " ,(+*-^%=<>\\".Contains(line[i])) break;
+                    if (separator == ' ' && Punctuation.Contains(line[i])) break;
                     tableName = line[i] + tableName;
                 }
             }
@@ -237,6 +243,7 @@ namespace DaxStudio.UI.Utils
                     case '&':
                     case '|':
                     case ',':
+                    case ';':
                     case '.':
                     case ' ':
                         if (!inStr && !inTab && !inCol) { word = ""; pos = i + 1; }
@@ -274,7 +281,7 @@ namespace DaxStudio.UI.Utils
 
         public static bool IsSeparatorChar(char c)
         {
-            return "(=-\\*><^%&|, .\"".Contains(c);
+            return Punctuation.Contains(c);
         }
 
     }

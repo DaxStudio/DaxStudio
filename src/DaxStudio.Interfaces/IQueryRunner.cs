@@ -28,7 +28,7 @@ namespace DaxStudio.Interfaces
         void QueryCompleted(bool isCancelled);
         IDaxStudioHost Host { get; }
         string SelectedWorksheet { get; set; }
-        string ConnectionString { get; }
+        string ConnectionStringWithInitialCatalog { get; }
         bool ConnectedToPowerPivot { get; }
 
         void SetResultsMessage(string message, OutputTargets icon);

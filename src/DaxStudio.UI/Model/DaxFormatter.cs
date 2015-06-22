@@ -73,7 +73,7 @@ namespace DaxStudio.UI.Model
                     {
                         editor.IsEnabled = false;
                         editor.Document.BeginUpdate();
-                        editor.Document.Text = res.FormattedDax.TrimEnd();
+                        editor.Document.Text = res.FormattedDax;
                         editor.Document.EndUpdate();
                         editor.IsEnabled = true;
                     }
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.Model
                         var loc = editor.Document.GetLocation(editor.SelectionStart);
                         colOffset = loc.Column;
                         rowOffset = loc.Line;
-                        editor.SelectedText = res.FormattedDax.TrimEnd();
+                        editor.SelectedText = res.FormattedDax;
                     }
                     Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
                     doc.OutputMessage("Query Formatted via daxformatter.com");
@@ -138,8 +138,10 @@ namespace DaxStudio.UI.Model
             // trim off leading and trailing quotes
             var o2 = output.Substring(1, output.Length - 2);
             o2 = o2.Replace("\\r\\n", "\r\n");
+            o2 = o2.TrimEnd( Environment.NewLine.ToCharArray() );
             o2 = o2.Replace("\\\"", "\"");
-
+            o2 = o2.Replace("\\\\", "\\");
+            
             //todo if result is empty string then call out to rich format API to get error message
             var res2 = new DaxFormatterResult();
             if (errorFound)

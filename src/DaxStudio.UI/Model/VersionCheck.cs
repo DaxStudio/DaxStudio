@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Model
 #else
         private const string CURRENT_GITHUB_VERSION_URL = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
 #endif
-        private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
+        //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
         private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         
@@ -31,7 +31,7 @@ namespace DaxStudio.UI.Model
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
         /// </summary>
-        private Version serverVersion;
+        private Version _serverVersion;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
@@ -70,7 +70,7 @@ namespace DaxStudio.UI.Model
             {
                 if (!VersionIsLatest && ServerVersion != DismissedVersion)
                 {
-                    _eventAggregator.PublishOnUIThread(new NewVersionEvent(ServerVersion, DAXSTUDIO_RELEASE_URL));
+                    _eventAggregator.PublishOnUIThread(new NewVersionEvent(ServerVersion, DownloadUrl));
                 }
             }
             catch (Exception ex)
@@ -126,24 +126,26 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                if (this.serverVersion != null)
+                if (this._serverVersion != null)
                 {
-                    return this.serverVersion;
+                    return this._serverVersion;
                 }
+
                 VersionStatus = "Checking for updates...";
                 NotifyOfPropertyChange(() => VersionStatus);
 
                 PopulateServerVersionFromGithub();
-                if (LocalVersion.CompareTo(serverVersion) > 0)
-                    { VersionStatus = string.Format("(Ahead of official release - {0} )",serverVersion.ToString(3));}
-                else if (LocalVersion.CompareTo(serverVersion) == 0)
+                
+                if (LocalVersion.CompareTo(_serverVersion) > 0)
+                    { VersionStatus = string.Format("(Ahead of official release - {0} )",_serverVersion.ToString(3));}
+                else if (LocalVersion.CompareTo(_serverVersion) == 0)
                     { VersionStatus = "(Latest Official Release)"; }
                 else
-                    { VersionStatus = string.Format("(New Version available - {0})", serverVersion.ToString(3)); }
+                    { VersionStatus = string.Format("(New Version available - {0})", _serverVersion.ToString(3)); }
             
                 NotifyOfPropertyChange(() => VersionStatus);
 
-                return this.serverVersion;
+                return this._serverVersion;
             }
         }
 
@@ -173,7 +175,7 @@ namespace DaxStudio.UI.Model
             XmlReader reader = XmlReader.Create(ms);
             XmlDocument doc = new XmlDocument();
             doc.Load(reader);
-            this.serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
+            this._serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
             ms.Close();
             reader.Close();
 
@@ -210,7 +212,8 @@ namespace DaxStudio.UI.Model
 
                 JObject jobj = JObject.Parse(json);
 
-                this.serverVersion = Version.Parse((string)jobj["Version"]);
+                this._serverVersion = Version.Parse((string)jobj["Version"]);
+                this.DownloadUrl = (string)jobj["DownloadUrl"];
             }
         }
 
@@ -224,17 +227,25 @@ namespace DaxStudio.UI.Model
 
         public string VersionStatus { get; set; }
 
-        public static void OpenDaxStudioReleasePageInBrowser()
+        public void OpenDaxStudioReleasePageInBrowser()
         {
             // Open URL in Browser
-            System.Diagnostics.Process.Start(DAXSTUDIO_RELEASE_URL);
+            System.Diagnostics.Process.Start(DownloadUrl);
         }
         public void Update()
         {
-            if (serverVersion != null) return;
+            if (_serverVersion != null) return;
             var ver = this.ServerVersion;
         }
 
+        private string _downloadUrl = "https://daxstudio.codeplex.com/releases"; 
+        public string DownloadUrl { 
+            get { return _downloadUrl; } 
+            set { if (value == _downloadUrl) return; 
+                _downloadUrl = value; 
+                NotifyOfPropertyChange(() => DownloadUrl); 
+            } 
+        }
     }
 }
 

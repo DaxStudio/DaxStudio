@@ -175,7 +175,6 @@
     <Compile Include="DaxEditor_dp.cs" />
     <Compile Include="DAXMetadataBrowser.cs" />
     <Compile Include="ITextBoxController.cs" />
-    <Compile Include="MyCompletionData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

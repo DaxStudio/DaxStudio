@@ -35,11 +35,11 @@ namespace DaxStudio.UI.ResultsTargets
                         runner.OutputMessage("Query Started");
                         var sw = Stopwatch.StartNew();
                         var dq = runner.QueryText;
-                                                
+                        
                         //  write results to Excel
                         runner.Host.Proxy.OutputLinkedResultAsync(dq
                             , runner.SelectedWorksheet
-                            , runner.ConnectedToPowerPivot?"":runner.ConnectionString).ContinueWith((ascendant) => {
+                            , runner.ConnectedToPowerPivot?"":runner.ConnectionStringWithInitialCatalog).ContinueWith((ascendant) => {
 
                                 sw.Stop();
                                 var durationMs = sw.ElapsedMilliseconds;

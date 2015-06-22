@@ -467,7 +467,7 @@ namespace DaxStudio.ExcelAddin
             if (wbc == null) throw new Exception("Workbook table connection not found");
 
             var listObjs = ws.ListObjects;
-            var r = ws.Cells[1, 1];
+            Range r = ws.Cells[1, 1];
             var lo = listObjs.Add( SourceType: XlListObjectSourceType.xlSrcModel
                 , Source: wbc
                 , Destination: r);
@@ -485,7 +485,26 @@ namespace DaxStudio.ExcelAddin
             oleCnn.Refresh();
             WriteQueryToExcelComment(excelSheet, daxQuery);
         }
-
+        /* 
+         * VBA equivalent code for the above
+         * 
+     With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+        Connections("SqlServer Demo ContosoRetailDW"), Destination:=Range("$A$1")). _
+        TableObject
+        .RowNumbers = False
+        .PreserveFormatting = True
+        .RefreshStyle = 1
+        .AdjustColumnWidth = True
+        .ListObject.DisplayName = "Table_Currency"
+        .Refresh
+    End With
+    With Selection.ListObject.TableObject.WorkbookConnection.OLEDBConnection
+        .CommandText = Array( _
+        "evaluate filter(Currency, left(currency[Currency Code],1)=""C"")" & Chr(13) & "" & Chr(10) & "")
+        .CommandType = xlCmdDAX
+    End With
+    ActiveWorkbook.Connections("ModelConnection_Currency").Refresh
+         */
 
         public static void DaxQueryTable2013(Worksheet excelSheet, string daxQuery, string connectionString)        
         {

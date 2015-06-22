@@ -53,6 +53,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 svr.Connect(connStr);
 
                 // STEP 1: send the request to server.
+                Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
                 System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
                 
                 System.Xml.XmlReader xmlaResponseFromServer=null; // will be used to parse the XML/A response from server

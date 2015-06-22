@@ -202,14 +202,21 @@ CALCULATETABLE (
 )
 ORDER BY
     'SalesTerritory'[SalesTerritory Country] DESC,
-    'Product'[Colour]
-
-";
+    'Product'[Colour]";
             DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
-            Assert.AreEqual(573, res.FormattedDax.Length, "Query length does not match");
+            Assert.AreEqual(569, res.FormattedDax.Length, "Query length does not match");
             Assert.AreEqual(formattedQry, res.FormattedDax, "Formatted Query does not match expected format");
             Assert.IsNull(res.errors);
             
+        }
+
+        [TestMethod]
+        public async Task TestBackslashEscapgin()
+        {
+            var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
+            var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            Assert.AreEqual(expectedQry, res.FormattedDax);
         }
     }
 }

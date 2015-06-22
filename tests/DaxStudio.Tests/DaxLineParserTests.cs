@@ -128,5 +128,11 @@ namespace DaxStudio.Tests
             Assert.AreEqual(LineState.Dmv, daxState.LineState);
             Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
         }
+
+        [TestMethod]
+        public void TestFindTableNameEuropeanListSeparator()
+        {
+            Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table;table1[col1"));
+        }
     }
 }
