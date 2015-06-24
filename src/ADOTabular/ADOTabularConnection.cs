@@ -83,7 +83,7 @@ namespace ADOTabular
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 var db = dd[_adomdConn.Database];
-                if (_db == null || db.Id != _db.Id)
+                if (_db == null || db.Id != _db.Id || db.Id == null)
                 {
                     _db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
                 }

@@ -54,7 +54,7 @@ namespace ADOTabular
             */
 
             // get hierarchy structure
-            var hierResCol = new AdomdRestrictionCollection { {"CATALOG_NAME", _conn.Database.Name }, {"CUBE_NAME", _conn.Database.Models.BaseModel.Name} };
+            var hierResCol = new AdomdRestrictionCollection { { "CATALOG_NAME", _conn.Database.Name }, { "CUBE_NAME", _conn.Database.Models.BaseModel.Name }, { "HIERARCHY_VISIBILITY" , 3} };
             var dsHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", hierResCol);
 
             _hierStructure = new Dictionary<string,Dictionary<string,string>>();

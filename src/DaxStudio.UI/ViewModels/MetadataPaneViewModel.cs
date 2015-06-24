@@ -152,6 +152,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     catch (Exception ex)
                     {
+                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "Tables", ex.Message, ex.StackTrace);
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error,ex.Message));
                     }
                 }
