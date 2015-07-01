@@ -112,6 +112,7 @@
     <Compile Include="AdomdClientWrappers\Position.cs" />
     <Compile Include="AdomdClientWrappers\Property.cs" />
     <Compile Include="ADOTabularColumn.cs" />
+    <Compile Include="ADOTabularKeywordCollection.cs" />
     <Compile Include="ADOTabularKpiComponent.cs" />
     <Compile Include="ADOTabularColumnCollection.cs" />
     <Compile Include="ADOTabularDatabase.cs" />

@@ -40,7 +40,8 @@ namespace ADOTabular
 
             if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3368.0"))
                 resColl.Add(new AdomdRestriction("VERSION", "2.0"));
-            else if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0"))
+            else if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0")
+                || (_conn.IsPowerPivot && _conn.ServerVersion.VersionGreaterOrEqualTo("11.0.2830.0")) )
                 resColl.Add(new AdomdRestriction("VERSION", "1.1"));
             var ds = _conn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", resColl);
             string csdl = ds.Tables[0].Rows[0]["Metadata"].ToString();
@@ -485,7 +486,14 @@ namespace ADOTabular
             }
         }
 
-
+        public void Visit(ADOTabularKeywordCollection keywords)
+        {
+            DataRowCollection drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0].Rows;
+            foreach (DataRow dr in drKeywords)
+            {
+                keywords.Add(dr["Keyword"].ToString());
+            }
+        }
     }
 
 }

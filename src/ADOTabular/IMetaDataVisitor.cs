@@ -8,5 +8,7 @@ namespace ADOTabular
         void Visit(ADOTabularTableCollection tables);
         SortedDictionary<string,ADOTabularColumn> Visit(ADOTabularColumnCollection columns);
         void Visit(ADOTabularFunctionGroupCollection functionGroups);
+
+        void Visit(ADOTabularKeywordCollection aDOTabularKeywordCollection);
     }
 }

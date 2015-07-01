@@ -83,7 +83,7 @@ namespace ADOTabular
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 var db = dd[_adomdConn.Database];
-                if (_db == null || db.Id != _db.Id || db.Id == null)
+                if (_db == null || db.Name != _db.Name )
                 {
                     _db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
                 }
@@ -372,6 +372,15 @@ namespace ADOTabular
         {
             get { return _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(this)); }
         }
+
+        private ADOTabularKeywordCollection _keywords;
+        public ADOTabularKeywordCollection Keywords
+        {
+            get {
+                if (_keywords == null) { _keywords = new ADOTabularKeywordCollection(this); }
+                return _keywords; }
+        }
+
         /*
         private ADOTabularFunctionCollection _adoTabFuncColl;
         public ADOTabularFunctionCollection Functions

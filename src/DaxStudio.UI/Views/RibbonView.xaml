@@ -142,6 +142,7 @@
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1">
                                 <Label FontSize="14" Foreground="DimGray" FontWeight="Bold">Select a Document</Label>
+                                
                             </StackPanel>
                         </Grid> 
                     </Fluent:BackstageTabItem>

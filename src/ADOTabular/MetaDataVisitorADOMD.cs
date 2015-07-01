@@ -109,6 +109,12 @@ namespace ADOTabular
         {
             throw new System.NotImplementedException();
         }
+
+
+        public void Visit(ADOTabularKeywordCollection aDOTabularKeywordCollection)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 }

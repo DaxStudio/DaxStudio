@@ -9,7 +9,7 @@ namespace ADOTabular
         private readonly ADOTabularModel _model;
         private ADOTabularColumnCollection _columnColl;
 
-        public ADOTabularTable(ADOTabularConnection adoTabConn, DataRow dr, ADOTabularModel model)
+       /* public ADOTabularTable(ADOTabularConnection adoTabConn, DataRow dr, ADOTabularModel model)
         {
             Caption = dr["DIMENSION_NAME"].ToString();
             IsVisible = bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString());
@@ -17,13 +17,14 @@ namespace ADOTabular
             _adoTabConn = adoTabConn;
             _model = model;
         }
-
+        */
         public ADOTabularTable(ADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible)
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;
             Name = name ?? internalReference;
             Caption = caption ?? name ?? internalReference;
+            DaxName = GetDaxName();
             Description = description;
             IsVisible = isVisible;
         }
@@ -32,23 +33,30 @@ namespace ADOTabular
 
         public string DaxName
         {
-            get { 
-                const string VALID_NAME_START = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
-                const string STANDARD_NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+            get;
+            private set;
+        }
 
-                bool goodFirstCharacter = VALID_NAME_START.IndexOf(Name[0]) >= 0;
-                bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
-                string nameUpper = Name.ToUpper();
-                bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
-                if (Name.Length > 0
-                    && goodFirstCharacter
-                    && noSpecialCharacters
-                    && noSpecialName) {
-                    return Name;
-                }
-                else {
-                    return string.Format("'{0}'", Name); 
-                }
+        private string GetDaxName()
+        {
+            const string VALID_NAME_START = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+            const string STANDARD_NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+
+            bool goodFirstCharacter = VALID_NAME_START.IndexOf(Name[0]) >= 0;
+            bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
+            string nameUpper = Name.ToUpper();
+            //bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
+            bool noSpecialName = !_adoTabConn.Keywords.Contains(nameUpper);
+            if (Name.Length > 0
+                && goodFirstCharacter
+                && noSpecialCharacters
+                && noSpecialName)
+            {
+                return Name;
+            }
+            else
+            {
+                return string.Format("'{0}'", Name);
             }
         }
 

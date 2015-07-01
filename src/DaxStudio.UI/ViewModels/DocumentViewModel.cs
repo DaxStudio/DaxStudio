@@ -1265,7 +1265,6 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.Loaded;
         }
         
-        
         public new string DisplayName
         {
             get { return _displayName + (IsDirty?"*":"") ; }
@@ -1295,48 +1294,17 @@ namespace DaxStudio.UI.ViewModels
                     var cnn = message.PowerPivotModeSelected
                                      ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType)
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+                    cnn.IsPowerPivot = message.PowerPivotModeSelected;
+
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
-                        Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => { 
-                            Connection = cnn;
-                            Connection.IsPowerPivot = message.PowerPivotModeSelected;
-                            this.IsPowerPivot = message.PowerPivotModeSelected;
-                            this.Spid = cnn.SPID;
-                            this.SelectedDatabase = cnn.Database.Name;
-                            CurrentWorkbookName = message.WorkbookName;
-                            Databases = cnn.Databases.ToBindableCollection();
-
-                            if (Connection == null)
-                            { ServerName = "<Not Connected>"; }
-                            else
-                            {
-
-                                if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
-                                { ServerName = "<Not Connected>"; }
-                                else
-                                {
-                                    if (Connection.IsPowerPivot)
-                                    {
-                                        ServerName = string.Format("<PowerPivot>  {0}", Connection.ServerVersion);
-                                    }
-                                    else
-                                    {
-                                    ServerName = string.Format("{0}  {1}",Connection.ServerName , Connection.ServerVersion) ;
-                                    }
-                                }
-                            }
-
+                        Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => {
+                            SetupConnection(message, cnn);
                         }));
                     }
                     else
                     {
-                        Connection = cnn;
-                        Connection.IsPowerPivot = message.PowerPivotModeSelected;
-                        this.IsPowerPivot = message.PowerPivotModeSelected;
-                        this.Spid = cnn.SPID;
-                        this.SelectedDatabase = cnn.Database.Name;
-                        CurrentWorkbookName = message.WorkbookName;
-                        Databases = cnn.Databases.ToBindableCollection();
+                        SetupConnection(message, cnn);
                     }
                     
                 }).ContinueWith((antecendant) =>
@@ -1347,6 +1315,36 @@ namespace DaxStudio.UI.ViewModels
                         msg.Dispose(); //reset the status message
                     });
             
+        }
+
+        private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
+        {
+            Connection = cnn;
+            this.IsPowerPivot = message.PowerPivotModeSelected;
+            this.Spid = cnn.SPID;
+            this.SelectedDatabase = cnn.Database.Name;
+            CurrentWorkbookName = message.WorkbookName;
+            Databases = cnn.Databases.ToBindableCollection();
+
+            if (Connection == null)
+            { ServerName = "<Not Connected>"; }
+            else
+            {
+
+                if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
+                { ServerName = "<Not Connected>"; }
+                else
+                {
+                    if (Connection.IsPowerPivot)
+                    {
+                        ServerName = string.Format("<PowerPivot>  {0}", Connection.ServerVersion);
+                    }
+                    else
+                    {
+                        ServerName = string.Format("{0}  {1}", Connection.ServerName, Connection.ServerVersion);
+                    }
+                }
+            }
         }
         
 

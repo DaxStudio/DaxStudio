@@ -14,13 +14,13 @@ namespace DaxStudio.UI.Utils
 {
     [Flags] public enum IntellisenseMetadataTypes
     {
-        Columns = 1,
-        Functions=2,
-        Keywords=4,
-        Measures = 8,
-        Tables = 16,
-        DMV = 32,
-        ALL = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
+        Columns   = 1,
+        Functions = 2,
+        Keywords  = 4,
+        Measures  = 8,
+        Tables    = 16,
+        DMV       = 32,
+        ALL       = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
     }
 
     public class DaxIntellisenseProvider:IIntellisenseProvider
