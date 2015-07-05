@@ -154,6 +154,8 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="20" />
                         </Grid.ColumnDefinitions>
@@ -234,6 +236,10 @@
             </StatusBarItem>
             <Separator Grid.Column="9"/>
             <StatusBarItem Grid.Column="10">
+            <TextBlock x:Name="Rows">rows</TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="11"/>
+            <StatusBarItem Grid.Column="12">
                 <TextBlock x:Name="TimerText">0:00:00.00</TextBlock>
             </StatusBarItem>
         </StatusBar>

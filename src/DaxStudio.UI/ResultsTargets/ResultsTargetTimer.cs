@@ -30,6 +30,7 @@ namespace DaxStudio.UI.Model
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
+                runner.RowCount = res.Rows.Count;
                 runner.SetResultsMessage("Query timings sent to output tab", OutputTargets.Timer);
                 //runner.QueryCompleted();
                 runner.ActivateOutput();

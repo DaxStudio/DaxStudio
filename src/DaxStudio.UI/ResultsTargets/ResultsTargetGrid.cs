@@ -85,6 +85,7 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                                 res.Rows.Count == 1 ? "" : "s"), durationMs);
+                            runner.RowCount = res.Rows.Count;
                             // activate the result only when Counters are not selected...
                             runner.ActivateResults();
                             //runner.QueryCompleted();

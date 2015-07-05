@@ -10,14 +10,16 @@ namespace ADOTabular
         {
             _adoTabConn = adoTabConn;
             Name = dr["CUBE_NAME"].ToString();
+            Caption = dr["CUBE_CAPTION"].ToString();
             Description = dr["DESCRIPTION"].ToString();
             BaseModelName = dr["BASE_CUBE_NAME"].ToString();
         }
 
-        public ADOTabularModel(ADOTabularConnection adoTabConn, string name, string description, string baseModelName)
+        public ADOTabularModel(ADOTabularConnection adoTabConn, string name, string caption, string description, string baseModelName)
         {
             _adoTabConn = adoTabConn;
             Name = name;
+            Caption = caption;
             Description = description;
             BaseModelName = baseModelName;
         }
@@ -28,6 +30,7 @@ namespace ADOTabular
 
         public string Name { get; private set; }
 
+        public string Caption { get; private set; }
         public string Description { get; private set; }
 
         public ADOTabularTableCollection Tables

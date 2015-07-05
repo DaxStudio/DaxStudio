@@ -108,7 +108,26 @@ namespace DaxStudio.UI.ViewModels
         //{
         //    TimerText = message.TimerText;
         //}
-
+        private int _rowCount = -1;
+        public int RowCount
+        {
+            get { return _rowCount; }
+            set
+            {
+                _rowCount = value;
+                NotifyOfPropertyChange(() => Rows);
+            }
+        }
+        public string Rows
+        {
+            get { 
+                if (RowCount >= 0) { 
+                    return string.Format("{0} row{1}", RowCount, RowCount!=1?"s":""); } 
+                else { 
+                    return ""; 
+                } 
+            }
+        }
         public void Handle(ActivateDocumentEvent message)
         {
             if (message.Document == null ) return;
@@ -128,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
             ServerName = ActiveDocument.ServerName;
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
+            RowCount = ActiveDocument.RowCount;
         }
 
         void ActiveDocument_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -145,6 +165,10 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 case "ElapsedQueryTime":
                     TimerText = ActiveDocument.ElapsedQueryTime;
+                    break;
+                case "RowCount":
+                    RowCount = ActiveDocument.RowCount;
+                    //NotifyOfPropertyChange(()=>Rows);
                     break;
             }
         }

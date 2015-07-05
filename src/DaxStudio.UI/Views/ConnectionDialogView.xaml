@@ -306,7 +306,8 @@
                 <Expander x:Name="myExpander" Header="Advanced Options"
 					ExpandDirection="Down" IsExpanded="False" 
 					Template="{StaticResource RevealExpanderTemp}"
-					Grid.Row="1" Grid.Column="0"  Margin="10,10,5,0">
+					Grid.Row="1" Grid.Column="0"  Margin="10,10,5,0" >
+                    <!-- Template="{StaticResource RevealExpanderTemp}" -->
                     <Expander.HeaderTemplate>
                         <DataTemplate>
                             <TextBlock FontWeight="SemiBold" Margin="0,10,0,10" FontSize="13"><Run Text="Advanced Options"/></TextBlock>
@@ -321,6 +322,7 @@
 
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -355,8 +357,16 @@
                         <TextBox Height="23"  x:Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"  Grid.Column="1" Grid.Row="2"/>
                         <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
                         <TextBox Height="23"  x:Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Row="3" Grid.Column="1"  />
-                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
-                        <TextBox x:Name="AdditionalOptions" Grid.Row="4" Grid.Column="1" MinHeight="85"/>
+                        <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
+                        <ComboBox Height="23" Grid.Column="1" Grid.Row="4" x:Name="cboLocales" 
+							VerticalAlignment="Top" 
+							
+                            DisplayMemberPath="DisplayName"
+							SelectedItem="{Binding Path=Locale}"
+							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
+
+                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
+                        <TextBox x:Name="AdditionalOptions" Grid.Row="5" Grid.Column="1" MinHeight="85"/>
                     </Grid>
                 </Expander>
                 <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">

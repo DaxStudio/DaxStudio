@@ -1816,5 +1816,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public object UniqueID { get { return _uniqueId; } }
+
+        private int _rowCount = -1;
+        public int RowCount { 
+            get {return _rowCount;} 
+            set {_rowCount = value;  NotifyOfPropertyChange(()=>RowCount);}
+        }
     }
 }

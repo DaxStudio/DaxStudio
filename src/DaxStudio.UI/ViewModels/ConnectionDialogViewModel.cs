@@ -13,6 +13,7 @@ using DaxStudio.UI.Views;
 using DaxStudio.UI.Utils;
 using Serilog;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -346,10 +347,11 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
-            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4};{5};Application Name={6}", SelectedPowerBIInstance.Port
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5};{6};Application Name={7}", SelectedPowerBIInstance.Port
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
+                                 , GetLocaleIdentifier()
                                  , AdditionalProperties
                                  , AdditionalOptions
                                  , GetApplicationName("Power BI"));
@@ -358,13 +360,14 @@ namespace DaxStudio.UI.ViewModels
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4};{5};Application Name={6}", DataSource
-                                 , GetMdxCompatibilityMode()
-                                 , GetDirectQueryMode()
-                                 , GetRolesProperty()
-                                 , AdditionalProperties
-                                 , AdditionalOptions
-                                 , GetApplicationName("SSAS"));
+            return string.Format("Data Source={0};{1}{2}{3}{4}{5};{6};Application Name={7}", DataSource
+                                 , GetMdxCompatibilityMode()     //1
+                                 , GetDirectQueryMode()          //2
+                                 , GetRolesProperty()            //3
+                                 , GetLocaleIdentifier()         //4
+                                 , AdditionalProperties          //5
+                                 , AdditionalOptions             //6
+                                 , GetApplicationName("SSAS"));  //7
         }
 
         private string GetApplicationName(string connectionType)
@@ -447,8 +450,55 @@ namespace DaxStudio.UI.ViewModels
             if (ServerModeSelected) return "SSAS";
             if (PowerBIModeSelected) return "Power BI";
             if (PowerPivotModeSelected) return "Power Pivot";
-            return "Unknown";
-        } }
+            return "Unknown";  } 
+        }
+
+        public string GetLocaleIdentifier()
+        {
+            if (Locale.LCID != -1)
+            {
+                return string.Format("Locale Identifier={0}", Locale.LCID);
+            }
+            return "";
+        }
+        private LocaleIdentifier _locale;
+        public LocaleIdentifier Locale
+        {
+            get
+            {
+                if (_locale == null) { _locale = LocaleOptions["<Default>"]; }
+                return _locale;
+            }
+            set { _locale = value;
+            NotifyOfPropertyChange(() => Locale);
+            }
+        }
+
+        private SortedList<string, LocaleIdentifier> _locales;
+        public SortedList<string, LocaleIdentifier> LocaleOptions
+        {
+            get
+            {
+                if (_locales == null)
+                {
+                    _locales = new SortedList<string, LocaleIdentifier>();
+                    _locales.Add("<Default>", new LocaleIdentifier() { DisplayName = "<Default>", LCID = -1 });
+                    foreach (var ci in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+                    {
+                        _locales.Add(ci.DisplayName, new LocaleIdentifier() { 
+                            DisplayName = string.Format("{0} - {1}",ci.DisplayName,ci.LCID) , 
+                            LCID = ci.LCID });
+                    }
+                }
+                return _locales;
+            }
+        }
     }
-        
+     
+    public class LocaleIdentifier
+    {
+        public string DisplayName {get;set;}
+        public int LCID { get; set; }
+        public override string ToString() { return DisplayName; }
+    }
 }

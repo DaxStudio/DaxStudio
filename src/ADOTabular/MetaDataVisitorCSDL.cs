@@ -25,7 +25,7 @@ namespace ADOTabular
             foreach (DataRow dr in dtModels.Rows)
             {
                 ret.Add(dr["CUBE_NAME"].ToString()
-                    , new ADOTabularModel(_conn, dr["CUBE_NAME"].ToString(), dr["DESCRIPTION"].ToString(), dr["BASE_CUBE_NAME"].ToString()));
+                    , new ADOTabularModel(_conn, dr["CUBE_NAME"].ToString(), dr["CUBE_CAPTION"].ToString(), dr["DESCRIPTION"].ToString(), dr["BASE_CUBE_NAME"].ToString()));
             }
             return ret;
         }

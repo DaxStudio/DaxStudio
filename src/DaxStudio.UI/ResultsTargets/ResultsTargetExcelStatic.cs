@@ -46,6 +46,7 @@ namespace DaxStudio.UI.Model
                             runner.OutputMessage(
                                 string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
+                            runner.RowCount = res.Rows.Count;
                             runner.ActivateOutput();
                             runner.SetResultsMessage("Static results sent to Excel", OutputTargets.Static);
                             runner.QueryCompleted();
