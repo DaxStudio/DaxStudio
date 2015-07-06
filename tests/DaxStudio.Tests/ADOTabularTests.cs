@@ -212,5 +212,21 @@ namespace DaxStudio.Tests
             Assert.AreEqual(c.Databases.Count, dd.Count, "has 2 databases");
         }
 
+        [TestMethod]
+        public void TestColumnRenaming()
+        {
+            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            var dt = new DataTable();
+            dt.Columns.Add("table1[Column1]");
+            dt.Columns.Add("table2[Column1]");
+            dt.Columns.Add("table1[Column2]");
+            dt.Columns.Add("table2[Column3]");
+            ADOTabularConnection.FixColumnNaming(dt);
+            Assert.AreEqual("table1[Column1]", dt.Columns[0].ColumnName );
+            Assert.AreEqual("table2[Column1]",dt.Columns[1].ColumnName );
+            Assert.AreEqual("Column2", dt.Columns[2].ColumnName);
+            Assert.AreEqual("Column3", dt.Columns[3].ColumnName);
+        }
+
     }
 }

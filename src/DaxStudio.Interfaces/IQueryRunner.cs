@@ -33,7 +33,6 @@ namespace DaxStudio.Interfaces
 
         void SetResultsMessage(string message, OutputTargets icon);
         IStatusBarMessage NewStatusBarMessage(string message);
-
         int RowCount { get; set; }
     }
 }
