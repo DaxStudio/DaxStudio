@@ -106,6 +106,10 @@ namespace ADOTabular
 
         public void ChangeDatabase(string database)
         {
+            if (_adomdConn.State != ConnectionState.Open)
+            {
+                _adomdConn.Open();
+            }
             _adomdConn.ChangeDatabase(database);
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
@@ -622,7 +626,7 @@ namespace ADOTabular
         public void SetCube(string cubeName)
         {
             _adomdConn.Close();
-            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1}", ConnectionString, cubeName ), _connectionType);
+            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1};Initial Catalog={2}", ConnectionString, cubeName , Database.Name), _connectionType);
         }
 
         public bool Is2012SP1OrLater
