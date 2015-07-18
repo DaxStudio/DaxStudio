@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"             
+             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"    
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
@@ -13,6 +14,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -21,6 +23,7 @@
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <sys:Double x:Key="BarWidth">100.0</sys:Double>
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -62,43 +65,76 @@
                         <ColumnDefinition Width="*" />
       
                     </Grid.ColumnDefinitions>
+                    
+                    <!-- Total Duration -->
                     <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding TotalDuration, StringFormat='#,0 ms'}" />
 
-                    <TextBlock Text="Total CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <!-- SE CPU Duration -->
+                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding TotalCpuDuration, StringFormat='#,0 ms'}"  />
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
-                   Text="{Binding TotalCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
-
-
-                    <TextBlock Text="FE" Grid.Row="3" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                   Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
+                    
+                    <!-- FE Controls -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center">
+                        <Rectangle Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
+                        <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}" />
+                    
                     <TextBlock Grid.Row="5" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="#3571AD" />
-
-                    <TextBlock Text="SE" Grid.Row="3" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    
+                    <!-- SE Controls -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center">
+                        <Rectangle Width="10" Height="10" Fill="{StaticResource DaxStudioBrush}" Margin="0,4,5,0"/>
+                        <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}" />
                     <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
-
-                    <TextBlock Text="SE Queries" Grid.Row="6" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="7" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
+                    
+                    <!-- Horizontal Bar FE vs SE -->
+                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{StaticResource FEBrush}">
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource MultiConverter}">
+                                    <Binding Path="FormulaEngineDurationPercentage"/>
+                                    <Binding Source="{StaticResource BarWidth}" />
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>    
+                        <Rectangle Height="5" HorizontalAlignment="Right" Margin="0,2,0,5" Fill="{StaticResource DaxStudioBrush}">
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource MultiConverter}">
+                                    <Binding Path="StorageEngineDurationPercentage"/>
+                                    <Binding Source="{StaticResource BarWidth}" />
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>
+                    </StackPanel>
+                    
+                    <!-- SE Queries -->
+                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
                     
-                    <TextBlock Text="SE Cache" Grid.Row="6" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="7" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
+                    <!-- SE Cache -->
+                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}" />
-                    <TextBlock Grid.Row="8" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
+                    <TextBlock Grid.Row="9" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
                    Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
-
-                    <TextBlock Text="SE CPU" Grid.Row="9" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    <TextBlock Grid.Row="10" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
-
+<!--
+                    <TextBlock Text="Total CPU" Grid.Row="10" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="gray"/>
+                    <TextBlock Grid.Row="11" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" Foreground="Gray"
+                       Text="{Binding TotalCpuDuration, StringFormat='#,0 ms'}"  />
+-->
                 </Grid>
                 
                 
