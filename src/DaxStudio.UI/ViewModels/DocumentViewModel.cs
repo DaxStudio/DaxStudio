@@ -1181,7 +1181,7 @@ namespace DaxStudio.UI.ViewModels
                         saver.Save(FileName);
                     }
                 }
-
+                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
             }

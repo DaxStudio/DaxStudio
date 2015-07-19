@@ -304,9 +304,12 @@
     <Compile Include="Events\CancelConnectEvent.cs" />
     <Compile Include="Events\DocumentConnectionUpdateEvent.cs" />
     <Compile Include="Events\EditorPositionChangedEvent.cs" />
+    <Compile Include="Events\FileOpenedEvent.cs" />
+    <Compile Include="Events\FileSavedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
     <Compile Include="Events\NavigateToLocationEvent.cs" />
     <Compile Include="Events\NewVersionEvent.cs" />
+    <Compile Include="Events\OpenRecentFileEvent.cs" />
     <Compile Include="Events\OpenFileEvent.cs" />
     <Compile Include="Events\OutputMessage.cs">
       <SubType>Code</SubType>
@@ -321,6 +324,7 @@
     <Compile Include="Events\TraceChangingEvent.cs" />
     <Compile Include="Events\TraceWatcherToggleEvent.cs" />
     <Compile Include="Events\UpdateTimerTextEvent.cs" />
+    <Compile Include="Model\DaxFile.cs" />
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Model\Enums.cs" />
     <Compile Include="Interfaces\ISaveState.cs" />
@@ -861,6 +865,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Metadata\hierarchy-unnatural.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\DaxStudio_File3a_x48.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

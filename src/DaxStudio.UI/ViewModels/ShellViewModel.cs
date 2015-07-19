@@ -71,8 +71,9 @@ namespace DaxStudio.UI.ViewModels {
         public override void TryClose(bool? dialogResult = null)
         {
             base.TryClose(dialogResult);
-            if (dialogResult == true )
+            if (dialogResult != false )
             {
+                Ribbon.OnClose();
                 notifyIcon.Dispose();
             }
         }

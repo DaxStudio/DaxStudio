@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 //using ComboBox = System.Windows.Forms.ComboBox;
 using System;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI
 {
@@ -24,14 +25,19 @@ namespace DaxStudio.UI
             SaveListToRegistry("Server", currentServer, servers);
         }
 
-        public static ObservableCollection<string> GetFileMRUListFromRegistry()
+        public static ObservableCollection<DaxFile> GetFileMRUListFromRegistry()
         {
-            return GetMRUListFromRegistry("File");
+            var lst = new ObservableCollection<DaxFile>();
+            foreach (var itm in  GetMRUListFromRegistry("File"))
+            {
+                lst.Add(new DaxFile(itm));
+            }
+            return lst;
         }
 
-        public static void SaveFileMRUListToRegistry(string currentServer, ObservableCollection<string> servers)
+        public static void SaveFileMRUListToRegistry( IEnumerable<object> files)
         {
-            SaveListToRegistry("File", currentServer, servers);
+            SaveListToRegistry("File","", files);
         }
 
         internal static ObservableCollection<string> GetMRUListFromRegistry(string listName)
@@ -54,7 +60,7 @@ namespace DaxStudio.UI
 
 
 
-        internal static void SaveListToRegistry(string listName, string currentItem, ObservableCollection<string>itemList)
+        internal static void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
             var listKey = string.Format("{0}MRU", listName);
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
@@ -69,12 +75,18 @@ namespace DaxStudio.UI
                 {
                     int i = 1;
                     // set current item as item 1
-                    regListMRU.SetValue(string.Format("{0}{1}",listName, i), currentItem);
-                    foreach (string listItem in itemList)
+                    if (currentItem.ToString().Length > 0)
+                    {
+                        regListMRU.SetValue(string.Format("{0}{1}", listName, i), currentItem);
+                    }
+                    foreach (object listItem in itemList)
                     {
                         i++;
-                        if (listItem == currentItem) continue;
-                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), listItem );
+                        
+                        var str = listItem as string;
+                        if (str == null) str = listItem.ToString();
+                        if (string.Equals(str, currentItem.ToString(),StringComparison.CurrentCultureIgnoreCase)) continue;
+                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );
                     }
                 }
             }

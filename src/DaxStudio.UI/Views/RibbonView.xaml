@@ -14,7 +14,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         
         
@@ -94,7 +95,7 @@
         <!--Backstage-->
         <Fluent:Ribbon.Menu>
             
-            <Fluent:Backstage >
+            <Fluent:Backstage x:Name="Backstage">
                 <Fluent:BackstageTabControl>
 
                     <!-- File New -->
@@ -115,13 +116,24 @@
                     <Fluent:BackstageTabItem Header="Open"  >
                         
                         <!-- Right-side content here -->
-                        <Grid>
+                        <Grid Margin="35,25,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200" />
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
+                                       Foreground="{StaticResource DaxStudioBrush}"
+                                       Margin="5,0,0,0"
+                                       FontWeight="ExtraLight"
+                                       />
+                            
+                            <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
                                 <Border>
+                                    <!-- style comes from ribbon control -->
                                     <Fluent:Button Style="{DynamicResource ButtonBackstageStyle}" 
                                            BorderBrush="DimGray"  
                                            BorderThickness="1" 
@@ -131,18 +143,44 @@
                                            Height="100" Width="100" Foreground="Black">
                                            
                                         <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Click">
-                                        <cal:ActionMessage MethodName="Open">
-                                        </cal:ActionMessage>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="Open">
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                             </Fluent:Button>
                                 </Border>
-
                             </StackPanel>
-                            <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1">
-                                <Label FontSize="14" Foreground="DimGray" FontWeight="Bold">Select a Document</Label>
-                                
+                            
+                            <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1" Grid.Row="1">
+                                <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
+                                <ListView DataContext="{Binding}" ItemsSource="{Binding Path=Ribbon.RecentFiles}" x:Name="RecentFiles" 
+                                          MinWidth="600"
+                                          
+                                          BorderBrush="Transparent" >
+                                    <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                            <cal:ActionMessage MethodName="OpenRecentFile">
+                                                <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                <cal:Parameter Value="{Binding ElementName=Backstage}"/>
+                                            </cal:ActionMessage>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                    
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Source="{StaticResource FileIcon}"
+                                                       Margin="0,0,10,0"/>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                                                    <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
                             </StackPanel>
                         </Grid> 
                     </Fluent:BackstageTabItem>

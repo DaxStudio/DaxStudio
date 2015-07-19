@@ -28,6 +28,7 @@ namespace DaxStudio.UI.ViewModels
     public class DocumentTabViewModel : Conductor<IScreen>.Collection.OneActive
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
+        , IHandle<OpenRecentFileEvent>
         , IDocumentWorkspace
     {
         private readonly IWindowManager _windowManager;
@@ -146,9 +147,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Open document 
                 var fileName = dlg.FileName;
+                _eventAggregator.PublishOnUIThread(new FileOpenedEvent(fileName));
                 NewQueryDocument(fileName);
             }
             
+        }
+
+        public void Handle(OpenRecentFileEvent message)
+        {
+            NewQueryDocument(message.FileName);
         }
 
         public void TabClosing(object sender, DocumentClosingEventArgs args)
