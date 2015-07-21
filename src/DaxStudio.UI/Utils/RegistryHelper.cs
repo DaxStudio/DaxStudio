@@ -14,6 +14,7 @@ namespace DaxStudio.UI
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheckUTC";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
+        private const int MAX_MRU_SIZE = 25;
 
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
@@ -78,15 +79,16 @@ namespace DaxStudio.UI
                     if (currentItem.ToString().Length > 0)
                     {
                         regListMRU.SetValue(string.Format("{0}{1}", listName, i), currentItem);
+                        i++;
                     }
                     foreach (object listItem in itemList)
                     {
-                        i++;
-                        
+                        if (i > MAX_MRU_SIZE) break; // don't save more than the max mru size
                         var str = listItem as string;
                         if (str == null) str = listItem.ToString();
                         if (string.Equals(str, currentItem.ToString(),StringComparison.CurrentCultureIgnoreCase)) continue;
                         regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );
+                        i++;
                     }
                 }
             }

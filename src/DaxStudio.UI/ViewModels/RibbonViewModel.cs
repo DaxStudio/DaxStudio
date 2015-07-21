@@ -46,19 +46,20 @@ namespace DaxStudio.UI.ViewModels
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 
         [ImportingConstructor]
-        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager )
+        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager , OptionsViewModel options)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             _host = host;
             _windowManager = windowManager;
-            
+            Options = options;
             CanCut = true;
             CanCopy = true;
             CanPaste = true;
             RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
         }
-        
+
+        public OptionsViewModel Options { get; private set; }
         public Visibility OutputGroupIsVisible
         {
             get { return _host.IsExcel?Visibility.Visible : Visibility.Collapsed; }

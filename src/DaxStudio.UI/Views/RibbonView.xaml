@@ -206,7 +206,10 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-
+                    <Fluent:BackstageTabItem Header="Options"  >
+                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />
+                    </Fluent:BackstageTabItem>
+                    
                     <Fluent:Button Name="btnExit" Header="Exit" Foreground="White">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
