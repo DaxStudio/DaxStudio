@@ -70,6 +70,7 @@ namespace DaxStudio.UI.ViewModels {
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
         {
+            //Properties.Settings.Default.Save();
             base.TryClose(dialogResult);
             if (dialogResult == true )
             {
@@ -87,7 +88,26 @@ namespace DaxStudio.UI.ViewModels {
             TryClose();
         }
 
-        // Used for Global Keyboard Hooks
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
+        }
+
+        public override void CanClose(Action<bool> callback)
+        {
+            Tabs.CanClose(callback);
+        }
+
+        public void Handle(NewVersionEvent message)
+        {           
+            
+            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
+            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
+            notifyIcon.Notify(newVersionText, message.DownloadUrl);
+        }
+
+        #region Global Keyboard Hooks
         public void RunQuery()
         {
             Ribbon.RunQuery();
@@ -117,7 +137,7 @@ namespace DaxStudio.UI.ViewModels {
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
-        
+
         public void UncommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
@@ -152,27 +172,7 @@ namespace DaxStudio.UI.ViewModels {
         {
             Ribbon.FormatQuery();
         }
-
-        protected override void OnActivate()
-        {
-            base.OnActivate();
-            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
-        }
-
-        public override void CanClose(Action<bool> callback)
-        {
-            Tabs.CanClose(callback);
-        }
-
-        public void Handle(NewVersionEvent message)
-        {           
-            
-            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
-            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
-            notifyIcon.Notify(newVersionText, message.DownloadUrl);
-        }
-
-        
+        #endregion
     }
 
 
