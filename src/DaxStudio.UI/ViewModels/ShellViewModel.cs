@@ -20,6 +20,8 @@ namespace DaxStudio.UI.ViewModels {
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
         private readonly NotifyIcon notifyIcon;
+        private Window _window;
+
         //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
@@ -92,6 +94,28 @@ namespace DaxStudio.UI.ViewModels {
         {
             base.OnActivate();
             _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
+        }
+
+        
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewReady(view);
+            // load the saved window positions
+            _window = view as Window;
+            _window.Closing += windowClosing;
+            // SetPlacement will adjust the position if it's outside of the visible boundaries
+            //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
+            _window.SetPlacement(RegistryHelper.GetWindowPosition());
+        }
+
+        void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Store the current window position
+            var w = sender as Window;
+            //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();
+            //Properties.Settings.Default.Save();
+            RegistryHelper.SetWindowPosition(w.GetPlacement());
+            _window.Closing -= windowClosing;
         }
 
         public override void CanClose(Action<bool> callback)

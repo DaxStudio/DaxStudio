@@ -217,21 +217,23 @@
             </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
-        <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, Query, Query,
-                              Connection,Connection,Connection,
+        <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
+                              Connection,Query,Connection,Connection,
                               Traces,Traces,Traces,
-                              ServerTimings,
-                              Edit,Format,Find,
+                              ServerTimings,Format
+                              Edit,Find,
                               ServerTimings,ServerTimings,
                               Format,Format,
                               Find,Find,
                               Edit,Edit
                               ">
-            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0">
+            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
                 <Fluent:Button Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
+                               Icon="{StaticResource PlayIcon}"
                                LargeIcon="{StaticResource PlayIconLarger}"
+                               SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
@@ -243,6 +245,7 @@
                 <Fluent:Button Name="CancelQuery"
                                Header="Cancel"
                                cal:Message.Attach="[Event Click] = [Action CancelQuery()]"
+                               Icon="{StaticResource CancelIcon}"
                                LargeIcon="{StaticResource CancelIconLarger}"
                                Margin="4,0"
                                >
@@ -256,6 +259,7 @@
                 <Fluent:Button Name="ClearCache"
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
+                               Icon="{StaticResource ClearCacheIcon}"
                                LargeIcon="{StaticResource ClearCacheIconLarger}"
                                Margin="4,0"
                                >
@@ -269,6 +273,7 @@
                 <!-- Output Targets -->
                 <Fluent:DropDownButton Name="Output"
                                            Header="Output"
+                                           Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            IsEnabled="True"
                                            VerticalAlignment="Top"  Margin="4,0">
@@ -403,6 +408,7 @@
                 <Fluent:Button Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQuery()]"
+                               Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
                                Margin="0,0,10,0">
@@ -507,6 +513,7 @@
             
             
             <Fluent:RibbonGroupBox Header="Traces" Name="Traces" ItemsSource="{Binding TraceWatchers}"
+                                   Icon="{StaticResource PlanIconSmall}"
                                    ItemTemplate="{DynamicResource TraceWatcherTemplate}"
                                    >
                 
@@ -581,14 +588,14 @@
                 </Fluent:ToggleButton>
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0">
+            <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0" Icon="{StaticResource ConnectIcon}" >
                 <Fluent:Button x:Name="Connect" 
                                Header="Connect"
                                Icon="{StaticResource ConnectIcon}"
                                LargeIcon="{StaticResource ConnectIconLarger}" 
                                Margin="4,0"
                                cal:Message.Attach="[Event Click] = [Action Connect()]" 
-                               SizeDefinition="Large,Large,Middle">
+                               SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Connect" Text="Changes the connection for the current query" Width="190"/>
                     </Fluent:Button.ToolTip>
@@ -602,7 +609,7 @@
                                Icon="{StaticResource RefreshIcon}"
                                LargeIcon="{StaticResource RefreshIconLarger}"
                                Margin="4,0"
-                               SizeDefinition="Large,Large,Middle"
+                               SizeDefinition="Large,Large,Small"
                                >
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Refresh Metadata"
@@ -612,10 +619,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-       
-        
-           
-          
+                 
         </Fluent:RibbonTabItem>
             
         <!-- Help Tab -->

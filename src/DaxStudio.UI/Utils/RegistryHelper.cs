@@ -13,7 +13,9 @@ namespace DaxStudio.UI
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheckUTC";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
-
+        private const string REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME = "WindowPosition";
+        private const string DefaultPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
+        
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
             return GetMRUListFromRegistry("Server");
@@ -106,6 +108,33 @@ namespace DaxStudio.UI
             }
 
             return dtReturnVal.ToLocalTime();
+        }
+
+
+        public static void SetWindowPosition(string value)
+        {
+            string path = registryRootKey;
+            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
+            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+            using (settingKey)
+            {
+                settingKey.SetValue(REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME, value, RegistryValueKind.String);
+            }
+        }
+
+        public static string GetWindowPosition()
+        {
+            DateTime dtReturnVal = DateTime.MinValue;
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            string pos = String.Empty;
+            if (rk != null)
+            {
+                using (rk)
+                {
+                    pos = (string)rk.GetValue(REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME, DefaultPosition);
+                }
+            }
+            return pos;
         }
 
 

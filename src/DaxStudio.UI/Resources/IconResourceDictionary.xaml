@@ -15,7 +15,9 @@
     <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
     <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="CancelIconLarger"  UriSource="..\images\icon-cancel@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="CancelIcon"  UriSource="..\images\icon-cancel.png"></BitmapImage>
     <BitmapImage x:Key="ClearCacheIconLarger"  UriSource="..\images\icon-clearcache@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="ClearCacheIcon"  UriSource="..\images\icon-clearcache.png"></BitmapImage>
     <BitmapImage x:Key="DatabaseIcon"  UriSource="..\images\icon-database.png"></BitmapImage>
     <BitmapImage x:Key="TimerIcon"  UriSource="..\images\icon-timer.png"></BitmapImage>
     <BitmapImage x:Key="TimerIconLarger"  UriSource="..\images\icon-timer@96ppi.png"></BitmapImage>

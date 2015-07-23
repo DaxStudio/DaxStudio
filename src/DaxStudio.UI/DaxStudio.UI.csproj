@@ -384,6 +384,7 @@
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="Events\ConnectionClosedEvent.cs" />
+    <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
