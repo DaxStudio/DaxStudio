@@ -363,11 +363,13 @@
     </Compile>
     <Compile Include="AmoWrapper\AmoServer.cs" />
     <Compile Include="DataSetExtensions.cs" />
+    <Compile Include="DaxStudioLauncher.cs" />
     <Compile Include="DaxStudioStandalone.cs" />
     <Compile Include="ExcelHelper.cs" />
     <None Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </None>
+    <Compile Include="IDaxStudioLauncher.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

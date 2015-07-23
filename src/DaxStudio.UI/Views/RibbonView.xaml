@@ -269,13 +269,23 @@
             </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
-
-        <Fluent:RibbonTabItem Header="Home">
-            <Fluent:RibbonGroupBox Header="Query" Margin="4,0">
+        <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
+                              Connection,Query,Connection,Connection,
+                              Traces,Traces,Traces,
+                              ServerTimings,Format
+                              Edit,Find,
+                              ServerTimings,ServerTimings,
+                              Format,Format,
+                              Find,Find,
+                              Edit,Edit
+                              ">
+            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
-                               LargeIcon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIconsLarger}}"
+                               Icon="{StaticResource PlayIcon}"
+                               LargeIcon="{StaticResource PlayIconLarger}"
+                               SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"

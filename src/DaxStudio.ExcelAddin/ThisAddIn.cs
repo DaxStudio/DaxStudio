@@ -13,7 +13,7 @@ namespace DaxStudio.ExcelAddin
     public partial class ThisAddIn
     {
         private static bool _inShutdown ;
-
+        private static DaxStudioLauncher _launcher;
         public ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
         { 
@@ -107,5 +107,12 @@ namespace DaxStudio.ExcelAddin
         }
         
         #endregion
+
+        protected override object RequestComAddInAutomationService()
+        {
+            if (_launcher == null)
+                _launcher = new DaxStudioLauncher(this._ribbon);
+            return _launcher;
+        }
     }
 }
