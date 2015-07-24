@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ADOTabular
 {
@@ -105,6 +106,10 @@ namespace ADOTabular
 
         public void ChangeDatabase(string database)
         {
+            if (_adomdConn.State != ConnectionState.Open)
+            {
+                _adomdConn.Open();
+            }
             _adomdConn.ChangeDatabase(database);
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
@@ -541,10 +546,18 @@ namespace ADOTabular
         */
         // QueryComplete
 
-        private static void FixColumnNaming(DataTable dataTable)
+        internal class DaxColumn {
+            public string OriginalName;
+            public string OriginalCaption;
+            public string NewName;
+            public string NewCaption;
+            public bool UseOriginalName;
+        }
+
+        public static void FixColumnNaming(DataTable dataTable)
         {
             const string MEASURES_MDX = "[Measures].";
-
+            var newColumnNames = new Collection<DaxColumn>();
             // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
             bool isMdxResult = (from DataColumn col in dataTable.Columns
                                 where col.ColumnName.IndexOf("].[") > 0
@@ -569,10 +582,40 @@ namespace ADOTabular
                     int firstBracket = name.IndexOf('[') + 1;
                     name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
                 }
-                col.Caption = (removeCaption) ? "" : name;
-                col.ColumnName = name.Replace(' ', '_');
+                var dc = new DaxColumn()
+                {
+                    OriginalCaption = col.Caption,
+                    OriginalName = col.ColumnName,
+                    NewCaption = (removeCaption) ? "" : name,
+                    NewName = name.Replace(' ', '_'),
+                };
+                newColumnNames.Add(dc);
+                //col.Caption = (removeCaption) ? "" : name;
+                //col.ColumnName = name.Replace(' ', '_');
             }
-
+            // check for duplicate names
+            
+            for(var outerIdx =0;outerIdx < newColumnNames.Count;outerIdx++)
+            {
+                for (var innerIdx=outerIdx+1;innerIdx < newColumnNames.Count; innerIdx++)
+                { 
+                    if (newColumnNames[outerIdx].NewName == newColumnNames[innerIdx].NewName)
+                    {
+                        newColumnNames[outerIdx].UseOriginalName = true;
+                        newColumnNames[innerIdx].UseOriginalName = true;
+                    }
+                }
+            }
+            // Update names
+            foreach (DaxColumn c in newColumnNames)
+            {
+                if (!c.UseOriginalName)
+                {
+                    var dc = dataTable.Columns[c.OriginalName];
+                    dc.Caption = c.NewCaption;
+                    dc.ColumnName = c.NewName;
+                }
+            }
         }
 
         void IDisposable.Dispose()
@@ -583,7 +626,7 @@ namespace ADOTabular
         public void SetCube(string cubeName)
         {
             _adomdConn.Close();
-            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1}", ConnectionString, cubeName ), _connectionType);
+            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1};Initial Catalog={2}", ConnectionString, cubeName , Database.Name), _connectionType);
         }
 
         public bool Is2012SP1OrLater

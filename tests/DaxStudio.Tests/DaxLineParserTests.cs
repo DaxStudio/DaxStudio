@@ -129,6 +129,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
         }
 
+        [Ignore]
         [TestMethod]
         public void TestFindTableNameEuropeanListSeparator()
         {

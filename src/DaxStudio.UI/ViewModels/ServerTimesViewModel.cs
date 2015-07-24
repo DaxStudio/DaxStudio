@@ -164,6 +164,11 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return (double)_totalCpuDuration / (double)_totalDuration; }
         }
+
+        public double StorageEngineCpuFactor
+        {
+            get { return _storageEngineDuration==0 ? 0 : (double)_storageEngineCpu / (double)_storageEngineDuration; }
+        }
         public double StorageEngineDurationPercentage {
             get
             {
@@ -205,6 +210,7 @@ namespace DaxStudio.UI.ViewModels
                 _storageEngineDuration = value;
                 NotifyOfPropertyChange(() => StorageEngineDuration);
                 NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
+                NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
         private long _storageEngineCpu = 0;
@@ -212,6 +218,7 @@ namespace DaxStudio.UI.ViewModels
             private set {
                 _storageEngineCpu = value;
                 NotifyOfPropertyChange(() => StorageEngineCpu);
+                NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
         private long _storageEngineQueryCount = 0;

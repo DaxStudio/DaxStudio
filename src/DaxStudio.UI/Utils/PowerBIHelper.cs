@@ -14,7 +14,7 @@ namespace DaxStudio.UI.Utils
         public PowerBIInstance(string name, int port)
         {
             Port = port;
-            Name = name.Substring(0, name.IndexOf(" - Power BI Designer"));
+            Name = name.Substring(0, name.IndexOf(" - Power BI Des"));  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
         }
         public int Port { get; private set; }
         public string Name { get; private set; }

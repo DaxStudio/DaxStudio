@@ -15,8 +15,7 @@ namespace DaxStudio.ExcelAddin
 
         public ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
-        {
-            
+        { 
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
             CreateRibbonObjects();

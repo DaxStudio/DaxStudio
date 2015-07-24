@@ -45,8 +45,8 @@
     
     <!-- Xmla Parameter blocks -->
     <Span color="Xmla" multiline="true">
-      <Begin>^\s*(&lt;[^(&gt;&lt;)])</Begin>
-      <End>&gt;\s*$</End>  
+      <Begin>^\s*&lt;Parameters\s*</Begin>
+      <End>^\s*&lt;\/Parameters&gt;</End>  
       <RuleSet>
         <Span>
           <Begin>ame&gt;</Begin>

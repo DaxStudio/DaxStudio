@@ -20,6 +20,8 @@ namespace DaxStudio.UI.ViewModels {
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
         private readonly NotifyIcon notifyIcon;
+        private Window _window;
+
         //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
@@ -70,6 +72,7 @@ namespace DaxStudio.UI.ViewModels {
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
         {
+            //Properties.Settings.Default.Save();
             base.TryClose(dialogResult);
             if (dialogResult == true )
             {
@@ -87,7 +90,48 @@ namespace DaxStudio.UI.ViewModels {
             TryClose();
         }
 
-        // Used for Global Keyboard Hooks
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
+        }
+
+        
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewReady(view);
+            // load the saved window positions
+            _window = view as Window;
+            _window.Closing += windowClosing;
+            // SetPlacement will adjust the position if it's outside of the visible boundaries
+            //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
+            _window.SetPlacement(RegistryHelper.GetWindowPosition());
+        }
+
+        void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Store the current window position
+            var w = sender as Window;
+            //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();
+            //Properties.Settings.Default.Save();
+            RegistryHelper.SetWindowPosition(w.GetPlacement());
+            _window.Closing -= windowClosing;
+        }
+
+        public override void CanClose(Action<bool> callback)
+        {
+            Tabs.CanClose(callback);
+        }
+
+        public void Handle(NewVersionEvent message)
+        {           
+            
+            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
+            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
+            notifyIcon.Notify(newVersionText, message.DownloadUrl);
+        }
+
+        #region Global Keyboard Hooks
         public void RunQuery()
         {
             Ribbon.RunQuery();
@@ -117,7 +161,7 @@ namespace DaxStudio.UI.ViewModels {
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
-        
+
         public void UncommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
@@ -152,27 +196,7 @@ namespace DaxStudio.UI.ViewModels {
         {
             Ribbon.FormatQuery();
         }
-
-        protected override void OnActivate()
-        {
-            base.OnActivate();
-            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
-        }
-
-        public override void CanClose(Action<bool> callback)
-        {
-            Tabs.CanClose(callback);
-        }
-
-        public void Handle(NewVersionEvent message)
-        {           
-            
-            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
-            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
-            notifyIcon.Notify(newVersionText, message.DownloadUrl);
-        }
-
-        
+        #endregion
     }
 
 

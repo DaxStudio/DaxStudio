@@ -68,7 +68,7 @@
 
             <DataTemplate x:Key="TraceWatcherTemplate">
                 <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}" 
-                                     SizeDefinition="Large" 
+                                     SizeDefinition="Large,Large,Middle" 
                                      ClickMode="Press" Width="Auto" 
                                      Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
@@ -217,12 +217,23 @@
             </Fluent:Ribbon.QuickAccessItems>
 
         <!-- Home Tabs-->
-        <Fluent:RibbonTabItem Header="Home">
-            <Fluent:RibbonGroupBox Header="Query" Margin="4,0">
+        <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
+                              Connection,Query,Connection,Connection,
+                              Traces,Traces,Traces,
+                              ServerTimings,Format
+                              Edit,Find,
+                              ServerTimings,ServerTimings,
+                              Format,Format,
+                              Find,Find,
+                              Edit,Edit
+                              ">
+            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
                 <Fluent:Button Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
+                               Icon="{StaticResource PlayIcon}"
                                LargeIcon="{StaticResource PlayIconLarger}"
+                               SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
@@ -234,6 +245,7 @@
                 <Fluent:Button Name="CancelQuery"
                                Header="Cancel"
                                cal:Message.Attach="[Event Click] = [Action CancelQuery()]"
+                               Icon="{StaticResource CancelIcon}"
                                LargeIcon="{StaticResource CancelIconLarger}"
                                Margin="4,0"
                                >
@@ -247,6 +259,7 @@
                 <Fluent:Button Name="ClearCache"
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
+                               Icon="{StaticResource ClearCacheIcon}"
                                LargeIcon="{StaticResource ClearCacheIconLarger}"
                                Margin="4,0"
                                >
@@ -260,6 +273,7 @@
                 <!-- Output Targets -->
                 <Fluent:DropDownButton Name="Output"
                                            Header="Output"
+                                           Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            IsEnabled="True"
                                            VerticalAlignment="Top"  Margin="4,0">
@@ -297,14 +311,14 @@
             
             
 
-            <Fluent:RibbonGroupBox Header="Edit" Margin="4,0">
+            <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Margin="4,0" Icon="{StaticResource CutIcon}">
                 <Fluent:ToggleButton x:Name="Cut"
                                 Fluent:KeyTip.Keys="X"
                                 Header="Cut"
                                 Icon="{StaticResource CutIconLarger}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Small,Small"
                                 Command="Cut"
-                                FocusManager.IsFocusScope="True"
+                                FocusManager.IsFocusScope="True" Size="Middle"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Cut (Ctrl+X)"
@@ -317,7 +331,7 @@
                                Fluent:KeyTip.Keys="C"
                                Header="Copy"
                                Icon="{StaticResource CopyIconLarger}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Command="ApplicationCommands.Copy"
                                FocusManager.IsFocusScope="True"
                                >
@@ -333,7 +347,7 @@
                                Fluent:KeyTip.Keys="V"
                                Header="Paste"
                                Icon="{StaticResource PasteIconLarger}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Command="Paste"
                                IsEnabled="True"
                                FocusManager.IsFocusScope="True"
@@ -350,7 +364,7 @@
                                Fluent:KeyTip.Keys="Z"
                                cal:Message.Attach="[Event Click] = [Action Undo()]"
                                Icon="{StaticResource UndoIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Undo (Ctrl+Z)"
@@ -363,7 +377,7 @@
                                Fluent:KeyTip.Keys="Y"
                                cal:Message.Attach="[Event Click] = [Action Redo()]"
                                Icon="{StaticResource RedoIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Redo (Ctrl+Y)"
@@ -377,7 +391,7 @@
                                Fluent:KeyTip.Keys="S"
                                cal:Message.Attach="[Event Click] = [Action Save()]"
                                Icon="{StaticResource CommentIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Visibility="Hidden"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
@@ -390,11 +404,13 @@
 
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Format" Margin="4,0">
+            <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{StaticResource ToUpperIcon}">
                 <Fluent:Button Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQuery()]"
+                               Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
+                               SizeDefinition="Large,Large,Large"
                                Margin="0,0,10,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Format Query"
@@ -408,7 +424,7 @@
                                Header="To Upper"
                                cal:Message.Attach="[Event Click] = [Action ToUpper()]"
                                Icon="{StaticResource ToUpperIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
@@ -420,7 +436,7 @@
                                Header="To Lower"
                                cal:Message.Attach="[Event Click] = [Action ToLower()]"
                                Icon="{StaticResource ToLowerIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
@@ -435,7 +451,7 @@
                                Header="Comment"
                                cal:Message.Attach="[Event Click] = [Action CommentSelection()]"
                                Icon="{StaticResource CommentIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip Title="Comment (Ctrl+Alt C)"
@@ -447,7 +463,7 @@
                                Header="Uncomment"
                                cal:Message.Attach="[Event Click] = [Action UncommentSelection()]"
                                Icon="{StaticResource UncommentIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
@@ -459,7 +475,7 @@
                                Header="Merge XML"
                                cal:Message.Attach="[Event Click] = [Action MergeParameters()]"
                                Icon="{StaticResource MergeIcon}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Merge Parameters"
@@ -470,11 +486,11 @@
                 
             </Fluent:RibbonGroupBox>
   
-            <Fluent:RibbonGroupBox Header="Find" Margin="4,0">
+            <Fluent:RibbonGroupBox Header="Find" Name="Find" Margin="4,0" Icon="{StaticResource FindIconSmall}">
                 <Fluent:Button Header="Find" 
                                Command="Find"
                                Icon="{StaticResource FindIconSmall}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Fluent:KeyTip.Keys="F"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
@@ -485,7 +501,7 @@
                 <Fluent:Button Header="Replace" 
                                Command="Replace"
                                Icon="{StaticResource ReplaceIconSmall}"
-                               SizeDefinition="Middle,Small"
+                               SizeDefinition="Middle,Small,Small"
                                Fluent:KeyTip.Keys="H"
                                FocusManager.IsFocusScope="True">
                 <!-- cal:Message.Attach="[Event Click] = [Action Replace()]" -->
@@ -496,18 +512,19 @@
             </Fluent:RibbonGroupBox>
             
             
-                   
-            
-            <Fluent:RibbonGroupBox Header="Traces" ItemsSource="{Binding TraceWatchers}"
-                                   ItemTemplate="{DynamicResource TraceWatcherTemplate}">
+            <Fluent:RibbonGroupBox Header="Traces" Name="Traces" ItemsSource="{Binding TraceWatchers}"
+                                   Icon="{StaticResource PlanIconSmall}"
+                                   ItemTemplate="{DynamicResource TraceWatcherTemplate}"
+                                   >
                 
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Server Timings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked}">
+            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked}"
+                                   Icon="{StaticResource TimerIcon}">
                 <Fluent:ToggleButton x:Name="TimingsScan" IsChecked="{Binding ServerTimingDetails.ShowScan, Mode=TwoWay}" 
                                 IsEnabled="{Binding ServerTimingsChecked}"
                                 Header="Scan"
                                 Icon="{StaticResource TimerIcon}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Middle,Small"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Scan"
@@ -519,7 +536,7 @@
                                 IsEnabled="{Binding ServerTimingsChecked}"
                                 Header="Cache" 
                                 Icon="{StaticResource TimingsCache}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Middle,Small"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Cache"
@@ -531,7 +548,7 @@
                                 IsEnabled="{Binding ServerTimingsChecked}"
                                 Header="Internal"
                                 Icon="{StaticResource TimingsInternal}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Middle,Small"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Internal"
@@ -547,7 +564,7 @@
                                 IsEnabled="{Binding ServerTimingsChecked}"
                                 Header="Right Layout"
                                 Icon="{StaticResource RightPane}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Middle,Small"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Right Layout"
@@ -561,7 +578,7 @@
                                 IsEnabled="{Binding ServerTimingsChecked}"
                                 Header="Bottom Layout"
                                 Icon="{StaticResource BottomPane}"
-                                SizeDefinition="Middle,Small"
+                                SizeDefinition="Middle,Middle,Small"
                                 >
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Bottom Layout"
@@ -571,12 +588,14 @@
                 </Fluent:ToggleButton>
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Connection" Margin="2,0">
+            <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0" Icon="{StaticResource ConnectIcon}" >
                 <Fluent:Button x:Name="Connect" 
                                Header="Connect"
+                               Icon="{StaticResource ConnectIcon}"
                                LargeIcon="{StaticResource ConnectIconLarger}" 
                                Margin="4,0"
-                               cal:Message.Attach="[Event Click] = [Action Connect()]" >
+                               cal:Message.Attach="[Event Click] = [Action Connect()]" 
+                               SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Connect" Text="Changes the connection for the current query" Width="190"/>
                     </Fluent:Button.ToolTip>
@@ -590,6 +609,7 @@
                                Icon="{StaticResource RefreshIcon}"
                                LargeIcon="{StaticResource RefreshIconLarger}"
                                Margin="4,0"
+                               SizeDefinition="Large,Large,Small"
                                >
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Refresh Metadata"
@@ -599,10 +619,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-       
-        
-           
-          
+                 
         </Fluent:RibbonTabItem>
             
         <!-- Help Tab -->

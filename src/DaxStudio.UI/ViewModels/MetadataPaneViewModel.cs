@@ -85,22 +85,36 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if (_selectedModel != value)
                 {
-                    _selectedModel = value;
-                    _treeViewTables = null;
-                    if (Connection.ServerMode == "Multidimensional" )
+                    try
                     {
-                        if (Connection.Is2012SP1OrLater)
+                        _selectedModel = value;
+                        _treeViewTables = null;
+                        if (_selectedModel != null)
                         {
-                            Connection.SetCube(_selectedModel.Name);
-                        }
-                        else
-                        {
-                            _activeDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
-                                , Connection.ServerVersion));
+                            if (Connection.ServerMode == "Multidimensional")
+                            {
+                                if (Connection.Is2012SP1OrLater)
+                                {
+                                    Connection.SetCube(_selectedModel.Name);
+                                }
+                                else
+                                {
+                                    _activeDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
+                                        , Connection.ServerVersion));
+                                }
+                            }
                         }
                     }
-                    NotifyOfPropertyChange(() => SelectedModel);
-                    NotifyOfPropertyChange(() => Tables);
+                    catch (Exception ex)
+                    {
+                        Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "SelectModel", ex.Message, ex.StackTrace);
+                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message)); 
+                    }
+                    finally
+                    {
+                        NotifyOfPropertyChange(() => SelectedModel);
+                        NotifyOfPropertyChange(() => Tables);
+                    }
                 }
             }
         }
