@@ -180,6 +180,7 @@
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\lib\Microsoft.AnalysisServices.DLL</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -315,6 +316,7 @@
     <Compile Include="Events\QueryResultsPaneMessageEvent.cs" />
     <Compile Include="Events\QueryTraceCompletedEvent.cs" />
     <Compile Include="Events\SelectionChangeCaseEvent.cs" />
+    <Compile Include="Events\DefineMeasureOnEditor.cs" />
     <Compile Include="Events\ServerTimingDetailsUpdatedEvent.cs" />
     <Compile Include="Events\SetSelectedWorksheetEvent.cs" />
     <Compile Include="Events\TraceChangedEvent.cs" />

@@ -47,6 +47,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<RunQueryEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
+        , IHandle<DefineMeasureOnEditor>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateConnectionEvent> 
@@ -1100,10 +1101,53 @@ namespace DaxStudio.UI.ViewModels
         }
         */
 
-
         public void Handle(SendTextToEditor message)
         {
             InsertTextAtSelection(message.TextToSend);
+        }
+
+        public void Handle(DefineMeasureOnEditor message)
+        {
+            DefineMeasureOnEditor(message.MeasureName, message.MeasureExpression);
+        }
+
+        //RRomano: Should this be on DaxEditor?
+
+        private Regex defineMeasureRegex = new Regex("(?<=DEFINE)((.|\n)*?)(?=EVALUATE)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private void DefineMeasureOnEditor(string measureName, string measureExpression)
+        {
+            var editor = GetEditor();
+
+            // Try to find the DEFINE statements
+
+            var currentText = editor.Text;                      
+
+            var measureDeclaration = string.Format("MEASURE {0} = {1}", measureName, measureExpression);
+
+            // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
+            if (defineMeasureRegex.IsMatch(currentText))
+            {                
+                currentText = defineMeasureRegex.Replace(currentText, (m) =>
+                {
+                    var measuresText = new StringBuilder(m.Groups[1].Value);
+
+                    measuresText.AppendLine(measureDeclaration);
+
+                    return measuresText.ToString();
+
+                });
+
+                editor.Text = currentText;
+
+                editor.Focus();
+            }
+            else
+            {
+                measureDeclaration = string.Format("DEFINE {1}{0}{1}", measureDeclaration, System.Environment.NewLine);
+
+                InsertTextAtSelection(measureDeclaration);
+            }                        
         }
 
         public void Handle(UpdateConnectionEvent message)
@@ -1821,6 +1865,6 @@ namespace DaxStudio.UI.ViewModels
         public int RowCount { 
             get {return _rowCount;} 
             set {_rowCount = value;  NotifyOfPropertyChange(()=>RowCount);}
-        }
+        }     
     }
 }

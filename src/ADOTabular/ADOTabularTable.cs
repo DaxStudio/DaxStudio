@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace ADOTabular
@@ -8,6 +9,7 @@ namespace ADOTabular
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel _model;
         private ADOTabularColumnCollection _columnColl;
+        private ADOTabularMeasureCollection _measuresColl;        
 
        /* public ADOTabularTable(ADOTabularConnection adoTabConn, DataRow dr, ADOTabularModel model)
         {
@@ -72,6 +74,11 @@ namespace ADOTabular
         public ADOTabularColumnCollection Columns
         {
             get { return _columnColl ?? (_columnColl = new ADOTabularColumnCollection(_adoTabConn, this)); }
+        }
+
+        public ADOTabularMeasureCollection Measures
+        {
+            get { return _measuresColl ?? (_measuresColl = new ADOTabularMeasureCollection(_adoTabConn, this)); }
         }
 
         public ADOTabularModel Model

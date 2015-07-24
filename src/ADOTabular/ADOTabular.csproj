@@ -111,6 +111,8 @@
     <Compile Include="AdomdClientWrappers\NamedSet.cs" />
     <Compile Include="AdomdClientWrappers\Position.cs" />
     <Compile Include="AdomdClientWrappers\Property.cs" />
+    <Compile Include="ADOTabularMeasureCollection.cs" />
+    <Compile Include="ADOTabularMeasure.cs" />
     <Compile Include="ADOTabularColumn.cs" />
     <Compile Include="ADOTabularKeywordCollection.cs" />
     <Compile Include="ADOTabularKpiComponent.cs" />

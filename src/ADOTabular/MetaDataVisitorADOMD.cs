@@ -105,6 +105,51 @@ namespace ADOTabular
             return ret;
         }
 
+        public SortedDictionary<string, ADOTabularMeasure> Visit(ADOTabularMeasureCollection measures)
+        {
+            //RRomano: Better way to reuse this method in the two visitors? Create an abstract class of a visitor so that code can be shared (csdl doesnt seem to have the DAX expression)
+
+            var ret = VisitMeasures(measures, this._conn);
+
+            return ret;
+        }
+
+        internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, ADOTabularConnection conn)
+        {
+            var ret = new SortedDictionary<string, ADOTabularMeasure>();
+
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"CATALOG_NAME", conn.Database.Name},
+                    {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
+                    {"MEASUREGROUP_NAME", string.Format("{0}", measures.Table.Caption)},
+                    {
+                        "MEASURE_VISIBILITY",
+                        conn.ShowHiddenObjects
+                            ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
+                            : (int) (MdschemaVisibility.Visible)
+                    }
+                };
+
+            DataTable dtMeasures = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                ret.Add(dr["MEASURE_NAME"].ToString()
+                    , new ADOTabularMeasure(measures.Table
+                        , dr["MEASURE_NAME"].ToString()
+                        , dr["MEASURE_NAME"].ToString()
+                        , dr["MEASURE_CAPTION"].ToString()
+                        , dr["DESCRIPTION"].ToString()
+                        , bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
+                        , dr["EXPRESSION"].ToString()
+                        )
+                        );
+            }
+
+            return ret;
+        }
+
         public void Visit(ADOTabularFunctionGroupCollection functionGroups)
         {
             throw new System.NotImplementedException();
@@ -115,6 +160,9 @@ namespace ADOTabular
         {
             throw new System.NotImplementedException();
         }
+
+
+  
     }
 
 }

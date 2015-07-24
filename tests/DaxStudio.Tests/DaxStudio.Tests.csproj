@@ -76,6 +76,7 @@
     <Compile Include="DaxFormatterTests.cs" />
     <Compile Include="FindReplaceTests.cs" />
     <Compile Include="DaxLineParserTests.cs" />
+    <Compile Include="DaxDefineMeasureTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ADOTabular\ADOTabular.csproj">

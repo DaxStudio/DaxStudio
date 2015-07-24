@@ -494,6 +494,15 @@ namespace ADOTabular
                 keywords.Add(dr["Keyword"].ToString());
             }
         }
+
+        public SortedDictionary<string, ADOTabularMeasure> Visit(ADOTabularMeasureCollection measures)
+        {
+            //RRomano: Better way to reuse this method in the two visitors? Create an abstract class of a visitor so that code can be shared (csdl doesnt seem to have the DAX expression)
+
+            var ret = MetaDataVisitorADOMD.VisitMeasures(measures, this._conn);
+
+            return ret;
+        }
     }
 
 }
