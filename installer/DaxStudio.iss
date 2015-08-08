@@ -73,11 +73,15 @@ Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\release\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "D:\github\DaxStudio\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config"
-Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2014AMONotFound
+Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
+;Standalone configs
+Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2012AMOFound
 Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014AMOFound
-Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2014AMONotFound
-Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014AMOFound
+Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsGeSQL2016AMOFound
+;Excel Addin configs
+Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsSQL2012AMOFound Or IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014AMOFound And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsGeSQL2016AMOFound And Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -102,6 +106,7 @@ Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO D
 #include "scripts\products\winversion.iss"
 #include "scripts\products\fileversion.iss"
 #include "scripts\products\dotnetfxversion.iss"
+#include "scripts\products\excelversion.iss"
 #include "scripts\products\dotnetfx45.iss"
 #include "scripts\products\dotnetassembly.iss"
 #include "scripts\products\sql2012sp1adomdclient.iss"
@@ -244,6 +249,22 @@ begin
 	//init windows version
 	initwinversion();
 
+//  if IsExcel2010Installed() then begin
+//      msgbox('hello', mbInformation,MB_OK);
+//  end;
+
+//  if IsAssemblyInstalled('Microsoft.AnalysisServices', '11.0.0.0' ) then begin
+//      msgbox('amo ok',mbInformation, MB_OK);
+//  end  else begin
+//      msgbox('amo NOT ok',mbInformation, MB_OK);
+//  end;
+
+//  if IsAssemblyInstalled('Microsoft.AnalysisServices.AdomdClient', '11.0.0.0' ) then begin
+//      msgbox('adomd ok',mbInformation, MB_OK);
+//  end  else begin
+//      msgbox('adomd NOT ok',mbInformation, MB_OK);
+//  end;
+  
 #ifdef use_msi20
 	msi20('2.0');
 #endif
@@ -375,6 +396,18 @@ end;
 
 /////////////////////////////////////////////////////////////////////
 
+function IsSQL2012AMOFound(): boolean;
+var
+  maxVersion: string;
+begin
+  maxVersion := GetMaxAssemblyVersion('Microsoft.AnalysisServices');
+  //msgbox('Compare adomdclient ' + IntToStr(CompareAssemblyVersion(maxVersion ,'11.0.0.0000')),mbInformation,MB_OK);
+
+  // if maxVersion is less than 11.0.0.0000
+	Result := (CompareAssemblyVersion(maxVersion ,'11.0.0.0000') = 0 );
+end;
+
+
 function IsSQL2014AMOFound(): boolean;
 var
   maxVersion: string;
@@ -390,6 +423,17 @@ end;
 function IsSQL2014AMONotFound(): boolean;
 begin
    Result := not IsSQL2014AMOFound();
+end;
+
+function IsGeSQL2016AMOFound(): boolean;
+var
+  maxVersion: string;
+begin
+  maxVersion := GetMaxAssemblyVersion('Microsoft.AnalysisServices');
+  //msgbox('Compare adomdclient ' + IntToStr(CompareAssemblyVersion(maxVersion ,'11.0.0.0000')),mbInformation,MB_OK);
+
+  // if maxVersion is less than 11.0.0.0000
+	Result := (CompareAssemblyVersion(maxVersion ,'13.0.0.0000') >= 0 );
 end;
 
 /////////////////////////////////////////////////////////////////////
@@ -446,6 +490,7 @@ begin
   end else
     Result := 1;
 end;
+
 
 /////////////////////////////////////////////////////////////////////
 procedure CurStepChanged(CurStep: TSetupStep);

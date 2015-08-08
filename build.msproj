@@ -3,12 +3,14 @@
 
   <PropertyGroup>
     <SourceExeConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.standalone\app.config</SourceExeConfigFile>
-    <DestExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</DestExeConfigFile>
+    <Dest2014ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</Dest2014ExeConfigFile>
+	<Dest2016ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2016.config</Dest2016ExeConfigFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <SourceDllConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.exceladdin\app.config</SourceDllConfigFile>
-    <DestDllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</DestDllConfigFile>
+    <Dest2014DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</Dest2014DllConfigFile>
+	<Dest2016DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2016.config</Dest2016DllConfigFile>
   </PropertyGroup>
 
   <Target Name="Clean">
@@ -30,13 +32,24 @@
     <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
       <TransformXml Source="$(SourceExeConfigFile)"
                   Transform="app.2014.config"
-                  Destination="$(DestExeConfigFile)" />
+                  Destination="$(Dest2014ExeConfigFile)" />
       <TransformXml Source="$(SourceDllConfigFile)"
                       Transform="app.2014.config"
-                      Destination="$(DestDllConfigFile)" />
+                      Destination="$(Dest2014DllConfigFile)" />
   </Target>
 
-  <Target Name="Installer" DependsOnTargets="Configs2014">
+  <Target Name="Configs2016" DependsOnTargets="Build" >
+      <Message Text="Creating configs for SQL 2016 dependencies"/>
+    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
+      <TransformXml Source="$(SourceExeConfigFile)"
+                  Transform="app.2016.config"
+                  Destination="$(Dest2016ExeConfigFile)" />
+      <TransformXml Source="$(SourceDllConfigFile)"
+                      Transform="app.2016.config"
+                      Destination="$(Dest2016DllConfigFile)" />
+  </Target>
+  
+  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
   
