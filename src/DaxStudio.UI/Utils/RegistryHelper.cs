@@ -5,6 +5,7 @@ using Microsoft.Win32;
 //using ComboBox = System.Windows.Forms.ComboBox;
 using System;
 using DaxStudio.UI.Model;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI
 {
@@ -39,6 +40,28 @@ namespace DaxStudio.UI
         public static void SaveFileMRUListToRegistry( IEnumerable<object> files)
         {
             SaveListToRegistry("File","", files);
+        }
+
+        public static T GetValue<T>(string subKey, T defaultValue )
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            
+            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
+        }
+
+        public static T GetValue<T>(string subKey)
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            return (T)regDaxStudio.GetValue(subKey);
+        }
+
+        public static Task SetValueAsync<T>(string subKey, T value)
+        {
+            return Task.Factory.StartNew(()=>{
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
+                
+                regDaxStudio.SetValue(subKey, value);
+            });
         }
 
         internal static ObservableCollection<string> GetMRUListFromRegistry(string listName)

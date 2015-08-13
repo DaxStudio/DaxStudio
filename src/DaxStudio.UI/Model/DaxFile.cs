@@ -9,6 +9,11 @@ namespace DaxStudio.UI.Model
 {
     public class DaxFile
     {
+        public enum FileIcons
+        {
+            Dax,
+            Other
+        }
         public DaxFile(string initialValue)
         {
             var parts = initialValue.Split('|');
@@ -34,8 +39,13 @@ namespace DaxStudio.UI.Model
                 FileName = Path.GetFileNameWithoutExtension(_fullPath);
                 FileAndExtension = Path.GetFileName(_fullPath);
                 Folder = Path.GetDirectoryName(_fullPath);
+                Extension = Path.GetExtension(_fullPath).TrimStart('.').ToUpper();
+                ExtensionLabel = Extension == "DAX"?"":Extension;
             }
         }
+
+        public string Extension {get;private set;}
+        public string ExtensionLabel {get; private set;}
 
         public string FileName { get; private set; }
         public string Folder { get; private set; }
@@ -46,5 +56,11 @@ namespace DaxStudio.UI.Model
             return string.Format("{0}|{1}", Pinned.ToString(), FullPath);
         }
         
+        public  FileIcons Icon
+        {
+            get{
+                return Extension == "DAX" ?  FileIcons.Dax : FileIcons.Other;
+            }
+        }
     }
 }

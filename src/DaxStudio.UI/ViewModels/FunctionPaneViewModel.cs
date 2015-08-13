@@ -4,9 +4,10 @@ using Caliburn.Micro;
 
 namespace DaxStudio.UI.ViewModels
 {
-    [Export]
+    [Export(typeof(FunctionPaneViewModel))]
     public class FunctionPaneViewModel:ToolPaneBaseViewModel
     {
+        [ImportingConstructor]
         public FunctionPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator) : base(connection, eventAggregator)
         {
             Connection = connection;

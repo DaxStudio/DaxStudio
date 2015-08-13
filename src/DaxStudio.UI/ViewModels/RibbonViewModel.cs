@@ -57,8 +57,24 @@ namespace DaxStudio.UI.ViewModels
             CanCopy = true;
             CanPaste = true;
             RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
+            InitRunStyles();
         }
 
+        private void InitRunStyles()
+        {
+            RunStyles = new List<RunStyle>();
+            SelectedRunStyle = new RunStyle("Run Query", RunStyleIcons.RunOnly, false, "Executes the query and sends the results to the selected output");
+            RunStyles.Add(SelectedRunStyle);
+            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true, "Clears the database cache, then executes the query and sends the results to the selected output"));
+        }
+
+        public List<RunStyle> RunStyles { get; set; }
+        private RunStyle _selectedRunStyle;
+        public RunStyle SelectedRunStyle { 
+            get { return _selectedRunStyle; } 
+            set { _selectedRunStyle = value; 
+                NotifyOfPropertyChange(()=> SelectedRunStyle);
+            } }
         public OptionsViewModel Options { get; private set; }
         public Visibility OutputGroupIsVisible
         {
@@ -127,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget) );
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle.ClearCache) );
 
         }
 
@@ -193,7 +209,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            ActiveDocument.ClearDatabaseCache();
+            ActiveDocument.ClearDatabaseCacheAsync();
         }
 
         public void Save()
@@ -523,8 +539,5 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
         }
 
-        
-
-        public event EventHandler<ViewAttachedEventArgs> ViewAttached;
     }
 }

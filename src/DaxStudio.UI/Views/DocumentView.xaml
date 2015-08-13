@@ -19,188 +19,188 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
-        
-        <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
-                        <Grid ClipToBounds="True" SnapsToDevicePixels="True" KeyboardNavigation.TabNavigation="Local">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="0"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Border Background="Transparent" Grid.RowSpan="2"/>
-                            <Grid Panel.ZIndex="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <avalondock:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" FlowDirection="LeftToRight" IsItemsHost="True" 
+
+            <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
+                            <Grid ClipToBounds="True" SnapsToDevicePixels="True" KeyboardNavigation.TabNavigation="Local">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="0"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Border Background="Transparent" Grid.RowSpan="2"/>
+                                <Grid Panel.ZIndex="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <avalondock:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" FlowDirection="LeftToRight" IsItemsHost="True" 
                                                                  
                                                                  Grid.Row="0" KeyboardNavigation.TabIndex="1" />
                                     <!-- Margin="2,2,2,0" -->
-                                <avalondock:DropDownButton x:Name="MenuDropDownButton" Grid.Column="1" Focusable="False" Visibility="Hidden">
-                                    <avalondock:DropDownButton.DropDownContextMenu>
-                                        <avalondock:ContextMenuEx>
-                                            <avalondock:ContextMenuEx.ItemContainerStyle>
-                                                <Style TargetType="{x:Type avalondock:MenuItemEx}">
-                                                    <Setter Property="HeaderTemplate" Value="{Binding Root.Manager.DocumentPaneMenuItemHeaderTemplate}"/>
-                                                    <Setter Property="HeaderTemplateSelector" Value="{Binding Root.Manager.DocumentPaneMenuItemHeaderTemplateSelector}"/>
-                                                    <Setter Property="IconTemplate" Value="{Binding Root.Manager.IconContentTemplate}"/>
-                                                    <Setter Property="IconTemplateSelector" Value="{Binding Root.Manager.IconContentTemplateSelector}"/>
-                                                    <Setter Property="Command">
-                                                        <Setter.Value>
-                                                            <Binding Path=".">
-                                                                <Binding.Converter>
-                                                                    <avalondock:ActivateCommandLayoutItemFromLayoutModelConverter/>
-                                                                </Binding.Converter>
-                                                            </Binding>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.BasedOn>
-                                                        <Style TargetType="{x:Type MenuItem}">
-                                                            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-                                                            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
-                                                            <Setter Property="Background" Value="Transparent"/>
-                                                            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
-                                                            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
-                                                            <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuItemTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
-                                                            <Style.Triggers>
-                                                                <Trigger Property="Role" Value="TopLevelHeader">
-                                                                    <Setter Property="Padding" Value="7,2,8,3"/>
-                                                                    <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
-                                                                </Trigger>
-                                                                <Trigger Property="Role" Value="TopLevelItem">
-                                                                    <Setter Property="Padding" Value="7,2,8,3"/>
-                                                                    <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelItemTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
-                                                                </Trigger>
-                                                                <Trigger Property="Role" Value="SubmenuHeader">
-                                                                    <Setter Property="Padding" Value="2,3"/>
-                                                                    <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
-                                                                </Trigger>
-                                                                <Trigger Property="Role" Value="SubmenuItem">
-                                                                    <Setter Property="Padding" Value="2,3"/>
-                                                                </Trigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Style.BasedOn>
-                                                </Style>
-                                            </avalondock:ContextMenuEx.ItemContainerStyle>
-                                        </avalondock:ContextMenuEx>
-                                    </avalondock:DropDownButton.DropDownContextMenu>
-                                    <avalondock:DropDownButton.Style>
-                                        <Style TargetType="{x:Type ToggleButton}">
+                                    <avalondock:DropDownButton x:Name="MenuDropDownButton" Grid.Column="1" Focusable="False" Visibility="Hidden">
+                                        <avalondock:DropDownButton.DropDownContextMenu>
+                                            <avalondock:ContextMenuEx>
+                                                <avalondock:ContextMenuEx.ItemContainerStyle>
+                                                    <Style TargetType="{x:Type avalondock:MenuItemEx}">
+                                                        <Setter Property="HeaderTemplate" Value="{Binding Root.Manager.DocumentPaneMenuItemHeaderTemplate}"/>
+                                                        <Setter Property="HeaderTemplateSelector" Value="{Binding Root.Manager.DocumentPaneMenuItemHeaderTemplateSelector}"/>
+                                                        <Setter Property="IconTemplate" Value="{Binding Root.Manager.IconContentTemplate}"/>
+                                                        <Setter Property="IconTemplateSelector" Value="{Binding Root.Manager.IconContentTemplateSelector}"/>
+                                                        <Setter Property="Command">
+                                                            <Setter.Value>
+                                                                <Binding Path=".">
+                                                                    <Binding.Converter>
+                                                                        <avalondock:ActivateCommandLayoutItemFromLayoutModelConverter/>
+                                                                    </Binding.Converter>
+                                                                </Binding>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.BasedOn>
+                                                            <Style TargetType="{x:Type MenuItem}">
+                                                                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                                                                <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ItemsControl}}}"/>
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
+                                                                <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+                                                                <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuItemTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="Role" Value="TopLevelHeader">
+                                                                        <Setter Property="Padding" Value="7,2,8,3"/>
+                                                                        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
+                                                                    </Trigger>
+                                                                    <Trigger Property="Role" Value="TopLevelItem">
+                                                                        <Setter Property="Padding" Value="7,2,8,3"/>
+                                                                        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=TopLevelItemTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
+                                                                    </Trigger>
+                                                                    <Trigger Property="Role" Value="SubmenuHeader">
+                                                                        <Setter Property="Padding" Value="2,3"/>
+                                                                        <Setter Property="Template" Value="{DynamicResource {ComponentResourceKey ResourceId=SubmenuHeaderTemplateKey, TypeInTargetAssembly={x:Type MenuItem}}}"/>
+                                                                    </Trigger>
+                                                                    <Trigger Property="Role" Value="SubmenuItem">
+                                                                        <Setter Property="Padding" Value="2,3"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Style.BasedOn>
+                                                    </Style>
+                                                </avalondock:ContextMenuEx.ItemContainerStyle>
+                                            </avalondock:ContextMenuEx>
+                                        </avalondock:DropDownButton.DropDownContextMenu>
+                                        <avalondock:DropDownButton.Style>
+                                            <Style TargetType="{x:Type ToggleButton}">
 
-                                            <Setter Property="Padding" Value="2"/>
-                                            <Setter Property="BorderThickness" Value="1"/>
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="BorderBrush" Value="Transparent"/>
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsChecked" Value="True">
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FFE6F0FA"/>
-                                                            </Trigger>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FFC2E0FF"/>
-                                                            </Trigger>
-                                                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FFC2E0FF"/>
-                                                            </Trigger>
-                                                            <MultiTrigger>
-                                                                <MultiTrigger.Conditions>
-                                                                    <Condition Property="IsMouseOver" Value="True"/>
-                                                                    <Condition Property="IsChecked" Value="True"/>
-                                                                </MultiTrigger.Conditions>
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FF99CCFF"/>
-                                                            </MultiTrigger>
-                                                            <MultiTrigger>
-                                                                <MultiTrigger.Conditions>
-                                                                    <Condition Property="IsKeyboardFocused" Value="True"/>
-                                                                    <Condition Property="IsChecked" Value="True"/>
-                                                                </MultiTrigger.Conditions>
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FF99CCFF"/>
-                                                            </MultiTrigger>
-                                                            <Trigger Property="IsPressed" Value="True">
-                                                                <Setter Property="BorderBrush" Value="#FF3399FF"/>
-                                                                <Setter Property="Background" Value="#FF99CCFF"/>
-                                                            </Trigger>
-                                                            <Trigger Property="IsEnabled" Value="False">
-                                                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </avalondock:DropDownButton.Style>
-                                    <!--<Image>
+                                                <Setter Property="Padding" Value="2"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FFE6F0FA"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FFC2E0FF"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FFC2E0FF"/>
+                                                                </Trigger>
+                                                                <MultiTrigger>
+                                                                    <MultiTrigger.Conditions>
+                                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                                        <Condition Property="IsChecked" Value="True"/>
+                                                                    </MultiTrigger.Conditions>
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FF99CCFF"/>
+                                                                </MultiTrigger>
+                                                                <MultiTrigger>
+                                                                    <MultiTrigger.Conditions>
+                                                                        <Condition Property="IsKeyboardFocused" Value="True"/>
+                                                                        <Condition Property="IsChecked" Value="True"/>
+                                                                    </MultiTrigger.Conditions>
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FF99CCFF"/>
+                                                                </MultiTrigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#FF3399FF"/>
+                                                                    <Setter Property="Background" Value="#FF99CCFF"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsEnabled" Value="False">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </avalondock:DropDownButton.Style>
+                                        <!--<Image>
                                         <Image.Source>
                                             <BitmapImage UriSource="pack://application:,,,/AvalonDock;component/Images/PinDocMenu.png"/>
                                         </Image.Source>
                                     </Image>-->
-                                </avalondock:DropDownButton>
+                                    </avalondock:DropDownButton>
+                                </Grid>
+                                <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
+                                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentTemplate="{TemplateBinding SelectedContentTemplate}" Content="{TemplateBinding SelectedContent}" ContentStringFormat="{TemplateBinding SelectedContentStringFormat}" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
                             </Grid>
-                            <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
-                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentTemplate="{TemplateBinding SelectedContentTemplate}" Content="{TemplateBinding SelectedContent}" ContentStringFormat="{TemplateBinding SelectedContentStringFormat}" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                            </Border>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                            </Trigger>
-                            <DataTrigger Binding="{Binding Model.ChildrenCount, RelativeSource={RelativeSource Self}}" Value="0">
-                                <Setter Property="Visibility" TargetName="MenuDropDownButton" Value="Collapsed"/>
-                            </DataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ItemContainerStyle">
-                <Setter.Value>
-                    <Style TargetType="{x:Type TabItem}">
-                        <Setter Property="Visibility">
-                            <Setter.Value>
-                                <Binding Path="IsVisible">
-                                    <Binding.Converter>
-                                        <avalondock:BoolToVisibilityConverter/>
-                                    </Binding.Converter>
-                                </Binding>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                        <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ItemTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <avalondock:LayoutDocumentTabItem Model="{Binding}"/>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ContentTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <avalondock:LayoutDocumentControl Model="{Binding}"/>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding Model.ChildrenCount, RelativeSource={RelativeSource Self}}" Value="0">
+                                    <Setter Property="Visibility" TargetName="MenuDropDownButton" Value="Collapsed"/>
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="Visibility">
+                                <Setter.Value>
+                                    <Binding Path="IsVisible">
+                                        <Binding.Converter>
+                                            <avalondock:BoolToVisibilityConverter/>
+                                        </Binding.Converter>
+                                    </Binding>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalondock:LayoutDocumentTabItem Model="{Binding}"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalondock:LayoutDocumentControl Model="{Binding}"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <i:Interaction.Behaviors>
@@ -239,8 +239,8 @@
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
-                    </local:PanesStyleSelector>
-                </avalondock:DockingManager.LayoutItemContainerStyleSelector>
+                </local:PanesStyleSelector>
+            </avalondock:DockingManager.LayoutItemContainerStyleSelector>
             <!--
             <avalondock:DockingManager.AnchorablePaneTemplate>
                 <ControlTemplate>
@@ -263,8 +263,8 @@
                     </local:AutobinderTemplateSelector.Template>
                 </local:AutobinderTemplateSelector>
             </avalondock:DockingManager.LayoutItemTemplateSelector>
-            
-<!-- cal:Message.Attach="[Event DocumentClosing]=[Action DocumentClosing($this)]" -->
+
+            <!-- cal:Message.Attach="[Event DocumentClosing]=[Action DocumentClosing($this)]" -->
 
             <avalondock:LayoutRoot>
                 <!-- Left side Tool Panes -->
@@ -282,59 +282,56 @@
                                 <ContentControl cal:View.Model="{Binding DmvPane}" cal:View.ApplyConventions="true"></ContentControl>
                             </avalondock:LayoutAnchorable>
                             -->
-                            
+
                         </avalondock:LayoutAnchorablePane>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    
+
                     <!-- Main Document Pane -->
-                    
+
                     <avalondock:LayoutPanel Orientation="Vertical">
-                        
-                            <avalondock:LayoutDocumentPane DockHeight="Auto"  >
+
+                        <avalondock:LayoutDocumentPane DockHeight="Auto"  >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
-                                
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
+
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
                                     <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"
-                                                   Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="2"
-                                                   VerticalAlignment="Top" MinWidth="100" MinHeight="80"
+                                                   Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" MinWidth="100" 
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                   
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   
                                                    EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    >
-                                        
+
                                         <ContextMenuService.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
+                                            <ContextMenu>
+                                                <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
                                                       cal:Message.Attach="Cut()"></MenuItem>
-                                            <MenuItem x:Name="Copy" Header="Copy" Icon="{StaticResource CopyIcon}"
+                                                <MenuItem x:Name="Copy" Header="Copy" Icon="{StaticResource CopyIcon}"
                                                       cal:Message.Attach="Copy()"></MenuItem>
-                                            <MenuItem x:Name="Paste" Header="Paste" Icon="{StaticResource PasteIcon}"
+                                                <MenuItem x:Name="Paste" Header="Paste" Icon="{StaticResource PasteIcon}"
                                                       cal:Message.Attach="Paste()"></MenuItem>
-                                            <Separator />
-                                            <MenuItem x:Name="CommentSelection" Header="Comment" Icon="{StaticResource CommentIcon}"
+                                                <Separator />
+                                                <MenuItem x:Name="CommentSelection" Header="Comment" Icon="{StaticResource CommentIcon}"
                                                       cal:Message.Attach="CommentSelection()"></MenuItem>
-                                            <MenuItem x:Name="UncommentSelection" Header="Uncomment" Icon="{StaticResource UncommentIcon}"
+                                                <MenuItem x:Name="UncommentSelection" Header="Uncomment" Icon="{StaticResource UncommentIcon}"
                                                       cal:Message.Attach="UnCommentSelection()"></MenuItem>
-                                        </ContextMenu>
-                                    </ContextMenuService.ContextMenu>
-                                    
-                                </dax:DAXEditor>
-                                <ContentControl x:Name="FindReplaceDialog" 
+                                            </ContextMenu>
+                                        </ContextMenuService.ContextMenu>
+
+                                    </dax:DAXEditor>
+                                    <ContentControl x:Name="FindReplaceDialog" 
                                                 HorizontalAlignment="Right" 
                                                 VerticalAlignment="Top"
                                                 Width="300"
@@ -344,10 +341,10 @@
                                 </Grid>
                             </avalondock:LayoutDocument>
                         </avalondock:LayoutDocumentPane>
-                    
-                        
-                    <!-- Bottom Output panes -->
-                        
+
+
+                        <!-- Bottom Output panes -->
+
                         <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="170" DockHeight="260">
 
                             <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
@@ -367,6 +364,6 @@
 
             </avalondock:LayoutRoot>
         </avalondock:DockingManager>
-        
+
     </Grid>
 </UserControl>

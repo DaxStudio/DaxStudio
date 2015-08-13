@@ -5,6 +5,7 @@ using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [Export]
     public class OutputPaneViewModel:ToolWindowBase
     {
         private readonly BindableCollection<OutputMessage> _messages;

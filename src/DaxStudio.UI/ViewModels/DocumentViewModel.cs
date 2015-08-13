@@ -70,18 +70,21 @@ namespace DaxStudio.UI.ViewModels
         private RibbonViewModel _ribbon;
         private Regex _rexQueryError;
         private Guid _uniqueId;
+        private IGlobalOptions _options;
+        private IQueryHistoryEvent currentQueryDetails;
 
         [ImportingConstructor]
-        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails)
+        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options)
         {
             _host = host;
             _eventAggregator = eventAggregator;
             _windowManager = windowManager;
             _ribbon = ribbon;
-            Init(_ribbon);
             ServerTimingDetails = serverTimingDetails;
-            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$",RegexOptions.Compiled);
+            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled);
             _uniqueId = Guid.NewGuid();
+            _options = options;
+            Init(_ribbon);
         }
 
         public void Init(RibbonViewModel ribbon)
@@ -89,10 +92,12 @@ namespace DaxStudio.UI.ViewModels
             
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( GenerateScreenUnitList());
+            
             this.SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
-
+            
             // Initialize default Tool Windows
-            MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator, this);
+            // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
+            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator);
             OutputPane = new OutputPaneViewModel(_eventAggregator);
@@ -105,10 +110,8 @@ namespace DaxStudio.UI.ViewModels
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
             var t = DaxFormatterProxy.PrimeConnectionAsync();
-                        
-        }
 
-        
+        }
 
         /// <summary>
         /// Initialize Scale View with useful units in percent and font point size
@@ -126,16 +129,25 @@ namespace DaxStudio.UI.ViewModels
 
             return unitList;
         }
+
+
         public override void TryClose(bool? dialogResult = null)
         {
             
             base.TryClose(dialogResult);
         }
         private DAXEditor.DAXEditor _editor;
+        /// <summary>
+        /// Initialization that requires a reference to the editor control needs to happen here
+        /// </summary>
+        /// <param name="view"></param>
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
             _editor = GetEditor();
+
+            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor);
+            UpdateSettings();
             if (_editor != null)
             {
                 FindReplaceDialog.Editor = _editor;
@@ -143,8 +155,7 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
-                IntellisenseProvider = new DaxIntellisenseProvider(this, _editor);
-                _editor.IntellisenseProvider = IntellisenseProvider;
+                
             }
             if (this.State == DocumentState.LoadPending)
             {
@@ -381,9 +392,19 @@ namespace DaxStudio.UI.ViewModels
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             QueryResultsPane.IsBusy = false;
+            bool svrTimingsEnabled = false;
+            currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+            currentQueryDetails.RowCount = this.RowCount;
             foreach(var tw in TraceWatchers)
             {
-                if (tw.IsChecked) tw.QueryCompleted(isCancelled);
+                if (tw.IsChecked) tw.QueryCompleted(isCancelled, currentQueryDetails);
+                var svrTimings = tw as ServerTimesViewModel;
+                if (svrTimings != null) { svrTimingsEnabled = true; }
+
+            }
+            if (!svrTimingsEnabled)
+            {
+                _eventAggregator.BeginPublishOnUIThread(currentQueryDetails);
             }
         }
 
@@ -444,10 +465,18 @@ namespace DaxStudio.UI.ViewModels
             _ribbon.SelectedTarget = _selectedTarget;
             var loc = Document.GetLocation(0);
             //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
-            if (HasDatabaseSchemaChanged())
+            try
             {
-                RefreshMetadata();
-                OutputMessage("Model schema change detected - Metadata refreshed");
+                if (HasDatabaseSchemaChanged())
+                {
+                    RefreshMetadata();
+                    OutputMessage("Model schema change detected - Metadata refreshed");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
+                OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
             }
 
             try
@@ -803,6 +832,14 @@ namespace DaxStudio.UI.ViewModels
         private Stopwatch _queryStopWatch;
         public DataTable ExecuteQuery(string daxQuery)
         {
+            int row = 0;
+            int col = 0;
+            this._editor.Dispatcher.Invoke(() =>
+            {
+                var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                row = loc.Line;
+                col = loc.Column;
+            });
             try
             {
                 var c = Connection;
@@ -825,7 +862,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                OutputError(e.Message);
+                OutputError(e.Message,row,col);
                 ActivateOutput();
                 return null;
             }
@@ -884,16 +921,16 @@ namespace DaxStudio.UI.ViewModels
             return Task.Factory.StartNew(() => ExecuteQuery(daxQuery));
         }
 
-        public void Handle(RunQueryEvent message)
+        public async void Handle(RunQueryEvent message)
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
             if (!CanRunQuery) return;
 
             IsQueryRunning = true;
-            //SelectedWorksheet = message.SelectedWorksheet;
+            
             NotifyOfPropertyChange(()=>CanRunQuery);
-            //RegisterTraceWatchers();  // CHECK - is this required now that we are starting the trace as soon as one watcher is enabled...?
+            if (message.ClearCache) await ClearDatabaseCacheAsync();
             RunQueryInternal(message);
         }
 
@@ -901,6 +938,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var msg = NewStatusBarMessage("Running Query...");
             _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
+            currentQueryDetails = new QueryHistoryEvent(this.QueryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
+            currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
             {
                 IsQueryRunning = false;
@@ -977,12 +1016,23 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputError(string error, int row, int column)
         {
+            int msgRow = 0;
+            int msgCol = 0;
+            //"Query ( , )"
+            var m = _rexQueryError.Match(error);
+            if (m.Success)
+            {
+                int.TryParse(m.Groups["line"].Value, out msgRow);   
+                int.TryParse(m.Groups["col"].Value, out msgCol);
+                msgCol += column > 0 ? column -1 : 0;
+                msgRow += row > 0 ? row -1 : 0;
+            }
             _editor.Dispatcher.Invoke(() =>
             {
-                _editor.DisplayErrorMarkings(row, column, 1, error);
+                _editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
             });
                 
-            OutputPane.AddError(error,row,column);
+            OutputPane.AddError(error,msgRow,msgCol);
         }
 
         #endregion
@@ -1349,15 +1399,16 @@ namespace DaxStudio.UI.ViewModels
         
 
         public BindableCollection<string> Databases { get; private set; }
-        public void ClearDatabaseCache()
+        public async Task ClearDatabaseCacheAsync()
         {
             try
             {
                 var sw = Stopwatch.StartNew();
-
+                currentQueryDetails = new QueryHistoryEvent("", DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
+                currentQueryDetails.Status = QueryStatus.Running;
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
+                await ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
                 {
                     sw.Stop();
                     var duration = sw.ElapsedMilliseconds;
@@ -1584,10 +1635,9 @@ namespace DaxStudio.UI.ViewModels
 
             if (editor.SelectionLength > 0)
             {
-                // need to position this in relation to the current selection...
-                var selstart = _editor.Document.GetLocation(_editor.SelectionStart);
-                lineOffset = selstart.Line;
-                colOffset = selstart.Column;
+                // clear the selection
+                editor.SelectionStart = 0;
+                editor.SelectionLength = 0;
             }
             var caret = editor.TextArea.Caret;
             caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
@@ -1602,21 +1652,8 @@ namespace DaxStudio.UI.ViewModels
                 Keyboard.Focus(editor);
             }), DispatcherPriority.Input);
             
-
-            //InsertTextAtSelection("><");
         }
-        /*
-        public async void FormatQuery_()
-        {
-            var msg = new StatusBarMessage(this,"Formatting Query...");
 
-            await Model.DaxFormatterProxy.FormatQuery(this, _editor).ContinueWith((data) =>
-                {
-                    msg.Dispose();
-                });
-            
-        }
-        */
 
         public void FormatQuery()
         {
@@ -1630,7 +1667,12 @@ namespace DaxStudio.UI.ViewModels
             string qry;
             // if there is a selection send that to DocumentViewModel.com otherwise send all the text
             qry = _editor.SelectionLength == 0 ? _editor.Text : _editor.SelectedText;
-
+            if (_editor.SelectionLength > 0)
+            {
+                var loc = _editor.Document.GetLocation(_editor.SelectionStart);
+                colOffset = loc.Column;
+                rowOffset = loc.Line;
+            }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
             DaxFormatterProxy.FormatDaxAsync(qry).ContinueWith((res) => {
@@ -1653,9 +1695,7 @@ namespace DaxStudio.UI.ViewModels
                             }
                             else
                             {
-                                var loc = _editor.Document.GetLocation(_editor.SelectionStart);
-                                colOffset = loc.Column;
-                                rowOffset = loc.Line;
+                    
                                 _editor.SelectedText = res.Result.FormattedDax.TrimEnd();
                             }
                             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Query Text updated");
@@ -1669,8 +1709,8 @@ namespace DaxStudio.UI.ViewModels
                         {
                             // write error 
                             // note: daxformatter.com returns 0 based coordinates so we add 1 to them
-                            int errLine = err.line + rowOffset;
-                            int errCol = err.column + colOffset;
+                            int errLine = err.line + 1;
+                            int errCol = err.column + 1;
 
                             _editor.Dispatcher.Invoke(() => { 
                                 // if the error is at the end of text then we need to move in 1 character
@@ -1682,7 +1722,7 @@ namespace DaxStudio.UI.ViewModels
 
                                 // TODO - need to figure out if more than 1 character should be highlighted
                             
-                                OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
+                                OutputError(string.Format("Query ({0}, {1}) {2} ", errLine, errCol, err.message), rowOffset , colOffset);
                                 ActivateOutput();
                             });
                             
@@ -1821,6 +1861,33 @@ namespace DaxStudio.UI.ViewModels
         public int RowCount { 
             get {return _rowCount;} 
             set {_rowCount = value;  NotifyOfPropertyChange(()=>RowCount);}
+        }
+
+        public void UpdateSettings()
+        {
+            var editor = GetEditor();
+            if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
+            {
+                editor.ShowLineNumbers = _options.EditorShowLineNumbers;
+            }
+            if (editor.FontFamily.Source != _options.EditorFontFamily)
+            {
+                editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
+            }
+            if (editor.FontSize != _options.EditorFontSize)
+            {
+                editor.FontSize = _options.EditorFontSize;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
+                this.SizeUnitLabel.StringValue = "100";
+            }
+            if (_options.EditorEnableIntellisense)
+            {
+                _editor.EnableIntellisense(IntellisenseProvider);
+            }
+            else
+            {
+                _editor.DisableIntellisense();
+            }
         }
     }
 }

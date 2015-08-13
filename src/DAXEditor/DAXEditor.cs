@@ -156,6 +156,7 @@ namespace DAXEditor
             this.DefaultFontSize = 11.0;
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;
+            
         }
 
         void TextArea_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -269,7 +270,7 @@ namespace DAXEditor
             }
         }
 
-        public IIntellisenseProvider IntellisenseProvider { get; set; }
+        private IIntellisenseProvider IntellisenseProvider { get; set; }
 
         CompletionWindow completionWindow;
 
@@ -426,6 +427,16 @@ namespace DAXEditor
         public void DisposeCompletionWindow()
         {
             completionWindow = null;
+        }
+
+        public void DisableIntellisense()
+        {
+            this.IntellisenseProvider = new IntellisenseProviderStub();
+        }
+
+        public void EnableIntellisense(IIntellisenseProvider provider)
+        {
+            this.IntellisenseProvider = provider;
         }
     }
 }

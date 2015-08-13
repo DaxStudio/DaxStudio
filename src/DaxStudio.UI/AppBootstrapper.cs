@@ -74,6 +74,11 @@ namespace DaxStudio.UI
                     );
                 */
 
+                ConventionManager.AddElementConvention<Fluent.Spinner>(Fluent.Spinner.ValueProperty, "Value", "ValueChanged");
+                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
+                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
+                
+
                 // Fixes the default datetime format in the results listview
                 // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
                 FrameworkElement.LanguageProperty.OverrideMetadata(

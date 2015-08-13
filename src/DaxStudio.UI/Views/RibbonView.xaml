@@ -13,22 +13,12 @@
              d:DesignHeight="137" d:DesignWidth="654">
     <UserControl.Resources>
         <ResourceDictionary>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         
-        
-<!--
-        <conv:ResourceLookupConverter x:Key="OutputIcons">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
-                <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer@96ppi.png"/>
-                <BitmapImage x:Key="Static" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
-                <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
-            </ResourceDictionary>
-        </conv:ResourceLookupConverter>
--->
         <conv:ResourceLookupConverter x:Key="TraceIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
@@ -61,6 +51,28 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+        
+        <DataTemplate x:Key="RunStyleTemplate">
+            <Border
+                BorderThickness="4"
+                BorderBrush="Transparent" 
+                ToolTip="{Binding Tooltip}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image VerticalAlignment="Top"
+                        Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
+                        Stretch="None" 
+                        Width="32" Height="32" />
+                        <TextBlock Text="{Binding Name}"
+                        TextWrapping="Wrap"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center" 
+                        TextAlignment="Center"
+                        />
+
+                    </StackPanel>
+                </Border>
+        </DataTemplate>
+            
         </ResourceDictionary>
     </UserControl.Resources>
             
@@ -85,11 +97,7 @@
             <Style x:Key="TabButton" TargetType="Fluent:Button">
                 <Setter Property="Foreground" Value="White"></Setter>
             </Style>
-            <!--
-            <Style x:Key="BackstageTabButton">
-                <Setter Property="Margin" Value="50"></Setter>
-            </Style>
-            -->
+            
         </Fluent:Ribbon.Resources>
 
         <!--Backstage-->
@@ -171,8 +179,11 @@
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
-                                                <Image Source="{StaticResource FileIcon}"
-                                                       Margin="0,0,10,0"/>
+                                                <Grid>
+                                                <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                       Margin="0,3,10,3" Width="32" Height="32" />
+                                                    <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                </Grid>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
                                                     <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
@@ -260,18 +271,29 @@
         <!-- Home Tabs-->
         <Fluent:RibbonTabItem Header="Home">
             <Fluent:RibbonGroupBox Header="Query" Margin="4,0">
-                <Fluent:Button Name="RunQuery"
+                <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
-                               LargeIcon="{StaticResource PlayIconLarger}"
+                               LargeIcon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIconsLarger}}"
                                Margin="4,0">
-                    <Fluent:Button.ToolTip>
+                    <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
-                                          Text="Executes the query and sends the results to the selected output"
+                                          Text="{Binding Path=SelectedRunStyle.Tooltip}"
                                           DisableReason="{Binding RunQueryDisableReason}"
                                            ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
+                    </Fluent:SplitButton.ToolTip>
+                    <Fluent:Gallery
+                        ItemWidth="80"
+                        ItemHeight="80"
+                        MaxItemsInRow="1"
+                        ItemsSource="{Binding RunStyles}"
+                        SelectedItem="{Binding SelectedRunStyle}"
+                        ItemTemplate="{DynamicResource RunStyleTemplate}"
+                        >
+                        
+                       
+                    </Fluent:Gallery>
+                </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"
                                Header="Cancel"
                                cal:Message.Attach="[Event Click] = [Action CancelQuery()]"

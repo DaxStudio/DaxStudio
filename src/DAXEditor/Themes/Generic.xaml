@@ -217,20 +217,21 @@
                                                     </ComboBox>
 -->
                                                 <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
-                                           FontSize="12"
-                                           ItemsSource="{Binding SelectedItem.DefaultValues}"
-                                           ToolTip="{Binding ValueTip}"
-                                           HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                           Grid.Column="0"
-                                           Margin="3,0"
-                                           Padding="0"
-                                           BorderThickness="1"
-                                           BorderBrush="Transparent"
-                                           IsEditable="True">
+                                               FontSize="12"
+                                               ItemsSource="{Binding SelectedItem.DefaultValues}"
+                                               ToolTip="{Binding ValueTip}"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                               Grid.Column="0"
+                                               Margin="3,0"
+                                               Padding="0"
+                                               BorderThickness="1"
+                                               BorderBrush="Transparent"
+                                               IsEditable="True"
+                                               >
                                                     <unit:UnitCombobox.Text>
                                                         <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
                                                     </unit:UnitCombobox.Text>
-                                                </unit:UnitCombobox>
+                                           </unit:UnitCombobox>
                                                     
                                                 <ScrollBar Name="PART_HorizontalScrollBar"
                                    Orientation="Horizontal"
