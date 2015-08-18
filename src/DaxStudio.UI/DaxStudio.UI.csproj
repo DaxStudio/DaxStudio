@@ -275,6 +275,7 @@
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
+    <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\TextBoxEx.cs" />
@@ -289,6 +290,8 @@
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
+    <Compile Include="Converters\FormattedTimeConverter.cs" />
+    <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
     <Compile Include="Converters\DynamicGridViewConverter.cs" />
@@ -296,6 +299,7 @@
     <Compile Include="Converters\QueryMultiLineConverter.cs" />
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
+    <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
@@ -333,6 +337,7 @@
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Model\Enums.cs" />
     <Compile Include="Interfaces\ISaveState.cs" />
+    <Compile Include="Model\GlobalQueryHistory.cs" />
     <Compile Include="Model\LinkedQueryResult.cs" />
     <Compile Include="Model\NotifyIcon.cs" />
     <Compile Include="Model\ProxyPowerPivot.cs" />
@@ -456,6 +461,9 @@
     <Compile Include="Views\OutputPaneView.xaml.cs">
       <DependentUpon>OutputPaneView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\QueryHistoryPaneView.xaml.cs">
+      <DependentUpon>QueryHistoryPaneView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\QueryPlanTraceView.xaml.cs">
       <DependentUpon>QueryPlanTraceView.xaml</DependentUpon>
     </Compile>
@@ -513,6 +521,10 @@
     <Page Include="Views\MetadataPaneView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\QueryHistoryPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>

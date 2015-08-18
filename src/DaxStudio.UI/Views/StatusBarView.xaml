@@ -219,6 +219,7 @@
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{StaticResource StatusServer}"></Image>
                     <TextBlock x:Name="ServerName">Server</TextBlock>
+                    <TextBlock x:Name="ServerVersion" Margin="5,0,0,0"></TextBlock>
                 </StackPanel>
                 <StatusBarItem.ToolTip>
                     <TextBlock>Server name</TextBlock>

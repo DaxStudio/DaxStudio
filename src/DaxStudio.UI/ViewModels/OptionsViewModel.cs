@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ViewModels
         private string _proxyUser;
         private string _proxyPassword;
         private SecureString _proxySecurePassword;
-
+        private int _maxQueryHistory;
         private IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
@@ -38,8 +38,8 @@ namespace DaxStudio.UI.ViewModels
             ProxyUseSystem = RegistryHelper.GetValue<bool>("ProxyUseSystem", true);
             ProxyAddress = RegistryHelper.GetValue<string>("ProxyAddress", "");
             ProxyUser = RegistryHelper.GetValue<string>("ProxyUser", "");
-            ProxyPassword = RegistryHelper.GetValue<string>("ProxyPassword", "").Decrypt(); 
-            // TODO - read from registry
+            ProxyPassword = RegistryHelper.GetValue<string>("ProxyPassword", "").Decrypt();
+            MaxQueryHistory = RegistryHelper.GetValue<int>("MaxQueryHistory", 100);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -153,5 +153,18 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
+
+
+        public int MaxQueryHistory { get { return _maxQueryHistory; }
+            set
+            {
+                if (_maxQueryHistory == value) return;
+                _maxQueryHistory = value;
+                NotifyOfPropertyChange(() => MaxQueryHistory);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                RegistryHelper.SetValueAsync<int>("MaxQueryHistory", value);
+            }
+
+        }
     }
 }

@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Events
 {
     public class QueryHistoryEvent:IQueryHistoryEvent
     {
+        [JsonConstructor]
         public QueryHistoryEvent( string queryText
         , DateTime startTime
         , long clientDurationMs 
@@ -37,6 +39,7 @@ namespace DaxStudio.UI.Events
         , string databaseName 
         , string fileName): this(queryText,startTime,-1,-1,-1,-1,serverName,databaseName,fileName )
         {   }
+
 
         public string QueryText { get; private set; }
         public DateTime StartTime { get; private set; }

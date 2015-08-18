@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,5 +14,10 @@ namespace DaxStudio.Interfaces
         string EditorFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
 
+        int MaxQueryHistory { get; set; }
+        bool ProxyUseSystem { get; set; }
+        string ProxyAddress { get; set; }
+        string ProxyUser { get; set; }
+        SecureString ProxySecurePassword { get; set; }
     }
 }

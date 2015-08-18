@@ -100,8 +100,13 @@ namespace DaxStudio.UI.ViewModels
             MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator);
-            OutputPane = new OutputPaneViewModel(_eventAggregator);
-            QueryResultsPane = new QueryResultsPaneViewModel(_eventAggregator,_host);
+            OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
+            QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
+
+            var globalHistory = IoC.Get<GlobalQueryHistory>();
+            //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
+            //QueryHistoryPane = qryHistFactory(globalHistory, _eventAggregator, this);
+            QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this);
 
             Document = new TextDocument();
             FindReplaceDialog = new FindReplaceDialogViewModel(this.GetEditor());
@@ -338,7 +343,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-
+        /// <summary>
+        /// Properties added to this collection populate the available tool windows inside the document pane
+        /// </summary>
         public IObservableCollection<object> ToolWindows
         {
             get
@@ -349,7 +356,8 @@ namespace DaxStudio.UI.ViewModels
                         FunctionPane,
                         DmvPane,
                         OutputPane,
-                        QueryResultsPane
+                        QueryResultsPane,
+                        QueryHistoryPane
                     });
             }
         }
@@ -944,7 +952,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 IsQueryRunning = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
-                
+
+                // if the server times trace watcher is not active then just record client timings
+                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsActive)
+                {
+                    currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+                    currentQueryDetails.RowCount = ResultsTable.Rows.Count;
+                    _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
+                }
+
                 _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                 msg.Dispose();               
             });
@@ -1387,11 +1403,13 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (Connection.IsPowerPivot)
                     {
-                        ServerName = string.Format("<PowerPivot>  {0}", Connection.ServerVersion);
+                        ServerName = "<PowerPivot>";
+                        ServerVersion = Connection.ServerVersion;
                     }
                     else
                     {
-                        ServerName = string.Format("{0}  {1}", Connection.ServerName, Connection.ServerVersion);
+                        ServerName = Connection.ServerName;
+                        ServerVersion = Connection.ServerVersion;
                     }
                 }
             }
@@ -1858,6 +1876,7 @@ namespace DaxStudio.UI.ViewModels
         public object UniqueID { get { return _uniqueId; } }
 
         private int _rowCount = -1;
+        private  string _serverVersion = "";
         public int RowCount { 
             get {return _rowCount;} 
             set {_rowCount = value;  NotifyOfPropertyChange(()=>RowCount);}
@@ -1887,6 +1906,18 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 _editor.DisableIntellisense();
+            }
+        }
+
+        public QueryHistoryPaneViewModel QueryHistoryPane { get; set; }
+
+        public string ServerVersion
+        {
+            get { return _serverVersion; }
+            set
+            {
+                _serverVersion = value;
+                NotifyOfPropertyChange(() => ServerVersion);
             }
         }
     }
