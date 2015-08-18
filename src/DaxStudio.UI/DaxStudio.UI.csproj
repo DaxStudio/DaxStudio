@@ -204,6 +204,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.3.4.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -275,6 +276,8 @@
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
+    <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
+    <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
@@ -287,6 +290,9 @@
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
+    <Compile Include="Converters\FontConverter.cs" />
+    <Compile Include="Converters\FormattedTimeConverter.cs" />
+    <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
     <Compile Include="Converters\DynamicGridViewConverter.cs" />
@@ -294,6 +300,7 @@
     <Compile Include="Converters\QueryMultiLineConverter.cs" />
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
+    <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
@@ -305,14 +312,18 @@
     <Compile Include="Events\CancelConnectEvent.cs" />
     <Compile Include="Events\DocumentConnectionUpdateEvent.cs" />
     <Compile Include="Events\EditorPositionChangedEvent.cs" />
+    <Compile Include="Events\FileOpenedEvent.cs" />
+    <Compile Include="Events\FileSavedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
     <Compile Include="Events\NavigateToLocationEvent.cs" />
     <Compile Include="Events\NewVersionEvent.cs" />
+    <Compile Include="Events\OpenRecentFileEvent.cs" />
     <Compile Include="Events\OpenFileEvent.cs" />
     <Compile Include="Events\OutputMessage.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Events\QueryFinishedEvent.cs" />
+    <Compile Include="Events\QueryHistoryEvent.cs" />
     <Compile Include="Events\QueryResultsPaneMessageEvent.cs" />
     <Compile Include="Events\QueryTraceCompletedEvent.cs" />
     <Compile Include="Events\SelectionChangeCaseEvent.cs" />
@@ -322,10 +333,13 @@
     <Compile Include="Events\TraceChangedEvent.cs" />
     <Compile Include="Events\TraceChangingEvent.cs" />
     <Compile Include="Events\TraceWatcherToggleEvent.cs" />
+    <Compile Include="Events\UpdateEditorOptions.cs" />
     <Compile Include="Events\UpdateTimerTextEvent.cs" />
+    <Compile Include="Model\DaxFile.cs" />
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Model\Enums.cs" />
     <Compile Include="Interfaces\ISaveState.cs" />
+    <Compile Include="Model\GlobalQueryHistory.cs" />
     <Compile Include="Model\LinkedQueryResult.cs" />
     <Compile Include="Model\NotifyIcon.cs" />
     <Compile Include="Model\ProxyPowerPivot.cs" />
@@ -333,6 +347,7 @@
     <Compile Include="Model\QueryPlanModel.cs" />
     <Compile Include="Interfaces\IToolWindow.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
+    <Compile Include="Model\RunStyle.cs" />
     <Compile Include="Model\ServerTimesModel.cs" />
     <Compile Include="Model\StaticQueryResult.cs" />
     <Compile Include="Model\StatusBarMessage.cs" />
@@ -356,6 +371,7 @@
     </Compile>
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
+    <Compile Include="Utils\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
     <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="Utils\AutoBinderTemplateSelector.cs" />
@@ -389,6 +405,11 @@
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
+    <Compile Include="ViewModels\OptionsViewModel.cs" />
+    <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
+    <Compile Include="Views\OptionsView.xaml.cs">
+      <DependentUpon>OptionsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
     <Compile Include="ViewModels\DmvPaneViewModel.cs" />
     <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
@@ -443,6 +464,9 @@
     <Compile Include="Views\OutputPaneView.xaml.cs">
       <DependentUpon>OutputPaneView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\QueryHistoryPaneView.xaml.cs">
+      <DependentUpon>QueryHistoryPaneView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\QueryPlanTraceView.xaml.cs">
       <DependentUpon>QueryPlanTraceView.xaml</DependentUpon>
     </Compile>
@@ -485,6 +509,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\OptionsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FindReplaceDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -496,6 +524,10 @@
     <Page Include="Views\MetadataPaneView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\QueryHistoryPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>
@@ -864,6 +896,24 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Metadata\hierarchy-unnatural.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\DaxStudio_File3a_x48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Dax_x48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Other_x48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Other_x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Dax_x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-clear-then-run%4096ppi.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

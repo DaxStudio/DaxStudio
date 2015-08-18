@@ -74,8 +74,9 @@ namespace DaxStudio.UI.ViewModels {
         {
             //Properties.Settings.Default.Save();
             base.TryClose(dialogResult);
-            if (dialogResult == true )
+            if (dialogResult != false )
             {
+                Ribbon.OnClose();
                 notifyIcon.Dispose();
             }
         }

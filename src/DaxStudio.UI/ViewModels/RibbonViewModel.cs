@@ -17,6 +17,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.UI.Model;
+using System.Collections.ObjectModel;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,10 +28,13 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ActivateDocumentEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<ApplicationActivatedEvent>
+        , IHandle<FileOpenedEvent>
+        , IHandle<FileSavedEvent>
         , IHandle<TraceChangingEvent>
         , IHandle<TraceChangedEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<DocumentConnectionUpdateEvent>
+//        , IViewAware
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
@@ -41,17 +46,36 @@ namespace DaxStudio.UI.ViewModels
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 
         [ImportingConstructor]
-        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager )
+        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager , OptionsViewModel options)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             _host = host;
             _windowManager = windowManager;
+            Options = options;
             CanCut = true;
             CanCopy = true;
             CanPaste = true;
+            RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
+            InitRunStyles();
         }
 
+        private void InitRunStyles()
+        {
+            RunStyles = new List<RunStyle>();
+            SelectedRunStyle = new RunStyle("Run Query", RunStyleIcons.RunOnly, false, "Executes the query and sends the results to the selected output");
+            RunStyles.Add(SelectedRunStyle);
+            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true, "Clears the database cache, then executes the query and sends the results to the selected output"));
+        }
+
+        public List<RunStyle> RunStyles { get; set; }
+        private RunStyle _selectedRunStyle;
+        public RunStyle SelectedRunStyle { 
+            get { return _selectedRunStyle; } 
+            set { _selectedRunStyle = value; 
+                NotifyOfPropertyChange(()=> SelectedRunStyle);
+            } }
+        public OptionsViewModel Options { get; private set; }
         public Visibility OutputGroupIsVisible
         {
             get { return _host.IsExcel?Visibility.Visible : Visibility.Collapsed; }
@@ -119,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget) );
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle.ClearCache) );
 
         }
 
@@ -185,7 +209,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            ActiveDocument.ClearDatabaseCache();
+            ActiveDocument.ClearDatabaseCacheAsync();
         }
 
         public void Save()
@@ -222,6 +246,7 @@ namespace DaxStudio.UI.ViewModels
         public void Open()
         {
             _eventAggregator.PublishOnUIThread(new OpenFileEvent());
+
         }
 
         private void RefreshConnectionDetails(IConnection connection, string databaseName)
@@ -345,12 +370,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         
-        // TODO - configure MRU list
-        public System.Collections.Specialized.StringCollection RecentDocuments
-        {
-            get { return Settings.Default.RecentDocuments; }
-            
-        }
 
         public void Handle(QueryFinishedEvent message)
         {
@@ -479,5 +498,46 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ServerTimingsChecked);
             }
         }
+
+        public ObservableCollection<DaxFile> RecentFiles { get; set; }
+
+        internal void OnClose()
+        {
+            RegistryHelper.SaveFileMRUListToRegistry(this.RecentFiles);
+        }
+
+        private void AddToRecentFiles(string fileName)
+        {
+            DaxFile df = (from DaxFile f in RecentFiles
+                          where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
+                          select f).FirstOrDefault<DaxFile>();
+            if (df == null)
+            {
+                RecentFiles.Insert(0, new DaxFile(fileName));
+            }
+            else
+            {
+                // move the file to the first position in the list                
+                RecentFiles.Remove(df);
+                RecentFiles.Insert(0, df);
+            }
+        }
+
+        public void Handle(FileOpenedEvent message)
+        {
+            AddToRecentFiles(message.FileName);
+        }
+
+        public void Handle(FileSavedEvent message)
+        {
+            AddToRecentFiles(message.FileName);
+        }
+
+        public void OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
+        {
+            backstage.IsOpen = false;
+            _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+        }
+
     }
 }

@@ -17,9 +17,8 @@ namespace DaxStudio.UI.Interfaces
 
         string ToolTipText { get; }
 
-
         void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents);
 
-        void QueryCompleted(bool isCancelled);
+        void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent);
     }
 }

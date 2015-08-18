@@ -9,6 +9,8 @@ namespace DaxStudio.UI.Utils
 {
     public static class DaxHelper
     {
+        //TODO - detects a parameter
+        const string paramRegex = @"@[^\[\]\s]*\b+(?![^\[]*\])";
         
         public static string PreProcessQuery(string query)
         {
@@ -32,7 +34,7 @@ namespace DaxStudio.UI.Utils
 			        sbQuery.Append(line);
 		        }
 
-                if (line.Trim() == "</Parameters>")
+                if (line.Trim().EndsWith("</Parameters>"))
                 {
                     inParams = false;
                 }

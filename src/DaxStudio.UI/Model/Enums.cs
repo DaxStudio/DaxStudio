@@ -12,4 +12,6 @@ namespace DaxStudio.UI.Model
         LoadPending,
         New
     }
+
+
 }

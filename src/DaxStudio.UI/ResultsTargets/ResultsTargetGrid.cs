@@ -6,6 +6,7 @@ using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.Model
 {
@@ -26,41 +27,7 @@ namespace DaxStudio.UI.Model
         public string Group {get { return "Standard"; }
         }
 
-        /*
-        public void OutputResults(IQueryRunner runner)
-        {
-            
-            try
-            {
-                runner.OutputMessage("Query Started");
-                var sw = Stopwatch.StartNew();
-                
-                var dq = runner.QueryText;
-                runner.ExecuteQueryAsync(dq).ContinueWith((antecendant) => 
-                    {
-                        using (runner.NewStatusBarMessage("Executing Query..."))
-                        {
-                            sw.Stop();
-                            var durationMs = sw.ElapsedMilliseconds;
-                            var res = antecendant.Result;
-                            runner.ResultsTable = res;
-
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            // activate the result only when Counters are not selected...
-                            runner.ActivateResults();
-                            runner.QueryCompleted();
-                        }
-                    }); 
-            }
-            catch (Exception ex)
-            {
-                runner.ActivateOutput();
-                runner.OutputError(ex.Message);
-            }
-        }
-         */ 
+         
         public int DisplayOrder
         {
             get { return 10; }
@@ -94,6 +61,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
+                        Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
                     }

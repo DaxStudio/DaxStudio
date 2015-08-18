@@ -10,14 +10,12 @@ namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(StatusBarViewModel))]
     public class StatusBarViewModel:PropertyChangedBase
-        //, IHandle<StatusBarMessageEvent>
         , IHandle<EditorPositionChangedMessage>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<ConnectionClosedEvent>
-        //, IHandle<UpdateTimerTextEvent>
         , IHandle<ActivateDocumentEvent>
     {
-        //private ADOTabularConnection _connection;
+        
         [ImportingConstructor]
         public StatusBarViewModel(IEventAggregator eventAggregator)
         {
@@ -26,21 +24,6 @@ namespace DaxStudio.UI.ViewModels
 
         public bool Working { get; set; }
 
-        /*private void ConnectionOnConnectionChanged(object sender, EventArgs eventArgs)
-        {
-            NotifyOfPropertyChange(()=> ServerName);
-            NotifyOfPropertyChange(()=> Spid);
-        }
-        */
-        /*
-        public void Handle(StatusBarMessageEvent message)
-        {
-            Message = message.Text;
-            Working = (Message != "Ready");
-            NotifyOfPropertyChange(()=> Message);
-            NotifyOfPropertyChange(() => Working);
-        }
-        */
         private string _message = "Ready";
         public string Message { 
             get { return _message; }
@@ -58,6 +41,18 @@ namespace DaxStudio.UI.ViewModels
                 _serverName = value;
                 NotifyOfPropertyChange(()=>ServerName); 
             } }
+
+        private string _serverVersion = "";
+        public string ServerVersion
+        {
+            get { return string.IsNullOrWhiteSpace(_serverVersion) ? "" : _serverVersion; }
+            set
+            {
+                _serverVersion = value;
+                NotifyOfPropertyChange(() => ServerVersion);
+            }
+        }
+
 
         private string _spid = "";
         
@@ -104,10 +99,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //public void Handle(UpdateTimerTextEvent message)
-        //{
-        //    TimerText = message.TimerText;
-        //}
         private int _rowCount = -1;
         public int RowCount
         {
@@ -145,6 +136,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ActiveDocument);
             Spid = ActiveDocument.Spid.ToString() ;
             ServerName = ActiveDocument.ServerName;
+            ServerVersion = ActiveDocument.ServerVersion;
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
             RowCount = ActiveDocument.RowCount;
@@ -162,6 +154,9 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 case "ServerName":
                     NotifyOfPropertyChange(() => ServerName);
+                    break;
+                case "ServerVersion":
+                    NotifyOfPropertyChange(() => ServerVersion);
                     break;
                 case "ElapsedQueryTime":
                     TimerText = ActiveDocument.ElapsedQueryTime;

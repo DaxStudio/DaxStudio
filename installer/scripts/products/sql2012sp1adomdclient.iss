@@ -27,7 +27,7 @@ begin
   //msgbox('Compare adomdclient ' + IntToStr(CompareAssemblyVersion(maxVersion ,'11.0.0.0000')),mbInformation,MB_OK);
 
   // if maxVersion is less than 11.0.0.0000
-	if (CompareAssemblyVersion(maxVersion ,'11.0.0.0000') < 0 ) then begin
+	if (CompareAssemblyVersion(maxVersion ,'11.0.0.0000') < 0 ) or (( not IsAssemblyInstalled('Microsoft.AnalysisServices.AdomdClient', '11.0.0.0' ) ) And IsExcel2010Installed()) then begin
   
 		if (not IsIA64()) then
 			AddProduct('SQL_AS_ADOMD.msi',

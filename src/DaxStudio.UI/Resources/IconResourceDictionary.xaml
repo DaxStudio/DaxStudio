@@ -12,6 +12,28 @@
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
 
+    <conv:ResourceLookupConverter x:Key="FileIcons">
+        <ResourceDictionary>
+            <BitmapImage x:Key="Dax" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x32.png"/>
+            <BitmapImage x:Key="Other" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Other_x32.png"/>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>
+
+    <conv:ResourceLookupConverter x:Key="RunIcons">
+        <ResourceDictionary>
+            <BitmapImage x:Key="RunOnly"  UriSource="..\images\icon-run.png"></BitmapImage>
+            <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-run.png"></BitmapImage>
+            
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>
+
+    <conv:ResourceLookupConverter x:Key="RunIconsLarger">
+        <ResourceDictionary>
+            <BitmapImage x:Key="RunOnly"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
+            <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-clear-then-run@96ppi.png"></BitmapImage>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>
+    
     <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
     <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="CancelIconLarger"  UriSource="..\images\icon-cancel@96ppi.png"></BitmapImage>
@@ -57,4 +79,5 @@
     <BitmapImage x:Key="TimingsCache"  UriSource="..\images\icon-showcache.png"></BitmapImage>
     <BitmapImage x:Key="RightPane"  UriSource="..\images\icon-rightpane.png"></BitmapImage>
     <BitmapImage x:Key="BottomPane"  UriSource="..\images\icon-bottompane.png"></BitmapImage>
+    <BitmapImage x:Key="FileIcon"  UriSource="..\images\DaxStudio_File3a_x48.png"></BitmapImage>
 </ResourceDictionary>

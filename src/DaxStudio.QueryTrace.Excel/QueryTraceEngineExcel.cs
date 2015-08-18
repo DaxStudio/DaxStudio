@@ -282,6 +282,7 @@ namespace DaxStudio.QueryTrace
 
         public void Dispose()
         {
+            if (_trace == null) return;
             _trace.Dispose();
         }
     }

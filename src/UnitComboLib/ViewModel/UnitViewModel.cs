@@ -8,6 +8,7 @@
   using UnitComboLib.Unit;
   using System.ComponentModel;
   using UnitComboLib.Local;
+    using UnitComboLib.Unit.Screen;
 
   /// <summary>
   /// Viewmodel class to manage unit conversion based on default values and typed values.
@@ -109,6 +110,7 @@
             if (value != (int)this.mUnitConverter.Convert(this.SelectedItem.Key, this.mValue, Itemkey.ScreenFontPoints))
               this.Value = (int)this.mUnitConverter.Convert(Itemkey.ScreenFontPoints, value, this.SelectedItem.Key);
           }
+          this.RaisePropertyChanged(() => ScreenPoints);
         }
       }
     }
@@ -303,6 +305,15 @@
 
         return this.mSetSelectedItemCommand;
       }
+    }
+
+      /// <summary>
+      /// Allows the changing of the 100% font size when the user changes the default font size for the editor
+      /// </summary>
+      /// <param name="fontSize"></param>
+    public void SetOneHundredPercentFontSize(double fontSize)
+    {
+        this.mUnitConverter = new ScreenConverter(fontSize);
     }
     #endregion properties
 

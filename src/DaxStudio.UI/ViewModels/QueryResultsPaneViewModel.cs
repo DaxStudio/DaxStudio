@@ -13,6 +13,7 @@ using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [Export]
     [Export(typeof(IToolWindow))]
     public class QueryResultsPaneViewModel: ToolWindowBase
         , IHandle<QueryResultsPaneMessageEvent>
