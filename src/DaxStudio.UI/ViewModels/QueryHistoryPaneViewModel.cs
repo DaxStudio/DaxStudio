@@ -39,6 +39,8 @@ namespace DaxStudio.UI.ViewModels
             _queryHistory = new ListCollectionView(globalHistory.QueryHistory);
             _currentDocument = currentDocument;
             _queryHistory.Filter = HistoryFilter;
+            // sort by StartTime Desc by default
+            _queryHistory.SortDescriptions.Add(new SortDescription("StartTime", ListSortDirection.Descending));
             
         }
 

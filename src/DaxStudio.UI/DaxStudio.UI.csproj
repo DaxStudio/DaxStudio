@@ -293,6 +293,8 @@
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\FormattedTimeConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
+    <Compile Include="Converters\MaxTextLinesConverter.cs" />
+    <Compile Include="Converters\NegativeColourConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
     <Compile Include="Converters\DynamicGridViewConverter.cs" />
@@ -300,6 +302,7 @@
     <Compile Include="Converters\QueryMultiLineConverter.cs" />
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
+    <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
@@ -402,6 +405,7 @@
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="Events\ConnectionClosedEvent.cs" />
+    <Compile Include="Utils\WebRequestFactory.cs" />
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />

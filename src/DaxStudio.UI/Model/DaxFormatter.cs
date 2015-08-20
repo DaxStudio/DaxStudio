@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog;
 using System.Windows.Threading;
+using DaxStudio.UI.Utils;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Model
 {
@@ -42,8 +44,6 @@ namespace DaxStudio.UI.Model
 
     public class DaxFormatterProxy
     {
-        const string DaxFormatUri =  "http://www.daxformatter.com/api/daxformatter/DaxFormat";
-        const string DaxFormatVerboseUri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
         const int REQUEST_TIMEOUT = 10000;
 
         private static string redirectUrl = null;  // cache the redirected URL
@@ -128,11 +128,11 @@ namespace DaxStudio.UI.Model
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
             var errorFound = false;
-            string output = await CallDaxFormatterAsync(DaxFormatUri, query);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatUri, query);
             if (output == "\"\"")
             {
                 errorFound = true;
-                output = await CallDaxFormatterAsync(DaxFormatVerboseUri, query);
+                output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatVerboseUri, query);
             }
             
             // trim off leading and trailing quotes
@@ -175,16 +175,16 @@ namespace DaxStudio.UI.Model
                 // see: http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
                 //System.Net.ServicePointManager.Expect100Continue = false;
 
-                //TODO - figure out when to use proxy
-                var proxy = GetProxy(uri);
+                
 
                 await PrimeConnectionAsync(uri);
 
                 Uri originalUri = new Uri(uri);
-                var actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
+                string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
 
+                var webRequestFactory = IoC.Get<WebRequestFactory>();
+                var wr = webRequestFactory.Create(new Uri(actualUrl));
 
-                var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(actualUrl);
                 wr.Timeout = REQUEST_TIMEOUT;
                 wr.ContentType = "application/json";
                 wr.Method = "POST";
@@ -192,11 +192,7 @@ namespace DaxStudio.UI.Model
                 wr.Headers.Add("Accept-Encoding", "gzip,deflate");
                 wr.Headers.Add("Accept-Language", "en-US,en;q=0.8");
                 wr.ContentType = "application/json; charset=UTF-8";
-                
                 wr.AutomaticDecompression = DecompressionMethods.GZip;
-
-                //todo - how to check that this works with different proxies...??
-                wr.Proxy = proxy;
 
                 string output = "";
                 using (var strm = await wr.GetRequestStreamAsync())
@@ -227,20 +223,6 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private static IWebProxy GetProxy(string uri)
-        {
-            var proxy = System.Net.WebRequest.GetSystemWebProxy();
-            proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-
-            Log.Verbose("Proxy: {proxyAddress}", proxy.GetProxy(new Uri(uri)).AbsolutePath);
-            return proxy;
-        }
-
-        public static async Task PrimeConnectionAsync()
-        {
-            await PrimeConnectionAsync(DaxFormatUri);
-        }
-
         public static async Task PrimeConnectionAsync(string uri)
         {
             await Task.Factory.StartNew(() =>
@@ -248,15 +230,17 @@ namespace DaxStudio.UI.Model
                 Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
                 if (redirectHost == null)
                 {
-                    var proxy = GetProxy(uri);
+                    
 
                     // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
                     // The following 2 requests are doing manual POST re-direct
-                    var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
+                    var webRequestFactory = IoC.Get<WebRequestFactory>();
+                    var redirectRequest =  webRequestFactory.Create(uri) as HttpWebRequest;
+
                     redirectRequest.AllowAutoRedirect = false;
                     redirectRequest.Timeout = REQUEST_TIMEOUT;
-                    redirectRequest.Proxy = proxy;
-                    try {
+                    try
+                    {
                         using (var netResponse = redirectRequest.GetResponse())
                         {
                             var redirectResponse = (HttpWebResponse)netResponse;
@@ -278,5 +262,10 @@ namespace DaxStudio.UI.Model
             });
 
         }
+        public static async Task PrimeConnectionAsync()
+        {
+            await PrimeConnectionAsync(WebRequestFactory.DaxFormatUri);
+        }
+        
     }
 }

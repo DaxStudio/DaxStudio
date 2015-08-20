@@ -8,15 +8,25 @@
              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
              xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:clr="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="500">
     <UserControl.Resources>
+        
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:VisbilityToBooleanConverter x:Key="VisibilityToBoolConverter"/>
+        <conv:RowMaxHeightVisibilityConverter x:Key="RowMaxHeightVisibilityConverter"/>
+        <conv:MaxTextLinesConverter x:Key="MaxTextLinesConverter"/>
+        <conv:NegativeColourConverter x:Key="NegativeColourConverter"/>
+                                      
         <SolidColorBrush x:Key="DistinctFilterActiveFunnelFill" Color="#FFFADCA5" />
         <SolidColorBrush x:Key="DistinctFilterFunnelFill" Color="#FF535353" />
-        <!--Custom Column Header Gripper styling-->
-        <!--Thanks to Nipun Tomar (http://www.c-sharpcorner.com/UploadFile/nipuntomar/wpf-datagrid-style/)-->
+        <clr:String x:Key="NaColour">#909090</clr:String>
+        
+        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>
+        
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Width" Value="3"/>
             <Setter Property="Foreground" Value="Transparent" />
@@ -55,7 +65,6 @@
                 <TextBlock Text="{Binding QueryText}" />
                 </ScrollViewer>
             </Grid>
-
         </DataTemplate>
 
         <DataTemplate x:Key="ExpandDetails">
@@ -71,6 +80,44 @@
             </ToggleButton>
         </DataTemplate>
 
+        <DataTemplate x:Key="QueryTextCell">
+            <Grid><ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Label 
+                    cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($dataContext)]"
+                    Margin="0"
+                    Padding="0">
+                    
+                <TextBlock x:Name="QueryText"
+                    Text="{Binding Path=QueryText,Mode=OneWay}"  
+                    VerticalAlignment="Top" 
+                    HorizontalAlignment="Left"   
+                    TextTrimming="CharacterEllipsis"
+                    ToolTip="{Binding QueryText}">
+                </TextBlock>
+                    
+                </Label>
+            </ScrollViewer>
+                <ToggleButton Name="ShowDetails" 
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top"
+                          Opacity="0.7"
+                          Content="…"
+                          Margin="0,2,15,0"
+                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, 
+                                      Path=DetailsVisibility, 
+                                      Converter={StaticResource VisibilityToBoolConverter}, 
+                                      Mode=TwoWay}" 
+                          Visibility="{Binding  
+                                      ElementName=QueryText,
+                                      Path=ActualHeight,
+                                      Converter={StaticResource RowMaxHeightVisibilityConverter},
+                                      ConverterParameter=45,
+                                      Mode=OneWay}"
+                          >
+                </ToggleButton>
+            </Grid>
+        </DataTemplate>
+        
     </UserControl.Resources>
     <Grid >
         
@@ -78,6 +125,7 @@
         <DataGrid x:Name="QueryHistory" 
                       Grid.Row="1"
                       CanUserSortColumns="True"
+                      RowHeight="24"
                       ClipboardCopyMode="IncludeHeader"
                       SelectionMode="Extended"       
                       SelectionUnit="FullRow"
@@ -98,8 +146,8 @@
             </DataGrid.AlternatingRowBackground>
             
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Start Time" Binding="{Binding StartTime, StringFormat=\{0:g\}}"></DataGridTextColumn>
-                <DataGridTemplateColumn SortMemberPath="RowCount" Header="Rows" IsReadOnly="True">
+                <DataGridTextColumn Header="Start Time" Binding="{Binding StartTime, StringFormat=\{0:g\}}" SortDirection="Descending"></DataGridTextColumn>
+                <DataGridTemplateColumn SortMemberPath="RowCount" Header="Rows" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Path=RowCount,Mode=OneWay,StringFormat=\{0:#\,###;n/a;0\}}"  VerticalAlignment="Top" HorizontalAlignment="Right">
@@ -107,7 +155,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="ClientDurationMs" Header="Client" IsReadOnly="True">
+                <DataGridTemplateColumn SortMemberPath="ClientDurationMs" Header="Client" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right">
@@ -115,28 +163,32 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="ServerDurationMs" Header="Server" IsReadOnly="True">
+                <DataGridTemplateColumn SortMemberPath="ServerDurationMs" Header="Server" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right">
+                            <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
+                                       Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
                             </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn SortMemberPath="FEDurationMs" Header="FE" IsReadOnly="True">
+                <DataGridTemplateColumn SortMemberPath="FEDurationMs" Header="FE" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right">
+                            <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
+                                       VerticalAlignment="Top" HorizontalAlignment="right"
+                                       Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
                             </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn SortMemberPath="SEDurationMs" Header="SE" IsReadOnly="True">
+                <DataGridTemplateColumn SortMemberPath="SEDurationMs" Header="SE" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right">
+                            <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
+                                       Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
                             </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -185,20 +237,7 @@
                     </DataGridTextColumn.HeaderTemplate>
                 </DataGridTextColumn>
                 
-                <DataGridTemplateColumn SortMemberPath="QueryText" Header="Query" IsReadOnly="True" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock 
-                                Text="{Binding Path=QueryText,Mode=OneWay}"  
-                                VerticalAlignment="Top" 
-                                HorizontalAlignment="Left" 
-                                MaxHeight="58"
-                                TextTrimming="CharacterEllipsis">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn CellTemplate="{StaticResource ExpandDetails}" Header=""/>
+                <DataGridTemplateColumn Header="Query" CellTemplate="{StaticResource QueryTextCell}" />
             </DataGrid.Columns>    
         </DataGrid>
         

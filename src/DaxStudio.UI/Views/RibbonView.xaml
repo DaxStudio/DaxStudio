@@ -89,8 +89,7 @@
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" />
                     </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                
+                </Fluent:ToggleButton>               
                 
             </DataTemplate>
 
@@ -162,9 +161,10 @@
                             
                             <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1" Grid.Row="1">
                                 <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
-                                <ListView DataContext="{Binding}" ItemsSource="{Binding Path=Ribbon.RecentFiles}" x:Name="RecentFiles" 
+                                <ListView x:Name="RecentFiles" 
+                                          DataContext="{Binding}" 
+                                          ItemsSource="{Binding Path=Ribbon.RecentFiles}" 
                                           MinWidth="600"
-                                          
                                           BorderBrush="Transparent" >
                                     <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
                                     <i:Interaction.Triggers>
@@ -291,7 +291,6 @@
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
                         >
-                        
                        
                     </Fluent:Gallery>
                 </Fluent:SplitButton>
@@ -731,48 +730,8 @@
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
             
-                
             
         </Fluent:RibbonTabItem>
-
-        <!-- ToMove Tab 
-        <Fluent:RibbonTabItem Header="ToMove">
-            <Fluent:RibbonGroupBox Header="Database" Margin="0,0,4,0">
-                <TextBlock Text="Database:" Padding="0,6,0,0"/>
-                <Fluent:ComboBox x:Name="Database" 
-                                 SelectedItem="{Binding SelectedDatabase}"
-                                 ItemsSource="{Binding Databases}"   
-                                 MinWidth="160" 
-                                 MaxWidth="250" 
-                                 IsEditable="False"
-                                 IsSynchronizedWithCurrentItem="True" 
-                                 IsEnabled="{Binding CanSelectDatabase}" 
-                                 Margin="0,8,8,0" ToolTip="{Binding SelectedDatabase}">
-                    <Fluent:ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                                <TextBlock Text="{Binding}" Margin="4,0" ></TextBlock>
-                            </StackPanel>
-                        </DataTemplate>
-                    </Fluent:ComboBox.ItemTemplate>
-                </Fluent:ComboBox>
-            </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Output" x:Name="OutputGroup" Visibility="{Binding OutputGroupIsVisible}" >
-                <TextBlock Text="Worksheet:" Padding="0,6,0,0"/>
-                <Fluent:ComboBox Name="cboOutputTo" 
-                                 Text="&lt;Output Sheet&gt;" 
-                                 MinWidth="120" MaxWidth="200" 
-                                 IsEditable="False" 
-                                 ItemsSource="{Binding Worksheets}" 
-                                 SelectedItem="{Binding SelectedWorksheet}"
-                                 Margin="0,8,8,0">
-
-                </Fluent:ComboBox>
-            </Fluent:RibbonGroupBox>
-        </Fluent:RibbonTabItem>
--->
-
 
         <!-- Quick Access Targets -->
         <Fluent:RibbonTabItem Visibility="Collapsed">
