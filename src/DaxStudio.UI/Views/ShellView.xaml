@@ -37,7 +37,8 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
             <!--
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
             <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
@@ -206,8 +207,13 @@
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Bottom"/>
-        
-        
+
+        <Border HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch" 
+                Grid.RowSpan="3"
+                Background="{DynamicResource GrayBrush5}" Opacity="0.7" 
+                Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
+
     </Grid>
 
 </Fluent:RibbonWindow>

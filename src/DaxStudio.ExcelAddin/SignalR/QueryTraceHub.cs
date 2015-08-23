@@ -24,7 +24,7 @@ namespace DaxStudio
         {
             try
             {
-                Log.Verbose("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Starting");
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Starting");
                 string powerPivotConnStr = "";
                 using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
                 {
@@ -33,22 +33,22 @@ namespace DaxStudio
                     if (xl.IsExcel2013OrLater)
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.Excel;
-                        Log.Verbose("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngineExcel");
+                        Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngineExcel");
                         _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture);
                         _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
-                        Log.Verbose("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngineExcel", (_xlEngine != null));
+                        Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngineExcel", (_xlEngine != null));
                     }
                     else
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
-                        Log.Verbose("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
+                        Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
                         _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture);
                         _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
-                        Log.Verbose("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));
+                        Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));
                     }
 
                 }
@@ -85,14 +85,17 @@ namespace DaxStudio
                         Exception ex = x.Exception;
                         while (ex is AggregateException && ex.InnerException != null)
                             ex = ex.InnerException;
+                        Log.Error("{class} {method} {message}", "QueryTraceHub", "StartAsync", "ExcelEngine: " + ex.Message);
                         Clients.Caller.OnTraceError("Error starting Trace - " + ex.Message);
                     }
                     else if (x.IsCanceled)
                     {
+                        Log.Warning("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Cancelled during startup");
                         Clients.Caller.OnTraceError("Trace cancelled during startup");
                     }
                     else
                     {
+                        Log.Debug("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Starting");
                         Clients.Caller.OnTraceStarting();
                     }
                 });
@@ -110,14 +113,17 @@ namespace DaxStudio
                         Exception ex = x.Exception;
                         while (ex is AggregateException && ex.InnerException != null)
                             ex = ex.InnerException;
+                        Log.Error("{class} {method} {message}", "QueryTraceHub", "StartAsync", "SSASEngine: " + ex.Message);
                         Clients.Caller.OnTraceError("Error starting Trace - " + ex.Message);
                     }
                     else if (x.IsCanceled)
                     {
+                        Log.Warning("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Cancelled during startup");
                         Clients.Caller.OnTraceError("Trace cancelled during startup");
                     }
                     else
                     {
+                        Log.Debug("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Starting");
                         Clients.Caller.OnTraceStarting();
                     }
                 });
@@ -126,6 +132,7 @@ namespace DaxStudio
             else
             {
                 // if neither engine has been created report an error
+                Log.Error("{class} {method} {message}", "QueryTraceHub", "StartAsync", "QueryTraceEngine not constructed");
                 Clients.Caller.OnTraceError("QueryTraceEngine not constructed");
             }
         }
@@ -133,6 +140,7 @@ namespace DaxStudio
 
         public void Stop() {
             if (_xlEngine != null) _xlEngine.Stop();
+            Log.Debug("{class} {method} {message}", "QueryTraceHub", "Stop", "Trace Stopping");
             Clients.Caller.OnTraceStopped();
         }
 

@@ -5,6 +5,7 @@ using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
     public class OutputPaneViewModel:ToolWindowBase
     {

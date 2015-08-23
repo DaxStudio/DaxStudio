@@ -2,6 +2,7 @@
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace DaxStudio.QueryTrace
 
         public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port)
         {
-            
+            Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
             hubConnection = new HubConnection(string.Format("http://localhost:{0}/",port));
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");

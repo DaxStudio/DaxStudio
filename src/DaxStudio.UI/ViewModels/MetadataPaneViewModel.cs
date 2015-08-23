@@ -19,6 +19,7 @@ using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
     public class MetadataPaneViewModel:ToolPaneBaseViewModel
         , IDragSource
@@ -26,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
     {
         private string _modelName;
         private readonly DocumentViewModel _activeDocument;
+        [ImportingConstructor]
         public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document):base(connection,eventAggregator)
         {
             _activeDocument = document;

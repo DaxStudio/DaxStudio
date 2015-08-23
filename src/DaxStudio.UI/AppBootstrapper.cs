@@ -88,7 +88,8 @@ namespace DaxStudio.UI
 	            var catalog = new AggregateCatalog(
 	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
 	                );
-	            _container = new CompositionContainer(catalog,true);
+	            //_container = new CompositionContainer(catalog,true);
+                _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
 	            batch.AddExportedValue<IWindowManager>(new WindowManager());

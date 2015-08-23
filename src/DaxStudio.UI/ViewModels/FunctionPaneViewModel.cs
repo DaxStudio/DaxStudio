@@ -4,6 +4,7 @@ using Caliburn.Micro;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof(FunctionPaneViewModel))]
     public class FunctionPaneViewModel:ToolPaneBaseViewModel
     {

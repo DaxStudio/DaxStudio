@@ -132,6 +132,26 @@ namespace DaxStudio.UI.ViewModels {
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }
 
+        #region Overlay code
+        private int _overlayDependencies;
+        public void ShowOverlay()
+        {
+            _overlayDependencies++;
+            NotifyOfPropertyChange(() => IsOverlayVisible);
+        }
+
+        public void HideOverlay()
+        {
+            _overlayDependencies--;
+            NotifyOfPropertyChange(() => IsOverlayVisible);
+        }
+
+        public bool IsOverlayVisible
+        {
+            get { return _overlayDependencies > 0; }
+        }
+        #endregion
+
         #region Global Keyboard Hooks
         public void RunQuery()
         {

@@ -6,6 +6,7 @@ using Microsoft.Office.Tools.Ribbon;
 using Microsoft.Owin.Hosting;
 using Serilog;
 using DaxStudio.ExcelAddin;
+using Caliburn.Micro;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -40,7 +41,7 @@ namespace DaxStudio.ExcelAddin
         {
             try
             {
-                Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name);
+                Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name, args.RequestingAssembly);
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
                 if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
                 {
@@ -64,6 +65,7 @@ namespace DaxStudio.ExcelAddin
                 if (!_inShutdown)
                 {
                     Log.Error("{class} {method} {args_Name} {ex_Message}","ThisAddIn","currentDomain_AssemblyResolve",args.Name,ex.Message + "\n" + ex.StackTrace);
+                    
                     MessageBox.Show(
                         string.Format("Problem during AssemblyResolve in Dax Studio\r\nFor Assembly {0} :\r\n{1}\r\n{2} "
                             , args.Name

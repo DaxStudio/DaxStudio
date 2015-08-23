@@ -497,12 +497,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
             }
-/*            if (Host.Proxy.WorkbookName != this.CurrentWorkbookName)
-            {
-                // TODO - active workbook has changed need to 
-                MessageBox.Show("active workbook has changed");
-            }
- */ 
+
         }
 
         public override void CanClose(Action<bool> callback)
@@ -608,7 +603,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this);
 
-                        _windowManager.ShowDialog(connDialog, settings: new Dictionary<string, object>
+                        _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
                                         {
                                             {"Top", 40},
                                             { "WindowStyle", WindowStyle.None},
@@ -1512,10 +1507,7 @@ namespace DaxStudio.UI.ViewModels
                 string.Format("\"{0}\" has unsaved changes.\nAre you sure you want to close this document without saving?.",_displayName),
                 "Unsaved Changes", MessageBoxButton.YesNo
                 );
-            //if (res== MessageBoxResult.Yes)
-            //{
-            //    ShutDownTraces();
-            //}
+
             callback(res == MessageBoxResult.Yes);
         }
 

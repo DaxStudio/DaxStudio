@@ -60,7 +60,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                 string fullEnvelopeResponseFromServer = "";
                 try
                 {
-                    xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
+                    //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
+                    xmlaResponseFromServer = svr.SendXmlaRequest(streamWithXmlaRequest);
                     // STEP 2: read/parse the XML/A response from server.
                     xmlaResponseFromServer.MoveToContent();
                     fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();

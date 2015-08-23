@@ -19,6 +19,7 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
     public class QueryHistoryPaneViewModel : ToolWindowBase
         , IHandle<DocumentConnectionUpdateEvent>
