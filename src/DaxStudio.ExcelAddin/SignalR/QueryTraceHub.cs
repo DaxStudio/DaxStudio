@@ -17,6 +17,8 @@ namespace DaxStudio
     [HubName("QueryTrace")]
     public class QueryTraceHub:Hub<IQueryTraceHub>
     {
+        internal delegate void VoidDelegate();
+
         private static QueryTraceEngineExcel _xlEngine;
         private static QueryTraceEngine _engine;
 
@@ -34,10 +36,16 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.Excel;
                         Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngineExcel");
-                        _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture);
-                        _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
-                        _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
-                        _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
+                        // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
+                        VoidDelegate f = delegate
+                        {    
+                            _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture);
+                            _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
+                            _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
+                            _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
+                        
+                        };
+                        f();
                         Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngineExcel", (_xlEngine != null));
                     }
                     else
@@ -60,6 +68,8 @@ namespace DaxStudio
             }
         }
 
+
+
         private void OnTraceCompleted(IList<DaxStudioTraceEventArgs> e)
         {
             try
@@ -77,28 +87,33 @@ namespace DaxStudio
             
             if (QueryTraceHub._xlEngine != null) {
                 // Excel 2013 based traces
-                QueryTraceHub._xlEngine.StartAsync().ContinueWith((x) =>
+                // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
+                VoidDelegate f = delegate
                 {
-                    if (x.IsFaulted)
+                    QueryTraceHub._xlEngine.StartAsync().ContinueWith((x) =>
                     {
-                        // faulted with exception
-                        Exception ex = x.Exception;
-                        while (ex is AggregateException && ex.InnerException != null)
-                            ex = ex.InnerException;
-                        Log.Error("{class} {method} {message}", "QueryTraceHub", "StartAsync", "ExcelEngine: " + ex.Message);
-                        Clients.Caller.OnTraceError("Error starting Trace - " + ex.Message);
-                    }
-                    else if (x.IsCanceled)
-                    {
-                        Log.Warning("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Cancelled during startup");
-                        Clients.Caller.OnTraceError("Trace cancelled during startup");
-                    }
-                    else
-                    {
-                        Log.Debug("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Starting");
-                        Clients.Caller.OnTraceStarting();
-                    }
-                });
+                        if (x.IsFaulted)
+                        {
+                            // faulted with exception
+                            Exception ex = x.Exception;
+                            while (ex is AggregateException && ex.InnerException != null)
+                                ex = ex.InnerException;
+                            Log.Error("{class} {method} {message}", "QueryTraceHub", "StartAsync", "ExcelEngine: " + ex.Message);
+                            Clients.Caller.OnTraceError("Error starting Trace - " + ex.Message);
+                        }
+                        else if (x.IsCanceled)
+                        {
+                            Log.Warning("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Cancelled during startup");
+                            Clients.Caller.OnTraceError("Trace cancelled during startup");
+                        }
+                        else
+                        {
+                            Log.Debug("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Starting");
+                            Clients.Caller.OnTraceStarting();
+                        }
+                    }, TaskScheduler.Default);
+                };
+                f();
                 return;
             }
 
@@ -126,7 +141,7 @@ namespace DaxStudio
                         Log.Debug("{class} {method} {message}", "QueryTraceHub", "StartAsync", "Trace Starting");
                         Clients.Caller.OnTraceStarting();
                     }
-                });
+                },TaskScheduler.Default);
                 return;
             }
             else
@@ -139,15 +154,49 @@ namespace DaxStudio
         
 
         public void Stop() {
-            if (_xlEngine != null) _xlEngine.Stop();
+            Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "start");
+            if (_xlEngine != null) {
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "stopping xlEngine");
+                // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
+                VoidDelegate f = delegate
+                {
+                    _xlEngine.Stop();
+                };
+                f();
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "stopped xlEngine");
+            }
+            if (_engine != null) {
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "stopping engine");
+                _engine.Stop();
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "stopped engine");
+            }
             Log.Debug("{class} {method} {message}", "QueryTraceHub", "Stop", "Trace Stopping");
             Clients.Caller.OnTraceStopped();
+            Log.Debug("{class} {method} {event}", "QueryTraceHub", "Stop", "end");
         }
 
         public new void Dispose()
         {
-            if (_xlEngine != null) _xlEngine.Dispose();
-            if (_engine != null) _engine.Dispose();
+            Log.Debug("{class} {method} {event}", "QueryTraceHub", "Dispose", "start");
+            if (_xlEngine != null) {
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Dispose", "disposing xlEngine");
+                // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
+                VoidDelegate f = delegate
+                {
+                    _xlEngine.Dispose();
+                    _xlEngine = null;
+                };
+                f();
+
+            }
+            if (_engine != null) {
+                Log.Debug("{class} {method} {event}", "QueryTraceHub", "Dispose", "disposing engine");
+
+
+                _engine.Dispose();
+                _engine = null;
+            }
+            Log.Debug("{class} {method} {event}", "QueryTraceHub", "Dispose", "end");
         }
 
 

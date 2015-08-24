@@ -31,10 +31,10 @@ namespace DaxStudio.UI.Model
             _queryHistoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "DaxStudio",
                 "QueryHistory");
-            Log.Verbose("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Setting Query History Path", _queryHistoryPath);
+            Log.Debug("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Setting Query History Path", _queryHistoryPath);
             if (!Directory.Exists(_queryHistoryPath))
             {
-                Log.Verbose("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Creating Query History Path", _queryHistoryPath);
+                Log.Debug("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Creating Query History Path", _queryHistoryPath);
                 Directory.CreateDirectory(_queryHistoryPath);
             }
             LoadHistoryFilesAsync();
@@ -43,7 +43,7 @@ namespace DaxStudio.UI.Model
 
         private void LoadHistoryFilesAsync()
         {
-            Task.Factory.StartNew(() =>
+            Task.Run(() =>
             {
                 DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
                 foreach (var fileInfo in d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly))

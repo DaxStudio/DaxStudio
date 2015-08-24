@@ -563,7 +563,7 @@ namespace DaxStudio.UI.ViewModels
         private Task UpdateConnectionsAsync(ADOTabularConnection value, string selectedDatabase)
         {
             Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnectionsAsync", value.ConnectionString,selectedDatabase);          
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     UpdateConnections(value,selectedDatabase);
                 });
@@ -590,8 +590,9 @@ namespace DaxStudio.UI.ViewModels
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to Excel");          
                 
-            Task.Factory.StartNew(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
+            Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
             {
+                // todo - should we be checking for exceptions in this continuation
                 try
                 {
                     Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "recieved async result from Excel");
@@ -629,13 +630,13 @@ namespace DaxStudio.UI.ViewModels
                         msg.Dispose(); // turn off the status bar message
                     }
                 }
-            });
+            }, TaskScheduler.Default);
             
         }
 
         public async Task<bool> HasPowerPivotModelAsync()
         {
-           return await Task.Factory.StartNew(() => Host.Proxy.HasPowerPivotModel );
+           return await Task.Run(() => Host.Proxy.HasPowerPivotModel );
         }
 
         public string ConnectionError { get; set; }
@@ -917,12 +918,12 @@ namespace DaxStudio.UI.ViewModels
 
         public Task CancelQueryAsync()
         {
-            return Task.Factory.StartNew(CancelQuery);
+            return Task.Run(()=>CancelQuery());
         }
 
         public Task<DataTable> ExecuteQueryAsync(string daxQuery)
         {
-            return Task.Factory.StartNew(() => ExecuteQuery(daxQuery));
+            return Task.Run(() => ExecuteQuery(daxQuery));
         }
 
         public async void Handle(RunQueryEvent message)
@@ -946,6 +947,7 @@ namespace DaxStudio.UI.ViewModels
             currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
             {
+                // todo - should we be checking for exceptions in this continuation
                 IsQueryRunning = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
 
@@ -959,7 +961,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                 msg.Dispose();               
-            });
+            },TaskScheduler.Default);
         }
         #endregion
 
@@ -1241,7 +1243,18 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
                     OutputMessage("Waiting for Trace to start");
-                    Tracer.StartAsync();
+                    var t = Tracer;
+                    t.StartAsync().ContinueWith((p)=>{
+                        if (p.Exception != null)
+                        {
+                            p.Exception.Handle((x) =>
+                            {
+                                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
+                                OutputError("Error Starting Trace: " + x.Message);
+                                return false;
+                            });
+                        }
+                    },TaskScheduler.Default);
                 }
             }
             else
@@ -1251,7 +1264,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (tw.IsChecked) return;
                 }
-                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
                 OutputMessage("Stopping Trace");
                 // spin down trace is no tracewatchers are active
                 Tracer.Stop();
@@ -1328,12 +1341,13 @@ namespace DaxStudio.UI.ViewModels
                     Execute.OnUIThread(() => { LoadFile(); });
                 }).ContinueWith((previousOutput) =>
                 {
+                    // todo - should we be checking for exceptions in this continuation
                     Execute.OnUIThread(() => { ChangeConnection(); });
-                }).ContinueWith((previousOutput) =>
+                },TaskScheduler.Default).ContinueWith((previousOutput) =>
                 {
+                    // todo - should we be checking for exceptions in this continuation
                     Execute.OnUIThread(() => { IsDirty = false; });
-
-                });
+                },TaskScheduler.Default);
             }) ;
             
         }
@@ -1393,7 +1407,7 @@ namespace DaxStudio.UI.ViewModels
             _logger.Info("In Handle<ConnectEvent>");
             var msg = NewStatusBarMessage("Connecting...");
             
-            Task.Factory.StartNew(() =>
+            Task.Run(() =>
                 {
                     
                     var cnn = message.PowerPivotModeSelected
@@ -1414,11 +1428,12 @@ namespace DaxStudio.UI.ViewModels
                     
                 }).ContinueWith((antecendant) =>
                     {
+                        // todo - should we be checking for exceptions in this continuation
                         _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases));//,IsPowerPivotConnection));
                         _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                         LoadState();
                         msg.Dispose(); //reset the status message
-                    });
+                    }, TaskScheduler.Default);
             
         }
 
@@ -1467,10 +1482,11 @@ namespace DaxStudio.UI.ViewModels
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
                 await ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
                 {
+                    // todo - should we be checking for exceptions in this continuation
                     sw.Stop();
                     var duration = sw.ElapsedMilliseconds;
                     OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
-                });
+                },TaskScheduler.Default);
             }
             catch (Exception ex)
             {
@@ -1730,6 +1746,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
             DaxFormatterProxy.FormatDaxAsync(qry).ContinueWith((res) => {
+                // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 
                 try
@@ -1805,7 +1822,7 @@ namespace DaxStudio.UI.ViewModels
                     msg.Dispose();
                     Log.Verbose("{class} {method} {end}", "DocumentViewModel", "FormatDax:End");
                 }
-            });
+            },TaskScheduler.Default);
         
         }
 

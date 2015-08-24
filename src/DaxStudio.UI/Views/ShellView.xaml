@@ -25,6 +25,7 @@
         >
     <!--Fluent:MetroColors.ThemeColorKey="#FF0072C6"-->
     <Fluent:RibbonWindow.Resources>
+        
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Generic.xaml" />
@@ -39,6 +40,7 @@
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
+
             <!--
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
             <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
@@ -77,7 +79,31 @@
                 </StackPanel>
             </Border>
         </DataTemplate>-->
+
+            <Style x:Key="BlurEffect" TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsOverlayVisible}" Value="True">
+                        <Setter Property="BitmapEffect">
+                            <Setter.Value>
+                                <BlurBitmapEffect Radius="10"/>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="BitmapEffect">
+                            <Setter.Value>
+
+                                <BlurBitmapEffect Radius="10"/>
+
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
+        
+        
     </Fluent:RibbonWindow.Resources>
     
     <i:Interaction.Triggers>
@@ -190,9 +216,9 @@
         </local:InputBindingTrigger>
         
     </i:Interaction.Triggers>
-
-    <Grid x:Name="LayoutRoot"
-          Margin="0,0,0,-2">
+    <Grid>
+        <Grid x:Name="LayoutRoot"
+          Margin="0,0,0,-2" Style="{StaticResource BlurEffect}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -207,13 +233,28 @@
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Bottom"/>
+<!--
+            <Grid.BitmapEffect>
+                <BlurBitmapEffect Radius="10"/>
+            </Grid.BitmapEffect>
+    -->        
 
-        <Border HorizontalAlignment="Stretch" 
+        </Grid>
+    <Border HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch" 
                 Grid.RowSpan="3"
-                Background="{DynamicResource GrayBrush5}" Opacity="0.7" 
-                Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
+                
+                Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                >
+            <!-- Background="{DynamicResource GrayBrush5}" Opacity="0.7" -->
+        <!--
+        <Border.BitmapEffect>
+            <BlurBitmapEffect Radius="10"/>
+        </Border.BitmapEffect>
+        <Border.Background>
+            <VisualBrush  Visual="{Binding ElementName=LayoutRoot}" Stretch="None" />
+        </Border.Background>
+        -->
+    </Border>
     </Grid>
-
 </Fluent:RibbonWindow>

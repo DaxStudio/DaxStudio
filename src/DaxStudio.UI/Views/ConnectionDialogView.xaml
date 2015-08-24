@@ -151,7 +151,7 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-                                                 Storyboard.TargetProperty="Tag"                                                 
+                                                 Storyboard.TargetProperty="Tag"
                                                  To="1"
                                                  Duration="0:0:0.4"/>
 
@@ -165,7 +165,7 @@
                         <BeginStoryboard>
                             <Storyboard AutoReverse="False">
                                 <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-                                                 Storyboard.TargetProperty="Tag"                                                 
+                                                 Storyboard.TargetProperty="Tag"
                                                  To="0"
                                                  Duration="0:0:0.4"/>
                                 <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
@@ -183,7 +183,7 @@
         </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Padding="10,10,10,250" Margin="0,80,0,0"  >
+    <Border Padding="10,10,10,300" Margin="0,80,0,0"  >
         <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
 
             <Grid  Height="Auto">

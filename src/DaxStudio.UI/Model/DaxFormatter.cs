@@ -50,7 +50,7 @@ namespace DaxStudio.UI.Model
         private static string redirectHost = null;
         public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
         {
-            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
+            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
             int colOffset = 1;
             int rowOffset = 1;
             Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Getting Query Text");
@@ -59,11 +59,11 @@ namespace DaxStudio.UI.Model
             // if there is a selection send that to daxformatter.com otherwise send all the text
             qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
 
-            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "About to Call daxformatter.com");
+            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "About to Call daxformatter.com");
 
             var res = await FormatDaxAsync(qry);
 
-            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "daxformatter.com call complete");
+            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "daxformatter.com call complete");
     
             try
             {  
@@ -84,7 +84,7 @@ namespace DaxStudio.UI.Model
                         rowOffset = loc.Line;
                         editor.SelectedText = res.FormattedDax;
                     }
-                    Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
+                    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
                     doc.OutputMessage("Query Formatted via daxformatter.com");
                 }
                 else
@@ -108,7 +108,7 @@ namespace DaxStudio.UI.Model
                         doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
                         doc.ActivateOutput();
 
-                        Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Error markings set");
+                        Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Error markings set");
                     }
 
                 }
@@ -120,7 +120,7 @@ namespace DaxStudio.UI.Model
             }
             finally
             {
-                Log.Verbose("{class} {method} {end}", "DaxFormatter", "FormatDax:End");
+                Log.Debug("{class} {method} {end}", "DaxFormatter", "FormatDax:End");
             }
         }
 
@@ -153,7 +153,7 @@ namespace DaxStudio.UI.Model
             {
                 res2.FormattedDax = o2;
             }
-            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
+            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
 
@@ -219,15 +219,15 @@ namespace DaxStudio.UI.Model
             }
             finally
             {
-                Log.Verbose("{class} {method}", "DaxFormatter", "CallDaxFormatterAsync:End");
+                Log.Debug("{class} {method}", "DaxFormatter", "CallDaxFormatterAsync:End");
             }
         }
 
         public static async Task PrimeConnectionAsync(string uri)
         {
-            await Task.Factory.StartNew(() =>
+            await Task.Run(() =>
             {
-                Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
+                Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
                 if (redirectHost == null)
                 {
                     
@@ -258,7 +258,7 @@ namespace DaxStudio.UI.Model
                         Log.Error("{class} {method} {error}", "DaxFormatter", "PrimeConnectionAsync", ex.Message);
                     }
                 }
-                Log.Verbose("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "End");
+                Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "End");
             });
 
         }

@@ -151,7 +151,7 @@ namespace DaxStudio.ExcelAddin
 
         public bool HasPowerPivotData()
         {
-            Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "Start");
+            Log.Debug("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "Start");
             try
             {
                 var wb = _app.ActiveWorkbook;
@@ -164,12 +164,12 @@ namespace DaxStudio.ExcelAddin
                     {
                         if (c.Name == "ThisWorkbookDataModel")
                         {
-                            Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:true", "End (2013)");
+                            Log.Debug("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:true", "End (2013)");
                             return true;
                         }
                     }
                     
-                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:false", "End (2013)");
+                    Log.Debug("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData:false", "End (2013)");
                     return false;
                 }
 
@@ -198,10 +198,10 @@ namespace DaxStudio.ExcelAddin
                 if (ptc != null)
                 {
                     ptc.Refresh();
-                    Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - true");
+                    Log.Debug("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - true");
                     return true;
                 }
-                Log.Verbose("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - false");
+                Log.Debug("{Class} {method} {event}", "ExcelHelper", "HasPowerPivotData", "End (2010) - false");
                 return false;
             }
             catch(Exception ex)

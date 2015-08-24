@@ -34,6 +34,7 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
             hubConnection.Start().Wait();
             // configure trace
+            Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQUeryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
             queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events);
             // wire up hub events
 

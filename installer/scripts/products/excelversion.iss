@@ -1,7 +1,6 @@
 
 function IsExcel2010Installed(): Boolean;
  var
-  CurVer: Cardinal;
   key: string;
   
 begin

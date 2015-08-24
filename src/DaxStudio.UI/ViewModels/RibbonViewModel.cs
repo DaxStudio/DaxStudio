@@ -19,6 +19,7 @@ using System.Windows.Input;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Model;
 using System.Collections.ObjectModel;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -209,7 +210,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            ActiveDocument.ClearDatabaseCacheAsync();
+            ActiveDocument.ClearDatabaseCacheAsync().FireAndForget();
         }
 
         public void Save()

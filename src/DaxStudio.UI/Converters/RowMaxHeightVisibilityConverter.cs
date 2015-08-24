@@ -15,7 +15,7 @@ namespace DaxStudio.UI.Converters
         {
             var actHeight = (Double)value;
             var maxHeight = Double.Parse(parameter.ToString());
-            if (actHeight != null && maxHeight != null)
+            if (actHeight > 0 && maxHeight > 0)
             {
                 if (actHeight >= maxHeight) return Visibility.Visible;
                 else return Visibility.Collapsed;

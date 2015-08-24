@@ -238,25 +238,19 @@
                       ResizeDirection="Columns" 
                       Grid.Row="0"
                       Height="Auto" 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Stretch" 
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
-                    Margin="0"/>
-        <TextBox  Padding="5,5,5,5"
-                  
+                      Margin="0"/>
+        <ScrollViewer>
+        <TextBox Padding="5,5,5,5"
                  MinWidth="200"
-                  MinHeight="100"
-                     TextWrapping="Wrap"
-                     Text="{Binding ElementName=ListEvents, Path=SelectedItem.Query, Mode=OneWay}"
-                         BorderThickness="0"
-                         IsReadOnly="True">
-            <TextBox.Style>
-                <Style>
-                    <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />
-                    <Setter Property="Grid.RowSpan" Value="{Binding TextGridRowSpan}" />
-                    <Setter Property="Grid.Column" Value="{Binding TextGridColumn}" />
-                </Style>
-            </TextBox.Style>
+                 MinHeight="100"
+                 TextWrapping="Wrap"
+                 Text="{Binding ElementName=ListEvents, Path=SelectedItem.Query, Mode=OneWay}"
+                 BorderThickness="0"
+                 IsReadOnly="True">
+        
             <TextBox.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
@@ -265,7 +259,15 @@
                 </ContextMenu>
             </TextBox.ContextMenu>
         </TextBox>
-
+            <ScrollViewer.Style>
+                <Style>
+                    <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />
+                    <Setter Property="Grid.RowSpan" Value="{Binding TextGridRowSpan}" />
+                    <Setter Property="Grid.Column" Value="{Binding TextGridColumn}" />
+                </Style>
+            </ScrollViewer.Style>
+        </ScrollViewer>
+        
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 

@@ -236,7 +236,7 @@ namespace ADOTabular
 
          public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
         {
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
                     return _adomdConn.GetSchemaDataSet(schemaName, null,true);
@@ -265,7 +265,7 @@ namespace ADOTabular
         public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
         {
             
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     if (_adomdConn.State != ConnectionState.Open)
                         _adomdConn.Open();

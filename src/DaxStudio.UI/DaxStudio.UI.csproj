@@ -375,6 +375,7 @@
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
+    <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
     <Compile Include="Utils\ApplicationCloseStrategy.cs" />

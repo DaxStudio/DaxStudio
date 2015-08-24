@@ -49,7 +49,7 @@ namespace DaxStudio.UI.Model
                 // Save document 
                 fileName = dlg.FileName;
         
-                return Task.Factory.StartNew(() =>
+                return Task.Run(() =>
                 {
 
                     try
@@ -146,7 +146,7 @@ namespace DaxStudio.UI.Model
                 });
                 
             }
-            return Task.Factory.StartNew(() => { });
+            return Task.Run(() => { });
         }
 
         public bool IsDefault

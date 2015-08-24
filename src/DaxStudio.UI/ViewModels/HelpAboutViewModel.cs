@@ -26,16 +26,17 @@ namespace DaxStudio.UI.ViewModels
             // start version check async
             VersionChecker = checker;
             VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
-            Task.Factory.StartNew(() => 
+            Task.Run(() => 
                 {
                     this.VersionChecker.Update(); 
                 })
                 .ContinueWith((previous)=> {
+                    // todo - should we be checking for exceptions in this continuation
                     CheckingUpdateStatus = false;
                     UpdateStatus = VersionChecker.VersionStatus;
                     NotifyOfPropertyChange(() => UpdateStatus);
                     NotifyOfPropertyChange(() => CheckingUpdateStatus);
-                });
+                },TaskScheduler.Default);
         }
 
         void VersionChecker_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

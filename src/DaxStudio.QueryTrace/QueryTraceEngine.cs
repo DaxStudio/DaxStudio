@@ -19,7 +19,7 @@ namespace DaxStudio.QueryTrace
 #region public IQueryTrace interface
         public Task StartAsync()
         {
-            return Task.Factory.StartNew(() => Start());
+            return Task.Run(() => Start());
         }
 
         public void Stop()
@@ -251,11 +251,21 @@ namespace DaxStudio.QueryTrace
             _startingTimer.Elapsed -= OnTimerElapsed;
         }
 
+        private void ClearEventSubscribers()
+        {
+            TraceStarted = (EventHandler)Delegate.RemoveAll(TraceStarted, TraceStarted);
+            TraceEvent = (TraceEventHandler)Delegate.RemoveAll(TraceEvent, TraceEvent);
+            TraceCompleted = (EventHandler<IList<DaxStudioTraceEventArgs>>)Delegate.RemoveAll(TraceCompleted, TraceCompleted);
+            TraceError = (EventHandler<string>)Delegate.RemoveAll(TraceError, TraceError);
+        }
+
 #endregion
 
         public void Dispose()
         {
             if (_trace == null) return; // exit here if trace has already been disposed
+            _trace.OnEvent -= OnTraceEventInternal;
+            ClearEventSubscribers();
             _trace.Dispose();
             _trace = null;
         }

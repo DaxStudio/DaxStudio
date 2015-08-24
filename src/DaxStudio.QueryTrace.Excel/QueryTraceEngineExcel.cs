@@ -22,7 +22,7 @@ namespace DaxStudio.QueryTrace
         public Task StartAsync()
         {
             Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "StartAsync", "entered");
-            return Task.Factory.StartNew(() => Start());
+            return Task.Run(() => Start());
         }
 
         public void Stop()

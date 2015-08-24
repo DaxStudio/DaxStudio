@@ -60,7 +60,7 @@ namespace DaxStudio.UI
 
         public static Task SetValueAsync<T>(string subKey, T value)
         {
-            return Task.Factory.StartNew(()=>{
+            return Task.Run(()=>{
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
                 
                 regDaxStudio.SetValue(subKey, value);

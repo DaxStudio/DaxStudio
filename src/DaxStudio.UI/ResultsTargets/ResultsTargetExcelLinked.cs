@@ -28,7 +28,7 @@ namespace DaxStudio.UI.ResultsTargets
         
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     try
                     {
@@ -49,7 +49,7 @@ namespace DaxStudio.UI.ResultsTargets
                                 runner.ActivateOutput();
                                 runner.SetResultsMessage("Query sent to Excel for execution", OutputTargets.Linked);
                                 runner.QueryCompleted();
-                            });
+                            },TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {
