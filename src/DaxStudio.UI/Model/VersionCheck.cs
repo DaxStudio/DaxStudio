@@ -137,12 +137,14 @@ namespace DaxStudio.UI.Model
                     Log.Error("{class} {method} {error}", "VersionCheck", "ServerVersion.get", ex.Message);
                     _eventAggregator.PublishOnUIThread(new ErrorEventArgs(ex));
                 }
-                if (LocalVersion.CompareTo(_serverVersion) > 0)
-                    { VersionStatus = string.Format("(Ahead of official release - {0} )",_serverVersion.ToString(3));}
+                if (_serverVersion == null)
+                { VersionStatus = "(Unable to get version information)"; }
+                else if (LocalVersion.CompareTo(_serverVersion) > 0)
+                { VersionStatus = string.Format("(Ahead of official release - {0} )", _serverVersion.ToString(3)); }
                 else if (LocalVersion.CompareTo(_serverVersion) == 0)
-                    { VersionStatus = "(Latest Official Release)"; }
+                { VersionStatus = "(Latest Official Release)"; }
                 else
-                    { VersionStatus = string.Format("(New Version available - {0})", _serverVersion.ToString(3)); }
+                { VersionStatus = string.Format("(New Version available - {0})", _serverVersion.ToString(3)); }
             
                 NotifyOfPropertyChange(() => VersionStatus);
 

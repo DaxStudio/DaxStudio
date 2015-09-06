@@ -4,22 +4,53 @@ using System.Linq;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.ViewModels;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Utils {
-    public class ApplicationCloseAllStrategy : ICloseStrategy<DocumentTabViewModel> {
+    [Export]
+    [Export(typeof(ICloseStrategy<IScreen>))]
+    public class ApplicationCloseAllStrategy : ICloseStrategy<IScreen> {
         //IEnumerator<IScreen> enumerator;
-        private IEnumerable<DocumentTabViewModel> toclose; 
+        private IEnumerable<IScreen> toclose; 
         bool finalResult;
-        Action<bool, IEnumerable<DocumentTabViewModel>> callback;
+        Action<bool, IEnumerable<IScreen>> callback;
+        private IWindowManager _windowManager;
 
-        public void Execute(IEnumerable<DocumentTabViewModel> toClose, Action<bool, IEnumerable<DocumentTabViewModel>> callback)
+        [ImportingConstructor]
+        public ApplicationCloseAllStrategy(IWindowManager windowManager )
+        {
+            _windowManager = windowManager;
+        }
+
+        public void Execute(IEnumerable<IScreen> toClose, Action<bool, IEnumerable<IScreen>> callback)
         {
             //enumerator = toClose.GetEnumerator();
-            toclose = toClose;
+            this.toclose = toClose;
             this.callback = callback;
-            finalResult = true;
-            
-            Evaluate(finalResult);
+
+            var docs = toClose.Cast<ISaveable>();// .ConvertAll(o => (DocumentViewModel)o);
+            var dirtyDocs = new ObservableCollection<ISaveable>(docs.Where<ISaveable>(x => x.IsDirty));
+
+            if (dirtyDocs.Count > 0)
+            {
+                var closeDialog = new SaveDialogViewModel();
+                closeDialog.Documents = dirtyDocs;
+
+                _windowManager.ShowDialogBox(closeDialog, null);
+
+                if (closeDialog.Result == Enums.SaveDialogResult.Cancel)
+                {
+                    // TODO - how to quit here
+                    finalResult = false; // cancel closing
+                    Evaluate(finalResult);
+                }
+                else
+                { Evaluate(true); }
+            }
+            Evaluate(true);
+
         }
 
         void Evaluate(bool result)
@@ -43,13 +74,13 @@ namespace DaxStudio.UI.Utils {
                     var sequential = new SequentialResult(tasks.GetEnumerator());
                     sequential.Completed += (s, e) =>
                         {
-                            callback(!e.WasCancelled, new List<DocumentTabViewModel>());
+                            callback(!e.WasCancelled, new List<IScreen>());
                         //if(!e.WasCancelled)
                         //Evaluate(!e.WasCancelled);
                     };
                     sequential.Execute(new CoroutineExecutionContext());
                 }
-                else callback(true, new List<DocumentTabViewModel>());
+                else callback(true, new List<IScreen>());
             //}
         }
     }

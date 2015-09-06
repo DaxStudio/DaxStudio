@@ -115,7 +115,7 @@ namespace DaxStudio.UI.ViewModels
                     finally
                     {
                         NotifyOfPropertyChange(() => SelectedModel);
-                        NotifyOfPropertyChange(() => Tables);
+                        RefreshTables();
                     }
                 }
             }
@@ -132,10 +132,9 @@ namespace DaxStudio.UI.ViewModels
         protected override void OnConnectionChanged()//bool isSameServer)
         {
             base.OnConnectionChanged();//isSameServer);
-            if (Connection == null)
-                return;
-            if (ModelList == Connection.Database.Models)
-                return;
+            if (Connection == null) return;
+            if (ModelList == Connection.Database.Models) return;
+
             Execute.OnUIThread(() => { 
                 Databases = Connection.Databases.ToBindableCollection();
             });
@@ -159,23 +158,46 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<FilterableTreeViewItem> Tables {
             get
             {
-                if (SelectedModel == null) return null;
-                if (_treeViewTables == null)
+                return _treeViewTables;
+            }
+            set
+            { _treeViewTables = value;
+            NotifyOfPropertyChange(() => Tables);
+            }
+
+        }
+
+        private void RefreshTables()
+        {
+            if (SelectedModel == null) return;
+            if (_treeViewTables == null)
+            {
+                
+                // TODO run async Task.Factory.s
+                Task.Run(() =>
                 {
                     try
                     {
+                        IsBusy = true;
                         _treeViewTables = SelectedModel.TreeViewTables();
+
                     }
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "Tables", ex.Message, ex.StackTrace);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error,ex.Message));
+                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
                     }
-                }
-                return _treeViewTables;
-                //return SelectedModel == null ? null : SelectedModel.TreeViewTables();
-                
+                    finally
+                    {
+                        IsBusy = false;
+                    }
+                }).ContinueWith((taskStatus)=>{    
+                    Tables = _treeViewTables;
+                });
             }
+            
+            //return SelectedModel == null ? null : SelectedModel.TreeViewTables();
+
         }
 
         public override string DefaultDockingPane
@@ -335,6 +357,18 @@ namespace DaxStudio.UI.ViewModels
                 return _databasesView; 
             }
         }
+
+        #region Busy Overlay
+        private bool _isBusy = false;
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set { _isBusy = value;
+            NotifyOfPropertyChange(() => IsBusy);
+            }
+        }
+        public string BusyMessage { get { return "Loading Metadata"; } }
+        #endregion
     }
 
 
@@ -347,5 +381,7 @@ namespace DaxStudio.UI.ViewModels
             return custX.CompareTo(custY);
         }
     }
+
+    
 
 }

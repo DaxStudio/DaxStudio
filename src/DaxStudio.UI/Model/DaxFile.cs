@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.Enums;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,11 +10,7 @@ namespace DaxStudio.UI.Model
 {
     public class DaxFile
     {
-        public enum FileIcons
-        {
-            Dax,
-            Other
-        }
+        
         public DaxFile(string initialValue)
         {
             var parts = initialValue.Split('|');

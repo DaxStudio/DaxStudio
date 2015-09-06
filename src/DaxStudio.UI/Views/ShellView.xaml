@@ -85,7 +85,7 @@
                     <DataTrigger Binding="{Binding Path=IsOverlayVisible}" Value="True">
                         <Setter Property="BitmapEffect">
                             <Setter.Value>
-                                <BlurBitmapEffect Radius="10"/>
+                                <BlurBitmapEffect Radius="5"/>
                             </Setter.Value>
                         </Setter>
                     </DataTrigger>
@@ -240,14 +240,13 @@
     -->        
 
         </Grid>
-    <Border HorizontalAlignment="Stretch" 
+        <Border HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch" 
                 Grid.RowSpan="3"
-                
                 Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Background="{DynamicResource GrayBrush5}" Opacity="0.6"
                 >
-            <!-- Background="{DynamicResource GrayBrush5}" Opacity="0.7" -->
-        <!--
+            <!--
         <Border.BitmapEffect>
             <BlurBitmapEffect Radius="10"/>
         </Border.BitmapEffect>

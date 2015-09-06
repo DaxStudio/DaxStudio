@@ -35,7 +35,8 @@ namespace DaxStudio.UI.ViewModels {
             _eventAggregator.Subscribe(this);
             Tabs = (DocumentTabViewModel) conductor;
             Tabs.ConductWith(this);
-            Tabs.CloseStrategy = new ApplicationCloseStrategy();
+            //Tabs.CloseStrategy = new ApplicationCloseStrategy();
+            Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             if (_host.CommandLineFileName != string.Empty)
             {

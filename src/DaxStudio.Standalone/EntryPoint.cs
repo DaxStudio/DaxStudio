@@ -4,7 +4,7 @@ using System.Windows;
 using Caliburn.Micro;
 using DaxStudio.UI;
 using Serilog;
-
+using DaxStudio.UI.Utils;
 namespace DaxStudio.Standalone
 {
     public static class EntryPoint 
@@ -13,9 +13,11 @@ namespace DaxStudio.Standalone
         static EntryPoint()
         {
             log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+            
             //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
 #if DEBUG
-            Serilog.Debugging.SelfLog.Out = Console.Out;
+            log.Warning("test warning");
+            Serilog.Debugging.SelfLog.Out =  Console.Out;
 #endif
             Log.Logger = log;
             Log.Information("============ DaxStudio Startup =============");

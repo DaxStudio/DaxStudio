@@ -32,6 +32,8 @@ using System.Windows.Input;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.UI.Enums;
+using DaxStudio.UI.Eums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -57,6 +59,7 @@ namespace DaxStudio.UI.ViewModels
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
+        , ISaveable
     {
         private ADOTabularConnection _connection;
         private IWindowManager _windowManager;
@@ -1519,12 +1522,12 @@ namespace DaxStudio.UI.ViewModels
         protected virtual void DoCloseCheck( Action<bool> callback)
         {
             
-            var res = MessageBoxEx.Show(Application.Current.MainWindow,
-                string.Format("\"{0}\" has unsaved changes.\nAre you sure you want to close this document without saving?.",_displayName),
-                "Unsaved Changes", MessageBoxButton.YesNo
-                );
+        //    var res = MessageBoxEx.Show(Application.Current.MainWindow,
+        //        string.Format("\"{0}\" has unsaved changes.\nAre you sure you want to close this document without saving?.",_displayName),
+        //        "Unsaved Changes", MessageBoxButton.YesNo
+        //        );
 
-            callback(res == MessageBoxResult.Yes);
+            callback(true);
         }
 
         public void Handle(SelectionChangeCaseEvent message)
@@ -1975,5 +1978,30 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #region ISaveable 
+        public FileIcons Icon { get { 
+            
+            return  !IsDiskFileName || Path.GetExtension(FileName).ToLower() == ".dax" ? FileIcons.Dax : FileIcons.Other; } }
+        public string FileAndExtension { get { 
+            if (IsDiskFileName)
+                return Path.GetFileName(FileName); 
+            else
+                return DisplayName.TrimEnd('*');
+            } 
+        }
+        public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
+        private bool _shouldSave = true;
+        public bool ShouldSave
+        {
+            get { return _shouldSave; }
+            set { _shouldSave = value; NotifyOfPropertyChange(() => ShouldSave); }
+        }
+        public string ExtensionLabel { 
+            get {
+                var ext = Path.GetExtension(DisplayName).TrimStart('.').TrimEnd('*').ToUpper();
+                return ext == "DAX" ? "" : ext;
+            } 
+        }
+        #endregion
     }
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +15,9 @@ namespace DaxStudio.UI.Utils
     [Export]
     public class WebRequestFactory
     {
+        [DllImport("wininet.dll")]
+        private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
+ 
         // private variables
         private readonly IGlobalOptions _globalOptions;
         private IWebProxy _proxy;
@@ -28,15 +33,43 @@ namespace DaxStudio.UI.Utils
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
 #endif
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
-        
+
+        private bool _isNetworkOnline = false;
+
         [ImportingConstructor]
         public WebRequestFactory(IGlobalOptions globalOptions)
         {
             _globalOptions = globalOptions;
 
+            NetworkChange.NetworkAvailabilityChanged 
+                += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+            try
+            {
+                int connDesc;
+                _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
+            }
+            catch
+            {
+                _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
+            }
+
             //todo - how to check that this works with different proxies...??
+            try
+            {
+                _proxy = GetProxy(DaxFormatUri);
+            }
+            catch (System.Net.WebException wex)
+            {
+                _isNetworkOnline = false;
+            }
+        }
+
+        // ...
+        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            _isNetworkOnline = e.IsAvailable;
+            // refresh proxy
             _proxy = GetProxy(DaxFormatUri);
-            
         }
 
         public HttpWebRequest Create(string uri)

@@ -305,6 +305,8 @@
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
+    <Compile Include="Enums\FileIcons.cs" />
+    <Compile Include="Enums\SaveResult.cs" />
     <Compile Include="Events\ActivateDocumentEvent.cs" />
     <Compile Include="Events\ActivateTrace.cs" />
     <Compile Include="Events\ApplicationActivatedEvent.cs" />
@@ -340,7 +342,7 @@
     <Compile Include="Events\UpdateTimerTextEvent.cs" />
     <Compile Include="Model\DaxFile.cs" />
     <Compile Include="Model\DaxFormatter.cs" />
-    <Compile Include="Model\Enums.cs" />
+    <Compile Include="Enums\DocumentState.cs" />
     <Compile Include="Interfaces\ISaveState.cs" />
     <Compile Include="Model\GlobalQueryHistory.cs" />
     <Compile Include="Model\LinkedQueryResult.cs" />
@@ -375,6 +377,7 @@
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
+    <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
@@ -414,6 +417,7 @@
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
+    <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="Views\OptionsView.xaml.cs">
       <DependentUpon>OptionsView.xaml</DependentUpon>
     </Compile>
@@ -483,6 +487,9 @@
     <Compile Include="Views\RibbonView.xaml.cs">
       <DependentUpon>RibbonView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SaveDialogView.xaml.cs">
+      <DependentUpon>SaveDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ServerTimesView.xaml.cs">
       <DependentUpon>ServerTimesView.xaml</DependentUpon>
     </Compile>
@@ -533,6 +540,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\QueryHistoryPaneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SaveDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

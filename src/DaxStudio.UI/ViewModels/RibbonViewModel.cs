@@ -445,7 +445,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ShowHelpAbout()
         {
-            _windowManager.ShowDialog(aboutDialog , 
+            _windowManager.ShowDialogBox(aboutDialog , 
                 settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},

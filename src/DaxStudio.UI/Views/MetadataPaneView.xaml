@@ -88,11 +88,12 @@
             </Storyboard>
 
 
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
@@ -167,6 +168,7 @@
         <!-- Tables -->
         <ctrl:TreeViewEx Grid.Row="2" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                   Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+                  FocusManager.IsFocusScope="True"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"                         
@@ -300,5 +302,23 @@
             </Border>
         </StackPanel>
 
+
+        <!-- Busy overlay -->
+        <Border Grid.Row="2"
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+                Grid.RowSpan="3" Style="{StaticResource BusyPanel}">
+            <Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!--
+                    <Views:ucSpinner Foreground="White" Margin="0,0,10,0" />
+                    <TextBlock Margin="0" TextWrapping="Wrap" Text="Running Query..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#7E000000"/>
+                    -->
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">
+                        <TextBlock x:Name="BusyMessage"/>
+                    </Label>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

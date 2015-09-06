@@ -68,6 +68,7 @@ namespace DaxStudio.UI.Utils
                             var portFile = string.Format("{0}\\msmdsrv.port.txt", msmdsrvPath);
                             if (System.IO.File.Exists(portFile))
                             {
+                                Log.Verbose("{class} {method} {message}", "PowerBIHelper", "Refresh", "port.txt found");
                                 string sPort = System.IO.File.ReadAllText(portFile, Encoding.Unicode);
                                 var port = int.Parse(sPort);
                                 _port = port;
@@ -76,10 +77,14 @@ namespace DaxStudio.UI.Utils
                                 Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
                                 continue;
                             }
+                            else
+                            {
+                                Log.Verbose("{class} {method} {message}", "PowerBIHelper", "Refresh", "no port.txt file found");
+                            }
                         }
                         catch (Exception ex)
                         {
-                            Log.Error("{class} {Method} {Error}", "PowerBIHelper", "Refresh", ex.Message);
+                            Log.Error("{class} {Method} {Error} {StackTrace}", "PowerBIHelper", "Refresh", ex.Message, ex.StackTrace);
                         }
                     }
                 }
@@ -94,13 +99,6 @@ namespace DaxStudio.UI.Utils
                 return _instances;
             }
         }
-
-        //public static int Port { 
-        //    get {
-        //        if (!_portSet) { Refresh();}
-        //        return _port;
-        //    }
-        //}
 
         #region PInvoke calls to get the window title of a minimize window
 

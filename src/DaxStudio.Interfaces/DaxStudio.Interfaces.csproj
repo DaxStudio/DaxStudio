@@ -96,6 +96,7 @@
     <Compile Include="IGlobalOptions.cs" />
     <Compile Include="IQueryRunner.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
+    <Compile Include="ISaveable.cs" />
     <Compile Include="IStatusBarMessage.cs" />
     <Compile Include="IVersionCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

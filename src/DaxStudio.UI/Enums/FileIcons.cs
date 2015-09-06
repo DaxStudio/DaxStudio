@@ -4,14 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Enums
 {
-    public enum DocumentState
+    public enum FileIcons
     {
-        Loaded,
-        LoadPending,
-        New
+        Dax,
+        Other
     }
-
-
 }
