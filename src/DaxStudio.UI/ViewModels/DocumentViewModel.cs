@@ -909,7 +909,7 @@ namespace DaxStudio.UI.ViewModels
                     var c = Connection;
                     c.Cancel();
                     QueryCompleted(true);
-                    OutputWarning("Query Cancelled");
+                    OutputWarning("Cancel of running query requested");
                 }
             }
             catch (Exception e)
@@ -1313,9 +1313,9 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog
                 {
-                    FileName = this.FileName=="" ? _displayName:FileName ,
+                    FileName = this.FileName?? _displayName ,
                     DefaultExt = ".dax",
-                    Filter = "DAX documents (.dax)|*.dax"
+                    Filter = "DAX documents|*.dax"
                 };
 
             // Show save file dialog box
@@ -1526,8 +1526,8 @@ namespace DaxStudio.UI.ViewModels
         //        string.Format("\"{0}\" has unsaved changes.\nAre you sure you want to close this document without saving?.",_displayName),
         //        "Unsaved Changes", MessageBoxButton.YesNo
         //        );
-
-            callback(true);
+            // don't close if the file has unsaved changes
+            callback(!IsDirty);
         }
 
         public void Handle(SelectionChangeCaseEvent message)

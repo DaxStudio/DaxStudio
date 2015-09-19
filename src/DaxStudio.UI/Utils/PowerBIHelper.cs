@@ -14,7 +14,22 @@ namespace DaxStudio.UI.Utils
         public PowerBIInstance(string name, int port)
         {
             Port = port;
-            Name = name.Substring(0, name.IndexOf(" - Power BI Des"));  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
+            try
+            {
+                var dashPos = name.LastIndexOf(" - ");
+                if (dashPos >= 0)
+                { Name = name.Substring(0, dashPos); }  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
+                else
+                {
+                    Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", "Unable to find ' - ' in Power BI title", dashPos);
+                    Name = name; 
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "PowerBIInstance", "ctor", ex.Message, ex.StackTrace);
+                Name = name;
+            }
         }
         public int Port { get; private set; }
         public string Name { get; private set; }

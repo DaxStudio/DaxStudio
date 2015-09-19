@@ -27,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isFilteredByServer = true;
         private bool _isFilteredByDatabase = true;
         private readonly GlobalQueryHistory _globalHistory;
-        private readonly ICollectionView _queryHistory;
+        private readonly ListCollectionView _queryHistory;
         private readonly IEventAggregator _eventAggregator;
         private readonly DocumentViewModel _currentDocument;
 
@@ -37,7 +37,9 @@ namespace DaxStudio.UI.ViewModels
             _globalHistory = globalHistory;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
+            //_queryHistory = new ListCollectionView(globalHistory.QueryHistory);
             _queryHistory = new ListCollectionView(globalHistory.QueryHistory);
+            //_queryHistory.PageSize = 50;
             _currentDocument = currentDocument;
             _queryHistory.Filter = HistoryFilter;
             // sort by StartTime Desc by default

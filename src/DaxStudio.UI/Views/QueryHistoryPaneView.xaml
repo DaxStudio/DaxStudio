@@ -20,6 +20,12 @@
                                       
         <SolidColorBrush x:Key="DistinctFilterActiveFunnelFill" Color="#FFFADCA5" />
         <SolidColorBrush x:Key="DistinctFilterFunnelFill" Color="#FF535353" />
+        <!--<SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Yellow"/>-->
+        <LinearGradientBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Offset="1" Color="#a2a2f2"/>
+            <GradientStop Color="#a7a7f7"/>
+        </LinearGradientBrush>
+
         <clr:String x:Key="NaColour">#909090</clr:String>
         
         <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader">
@@ -57,6 +63,30 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                            <aero:DataGridHeaderBorder BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,25,0">
+                                
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                    
+                            </aero:DataGridHeaderBorder>
+                                <ToggleButton Content="A" Width="25" Height="{TemplateBinding Height}" Visibility="Visible"></ToggleButton>
+                            </StackPanel>
+                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource ColumnHeaderGripperStyle}"/>
+                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource ColumnHeaderGripperStyle}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
 
         <DataTemplate x:Key="RowDetailsTemplate">
             <Grid TextBlock.Foreground="Black">
@@ -119,6 +149,11 @@
         
     </UserControl.Resources>
     <Grid >
+    	<VisualStateManager.VisualStateGroups>
+    		<VisualStateGroup x:Name="MouseOverStateGroup">
+    			<VisualState x:Name="MouseOver"/>
+    		</VisualStateGroup>
+    	</VisualStateManager.VisualStateGroups>
         
         
         <DataGrid x:Name="QueryHistory" 
@@ -193,19 +228,35 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn  Binding="{Binding ServerName}" HeaderStyle="{StaticResource DataGridColumnHeaderStyle1 }">
-
+                <DataGridTextColumn  Binding="{Binding ServerName}" HeaderStyle="{StaticResource DataGridColumnHeaderWithButtonStyle }">
+                    <!--<DataGridTextColumn.HeaderStyle>
+                        <Style>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding ColumnName}" />
+                                            <Button Content="Button" />
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    -->
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <Grid Width="{Binding Width, 
                                  RelativeSource={RelativeSource Mode=FindAncestor, 
-                                 AncestorType={x:Type DataGridTextColumn }}}" >
+                                 AncestorType={x:Type DataGridTextColumn }}}" Margin="0" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Server" Grid.Column="0"></TextBlock>
-                                <ToggleButton Grid.Column="1" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" DockPanel.Dock="Right">
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
+                                              DockPanel.Dock="Right"
+                                              Margin="0">
                                     <Path Fill="{StaticResource DistinctFilterFunnelFill}" Stretch="Fill" Data="M2.9999999,0.99999994 L2.9999999,2 3.9999999,2 3.9999999,3 4.9999999,3 4.9999999,4 5.9999999,4 5.9999999,3 6.9999999,3 6.9999999,2 7.9999999,2 7.9999999,0.99999994 6.9999999,0.99999994 5.9999999,0.99999994 4.9999999,0.99999994 3.9999999,0.99999994 z M0,0 L11,0 11,0.99999994 9.9999999,0.99999994 9.9999999,2 8.9999999,2 8.9999999,3 7.9999999,3 7.9999999,4 6.9999999,4 6.9999999,12 3.9999999,12 3.9999999,4 2.9999999,4 2.9999999,3 1.9999999,3 1.9999999,2 0.99999994,2 0.99999994,0.99999994 0,0.99999994 z"/>
                                 </ToggleButton>
 

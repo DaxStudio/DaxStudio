@@ -58,7 +58,7 @@ namespace DaxStudio.UI.Utils
             {
                 _proxy = GetProxy(DaxFormatUri);
             }
-            catch (System.Net.WebException wex)
+            catch (System.Net.WebException)
             {
                 _isNetworkOnline = false;
             }

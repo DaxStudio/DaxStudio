@@ -23,7 +23,8 @@
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
-
+            <conv:BooleanOrConverter x:Key="BooleanOrConverter" />
+            
             <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/clear.png" />
             <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
             <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
@@ -204,7 +205,8 @@
                         
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                         
-                        <TextBlock Text="{Binding Caption}">
+                        <TextBlock x:Name="Caption" Text="{Binding Caption}">
+                            
                             <TextBlock.ToolTip>
                                 <StackPanel Orientation="Vertical" >
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
@@ -217,8 +219,34 @@
                                     <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
                                 </StackPanel>
                             </TextBlock.ToolTip>                                
+                            
                         </TextBlock>
-                        
+<!--
+                        <Popup PlacementTarget="{Binding ElementName=Caption}" Placement="Bottom" HorizontalOffset="15">
+                            <Popup.IsOpen>
+                                <MultiBinding Mode="OneWay" Converter="{StaticResource BooleanOrConverter}">
+                                    <Binding Mode="OneWay" ElementName="Caption" Path="IsMouseOver"/>
+                                    <Binding RelativeSource="{RelativeSource Self}" Path="IsMouseOver" />
+                                </MultiBinding>
+                            </Popup.IsOpen>
+                            <Border Background="Snow">
+                            <StackPanel Orientation="Vertical" >
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                    <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                </StackPanel>
+                                <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
+                                <TextBlock HorizontalAlignment="Right">
+                                    <Hyperlink>Show Stats</Hyperlink>
+                                </TextBlock>
+                            </StackPanel>
+                            </Border>
+                        </Popup>
+-->
+
                         <StackPanel.ContextMenu>
                             <ContextMenu 
                                 cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"

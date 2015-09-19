@@ -15,6 +15,10 @@ using Serilog.Formatting.Raw;
 
 namespace DaxStudio.UI.Utils
 {
+    /// <summary>
+    /// This class allows for Serilog messages to be sent to the output window in the current DaxStudio
+    /// DocumentViewModel
+    /// </summary>
     class SerilogDaxStudioOutputSink : ILogEventSink
     {
 
@@ -54,6 +58,10 @@ namespace DaxStudio.UI.Utils
                     EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Error, text));
                 else if (logEvent.Level == LogEventLevel.Warning)
                     EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Warning, text));
+                else
+                {
+                    EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Information, text));
+                }
             }
         }
 
@@ -62,7 +70,16 @@ namespace DaxStudio.UI.Utils
     }
 
     public static class SerilogDaxStudioOutputSinkExtensions {
-        const string DefaultConsoleOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}";
+        //const string DefaultConsoleOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}";
+        const string DefaultConsoleOutputTemplate = "[{Level}] {Message}{NewLine}{Exception}";
+        /// <summary>
+        /// This is how the serilog configuration knows about this sink
+        /// </summary>
+        /// <param name="sinkConfiguration"></param>
+        /// <param name="restrictedToMinimumLevel"></param>
+        /// <param name="outputTemplate"></param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
         public static LoggerConfiguration DaxStudioOutput(
             this LoggerSinkConfiguration sinkConfiguration,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,

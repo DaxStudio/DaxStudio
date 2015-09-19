@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              MinWidth="400"
-             MinHeight="150">
+             MinHeight="350">
     <UserControl.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
@@ -16,8 +16,8 @@
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
         <Style TargetType="Button">
-            <Setter Property="Margin" Value="2"/>
-                <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="4,2"/>
+                <Setter Property="Padding" Value="8,2"/>
             </Style>
         <DataTemplate  DataType="{x:Type viewModel:DocumentViewModel}">
                 
@@ -42,14 +42,30 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0">The following documents have unsaved changes:</TextBlock>
-            <ListView x:Name="DocumentList" Grid.Row="1" Margin="3" ItemsSource="{Binding Documents}" 
+            <StackPanel Grid.Row="0" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
+                    <Label Content="Unsaved Changes" Foreground="{StaticResource DaxStudioBrush}" 
+                           Margin="3,0"
+                           FontWeight="Light" FontSize="44" ></Label>
+                    <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+                </StackPanel>
+                <TextBlock Padding="10,10,0,5">The following documents have unsaved changes:</TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5,0">
+                <CheckBox Grid.Row="1" Margin="5,1,5,5"  VerticalAlignment="Center" x:Name="SelecteAll"></CheckBox>
+                <TextBlock>Select All</TextBlock>
+            </StackPanel>
+            <ListView x:Name="DocumentList" Grid.Row="2"
+                      ItemsSource="{Binding Documents}" 
+                      Margin="10,0"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldSave($this.SelectedItem)]">
             </ListView>
-            <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="3" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 <Button x:Name="Save">Save</Button>
                 <Button x:Name="DontSave">Don't Save</Button>
                 <Button x:Name="Cancel" IsCancel="True">Cancel</Button>

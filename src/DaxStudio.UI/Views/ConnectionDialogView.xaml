@@ -183,15 +183,16 @@
         </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Padding="10,10,10,300" Margin="0,80,0,0"  >
+    <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
         <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
 
             <Grid  Height="Auto">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="298*"/>
+                    <ColumnDefinition Width="*"/>
 
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <!-- MinHeight="131"-->
                     <RowDefinition Height="Auto"/>
@@ -201,7 +202,9 @@
                 <!--<Grid.Effect>
                     <fluent:GrayscaleEffect/>
                 </Grid.Effect>-->
-                <GroupBox Header="Data Source" Margin="10,10,10,0" x:Name="grpServer" VerticalAlignment="Top"  MinWidth="420" Grid.Row="0">
+                <Label Content="Connect" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="44" Padding="17,0" />
+                <GroupBox Header="Data Source" Margin="10,10,10,0" x:Name="grpServer" 
+                          VerticalAlignment="Top"  MinWidth="420" Grid.Row="1">
                     <StackPanel Orientation="Vertical">
                         <StackPanel>
                             <Grid Visibility="{Binding HostIsExcel, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -306,7 +309,7 @@
                 <Expander x:Name="myExpander" Header="Advanced Options"
 					ExpandDirection="Down" IsExpanded="False" 
 					Template="{StaticResource RevealExpanderTemp}"
-					Grid.Row="1" Grid.Column="0"  Margin="10,10,5,0" >
+					Grid.Row="2" Grid.Column="0"  Margin="10,10,5,0" >
                     <!-- Template="{StaticResource RevealExpanderTemp}" -->
                     <Expander.HeaderTemplate>
                         <DataTemplate>
@@ -315,10 +318,10 @@
                     </Expander.HeaderTemplate>
                     <!--</GroupBox>-->
                     <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
-                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,20,10" >
+                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,15,0" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="130"/>
-                            <ColumnDefinition Width="120*"/>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
 
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
@@ -335,7 +338,8 @@
 							VerticalAlignment="Top" 
 							IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"
 							SelectedValue="{Binding DirectQueryMode}"
-							ItemsSource="{Binding DirectQueryModeOptions}"/>
+							ItemsSource="{Binding DirectQueryModeOptions}"
+                            Margin="0"/>
 
                         <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  x:Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
                         <ComboBox Height="23"  x:Name="cboMdxCompat" VerticalAlignment="Top" 
@@ -354,9 +358,9 @@
                         </ComboBox>
 
                         <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  x:Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
-                        <TextBox Height="23"  x:Name="txtEffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"  Grid.Column="1" Grid.Row="2"/>
+                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"  Grid.Column="1" Grid.Row="2"/>
                         <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
-                        <TextBox Height="23"  x:Name="txtRoles" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Row="3" Grid.Column="1"  />
+                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Row="3" Grid.Column="1"  />
                         <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="4" x:Name="cboLocales" 
 							VerticalAlignment="Top" 
@@ -369,7 +373,8 @@
                         <TextBox x:Name="AdditionalOptions" Grid.Row="5" Grid.Column="1" MinHeight="85"/>
                     </Grid>
                 </Expander>
-                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">
+                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" 
+                            Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">
                     <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" Width="75" IsDefault="True" Height="23" VerticalAlignment="Bottom" />
                     <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
                 </StackPanel>

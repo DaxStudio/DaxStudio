@@ -39,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
             ProxyAddress = RegistryHelper.GetValue<string>("ProxyAddress", "");
             ProxyUser = RegistryHelper.GetValue<string>("ProxyUser", "");
             ProxyPassword = RegistryHelper.GetValue<string>("ProxyPassword", "").Decrypt();
-            MaxQueryHistory = RegistryHelper.GetValue<int>("MaxQueryHistory", 100);
+            MaxQueryHistory = RegistryHelper.GetValue<int>("MaxQueryHistory", 200);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 

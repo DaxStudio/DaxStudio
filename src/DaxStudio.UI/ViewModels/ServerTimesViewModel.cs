@@ -163,10 +163,14 @@ namespace DaxStudio.UI.ViewModels
             }
 
             FormulaEngineDuration = TotalDuration - StorageEngineDuration;
-            QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
-            QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
-            QueryHistoryEvent.ServerDurationMs = TotalDuration;
-            _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
+            if (QueryHistoryEvent != null)
+            {
+                QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
+                QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
+                QueryHistoryEvent.ServerDurationMs = TotalDuration;
+
+                _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
+            }
             Events.Clear();
             
             NotifyOfPropertyChange(() => StorageEngineEvents);

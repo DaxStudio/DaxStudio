@@ -16,7 +16,6 @@ namespace DaxStudio.Standalone
             
             //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
 #if DEBUG
-            log.Warning("test warning");
             Serilog.Debugging.SelfLog.Out =  Console.Out;
 #endif
             Log.Logger = log;

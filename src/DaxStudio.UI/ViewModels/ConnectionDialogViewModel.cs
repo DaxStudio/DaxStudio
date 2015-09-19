@@ -311,7 +311,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetDirectQueryMode()
         {
-            return DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default" ? string.Empty : string.Format("DirectQueryMode={0}", DirectQueryMode);
+            return DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default" ? string.Empty : string.Format("DirectQueryMode={0};", DirectQueryMode);
         }
 
         private string GetMdxCompatibilityMode()
@@ -347,27 +347,34 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
-            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5};{6};Application Name={7}", SelectedPowerBIInstance.Port
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6};{7};Application Name={8}", SelectedPowerBIInstance.Port
                                  , GetMdxCompatibilityMode()
                                  , GetDirectQueryMode()
                                  , GetRolesProperty()
                                  , GetLocaleIdentifier()
+                                 , GetEffectiveUserName()
                                  , AdditionalProperties
                                  , AdditionalOptions
                                  , GetApplicationName("Power BI"));
         }
 
+        private object GetEffectiveUserName()
+        {
+            return EffectiveUserName == string.Empty ? string.Empty : string.Format("EffectiveUserName={0};", EffectiveUserName);
+        }
+
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4}{5};{6};Application Name={7}", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6};{7};Application Name={8}", DataSource
                                  , GetMdxCompatibilityMode()     //1
                                  , GetDirectQueryMode()          //2
                                  , GetRolesProperty()            //3
                                  , GetLocaleIdentifier()         //4
-                                 , AdditionalProperties          //5
-                                 , AdditionalOptions             //6
-                                 , GetApplicationName("SSAS"));  //7
+                                 , GetEffectiveUserName()        //5
+                                 , AdditionalProperties          //6
+                                 , AdditionalOptions             //7
+                                 , GetApplicationName("SSAS"));  //8
         }
 
         private string GetApplicationName(string connectionType)

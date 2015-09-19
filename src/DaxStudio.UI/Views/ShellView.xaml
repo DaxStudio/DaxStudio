@@ -40,6 +40,7 @@
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
+            <SolidColorBrush x:Key="BusyBrush" Color="#30000000" />
 
             <!--
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
@@ -94,7 +95,7 @@
                         <Setter Property="BitmapEffect">
                             <Setter.Value>
 
-                                <BlurBitmapEffect Radius="10"/>
+                                <BlurBitmapEffect Radius="5"/>
 
                             </Setter.Value>
                         </Setter>
@@ -218,7 +219,8 @@
     </i:Interaction.Triggers>
     <Grid>
         <Grid x:Name="LayoutRoot"
-          Margin="0,0,0,-2" Style="{StaticResource BlurEffect}">
+              Margin="0,0,0,-2" >
+              <!--="{StaticResource BlurEffect}"-->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -244,7 +246,7 @@
                 VerticalAlignment="Stretch" 
                 Grid.RowSpan="3"
                 Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                Background="{DynamicResource GrayBrush5}" Opacity="0.6"
+                Background="{DynamicResource BusyBrush}" Opacity="0.7"
                 >
             <!--
         <Border.BitmapEffect>

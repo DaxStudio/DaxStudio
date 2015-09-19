@@ -179,8 +179,12 @@ namespace DaxStudio.UI.ViewModels
                     try
                     {
                         IsBusy = true;
-                        _treeViewTables = SelectedModel.TreeViewTables();
-
+                        using (var conn = Connection.Clone())
+                        {
+                            conn.Open();
+                            _treeViewTables = conn.Database.Models[SelectedModel.Name].TreeViewTables();
+                            //_treeViewTables = SelectedModel.TreeViewTables();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -367,7 +371,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsBusy);
             }
         }
-        public string BusyMessage { get { return "Loading Metadata"; } }
+        public string BusyMessage { get { return "Loading"; } }
         #endregion
     }
 

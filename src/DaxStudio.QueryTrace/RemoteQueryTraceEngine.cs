@@ -35,12 +35,13 @@ namespace DaxStudio.QueryTrace
             hubConnection.Start().Wait();
             // configure trace
             Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQUeryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
-            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events);
+            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events).Wait();
             // wire up hub events
 
         }
         public async Task StartAsync()
         {
+            Log.Debug("{class} {method} {message}", "RemoteQueryTraceEngine", "StartAsync", "entered");
             await queryTraceHubProxy.Invoke("StartAsync");
         }
 

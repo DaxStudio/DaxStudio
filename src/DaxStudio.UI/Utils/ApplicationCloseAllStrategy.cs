@@ -7,6 +7,7 @@ using DaxStudio.UI.ViewModels;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using DaxStudio.Interfaces;
+using System.Windows;
 
 namespace DaxStudio.UI.Utils {
     [Export]
@@ -38,18 +39,31 @@ namespace DaxStudio.UI.Utils {
                 var closeDialog = new SaveDialogViewModel();
                 closeDialog.Documents = dirtyDocs;
 
-                _windowManager.ShowDialogBox(closeDialog, null);
+                _windowManager.ShowDialogBox(closeDialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+                
+                });
 
                 if (closeDialog.Result == Enums.SaveDialogResult.Cancel)
                 {
-                    // TODO - how to quit here
+                    // loop through and cancel closing for any dirty documents
                     finalResult = false; // cancel closing
                     Evaluate(finalResult);
+                    
                 }
                 else
-                { Evaluate(true); }
+                { Evaluate(finalResult); }
             }
-            Evaluate(true);
+            else
+            {
+                callback(true, new List<IScreen>());
+            }
+            
 
         }
 

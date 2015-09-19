@@ -50,6 +50,16 @@ namespace DaxStudio.UI.ViewModels
             item.ShouldSave = !item.ShouldSave;
         }
 
+        private bool _selectAll = true;
+        public bool SelectAll {
+            get { return _selectAll; }
+            set
+            {
+                _selectAll = value;
+                foreach (var doc in Documents) { doc.ShouldSave = _selectAll; }
+                NotifyOfPropertyChange(() => SelectAll);
+            } }
+
         public SaveDialogResult Result { get { return _dialogResult; } }
     }
 }

@@ -33,7 +33,8 @@
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-clear-then-run@96ppi.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
-    
+
+    <BitmapImage x:Key="DaxStudioIcon" UriSource="..\images\daxstudio_x16.png"></BitmapImage>
     <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
     <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="CancelIconLarger"  UriSource="..\images\icon-cancel@96ppi.png"></BitmapImage>
