@@ -20,6 +20,7 @@ namespace DaxStudio.UI
     using Serilog;
     using System.Windows.Input;
     using DaxStudio.UI.Triggers;
+    using DaxStudio.UI.Utils;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -39,6 +40,7 @@ namespace DaxStudio.UI
 
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
+            AssemblyLoader.PreJitControls();
             base.DisplayRootViewFor<IShell>(null);
         }
 

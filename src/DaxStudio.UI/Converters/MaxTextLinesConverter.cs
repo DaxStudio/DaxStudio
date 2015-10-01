@@ -12,14 +12,16 @@ namespace DaxStudio.UI.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             string str = value as string;
-            string param = parameter as string;
-            int? maxLines = int.Parse(param.Split(',')[0]);
-            int? height = int.Parse(param.Split(',')[1]);
-            if (str != null)
-            {
-                if (str.Split('\n').Length > maxLines) return height;
-            }
-            return Binding.DoNothing;
+            int? maxlines = int.Parse((string)parameter);
+            
+            //int? height = int.Parse(param.Split(',')[1]);
+            if (str == null) return Binding.DoNothing;
+            if (maxlines == null) return Binding.DoNothing;
+
+            string[] lines = str.Split('\n');
+            if (lines.Length <= maxlines) return str;
+            return string.Join("\n", lines.Take((int)maxlines).ToArray<string>()) + "...";
+            
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

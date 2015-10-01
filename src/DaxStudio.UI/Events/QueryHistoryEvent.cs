@@ -22,14 +22,14 @@ namespace DaxStudio.UI.Events
         , string databaseName 
         , string fileName)
         {
-            QueryText = queryText;
+            QueryText = queryText.Trim();
             StartTime = startTime;
             ClientDurationMs = clientDurationMs;
             ServerDurationMs = serverDurationMs;
             SEDurationMs = seDurationMs;
             FEDurationMs = feDurationMs;
-            ServerName = serverName;
-            DatabaseName = databaseName;
+            ServerName = serverName.Trim().ToLower();
+            DatabaseName = databaseName.Trim();
             FileName = fileName;
         }
 
@@ -40,7 +40,6 @@ namespace DaxStudio.UI.Events
         , string fileName): this(queryText,startTime,-1,-1,-1,-1,serverName,databaseName,fileName )
         {   }
 
-
         public string QueryText { get; private set; }
         public DateTime StartTime { get; private set; }
         public long ClientDurationMs { get; set; }
@@ -50,7 +49,6 @@ namespace DaxStudio.UI.Events
         public string ServerName { get; private set; }
         public string DatabaseName { get; private set; }
         public string FileName { get; private set; }
-
         public int RowCount { get; set; }
         public QueryStatus Status { get; set; }
 

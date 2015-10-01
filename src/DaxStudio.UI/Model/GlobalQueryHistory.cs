@@ -45,18 +45,21 @@ namespace DaxStudio.UI.Model
         {
             Task.Run(() =>
             {
+                Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
                 DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
-                foreach (var fileInfo in d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly))
+                var fileList = d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
+                List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.MaxQueryHistory);
+                foreach (var fileInfo in fileList)
                 {
-
                     using (StreamReader file = File.OpenText(fileInfo.FullName))
                     {
                         JsonSerializer serializer = new JsonSerializer();
                         QueryHistoryEvent queryHistory = (QueryHistoryEvent)serializer.Deserialize(file, typeof(QueryHistoryEvent));
-                        QueryHistory.Add(queryHistory);
+                        tempHist.Add(queryHistory);
                     }
-
                 }
+                QueryHistory.AddRange(tempHist);
+                Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList.Count()  + " files)");
             });
         }
 

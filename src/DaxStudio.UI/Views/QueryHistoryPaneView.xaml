@@ -7,17 +7,25 @@
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:clr="clr-namespace:System;assembly=mscorlib"
+             xmlns:clr="clr-namespace:System;assembly=mscorlib"        
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:prop="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:xcdg="http://schemas.xceed.com/wpf/xaml/datagrid"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"             
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="500">
+             d:DesignHeight="300" d:DesignWidth="700">
     <UserControl.Resources>
         
+        <!-- Converters -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:VisbilityToBooleanConverter x:Key="VisibilityToBoolConverter"/>
         <conv:RowMaxHeightVisibilityConverter x:Key="RowMaxHeightVisibilityConverter"/>
-        <conv:MaxTextLinesConverter x:Key="MaxTextLinesConverter"/>
+        <conv:CappedHeightConverter x:Key="CappedHeightConverter"/>
         <conv:NegativeColourConverter x:Key="NegativeColourConverter"/>
-                                      
+        <conv:MaxTextLinesConverter x:Key="MaxTextLinesConverter"/>
+        
+        <!-- Brushes -->
         <SolidColorBrush x:Key="DistinctFilterActiveFunnelFill" Color="#FFFADCA5" />
         <SolidColorBrush x:Key="DistinctFilterFunnelFill" Color="#FF535353" />
         <!--<SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Yellow"/>-->
@@ -88,26 +96,6 @@
         </Style>
 
 
-        <DataTemplate x:Key="RowDetailsTemplate">
-            <Grid TextBlock.Foreground="Black">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="120">
-                <TextBlock Text="{Binding QueryText}" />
-                </ScrollViewer>
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ExpandDetails">
-            
-            <ToggleButton Name="ShowDetails" 
-                          Content="…"
-                              IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, 
-                                                  Path=DetailsVisibility, 
-                                                  Converter={StaticResource VisibilityToBoolConverter}, 
-                                                  Mode=TwoWay}" 
-                              Margin="4">
-
-            </ToggleButton>
-        </DataTemplate>
 
         <DataTemplate x:Key="QueryTextCell">
             <Grid><ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -121,7 +109,7 @@
                     VerticalAlignment="Top" 
                     HorizontalAlignment="Left"   
                     TextTrimming="CharacterEllipsis"
-                    ToolTip="{Binding QueryText}">
+                    ToolTip="{Binding QueryText ,Converter={StaticResource MaxTextLinesConverter}, ConverterParameter=10}">
                 </TextBlock>
                     
                 </Label>
@@ -147,149 +135,131 @@
             </Grid>
         </DataTemplate>
         
+<!--  ##### Xceed Styles  #####-->
+        
+        <DataTemplate x:Key="qryTemplate">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                          ToolTip="{TemplateBinding Property=Content ,Converter={StaticResource MaxTextLinesConverter}, ConverterParameter=10}">
+                <Label 
+                    cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($dataContext)]"
+                    Margin="0"
+                    Padding="0">
+
+                    <TextBlock x:Name="QueryText" Text="{TemplateBinding Property=Content}"
+                               VerticalAlignment="Top" 
+                               HorizontalAlignment="Left"   
+                               TextTrimming="CharacterEllipsis"
+                               />
+                    <!-- ToolTip="{Binding QueryText ,Converter={StaticResource MaxTextLinesConverter}, ConverterParameter=10}" -->
+                </Label>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <Style TargetType="{x:Type xcdg:ColumnManagerCell}" >
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=FieldName}"
+                             Value="ClientDurationMs" >
+                    <Setter Property="ToolTip" Value="Client Elapsed Query time&#10;(includes data transfer and display)" />
+                </DataTrigger>
+                
+            </Style.Triggers>
+        </Style>
+        <!--
+        <Style TargetType="{x:Type xcdg:DataRow}">
+            <Setter Property="Height" Value="{Binding ElementName=QueryText,
+                                      Path=ActualHeight
+                ,Converter={StaticResource CappedHeightConverter}, ConverterParameter=45  }" />
+        </Style>
+-->
+        <Style TargetType="{x:Type xcdg:DataRow}">
+            <Setter Property="Height" Value="50" />
+        </Style>
+        
+        <Style TargetType="{x:Type xcdg:HierarchicalGroupByControl}">
+            <Setter Property="AllowGroupingModification" Value="False"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+
+        <xcdg:DataGridCollectionViewSource x:Key="cvs_items"
+                                               x:Name="cvsItems"
+                                     Source="{Binding Path=QueryHistoryList}"
+                                     AutoFilterMode="And"                            
+                                     DistinctValuesConstraint="Filtered"
+                                     AutoCreateItemProperties="True">
+                <xcdg:DataGridCollectionViewSource.ItemProperties>
+                    <xcdg:DataGridItemProperty Name="StartTime" DataType="{x:Type system:DateTime}" 
+                                          Title="Start Time"
+                                          CalculateDistinctValues="False"/>
+                <xcdg:DataGridItemProperty Name="ServerName"
+                                   Title="Server" DataType="{x:Type system:String}" >
+
+                </xcdg:DataGridItemProperty>
+                    <xcdg:DataGridItemProperty Name="DatabaseName" DataType="{x:Type system:String}"
+                                   Title="Database">
+
+                    </xcdg:DataGridItemProperty>
+                    <xcdg:DataGridItemProperty Name="QueryText" DataType="{x:Type system:String}"
+                                   Title="Query"
+                                   CalculateDistinctValues="False"/>
+                    <xcdg:DataGridItemProperty Name="RowCount" DataType="{x:Type system:Int32}"
+                                   Title="Rows"
+                                   CalculateDistinctValues="False"/>
+                <xcdg:DataGridItemProperty Name="ServerDurationMs" DataType="{x:Type system:Int32}"
+                                   Title="Server"
+                                   CalculateDistinctValues="False"/>
+                <xcdg:DataGridItemProperty Name="ClientDurationMs" DataType="{x:Type system:Int32}"
+                                   Title="Client"
+                                   CalculateDistinctValues="False"/>
+                <xcdg:DataGridItemProperty Name="SEDurationMs" DataType="{x:Type system:Int32}"
+                                   Title="SE"
+                                   CalculateDistinctValues="False"/>
+                <xcdg:DataGridItemProperty Name="FEDurationMs" DataType="{x:Type system:Int32}"
+                                   Title="FE"
+                                   CalculateDistinctValues="False"/>
+            </xcdg:DataGridCollectionViewSource.ItemProperties>
+            <xcdg:DataGridCollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="StartTime" Direction="Descending"/>
+            </xcdg:DataGridCollectionViewSource.SortDescriptions>
+            </xcdg:DataGridCollectionViewSource>
+       
     </UserControl.Resources>
     <Grid >
-    	<VisualStateManager.VisualStateGroups>
-    		<VisualStateGroup x:Name="MouseOverStateGroup">
-    			<VisualState x:Name="MouseOver"/>
-    		</VisualStateGroup>
-    	</VisualStateManager.VisualStateGroups>
         
-        
-        <DataGrid x:Name="QueryHistory" 
-                      Grid.Row="1"
-                      CanUserSortColumns="True"
-                      RowHeight="24"
-                      ClipboardCopyMode="IncludeHeader"
-                      SelectionMode="Extended"       
-                      SelectionUnit="FullRow"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      VerticalGridLinesBrush="WhiteSmoke" 
-                      HorizontalGridLinesBrush="WhiteSmoke"
-                      AutoGenerateColumns="False" 
-                      RowDetailsTemplate="{StaticResource RowDetailsTemplate}"
-                      RowDetailsVisibilityMode="Collapsed"
-                      >
-            <DataGrid.AlternatingRowBackground>
-
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Offset="1" Color="#f2f2f2"/>
-                    <GradientStop Color="#f7f7f7"/>
-                </LinearGradientBrush>
-            </DataGrid.AlternatingRowBackground>
+        <xcdg:DataGridControl Grid.Row="1" 
+                              ItemsSource="{Binding Source={StaticResource cvs_items}, IsAsync=True}"
+                              AutoCreateColumns="False" x:Name="grd" ReadOnly="True" HideSelection="True" 
+                               >
             
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Start Time" Binding="{Binding StartTime, StringFormat=\{0:g\}}" SortDirection="Descending"></DataGridTextColumn>
-                <DataGridTemplateColumn SortMemberPath="RowCount" Header="Rows" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=RowCount,Mode=OneWay,StringFormat=\{0:#\,###;n/a;0\}}"  VerticalAlignment="Top" HorizontalAlignment="Right">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="ClientDurationMs" Header="Client" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn SortMemberPath="ServerDurationMs" Header="Server" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn SortMemberPath="FEDurationMs" Header="FE" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
-                                       VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn SortMemberPath="SEDurationMs" Header="SE" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}">
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTextColumn  Binding="{Binding ServerName}" HeaderStyle="{StaticResource DataGridColumnHeaderWithButtonStyle }">
-                    <!--<DataGridTextColumn.HeaderStyle>
-                        <Style>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding ColumnName}" />
-                                            <Button Content="Button" />
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                    -->
-                    <DataGridTextColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <Grid Width="{Binding Width, 
-                                 RelativeSource={RelativeSource Mode=FindAncestor, 
-                                 AncestorType={x:Type DataGridTextColumn }}}" Margin="0" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Server" Grid.Column="0"></TextBlock>
-                                <ToggleButton Grid.Column="1" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
-                                              DockPanel.Dock="Right"
-                                              Margin="0">
-                                    <Path Fill="{StaticResource DistinctFilterFunnelFill}" Stretch="Fill" Data="M2.9999999,0.99999994 L2.9999999,2 3.9999999,2 3.9999999,3 4.9999999,3 4.9999999,4 5.9999999,4 5.9999999,3 6.9999999,3 6.9999999,2 7.9999999,2 7.9999999,0.99999994 6.9999999,0.99999994 5.9999999,0.99999994 4.9999999,0.99999994 3.9999999,0.99999994 z M0,0 L11,0 11,0.99999994 9.9999999,0.99999994 9.9999999,2 8.9999999,2 8.9999999,3 7.9999999,3 7.9999999,4 6.9999999,4 6.9999999,12 3.9999999,12 3.9999999,4 2.9999999,4 2.9999999,3 1.9999999,3 1.9999999,2 0.99999994,2 0.99999994,0.99999994 0,0.99999994 z"/>
-                                </ToggleButton>
-
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
-                <DataGridTextColumn  Binding="{Binding DatabaseName}" HeaderStyle="{StaticResource DataGridColumnHeaderStyle1 }">
-                    
-                    <DataGridTextColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <Grid Width="{Binding Width, 
-                                 RelativeSource={RelativeSource Mode=FindAncestor, 
-                                 AncestorType={x:Type DataGridTextColumn }}}" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Database" Grid.Column="0"></TextBlock>
-                                    <ToggleButton Grid.Column="1" IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" DockPanel.Dock="Right">
-                                    <ToggleButton.Content>
-                                        <Path Fill="{StaticResource DistinctFilterFunnelFill}" Stretch="Fill" Data="M2.9999999,0.99999994 L2.9999999,2 3.9999999,2 3.9999999,3 4.9999999,3 4.9999999,4 5.9999999,4 5.9999999,3 6.9999999,3 6.9999999,2 7.9999999,2 7.9999999,0.99999994 6.9999999,0.99999994 5.9999999,0.99999994 4.9999999,0.99999994 3.9999999,0.99999994 z M0,0 L11,0 11,0.99999994 9.9999999,0.99999994 9.9999999,2 8.9999999,2 8.9999999,3 7.9999999,3 7.9999999,4 6.9999999,4 6.9999999,12 3.9999999,12 3.9999999,4 2.9999999,4 2.9999999,3 1.9999999,3 1.9999999,2 0.99999994,2 0.99999994,0.99999994 0,0.99999994 z"/>
-                                    </ToggleButton.Content>
-                                </ToggleButton>
-                            
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
-                
-                <DataGridTemplateColumn Header="Query" CellTemplate="{StaticResource QueryTextCell}" />
-            </DataGrid.Columns>    
-        </DataGrid>
-        
+            <xcdg:DataGridControl.View>
+                <xcdg:TableView ColumnStretchMode="Last" AllowRowResize="True" >
+                    <xcdg:TableView.FixedHeaders>
+                        <xcdg:ClearHeadersFooters/>
+                        <!--<DataTemplate>
+                            <xcdg:ColumnManagerRow/>
+                        </DataTemplate>-->
+                    </xcdg:TableView.FixedHeaders>
+                </xcdg:TableView>
+            </xcdg:DataGridControl.View>
+            
+            <xcdg:DataGridControl.Columns>
+                <xcdg:Column FieldName="StartTime" Title="Start Time"  AllowAutoFilter="False" MaxWidth="90" TextWrapping="Wrap"/>
+                <xcdg:Column FieldName="ServerName" Title="Server"  AllowAutoFilter="True" >
+                    <i:Interaction.Behaviors>
+                        <beh:InitialColumnFilterBehavior InitialFilter="{Binding CurrentServer}" />
+                    </i:Interaction.Behaviors>
+                </xcdg:Column>
+                <xcdg:Column FieldName="DatabaseName" Title="Database"  AllowAutoFilter="True" >
+                    <i:Interaction.Behaviors>
+                        <beh:InitialColumnFilterBehavior InitialFilter="{Binding CurrentDatabase}" />
+                    </i:Interaction.Behaviors>
+                </xcdg:Column>
+                <xcdg:Column FieldName="RowCount" Title="Rows" AllowAutoFilter="False" MaxWidth="60" CellHorizontalContentAlignment="Right" />
+                <xcdg:Column FieldName="ClientDurationMs" Title="Client" AllowAutoFilter="False" MaxWidth="60" CellHorizontalContentAlignment="Right"/>
+                <xcdg:Column FieldName="ServerDurationMs" Title="Server"  AllowAutoFilter="False" MaxWidth="60" CellHorizontalContentAlignment="Right"  Visible="False"/>
+                <xcdg:Column FieldName="FEDurationMs" Title="FE" AllowAutoFilter="False" MaxWidth="50" CellHorizontalContentAlignment="Right" Visible="False"/>
+                <xcdg:Column FieldName="SEDurationMs" Title="SE" AllowAutoFilter="False" MaxWidth="50" CellHorizontalContentAlignment="Right" Visible="False"/>
+                <xcdg:Column FieldName="QueryText" Title="Query"  AllowSort="False" AllowGroup="False" CellContentTemplate="{StaticResource qryTemplate}" />
+            </xcdg:DataGridControl.Columns>
+        </xcdg:DataGridControl>
     </Grid>
 </UserControl>
