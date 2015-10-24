@@ -268,10 +268,6 @@
       <HintPath>..\..\packages\Xceed.Wpf.Controls.5.7.15466.10150\lib\net40\Xceed.Wpf.Controls.v5.7.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid.v5.7, Version=5.7.15466.10150, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.DataGrid.5.7.15466.10150\lib\net40\Xceed.Wpf.DataGrid.v5.7.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Xceed.Wpf.Themes">
       <HintPath>..\..\packages\Xceed.Wpf.Themes.2.6.15111.10510\lib\net40\Xceed.Wpf.Themes.dll</HintPath>
     </Reference>
@@ -303,7 +299,6 @@
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
-    <Compile Include="Behaviours\InitialColumnFilterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\TextBoxEx.cs" />
@@ -315,6 +310,7 @@
     <Compile Include="Converters\BoolToThicknessConverter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converters\CappedRowHeightConverter.cs" />
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
@@ -369,6 +365,7 @@
     <Compile Include="Events\TraceWatcherToggleEvent.cs" />
     <Compile Include="Events\UpdateEditorOptions.cs" />
     <Compile Include="Events\UpdateTimerTextEvent.cs" />
+    <Compile Include="MarkupExtensions\NinjaBinding.cs" />
     <Compile Include="Model\DaxFile.cs" />
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Enums\DocumentState.cs" />
@@ -965,6 +962,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\DaxStudio_x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\QueryHistory\filter.png" />
+    <Resource Include="Images\QueryHistory\filtered.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\QueryHistory\filter_trans.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\QueryHistory\filtered_trans.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

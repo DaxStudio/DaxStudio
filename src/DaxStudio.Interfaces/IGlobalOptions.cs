@@ -14,7 +14,8 @@ namespace DaxStudio.Interfaces
         string EditorFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
 
-        int MaxQueryHistory { get; set; }
+        int QueryHistoryMaxItems { get; set; }
+        bool QueryHistoryShowTraceColumns { get; set; }
         bool ProxyUseSystem { get; set; }
         string ProxyAddress { get; set; }
         string ProxyUser { get; set; }

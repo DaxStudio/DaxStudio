@@ -11,6 +11,9 @@ namespace DaxStudio.UI.Events
 {
     public class QueryHistoryEvent:IQueryHistoryEvent
     {
+        private double _lineHeight = 18;
+        private double _padding = 3;
+
         [JsonConstructor]
         public QueryHistoryEvent( string queryText
         , DateTime startTime
@@ -23,6 +26,7 @@ namespace DaxStudio.UI.Events
         , string fileName)
         {
             QueryText = queryText.Trim();
+            QueryTextLines = QueryText.Split('\n').Count();
             StartTime = startTime;
             ClientDurationMs = clientDurationMs;
             ServerDurationMs = serverDurationMs;
@@ -50,7 +54,20 @@ namespace DaxStudio.UI.Events
         public string DatabaseName { get; private set; }
         public string FileName { get; private set; }
         public int RowCount { get; set; }
+        [JsonIgnore]
         public QueryStatus Status { get; set; }
+        [JsonIgnore]
+        public double QueryTextLines { get; private set; }
+        public double QueryTextHeight { get { 
+            if (QueryTextLines > 3) {
+                return 3 * _lineHeight + _padding;
+            }
+            else
+            {
+                return QueryTextLines * _lineHeight + _padding;
+            }
+        }
+        }
 
     }
 }

@@ -136,6 +136,7 @@ namespace DaxStudio.UI.Utils
                     case ',':
                     case ';':
                     case ' ':
+                    case '\t':
                         if (daxState.LineState != LineState.String 
                             && daxState.LineState != LineState.Table 
                             && daxState.LineState != LineState.TableDelimiter
@@ -246,6 +247,7 @@ namespace DaxStudio.UI.Utils
                     case ';':
                     case '.':
                     case ' ':
+                    case '\t':
                         if (!inStr && !inTab && !inCol) { word = ""; pos = i + 1; }
                         else word += c;
                         break;

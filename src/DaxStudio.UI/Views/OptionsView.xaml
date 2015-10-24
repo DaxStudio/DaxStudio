@@ -36,64 +36,64 @@
 			Grid.Column="0"/>
 		<!-- Editor -->
         <WrapPanel Grid.Row="1">
-            <GroupBox Header="Editor" Grid.Row="1" Margin="0,0,10,0" MinWidth="300" Foreground="{StaticResource DaxStudioBrush}">
-	<Grid Margin="5,5,0,0">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="*"/>
-		</Grid.ColumnDefinitions>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+        <GroupBox Header="Editor" Grid.Row="1" Margin="0,0,10,0" MinWidth="300" Foreground="{StaticResource DaxStudioBrush}">
+	    <Grid Margin="5,5,0,0">
+		    <Grid.ColumnDefinitions>
+			    <ColumnDefinition Width="Auto"/>
+			    <ColumnDefinition Width="*"/>
+		    </Grid.ColumnDefinitions>
+		    <Grid.RowDefinitions>
+			    <RowDefinition Height="Auto"/>
+			    <RowDefinition Height="Auto"/>
+			    <RowDefinition Height="Auto"/>
+			    <RowDefinition Height="Auto"/>
+			    <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
 
-		</Grid.RowDefinitions>
-		<Label Grid.Row="3" Grid.Column="0" Content="Show Line Numbers"/>
-		<CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" />
-		<Label Grid.Row="4" Grid.Column="0" Content="Font Family"/>
-		<ComboBox x:Name="EditorFontFamily" Grid.Row="4" Grid.Column="1"
-			xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			ItemTemplate="{DynamicResource FontTemplate}"
-            SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-            IsSynchronizedWithCurrentItem="True"
-            VerticalContentAlignment="Center"      >
-    <ComboBox.Resources>
+		    </Grid.RowDefinitions>
+		    <Label Grid.Row="3" Grid.Column="0" Content="Show Line Numbers"/>
+		    <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" />
+		    <Label Grid.Row="4" Grid.Column="0" Content="Font Family"/>
+		    <ComboBox x:Name="EditorFontFamily" Grid.Row="4" Grid.Column="1"
+			    xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			    ItemTemplate="{DynamicResource FontTemplate}"
+                SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                IsSynchronizedWithCurrentItem="True"
+                VerticalContentAlignment="Center"      >
+                <ComboBox.Resources>
 
-        <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
-            <CollectionViewSource.SortDescriptions>
-                <ComponentModel:SortDescription PropertyName="Source" />
-            </CollectionViewSource.SortDescriptions>
-        </CollectionViewSource>
+                    <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                        <CollectionViewSource.SortDescriptions>
+                            <ComponentModel:SortDescription PropertyName="Source" />
+                        </CollectionViewSource.SortDescriptions>
+                    </CollectionViewSource>
 
-        <Style x:Key="FontStyle">
-            <Setter Property="Control.FontFamily" Value="{Binding Source}" />
-            <Setter Property="Control.FontSize" Value="14" />
-        </Style>
+                    <Style x:Key="FontStyle">
+                        <Setter Property="Control.FontFamily" Value="{Binding Source}" />
+                        <Setter Property="Control.FontSize" Value="14" />
+                    </Style>
 
-        <DataTemplate x:Key="FontTemplate">
-            <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
-                <TextBlock Style="{StaticResource FontStyle}"
-                           Text="{Binding Source}"
-                           ToolTip="{Binding Source}" />
-            </StackPanel>
-        </DataTemplate>
+                    <DataTemplate x:Key="FontTemplate">
+                        <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
+                            <TextBlock Style="{StaticResource FontStyle}"
+                                       Text="{Binding Source}"
+                                       ToolTip="{Binding Source}" />
+                        </StackPanel>
+                    </DataTemplate>
 
-    </ComboBox.Resources>
+                </ComboBox.Resources>
 
-    <ComboBox.ItemsSource>
-        <Binding Source="{StaticResource myFonts}" />
-    </ComboBox.ItemsSource>
-		</ComboBox>
-		<Label Grid.Row="5" Grid.Column="0" Content="Font Size"/>
-                    <xctk:DoubleUpDown Grid.Row="5" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
-		<!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
-                    <Label Grid.Row="6" Grid.Column="0" Content="Enable Intellisense"/>
-                    <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center"/>
-                </Grid>		
+                <ComboBox.ItemsSource>
+                    <Binding Source="{StaticResource myFonts}" />
+                </ComboBox.ItemsSource>
+		    </ComboBox>
+		    <Label Grid.Row="5" Grid.Column="0" Content="Font Size"/>
+            <xctk:DoubleUpDown Grid.Row="5" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+		    <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
+             <Label Grid.Row="6" Grid.Column="0" Content="Enable Intellisense"/>
+                <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
+            </Grid>		
 		</GroupBox>
             <GroupBox Header="Proxy" MinWidth="300" Foreground="{StaticResource DaxStudioBrush}">
                 <Grid Margin="5,5,0,0">
@@ -113,16 +113,38 @@
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Use System Proxy"/>
                     <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center"/>
-                    <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" />
-                    <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding IsChecked, ElementName=ProxyUseSystem}" Watermark="eg. http://myproxy.com:8080" />
-                    <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:"/>
-                    <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding IsChecked, ElementName=ProxyUseSystem}"/>
-                    <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:"/>
-                    <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding IsChecked, ElementName=ProxyUseSystem}">
+                    <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" />
+                    <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" />
+                    <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
+                    <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
+                    <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}">
                         <i:Interaction.Behaviors>
                             <beh:PasswordBoxBindingBehavior SecurePassword="{Binding ProxySecurePassword}"/>
                         </i:Interaction.Behaviors>
                     </PasswordBox>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Query History" Foreground="{StaticResource DaxStudioBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:"/>
+                    <xctk:IntegerUpDown x:Name="QueryHistoryMaxItems" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="500" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:"/>
+                    <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                 </Grid>
             </GroupBox>
         </WrapPanel>

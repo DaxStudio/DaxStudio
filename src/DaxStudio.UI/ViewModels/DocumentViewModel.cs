@@ -109,9 +109,9 @@ namespace DaxStudio.UI.ViewModels
 
             var globalHistory = IoC.Get<GlobalQueryHistory>();
             //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
-            //QueryHistoryPane = qryHistFactory(globalHistory, _eventAggregator, this);
-            QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this);
-
+            QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this, _options);
+            //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
+            
             Document = new TextDocument();
             FindReplaceDialog = new FindReplaceDialogViewModel(this.GetEditor());
             _logger = LogManager.GetLog(typeof (DocumentViewModel));

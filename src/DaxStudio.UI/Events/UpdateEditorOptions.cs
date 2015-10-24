@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Events
 {
-    public class UpdateEditorOptions
+    public class UpdateGlobalOptions
     {
     }
 }

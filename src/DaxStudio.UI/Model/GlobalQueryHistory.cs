@@ -48,7 +48,7 @@ namespace DaxStudio.UI.Model
                 Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
                 DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
                 var fileList = d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
-                List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.MaxQueryHistory);
+                List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
                 foreach (var fileInfo in fileList)
                 {
                     using (StreamReader file = File.OpenText(fileInfo.FullName))
@@ -66,7 +66,7 @@ namespace DaxStudio.UI.Model
         public void Handle(QueryHistoryEvent message)
         {
             QueryHistory.Add(message);
-            while (QueryHistory.Count > _globalOptions.MaxQueryHistory)
+            while (QueryHistory.Count > _globalOptions.QueryHistoryMaxItems)
             {
                 QueryHistory.RemoveAt(0);
             }
@@ -84,7 +84,7 @@ namespace DaxStudio.UI.Model
             foreach (var fi in new DirectoryInfo(_queryHistoryPath)
                 .GetFiles()
                 .OrderByDescending(x => x.LastWriteTime)
-                .Skip(_globalOptions.MaxQueryHistory))
+                .Skip(_globalOptions.QueryHistoryMaxItems))
                 fi.Delete();
         }
 

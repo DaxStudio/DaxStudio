@@ -25,6 +25,7 @@ namespace DaxStudio.UI.ViewModels
         private string _proxyPassword;
         private SecureString _proxySecurePassword;
         private int _maxQueryHistory;
+        private bool _queryHistoryShowTraceColumns;
         private IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
@@ -39,7 +40,8 @@ namespace DaxStudio.UI.ViewModels
             ProxyAddress = RegistryHelper.GetValue<string>("ProxyAddress", "");
             ProxyUser = RegistryHelper.GetValue<string>("ProxyUser", "");
             ProxyPassword = RegistryHelper.GetValue<string>("ProxyPassword", "").Decrypt();
-            MaxQueryHistory = RegistryHelper.GetValue<int>("MaxQueryHistory", 200);
+            QueryHistoryMaxItems = RegistryHelper.GetValue<int>("QueryHistoryMaxItems", 200);
+            QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -47,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_selectedFontFamily == value) return;
                 _selectedFontFamily = value;
                 NotifyOfPropertyChange(() => EditorFontFamily);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("EditorFontFamily", value);
             } 
         }
@@ -56,7 +58,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_fontSize == value) return;
                 _fontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("EditorFontSize", value);
             } 
         }
@@ -66,7 +68,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_showLineNumbers == value) return;
                 _showLineNumbers = value;
                 NotifyOfPropertyChange(() => EditorShowLineNumbers);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("EditorShowLineNumbers", value);
             }
         }
@@ -78,7 +80,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_enableIntellisense == value) return;
                 _enableIntellisense = value;
                 NotifyOfPropertyChange(() => EditorEnableIntellisense);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("EditorEnableIntellisense", value);
             }
         }
@@ -93,9 +95,15 @@ namespace DaxStudio.UI.ViewModels
                 if (_proxyUseSystem == value) return;
                 _proxyUseSystem = value;
                 NotifyOfPropertyChange(() => ProxyUseSystem);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                NotifyOfPropertyChange(() => ProxyDontUseSystem);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ProxyUseSystem", value);
             }
+        }
+
+        public bool ProxyDontUseSystem
+        {
+            get { return !_proxyUseSystem; }
         }
 
         public string ProxyAddress
@@ -106,7 +114,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_proxyAddress == value) return;
                 _proxyAddress = value;
                 NotifyOfPropertyChange(() => ProxyAddress);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyAddress", value);
             }
         }
@@ -119,7 +127,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_proxyUser == value) return;
                 _proxyUser = value;
                 NotifyOfPropertyChange(() => ProxyUser);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyUser", value);
             }
         }
@@ -132,7 +140,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_proxyPassword == value) return;
                 _proxyPassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyPassword", value.Encrypt());
             }
         }
@@ -145,7 +153,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_proxySecurePassword == value) return;
                 _proxySecurePassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyPassword", value.GetInsecureString().Encrypt());
             }
         }
@@ -155,14 +163,29 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        public int MaxQueryHistory { get { return _maxQueryHistory; }
+        public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
             set
             {
                 if (_maxQueryHistory == value) return;
                 _maxQueryHistory = value;
-                NotifyOfPropertyChange(() => MaxQueryHistory);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateEditorOptions());
-                RegistryHelper.SetValueAsync<int>("MaxQueryHistory", value);
+                NotifyOfPropertyChange(() => QueryHistoryMaxItems);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>("QueryHistoryMaxItems", value);
+            }
+
+        }
+
+
+        public bool QueryHistoryShowTraceColumns
+        {
+            get { return _queryHistoryShowTraceColumns; }
+            set
+            {
+                if (_queryHistoryShowTraceColumns == value) return;
+                _queryHistoryShowTraceColumns = value;
+                NotifyOfPropertyChange(() => QueryHistoryShowTraceColumns);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("QueryHistoryShowTraceColumns", value);
             }
 
         }

@@ -30,7 +30,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
         , IHandle<OpenRecentFileEvent>
-        , IHandle<UpdateEditorOptions>
+        , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
     {
         private readonly IWindowManager _windowManager;
@@ -219,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateEditorOptions message)
+        public void Handle(UpdateGlobalOptions message)
         {
             foreach (var itm in this.Items)
             {

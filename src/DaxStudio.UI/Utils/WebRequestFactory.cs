@@ -1,4 +1,6 @@
-﻿using DaxStudio.Interfaces;
+﻿using Caliburn.Micro;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -35,11 +37,13 @@ namespace DaxStudio.UI.Utils
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
 
         private bool _isNetworkOnline = false;
+        private IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
-        public WebRequestFactory(IGlobalOptions globalOptions)
+        public WebRequestFactory(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             _globalOptions = globalOptions;
+            _eventAggregator = eventAggregator;
 
             NetworkChange.NetworkAvailabilityChanged 
                 += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
@@ -96,22 +100,36 @@ namespace DaxStudio.UI.Utils
         {
             if (_proxy != null) return _proxy;
 
-            if (_globalOptions.ProxyUseSystem)
+            if (_globalOptions.ProxyUseSystem || _globalOptions.ProxyAddress.Length == 0)
             {
-                _proxy = System.Net.WebRequest.GetSystemWebProxy();
-                if (RequiresProxyCredentials(_proxy))
-                    _proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                UseSystemProxy();
             }
             else
             {
-                _proxy = new WebProxy(_globalOptions.ProxyAddress);
-                _proxy.Credentials = new NetworkCredential(
-                                            _globalOptions.ProxyUser, 
-                                            _globalOptions.ProxySecurePassword.ConvertToUnsecureString());
+                try
+                {
+                    _proxy = new WebProxy(_globalOptions.ProxyAddress);
+                    _proxy.Credentials = new NetworkCredential(
+                                                _globalOptions.ProxyUser,
+                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString());
+                }
+                catch (Exception ex)
+                {
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
+                    Log.Error("{class} {method} {message} {stacktrace}", "WebRequestFactory", "GetProxy", ex.Message, ex.StackTrace );
+                    UseSystemProxy();
+                }
             }
-            //((WebProxy)_proxy).
+            
             Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri)).AbsolutePath);
             return _proxy;
+        }
+
+        private void UseSystemProxy()
+        {
+            _proxy = System.Net.WebRequest.GetSystemWebProxy();
+            if (RequiresProxyCredentials(_proxy))
+                _proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
         }
 
         private static bool RequiresProxyCredentials(IWebProxy proxy)

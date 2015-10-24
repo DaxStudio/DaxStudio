@@ -79,6 +79,7 @@ namespace DaxStudio.ExcelAddin
                 if (!_client.HasExited)
                 {
                     SetForegroundWindow(_client.MainWindowHandle);
+                    _client.StandardInput.Write("ExcelAddinClosing");
                     _client.CloseMainWindow();
                 }
             }

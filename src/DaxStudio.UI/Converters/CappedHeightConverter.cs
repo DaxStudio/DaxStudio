@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.Converters
 {
@@ -11,6 +12,7 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+
             var maxHeight = Double.Parse(parameter.ToString());
             var actHeight = (Double)value;
             if (actHeight > maxHeight)

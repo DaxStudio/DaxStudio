@@ -43,7 +43,7 @@ namespace DaxStudio.Standalone
                 var app = new Application();
                 // then load Caliburn Micro bootstrapper
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
-
+                
                 app.Run();
             }
             catch (Exception ex)
