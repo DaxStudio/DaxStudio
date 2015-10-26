@@ -1417,7 +1417,10 @@ namespace DaxStudio.UI.ViewModels
                                      ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType)
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     cnn.IsPowerPivot = message.PowerPivotModeSelected;
-
+                    if (message.PowerBIFileName.Length > 0)
+                    {
+                        cnn.PowerBIFileName = message.PowerBIFileName;
+                    }
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => {

@@ -73,16 +73,18 @@ namespace DaxStudio.ExcelAddin
             // stop the web host
             WebHost.Stop();
 
+            // TODO - need to find a way to only shut down the UI if 
+            //        Dax Studio was launched from Excel
+
             // tell the DaxStudio.exe client to shutdown
-            if (_client != null)
-            {
-                if (!_client.HasExited)
-                {
-                    SetForegroundWindow(_client.MainWindowHandle);
-                    _client.StandardInput.Write("ExcelAddinClosing");
-                    _client.CloseMainWindow();
-                }
-            }
+            //if (_client != null)
+            //{
+            //    if (!_client.HasExited)
+            //    {
+            //        SetForegroundWindow(_client.MainWindowHandle);
+            //        _client.CloseMainWindow();
+            //    }
+            //}
 
         }
 

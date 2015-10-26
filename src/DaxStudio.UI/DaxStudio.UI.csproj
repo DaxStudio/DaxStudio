@@ -316,7 +316,6 @@
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
-    <Compile Include="Converters\FormattedTimeConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
     <Compile Include="Converters\NegativeColourConverter.cs" />

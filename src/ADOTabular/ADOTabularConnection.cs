@@ -72,6 +72,7 @@ namespace ADOTabular
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
+            
             get
             {
                 //_adomdConn.UnderlyingConnection.Databases
@@ -100,7 +101,8 @@ namespace ADOTabular
         public void Open()
         {
             _adomdConn.Open();
-            _currentDatabase = _adomdConn.Database;
+            
+            ChangeDatabase(_adomdConn.Database);
         }
 
  /*       public void Open(string connectionString)
@@ -117,7 +119,16 @@ namespace ADOTabular
             {
                 _adomdConn.Open();
             }
-            _adomdConn.ChangeDatabase(database);
+            //if (PowerBIFileName != string.Empty)
+            //{
+            //    _currentDatabase = PowerBIFileName;
+            //    ADOTabularDatabase db = Database;
+            //    _adomdConn.ChangeDatabase(db.Id);
+            //}
+            //else
+            //{
+                _adomdConn.ChangeDatabase(database);
+            //}
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
 
@@ -536,7 +547,7 @@ namespace ADOTabular
             
         }
 
-
+        
         public bool IsPowerPivot {get; set;}
 
         // BeginQueryAsync
@@ -553,6 +564,9 @@ namespace ADOTabular
         }
         */
         // QueryComplete
+
+        private string _powerBIFileName = string.Empty;
+        public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
         internal class DaxColumn {
             public string OriginalName;

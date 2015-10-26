@@ -119,6 +119,10 @@ namespace ADOTabular
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
+                                    //if (_adoTabConn.PowerBIFileName != string.Empty)
+                                    //{
+                                    //    name = _adoTabConn.PowerBIFileName;
+                                    //}
                                     _databaseDictionary.Add(name, new DatabaseDetails { Name = name, Id = id, LastUpdate = DateTime.Parse(lastUpdate) });
                                     break;
                                 }
@@ -154,8 +158,13 @@ namespace ADOTabular
         {
             foreach (DataRow dr in GetDatabaseTable().Rows)
             {
-                //yield return new ADOTabularDatabase(_adoTabConn, dr["CATALOG_NAME"].ToString());//, dr);
-                yield return dr["CATALOG_NAME"].ToString();//, dr);
+                //if (_adoTabConn.PowerBIFileName != string.Empty) {
+                //    yield return _adoTabConn.PowerBIFileName;
+                //}
+                //else {
+                    //yield return new ADOTabularDatabase(_adoTabConn, dr["CATALOG_NAME"].ToString());//, dr);
+                    yield return dr["CATALOG_NAME"].ToString();//, dr);
+                //}
             }
         }
 

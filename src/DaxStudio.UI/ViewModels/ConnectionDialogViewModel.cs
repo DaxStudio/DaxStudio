@@ -408,7 +408,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
                 }
-                _eventAggregator.PublishOnUIThread(new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType)));
+                var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),"");
+                if (PowerBIModeSelected)
+                {
+                    connEvent.PowerBIFileName = SelectedPowerBIInstance.Name;
+                }
+                _eventAggregator.PublishOnUIThread(connEvent);
             }
             catch (Exception ex)
             {
