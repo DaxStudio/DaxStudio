@@ -12,15 +12,15 @@ namespace DaxStudio.Standalone
         public static ILogger log;
         static EntryPoint()
         {
-            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+//            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
             
-            //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
-#if DEBUG
-            Serilog.Debugging.SelfLog.Out =  Console.Out;
-#endif
-            Log.Logger = log;
-            Log.Information("============ DaxStudio Startup =============");
-            //AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+//            //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
+//#if DEBUG
+//            Serilog.Debugging.SelfLog.Out =  Console.Out;
+//#endif
+//            Log.Logger = log;
+//            Log.Information("============ DaxStudio Startup =============");
+//            //AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
             
         }
 
@@ -43,7 +43,19 @@ namespace DaxStudio.Standalone
                 var app = new Application();
                 // then load Caliburn Micro bootstrapper
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
-                
+
+
+                log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+
+                //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
+#if DEBUG
+                Serilog.Debugging.SelfLog.Out = Console.Out;
+#endif
+                Log.Logger = log;
+                Log.Information("============ DaxStudio Startup =============");
+                //AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+
+
                 app.Run();
             }
             catch (Exception ex)

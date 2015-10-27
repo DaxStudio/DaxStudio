@@ -12,6 +12,7 @@ using Serilog;
 using Serilog.Configuration;
 using Serilog.Formatting.Display;
 using Serilog.Formatting.Raw;
+using System.ComponentModel.Composition;
 
 namespace DaxStudio.UI.Utils
 {
@@ -31,6 +32,7 @@ namespace DaxStudio.UI.Utils
             
         }
 
+        [Import]
         public IEventAggregator EventAggregator { get; private set; }
 
         public void Emit(LogEvent logEvent)

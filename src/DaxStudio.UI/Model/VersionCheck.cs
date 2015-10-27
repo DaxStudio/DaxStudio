@@ -23,6 +23,7 @@ namespace DaxStudio.UI.Model
         
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
+        private WebRequestFactory _webRequestFactory;
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
         /// </summary>
@@ -33,10 +34,10 @@ namespace DaxStudio.UI.Model
         /// </summary>
         /// <param name="eventAggregator">A reference to the event aggregator so we can publish an event when a new version is found.</param>
         [ImportingConstructor]
-        public VersionCheck(IEventAggregator eventAggregator)
+        public VersionCheck(IEventAggregator eventAggregator, WebRequestFactory webRequestFactory)
         {
             _eventAggregator = eventAggregator;
-
+            _webRequestFactory = webRequestFactory;
             if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
                 worker.DoWork += new DoWorkEventHandler(worker_DoWork);
@@ -130,7 +131,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(() => VersionStatus);
                 try
                 {
-                    PopulateServerVersionFromGithub();
+                    PopulateServerVersionFromGithub(_webRequestFactory);
                 }
                 catch (Exception ex)
                 {
@@ -185,9 +186,9 @@ namespace DaxStudio.UI.Model
         //}
 
 
-        private void PopulateServerVersionFromGithub()
+        private void PopulateServerVersionFromGithub(WebRequestFactory wrf)
         {
-            var wrf = IoC.Get<WebRequestFactory>();
+            
             using (System.Net.WebClient http = wrf.CreateWebClient())
             {
                 
