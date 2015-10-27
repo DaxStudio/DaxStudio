@@ -5,7 +5,7 @@ namespace ADOTabular
     public class ADOTabularDatabase
     {
         private readonly ADOTabularConnection _adoTabConn;
-        private readonly string _databaseName;
+        private string _databaseName;
         private readonly string _databaseId;
         private ADOTabularModelCollection _modelColl;
         private DateTime? _lastUpdate = null;
@@ -38,6 +38,7 @@ namespace ADOTabular
         public string Name
         {
             get { return _databaseName; }
+            //get { return _adoTabConn.PowerBIFileName == string.Empty? _databaseName: _adoTabConn.PowerBIFileName; }
         }
 
         public ADOTabularModelCollection Models

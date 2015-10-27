@@ -14,7 +14,22 @@ namespace DaxStudio.UI.Utils
         public PowerBIInstance(string name, int port)
         {
             Port = port;
-            Name = name.Substring(0, name.IndexOf(" - Power BI Des"));  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
+            try
+            {
+                var dashPos = name.LastIndexOf(" - ");
+                if (dashPos >= 0)
+                { Name = name.Substring(0, dashPos); }  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
+                else
+                {
+                    Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", "Unable to find ' - ' in Power BI title", dashPos);
+                    Name = name; 
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "PowerBIInstance", "ctor", ex.Message, ex.StackTrace);
+                Name = name;
+            }
         }
         public int Port { get; private set; }
         public string Name { get; private set; }
@@ -68,6 +83,7 @@ namespace DaxStudio.UI.Utils
                             var portFile = string.Format("{0}\\msmdsrv.port.txt", msmdsrvPath);
                             if (System.IO.File.Exists(portFile))
                             {
+                                Log.Verbose("{class} {method} {message}", "PowerBIHelper", "Refresh", "port.txt found");
                                 string sPort = System.IO.File.ReadAllText(portFile, Encoding.Unicode);
                                 var port = int.Parse(sPort);
                                 _port = port;
@@ -76,10 +92,14 @@ namespace DaxStudio.UI.Utils
                                 Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
                                 continue;
                             }
+                            else
+                            {
+                                Log.Verbose("{class} {method} {message}", "PowerBIHelper", "Refresh", "no port.txt file found");
+                            }
                         }
                         catch (Exception ex)
                         {
-                            Log.Error("{class} {Method} {Error}", "PowerBIHelper", "Refresh", ex.Message);
+                            Log.Error("{class} {Method} {Error} {StackTrace}", "PowerBIHelper", "Refresh", ex.Message, ex.StackTrace);
                         }
                     }
                 }
@@ -94,13 +114,6 @@ namespace DaxStudio.UI.Utils
                 return _instances;
             }
         }
-
-        //public static int Port { 
-        //    get {
-        //        if (!_portSet) { Refresh();}
-        //        return _port;
-        //    }
-        //}
 
         #region PInvoke calls to get the window title of a minimize window
 

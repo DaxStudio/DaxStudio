@@ -9,11 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Serilog;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.ExcelAddin
 {
     
-    public partial class DaxStudioRibbon
+    public partial class DaxStudioRibbon :IDaxStudioLauncher
     {
         private Process _client;
         private int _port;
@@ -37,13 +38,16 @@ namespace DaxStudio.ExcelAddin
         
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
+            Launch();
+        }
 
-                
+        public void Launch()
+        {
             // Find free port and start the web host
             _port = WebHost.Start();
 
             //todo - can I search for DaxStudio.exe and set _client if found (would need to send it a message with the port number) ??
-            
+
             // activate DAX Studio if it's already running
             if (_client != null)
             {
@@ -53,7 +57,7 @@ namespace DaxStudio.ExcelAddin
                     return;
                 }
             }
-            
+
             var path = "";
             // look for daxstudio.exe in the same folder as daxstudio.dll
             path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
@@ -61,7 +65,6 @@ namespace DaxStudio.ExcelAddin
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process
             _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
-            
         }
 
 
@@ -70,15 +73,18 @@ namespace DaxStudio.ExcelAddin
             // stop the web host
             WebHost.Stop();
 
+            // TODO - need to find a way to only shut down the UI if 
+            //        Dax Studio was launched from Excel
+
             // tell the DaxStudio.exe client to shutdown
-            if (_client != null)
-            {
-                if (!_client.HasExited)
-                {
-                    SetForegroundWindow(_client.MainWindowHandle);
-                    _client.CloseMainWindow();
-                }
-            }
+            //if (_client != null)
+            //{
+            //    if (!_client.HasExited)
+            //    {
+            //        SetForegroundWindow(_client.MainWindowHandle);
+            //        _client.CloseMainWindow();
+            //    }
+            //}
 
         }
 

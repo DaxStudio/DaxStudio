@@ -93,12 +93,15 @@
     <Compile Include="IConnection.cs" />
     <Compile Include="IDaxStudioProxy.cs" />
     <Compile Include="IDaxStudioHost.cs" />
+    <Compile Include="IGlobalOptions.cs" />
     <Compile Include="IQueryRunner.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
+    <Compile Include="ISaveable.cs" />
     <Compile Include="IStatusBarMessage.cs" />
     <Compile Include="IVersionCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IStaticQueryResult.cs" />
+    <Compile Include="IQueryHistoryEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">

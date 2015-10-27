@@ -6,13 +6,14 @@ using Microsoft.Office.Tools.Ribbon;
 using Microsoft.Owin.Hosting;
 using Serilog;
 using DaxStudio.ExcelAddin;
+using Caliburn.Micro;
 
 namespace DaxStudio.ExcelAddin
 {
     public partial class ThisAddIn
     {
         private static bool _inShutdown ;
-
+        private static DaxStudioLauncher _launcher;
         public ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
         { 
@@ -40,7 +41,7 @@ namespace DaxStudio.ExcelAddin
         {
             try
             {
-                Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name);
+                Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name, args.RequestingAssembly);
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
                 if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
                 {
@@ -64,6 +65,7 @@ namespace DaxStudio.ExcelAddin
                 if (!_inShutdown)
                 {
                     Log.Error("{class} {method} {args_Name} {ex_Message}","ThisAddIn","currentDomain_AssemblyResolve",args.Name,ex.Message + "\n" + ex.StackTrace);
+                    
                     MessageBox.Show(
                         string.Format("Problem during AssemblyResolve in Dax Studio\r\nFor Assembly {0} :\r\n{1}\r\n{2} "
                             , args.Name
@@ -105,5 +107,12 @@ namespace DaxStudio.ExcelAddin
         }
         
         #endregion
+
+        protected override object RequestComAddInAutomationService()
+        {
+            if (_launcher == null)
+                _launcher = new DaxStudioLauncher(this._ribbon);
+            return _launcher;
+        }
     }
 }

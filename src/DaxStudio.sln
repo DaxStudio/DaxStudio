@@ -1,12 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E04330FA-13D0-4B47-BE99-31B788340C09}"
 	ProjectSection(SolutionItems) = preProject
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		CurrentReleaseVersion.json = CurrentReleaseVersion.json
+		Performance1.psess = Performance1.psess
 		setup-build-env.ps1 = setup-build-env.ps1
 	EndProjectSection
 EndProject
@@ -26,6 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Interfaces", "Dax
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Standalone", "DaxStudio.Standalone\DaxStudio.Standalone.csproj", "{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}"
 	ProjectSection(ProjectDependencies) = postProject
+		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443} = {C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}
 		{EE4788C1-DCA6-465F-8049-28CEACE6586F} = {EE4788C1-DCA6-465F-8049-28CEACE6586F}
 	EndProjectSection
 EndProject
@@ -185,5 +187,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

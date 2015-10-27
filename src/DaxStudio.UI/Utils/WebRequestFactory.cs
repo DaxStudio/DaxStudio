@@ -1,0 +1,158 @@
+﻿using Caliburn.Micro;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DaxStudio.UI.Utils
+{
+    [Export]
+    public class WebRequestFactory
+    {
+        [DllImport("wininet.dll")]
+        private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
+ 
+        // private variables
+        private readonly IGlobalOptions _globalOptions;
+        private IWebProxy _proxy;
+
+        // Urls
+        public const string DaxFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
+        public const string DaxFormatVerboseUri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
+
+        //private const string CURRENT_CODEPLEX_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
+#if DEBUG
+        public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
+#else
+        public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
+#endif
+        //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
+
+        private bool _isNetworkOnline = false;
+        private IEventAggregator _eventAggregator;
+
+        [ImportingConstructor]
+        public WebRequestFactory(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        {
+            _globalOptions = globalOptions;
+            _eventAggregator = eventAggregator;
+
+            NetworkChange.NetworkAvailabilityChanged 
+                += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+            try
+            {
+                int connDesc;
+                _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
+            }
+            catch
+            {
+                _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
+            }
+
+            //todo - how to check that this works with different proxies...??
+            try
+            {
+                _proxy = GetProxy(DaxFormatUri);
+            }
+            catch (System.Net.WebException)
+            {
+                _isNetworkOnline = false;
+            }
+        }
+
+        // ...
+        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            _isNetworkOnline = e.IsAvailable;
+            // refresh proxy
+            _proxy = GetProxy(DaxFormatUri);
+        }
+
+        public HttpWebRequest Create(string uri)
+        {
+            return Create(new Uri(uri));
+        }
+
+        public HttpWebRequest Create(Uri uri) {
+            var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(uri);
+            wr.Proxy = _proxy;
+            return wr;
+        }
+
+        public WebClient CreateWebClient()
+        {
+            var wc = new WebClient();
+            wc.Proxy = _proxy;
+            return wc;
+        }
+
+        #region private methods
+
+        private IWebProxy GetProxy(string uri)
+        {
+            if (_proxy != null) return _proxy;
+
+            if (_globalOptions.ProxyUseSystem || _globalOptions.ProxyAddress.Length == 0)
+            {
+                UseSystemProxy();
+            }
+            else
+            {
+                try
+                {
+                    _proxy = new WebProxy(_globalOptions.ProxyAddress);
+                    _proxy.Credentials = new NetworkCredential(
+                                                _globalOptions.ProxyUser,
+                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString());
+                }
+                catch (Exception ex)
+                {
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
+                    Log.Error("{class} {method} {message} {stacktrace}", "WebRequestFactory", "GetProxy", ex.Message, ex.StackTrace );
+                    UseSystemProxy();
+                }
+            }
+            
+            Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri)).AbsolutePath);
+            return _proxy;
+        }
+
+        private void UseSystemProxy()
+        {
+            _proxy = System.Net.WebRequest.GetSystemWebProxy();
+            if (RequiresProxyCredentials(_proxy))
+                _proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+        }
+
+        private static bool RequiresProxyCredentials(IWebProxy proxy)
+        {
+            try {
+                var wr = WebRequest.CreateHttp(CurrentGithubVersionUrl);
+                wr.Proxy = proxy;
+                var resp = wr.GetResponse();
+                
+                return false;
+            }
+            catch (System.Net.WebException wex)
+            {
+                if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                {
+                    return true;
+                }
+                throw;
+            }
+        }
+
+        
+        #endregion
+
+    }
+}

@@ -25,6 +25,7 @@
         >
     <!--Fluent:MetroColors.ThemeColorKey="#FF0072C6"-->
     <Fluent:RibbonWindow.Resources>
+        
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Generic.xaml" />
@@ -37,6 +38,9 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
+            <SolidColorBrush x:Key="BusyBrush" Color="#30000000" />
 
             <!--
             <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
@@ -76,7 +80,31 @@
                 </StackPanel>
             </Border>
         </DataTemplate>-->
+
+            <Style x:Key="BlurEffect" TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsOverlayVisible}" Value="True">
+                        <Setter Property="BitmapEffect">
+                            <Setter.Value>
+                                <BlurBitmapEffect Radius="5"/>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                    
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="BitmapEffect">
+                            <Setter.Value>
+
+                                <BlurBitmapEffect Radius="5"/>
+
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
+        
+        
     </Fluent:RibbonWindow.Resources>
     
     <i:Interaction.Triggers>
@@ -189,9 +217,10 @@
         </local:InputBindingTrigger>
         
     </i:Interaction.Triggers>
-
-    <Grid x:Name="LayoutRoot"
-          Margin="0,0,0,-2">
+    <Grid>
+        <Grid x:Name="LayoutRoot"
+              Margin="0,0,0,-2" >
+              <!--="{StaticResource BlurEffect}"-->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -206,8 +235,27 @@
                         Grid.Row="2"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Bottom"/>
-        
-        
-    </Grid>
+<!--
+            <Grid.BitmapEffect>
+                <BlurBitmapEffect Radius="10"/>
+            </Grid.BitmapEffect>
+    -->        
 
+        </Grid>
+        <Border HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch" 
+                Grid.RowSpan="3"
+                Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Background="{DynamicResource BusyBrush}" Opacity="0.7"
+                >
+            <!--
+        <Border.BitmapEffect>
+            <BlurBitmapEffect Radius="10"/>
+        </Border.BitmapEffect>
+        <Border.Background>
+            <VisualBrush  Visual="{Binding ElementName=LayoutRoot}" Stretch="None" />
+        </Border.Background>
+        -->
+    </Border>
+    </Grid>
 </Fluent:RibbonWindow>

@@ -13,21 +13,12 @@
              d:DesignHeight="137" d:DesignWidth="654">
     <UserControl.Resources>
         <ResourceDictionary>
+
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         
-        
-<!--
-        <conv:ResourceLookupConverter x:Key="OutputIcons">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Grid" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-table@96ppi.png"/>
-                <BitmapImage x:Key="Timer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timer@96ppi.png"/>
-                <BitmapImage x:Key="Static" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excelstatic@96ppi.png"/>
-                <BitmapImage x:Key="Linked" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excellinked@96ppi.png"/>
-            </ResourceDictionary>
-        </conv:ResourceLookupConverter>
--->
         <conv:ResourceLookupConverter x:Key="TraceIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
@@ -60,6 +51,28 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+        
+        <DataTemplate x:Key="RunStyleTemplate">
+            <Border
+                BorderThickness="4"
+                BorderBrush="Transparent" 
+                ToolTip="{Binding Tooltip}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image VerticalAlignment="Top"
+                        Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
+                        Stretch="None" 
+                        Width="32" Height="32" />
+                        <TextBlock Text="{Binding Name}"
+                        TextWrapping="Wrap"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center" 
+                        TextAlignment="Center"
+                        />
+
+                    </StackPanel>
+                </Border>
+        </DataTemplate>
+            
         </ResourceDictionary>
     </UserControl.Resources>
             
@@ -76,25 +89,20 @@
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" />
                     </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                
+                </Fluent:ToggleButton>               
                 
             </DataTemplate>
 
             <Style x:Key="TabButton" TargetType="Fluent:Button">
                 <Setter Property="Foreground" Value="White"></Setter>
             </Style>
-            <!--
-            <Style x:Key="BackstageTabButton">
-                <Setter Property="Margin" Value="50"></Setter>
-            </Style>
-            -->
+            
         </Fluent:Ribbon.Resources>
 
         <!--Backstage-->
         <Fluent:Ribbon.Menu>
             
-            <Fluent:Backstage >
+            <Fluent:Backstage x:Name="Backstage">
                 <Fluent:BackstageTabControl>
 
                     <!-- File New -->
@@ -115,13 +123,24 @@
                     <Fluent:BackstageTabItem Header="Open"  >
                         
                         <!-- Right-side content here -->
-                        <Grid>
+                        <Grid Margin="35,25,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200" />
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
+                                       Foreground="{StaticResource DaxStudioBrush}"
+                                       Margin="5,0,0,0"
+                                       FontWeight="ExtraLight"
+                                       />
+                            
+                            <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
                                 <Border>
+                                    <!-- style comes from ribbon control -->
                                     <Fluent:Button Style="{DynamicResource ButtonBackstageStyle}" 
                                            BorderBrush="DimGray"  
                                            BorderThickness="1" 
@@ -131,18 +150,48 @@
                                            Height="100" Width="100" Foreground="Black">
                                            
                                         <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Click">
-                                        <cal:ActionMessage MethodName="Open">
-                                        </cal:ActionMessage>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="Open">
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                             </Fluent:Button>
                                 </Border>
-
                             </StackPanel>
-                            <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1">
-                                <Label FontSize="14" Foreground="DimGray" FontWeight="Bold">Select a Document</Label>
-                                
+                            
+                            <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1" Grid.Row="1">
+                                <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
+                                <ListView x:Name="RecentFiles" 
+                                          DataContext="{Binding}" 
+                                          ItemsSource="{Binding Path=Ribbon.RecentFiles}" 
+                                          MinWidth="600"
+                                          BorderBrush="Transparent" >
+                                    <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                            <cal:ActionMessage MethodName="OpenRecentFile">
+                                                <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                <cal:Parameter Value="{Binding ElementName=Backstage}"/>
+                                            </cal:ActionMessage>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                    
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Grid>
+                                                <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                       Margin="0,3,10,3" Width="32" Height="32" />
+                                                    <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                </Grid>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                                                    <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
                             </StackPanel>
                         </Grid> 
                     </Fluent:BackstageTabItem>
@@ -168,7 +217,10 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-
+                    <Fluent:BackstageTabItem Header="Options"  >
+                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />
+                    </Fluent:BackstageTabItem>
+                    
                     <Fluent:Button Name="btnExit" Header="Exit" Foreground="White">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
@@ -228,20 +280,30 @@
                               Edit,Edit
                               ">
             <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
-                <Fluent:Button Name="RunQuery"
+                <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
                                Icon="{StaticResource PlayIcon}"
                                LargeIcon="{StaticResource PlayIconLarger}"
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
-                    <Fluent:Button.ToolTip>
+                    <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="Run Query (F5)"
-                                          Text="Executes the query and sends the results to the selected output"
+                                          Text="{Binding Path=SelectedRunStyle.Tooltip}"
                                           DisableReason="{Binding RunQueryDisableReason}"
                                            ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
+                    </Fluent:SplitButton.ToolTip>
+                    <Fluent:Gallery
+                        ItemWidth="80"
+                        ItemHeight="80"
+                        MaxItemsInRow="1"
+                        ItemsSource="{Binding RunStyles}"
+                        SelectedItem="{Binding SelectedRunStyle}"
+                        ItemTemplate="{DynamicResource RunStyleTemplate}"
+                        >
+                       
+                    </Fluent:Gallery>
+                </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"
                                Header="Cancel"
                                cal:Message.Attach="[Event Click] = [Action CancelQuery()]"
@@ -678,48 +740,8 @@
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
             
-                
             
         </Fluent:RibbonTabItem>
-
-        <!-- ToMove Tab 
-        <Fluent:RibbonTabItem Header="ToMove">
-            <Fluent:RibbonGroupBox Header="Database" Margin="0,0,4,0">
-                <TextBlock Text="Database:" Padding="0,6,0,0"/>
-                <Fluent:ComboBox x:Name="Database" 
-                                 SelectedItem="{Binding SelectedDatabase}"
-                                 ItemsSource="{Binding Databases}"   
-                                 MinWidth="160" 
-                                 MaxWidth="250" 
-                                 IsEditable="False"
-                                 IsSynchronizedWithCurrentItem="True" 
-                                 IsEnabled="{Binding CanSelectDatabase}" 
-                                 Margin="0,8,8,0" ToolTip="{Binding SelectedDatabase}">
-                    <Fluent:ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                                <TextBlock Text="{Binding}" Margin="4,0" ></TextBlock>
-                            </StackPanel>
-                        </DataTemplate>
-                    </Fluent:ComboBox.ItemTemplate>
-                </Fluent:ComboBox>
-            </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Output" x:Name="OutputGroup" Visibility="{Binding OutputGroupIsVisible}" >
-                <TextBlock Text="Worksheet:" Padding="0,6,0,0"/>
-                <Fluent:ComboBox Name="cboOutputTo" 
-                                 Text="&lt;Output Sheet&gt;" 
-                                 MinWidth="120" MaxWidth="200" 
-                                 IsEditable="False" 
-                                 ItemsSource="{Binding Worksheets}" 
-                                 SelectedItem="{Binding SelectedWorksheet}"
-                                 Margin="0,8,8,0">
-
-                </Fluent:ComboBox>
-            </Fluent:RibbonGroupBox>
-        </Fluent:RibbonTabItem>
--->
-
 
         <!-- Quick Access Targets -->
         <Fluent:RibbonTabItem Visibility="Collapsed">

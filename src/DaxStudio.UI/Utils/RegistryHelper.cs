@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 //using ComboBox = System.Windows.Forms.ComboBox;
 using System;
+using DaxStudio.UI.Model;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI
 {
@@ -15,7 +17,8 @@ namespace DaxStudio.UI
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
         private const string REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME = "WindowPosition";
         private const string DefaultPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
-        
+        private const int MAX_MRU_SIZE = 25;
+
         public static ObservableCollection<string> GetServerMRUListFromRegistry()
         {
             return GetMRUListFromRegistry("Server");
@@ -26,14 +29,41 @@ namespace DaxStudio.UI
             SaveListToRegistry("Server", currentServer, servers);
         }
 
-        public static ObservableCollection<string> GetFileMRUListFromRegistry()
+        public static ObservableCollection<DaxFile> GetFileMRUListFromRegistry()
         {
-            return GetMRUListFromRegistry("File");
+            var lst = new ObservableCollection<DaxFile>();
+            foreach (var itm in  GetMRUListFromRegistry("File"))
+            {
+                lst.Add(new DaxFile(itm));
+            }
+            return lst;
         }
 
-        public static void SaveFileMRUListToRegistry(string currentServer, ObservableCollection<string> servers)
+        public static void SaveFileMRUListToRegistry( IEnumerable<object> files)
         {
-            SaveListToRegistry("File", currentServer, servers);
+            SaveListToRegistry("File","", files);
+        }
+
+        public static T GetValue<T>(string subKey, T defaultValue )
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            
+            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
+        }
+
+        public static T GetValue<T>(string subKey)
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            return (T)regDaxStudio.GetValue(subKey);
+        }
+
+        public static Task SetValueAsync<T>(string subKey, T value)
+        {
+            return Task.Run(()=>{
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
+                
+                regDaxStudio.SetValue(subKey, value);
+            });
         }
 
         internal static ObservableCollection<string> GetMRUListFromRegistry(string listName)
@@ -56,7 +86,7 @@ namespace DaxStudio.UI
 
 
 
-        internal static void SaveListToRegistry(string listName, string currentItem, ObservableCollection<string>itemList)
+        internal static void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
             var listKey = string.Format("{0}MRU", listName);
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
@@ -71,12 +101,19 @@ namespace DaxStudio.UI
                 {
                     int i = 1;
                     // set current item as item 1
-                    regListMRU.SetValue(string.Format("{0}{1}",listName, i), currentItem);
-                    foreach (string listItem in itemList)
+                    if (currentItem.ToString().Length > 0)
                     {
+                        regListMRU.SetValue(string.Format("{0}{1}", listName, i), currentItem);
                         i++;
-                        if (listItem == currentItem) continue;
-                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), listItem );
+                    }
+                    foreach (object listItem in itemList)
+                    {
+                        if (i > MAX_MRU_SIZE) break; // don't save more than the max mru size
+                        var str = listItem as string;
+                        if (str == null) str = listItem.ToString();
+                        if (string.Equals(str, currentItem.ToString(),StringComparison.CurrentCultureIgnoreCase)) continue;
+                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );
+                        i++;
                     }
                 }
             }

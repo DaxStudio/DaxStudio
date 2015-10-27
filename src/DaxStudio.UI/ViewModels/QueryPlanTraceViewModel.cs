@@ -111,7 +111,7 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
-            ProcessResults();
+            //ProcessResults();
         }
 
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 

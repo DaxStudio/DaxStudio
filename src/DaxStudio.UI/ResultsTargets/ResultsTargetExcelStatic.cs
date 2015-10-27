@@ -27,7 +27,7 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     try
                     {
@@ -50,7 +50,7 @@ namespace DaxStudio.UI.Model
                             runner.ActivateOutput();
                             runner.SetResultsMessage("Static results sent to Excel", OutputTargets.Static);
                             runner.QueryCompleted();
-                        });
+                        },TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {

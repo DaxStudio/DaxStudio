@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Events
 {
-    public enum DocumentState
+    public class UpdateGlobalOptions
     {
-        Loaded,
-        LoadPending,
-        New
     }
 }

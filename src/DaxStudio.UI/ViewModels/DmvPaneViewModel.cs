@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using ADOTabular;
 using Caliburn.Micro;
+using System.ComponentModel.Composition;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [PartCreationPolicy(CreationPolicy.NonShared)]
+    [Export]
     public class DmvPaneViewModel:ToolPaneBaseViewModel
     {
-
+        [ImportingConstructor]
         public DmvPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator)
             : base(connection, eventAggregator)
         {}

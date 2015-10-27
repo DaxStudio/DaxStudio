@@ -23,6 +23,7 @@
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
+            <conv:BooleanOrConverter x:Key="BooleanOrConverter" />
             
             <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/clear.png" />
             <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
@@ -44,7 +45,7 @@
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
             <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
-            
+
             <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
             <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
 
@@ -88,18 +89,19 @@
             </Storyboard>
 
 
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
+
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Margin="2 2 2 0" >
-        
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -162,15 +164,16 @@
                 </Style>
             </ComboBox.Style>
         </ComboBox>
-    
-        
+
+
         <!-- Tables -->
         <ctrl:TreeViewEx Grid.Row="2" x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                   Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+                  FocusManager.IsFocusScope="True"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
-                  dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]" 
+                  dd:DragDrop.DragHandler="{Binding}"                         
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"                   
                   Margin="0,2,0,-2">
             <i:Interaction.Behaviors>
                 <beh:TreeViewClipboardBehavior />
@@ -194,13 +197,15 @@
                     </StackPanel>
                 </HierarchicalDataTemplate>
 
-                
+
                 <!-- Column Template -->
-                <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}"
-                                          >
-                    <StackPanel Orientation="Horizontal" >
+                <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal"
+                                Tag="{Binding DataContext, ElementName=Tables}">
+                        
                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
-                        <TextBlock Text="{Binding Caption}">
+                        
+                        <TextBlock x:Name="Caption" Text="{Binding Caption}">
                             
                             <TextBlock.ToolTip>
                                 <StackPanel Orientation="Vertical" >
@@ -213,73 +218,109 @@
                                     </StackPanel>
                                     <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
                                 </StackPanel>
-                            </TextBlock.ToolTip>    
+                            </TextBlock.ToolTip>                                
                             
+                        </TextBlock>
+<!--
+                        <Popup PlacementTarget="{Binding ElementName=Caption}" Placement="Bottom" HorizontalOffset="15">
+                            <Popup.IsOpen>
+                                <MultiBinding Mode="OneWay" Converter="{StaticResource BooleanOrConverter}">
+                                    <Binding Mode="OneWay" ElementName="Caption" Path="IsMouseOver"/>
+                                    <Binding RelativeSource="{RelativeSource Self}" Path="IsMouseOver" />
+                                </MultiBinding>
+                            </Popup.IsOpen>
+                            <Border Background="Snow">
+                            <StackPanel Orientation="Vertical" >
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                    <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                </StackPanel>
+                                <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
+                                <TextBlock HorizontalAlignment="Right">
+                                    <Hyperlink>Show Stats</Hyperlink>
                                 </TextBlock>
+                            </StackPanel>
+                            </Border>
+                        </Popup>
+-->
+
+                        <StackPanel.ContextMenu>
+                            <ContextMenu 
+                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
+                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }">
+                                <MenuItem Header="Define Measure"
+                                          cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">                                   
+                                </MenuItem>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+                        
                     </StackPanel>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>
         </ctrl:TreeViewEx>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
-        <Border Style="{StaticResource ResourceKey=searchBox}" Grid.Row="1" x:Name="srchBox">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Image x:Name="SearchIcon" Grid.Column="0"> 
-                    <Image.Style>
-                        <Style TargetType="{x:Type Image}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasCriteria}" Value="false">
-                                    <Setter Property="Source" Value="{StaticResource Search}"/>
-                                </DataTrigger>
+            <Border Style="{StaticResource ResourceKey=searchBox}" Grid.Row="1" x:Name="srchBox">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="SearchIcon" Grid.Column="0">
+                        <Image.Style>
+                            <Style TargetType="{x:Type Image}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasCriteria}" Value="false">
+                                        <Setter Property="Source" Value="{StaticResource Search}"/>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding HasCriteria}" Value="true">
                                         <Setter Property="Source" Value="{StaticResource SearchActive}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                </Image>
-                <TextBox Grid.Column="1"
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <TextBox Grid.Column="1"
                          x:Name="CurrentCriteria"
                          Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged}"
                          Opacity="0"
                          Padding="2 2 24 0">
-                    <i:Interaction.Triggers>
-                        <trig:InputBindingTrigger>
-                            <trig:InputBindingTrigger.InputBinding>
-                                <KeyBinding Key="Escape"/>
-                            </trig:InputBindingTrigger.InputBinding>
-                            <cal:ActionMessage MethodName="ClearCriteria"/>
-                        </trig:InputBindingTrigger>
-                    </i:Interaction.Triggers>
-                    
-                </TextBox>
-                <Button Margin="5" Grid.Column="1" HorizontalAlignment="Right"
+                        <i:Interaction.Triggers>
+                            <trig:InputBindingTrigger>
+                                <trig:InputBindingTrigger.InputBinding>
+                                    <KeyBinding Key="Escape"/>
+                                </trig:InputBindingTrigger.InputBinding>
+                                <cal:ActionMessage MethodName="ClearCriteria"/>
+                            </trig:InputBindingTrigger>
+                        </i:Interaction.Triggers>
+
+                    </TextBox>
+                    <Button Margin="5" Grid.Column="1" HorizontalAlignment="Right"
                         Visibility="{Binding Path=HasCriteria, Converter={StaticResource BoolToVisibilityConverter}}"
                         BorderThickness="0"
                         Background="Transparent">
-                    <Image Source="{StaticResource Clear}" />
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="ClearCriteria" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Button>
+                        <Image Source="{StaticResource Clear}" />
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="ClearCriteria" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
 
-            </Grid>
-            <Border.Triggers>
-                
-                <EventTrigger RoutedEvent="Mouse.MouseEnter">
-                    <BeginStoryboard Storyboard="{StaticResource SearchIn}"/>
-                </EventTrigger>
-                <EventTrigger RoutedEvent="Mouse.MouseLeave" >
-                    <BeginStoryboard Storyboard="{StaticResource SearchOut}"/>
-                </EventTrigger>
-            </Border.Triggers>
-        </Border>
+                </Grid>
+                <Border.Triggers>
+
+                    <EventTrigger RoutedEvent="Mouse.MouseEnter">
+                        <BeginStoryboard Storyboard="{StaticResource SearchIn}"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Mouse.MouseLeave" >
+                        <BeginStoryboard Storyboard="{StaticResource SearchOut}"/>
+                    </EventTrigger>
+                </Border.Triggers>
+            </Border>
             <Border x:Name="SearchSpacer" 
                     BorderThickness="0" 
                     Height="1" 
@@ -288,6 +329,24 @@
                     Width="{Binding ElementName=Tables, Path=ScrollBarWidth}">
             </Border>
         </StackPanel>
-        
+
+
+        <!-- Busy overlay -->
+        <Border Grid.Row="2"
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+                Grid.RowSpan="3" Style="{StaticResource BusyPanel}">
+            <Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!--
+                    <Views:ucSpinner Foreground="White" Margin="0,0,10,0" />
+                    <TextBlock Margin="0" TextWrapping="Wrap" Text="Running Query..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#7E000000"/>
+                    -->
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">
+                        <TextBlock x:Name="BusyMessage"/>
+                    </Label>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

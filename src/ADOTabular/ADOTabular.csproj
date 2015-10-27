@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ADOTabular</RootNamespace>
     <AssemblyName>ADOTabular</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -111,6 +112,8 @@
     <Compile Include="AdomdClientWrappers\NamedSet.cs" />
     <Compile Include="AdomdClientWrappers\Position.cs" />
     <Compile Include="AdomdClientWrappers\Property.cs" />
+    <Compile Include="ADOTabularMeasureCollection.cs" />
+    <Compile Include="ADOTabularMeasure.cs" />
     <Compile Include="ADOTabularColumn.cs" />
     <Compile Include="ADOTabularKeywordCollection.cs" />
     <Compile Include="ADOTabularKpiComponent.cs" />

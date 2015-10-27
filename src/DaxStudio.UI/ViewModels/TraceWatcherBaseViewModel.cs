@@ -24,7 +24,8 @@ namespace DaxStudio.UI.ViewModels
         //, IHandle<QueryTraceCompletedEvent>
     {
         private List<DaxStudioTraceEventArgs> _events;
-        private readonly IEventAggregator _eventAggregator;
+        protected readonly IEventAggregator _eventAggregator;
+        private IQueryHistoryEvent _queryHistoryEvent;
 
         [ImportingConstructor]
         protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator)
@@ -188,10 +189,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         Timer _timeout;
-        
 
-        public void QueryCompleted(bool isCancelled)
+        public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
+
+        public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {
+            _queryHistoryEvent = queryHistoryEvent;
             if (isCancelled) return;
 
             // start timer, if timer elapses then print warning and set IsBusy = false

@@ -12,6 +12,7 @@ using System.Timers;
 using Caliburn.Micro;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.QueryTrace.Interfaces;
+using Serilog;
 
 namespace DaxStudio.QueryTrace
 {
@@ -20,11 +21,13 @@ namespace DaxStudio.QueryTrace
 #region public IQueryTrace interface
         public Task StartAsync()
         {
-            return Task.Factory.StartNew(() => Start());
+            Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "StartAsync", "entered");
+            return Task.Run(() => Start());
         }
 
         public void Stop()
         {
+            Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "Stop", "entered");
             Status = QueryTraceStatus.Stopping;
             if (_trace != null)
             {
@@ -37,6 +40,7 @@ namespace DaxStudio.QueryTrace
                 }
                 catch (Exception e)
                 {
+                    Log.Error("{class} {method} {message} {stacktrace}", "QueryTraceEngineExcel", "Stop", e.Message, e.StackTrace);
                     System.Diagnostics.Debug.WriteLine(e);
                 }
             }
@@ -282,6 +286,7 @@ namespace DaxStudio.QueryTrace
 
         public void Dispose()
         {
+            if (_trace == null) return;
             _trace.Dispose();
         }
     }

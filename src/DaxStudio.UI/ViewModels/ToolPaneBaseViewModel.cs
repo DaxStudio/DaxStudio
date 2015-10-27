@@ -9,8 +9,8 @@ using GongSolutions.Wpf.DragDrop;
 
 namespace DaxStudio.UI.ViewModels
 {
-    
-    public class ToolPaneBaseViewModel:ToolWindowBase, IDragSource
+
+    public class ToolPaneBaseViewModel : ToolWindowBase, IDragSource
     {
         private ADOTabularConnection _connection;
 
@@ -22,19 +22,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         protected IEventAggregator EventAggregator { get; set; }
-        
+
         public virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
 
         }
-        
+
         public bool IsConnected
         {
             get { return Connection != null; }
         }
 
-        public ADOTabularConnection Connection {
-            get { return _connection; } 
+        public ADOTabularConnection Connection
+        {
+            get { return _connection; }
             set
             {
                 if (_connection == null && value == null) return;
@@ -44,8 +45,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         protected virtual void OnConnectionChanged()
-        {}
-    
+        { }
+
         public void MouseDoubleClick(IADOTabularObject item)
         {
             if (item != null)
@@ -53,6 +54,24 @@ namespace DaxStudio.UI.ViewModels
                 var txt = item.DaxName;
                 EventAggregator.PublishOnUIThread(new SendTextToEditor(txt));
             }
+        }
+
+        //RRomano: Needed to set the TreeViewColumn as Public, if I do $dataContext.Column always sends NULL to DefineMeasure (Caliburn issue?)
+
+        public void DefineMeasure(TreeViewColumn item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            var column = (ADOTabularColumn)item.Column;
+
+            var measureName = string.Format("{0}[{1}]", column.Table.DaxName, column.Name);
+
+            var measureExpression = column.MeasureExpression;
+
+            EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
         }
 
         public IADOTabularObject SelectedItem { get; set; }
@@ -78,15 +97,15 @@ namespace DaxStudio.UI.ViewModels
 
 
         public void DragCancelled()
-        {  }
+        { }
 
         public void Dropped(IDropInfo dropInfo)
-        {  }
+        { }
 
         public bool CanStartDrag(IDragInfo dragInfo)
         {
             return true;
-//            throw new System.NotImplementedException();
+            //            throw new System.NotImplementedException();
         }
     }
 

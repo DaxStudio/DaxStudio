@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AnalysisServices;
+//using Microsoft.AnalysisServices;
 using Serilog;
 
 namespace DaxStudio.ExcelAddin.AmoWrapper
@@ -20,7 +20,7 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
         internal delegate void VoidDelegate();
         internal delegate T ReturnDelegate<T>();
 
-        Server _svr;
+        Microsoft.AnalysisServices.Server _svr;
         ExcelAmo.Microsoft.AnalysisServices.Server _xlSvr;
         AmoType _type;
 
@@ -29,12 +29,12 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
             _type = amoType;
             if (amoType == AmoType.AnalysisServices)
             {
-                Log.Verbose("{class} {method} {message}","AmoServer","<constructor>","Using Microsoft.AnalysisServices");
-                _svr = new Server();
+                Log.Debug("{class} {method} {message}","AmoServer","<constructor>","Using Microsoft.AnalysisServices");
+                _svr = new Microsoft.AnalysisServices.Server();
             }
             else
             {
-                Log.Verbose("{class} {method} {message}", "AmoServer", "<constructor>", "Using Microsoft.Excel.Amo");
+                Log.Debug("{class} {method} {message}", "AmoServer", "<constructor>", "Using Microsoft.Excel.Amo");
                 AmoServer.VoidDelegate f = delegate
                 {
                     _xlSvr = new ExcelAmo.Microsoft.AnalysisServices.Server();
@@ -62,22 +62,25 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
 
         }
 
-        public System.Xml.XmlReader SendXmlaRequest(Microsoft.AnalysisServices.XmlaRequestType requestType, System.IO.TextReader textReader)
+
+        public System.Xml.XmlReader SendXmlaRequest( System.IO.TextReader textReader)
         {
             if (_type == AmoType.AnalysisServices )
             {
-                return _svr.SendXmlaRequest(requestType, textReader);
+                //var rt = (Microsoft.AnalysisServices.XmlaRequestType)requestType;
+                return _svr.SendXmlaRequest(0, textReader);
             }
             else
             {
                 AmoServer.ReturnDelegate<System.Xml.XmlReader> f = delegate
                 {
-                    var req = (ExcelAmo.Microsoft.AnalysisServices.XmlaRequestType)requestType;
-                    return _xlSvr.SendXmlaRequest(req, textReader);
+                    //var req = (ExcelAmo.Microsoft.AnalysisServices.XmlaRequestType)requestType;
+                    return _xlSvr.SendXmlaRequest(0, textReader);
                 };
                 return f();
             }
 
         }
+
     }
 }

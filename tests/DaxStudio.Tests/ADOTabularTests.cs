@@ -212,6 +212,22 @@ namespace DaxStudio.Tests
             Assert.AreEqual(c.Databases.Count, dd.Count, "has 2 databases");
         }
 
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitorMeasures()
+        {
+            var c = new ADOTabularConnection(@"Data Source=.\sql2014tb", AdomdType.AnalysisServices);            
+            var v = new MetaDataVisitorCSDL(c);
+            var m = new ADOTabularModel(c, "AdventureWorks", "AdventureWorks", "Test AdventureWorks", "");            
+            var tabs = new ADOTabularTableCollection(c, m);
+
+            foreach (var table in tabs)
+            {
+                var measures = table.Measures;
+
+
+            }
+        }
         [TestMethod]
         public void TestColumnRenaming()
         {

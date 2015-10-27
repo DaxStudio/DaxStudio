@@ -182,10 +182,10 @@ namespace DaxStudio.UI.Utils
                 return;
             }
             // insert the current item when the right arrow is pressed
-            if (e.Key == Key.Right)
-            {
-                completionWindow.CompletionList.RequestInsertion(null);
-            }
+            //if (e.Key == Key.Right)
+            //{
+            //    completionWindow.CompletionList.RequestInsertion(null);
+            //}
         }
 
         void completionWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)

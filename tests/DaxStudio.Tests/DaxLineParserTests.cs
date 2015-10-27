@@ -91,7 +91,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
-        public void GetCompletionSegmentTestWithQuatedTableName()
+        public void GetCompletionSegmentTestWithQuotedTableName()
         {
             var dax = "evaluate filter('my table', 'my table'[column name";
             //                                                ^ 39
@@ -102,6 +102,17 @@ namespace DaxStudio.Tests
             Assert.AreEqual("my table", daxState.TableName);
         }
 
+        [TestMethod]
+        public void GetCompletionSegmentTestWithTabBeforeTableName()
+        {
+            var dax = "\t'table";
+            //               ^ 5
+            var daxState = DaxLineParser.ParseLine(dax, dax.Length - 1, 0);
+            Assert.AreEqual(LineState.Table, daxState.LineState);
+            Assert.AreEqual(2, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(dax.Length - 1, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual("table", daxState.TableName);
+        }
         [TestMethod]
         public void MultiLineParsing()
         {

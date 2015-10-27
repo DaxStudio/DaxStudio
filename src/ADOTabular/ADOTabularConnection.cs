@@ -31,6 +31,8 @@ namespace ADOTabular
         public event EventHandler ConnectionChanged;
         private AdomdConnection _adomdConn; 
         private readonly AdomdType _connectionType;
+        private string _currentDatabase;
+
         public ADOTabularConnection(string connectionString, AdomdType connectionType) 
             : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
         { }
@@ -70,23 +72,27 @@ namespace ADOTabular
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
+            
             get
             {
                 //_adomdConn.UnderlyingConnection.Databases
                 if (_adomdConn == null) return null;
                 if (_adomdConn.State != ConnectionState.Open)
                 {
-                    _adomdConn.Open();
+                    this.Open();
                 }
                 var dd = Databases.GetDatabaseDictionary(this.SPID);
-                if (!dd.ContainsKey(_adomdConn.Database))
+                //if (!dd.ContainsKey(_adomdConn.Database))
+                if (!dd.ContainsKey(_currentDatabase))
                 {
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
-                var db = dd[_adomdConn.Database];
+                //var db = dd[_adomdConn.Database];
+                var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
-                    _db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
+                    _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate);
+                    //_db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
                 }
                 return _db;
             }
@@ -95,24 +101,37 @@ namespace ADOTabular
         public void Open()
         {
             _adomdConn.Open();
+            
+            ChangeDatabase(_adomdConn.Database);
         }
 
-        public void Open(string connectionString)
+ /*       public void Open(string connectionString)
         {
             _adomdConn.Open(connectionString);
             if (ConnectionChanged!=null)
                 ConnectionChanged(this,new EventArgs());
         }
-
+        */
         public void ChangeDatabase(string database)
         {
+            _currentDatabase = database;
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            _adomdConn.ChangeDatabase(database);
+            //if (PowerBIFileName != string.Empty)
+            //{
+            //    _currentDatabase = PowerBIFileName;
+            //    ADOTabularDatabase db = Database;
+            //    _adomdConn.ChangeDatabase(db.Id);
+            //}
+            //else
+            //{
+                _adomdConn.ChangeDatabase(database);
+            //}
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
+
         }
 
         private bool _showHiddenObjects;
@@ -236,7 +255,7 @@ namespace ADOTabular
 
          public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
         {
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
                     return _adomdConn.GetSchemaDataSet(schemaName, null,true);
@@ -265,7 +284,7 @@ namespace ADOTabular
         public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
         {
             
-            return Task.Factory.StartNew(() =>
+            return Task.Run(() =>
                 {
                     if (_adomdConn.State != ConnectionState.Open)
                         _adomdConn.Open();
@@ -528,7 +547,7 @@ namespace ADOTabular
             
         }
 
-
+        
         public bool IsPowerPivot {get; set;}
 
         // BeginQueryAsync
@@ -545,6 +564,9 @@ namespace ADOTabular
         }
         */
         // QueryComplete
+
+        private string _powerBIFileName = string.Empty;
+        public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
         internal class DaxColumn {
             public string OriginalName;
@@ -651,6 +673,18 @@ namespace ADOTabular
             _adoTabDatabaseColl = null;
             _db = null;
             _adomdConn.RefreshMetadata();
+        }
+
+        public string ConnectionStringWithInitialCatalog {
+            get {
+                return string.Format("{0};Initial Catalog={1}", this.ConnectionString , _currentDatabase);
+            }
+        }
+
+        public ADOTabularConnection Clone()
+        {
+            
+            return new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
         }
     }
 

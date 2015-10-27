@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 
 namespace ADOTabular
 {
@@ -69,6 +70,24 @@ namespace ADOTabular
         public Type DataType { get; set; }
 
         public string DataTypeName { get { return DataType==null?"n/a":DataType.ToString().Replace("System.", ""); } }
+
+        //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
+        public string MeasureExpression
+        {
+            get
+            {
+                if (this.MetadataImage != MetadataImages.Measure)
+                {
+                    return null;
+                }
+
+                // Return the measure expression from the table measures dictionary (the measures are loaded and cached on the use of the Table.Measures property)
+
+                var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
+
+                return (measure != null ? measure.Expression : null);
+            }
+        }
 
         public MetadataImages MetadataImage
         {

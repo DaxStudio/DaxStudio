@@ -41,7 +41,7 @@ namespace DaxStudio.UI.ViewModels
     }
 
     public static class TraceStorageEngineExtensions {
-        const string searchGuid = @"_(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})";
+        const string searchGuid = @"([_-]\{?([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}?)";
         const string searchXmSqlSquareBracketsNoSpace = @"(?<!\.)\[([^\[^ ])*\]";
         const string searchXmSqlSquareBracketsWithSpace = @"(?<!\.)\[([^\[])*\]";
         const string searchXmSqlDotSeparator = @"\.\[";
@@ -153,6 +153,7 @@ namespace DaxStudio.UI.ViewModels
                     TotalDuration = traceEvent.Duration;
                     TotalCpuDuration = traceEvent.CpuTime;
                     //FormulaEngineDuration = traceEvent.CpuTime;
+                    
                 }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                 {
@@ -162,7 +163,14 @@ namespace DaxStudio.UI.ViewModels
             }
 
             FormulaEngineDuration = TotalDuration - StorageEngineDuration;
-            
+            if (QueryHistoryEvent != null)
+            {
+                QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
+                QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
+                QueryHistoryEvent.ServerDurationMs = TotalDuration;
+
+                _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
+            }
             Events.Clear();
             
             NotifyOfPropertyChange(() => StorageEngineEvents);

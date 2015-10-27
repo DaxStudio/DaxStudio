@@ -35,7 +35,8 @@ namespace DaxStudio.UI.ViewModels {
             _eventAggregator.Subscribe(this);
             Tabs = (DocumentTabViewModel) conductor;
             Tabs.ConductWith(this);
-            Tabs.CloseStrategy = new ApplicationCloseStrategy();
+            //Tabs.CloseStrategy = new ApplicationCloseStrategy();
+            Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             if (_host.CommandLineFileName != string.Empty)
             {
@@ -74,8 +75,9 @@ namespace DaxStudio.UI.ViewModels {
         {
             //Properties.Settings.Default.Save();
             base.TryClose(dialogResult);
-            if (dialogResult == true )
+            if (dialogResult != false )
             {
+                Ribbon.OnClose();
                 notifyIcon.Dispose();
             }
         }
@@ -130,6 +132,26 @@ namespace DaxStudio.UI.ViewModels {
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }
+
+        #region Overlay code
+        private int _overlayDependencies;
+        public void ShowOverlay()
+        {
+            _overlayDependencies++;
+            NotifyOfPropertyChange(() => IsOverlayVisible);
+        }
+
+        public void HideOverlay()
+        {
+            _overlayDependencies--;
+            NotifyOfPropertyChange(() => IsOverlayVisible);
+        }
+
+        public bool IsOverlayVisible
+        {
+            get { return _overlayDependencies > 0; }
+        }
+        #endregion
 
         #region Global Keyboard Hooks
         public void RunQuery()

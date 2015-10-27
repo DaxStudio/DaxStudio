@@ -44,7 +44,7 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Factory.StartNew(() => OutputResults(runner));
+            return Task.Run(() => OutputResults(runner));
         }
 
 

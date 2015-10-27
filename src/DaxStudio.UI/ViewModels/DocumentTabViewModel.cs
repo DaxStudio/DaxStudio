@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using DaxStudio.UI.Model;
 using Serilog;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Eums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -28,6 +29,8 @@ namespace DaxStudio.UI.ViewModels
     public class DocumentTabViewModel : Conductor<IScreen>.Collection.OneActive
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
+        , IHandle<OpenRecentFileEvent>
+        , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
     {
         private readonly IWindowManager _windowManager;
@@ -146,9 +149,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Open document 
                 var fileName = dlg.FileName;
+                _eventAggregator.PublishOnUIThread(new FileOpenedEvent(fileName));
                 NewQueryDocument(fileName);
             }
             
+        }
+
+        public void Handle(OpenRecentFileEvent message)
+        {
+            NewQueryDocument(message.FileName);
         }
 
         public void TabClosing(object sender, DocumentClosingEventArgs args)
@@ -161,6 +170,8 @@ namespace DaxStudio.UI.ViewModels
 
             doc.TryClose();     // TryClose and give the document a chance to block the close
         }
+
+
 
         /*
         public IEnumerable<IResult> DocumentClosing(DocumentViewModel document, DocumentClosingEventArgs e)
@@ -205,6 +216,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 ActivateItem(doc);
                 ActiveDocument = doc;
+            }
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            foreach (var itm in this.Items)
+            {
+                var doc = itm as DocumentViewModel;
+                doc.UpdateSettings();
             }
         }
     }

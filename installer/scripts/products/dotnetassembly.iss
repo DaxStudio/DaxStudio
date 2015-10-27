@@ -24,7 +24,7 @@ begin
         // comma after assembly name prevents partial matches
         if (Pos( assemblyName + ',', Names[J]) > 0) AND (Pos( 'version="' + versionString, Names[J]) > 0) then
         begin  
-            MsgBox( 'Found key: ' + Names[J], mbInformation ,MB_OK)
+            //MsgBox( 'Found key: ' + Names[J], mbInformation ,MB_OK)
             Result := True;
             exit;
         end;

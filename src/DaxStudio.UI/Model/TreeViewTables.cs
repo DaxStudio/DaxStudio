@@ -150,7 +150,7 @@ namespace DaxStudio.UI.Model
         }
     }
 
-    class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
+    public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
     {
     /*
     Hierarchy
@@ -218,6 +218,23 @@ namespace DaxStudio.UI.Model
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }
+
+        public bool IsMeasure
+        {
+            get
+            {
+                return this.MetadataImage == MetadataImages.Measure;
+            }
+        }
+
+        public IADOTabularObject Column
+        {
+            get
+            {
+                return this._column;
+            }
+        }
+
         public override bool IsCriteriaMatched(string criteria)
         {
             return String.IsNullOrEmpty(criteria) || Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0;

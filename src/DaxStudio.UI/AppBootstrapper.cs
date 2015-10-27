@@ -20,6 +20,7 @@ namespace DaxStudio.UI
     using Serilog;
     using System.Windows.Input;
     using DaxStudio.UI.Triggers;
+    using DaxStudio.UI.Utils;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -39,6 +40,7 @@ namespace DaxStudio.UI
 
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
+            AssemblyLoader.PreJitControls();
             base.DisplayRootViewFor<IShell>(null);
         }
 
@@ -74,6 +76,12 @@ namespace DaxStudio.UI
                     );
                 */
 
+                ConventionManager.AddElementConvention<Fluent.Spinner>(Fluent.Spinner.ValueProperty, "Value", "ValueChanged");
+                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
+                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.IntegerUpDown>(Xceed.Wpf.Toolkit.IntegerUpDown.ValueProperty, "Value", "ValueChanged");
+                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
+                
+
                 // Fixes the default datetime format in the results listview
                 // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
                 FrameworkElement.LanguageProperty.OverrideMetadata(
@@ -83,7 +91,8 @@ namespace DaxStudio.UI
 	            var catalog = new AggregateCatalog(
 	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
 	                );
-	            _container = new CompositionContainer(catalog);
+	            //_container = new CompositionContainer(catalog,true);
+                _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
 	            batch.AddExportedValue<IWindowManager>(new WindowManager());
