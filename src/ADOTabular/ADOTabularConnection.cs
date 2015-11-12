@@ -342,7 +342,31 @@ namespace ADOTabular
             _execReader.EndInvoke(result);
         }
 
-        
+        public DataTable ExecuteReader(string query, int maxRows)
+        {
+            _runningCommand = _adomdConn.CreateCommand();
+            _runningCommand.CommandType = CommandType.Text;
+            _runningCommand.CommandText = query;
+            var da = new AdomdDataAdapter(_runningCommand);
+            var dt = new DataTable("DAXResult");
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+            AdomdDataReader rdr = _runningCommand.ExecuteReader();
+            int iRow = 0;
+            dt.BeginLoadData();
+            while (rdr.Read())
+            {
+                DataRow dr = dt.NewRow();
+                rdr.GetValues(dr.ItemArray);
+                dt.ImportRow(dr);
+                //dt.LoadDataRow(rdr[iRow], LoadOption.OverwriteChanges);
+                iRow++;
+            }
+            dt.EndLoadData();
+            //while (rdr)
+            FixColumnNaming(dt);
+            _runningCommand = null;
+            return dt;
+        }
 
         public DataTable ExecuteDaxQueryDataTable(string query)
         {

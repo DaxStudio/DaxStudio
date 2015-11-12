@@ -280,11 +280,16 @@
                               Edit,Edit
                               ">
             <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
+                <!-- 
+                Icon="{StaticResource PlayIcon}"
+                               LargeIcon="{StaticResource PlayIconLarger}"
+                -->
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
-                               Icon="{StaticResource PlayIcon}"
-                               LargeIcon="{StaticResource PlayIconLarger}"
+                               Icon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIcons}}"
+                               LargeIcon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIconsLarger}}"
+                               
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:SplitButton.ToolTip>

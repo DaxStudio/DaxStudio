@@ -262,15 +262,21 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _databases = value;
-                _databasesView = CollectionViewSource.GetDefaultView(_databases) as ListCollectionView;
-                _databasesView.CustomSort = new DatabaseComparer();
+                var newList = _databases.Select(
+                    db => new DatabaseReference()
+                    {
+                        Name = db,
+                        Caption = Connection.PowerBIFileName.Length > 0 ? Connection.PowerBIFileName : db
+                    }).OrderBy(db => db.Name);
+                _databasesView = CollectionViewSource.GetDefaultView(newList) as ICollectionView;
+                //_databasesView.CustomSort = new DatabaseComparer();
                 NotifyOfPropertyChange(() => DatabasesView);
                 //NotifyOfPropertyChange(() => Databases);
             }
         }
         
-        private string _selectedDatabase;
-        public string SelectedDatabase
+        private DatabaseReference _selectedDatabase;
+        public DatabaseReference SelectedDatabase
         {
             get { return _selectedDatabase; }
             set
@@ -283,14 +289,14 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 _selectedDatabase = value;
-                ActiveDocument.SelectedDatabase = value;
+                ActiveDocument.SelectedDatabase = value.Name;
                 
                 if (Connection != null)
                 {
                     if (_selectedDatabase == null || !Connection.Database.Equals(_selectedDatabase))
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
-                        Connection.ChangeDatabase( _selectedDatabase);
+                        Connection.ChangeDatabase( _selectedDatabase.Name);
                         ModelList = Connection.Database.Models;
                     }
                 }
@@ -354,7 +360,7 @@ namespace DaxStudio.UI.ViewModels
             return ss;
         }
 
-        private ListCollectionView _databasesView;
+        private ICollectionView _databasesView;
         public ICollectionView DatabasesView
         {
             get { 
@@ -387,5 +393,9 @@ namespace DaxStudio.UI.ViewModels
     }
 
     
-
+    public class DatabaseReference
+    {
+        public string Name { get; set; }
+        public string Caption { get; set; }
+    }
 }
