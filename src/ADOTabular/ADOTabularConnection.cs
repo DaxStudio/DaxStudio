@@ -342,30 +342,41 @@ namespace ADOTabular
             _execReader.EndInvoke(result);
         }
 
-        public DataTable ExecuteReader(string query, int maxRows)
+        public AdomdDataReader ExecuteReader(string query)
+        {
+            return ExecuteReader(query, 0);
+        }
+        public AdomdDataReader ExecuteReader(string query, int maxRows)
         {
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = query;
-            var da = new AdomdDataAdapter(_runningCommand);
             var dt = new DataTable("DAXResult");
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
-            int iRow = 0;
-            dt.BeginLoadData();
-            while (rdr.Read())
-            {
-                DataRow dr = dt.NewRow();
-                rdr.GetValues(dr.ItemArray);
-                dt.ImportRow(dr);
-                //dt.LoadDataRow(rdr[iRow], LoadOption.OverwriteChanges);
-                iRow++;
-            }
-            dt.EndLoadData();
-            //while (rdr)
-            FixColumnNaming(dt);
-            _runningCommand = null;
-            return dt;
+            return rdr;
+            //int iRow = 0;
+            //dt.BeginLoadData();
+            //if (maxRows <= 0)
+            //{
+            //    dt.Load(rdr);
+            //}
+            //else
+            //{
+            //    while (rdr.Read())
+            //    {
+            //        DataRow dr = dt.NewRow();
+            //        rdr.GetValues(dr.ItemArray);
+            //        dt.ImportRow(dr);
+            //        //dt.LoadDataRow(rdr[iRow], LoadOption.OverwriteChanges);
+            //        iRow++;
+            //    }
+            //    dt.EndLoadData();
+            //}
+            ////while (rdr)
+            //FixColumnNaming(dt);
+            //_runningCommand = null;
+            //return dt;
         }
 
         public DataTable ExecuteDaxQueryDataTable(string query)
@@ -633,7 +644,7 @@ namespace ADOTabular
                     OriginalCaption = col.Caption,
                     OriginalName = col.ColumnName,
                     NewCaption = (removeCaption) ? "" : name,
-                    NewName = name.Replace(' ', '_'),
+                    NewName = name.Replace(' ', '`').Replace(',','`'),
                 };
                 newColumnNames.Add(dc);
                 //col.Caption = (removeCaption) ? "" : name;

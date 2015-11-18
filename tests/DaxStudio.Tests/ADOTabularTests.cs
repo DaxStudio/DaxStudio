@@ -237,11 +237,15 @@ namespace DaxStudio.Tests
             dt.Columns.Add("table2[Column1]");
             dt.Columns.Add("table1[Column2]");
             dt.Columns.Add("table2[Column3]");
+            dt.Columns.Add("table2[Column 4]");
+            dt.Columns.Add("table2[Column, 5]");
             ADOTabularConnection.FixColumnNaming(dt);
             Assert.AreEqual("table1[Column1]", dt.Columns[0].ColumnName );
             Assert.AreEqual("table2[Column1]",dt.Columns[1].ColumnName );
             Assert.AreEqual("Column2", dt.Columns[2].ColumnName);
             Assert.AreEqual("Column3", dt.Columns[3].ColumnName);
+            Assert.AreEqual("Column`4", dt.Columns[4].ColumnName,"spaces must be replaced with backticks");
+            Assert.AreEqual("Column``5", dt.Columns[5].ColumnName, "commas must be replaced with backticks");
         }
 
     }
