@@ -299,12 +299,12 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
-
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
                                     <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"
-                                                   Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" MinWidth="100" 
+                                                   Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2" MinWidth="100" 
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

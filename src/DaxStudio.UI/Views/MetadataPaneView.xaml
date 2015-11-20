@@ -110,6 +110,7 @@
         <!-- database Dropdown -->
         <ComboBox Grid.Row="0" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase}"
+            SelectedValuePath="Name"
             ItemsSource="{Binding DatabasesView}"   
             MinWidth="160" 
             Template="{DynamicResource MetroComboBoxControlTemplate}"
@@ -121,7 +122,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                        <TextBlock Text="{Binding}" Margin="4,0" ></TextBlock>
+                        <TextBlock Text="{Binding Path=Caption}" Margin="4,0" ></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
