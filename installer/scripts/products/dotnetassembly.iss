@@ -165,3 +165,85 @@ begin
     
   end;
 end;
+
+
+
+function GetAllAssemblyVersions(assemblyName: String): array of String;
+var
+  
+  J: Integer;
+  RegKey: string;
+  Names: TArrayOfString;
+//  ResultStr: AnsiString;
+  verStr: string;
+  verStart: Integer;
+  verEnd: Integer;
+  tmp: String;
+  maxVer: String;
+  len: Integer;
+begin
+  RegKey := '\Installer\Assemblies\Global';
+  
+  //found := False;
+  // for each version of Excel
+  //Result := '';
+  maxVer := '';
+  len := 0;
+
+  If  RegKeyExists(HKEY_CLASSES_ROOT, RegKey) then
+  begin  
+    if RegGetValueNames(HKEY_CLASSES_ROOT, RegKey, Names) then
+    begin
+
+      // loop through any disabled add-ins and delete
+      // any keys that reference Dax Studio
+      for J := 0 to GetArrayLength(Names)-1 do
+      begin
+        // comma after assembly name prevents partial matches
+        if (Pos( assemblyName + ',', Names[J]) > 0) then
+        begin  
+            verStart := Pos('version="',Names[J]);
+            tmp := Copy(Names[J],verStart+9,10000);
+            verEnd := Pos('"',tmp);
+            verStr := Copy(tmp,0,verEnd-1);
+
+            SetArrayLength(Result, len + 1);
+            Result[len] := verStr;
+            len := len + 1;
+
+        end;
+      end;
+    end;
+    
+  end;
+end;
+
+
+
+function GetMaxCommonSsasAssemblyVersionInternal(): String;
+var 
+  amo: array of String;
+  adomd: array of String;
+  amoLen: Integer;
+  adomdLen: Integer;
+  I: Integer;
+  J: Integer;
+begin
+
+  amo := GetAllAssemblyVersions('Microsoft.AnalysisServices');
+  adomd := GetAllAssemblyVersions('Microsoft.AnalysisServices.AdomdClient');
+
+  amoLen := GetArrayLength(amo);
+  adomdLen := GetArrayLength(adomd);
+  Result := '';
+  for I := 0 to amoLen - 1 do
+  begin
+    for J := 0 to amoLen - 1 do
+    begin
+      if (amo[I] = adomd[J]) then
+      begin
+        Result := amo[I];
+      end;
+    end;
+  end;
+end;

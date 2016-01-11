@@ -11,9 +11,20 @@ namespace ADOTabular
 {
     public class DatabaseDetails
     {
-        public string Name {get;set;}
-        public string Id {get;set;}
-        public DateTime LastUpdate {get;set;}
+        public DatabaseDetails(string name, string id, string lastUpdate)
+        {
+            Name = name;
+            Id = id;
+            DateTime lastUpdatedDate = new DateTime(1900,1,1);
+            DateTime.TryParse(lastUpdate, out lastUpdatedDate);
+            LastUpdate = lastUpdatedDate; 
+        }
+
+        public DatabaseDetails(string name, string lastUpdate) : this(name, string.Empty, lastUpdate) { }
+        
+        public string Name {get;private set;}
+        public string Id {get;private set;}
+        public DateTime LastUpdate {get;private set;}
     }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
@@ -62,11 +73,10 @@ namespace ADOTabular
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
-                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails()
-                {
-                    Name = row["CATALOG_NAME"].ToString(),
-                    LastUpdate = DateTime.Parse(row["DATE_MODIFIED"].ToString())
-                });
+                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
+                    row["CATALOG_NAME"].ToString(),
+                    row["DATE_MODIFIED"].ToString()
+                ));
             }
             return _databaseDictionary;
         }
@@ -119,11 +129,7 @@ namespace ADOTabular
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    //if (_adoTabConn.PowerBIFileName != string.Empty)
-                                    //{
-                                    //    name = _adoTabConn.PowerBIFileName;
-                                    //}
-                                    _databaseDictionary.Add(name, new DatabaseDetails { Name = name, Id = id, LastUpdate = DateTime.Parse(lastUpdate) });
+                                    _databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate));
                                     break;
                                 }
 

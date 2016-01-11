@@ -1841,6 +1841,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Connection == null) return false;
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName ))
                 {
+                    Log.Error("{class} {method} {message} ", "DocumentViewModel", "HasDatabaseSchemaChanged", "Connection is not open");
                     OutputError(string.Format("Error Connecting to server: {0}", ServerName));
                     ServerName = string.Empty; // clear the server name so that we don't throw this error again
                     ActivateOutput();
@@ -1858,6 +1859,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "HasDatabaseSchemaChanged", ex.Message, ex.StackTrace);
                 OutputError(string.Format("Error Connecting to server: {0}", ex.Message));
                 ServerName = string.Empty; // clear the server name so that we don't throw this error again
                 ActivateOutput();
