@@ -133,37 +133,62 @@ begin
   Result := '';
   maxVer := '';
 
+  Log('Entering GetMaxAssemblyVersion()');
+
   If  RegKeyExists(HKEY_CLASSES_ROOT, RegKey) then
   begin  
+    Log('  Found RegKey : \Installer\Assemblies\Global' );
     if RegGetValueNames(HKEY_CLASSES_ROOT, RegKey, Names) then
     begin
+      Log('  Processing Array of Values ');
+      if  (GetArrayLength(Names) > 0) then
+        begin
+          // loop through any disabled add-ins and delete
+          // any keys that reference Dax Studio
+          
+          for J := 0 to GetArrayLength(Names)-1 do
+          begin
 
-      // loop through any disabled add-ins and delete
-      // any keys that reference Dax Studio
-      for J := 0 to GetArrayLength(Names)-1 do
-      begin
-        // comma after assembly name prevents partial matches
-        if (Pos( assemblyName + ',', Names[J]) > 0) then
-        begin  
-            verStart := Pos('version="',Names[J]);
-            tmp := Copy(Names[J],verStart+9,10000);
-            verEnd := Pos('"',tmp);
-            verStr := Copy(tmp,0,verEnd-1)
+            // comma after assembly name prevents partial matches
+            if (Pos( assemblyName + ',', Names[J]) > 0) then
+            begin  
+                try
+                  verStart := Pos('version="',Names[J]);
+                  if (verStart > 0) then
+                  begin
+                    tmp := Copy(Names[J],verStart+9,10000);
+                    verEnd := Pos('"',tmp);
+                    if (verEnd > 0) then
+                    begin
+                      verStr := Copy(tmp,0,verEnd-1)
 
-            if (CompareAssemblyVersion(verStr, maxVer) > 0) then
-            begin
-              maxVer:=verStr;
-              //MsgBox('new max',mbInformation,MB_OK);
-            end;
-
-            //MsgBox( 'Found key: ' + Names[J] + ' version= ' + verStr, mbInformation ,MB_OK);
-            Result := maxVer;
-            //exit;
-        end;
+                      Log( '    Found key: ' + Names[J] + ' version= ' + verStr);
+                      
+                      if (CompareAssemblyVersion(verStr, maxVer) > 0) then
+                      begin
+                        maxVer:=verStr;
+                        Log('    GetMaxAssemblyVersion: New max ' + verStr);
+                      end;
+                      
+                      Result := maxVer;
+                      //exit;
+                    end; // verEnd > 0
+                  end; // verStart > 0
+                except
+                    // Catch the exception, show it, and continue
+                    ShowExceptionMessage;
+                end; // end try
+            end; // if (Pos( assemblyName + ',', Names[J]) > 0) then
+          end; // for loop
+        end
+      else begin
+         Log('    No keys found under \\HKEY_CLASSES_ROOT\Installer\Assemblies\Global');
       end;
     end;
     
   end;
+
+  Log('Exiting GetMaxAssemblyVersion()');
 end;
 
 
@@ -174,7 +199,6 @@ var
   J: Integer;
   RegKey: string;
   Names: TArrayOfString;
-//  ResultStr: AnsiString;
   verStr: string;
   verStart: Integer;
   verEnd: Integer;
@@ -183,6 +207,7 @@ var
   len: Integer;
 begin
   RegKey := '\Installer\Assemblies\Global';
+  Log('Start: GetMaxAssemblyVersion(''' + assemblyName + ''')');
   
   //found := False;
   // for each version of Excel
@@ -194,28 +219,37 @@ begin
   begin  
     if RegGetValueNames(HKEY_CLASSES_ROOT, RegKey, Names) then
     begin
+      Log('  Processing Array of Values ');
+      if  (GetArrayLength(Names) > 0) then
+        begin
+        // loop through any disabled add-ins and delete
+        // any keys that reference Dax Studio
+        for J := 0 to GetArrayLength(Names)-1 do
+        begin
+          //Log('    Processing: ' + Names[J]);
+          // comma after assembly name prevents partial matches
+          if (Pos( assemblyName + ',', Names[J]) > 0) then
+          begin  
+              verStart := Pos('version="',Names[J]);
+              if (verStart) > 0 then
+              begin
+                tmp := Copy(Names[J],verStart+9,10000);
+                verEnd := Pos('"',tmp);
+                verStr := Copy(tmp,0,verEnd-1);
 
-      // loop through any disabled add-ins and delete
-      // any keys that reference Dax Studio
-      for J := 0 to GetArrayLength(Names)-1 do
-      begin
-        // comma after assembly name prevents partial matches
-        if (Pos( assemblyName + ',', Names[J]) > 0) then
-        begin  
-            verStart := Pos('version="',Names[J]);
-            tmp := Copy(Names[J],verStart+9,10000);
-            verEnd := Pos('"',tmp);
-            verStr := Copy(tmp,0,verEnd-1);
+                Log( '    Found key: ' + Names[J] + ' version= ' + verStr);
 
-            SetArrayLength(Result, len + 1);
-            Result[len] := verStr;
-            len := len + 1;
-
-        end;
-      end;
-    end;
+                SetArrayLength(Result, len + 1);
+                Result[len] := verStr;
+                len := len + 1;
+              end; // end If verStart > 0
+          end;  // end if Pos ','
+        end;  // For J
+      end; // end If GetArrayLength(Names) > 0
+    end; // end If GetRegValueNames()
     
-  end;
+  end; // end If regKeyExists
+  Log('End: GetMaxAssemblyVersion(''' + assemblyName + ''')');
 end;
 
 
@@ -229,7 +263,7 @@ var
   I: Integer;
   J: Integer;
 begin
-
+  Log('Start: GetMaxAssemblyVersionInternal()');
   amo := GetAllAssemblyVersions('Microsoft.AnalysisServices');
   adomd := GetAllAssemblyVersions('Microsoft.AnalysisServices.AdomdClient');
 
@@ -238,7 +272,7 @@ begin
   Result := '';
   for I := 0 to amoLen - 1 do
   begin
-    for J := 0 to amoLen - 1 do
+    for J := 0 to adomdLen - 1 do
     begin
       if (amo[I] = adomd[J]) then
       begin
@@ -246,4 +280,5 @@ begin
       end;
     end;
   end;
+  Log('End: GetMaxAssemblyVersionInternal() Result=' + Result );
 end;

@@ -250,13 +250,26 @@ end;
 
 function InitializeSetup(): boolean;
 begin
-
+                     
   // clear DaxStudio from Excel Add-ins hard disabled items
-  CleanDisabledItems();
+  try 
+    Log('Clearing Disabled items from Excel Add-in registry location');
+    CleanDisabledItems();
+  except
+    // Catch the exception, show it, and continue
+    ShowExceptionMessage;
+  end;
 
 	//init windows version
-	initwinversion();
+	try 
+    Log('Checking Windows Version');
+    initwinversion();
+  except
+    // Catch the exception, show it, and continue
+    ShowExceptionMessage;
+  end;
 
+  Log('Checking the maximum SSAS assembly versions');
   maxCommonSsasAssemblyVersion := GetMaxCommonSsasAssemblyVersionInternal();
 
 //  msgbox(GetMaxCommonSsasAssemblyVersion(), mbInformation,MB_OK);
@@ -336,13 +349,15 @@ begin
 	wic();
 #endif
 
-	// if no .netfx 4.0 is found, install the client (smallest)
+// if no .netfx 4.0 is found, install the client (smallest)
 #ifdef use_dotnetfx40
+  Log('Checking if .Net 4.0 is installed');
 	if (not netfxinstalled(NetFx40Client, '') and not netfxinstalled(NetFx40Full, '')) then
 		dotnetfx40client();
 #endif
 
 #ifdef use_dotnetfx45
+    Log('Checking if .Net 4.5 is installed');
     //dotnetfx45(2); // min allowed version is .netfx 4.5.2
     dotnetfx45(0); // min allowed version is .netfx 4.5.0
 #endif
@@ -352,10 +367,12 @@ begin
 #endif
 
 #ifdef use_sql2012sp1adomdclient
+  Log('Checking for AdomdClient');
 	sql2012sp1adomdclient();
 #endif
 
 #ifdef use_sql2012sp1amo
+  Log('Checking for AMO');
 	sql2012sp1amo();
 #endif
 
