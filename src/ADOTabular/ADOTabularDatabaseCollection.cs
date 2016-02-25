@@ -24,7 +24,7 @@ namespace ADOTabular
         
         public string Name {get;private set;}
         public string Id {get;private set;}
-        public DateTime LastUpdate {get;private set;}
+        public DateTime LastUpdate {get; set;}
     }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
@@ -56,19 +56,52 @@ namespace ADOTabular
         }
         public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
-            if (refresh) _databaseDictionary = null;
-            if (_databaseDictionary != null) return _databaseDictionary;
+            //if (refresh) _databaseDictionary = null;
+            if (_databaseDictionary != null && !refresh) return _databaseDictionary;
 
+            Dictionary<string,DatabaseDetails> tmpDatabaseDict;
             if (spid != -1)
-                _databaseDictionary = GetDatabaseDictionaryFromXML();
+                tmpDatabaseDict = GetDatabaseDictionaryFromXML();
             else
-                _databaseDictionary = GetDatabaseDictionaryFromDMV();
+                tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
+
+            if (_databaseDictionary == null) _databaseDictionary = tmpDatabaseDict;
+            else MergeDatabaseDictionaries(tmpDatabaseDict);
+
             return _databaseDictionary;
+        }
+
+        private void MergeDatabaseDictionaries(Dictionary<string, DatabaseDetails> tmpDatabaseDict)
+        {
+            // Update the lastUpdated datetime
+            foreach (var dbName in tmpDatabaseDict.Keys)
+            {
+                if (_databaseDictionary.ContainsKey(dbName)) {
+                    _databaseDictionary[dbName].LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
+                } else
+                {
+                    _databaseDictionary.Add(dbName, tmpDatabaseDict[dbName]);
+                }
+            }
+
+            //Delete databases no longer in the list
+            List<string> keysToRemove = new List<string>();
+            foreach(var dbName in  _databaseDictionary.Keys)
+            {
+                if (!tmpDatabaseDict.ContainsKey(dbName ))
+                {
+                   keysToRemove.Add(dbName);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                _databaseDictionary.Remove(key);
+            }
         }
 
         private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-
             _databaseDictionary = new Dictionary<string, DatabaseDetails>();
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)

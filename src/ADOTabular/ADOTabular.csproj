@@ -140,6 +140,17 @@
     <Compile Include="ADOTabularStandardColumn.cs" />
     <Compile Include="ADOTabularTable.cs" />
     <Compile Include="ADOTabularTableCollection.cs" />
+    <Compile Include="DatabaseProfile\Column.cs" />
+    <Compile Include="DatabaseProfile\ColumnCollection.cs" />
+    <Compile Include="DatabaseProfile\Constants.cs" />
+    <Compile Include="DatabaseProfile\DatabaseProfile.cs" />
+    <Compile Include="DatabaseProfile\DatabaseProfiler.cs" />
+    <Compile Include="DatabaseProfile\Segment.cs" />
+    <Compile Include="DatabaseProfile\SegmentCollection.cs" />
+    <Compile Include="DatabaseProfile\Table.cs" />
+    <Compile Include="DatabaseProfile\TableCollection.cs" />
+    <Compile Include="DatabaseProfile\UserHierarchy.cs" />
+    <Compile Include="DatabaseProfile\UserHierarchyCollection.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="IADOTabularObject.cs" />
     <Compile Include="MetaDataVisitorCSDL.cs" />

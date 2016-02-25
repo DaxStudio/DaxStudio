@@ -47,5 +47,9 @@ namespace ADOTabular
         {
             return _keywords.Contains(word, StringComparer.InvariantCultureIgnoreCase);
         }
+        public int Count
+        {
+            get { return _keywords.Count; }
+        }
     }
 }
