@@ -403,6 +403,12 @@
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
+    <Compile Include="Utils\RegionalTranslator\CharStateTable.cs" />
+    <Compile Include="Utils\RegionalTranslator\CharStateOther.cs" />
+    <Compile Include="Utils\RegionalTranslator\CharStateColumn.cs" />
+    <Compile Include="Utils\RegionalTranslator\CharStateString.cs" />
+    <Compile Include="Utils\RegionalTranslator\IRegionalStateMachine.cs" />
+    <Compile Include="Utils\RegionalTranslator\RegionalTranslator.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />

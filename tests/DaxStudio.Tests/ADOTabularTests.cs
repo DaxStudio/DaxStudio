@@ -20,14 +20,18 @@ namespace DaxStudio.Tests
         ///information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext { get; set; }
+        private static string ConnectionString { get; set; }
 
         #region Additional test attributes
         //
         // You can use the following additional attributes as you write your tests:
         //
         // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
+        [ClassInitialize()]
+        public static void MyClassInitialize(TestContext testContext) {
+            ConnectionString = "Data Source=localhost";
+            //ConnectionString = @"Data Source=.\sql2014tb";
+        }
         //
         // Use ClassCleanup to run code after all tests in a class have run
         // [ClassCleanup()]
@@ -85,7 +89,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestADOTabularCSDLVisitor()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test","Test", "Test Description", "");
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml");
@@ -131,7 +135,7 @@ namespace DaxStudio.Tests
         [TestMethod,Ignore]
         public void TestCSDLColumnTranslations()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test","Test", "Test Description", "");
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\advwrkscsdl.xml");
@@ -150,7 +154,7 @@ namespace DaxStudio.Tests
         [TestMethod,Ignore]
         public void TestCSDLTablesWithSpaces()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             ADOTabularModel m = new ADOTabularModel(c, "Test","Test Caption", "Test Description", "");
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\advwrkscsdl.xml");
@@ -167,7 +171,7 @@ namespace DaxStudio.Tests
         [TestMethod,Ignore]
         public void TestADOTabularCSDLVisitorHierarchies()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\AdvWrks.xml");
             ADOTabularModel m = new ADOTabularModel(c, "Test","Test", "Test Description", "");
@@ -188,7 +192,7 @@ namespace DaxStudio.Tests
         [TestMethod,Ignore]
         public void TestADOTabularCSDLVisitorKPI()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\AdvWrks.xml");
             ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Caption","Test Description", "");
@@ -207,7 +211,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestDatabaseParser()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             var dd = c.Databases.GetDatabaseDictionary(c.SPID);
             Assert.AreEqual(c.Databases.Count, dd.Count, "has 2 databases");
         }
@@ -216,7 +220,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestADOTabularCSDLVisitorMeasures()
         {
-            var c = new ADOTabularConnection(@"Data Source=.\sql2014tb", AdomdType.AnalysisServices);            
+            var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);            
             var v = new MetaDataVisitorCSDL(c);
             var m = new ADOTabularModel(c, "AdventureWorks", "AdventureWorks", "Test AdventureWorks", "");            
             var tabs = new ADOTabularTableCollection(c, m);
@@ -231,7 +235,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestColumnRenaming()
         {
-            ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             var dt = new DataTable();
             dt.Columns.Add("table1[Column1]");
             dt.Columns.Add("table2[Column1]");

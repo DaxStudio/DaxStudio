@@ -345,6 +345,8 @@ namespace DAXEditor
             if (line >= 1 && line <= this.Document.LineCount)
             {
                 int offset = this.Document.GetOffset(new TextLocation(line, column));
+                if (offset == this.Document.TextLength && this.Document.TextLength >= 1) offset -= 1;
+
                 if (this.Document.GetText(offset, 1) == "'") { }
 
                 int endOffset = TextUtilities.GetNextCaretPosition(this.Document, offset, System.Windows.Documents.LogicalDirection.Forward, CaretPositioningMode.WordBorder);

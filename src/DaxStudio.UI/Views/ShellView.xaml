@@ -183,6 +183,13 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="R" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="ToggleRegion"/>
+        </local:InputBindingTrigger>
+        
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Z" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Undo"/>

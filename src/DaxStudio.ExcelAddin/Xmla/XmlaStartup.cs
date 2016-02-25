@@ -18,6 +18,7 @@ namespace DaxStudio.ExcelAddin.Xmla
         // parameter in the WebApp.Start method.
         public void Configuration( IAppBuilder appBuilder)
         {
+            Serilog.Log.Debug("{class} {method} {message}", "Startup", "Configuration", "Starting OWIN configuration");
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
@@ -36,7 +37,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             config.Formatters.Add(new JsonMediaTypeFormatter());
             config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
             appBuilder.UseWebApi(config);
-            
+            Serilog.Log.Debug("{class} {method} {message}", "Startup", "Configuration", "Finished OWIN configuration");
         }
     }
 }

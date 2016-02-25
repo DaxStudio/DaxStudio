@@ -25,9 +25,10 @@ namespace DaxStudio.ExcelAddin.Xmla
             var addin = Globals.ThisAddIn;
             var app = addin.Application;
             var wb = app.ActiveWorkbook;
-
-            System.Diagnostics.Debug.WriteLine(string.Format("Workbook: {0}", wb.FullName));
-            return Ok(wb.FullName);
+            var wbName = "<No Workbook>";
+            if (wb != null) { wbName = wb.FullName; }
+            System.Diagnostics.Debug.WriteLine(string.Format("Workbook: {0}", wbName));
+            return Ok(wbName);
         }
         
         

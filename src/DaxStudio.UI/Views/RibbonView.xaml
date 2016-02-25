@@ -379,7 +379,7 @@
             
 
             <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Margin="4,0" Icon="{StaticResource CutIcon}">
-                <Fluent:ToggleButton x:Name="Cut"
+                <Fluent:Button x:Name="Cut"
                                 Fluent:KeyTip.Keys="X"
                                 Header="Cut"
                                 Icon="{StaticResource CutIconLarger}"
@@ -387,14 +387,14 @@
                                 Command="Cut"
                                 FocusManager.IsFocusScope="True" Size="Middle"
                                 >
-                    <Fluent:ToggleButton.ToolTip>
+                    <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Cut (Ctrl+X)"
                                           Text="Cut the contents to the Clipboard."
                                           DisableReason="Nothing is currently selected"
                                           Width="190" />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="Copy"
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button x:Name="Copy"
                                Fluent:KeyTip.Keys="C"
                                Header="Copy"
                                Icon="{StaticResource CopyIconLarger}"
@@ -402,13 +402,13 @@
                                Command="ApplicationCommands.Copy"
                                FocusManager.IsFocusScope="True"
                                >
-                    <Fluent:ToggleButton.ToolTip>
+                    <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Copy (Ctrl+C)"
                                               Text="Copy the contents to the Clipboard."
                                               DisableReason="Nothing is currently selected"
                                               Width="190" />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
 
                 <Fluent:Button x:Name="Paste"
                                Fluent:KeyTip.Keys="V"

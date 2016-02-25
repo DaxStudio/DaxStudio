@@ -157,6 +157,7 @@ namespace DaxStudio.UI.Utils
                     }
                     else
                     {
+                        _editor.DisposeCompletionWindow();
                         completionWindow = null;
                     }
                 }
@@ -224,7 +225,8 @@ namespace DaxStudio.UI.Utils
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Columns)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
             {
-                foreach (var tab in Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables)
+                var tabs = Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables;
+                foreach (var tab in tabs)
                 {
                     // add tables
                     if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)) 

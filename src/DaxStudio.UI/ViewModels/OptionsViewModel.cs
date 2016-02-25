@@ -23,10 +23,12 @@ namespace DaxStudio.UI.ViewModels
         private string _proxyAddress;
         private string _proxyUser;
         private string _proxyPassword;
-        private SecureString _proxySecurePassword;
+        private SecureString _proxySecurePassword = new SecureString();
         private int _maxQueryHistory;
         private bool _queryHistoryShowTraceColumns;
         private IEventAggregator _eventAggregator;
+
+        public event EventHandler OptionsUpdated;
 
         [ImportingConstructor]
         public OptionsViewModel(IEventAggregator eventAggregator)
@@ -51,8 +53,10 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => EditorFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("EditorFontFamily", value);
+
             } 
         }
+
         public double EditorFontSize { get { return _fontSize; } 
             set {
                 if (_fontSize == value) return;
@@ -142,7 +146,17 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyPassword);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyPassword", value.Encrypt());
+                SetProxySecurePassword(value);
             }
+        }
+
+        private void SetProxySecurePassword(string value)
+        {
+            foreach (char c in value)
+            {
+                ProxySecurePassword.AppendChar(c);
+            }
+
         }
 
         public SecureString ProxySecurePassword

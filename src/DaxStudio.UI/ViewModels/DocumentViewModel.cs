@@ -34,6 +34,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Eums;
+using DaxStudio.UI.Utils.RegionalTranslator;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -508,6 +509,18 @@ namespace DaxStudio.UI.ViewModels
             DoCloseCheck(callback);
         }
 
+        internal void ToggleRegion()
+        {
+            if (_editor.SelectionLength > 0)
+            {
+                _editor.SelectedText = RegionalTranslator.Translate(_editor.SelectedText);
+            }
+            else
+            {
+                _editor.Text = RegionalTranslator.Translate(_editor.Text);
+            }
+        }
+
         public bool Close()
         {
             // Close the document's connection 
@@ -844,9 +857,11 @@ namespace DaxStudio.UI.ViewModels
             int col = 0;
             this._editor.Dispatcher.Invoke(() =>
             {
-                var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
-                row = loc.Line;
-                col = loc.Column;
+                if (_editor.SelectionLength > 0) { 
+                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                    row = loc.Line;
+                    col = loc.Column;
+                }
             });
             try
             {

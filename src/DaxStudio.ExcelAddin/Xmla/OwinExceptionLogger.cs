@@ -10,14 +10,14 @@ using Serilog;
 namespace DaxStudio.ExcelAddin.Xmla
 {
     
-        class TraceExceptionLogger : ExceptionLogger
+    class TraceExceptionLogger : ExceptionLogger
+    {
+        public override void Log(ExceptionLoggerContext context)
         {
-            public override void Log(ExceptionLoggerContext context)
-            {
-                Trace.TraceError(context.ExceptionContext.Exception.ToString());
-                Serilog.Log.Error("Exception: {Exception}", context.ExceptionContext.Exception.ToString());
-            }
-            
+            Trace.TraceError(context.ExceptionContext.Exception.ToString());
+            Serilog.Log.Error("Exception: {Exception}", context.ExceptionContext.Exception.ToString());
         }
+            
+    }
     
 }
