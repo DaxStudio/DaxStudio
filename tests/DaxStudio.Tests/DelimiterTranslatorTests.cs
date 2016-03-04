@@ -11,6 +11,7 @@ namespace DaxStudio.Tests
     [TestClass]
     public class DelimiterTranslatorTests
     {
+        /*
         [TestMethod]
         public void BasicTranslation1Test()
         {
@@ -37,7 +38,7 @@ namespace DaxStudio.Tests
             string expected = "Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
             Assert.AreEqual(expected, actual);
         }
-
+        */
 
 
         [TestMethod]

@@ -513,12 +513,18 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_editor.SelectionLength > 0)
             {
-                _editor.SelectedText = DelimiterTranslator.Translate(_editor.SelectedText);
+                _editor.SelectedText = SwapDelimiters(_editor.SelectedText);
             }
             else
             {
-                _editor.Text = DelimiterTranslator.Translate(_editor.Text);
+                _editor.Text = SwapDelimiters(_editor.Text);
             }
+        }
+
+        private string SwapDelimiters(string selectedText)
+        {
+            var dsm = new DelimiterStateMachine();
+            return dsm.ProcessString(selectedText);
         }
 
         public bool Close()
