@@ -210,6 +210,7 @@ namespace DaxStudio.QueryTrace
         public void RaiseError( string message)
         {
             if (TraceError != null) TraceError(this, message);
+            Log.Error("{class} {method} {message}", "QueryTraceEngine", "RaiseError", message);
         }
 
         private bool _traceStarted;
@@ -230,6 +231,7 @@ namespace DaxStudio.QueryTrace
             else
             {
                 System.Diagnostics.Debug.Print("TraceEvent: {0}", e.EventClass.ToString());
+                Log.Verbose("TraceEvent: {EventClass} - {EventSubClass}", e.EventClass.ToString(), e.EventSubclass.ToString());
                 OnTraceEvent(e);
                 _capturedEvents.Add(new DaxStudioTraceEventArgs(e));
                 if (e.EventClass == TraceEventClass.QueryEnd)
