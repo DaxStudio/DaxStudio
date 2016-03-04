@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Utils.RegionalTranslator
+namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
-    class CharStateTable : IRegionalStateMachine
+    class CharStateTable : IDelimiterStateMachine
     {
-        public IRegionalStateMachine Process(string input, int pos, RegionalState targetRegion, StringBuilder output)
+        public IDelimiterStateMachine Process(string input, int pos, DelimiterState targetRegion, StringBuilder output)
         {
             output.Append(input[pos]);
             switch (input[pos])

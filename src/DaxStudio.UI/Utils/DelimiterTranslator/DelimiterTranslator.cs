@@ -1,12 +1,13 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
-namespace DaxStudio.UI.Utils.RegionalTranslator
+namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
 
-    public enum RegionalState
+    public enum DelimiterState
     {
-        European,
-        English,
+        SemiColon,
+        Comma,
         Unknown
     };
 
@@ -18,11 +19,16 @@ namespace DaxStudio.UI.Utils.RegionalTranslator
         Other
     }
 
-    public static class RegionalTranslator
+    public static class DelimiterTranslator
     {
 
-
         public static string Translate(string input)
+        {
+            return Translate(input, DelimiterState.Unknown);
+        }
+
+
+        public static string Translate(string input, DelimiterState targetDelimiter)
         {
             // from European
             // ; -> ,
@@ -32,16 +38,16 @@ namespace DaxStudio.UI.Utils.RegionalTranslator
             // . -> ,
             // TopPercent( 10.0, 
 
-            RegionalState targetRegion = RegionalState.Unknown;
             StringBuilder output = new StringBuilder( input.Length);
 
-            IRegionalStateMachine currentState = new CharStateOther();
+            IDelimiterStateMachine currentState = new CharStateOther();
 
             for (int i = 0; i < input.Length;i++)
             {
-                currentState = currentState.Process(input, i, targetRegion, output);
+                currentState = currentState.Process(input, i, targetDelimiter, output);
             }
             return output.ToString();
         }
+
     }
 }

@@ -540,9 +540,9 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
         }
 
-        public void ToggleRegion()
+        public void SwapDelimiters()
         {
-            ActiveDocument.ToggleRegion();
+            ActiveDocument.SwapDelimiters();
         }
 
     }

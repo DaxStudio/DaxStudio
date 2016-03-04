@@ -183,9 +183,9 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="R" Modifiers="Control"/>
+                <KeyBinding  Key="D" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="ToggleRegion"/>
+            <cal:ActionMessage MethodName="SwapDelimiters"/>
         </local:InputBindingTrigger>
         
         <local:InputBindingTrigger>

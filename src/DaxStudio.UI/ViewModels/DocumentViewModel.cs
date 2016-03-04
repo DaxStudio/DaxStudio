@@ -34,7 +34,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Eums;
-using DaxStudio.UI.Utils.RegionalTranslator;
+using DaxStudio.UI.Utils.DelimiterTranslator;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -205,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnDocumentChanged(object sender, EventArgs e)
         {
-            Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
+            Log.Verbose("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
             IsDirty = true;
             NotifyOfPropertyChange(() => IsDirty);
@@ -509,15 +509,15 @@ namespace DaxStudio.UI.ViewModels
             DoCloseCheck(callback);
         }
 
-        internal void ToggleRegion()
+        internal void SwapDelimiters()
         {
             if (_editor.SelectionLength > 0)
             {
-                _editor.SelectedText = RegionalTranslator.Translate(_editor.SelectedText);
+                _editor.SelectedText = DelimiterTranslator.Translate(_editor.SelectedText);
             }
             else
             {
-                _editor.Text = RegionalTranslator.Translate(_editor.Text);
+                _editor.Text = DelimiterTranslator.Translate(_editor.Text);
             }
         }
 

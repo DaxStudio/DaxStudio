@@ -403,12 +403,13 @@
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
-    <Compile Include="Utils\RegionalTranslator\CharStateTable.cs" />
-    <Compile Include="Utils\RegionalTranslator\CharStateOther.cs" />
-    <Compile Include="Utils\RegionalTranslator\CharStateColumn.cs" />
-    <Compile Include="Utils\RegionalTranslator\CharStateString.cs" />
-    <Compile Include="Utils\RegionalTranslator\IRegionalStateMachine.cs" />
-    <Compile Include="Utils\RegionalTranslator\RegionalTranslator.cs" />
+    <Compile Include="Utils\DelimiterTranslator\CharStateTable.cs" />
+    <Compile Include="Utils\DelimiterTranslator\CharStateOther.cs" />
+    <Compile Include="Utils\DelimiterTranslator\CharStateColumn.cs" />
+    <Compile Include="Utils\DelimiterTranslator\CharStateString.cs" />
+    <Compile Include="Utils\DelimiterTranslator\IDelimiterStateMachine.cs" />
+    <Compile Include="Utils\DelimiterTranslator\DelimiterTranslator.cs" />
+    <Compile Include="Utils\DelimiterTranslator\StateMachine2.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
@@ -977,6 +978,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\QueryHistory\filtered_trans.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-swap-delimiters.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

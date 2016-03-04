@@ -219,9 +219,9 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.FormatQuery();
         }
 
-        public void ToggleRegion()
+        public void SwapDelimiters()
         {
-            Ribbon.ToggleRegion();
+            Ribbon.SwapDelimiters();
         }
 
         #endregion

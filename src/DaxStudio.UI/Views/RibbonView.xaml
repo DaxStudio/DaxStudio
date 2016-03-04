@@ -511,8 +511,20 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-                
-                <Fluent:Button Visibility="Hidden" Width="1"></Fluent:Button>
+
+                <Fluent:Button Name="SwapDelimiters"
+                               Header="Swap Delimiters"
+                               cal:Message.Attach="[Event Click] = [Action SwapDelimiters()]"
+                               Icon="{StaticResource SwapDelimitersIcon}"
+                               SizeDefinition="Middle,Small,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+ D)"
+                                          Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <!--<Fluent:Button Visibility="Hidden" Width="1"></Fluent:Button>-->
                 
                  <Fluent:Button Name="CommentSelection"
                                Header="Comment"
