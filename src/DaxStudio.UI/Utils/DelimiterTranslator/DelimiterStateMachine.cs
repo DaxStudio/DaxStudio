@@ -15,7 +15,7 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
         private const char OpenSquareBracket = '[';
         private const char CloseSquareBracket = ']';
 
-        public DelimiterMode CurrentMode = DelimiterMode.Unknown;
+        public DelimiterType TargetDelimiterType = DelimiterType.Unknown;
 
         #region Constructors
         static DelimiterStateMachine()
@@ -49,9 +49,9 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
 
         }
 
-        public DelimiterStateMachine() : base(OtherText) { CurrentMode = DelimiterMode.Unknown; }
-        public DelimiterStateMachine(DelimiterMode mode) : base(OtherText) { CurrentMode = mode; }
-        public DelimiterStateMachine(State initial, DelimiterMode mode) : base(initial) { CurrentMode = mode; }
+        public DelimiterStateMachine() : base(OtherText) { TargetDelimiterType = DelimiterType.Unknown; }
+        public DelimiterStateMachine(DelimiterType targetDelimiterType) : base(OtherText) { TargetDelimiterType = targetDelimiterType; }
+        public DelimiterStateMachine(State initial, DelimiterType targetDelimiterType) : base(initial) { TargetDelimiterType = targetDelimiterType; }
         #endregion
 
         public static char ProcessOtherText(DelimiterStateMachine sm, string input, int pos)
@@ -59,36 +59,36 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
             switch (input[pos])
             {
                 case ';':
-                    if (sm.CurrentMode == DelimiterMode.Unknown) { sm.CurrentMode = DelimiterMode.Comma; }
-                    if (sm.CurrentMode == DelimiterMode.Comma) { return ','; }
+                    if (sm.TargetDelimiterType == DelimiterType.Unknown) { sm.TargetDelimiterType = DelimiterType.Comma; }
+                    if (sm.TargetDelimiterType == DelimiterType.Comma) { return ','; }
                     return input[pos];
                 case '.':
-                    if (sm.CurrentMode == DelimiterMode.Unknown)
+                    if (sm.TargetDelimiterType == DelimiterType.Unknown)
                     {
                         if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
                         {
-                            sm.CurrentMode = DelimiterMode.SemiColon;
+                            sm.TargetDelimiterType = DelimiterType.SemiColon;
                         }
                     }
-                    if (sm.CurrentMode == DelimiterMode.SemiColon) { return ','; }
+                    if (sm.TargetDelimiterType == DelimiterType.SemiColon) { return ','; }
                     return input[pos];
                 case ',':
-                    if (sm.CurrentMode == DelimiterMode.Unknown)
+                    if (sm.TargetDelimiterType == DelimiterType.Unknown)
                     {
                         if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
                         {
-                            sm.CurrentMode = DelimiterMode.Comma;
+                            sm.TargetDelimiterType = DelimiterType.Comma;
                         }
                         else
                         {
-                            sm.CurrentMode = DelimiterMode.SemiColon;
+                            sm.TargetDelimiterType = DelimiterType.SemiColon;
                         }
                     }
-                    switch (sm.CurrentMode)
+                    switch (sm.TargetDelimiterType)
                     {
-                        case DelimiterMode.SemiColon:
+                        case DelimiterType.SemiColon:
                             return ';';
-                        case DelimiterMode.Comma:
+                        case DelimiterType.Comma:
                             return '.';
                         default:
                             return input[pos];

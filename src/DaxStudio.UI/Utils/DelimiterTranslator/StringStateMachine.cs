@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
 
-    public enum DelimiterMode
+    public enum DelimiterType
     {
         Comma,
         SemiColon,
