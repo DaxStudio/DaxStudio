@@ -273,6 +273,7 @@ namespace DAXEditor
         private IIntellisenseProvider IntellisenseProvider { get; set; }
 
         CompletionWindow completionWindow;
+        public InsightWindow InsightWindow { get; set; }
 
         void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {

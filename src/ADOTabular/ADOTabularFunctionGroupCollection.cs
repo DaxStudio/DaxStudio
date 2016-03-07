@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 
@@ -7,11 +8,13 @@ namespace ADOTabular
     public class ADOTabularFunctionGroupCollection : IEnumerable<ADOTabularFunctionGroup>
     {
         private readonly Dictionary<string, ADOTabularFunctionGroup> _funcGroups;
+        private readonly Dictionary<string, ADOTabularFunction> _funcDict;
         private readonly ADOTabularConnection _connection;
         public ADOTabularFunctionGroupCollection(ADOTabularConnection connection)
         {
             _connection = connection;
             _funcGroups = new Dictionary<string, ADOTabularFunctionGroup>();
+            _funcDict = new Dictionary<string, ADOTabularFunction>( StringComparer.OrdinalIgnoreCase);
             _connection.Visitor.Visit(this);
         }
 
@@ -34,6 +37,7 @@ namespace ADOTabular
                 _funcGroups.Add(groupName, new ADOTabularFunctionGroup(groupName,_connection));
             ADOTabularFunctionGroup grp = _funcGroups[groupName];
             grp.Functions.Add(fun);
+            _funcDict.Add(fun.Caption, fun);
         }
 
         public void AddFunction(DataRow functionDataRow)
@@ -43,6 +47,7 @@ namespace ADOTabular
                 _funcGroups.Add(fun.Group, new ADOTabularFunctionGroup(fun.Group, _connection));
             ADOTabularFunctionGroup grp = _funcGroups[fun.Group];
             grp.Functions.Add(fun);
+            _funcDict.Add(fun.Caption, fun);
         }
 
         IEnumerator<ADOTabularFunctionGroup> IEnumerable<ADOTabularFunctionGroup>.GetEnumerator()
@@ -59,6 +64,13 @@ namespace ADOTabular
             {
                 yield return grp;
             }
+        }
+
+        public ADOTabularFunction GetByName(string name)
+        {
+            ADOTabularFunction fun = null;
+            _funcDict.TryGetValue(name, out fun);
+            return fun;
         }
     }
 }

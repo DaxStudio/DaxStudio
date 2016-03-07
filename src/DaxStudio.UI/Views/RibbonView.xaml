@@ -519,7 +519,7 @@
                                SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+ D)"
+                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+;)"
                                           Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>

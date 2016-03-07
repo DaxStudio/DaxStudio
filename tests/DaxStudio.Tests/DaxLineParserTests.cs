@@ -146,5 +146,13 @@ namespace DaxStudio.Tests
         {
             Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table;table1[col1"));
         }
+
+        [TestMethod]
+        public void TestFindFunctionNameSimple()
+        {
+            Assert.AreEqual("filter", DaxLineParser.GetPreceedingWord("evaluate filter"));
+            
+        }
+
     }
 }

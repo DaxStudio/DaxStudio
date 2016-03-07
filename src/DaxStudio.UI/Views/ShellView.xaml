@@ -183,7 +183,7 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="D" Modifiers="Control"/>
+                <KeyBinding  Key="OemSemicolon" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SwapDelimiters"/>
         </local:InputBindingTrigger>

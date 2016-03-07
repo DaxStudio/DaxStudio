@@ -405,6 +405,7 @@
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
+    <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
