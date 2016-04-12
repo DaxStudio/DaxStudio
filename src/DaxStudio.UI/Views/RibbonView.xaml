@@ -676,7 +676,10 @@
                                cal:Message.Attach="[Event Click] = [Action Connect()]" 
                                SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Connect" Text="Changes the connection for the current query" Width="190"/>
+                        <Fluent:ScreenTip Title="Connect" 
+                                          Text="Changes the connection for the current query" 
+                                          DisableReason="{Binding ClearCacheDisableReason}"
+                                          Width="190"/>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                                 

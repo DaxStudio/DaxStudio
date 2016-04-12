@@ -154,5 +154,12 @@ namespace DaxStudio.Tests
             
         }
 
+        [TestMethod]
+        public void TestFindFunctionNameWithSpace()
+        {
+            Assert.AreEqual("filter", DaxLineParser.GetPreceedingWord("evaluate filter "));
+
+        }
+
     }
 }

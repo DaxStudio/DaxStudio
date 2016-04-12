@@ -212,7 +212,10 @@ namespace DaxStudio.UI.Utils
                     _editor.InsightWindow = new InsightWindow(_editor.TextArea);
                     //insight.ExpectInsertionBeforeStart = true;
                     //}
-                    _editor.InsightWindow.Content = BuildInsightContent(f);
+                    //_editor.InsightWindow.MaxWidth = 200;
+                    
+                    _editor.InsightWindow.Content = BuildInsightContent(f,400);
+                    
                     _editor.InsightWindow.Show();
                 }
                 catch (Exception ex)
@@ -222,9 +225,12 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        private UIElement BuildInsightContent(ADOTabularFunction f)
+        private UIElement BuildInsightContent(ADOTabularFunction f, int maxWidth)
         {
+            var grd = new Grid();
+            grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
             var tb = new TextBlock();
+            tb.TextWrapping = TextWrapping.Wrap;
             var caption = new Run(f.DaxName);
             //caption.Foreground = Brushes.Blue;
             tb.Inlines.Add(new Bold(caption));
@@ -232,7 +238,9 @@ namespace DaxStudio.UI.Utils
             tb.Inlines.Add(f.Description);
             //tb.Inlines.Add("\n");
             //tb.Inlines.Add(new Italic(new Run(f.DaxName)));
-            return tb;
+            Grid.SetColumn(tb, 0);
+            grd.Children.Add(tb);
+            return grd;
         }
 
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -277,7 +285,7 @@ namespace DaxStudio.UI.Utils
         private DaxLineState ParseLine()
         {
             string line = GetCurrentLine();
-            int pos = _editor.CaretOffset - 1;
+            int pos = _editor.CaretOffset>0 ? _editor.CaretOffset - 1 : 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
             return DaxLineParser.ParseLine(line, loc.Column, docLine.Offset);
@@ -377,7 +385,7 @@ namespace DaxStudio.UI.Utils
 
         private string GetCurrentLine()
         {
-            int pos = _editor.CaretOffset - 1;
+            int pos = _editor.CaretOffset > 0 ? _editor.CaretOffset - 1: 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
             string line = _editor.Document.GetText(docLine.Offset, loc.Column);
