@@ -11,9 +11,20 @@ namespace ADOTabular
 {
     public class DatabaseDetails
     {
-        public string Name {get;set;}
-        public string Id {get;set;}
-        public DateTime LastUpdate {get;set;}
+        public DatabaseDetails(string name, string id, string lastUpdate)
+        {
+            Name = name;
+            Id = id;
+            DateTime lastUpdatedDate = new DateTime(1900,1,1);
+            DateTime.TryParse(lastUpdate, out lastUpdatedDate);
+            LastUpdate = lastUpdatedDate; 
+        }
+
+        public DatabaseDetails(string name, string lastUpdate) : this(name, string.Empty, lastUpdate) { }
+        
+        public string Name {get;private set;}
+        public string Id {get;private set;}
+        public DateTime LastUpdate {get; set;}
     }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
@@ -45,28 +56,60 @@ namespace ADOTabular
         }
         public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
-            if (refresh) _databaseDictionary = null;
-            if (_databaseDictionary != null) return _databaseDictionary;
+            //if (refresh) _databaseDictionary = null;
+            if (_databaseDictionary != null && !refresh) return _databaseDictionary;
 
+            Dictionary<string,DatabaseDetails> tmpDatabaseDict;
             if (spid != -1)
-                _databaseDictionary = GetDatabaseDictionaryFromXML();
+                tmpDatabaseDict = GetDatabaseDictionaryFromXML();
             else
-                _databaseDictionary = GetDatabaseDictionaryFromDMV();
+                tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
+
+            if (_databaseDictionary == null) _databaseDictionary = tmpDatabaseDict;
+            else MergeDatabaseDictionaries(tmpDatabaseDict);
+
             return _databaseDictionary;
+        }
+
+        private void MergeDatabaseDictionaries(Dictionary<string, DatabaseDetails> tmpDatabaseDict)
+        {
+            // Update the lastUpdated datetime
+            foreach (var dbName in tmpDatabaseDict.Keys)
+            {
+                if (_databaseDictionary.ContainsKey(dbName)) {
+                    _databaseDictionary[dbName].LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
+                } else
+                {
+                    _databaseDictionary.Add(dbName, tmpDatabaseDict[dbName]);
+                }
+            }
+
+            //Delete databases no longer in the list
+            List<string> keysToRemove = new List<string>();
+            foreach(var dbName in  _databaseDictionary.Keys)
+            {
+                if (!tmpDatabaseDict.ContainsKey(dbName ))
+                {
+                   keysToRemove.Add(dbName);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                _databaseDictionary.Remove(key);
+            }
         }
 
         private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-
             _databaseDictionary = new Dictionary<string, DatabaseDetails>();
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
-                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails()
-                {
-                    Name = row["CATALOG_NAME"].ToString(),
-                    LastUpdate = DateTime.Parse(row["DATE_MODIFIED"].ToString())
-                });
+                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
+                    row["CATALOG_NAME"].ToString(),
+                    row["DATE_MODIFIED"].ToString()
+                ));
             }
             return _databaseDictionary;
         }
@@ -119,11 +162,7 @@ namespace ADOTabular
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    //if (_adoTabConn.PowerBIFileName != string.Empty)
-                                    //{
-                                    //    name = _adoTabConn.PowerBIFileName;
-                                    //}
-                                    _databaseDictionary.Add(name, new DatabaseDetails { Name = name, Id = id, LastUpdate = DateTime.Parse(lastUpdate) });
+                                    _databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate));
                                     break;
                                 }
 

@@ -34,6 +34,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Eums;
+using DaxStudio.UI.Utils.DelimiterTranslator;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -204,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnDocumentChanged(object sender, EventArgs e)
         {
-            Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
+            Log.Verbose("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
             IsDirty = true;
             NotifyOfPropertyChange(() => IsDirty);
@@ -506,6 +507,24 @@ namespace DaxStudio.UI.ViewModels
         public override void CanClose(Action<bool> callback)
         {
             DoCloseCheck(callback);
+        }
+
+        internal void SwapDelimiters()
+        {
+            if (_editor.SelectionLength > 0)
+            {
+                _editor.SelectedText = SwapDelimiters(_editor.SelectedText);
+            }
+            else
+            {
+                _editor.Text = SwapDelimiters(_editor.Text);
+            }
+        }
+
+        private string SwapDelimiters(string selectedText)
+        {
+            var dsm = new DelimiterStateMachine();
+            return dsm.ProcessString(selectedText);
         }
 
         public bool Close()
@@ -844,9 +863,11 @@ namespace DaxStudio.UI.ViewModels
             int col = 0;
             this._editor.Dispatcher.Invoke(() =>
             {
-                var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
-                row = loc.Line;
-                col = loc.Column;
+                if (_editor.SelectionLength > 0) { 
+                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                    row = loc.Line;
+                    col = loc.Column;
+                }
             });
             try
             {
@@ -1841,6 +1862,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Connection == null) return false;
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName ))
                 {
+                    Log.Error("{class} {method} {message} ", "DocumentViewModel", "HasDatabaseSchemaChanged", "Connection is not open");
                     OutputError(string.Format("Error Connecting to server: {0}", ServerName));
                     ServerName = string.Empty; // clear the server name so that we don't throw this error again
                     ActivateOutput();
@@ -1858,6 +1880,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "HasDatabaseSchemaChanged", ex.Message, ex.StackTrace);
                 OutputError(string.Format("Error Connecting to server: {0}", ex.Message));
                 ServerName = string.Empty; // clear the server name so that we don't throw this error again
                 ActivateOutput();

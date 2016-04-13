@@ -101,17 +101,28 @@ namespace ADOTabular
         public void Open()
         {
             _adomdConn.Open();
-            
             ChangeDatabase(_adomdConn.Database);
+            CacheKeywords();
+            CacheFunctionGroups();
         }
 
- /*       public void Open(string connectionString)
+        private void CacheFunctionGroups()
         {
-            _adomdConn.Open(connectionString);
-            if (ConnectionChanged!=null)
-                ConnectionChanged(this,new EventArgs());
+            if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(this);
         }
-        */
+
+        private void CacheKeywords()
+        {
+            if (_keywords == null) _keywords = new ADOTabularKeywordCollection(this);
+        }
+
+        /*       public void Open(string connectionString)
+               {
+                   _adomdConn.Open(connectionString);
+                   if (ConnectionChanged!=null)
+                       ConnectionChanged(this,new EventArgs());
+               }
+               */
         public void ChangeDatabase(string database)
         {
             _currentDatabase = database;
@@ -429,38 +440,21 @@ namespace ADOTabular
         private ADOTabularFunctionGroupCollection _functionGroups;
         public ADOTabularFunctionGroupCollection FunctionGroups
         {
-            get { return _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(this)); }
+            get {
+                CacheFunctionGroups();
+                return _functionGroups;
+            }
         }
 
         private ADOTabularKeywordCollection _keywords;
         public ADOTabularKeywordCollection Keywords
         {
             get {
-                if (_keywords == null) { _keywords = new ADOTabularKeywordCollection(this); }
-                return _keywords; }
-        }
-
-        /*
-        private ADOTabularFunctionCollection _adoTabFuncColl;
-        public ADOTabularFunctionCollection Functions
-        {
-            get
-            {
-                if (_adoTabFuncColl == null)
-                {
-                    if (_adomdConn != null)
-                    {
-                        _adoTabFuncColl = new ADOTabularFunctionCollection(this);
-                    }
-                    else
-                    {
-                        throw new NullReferenceException("Unable to populate Function collection - a valid connection has not been established");
-                    }
-                }
-                return _adoTabFuncColl;
+                CacheKeywords(); 
+                return _keywords;
             }
         }
-        */
+        
         private ADOTabularDynamicManagementViewCollection _dmvCollection;
         public ADOTabularDynamicManagementViewCollection DynamicManagementViews
         {

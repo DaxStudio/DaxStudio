@@ -81,4 +81,5 @@
     <BitmapImage x:Key="RightPane"  UriSource="..\images\icon-rightpane.png"></BitmapImage>
     <BitmapImage x:Key="BottomPane"  UriSource="..\images\icon-bottompane.png"></BitmapImage>
     <BitmapImage x:Key="FileIcon"  UriSource="..\images\DaxStudio_File3a_x48.png"></BitmapImage>
+    <BitmapImage x:Key="SwapDelimitersIcon"  UriSource="..\images\icon-swap-delimiters.png"></BitmapImage>
 </ResourceDictionary>

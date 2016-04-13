@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace DaxStudio.UI.Utils
 {
     [Export]
-    public class WebRequestFactory
+    public class WebRequestFactory: IHandle<UpdateGlobalOptions>
     {
         [DllImport("wininet.dll")]
         private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
@@ -42,6 +42,7 @@ namespace DaxStudio.UI.Utils
         [ImportingConstructor]
         public WebRequestFactory(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
+            Log.Verbose("{class} {method} {message}", "WebRequestFactory","ctor","start");
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
 
@@ -54,6 +55,7 @@ namespace DaxStudio.UI.Utils
             }
             catch
             {
+                Log.Error("{class} {method} {message}", "WebRequestFactory", "ctor", "call to InternetGetConnectedState failed");
                 _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
             }
 
@@ -64,8 +66,10 @@ namespace DaxStudio.UI.Utils
             }
             catch (System.Net.WebException)
             {
+                Log.Error("{class} {method} {message}", "WebRequestFactory", "ctor", "call to GetProxy failed");
                 _isNetworkOnline = false;
             }
+            Log.Verbose("{class} {method} {message}", "WebRequestFactory", "ctor", "end");
         }
 
         // ...
@@ -134,6 +138,8 @@ namespace DaxStudio.UI.Utils
 
         private static bool RequiresProxyCredentials(IWebProxy proxy)
         {
+            if (proxy == null) return false;
+
             try {
                 var wr = WebRequest.CreateHttp(CurrentGithubVersionUrl);
                 wr.Proxy = proxy;
@@ -147,11 +153,18 @@ namespace DaxStudio.UI.Utils
                 {
                     return true;
                 }
+                Log.Error("{class} {method} {message}", "WebRequestFactory", "RequiresProxyCredentials", wex.Message);
                 throw;
             }
         }
 
-        
+        public void Handle(UpdateGlobalOptions message)
+        {
+            // reset proxy
+            _proxy = null;
+        }
+
+
         #endregion
 
     }

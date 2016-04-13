@@ -6,6 +6,7 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -60,18 +61,52 @@ namespace DaxStudio.UI.ViewModels
 
         public void DefineMeasure(TreeViewColumn item)
         {
-            if (item == null)
+            try
             {
-                return;
+                if (item == null)
+                {
+                    return;
+                }
+                
+                ADOTabularColumn column; string measureExpression = null, measureName = null;
+
+                if (item.Column is ADOTabularKpiComponent)
+                {
+                    var kpiComponent = (ADOTabularKpiComponent)item.Column;
+
+                    column = (ADOTabularColumn)kpiComponent.Column;
+
+                    // The KPI Value dont have an expression and points to a measure
+
+                    if (kpiComponent.ComponentType == KpiComponentType.Value && string.IsNullOrEmpty(column.MeasureExpression))
+                    {
+                        measureName = string.Format("{0}[{1} {2}]", column.Table.DaxName, column.Name, kpiComponent.ComponentType.ToString());
+
+                        measureExpression = column.DaxName;
+                    }
+                }
+                else
+                {
+                    column = (ADOTabularColumn)item.Column;
+                }
+
+                if (string.IsNullOrEmpty(measureName))
+                {
+                    measureName = string.Format("{0}[{1}]", column.Table.DaxName, column.Name);
+                }
+
+                if (string.IsNullOrEmpty(measureExpression))
+                {
+                    measureExpression = column.MeasureExpression;
+                }
+
+                EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
+            }            
+            catch (System.Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasure", ex.Message, ex.StackTrace);
+
             }
-
-            var column = (ADOTabularColumn)item.Column;
-
-            var measureName = string.Format("{0}[{1}]", column.Table.DaxName, column.Name);
-
-            var measureExpression = column.MeasureExpression;
-
-            EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
         }
 
         public IADOTabularObject SelectedItem { get; set; }

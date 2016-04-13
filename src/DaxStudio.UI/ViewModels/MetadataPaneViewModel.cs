@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Windows;
 using System.Windows.Threading;
 using ADOTabular;
 using Caliburn.Micro;
@@ -11,7 +10,6 @@ using Serilog;
 using DaxStudio.UI.Model;
 using System.Collections.Generic;
 using System;
-using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.Collections;
 using System.Threading.Tasks;

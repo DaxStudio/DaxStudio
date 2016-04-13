@@ -1,4 +1,5 @@
-﻿using ICSharpCode.AvalonEdit.CodeCompletion;
+﻿using DaxStudio.UI.Utils.Intellisense;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System;
 using System.Collections.Generic;
@@ -18,55 +19,63 @@ namespace DaxStudio.UI.Utils
         private readonly string _description;
         private readonly ImageSource _image;
         private double _priority = 120.0;
-        public DaxCompletionData(string text, string content, string description, ImageSource image )
+        private IInsightProvider _insightProvider;
+        /*
+        public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
         {
             _text = text;
             _content = content;
             _description = description;
             _image = image;
+            _insightProvider = insightProvider;
         }
-
-        public DaxCompletionData(string text, double priority)
+        */
+        public DaxCompletionData(IInsightProvider insightProvider, string text, double priority)
         {
             _text = text;
             _content = text;
             _description = text;
             _image = null;
             _priority = priority;
+            _insightProvider = insightProvider;
         }
-
-        public DaxCompletionData(ADOTabular.ADOTabularColumn column)
+        
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularColumn column)
         {
             _text = column.DaxName;
             _content = column.Caption;
             _description = string.IsNullOrEmpty(column.Description)?null:column.Description;
             _image = GetMetadataImage(column.MetadataImage);
             _priority = 50.0;
+            _insightProvider = insightProvider;
         }
 
-        public DaxCompletionData(ADOTabular.ADOTabularDynamicManagementView dmv)
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularDynamicManagementView dmv)
         {
             _text = dmv.Caption;
             _content = dmv.Caption;
             _description = "";  //TODO - maybe add restrictions list??
             _image = GetMetadataImage(dmv.MetadataImage);
             _priority = 50.0;
+            _insightProvider = insightProvider;
         }
-        public DaxCompletionData(ADOTabular.ADOTabularFunction function)
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularFunction function)
         {
             _text = function.DaxName;
             _content = function.Caption;
             _description = string.IsNullOrEmpty(function.Description)?function.Caption:function.Description;
             _image = GetMetadataImage(function.MetadataImage);
+            _insightProvider = insightProvider;
         }
 
-        public DaxCompletionData(ADOTabular.ADOTabularTable table)
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularTable table)
         {
             _text = table.DaxName;
             _content = table.Caption;
             _description = string.IsNullOrEmpty(table.Description)?null:table.Description;
             _image = GetMetadataImage(table.MetadataImage);
             _priority = 100.0;
+            _insightProvider = insightProvider;
         }
 
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
@@ -85,6 +94,7 @@ namespace DaxStudio.UI.Utils
             }
 
             textArea.Document.Replace(newSegment, insertionText);
+            _insightProvider.ShowInsight(insertionText);
         }
 
         private ISegment GetPreceedingWordSegment(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment)

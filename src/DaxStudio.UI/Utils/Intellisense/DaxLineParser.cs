@@ -221,6 +221,7 @@ namespace DaxStudio.UI.Utils
 
         public static string GetPreceedingWord(string line)
         {
+            line = line.TrimEnd();
             string word = "";
             int pos = 0;
             char c;

@@ -1,5 +1,6 @@
 ﻿using ADOTabular;
 using DAXEditor;
+using DaxStudio.UI.Utils.Intellisense;
 using DaxStudio.UI.ViewModels;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
@@ -8,7 +9,11 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.Utils
 {
@@ -23,7 +28,7 @@ namespace DaxStudio.UI.Utils
         ALL       = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
     }
 
-    public class DaxIntellisenseProvider:IIntellisenseProvider
+    public class DaxIntellisenseProvider:IIntellisenseProvider, IInsightProvider
     {
         private DAXEditor.DAXEditor _editor;
         private DaxLineState _daxState;
@@ -34,7 +39,6 @@ namespace DaxStudio.UI.Utils
         {
             Document = activeDocument;
             _editor = editor;
-            
         }
 
         #region Public IIntellisenseProvider Interface
@@ -141,6 +145,18 @@ namespace DaxStudio.UI.Utils
                         // only show the completion window if we have valid items to display
                         if (completionWindow.CompletionList.ListBox.HasItems)
                         {
+                            
+                            Log.Verbose("InsightWindow == null : {IsNull}", _editor.InsightWindow == null);
+                            if (_editor.InsightWindow != null && _editor.InsightWindow.IsVisible)
+                            {
+                                Log.Verbose("hiding insight window");
+                                _editor.InsightWindow.Visibility = Visibility.Collapsed;
+                                //_editor.InsightWindow = null;
+                                
+                            }
+
+                            Log.Verbose("CW null: {CompletionWindowNull} CW.Vis: {CompletionWindowVisible} IW null: {insightWindowNull} IW.Vis: {InsightWindowVisible}", completionWindow == null, completionWindow.Visibility.ToString() , _editor.InsightWindow == null, completionWindow.Visibility.ToString());
+                            
                             completionWindow.Show();
                             completionWindow.Closing += completionWindow_Closing;
                             completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
@@ -157,8 +173,16 @@ namespace DaxStudio.UI.Utils
                     }
                     else
                     {
+                        _editor.DisposeCompletionWindow();
                         completionWindow = null;
                     }
+                }
+
+                if (e.Text[0] == '(')
+                {
+                    var funcName = DaxLineParser.GetPreceedingWord(GetCurrentLine().TrimEnd('(').Trim()).ToLower();
+                    Log.Verbose("Func: {Function}", funcName);
+                    ShowInsight(funcName);
                 }
             }
             catch(Exception ex)
@@ -167,6 +191,56 @@ namespace DaxStudio.UI.Utils
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
                 Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
+        }
+
+        public void ShowInsight(string funcName)
+        {
+            //if (!funcName.EndsWith("(")) return;
+            funcName = funcName.TrimEnd('(');
+
+            ADOTabularFunction f = Document.Connection.FunctionGroups.GetByName(funcName);
+            
+            if (f != null)
+            {
+                try
+                {
+                    Log.Verbose("Showing InsightWindow for {function}", f.Caption);
+                    //var insight = _editor.InsightWindow;
+                    //if (_editor.InsightWindow == null )
+                    //{
+                    _editor.InsightWindow = null;
+                    _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                    //insight.ExpectInsertionBeforeStart = true;
+                    //}
+                    //_editor.InsightWindow.MaxWidth = 200;
+                    
+                    _editor.InsightWindow.Content = BuildInsightContent(f,400);
+                    
+                    _editor.InsightWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
+                }
+            }
+        }
+
+        private UIElement BuildInsightContent(ADOTabularFunction f, int maxWidth)
+        {
+            var grd = new Grid();
+            grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
+            var tb = new TextBlock();
+            tb.TextWrapping = TextWrapping.Wrap;
+            var caption = new Run(f.DaxName);
+            //caption.Foreground = Brushes.Blue;
+            tb.Inlines.Add(new Bold(caption));
+            tb.Inlines.Add("\n");
+            tb.Inlines.Add(f.Description);
+            //tb.Inlines.Add("\n");
+            //tb.Inlines.Add(new Italic(new Run(f.DaxName)));
+            Grid.SetColumn(tb, 0);
+            grd.Children.Add(tb);
+            return grd;
         }
 
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -193,6 +267,11 @@ namespace DaxStudio.UI.Utils
             // cancel closing if part way into a table or column name
             var lineState = ParseLine();
             if (SpacePressed && (lineState.LineState == LineState.Column || lineState.LineState == LineState.Table)) e.Cancel = true;
+            var line = GetCurrentLine();
+            if (line.EndsWith("(")) {
+                var funcName = DaxLineParser.GetPreceedingWord(line.TrimEnd('('));
+                ShowInsight(funcName);
+            }
         }
 
         public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
@@ -206,7 +285,7 @@ namespace DaxStudio.UI.Utils
         private DaxLineState ParseLine()
         {
             string line = GetCurrentLine();
-            int pos = _editor.CaretOffset - 1;
+            int pos = _editor.CaretOffset>0 ? _editor.CaretOffset - 1 : 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
             return DaxLineParser.ParseLine(line, loc.Column, docLine.Offset);
@@ -224,11 +303,12 @@ namespace DaxStudio.UI.Utils
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Columns)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
             {
-                foreach (var tab in Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables)
+                var tabs = Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables;
+                foreach (var tab in tabs)
                 {
                     // add tables
                     if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)) 
-                            tmpData.Add( new DaxCompletionData(tab));
+                            tmpData.Add( new DaxCompletionData(this, tab));
 
                     // add columns or measures
                     if ((metadataType.HasFlag(IntellisenseMetadataTypes.Columns) 
@@ -241,7 +321,7 @@ namespace DaxStudio.UI.Utils
                                 || col.ColumnType == ADOTabularColumnType.Measure && metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
                             {
 
-                                tmpData.Add(new DaxCompletionData(col));
+                                tmpData.Add(new DaxCompletionData(this, col));
                             }
                         }
                     }
@@ -255,7 +335,7 @@ namespace DaxStudio.UI.Utils
                 {
                     foreach (var func in funcGrp.Functions)
                     {
-                        tmpData.Add( new DaxCompletionData(func));
+                        tmpData.Add( new DaxCompletionData(this,func));
                     }
                 }
             }
@@ -264,23 +344,23 @@ namespace DaxStudio.UI.Utils
             {
                 foreach (var dmv in Document.Connection.DynamicManagementViews)
                 {
-                    tmpData.Add(new DaxCompletionData(dmv));
+                    tmpData.Add(new DaxCompletionData(this, dmv));
                 }
             }
 
             // add keywords
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Keywords))
             {
-                tmpData.Add(new DaxCompletionData("EVALUATE", 200.0));
-                tmpData.Add(new DaxCompletionData("MEASURE", 200.0));
-                tmpData.Add(new DaxCompletionData("DEFINE", 200.0));
-                tmpData.Add(new DaxCompletionData("ORDER BY", 200.0));
-                tmpData.Add(new DaxCompletionData("ASC", 200.0));
-                tmpData.Add(new DaxCompletionData("DESC", 200.0));
-                tmpData.Add(new DaxCompletionData("SELECT", 200.0));
-                tmpData.Add(new DaxCompletionData("FROM", 200.0));
-                tmpData.Add(new DaxCompletionData("WHERE", 200.0));
-                tmpData.Add(new DaxCompletionData("$SYSTEM", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "DEFINE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "ORDER BY", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "ASC", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "DESC", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "SELECT", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "FROM", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "WHERE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
             {
@@ -305,7 +385,7 @@ namespace DaxStudio.UI.Utils
 
         private string GetCurrentLine()
         {
-            int pos = _editor.CaretOffset - 1;
+            int pos = _editor.CaretOffset > 0 ? _editor.CaretOffset - 1: 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
             string line = _editor.Document.GetText(docLine.Offset, loc.Column);
@@ -316,6 +396,7 @@ namespace DaxStudio.UI.Utils
         // TODO - do we need a way of triggering intellisense manually (ctrl-space) ??
         public void ProcessKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            
             if (HasThrownException) return;
             if (e.Key == System.Windows.Input.Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
             {
@@ -324,5 +405,6 @@ namespace DaxStudio.UI.Utils
                 e.Handled = true;  //swallow keystroke
             }
         }
+
     }
 }

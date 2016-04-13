@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
+using System;
+using Serilog;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -18,25 +20,32 @@ namespace DaxStudio.ExcelAddin.Xmla
         // parameter in the WebApp.Start method.
         public void Configuration( IAppBuilder appBuilder)
         {
+            Serilog.Log.Debug("{class} {method} {message}", "Startup", "Configuration", "Starting OWIN configuration");
             // Configure Web API for self-host. 
-            HttpConfiguration config = new HttpConfiguration();
+            try {
+                HttpConfiguration config = new HttpConfiguration();
 
-            appBuilder.Map("/signalr", map =>
-            {
-                var hubConfiguration = new HubConfiguration
+                appBuilder.Map("/signalr", map =>
                 {
-                    EnableDetailedErrors = true
-                };
-                map.RunSignalR(hubConfiguration);
-            });
+                    var hubConfiguration = new HubConfiguration
+                    {
+                        EnableDetailedErrors = true
+                    };
+                    map.RunSignalR(hubConfiguration);
+                });
 
-            config.MapHttpAttributeRoutes();            
-            config.Services.Add( typeof(IExceptionLogger), new TraceExceptionLogger());
-            config.Formatters.Clear();
-            config.Formatters.Add(new JsonMediaTypeFormatter());
-            config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
-            appBuilder.UseWebApi(config);
-            
+                config.MapHttpAttributeRoutes();
+                config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
+                config.Formatters.Clear();
+                config.Formatters.Add(new JsonMediaTypeFormatter());
+                config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
+                appBuilder.UseWebApi(config);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}","Startup", "Configuration", ex.Message);
+            }
+            Serilog.Log.Debug("{class} {method} {message}", "Startup", "Configuration", "Finished OWIN configuration");
         }
     }
 }

@@ -13,12 +13,12 @@ namespace DaxStudio.Interfaces
         double EditorFontSize { get; set; }
         string EditorFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
-
         int QueryHistoryMaxItems { get; set; }
         bool QueryHistoryShowTraceColumns { get; set; }
         bool ProxyUseSystem { get; set; }
         string ProxyAddress { get; set; }
         string ProxyUser { get; set; }
         SecureString ProxySecurePassword { get; set; }
+
     }
 }

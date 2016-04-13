@@ -48,81 +48,81 @@ namespace DaxStudio.UI.Model
 
         private static string redirectUrl = null;  // cache the redirected URL
         private static string redirectHost = null;
-        public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
-        {
-            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
-            int colOffset = 1;
-            int rowOffset = 1;
-            Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Getting Query Text");
-            // todo - do I want to disable the editor control while formatting is in progress???
-            string qry;
-            // if there is a selection send that to daxformatter.com otherwise send all the text
-            qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
+        //public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
+        //{
+        //    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
+        //    int colOffset = 1;
+        //    int rowOffset = 1;
+        //    Log.Verbose("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Getting Query Text");
+        //    // todo - do I want to disable the editor control while formatting is in progress???
+        //    string qry;
+        //    // if there is a selection send that to daxformatter.com otherwise send all the text
+        //    qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
 
-            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "About to Call daxformatter.com");
+        //    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "About to Call daxformatter.com");
 
-            var res = await FormatDaxAsync(qry);
+        //    var res = await FormatDaxAsync(qry);
 
-            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "daxformatter.com call complete");
+        //    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "daxformatter.com call complete");
     
-            try
-            {  
-                if (res.errors == null)
-                {
-                    if (editor.SelectionLength == 0)
-                    {
-                        editor.IsEnabled = false;
-                        editor.Document.BeginUpdate();
-                        editor.Document.Text = res.FormattedDax;
-                        editor.Document.EndUpdate();
-                        editor.IsEnabled = true;
-                    }
-                    else
-                    {
-                        var loc = editor.Document.GetLocation(editor.SelectionStart);
-                        colOffset = loc.Column;
-                        rowOffset = loc.Line;
-                        editor.SelectedText = res.FormattedDax;
-                    }
-                    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
-                    doc.OutputMessage("Query Formatted via daxformatter.com");
-                }
-                else
-                {
+        //    try
+        //    {  
+        //        if (res.errors == null)
+        //        {
+        //            if (editor.SelectionLength == 0)
+        //            {
+        //                editor.IsEnabled = false;
+        //                editor.Document.BeginUpdate();
+        //                editor.Document.Text = res.FormattedDax;
+        //                editor.Document.EndUpdate();
+        //                editor.IsEnabled = true;
+        //            }
+        //            else
+        //            {
+        //                var loc = editor.Document.GetLocation(editor.SelectionStart);
+        //                colOffset = loc.Column;
+        //                rowOffset = loc.Line;
+        //                editor.SelectedText = res.FormattedDax;
+        //            }
+        //            Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Query Text updated");
+        //            doc.OutputMessage("Query Formatted via daxformatter.com");
+        //        }
+        //        else
+        //        {
 
-                    foreach (var err in res.errors)
-                    {
-                        // write error 
-                        // note: daxformatter.com returns 0 based coordinates so we add 1 to them
-                        int errLine = err.line + rowOffset;
-                        int errCol = err.column + colOffset;
+        //            foreach (var err in res.errors)
+        //            {
+        //                // write error 
+        //                // note: daxformatter.com returns 0 based coordinates so we add 1 to them
+        //                int errLine = err.line + rowOffset;
+        //                int errCol = err.column + colOffset;
                         
-                        // if the error is at the end of text then we need to move in 1 character
-                        var errOffset = editor.Document.GetOffset(errLine, errCol);
-                        if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
-                        {
-                            editor.Document.Insert(errOffset, " ");
-                        }
+        //                // if the error is at the end of text then we need to move in 1 character
+        //                var errOffset = editor.Document.GetOffset(errLine, errCol);
+        //                if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
+        //                {
+        //                    editor.Document.Insert(errOffset, " ");
+        //                }
 
-                        // TODO - need to figure out if more than 1 character should be highlighted
-                        doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
-                        doc.ActivateOutput();
+        //                // TODO - need to figure out if more than 1 character should be highlighted
+        //                doc.OutputError(string.Format("(Ln {0}, Col {1}) {2} ", errLine, errCol, err.message), err.line + rowOffset, err.column + colOffset);
+        //                doc.ActivateOutput();
 
-                        Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Error markings set");
-                    }
+        //                Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Error markings set");
+        //            }
 
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("{Class} {Event} {Exception}", "DaxFormatter", "FormatQuery", ex.Message);
-                doc.OutputError(string.Format("DaxFormatter.com Error: {0}", ex.Message));
-            }
-            finally
-            {
-                Log.Debug("{class} {method} {end}", "DaxFormatter", "FormatDax:End");
-            }
-        }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error("{Class} {Event} {Exception}", "DaxFormatter", "FormatQuery", ex.Message);
+        //        doc.OutputError(string.Format("DaxFormatter.com Error: {0}", ex.Message));
+        //    }
+        //    finally
+        //    {
+        //        Log.Debug("{class} {method} {end}", "DaxFormatter", "FormatDax:End");
+        //    }
+        //}
 
         public static async Task<DaxFormatterResult> FormatDaxAsync(string query)
         {

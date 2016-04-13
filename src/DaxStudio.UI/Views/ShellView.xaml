@@ -183,6 +183,13 @@
 
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="OemSemicolon" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="SwapDelimiters"/>
+        </local:InputBindingTrigger>
+        
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Z" Modifiers="Control"/>
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Undo"/>

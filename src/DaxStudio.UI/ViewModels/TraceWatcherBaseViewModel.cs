@@ -61,6 +61,7 @@ namespace DaxStudio.UI.ViewModels
             if (_timeout != null)
             {
                 _timeout.Stop();
+                _timeout.Elapsed -= QueryEndEventTimeout;
                 _timeout.Dispose();
                 _timeout = null;
             }
@@ -72,6 +73,7 @@ namespace DaxStudio.UI.ViewModels
                     Events.Add(e);
                 }
             }
+            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAlEvents", "starting ProcessResults");
             ProcessResults();
             IsBusy = false;
         }
@@ -178,12 +180,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(QueryStartedEvent message)
         {
+            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
             IsBusy = true;
             Reset();
         }
 
         public void Handle(CancelQueryEvent message)
         {
+            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
             IsBusy = false;
             Reset();
         }
@@ -194,8 +198,10 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {
+            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "QueryCompleted", isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
             if (isCancelled) return;
+            if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 
             // start timer, if timer elapses then print warning and set IsBusy = false
             _timeout = new Timer(5000);

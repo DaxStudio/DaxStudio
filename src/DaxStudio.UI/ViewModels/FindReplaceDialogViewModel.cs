@@ -206,25 +206,24 @@ namespace DaxStudio.UI.ViewModels
 
         public void ReplaceAllText()
         {
-            // TODO - do we need a dialog??
-            //if (MessageBox.Show("Are you sure you want to Replace All occurences of \"" + 
-            //TextToFind + "\" with \"" + txtReplace.Text + "\"?",
-            //    "Replace All", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
+            
+            Regex regex = GetRegEx(TextToFind, true);
+            int offset = 0;
+            editor.BeginChange();
+            // TODO  if selectionlength > 0 replace only in selection
+            foreach (Match match in regex.Matches(editor.Text))
             {
-                Regex regex = GetRegEx(TextToFind, true);
-                int offset = 0;
-                editor.BeginChange();
-                foreach (Match match in regex.Matches(editor.Text))
-                {
-                    editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
-                    offset += TextToReplace.Length - match.Length;
-                }
-                editor.EndChange();
+                editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
+                offset += TextToReplace.Length - match.Length;
             }
+            editor.EndChange();
+            
         }
 
         private bool FindNextInternal()
         {
+            // TODO - if we have a multi-line selection then we only want to search inside that
+
             Regex regex = GetRegEx(TextToFind);
             int start = regex.Options.HasFlag(RegexOptions.RightToLeft) ? 
             editor.SelectionStart : editor.SelectionStart + editor.SelectionLength;

@@ -46,8 +46,8 @@ namespace DaxStudio.UI
 
         public static T GetValue<T>(string subKey, T defaultValue )
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
+            if (regDaxStudio == null) return defaultValue;
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
         }
 
@@ -61,7 +61,7 @@ namespace DaxStudio.UI
         {
             return Task.Run(()=>{
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
-                
+                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
                 regDaxStudio.SetValue(subKey, value);
             });
         }

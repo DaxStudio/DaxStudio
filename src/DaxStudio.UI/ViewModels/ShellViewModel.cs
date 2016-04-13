@@ -218,6 +218,12 @@ namespace DaxStudio.UI.ViewModels {
         {
             Ribbon.FormatQuery();
         }
+
+        public void SwapDelimiters()
+        {
+            Ribbon.SwapDelimiters();
+        }
+
         #endregion
     }
 

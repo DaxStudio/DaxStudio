@@ -403,6 +403,9 @@
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
+    <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
+    <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
+    <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
@@ -971,6 +974,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\QueryHistory\filtered_trans.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-swap-delimiters.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

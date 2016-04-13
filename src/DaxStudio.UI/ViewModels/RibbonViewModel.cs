@@ -41,6 +41,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
         private bool _isDocumentActivating = false;
+        private bool _isConnecting = false;
 
         private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -144,6 +145,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
+            NotifyOfPropertyChange(() => CanConnect);
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle.ClearCache) );
 
         }
@@ -227,14 +229,16 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.ChangeConnection();
         }
 
-        private bool _canConnect;
+        //private bool _canConnect;
         public bool CanConnect
         {
-            get { return _canConnect; }
-            set { 
+            get {
+                return !_queryRunning && !_isConnecting && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            }
+            /*set { 
                 _canConnect = value;
                 NotifyOfPropertyChange(()=> CanConnect);
-            }
+            }*/
         }
 
         public ShellViewModel Shell { get; set; }
@@ -257,10 +261,11 @@ namespace DaxStudio.UI.ViewModels
             if (connection == null)
             {
                 Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", "<null>", "<null>");
-                CanConnect = true;
+                _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
+                NotifyOfPropertyChange(() => CanConnect);
                 return;
             }
             try
@@ -274,10 +279,11 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                CanConnect = true;
+                _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
+                NotifyOfPropertyChange(() => CanConnect);
             }
         }
         
@@ -326,6 +332,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
+            NotifyOfPropertyChange(() => CanConnect);
             if (!ActiveDocument.IsConnected)
             {
                 UpdateTraceWatchers();
@@ -379,6 +386,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
+            NotifyOfPropertyChange(() => CanConnect);
         }
 
         public void LinkToDaxStudioWiki()
@@ -398,7 +406,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ConnectionPendingEvent message)
         {
-            CanConnect = false;
+            _isConnecting = true;
         }
         public void Handle(ApplicationActivatedEvent message)
         {
@@ -421,12 +429,14 @@ namespace DaxStudio.UI.ViewModels
         {
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanConnect);
         }
 
         public void Handle(TraceChangedEvent message)
         {
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanConnect);
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)
@@ -538,6 +548,11 @@ namespace DaxStudio.UI.ViewModels
         {
             backstage.IsOpen = false;
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+        }
+
+        public void SwapDelimiters()
+        {
+            ActiveDocument.SwapDelimiters();
         }
 
     }
