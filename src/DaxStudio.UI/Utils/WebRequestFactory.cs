@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (System.Net.WebException wex)
             {
-                if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
+                if (wex.Status == System.Net.WebExceptionStatus.ProtocolError || wex.Status == System.Net.WebExceptionStatus.NameResolutionFailure)
                 {
                     return true;
                 }
