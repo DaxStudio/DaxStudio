@@ -29,7 +29,7 @@ namespace DaxStudio.Tests
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext) {
-            ConnectionString = "Data Source=localhost";
+            ConnectionString = @"Data Source=localhost\tab12;";
             //ConnectionString = @"Data Source=.\sql2014tb";
         }
         //
@@ -99,6 +99,23 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(4, tabs.Count);
             Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+            Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+        }
+
+        [TestMethod]
+        public void TestPowerBICSDLVisitor()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\powerbi-csdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(13, tabs.Count, "Wrong number of tables in database");
+            Assert.AreEqual(2, tabs["ProductCategory"].Columns.Count(), "Wrong Column Count in ProductCategory");
+            Assert.AreEqual(8, tabs["ProductCategory"].Columns["ProductCategory"].DistinctValueCount);
         }
 
         [TestMethod]
@@ -132,7 +149,7 @@ namespace DaxStudio.Tests
         }
 
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
-        [TestMethod,Ignore]
+        [TestMethod]
         public void TestCSDLColumnTranslations()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
@@ -151,7 +168,7 @@ namespace DaxStudio.Tests
         }
 
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
-        [TestMethod,Ignore]
+        [TestMethod]
         public void TestCSDLTablesWithSpaces()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
@@ -167,8 +184,25 @@ namespace DaxStudio.Tests
 
         }
 
+        [TestMethod]
+        public void TestInvalidCSDLKPIs()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString + ";Initial Catalog=AW Internet Sales Tabular Model 2014", AdomdType.AnalysisServices);
+            c.Open();
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Caption", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\aw_internetsales_2014_csdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Internet Sales"];
+
+
+            Assert.AreEqual("Internet Sales", cmpyTab.Caption, "Table Name is translated");
+
+        }
+
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
-        [TestMethod,Ignore]
+        [TestMethod]
         public void TestADOTabularCSDLVisitorHierarchies()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
@@ -189,7 +223,7 @@ namespace DaxStudio.Tests
         }
 
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
-        [TestMethod,Ignore]
+        [TestMethod]
         public void TestADOTabularCSDLVisitorKPI()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);

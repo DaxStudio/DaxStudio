@@ -1,7 +1,7 @@
 <ResourceDictionary
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+  xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
   xmlns:l="clr-namespace:DaxStudio.UI.Controls">
   <SolidColorBrush x:Key="TextBoxEx_Background" Color="White" />
   <SolidColorBrush x:Key="TextBoxEx_Foreground" Color="Black" />

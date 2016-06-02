@@ -595,6 +595,8 @@ namespace ADOTabular
         // QueryComplete
 
         private string _powerBIFileName = string.Empty;
+        private string _currentCube = string.Empty;
+
         public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
         internal class DaxColumn {
@@ -613,18 +615,26 @@ namespace ADOTabular
             bool isMdxResult = (from DataColumn col in dataTable.Columns
                                 where col.ColumnName.IndexOf("].[") > 0
                                 select col).Count() > 0;
+            var measuresColumns = (from DataColumn col in dataTable.Columns
+                                where col.ColumnName.IndexOf(MEASURES_MDX) >= 0
+                                select col);
+            bool hasPlainMeasures = (from DataColumn col in measuresColumns
+                                     where col.ColumnName.IndexOf("].[", col.ColumnName.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length) > 0
+                                     select col).Count() == 0;
             foreach (DataColumn col in dataTable.Columns)
             {
                 bool removeCaption = false;
                 string name = col.ColumnName;
                 bool removeSquareBrackets = !isMdxResult;
+                int measuresMdxPos = name.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length;
                 if (isMdxResult) {
-                    if (name.IndexOf(MEASURES_MDX) >= 0) {
+                    if ((measuresMdxPos >= 0 )
+                        && (name.IndexOf("].[", measuresMdxPos) == -1)) {
                         name = name.Replace(MEASURES_MDX, "");
                         removeSquareBrackets = true;
                     }
                     else {
-                        removeCaption = true;
+                        removeCaption = hasPlainMeasures;
                     }
                 }
 
@@ -676,6 +686,7 @@ namespace ADOTabular
 
         public void SetCube(string cubeName)
         {
+            _currentCube = cubeName;
             _adomdConn.Close();
             _adomdConn = new AdomdConnection(string.Format("{0};Cube={1};Initial Catalog={2}", ConnectionString, cubeName , Database.Name), _connectionType);
         }
@@ -706,9 +717,11 @@ namespace ADOTabular
 
         public string ConnectionStringWithInitialCatalog {
             get {
-                return string.Format("{0};Initial Catalog={1}", this.ConnectionString , _currentDatabase);
+                return string.Format("{0};Initial Catalog={1}{2}", this.ConnectionString , _currentDatabase, CurrentCubeInternal);
             }
         }
+
+        internal object CurrentCubeInternal { get { return  (_currentCube == string.Empty)? string.Empty:string.Format(";Cube={0}", _currentCube); } }
 
         public ADOTabularConnection Clone()
         {

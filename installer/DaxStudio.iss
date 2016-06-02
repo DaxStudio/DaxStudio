@@ -15,7 +15,6 @@
 #define MyAppExeName "DaxStudio.exe"
 ; Calculated Constants
 #define MyAppFileVersion StringChange(MyAppVersion, ".", "_")
-
 #define use_dotnetfx45
 #define use_sql2012sp1amo
 #define use_sql2012sp1adomdclient
@@ -35,6 +34,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
+
 LicenseFile=eula.rtf
 ;OutputBaseFilename=DaxStudio_{#MyAppFileVersion}_setup
 OutputBaseFilename=DaxStudio_{#myAppMajor}_{#myAppMinor}_{#myAppRevision}_setup
@@ -154,6 +154,15 @@ Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabula
 
 [Code]
 
+// If there is a command-line parameter "skipdependencies=true", don't check for them }
+function ShouldInstallDependencies(): Boolean;
+begin
+  Result := True
+  if ExpandConstant('{param:skipdependencies|false}') <> 'false' then begin
+    Result := False;
+  end;
+end;
+
 var maxCommonSsasAssemblyVersion: string;
 
 function GetV4NetDir(version: string) : string;
@@ -168,7 +177,7 @@ begin
 
     RegQueryStringValue(HKLM, regkey, 'InstallPath', regval);
 
-    result := regval;
+    Result := regval;
 end; 
 
 function SwapSlashes(const path:String):String;
@@ -271,7 +280,7 @@ begin
 
   Log('Checking the maximum SSAS assembly versions');
   maxCommonSsasAssemblyVersion := GetMaxCommonSsasAssemblyVersionInternal();
-
+  Log('Max SSAS assembly versions ' + maxCommonSsasAssemblyVersion);
 //  msgbox(GetMaxCommonSsasAssemblyVersion(), mbInformation,MB_OK);
 
 //  if IsExcel2010Installed() then begin
@@ -300,7 +309,7 @@ begin
 	msi45('4.5');
 #endif
 
-
+  {
 	//install .netfx 2.0 sp2 if possible; if not sp1 if possible; if not .netfx 2.0
 #ifdef use_dotnetfx20
 	//check if .netfx 2.0 can be installed on this OS
@@ -314,6 +323,7 @@ begin
 	end;
 
 	if minwinversion(5, 1) then begin
+
 		dotnetfx20sp2();
 #ifdef use_dotnetfx20lp
 		dotnetfx20sp2lp();
@@ -344,22 +354,30 @@ begin
 	dotnetfx35sp1lp();
 #endif
 #endif
-
+  }
 #ifdef use_wic
 	wic();
 #endif
 
+if ShouldInstallDependencies() then
+  Log('Checking for Dependencies')
+else
+  Log('WARNING: Skipping Dependency checks due to /skipdependencies=true');
+
 // if no .netfx 4.0 is found, install the client (smallest)
 #ifdef use_dotnetfx40
   Log('Checking if .Net 4.0 is installed');
-	if (not netfxinstalled(NetFx40Client, '') and not netfxinstalled(NetFx40Full, '')) then
+	if (not netfxinstalled(NetFx40Client, '') and not netfxinstalled(NetFx40Full, '')) and ShouldInstallDependencies() then
 		dotnetfx40client();
 #endif
 
 #ifdef use_dotnetfx45
-    Log('Checking if .Net 4.5 is installed');
+    
     //dotnetfx45(2); // min allowed version is .netfx 4.5.2
-    dotnetfx45(0); // min allowed version is .netfx 4.5.0
+    if ShouldInstallDependencies() then begin
+      Log('Checking if .Net 4.5 is installed');
+      dotnetfx45(0); // min allowed version is .netfx 4.5.0
+    end;
 #endif
 
 #ifdef use_vc2010
@@ -367,13 +385,19 @@ begin
 #endif
 
 #ifdef use_sql2012sp1adomdclient
-  Log('Checking for AdomdClient');
-	sql2012sp1adomdclient();
+  
+  if ShouldInstallDependencies() then begin
+    Log('Checking for AdomdClient');
+	  sql2012sp1adomdclient();
+  end;
 #endif
 
 #ifdef use_sql2012sp1amo
-  Log('Checking for AMO');
-	sql2012sp1amo();
+  
+  if ShouldInstallDependencies() then begin
+    Log('Checking for AMO');
+	  sql2012sp1amo();
+   end;
 #endif
 
 	Result := true;

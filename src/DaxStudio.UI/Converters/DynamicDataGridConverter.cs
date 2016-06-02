@@ -32,7 +32,7 @@ namespace DaxStudio.UI.Converters
                     var txtBlock = new FrameworkElementFactory(typeof(TextBlock));
                     
                     txtBlock.SetValue(TextBlock.TextProperty, item.Caption);
-                    
+                    txtBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.WrapWithOverflow);        
                     contentPresenter.AppendChild(txtBlock);
                     hdrTemplate.VisualTree = contentPresenter;
                     
@@ -67,7 +67,7 @@ namespace DaxStudio.UI.Converters
                     {
                         var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                        var colBinding = new Binding("[" + item.ColumnName + "]");
+                        var colBinding = new Binding(FixBindingPath(item.ColumnName));
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
                         
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.Converters
                         HeaderTemplate = hdrTemplate,
                         Header = item.Caption,
                         
-                        ClipboardContentBinding = new Binding(item.ColumnName)
+                        ClipboardContentBinding = new Binding(FixBindingPath(item.ColumnName))
                     };
 
                     columns.Add(dgc);
@@ -94,6 +94,10 @@ namespace DaxStudio.UI.Converters
             return Binding.DoNothing;
         }
 
+        private string FixBindingPath(string columnName)
+        {
+            return "[" + columnName.Replace("]","^]").Replace(".","^.").Replace("[","^[") + "]";
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {

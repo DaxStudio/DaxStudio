@@ -13,10 +13,18 @@ namespace DaxStudio.Tests
     [TestClass]
     public class DatabaseProfileTests
     {
+        public string ConnectionString { get; private set; }
+
+        [TestInitialize]
+        public void Setup()
+        {
+            ConnectionString = @"Data Source=localhost\tab12;Initial Catalog=AdventureWorks2012";
+        }
+
         [TestMethod]
         public void TestAdventureWorksProfile()
         {
-            var cnn = new ADOTabular.ADOTabularConnection("Data Source=localhost;Initial Catalog=AdventureWorks", ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
+            var cnn = new ADOTabular.ADOTabularConnection(ConnectionString , ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
             cnn.Open();
             var db = cnn.Database;
             var profile = DatabaseProfiler.Create(db);

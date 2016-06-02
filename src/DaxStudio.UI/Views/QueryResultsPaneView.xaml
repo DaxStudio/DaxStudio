@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:ui="clr-namespace:DaxStudio.UI"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
@@ -76,12 +77,14 @@
                       CanUserDeleteRows="False"
                       VerticalGridLinesBrush="WhiteSmoke" 
                       HorizontalGridLinesBrush="WhiteSmoke"
-                      
                       AutoGenerateColumns="False" 
+                      cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]"
                       custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=ResultsDataView}"
                       >
+                <!-- ColumnWidth="SizeToCells"
+                      MinColumnWidth="50"
+                      -->
                 <DataGrid.AlternatingRowBackground>
-
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Offset="1" Color="#f2f2f2"/>
                         <GradientStop Color="#f7f7f7"/>

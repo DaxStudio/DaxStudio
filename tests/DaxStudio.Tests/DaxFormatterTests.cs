@@ -211,8 +211,8 @@ ORDER BY
             
         }
 
-        [TestMethod,Ignore]
-        public async Task TestBackslashEscapgin()
+        [TestMethod]
+        public async Task TestBackslashEscaping()
         {
             var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };
             var mockEventAggregator = new MockEventAggregator();
