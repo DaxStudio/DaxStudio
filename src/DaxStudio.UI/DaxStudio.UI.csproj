@@ -189,7 +189,6 @@
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\lib\Microsoft.AnalysisServices.DLL</HintPath>
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -334,15 +333,19 @@
     <Compile Include="Events\ActivateTrace.cs" />
     <Compile Include="Events\ApplicationActivatedEvent.cs" />
     <Compile Include="Events\CancelQueryEvent.cs" />
-    <Compile Include="Events\ChangeConnectionEvent.cs" />
+    <Compile Include="Events\ConnectionPendingEvent.cs" />
     <Compile Include="Events\CommentEvent.cs" />
     <Compile Include="Events\ConnectEvent.cs" />
     <Compile Include="Events\CancelConnectEvent.cs" />
+    <Compile Include="Events\DmvsLoadedEvent.cs" />
     <Compile Include="Events\DocumentConnectionUpdateEvent.cs" />
     <Compile Include="Events\EditorPositionChangedEvent.cs" />
     <Compile Include="Events\FileOpenedEvent.cs" />
     <Compile Include="Events\FileSavedEvent.cs" />
+    <Compile Include="Events\FunctionsLoadedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
+    <Compile Include="Events\MetadataLoadedEvent.cs" />
+    <Compile Include="Events\SelectedModelChangedEvent.cs" />
     <Compile Include="Events\NavigateToLocationEvent.cs" />
     <Compile Include="Events\NewVersionEvent.cs" />
     <Compile Include="Events\OpenRecentFileEvent.cs" />

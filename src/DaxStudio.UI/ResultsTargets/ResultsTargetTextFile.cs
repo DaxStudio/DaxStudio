@@ -1,4 +1,5 @@
-﻿using DaxStudio.Interfaces;
+﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using System;
@@ -73,7 +74,9 @@ namespace DaxStudio.UI.Model
                         } 
 
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteQuery(dq);
+                        var res = runner.ExecuteDataTableQuery(dq);
+                        //AdomdDataReader res = runner.ExecuteDataReaderQuery(dq);
+                        
                         if (res != null)
                         {
                             sw.Stop();

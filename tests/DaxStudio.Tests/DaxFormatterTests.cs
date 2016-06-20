@@ -58,7 +58,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod,Ignore]
-        public void TestInvalidDax()
+        public void TestFormatInvalidDax()
         {
             //var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
             var uri2 = "http://daxtest02.azurewebsites.net/api/daxformatter/daxformat";
@@ -86,7 +86,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod,Ignore]
-        public void TestInvalidDaxVerbose()
+        public void TestFormatInvalidDaxVerbose()
         {
             var uri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
             
@@ -211,7 +211,7 @@ ORDER BY
             
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public async Task TestBackslashEscaping()
         {
             var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };

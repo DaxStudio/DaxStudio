@@ -63,6 +63,7 @@ namespace DaxStudio.Tests
         {
             var daxState = DaxLineParser.ParseLine("table[column]",10,0);
             Assert.AreEqual(LineState.Column, daxState.LineState );
+            Assert.AreEqual("column", daxState.ColumnName);
             Assert.AreEqual(5, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(12, daxState.EndOffset, "EndOffset");
         }
@@ -146,6 +147,19 @@ namespace DaxStudio.Tests
         {
             Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table;table1[col1"));
         }
+
+        [TestMethod]
+        public void TestParseOpenColumnWithTrailingSpace()
+        {
+            var testText = "EVALUE FILTER('Products', 'product'[Product ";
+            var daxState = DaxLineParser.ParseLine(testText, testText.Length - 1, 0);
+            Assert.AreEqual(LineState.Column, daxState.LineState, "Column state not detected");
+            Assert.AreEqual("Product ", daxState.ColumnName, "preceeding word not correct");
+
+            Assert.AreEqual(LineState.Table, DaxLineParser.ParseLine(testText, 30, 0).LineState, "string state not detected");
+        }
+
+
 
         [TestMethod]
         public void TestFindFunctionNameSimple()

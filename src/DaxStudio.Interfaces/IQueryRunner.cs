@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using ADOTabular.AdomdClientWrappers;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace DaxStudio.Interfaces
@@ -14,7 +15,8 @@ namespace DaxStudio.Interfaces
     public interface IQueryRunner
     {
         string QueryText { get; }
-        DataTable ExecuteQuery(string daxQuery);
+        DataTable ExecuteDataTableQuery(string daxQuery);
+        AdomdDataReader ExecuteDataReaderQuery(string daxQuery);
         Task<DataTable> ExecuteQueryAsync(string daxQuery);
         DataTable ResultsTable { get; set; }
         void OutputMessage(string message);

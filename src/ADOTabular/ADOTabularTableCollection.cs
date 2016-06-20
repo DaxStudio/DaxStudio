@@ -10,6 +10,7 @@ namespace ADOTabular
         private readonly ADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel  _model;
         private SortedDictionary<string, ADOTabularTable> _tables;
+        private object mutex = new object();
 
         public ADOTabularTableCollection(ADOTabularConnection adoTabConn, ADOTabularModel model)
         {
@@ -24,7 +25,13 @@ namespace ADOTabular
             {
                 if (_tables == null)
                 {
-                    _adoTabConn.Visitor.Visit(this);
+                    lock (mutex)
+                    {
+                        if (_tables == null)
+                        {
+                            _adoTabConn.Visitor.Visit(this);
+                        }
+                    }
                 }
                 return _tables;
             }
@@ -99,6 +106,8 @@ namespace ADOTabular
         {
             return GetEnumerator();
         }
+
+        public bool IsCached { get { return _tables != null; } }
     }
 }
 

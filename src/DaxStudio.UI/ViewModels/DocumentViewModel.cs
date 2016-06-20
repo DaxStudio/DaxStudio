@@ -103,8 +103,8 @@ namespace DaxStudio.UI.ViewModels
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
             MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this);
-            FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator);
-            DmvPane = new DmvPaneViewModel(_connection, _eventAggregator);
+            FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this);
+            DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
 
@@ -156,7 +156,7 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor);
+            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator);
             UpdateSettings();
             if (_editor != null)
             {
@@ -205,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnDocumentChanged(object sender, EventArgs e)
         {
-            Log.Verbose("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
+            //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
             IsDirty = true;
             NotifyOfPropertyChange(() => IsDirty);
@@ -240,6 +240,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
+                if (_connection == null) return null;
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
                     if (_connection.IsPowerPivot)
@@ -554,7 +555,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 UpdateConnections(value,"");
                 Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection==null? "<null>": _connection.ConnectionString);          
-                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection)); 
+                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this)); 
             } 
         }
 
@@ -606,7 +607,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ChangeConnection()
         {
-            _eventAggregator.PublishOnUIThread(new ConnectionPendingEvent());
+            _eventAggregator.PublishOnUIThread(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");          
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
@@ -857,7 +858,7 @@ namespace DaxStudio.UI.ViewModels
         #region Execute Query
         private Timer _timer;
         private Stopwatch _queryStopWatch;
-        public DataTable ExecuteQuery(string daxQuery)
+        public DataTable ExecuteDataTableQuery(string daxQuery)
         {
             int row = 0;
             int col = 0;
@@ -892,6 +893,59 @@ namespace DaxStudio.UI.ViewModels
             {
                 Debug.WriteLine(e);
                 OutputError(e.Message,row,col);
+                ActivateOutput();
+                return null;
+            }
+            finally
+            {
+                _queryStopWatch.Stop();
+                _timer.Stop();
+                _timer.Elapsed -= _timer_Elapsed;
+                _timer.Dispose();
+                NotifyOfPropertyChange(() => ElapsedQueryTime);
+                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                QueryCompleted();
+
+            }
+
+        }
+
+        public AdomdDataReader ExecuteDataReaderQuery(string daxQuery)
+        {
+            int row = 0;
+            int col = 0;
+            this._editor.Dispatcher.Invoke(() =>
+            {
+                if (_editor.SelectionLength > 0)
+                {
+                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                    row = loc.Line;
+                    col = loc.Column;
+                }
+            });
+            try
+            {
+                var c = Connection;
+                foreach (var tw in TraceWatchers)
+                {
+                    if (tw.IsChecked)
+                    {
+                        tw.IsBusy = true;
+                    }
+                }
+                _timer = new Timer(300);
+                _timer.Elapsed += _timer_Elapsed;
+                _timer.Start();
+                _queryStopWatch = new Stopwatch();
+                _queryStopWatch.Start();
+                var dr = c.ExecuteReader(daxQuery);
+
+                return dr;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                OutputError(e.Message, row, col);
                 ActivateOutput();
                 return null;
             }
@@ -947,7 +1001,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task<DataTable> ExecuteQueryAsync(string daxQuery)
         {
-            return Task.Run(() => ExecuteQuery(daxQuery));
+            return Task.Run(() => ExecuteDataTableQuery(daxQuery));
         }
 
         public async void Handle(RunQueryEvent message)

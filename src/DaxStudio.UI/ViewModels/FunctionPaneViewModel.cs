@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using ADOTabular;
 using Caliburn.Micro;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -9,8 +10,9 @@ namespace DaxStudio.UI.ViewModels
     public class FunctionPaneViewModel:ToolPaneBaseViewModel
     {
         [ImportingConstructor]
-        public FunctionPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator) : base(connection, eventAggregator)
+        public FunctionPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document) : base(connection, eventAggregator)
         {
+            Document = document;
             Connection = connection;
             EventAggregator = eventAggregator; 
         }
@@ -25,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
             base.OnConnectionChanged();//isSameServer);
             //if (isSameServer) return;
             NotifyOfPropertyChange(()=> FunctionGroups);
+            EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, FunctionGroups));
         }
 
         public override string DefaultDockingPane
@@ -37,5 +40,7 @@ namespace DaxStudio.UI.ViewModels
             get { return "Functions"; }
             set { base.Title = value; }
         }
+
+        public DocumentViewModel Document { get; private set; }
     }
 }

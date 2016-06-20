@@ -1,6 +1,7 @@
 ﻿using DaxStudio.UI.Utils.Intellisense;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,16 +21,17 @@ namespace DaxStudio.UI.Utils
         private readonly ImageSource _image;
         private double _priority = 120.0;
         private IInsightProvider _insightProvider;
+
         /*
-        public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
-        {
-            _text = text;
-            _content = content;
-            _description = description;
-            _image = image;
-            _insightProvider = insightProvider;
-        }
-        */
+public DaxCompletionData(IInsightProvider insightProvider, string text, string content, string description, ImageSource image )
+{
+_text = text;
+_content = content;
+_description = description;
+_image = image;
+_insightProvider = insightProvider;
+}
+*/
         public DaxCompletionData(IInsightProvider insightProvider, string text, double priority)
         {
             _text = text;
@@ -40,7 +42,7 @@ namespace DaxStudio.UI.Utils
             _insightProvider = insightProvider;
         }
         
-        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularColumn column)
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularColumn column, DaxLineState state)
         {
             _text = column.DaxName;
             _content = column.Caption;
@@ -48,6 +50,7 @@ namespace DaxStudio.UI.Utils
             _image = GetMetadataImage(column.MetadataImage);
             _priority = 50.0;
             _insightProvider = insightProvider;
+            //_lineState = state;
         }
 
         public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularDynamicManagementView dmv)
@@ -68,7 +71,7 @@ namespace DaxStudio.UI.Utils
             _insightProvider = insightProvider;
         }
 
-        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularTable table)
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularTable table, DaxLineState state)
         {
             _text = table.DaxName;
             _content = table.Caption;
@@ -80,6 +83,7 @@ namespace DaxStudio.UI.Utils
 
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
+            Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset,completionSegment.EndOffset,completionSegment.Length );
             // walk back to start of word
             var newSegment = GetPreceedingWordSegment(textArea, completionSegment);
             var funcParamStart = Text.IndexOf("«");
@@ -92,7 +96,13 @@ namespace DaxStudio.UI.Utils
                 var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
                 if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
             }
-
+            if(completionSegment.EndOffset <= textArea.Document.TextLength-1)
+            {
+                var lastCompletionChar = insertionText[insertionText.Length - 1];
+                var lastDocumentChar = textArea.Document.GetCharAt(completionSegment.EndOffset);
+                Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
+                if (lastCompletionChar == lastDocumentChar) newSegment = new AnchorSegment(textArea.Document, newSegment.Offset, newSegment.Length + 1);
+            }
             textArea.Document.Replace(newSegment, insertionText);
             _insightProvider.ShowInsight(insertionText);
         }
@@ -103,10 +113,12 @@ namespace DaxStudio.UI.Utils
             
             int pos = completionSegment.EndOffset - 1;
             var loc = textArea.Document.GetLocation(pos);
+            Log.Debug("{class} {method} pos:{position}", "DaxCompletionData", "GetPreceedingWordSegment", pos);
             var docLine = textArea.Document.GetLineByOffset(pos);
             line = textArea.Document.GetText(docLine.Offset, loc.Column);
-            
-            return DaxLineParser.GetPreceedingWordSegment(textArea.Document,completionSegment.EndOffset, line);
+            var daxState = DaxLineParser.ParseLine(line, -1, 0);
+            //TOTO - look ahead to see if we have a table/column/function end character that we should replace upto
+            return DaxLineParser.GetPreceedingWordSegment(textArea.Document,completionSegment.EndOffset, line, daxState);
             
         }
 

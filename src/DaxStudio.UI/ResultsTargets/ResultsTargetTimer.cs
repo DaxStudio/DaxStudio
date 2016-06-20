@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Model
                 runner.OutputMessage("Query Started");
                 var sw = Stopwatch.StartNew();
                 var dq = runner.QueryText;
-                var res = runner.ExecuteQuery(dq);
+                var res = runner.ExecuteDataTableQuery(dq);
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);

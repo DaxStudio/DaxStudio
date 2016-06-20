@@ -5,6 +5,7 @@ using System.Text;
 using ADOTabular;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -13,9 +14,11 @@ namespace DaxStudio.UI.ViewModels
     public class DmvPaneViewModel:ToolPaneBaseViewModel
     {
         [ImportingConstructor]
-        public DmvPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator)
+        public DmvPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document)
             : base(connection, eventAggregator)
-        {}
+        {
+            Document = document;
+        }
 
         public ADOTabularDynamicManagementViewCollection DmvQueries
         {
@@ -27,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
             base.OnConnectionChanged();//isSameServer);
             //if (isSameServer) return;
             NotifyOfPropertyChange(()=> DmvQueries);
+            EventAggregator.PublishOnUIThread(new DmvsLoadedEvent(Document, Connection.DynamicManagementViews));
         }
         public override string DefaultDockingPane
         {
@@ -38,5 +42,7 @@ namespace DaxStudio.UI.ViewModels
             get { return "DMV"; }
             set { base.Title = value; }
         }
+
+        public DocumentViewModel Document { get; private set; }
     }
 }

@@ -32,6 +32,7 @@ namespace DaxStudio.UI.Utils
         private Utils.LineState _state;
         private LineState _endState;
         private string _tableName;
+        //private object _columnName;
 
         public DaxLineState(LineState lineState,int caretOffset, int startOffset, int endOffset, int startOfLineOffset)
         {
@@ -46,6 +47,9 @@ namespace DaxStudio.UI.Utils
         public int StartOffset { get { return _startOffset + _startOfLineOffset; } }
         public int EndOffset { get { return (_endOffset==0?_caretOffset:_endOffset) + _startOfLineOffset; } }
         public string TableName { get { return _tableName; } set { _tableName = value; } }
+
+        //public string ColumnName { get { return string.Format("{0}[{1}", _tableName, _columnName); }  internal set { _columnName = value; } }
+        public string ColumnName { get; internal set; }
         public void SetState(LineState newState, int pos)
         {
             if (newState != _state)
@@ -79,9 +83,15 @@ namespace DaxStudio.UI.Utils
 
         public static DaxLineState ParseLine(string line, int offset, int startOfLineOffset )
         {
+            // todo - can we get away with 1 string builder instance?
             StringBuilder sbTableName = new StringBuilder();
+            StringBuilder sbColumnName = new StringBuilder();
+            StringBuilder sbMeasureName = new StringBuilder();
+
             //LineState daxState.LineState = LineState.Other;
             DaxLineState daxState = new DaxLineState(LineState.NotSet, offset, 0, 0, startOfLineOffset);
+            if (offset == 0) { return daxState; }
+
             for (var i = 0; i < line.Length; i++)
             {
                 switch (line[i])
@@ -99,6 +109,7 @@ namespace DaxStudio.UI.Utils
                                 || daxState.LineState == LineState.TableDelimiter)
                             {
                                 daxState.SetState(LineState.Column, i);
+                                sbColumnName.Clear();
                                 if (i > 1 && line[i-1] != '\'')
                                 {
                                     sbTableName.Clear();
@@ -111,6 +122,7 @@ namespace DaxStudio.UI.Utils
                     case ']':
                         if (daxState.LineState != LineState.String)
                             daxState.SetState(LineState.Other,i);
+                        
                         break;
                     case '\'':
                         if (daxState.LineState != LineState.String && daxState.LineState != LineState.Table)
@@ -140,13 +152,16 @@ namespace DaxStudio.UI.Utils
                         if (daxState.LineState != LineState.String 
                             && daxState.LineState != LineState.Table 
                             && daxState.LineState != LineState.TableDelimiter
-                            && daxState.LineState != LineState.Column )
+                            && daxState.LineState != LineState.Column
+                            && daxState.LineState != LineState.Measure)
                         
                         //if (daxState.LineState == LineState.Dmv)
                         {
                             daxState.SetState(char.IsLetterOrDigit(line[i]) ? LineState.LetterOrDigit : LineState.Other, i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
+                        if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
+                        if (daxState.LineState == LineState.Measure) sbMeasureName.Append(line[i]);
                         break;
                     case '.':
                         if (GetPreceedingWord(line.Substring(0,i)).ToUpper() == "$SYSTEM") {
@@ -155,23 +170,28 @@ namespace DaxStudio.UI.Utils
                                 daxState.SetState(LineState.Dmv, i+1);
                             }
                         }
+                        // TODO can tables have . in them??
                         break;
                     default:
                         if (daxState.LineState != LineState.String 
                             && daxState.LineState != LineState.Table 
                             && daxState.LineState != LineState.TableDelimiter
                             && daxState.LineState != LineState.Column 
-                            && daxState.LineState != LineState.Dmv)
+                            && daxState.LineState != LineState.Dmv
+                            && daxState.LineState != LineState.Measure)
                         {
                             daxState.SetState( char.IsLetterOrDigit(line[i])?LineState.LetterOrDigit:LineState.Other ,i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
+                        if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
+                        if (daxState.LineState == LineState.Measure) sbMeasureName.Append(line[i]);
                         break;
                 }
 
             }
             
             daxState.TableName = sbTableName.ToString();
+            daxState.ColumnName = sbColumnName.ToString();
             return daxState;
         }
 
@@ -212,10 +232,27 @@ namespace DaxStudio.UI.Utils
             return tableName.TrimStart('\'').TrimEnd('\'');
         }
         
-        public static ISegment GetPreceedingWordSegment(TextDocument document, int endOffset, string line)
+        public static ISegment GetPreceedingWordSegment(TextDocument document, int endOffset, string line, DaxLineState daxState)
         {
             string word = GetPreceedingWord(line);
+            if (daxState != null)
+            {
+                switch (daxState.LineState)
+                {
+                    case LineState.Column:
+                        //word = daxState.ColumnName;
+                        break;
+                    case LineState.Table:
+                        //word = daxState.TableName;
+                        break;
+                    //default:
+                    //    word = GetPreceedingWord(line);
+                    //    break;
+                }
+            }
+            
             var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document,endOffset - word.Length, word.Length);
+            Log.Debug("{class} {method} {state} {endOffset} {word}", "DaxLineParser", "GetPreceedingWordSegment",daxState.LineState.ToString(), endOffset, word);
             return segment;
         }
 
