@@ -18,6 +18,7 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetTextFile : IResultsTarget
     {
+        #region Standard Properties
         public string Name
         {
             get { return "File"; }
@@ -26,8 +27,32 @@ namespace DaxStudio.UI.Model
         {
             get { return "Standard"; }
         }
+        public bool IsDefault
+        {
+            get { return false; }
+        }
 
-        public string MyProperty { get; set; }
+        public bool IsEnabled
+        {
+            get { return true; }
+        }
+
+        public int DisplayOrder
+        {
+            get { return 300; }
+        }
+
+
+        public string Message
+        {
+            get { return "Results will be sent to a Text File"; }
+        }
+
+        public OutputTargets Icon
+        {
+            get { return OutputTargets.File; }
+        }
+        #endregion
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
@@ -152,30 +177,6 @@ namespace DaxStudio.UI.Model
             return Task.Run(() => { });
         }
 
-        public bool IsDefault
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-
-        public int DisplayOrder
-        {
-            get { return 300; }
-        }
-
-
-        public string Message
-        {
-            get { return "Results will be sent to a Text File"; }
-        }
-
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.File; }
-        }
+        
     }
 }

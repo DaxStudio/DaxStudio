@@ -170,6 +170,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SsasAssemblyResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Caliburn.Micro">

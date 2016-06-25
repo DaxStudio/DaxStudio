@@ -24,14 +24,15 @@ namespace DaxStudio.Standalone
             
         }
 
-        /*
+        
         private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)
         {
-            //Log.Warning("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.Name, args.RequestingAssembly);
+            Log.Warning("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.RequestingAssembly, args.Name);
             System.Diagnostics.Debug.WriteLine(string.Format("ReqAss: {0}, Name{1}", args.RequestingAssembly, args.Name));
+            if (args.Name.StartsWith("Microsoft.AnalysisServices")) return SsasAssemblyResolver.Instance.Resolve(args.Name);
             return null;
         }
-        */ 
+        
         
         // All WPF applications should execute on a single-threaded apartment (STA) thread
         [STAThread]
@@ -53,14 +54,16 @@ namespace DaxStudio.Standalone
 #endif
                 Log.Logger = log;
                 Log.Information("============ DaxStudio Startup =============");
-                //AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+                SsasAssemblyResolver.Instance.BuildAssemblyCache();
+
+                AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
 
                 app.Run();
             }
             catch (Exception ex)
             {
-                Log.Error("Class: {0} Method: {1} Error: {2} Stack: {3}", "EnryPoint", "Main", ex.Message, ex.StackTrace);
+                Log.Error("Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
 #if DEBUG 
                 MessageBox.Show(ex.Message);
 #endif
