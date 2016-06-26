@@ -1,0 +1,32 @@
+﻿<Window x:Class="DaxStudio.Checker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DaxStudio.Checker"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525" Loaded="OnLoaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition RowDefinition.Height="Auto" />
+            <RowDefinition RowDefinition.Height="*" />
+            <RowDefinition RowDefinition.Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel StackPanel.Orientation="Horizontal">
+            <Label>
+                Dependency Checks:
+            </Label>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <TextBox x:Name="Output" />
+        </ScrollViewer>
+        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="2" FrameworkElement.HorizontalAlignment="Right">
+            <Button Margin="2,2,2,0" Button.IsDefault="True" Click="Ok_Click" Height="20" VerticalAlignment="Top">
+                Ok
+            </Button>
+            <Button FrameworkElement.Margin="2" Button.IsCancel="True" Click="Ok_Click">
+                Cancel
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
