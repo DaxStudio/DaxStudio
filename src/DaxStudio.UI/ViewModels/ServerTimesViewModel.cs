@@ -14,6 +14,7 @@ using System.Windows;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -107,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
         
     {
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;

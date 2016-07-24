@@ -44,7 +44,7 @@ _insightProvider = insightProvider;
         
         public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularColumn column, DaxLineState state)
         {
-            _text = column.DaxName;
+            _text = string.Format("[{0}]", column.Caption); //column.DaxName;
             _content = column.Caption;
             _description = string.IsNullOrEmpty(column.Description)?null:column.Description;
             _image = GetMetadataImage(column.MetadataImage);
@@ -115,10 +115,12 @@ _insightProvider = insightProvider;
             var loc = textArea.Document.GetLocation(pos);
             Log.Debug("{class} {method} pos:{position}", "DaxCompletionData", "GetPreceedingWordSegment", pos);
             var docLine = textArea.Document.GetLineByOffset(pos);
-            line = textArea.Document.GetText(docLine.Offset, loc.Column);
-            var daxState = DaxLineParser.ParseLine(line, -1, 0);
-            //TOTO - look ahead to see if we have a table/column/function end character that we should replace upto
-            return DaxLineParser.GetPreceedingWordSegment(textArea.Document,completionSegment.EndOffset, line, daxState);
+            //line = textArea.Document.GetText(docLine.Offset, loc.Column);
+            line = textArea.Document.GetText(docLine.Offset, docLine.Length);
+            Log.Verbose("{class} {method} {message}", "DaxCompletionData", "GetPreceedingWordSegment", "line: " + line);
+            var daxState = DaxLineParser.ParseLine(line, loc.Column, 0);
+            //TODO - look ahead to see if we have a table/column/function end character that we should replace upto
+            return DaxLineParser.GetPreceedingWordSegment(textArea.Document,docLine.Offset, loc.Column, line, daxState);
             
         }
 

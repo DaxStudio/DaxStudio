@@ -417,6 +417,7 @@ namespace DaxStudio.UI.Utils
             int pos = _editor.CaretOffset > 0 ? _editor.CaretOffset - 1: 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
+            if (docLine.Length == 0) return "";
             string line = _editor.Document.GetText(docLine.Offset, loc.Column);
             //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "GetCurrentLine", "end");
             return line;

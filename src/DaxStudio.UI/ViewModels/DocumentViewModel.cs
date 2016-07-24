@@ -119,7 +119,7 @@ namespace DaxStudio.UI.ViewModels
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
-            var t = DaxFormatterProxy.PrimeConnectionAsync();
+            var t = DaxFormatterProxy.PrimeConnectionAsync(_options);
 
         }
 
@@ -1826,7 +1826,7 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry).ContinueWith((res) => {
+            DaxFormatterProxy.FormatDaxAsync(qry, _options).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 

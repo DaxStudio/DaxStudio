@@ -54,7 +54,7 @@ namespace DaxStudio.Standalone
 #endif
                 Log.Logger = log;
                 Log.Information("============ DaxStudio Startup =============");
-                SsasAssemblyResolver.Instance.BuildAssemblyCache();
+                //SsasAssemblyResolver.Instance.BuildAssemblyCache();
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 

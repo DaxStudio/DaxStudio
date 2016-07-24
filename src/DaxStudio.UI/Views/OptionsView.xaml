@@ -13,12 +13,51 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
+            <Style TargetType="{x:Type xctk:WatermarkTextBox}">
+                <Style.Triggers>
+                    <Trigger Property="IsReadOnly" Value="True">
+                        <Setter Property="Background" Value="LightGray" />
+                    </Trigger>
+                    <Trigger Property="IsReadOnly" Value="False">
+                        <Setter Property="Background" Value="White" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="{x:Type TextBox}">
+                <Style.Triggers>
+                    <Trigger Property="IsReadOnly" Value="True">
+                        <Setter Property="Background" Value="LightGray" />
+                    </Trigger>
+                    <Trigger Property="IsReadOnly" Value="False">
+                        <Setter Property="Background" Value="White" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="{x:Type PasswordBox}">
+                <Style.Triggers>
+                    <Trigger Property="Focusable" Value="False">
+                        <Setter Property="Background" Value="LightGray" />
+                    </Trigger>
+                    <Trigger Property="Focusable" Value="True">
+                        <Setter Property="Background" Value="White" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <!--<Style TargetType="{x:Type TextBox}">
+                <Style.Resources>
+                    <SolidColorBrush 
+                    x:Key="{x:Static SystemColors.ControlBrushKey}" 
+                    Color="Blue" />
+                </Style.Resources>
+            </Style>-->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
         </ResourceDictionary>
-        
+
+
     </UserControl.Resources>
 	<Grid Margin="35,25,0,0">
 		<Grid.ColumnDefinitions>
@@ -27,7 +66,6 @@
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
 
 		</Grid.RowDefinitions>
@@ -35,67 +73,69 @@
 			Grid.Row="0"
 			Grid.Column="0"/>
 		<!-- Editor -->
-        <WrapPanel Grid.Row="1">
-        <GroupBox Header="Editor" Grid.Row="1" Margin="0,0,10,0" MinWidth="300" Foreground="{StaticResource DaxStudioBrush}">
-	    <Grid Margin="5,5,0,0">
-		    <Grid.ColumnDefinitions>
-			    <ColumnDefinition Width="Auto"/>
-			    <ColumnDefinition Width="*"/>
-		    </Grid.ColumnDefinitions>
-		    <Grid.RowDefinitions>
-			    <RowDefinition Height="Auto"/>
-			    <RowDefinition Height="Auto"/>
-			    <RowDefinition Height="Auto"/>
-			    <RowDefinition Height="Auto"/>
-			    <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+        <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
+            <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}">
+            <GroupBox Header="Editor" Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
+	            <Grid Margin="5,5,0,0">
+		        <Grid.ColumnDefinitions>
+			        <ColumnDefinition Width="Auto"/>
+			        <ColumnDefinition Width="*"/>
+		        </Grid.ColumnDefinitions>
+		        <Grid.RowDefinitions>
+			        <RowDefinition Height="Auto"/>
+			        <RowDefinition Height="Auto"/>
+			        <RowDefinition Height="Auto"/>
+			        <RowDefinition Height="Auto"/>
+			        <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
 
-		    </Grid.RowDefinitions>
-		    <Label Grid.Row="3" Grid.Column="0" Content="Show Line Numbers"/>
-		    <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" />
-		    <Label Grid.Row="4" Grid.Column="0" Content="Font Family"/>
-		    <ComboBox x:Name="EditorFontFamily" Grid.Row="4" Grid.Column="1"
-			    xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			    ItemTemplate="{DynamicResource FontTemplate}"
-                SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-                IsSynchronizedWithCurrentItem="True"
-                VerticalContentAlignment="Center"      >
-                <ComboBox.Resources>
+		        </Grid.RowDefinitions>
+		        <Label Grid.Row="3" Grid.Column="0" Content="Show Line Numbers"/>
+		        <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" />
+		        <Label Grid.Row="4" Grid.Column="0" Content="Font Family"/>
+		        <ComboBox x:Name="EditorFontFamily" Grid.Row="4" Grid.Column="1"
+			        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			        ItemTemplate="{DynamicResource FontTemplate}"
+                    SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                    IsSynchronizedWithCurrentItem="True"
+                    VerticalContentAlignment="Center"      >
+                    <ComboBox.Resources>
 
-                    <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
-                        <CollectionViewSource.SortDescriptions>
-                            <ComponentModel:SortDescription PropertyName="Source" />
-                        </CollectionViewSource.SortDescriptions>
-                    </CollectionViewSource>
+                        <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                            <CollectionViewSource.SortDescriptions>
+                                <ComponentModel:SortDescription PropertyName="Source" />
+                            </CollectionViewSource.SortDescriptions>
+                        </CollectionViewSource>
 
-                    <Style x:Key="FontStyle">
-                        <Setter Property="Control.FontFamily" Value="{Binding Source}" />
-                        <Setter Property="Control.FontSize" Value="14" />
-                    </Style>
+                        <Style x:Key="FontStyle">
+                            <Setter Property="Control.FontFamily" Value="{Binding Source}" />
+                            <Setter Property="Control.FontSize" Value="14" />
+                        </Style>
 
-                    <DataTemplate x:Key="FontTemplate">
-                        <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
-                            <TextBlock Style="{StaticResource FontStyle}"
-                                       Text="{Binding Source}"
-                                       ToolTip="{Binding Source}" />
-                        </StackPanel>
-                    </DataTemplate>
+                        <DataTemplate x:Key="FontTemplate">
+                            <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
+                                <TextBlock Style="{StaticResource FontStyle}"
+                                           Text="{Binding Source}"
+                                           ToolTip="{Binding Source}" />
+                            </StackPanel>
+                        </DataTemplate>
 
-                </ComboBox.Resources>
+                    </ComboBox.Resources>
 
-                <ComboBox.ItemsSource>
-                    <Binding Source="{StaticResource myFonts}" />
-                </ComboBox.ItemsSource>
-		    </ComboBox>
-		    <Label Grid.Row="5" Grid.Column="0" Content="Font Size"/>
-            <xctk:DoubleUpDown Grid.Row="5" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
-		    <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
-             <Label Grid.Row="6" Grid.Column="0" Content="Enable Intellisense"/>
-                <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
-            </Grid>		
-		</GroupBox>
-            <GroupBox Header="Proxy" MinWidth="300" Foreground="{StaticResource DaxStudioBrush}">
+                    <ComboBox.ItemsSource>
+                        <Binding Source="{StaticResource myFonts}" />
+                    </ComboBox.ItemsSource>
+		        </ComboBox>
+		        <Label Grid.Row="5" Grid.Column="0" Content="Font Size"/>
+                <xctk:DoubleUpDown Grid.Row="5" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+		        <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
+                 <Label Grid.Row="6" Grid.Column="0" Content="Enable Intellisense"/>
+                    <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
+                </Grid>		
+		    </GroupBox>
+                
+            <GroupBox Header="Proxy" MinWidth="300"  Width="375" Margin="0,0,10,0" Foreground="{StaticResource DaxStudioBrush}">
                 <Grid Margin="5,5,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -109,23 +149,23 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Use System Proxy"/>
                     <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center"/>
                     <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" />
-                    <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" />
+                        <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
                     <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
-                    <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
-                    <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
-                    <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}">
+                        <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" IsReadOnly="{Binding Path=ProxyUseSystem}"/>
+                    <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}" />
+                        <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" Focusable="{Binding Path=ProxyDontUseSystem}">
                         <i:Interaction.Behaviors>
                             <beh:PasswordBoxBindingBehavior SecurePassword="{Binding ProxySecurePassword}"/>
                         </i:Interaction.Behaviors>
                     </PasswordBox>
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Query History" Foreground="{StaticResource DaxStudioBrush}">
+            <!-- Query History -->
+            <GroupBox Header="Query History"  Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -147,6 +187,28 @@
                     <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                 </Grid>
             </GroupBox>
+
+            <GroupBox Header="Timeouts"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:"/>
+                    <xctk:IntegerUpDown x:Name="QueryEndEventTimeout" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                    <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
+                    <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:"/>
+                    <xctk:IntegerUpDown x:Name="DaxFormatterRequestTimeout" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                    <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
+                </Grid>
+            </GroupBox>
         </WrapPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

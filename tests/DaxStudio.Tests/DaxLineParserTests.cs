@@ -65,18 +65,20 @@ namespace DaxStudio.Tests
             Assert.AreEqual(LineState.Column, daxState.LineState );
             Assert.AreEqual("column", daxState.ColumnName);
             Assert.AreEqual(5, daxState.StartOffset, "StartOffset");
-            Assert.AreEqual(12, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(13, daxState.EndOffset, "EndOffset");
         }
 
         [TestMethod]
         public void GetCompletionSegmentTestWithLeadingAndTrailingText()
         {
+            //                   0123456789012345678901234567890123456789
+            //         01234567891111111111222222222233333333334444444444
             var dax = "filter( table[column] , table[column]=\"red\"";
             //                       ^ 15                       ^ 41
             var daxState = DaxLineParser.ParseLine(dax, 15,0); 
             Assert.AreEqual(LineState.Column, daxState.LineState);
             Assert.AreEqual(13, daxState.StartOffset, "StartOffset");
-            Assert.AreEqual(20, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(21, daxState.EndOffset, "EndOffset");
             Assert.AreEqual("table", daxState.TableName);
             
             var daxState2 = DaxLineParser.ParseLine(dax, 41,0);
@@ -104,13 +106,28 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void GetCompletionSegmentMidColumn()
+        {
+            //                   01234567890123 
+            //         012345678911111111112222
+            var dax = "'my table'[column name], blah";
+            //                         ^16
+            var daxState = DaxLineParser.ParseLine(dax, 11, 0);
+            Assert.AreEqual(LineState.Column, daxState.LineState);
+            Assert.AreEqual(10, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(23, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual("my table", daxState.TableName);
+        }
+
+
+        [TestMethod]
         public void GetCompletionSegmentTestWithTabBeforeTableName()
         {
             var dax = "\t'table";
             //               ^ 5
             var daxState = DaxLineParser.ParseLine(dax, dax.Length - 1, 0);
             Assert.AreEqual(LineState.Table, daxState.LineState);
-            Assert.AreEqual(2, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(1, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(dax.Length - 1, daxState.EndOffset, "EndOffset");
             Assert.AreEqual("table", daxState.TableName);
         }
@@ -173,6 +190,30 @@ namespace DaxStudio.Tests
         {
             Assert.AreEqual("filter", DaxLineParser.GetPreceedingWord("evaluate filter "));
 
+        }
+
+        [TestMethod]
+        public void TestParseOpenTable()
+        {
+            //                        0
+            //              01234567891  
+            var testText = "FILTER('Pr";
+            var daxState = DaxLineParser.ParseLine(testText, testText.Length, 0);
+            Assert.AreEqual(LineState.Table, daxState.LineState, "Table state not detected");
+            //Assert.AreEqual(7, daxState.StartOffset);
+            Assert.AreEqual(10, daxState.EndOffset);
+
+
+        }
+
+        [TestMethod]
+        public void TestMidStatementParsing()
+        {
+            var qry = "EVALUATE FILTER(Reseller, Reseller[Reselle]= \"bob\")";
+            var daxState = DaxLineParser.ParseLine(qry, 42, 0);
+            Assert.AreEqual(LineState.Column, daxState.LineState,"LineState");
+            Assert.AreEqual(43, daxState.EndOffset,"EndOffset");
+            Assert.AreEqual(34, daxState.StartOffset, "StartOffset");
         }
 
     }

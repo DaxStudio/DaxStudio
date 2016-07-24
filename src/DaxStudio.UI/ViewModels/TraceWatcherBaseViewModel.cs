@@ -10,6 +10,8 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using System.Timers;
+using System;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,11 +28,14 @@ namespace DaxStudio.UI.ViewModels
         private List<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
+        private IGlobalOptions _globalOptions;
+        
 
         [ImportingConstructor]
-        protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator)
+        protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)
         {
             _eventAggregator = eventAggregator;
+            _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             Init();
             //_eventAggregator.Subscribe(this); 
@@ -204,7 +209,7 @@ namespace DaxStudio.UI.ViewModels
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 
             // start timer, if timer elapses then print warning and set IsBusy = false
-            _timeout = new Timer(5000);
+            _timeout = new Timer(_globalOptions.QueryEndEventTimeout.SecondsToMilliseconds());
             _timeout.AutoReset = false;
             _timeout.Elapsed += QueryEndEventTimeout;
             _timeout.Start();
@@ -216,6 +221,6 @@ namespace DaxStudio.UI.ViewModels
             Reset();
             _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not recieved - Tracing timeout exceeded"));
         }
-        
+
     }
 }

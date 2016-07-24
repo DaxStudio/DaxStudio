@@ -7,6 +7,7 @@ using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace ADOTabular
 {
@@ -609,6 +610,8 @@ namespace ADOTabular
 
         public static void FixColumnNaming(DataTable dataTable)
         {
+            var columnPattern = new Regex(@"\[(?<col>.*)]\d*$",RegexOptions.Compiled);
+
             const string MEASURES_MDX = "[Measures].";
             var newColumnNames = new Collection<DaxColumn>();
             // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
@@ -626,12 +629,16 @@ namespace ADOTabular
                 bool removeCaption = false;
                 string name = col.ColumnName;
                 bool removeSquareBrackets = !isMdxResult;
-                int measuresMdxPos = name.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length;
+                int measuresMdxPos = name.IndexOf(MEASURES_MDX);// + MEASURES_MDX.Length;
                 if (isMdxResult) {
-                    if ((measuresMdxPos >= 0 )
-                        && (name.IndexOf("].[", measuresMdxPos) == -1)) {
-                        name = name.Replace(MEASURES_MDX, "");
-                        removeSquareBrackets = true;
+                    if ((measuresMdxPos >= 0 ))
+                    {
+                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length) == -1)
+                        && (name.IndexOf("].[", 0) == MEASURES_MDX.Length-2))
+                        {
+                            removeSquareBrackets = true;
+                        }
+                        name = name.Replace(MEASURES_MDX, measuresMdxPos > 0 ? "\n":"");
                     }
                     else {
                         removeCaption = hasPlainMeasures;
@@ -639,6 +646,11 @@ namespace ADOTabular
                 }
 
                 if (removeSquareBrackets) {
+                    var m = columnPattern.Match(name);
+                    if (m.Success)
+                    {
+                        name = m.Groups["col"].Value;
+                    }
                     // Format column naming for DAX result or if it is a measure name
                     int firstBracket = name.IndexOf('[') + 1;
                     name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
@@ -670,10 +682,13 @@ namespace ADOTabular
             // Update names
             foreach (DaxColumn c in newColumnNames)
             {
+                var dc = dataTable.Columns[c.OriginalName];
+                dc.Caption = c.NewCaption;
+
                 if (!c.UseOriginalName)
                 {
-                    var dc = dataTable.Columns[c.OriginalName];
-                    dc.Caption = c.NewCaption;
+                //    var dc = dataTable.Columns[c.OriginalName];
+                //    dc.Caption = c.NewCaption;
                     dc.ColumnName = c.NewName;
                 }
             }

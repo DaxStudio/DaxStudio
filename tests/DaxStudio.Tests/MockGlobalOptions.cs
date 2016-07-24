@@ -10,6 +10,8 @@ namespace DaxStudio.Tests
 {
     class MockGlobalOptions : IGlobalOptions
     {
+        public int DaxFormatterRequestTimeout  { get; set;   }
+
         public bool EditorEnableIntellisense { get; set; }
 
         public string EditorFontFamily { get; set; }
@@ -25,6 +27,8 @@ namespace DaxStudio.Tests
         public string ProxyUser { get; set; }
 
         public bool ProxyUseSystem { get; set; }
+
+        public int QueryEndEventTimeout { get; set;  }
 
         public int QueryHistoryMaxItems { get; set; }
 
