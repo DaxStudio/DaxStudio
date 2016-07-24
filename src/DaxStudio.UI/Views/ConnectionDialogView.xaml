@@ -240,7 +240,7 @@
                                 <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,12,5,0" x:Name="rdoPowerBI" VerticalAlignment="Top" IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding PowerBIDesignerDetected}">
                                     <StackPanel Orientation="Horizontal">
                                         <!--<Image  Source="{StaticResource PowerBI}" Margin="0,0,5,0"/>-->
-                                        <TextBlock Text="Power BI Designer"/>
+                                        <TextBlock Text="Power BI Desktop"/>
                                     </StackPanel>
                                 </RadioButton>
                                 <ComboBox Height="23" Margin="0,5,5,5" x:Name="cboPowerBI" 
