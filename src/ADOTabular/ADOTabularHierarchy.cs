@@ -17,7 +17,7 @@ namespace ADOTabular
         {
             _levels = new List<ADOTabularLevel>();
             _structure = structure;
-            if (structure != "Natural")
+            if (structure == "Unnatural")
             {
                 if (description.Length > 0) Description += '\n';
                 Description += "WARNING: Unnatural Hierarchy - may have a negative performance impact";

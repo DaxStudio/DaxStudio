@@ -328,6 +328,10 @@ namespace DaxStudio.UI.ViewModels
             SelectedTarget = ActiveDocument.SelectedTarget;
         
             _queryRunning = ActiveDocument.IsQueryRunning;
+            if (ActiveDocument.Tracer == null)
+                _traceStatus = QueryTraceStatus.Stopped;
+            else
+                _traceStatus = ActiveDocument.Tracer.Status;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);

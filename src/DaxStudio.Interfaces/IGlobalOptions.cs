@@ -19,6 +19,7 @@ namespace DaxStudio.Interfaces
         string ProxyAddress { get; set; }
         string ProxyUser { get; set; }
         SecureString ProxySecurePassword { get; set; }
-
+        int QueryEndEventTimeout { get; set; }
+        int DaxFormatterRequestTimeout { get; set; }
     }
 }

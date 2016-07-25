@@ -58,7 +58,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod,Ignore]
-        public void TestInvalidDax()
+        public void TestFormatInvalidDax()
         {
             //var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
             var uri2 = "http://daxtest02.azurewebsites.net/api/daxformatter/daxformat";
@@ -86,7 +86,7 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod,Ignore]
-        public void TestInvalidDaxVerbose()
+        public void TestFormatInvalidDaxVerbose()
         {
             var uri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
             
@@ -152,8 +152,8 @@ namespace DaxStudio.Tests
             var qry = "evaluate values(tatatata ";
             //var req = new DaxStudio.UI.Model.DaxFormatterRequest();
             //req.Dax = qry;
-
-            var t = DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
+            var t = DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, opt);
             t.Wait();
             DaxStudio.UI.Model.DaxFormatterResult res = t.Result;
             Assert.AreEqual(0, res.FormattedDax.Length);
@@ -204,7 +204,8 @@ CALCULATETABLE (
 ORDER BY
     'SalesTerritory'[SalesTerritory Country] DESC,
     'Product'[Colour]";
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry,opt);
             Assert.AreEqual(569, res.FormattedDax.Length, "Query length does not match");
             Assert.AreEqual(formattedQry, res.FormattedDax, "Formatted Query does not match expected format");
             Assert.IsNull(res.errors);
@@ -212,7 +213,7 @@ ORDER BY
         }
 
         [TestMethod,Ignore]
-        public async Task TestBackslashEscapgin()
+        public async Task TestBackslashEscaping()
         {
             var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };
             var mockEventAggregator = new MockEventAggregator();
@@ -221,7 +222,8 @@ ORDER BY
             //var daxFmtProxy = IoC.BuildUp(webReqFac);
             var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
             var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry);
+            var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, opt);
             Assert.AreEqual(expectedQry, res.FormattedDax);
         }
     }

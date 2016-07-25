@@ -7,6 +7,7 @@ using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace ADOTabular
 {
@@ -362,7 +363,7 @@ namespace ADOTabular
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = query;
-            var dt = new DataTable("DAXResult");
+            //var dt = new DataTable("DAXResult");
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             return rdr;
@@ -595,6 +596,8 @@ namespace ADOTabular
         // QueryComplete
 
         private string _powerBIFileName = string.Empty;
+        private string _currentCube = string.Empty;
+
         public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
         internal class DaxColumn {
@@ -607,28 +610,47 @@ namespace ADOTabular
 
         public static void FixColumnNaming(DataTable dataTable)
         {
+            var columnPattern = new Regex(@"\[(?<col>.*)]\d*$",RegexOptions.Compiled);
+
             const string MEASURES_MDX = "[Measures].";
             var newColumnNames = new Collection<DaxColumn>();
             // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
             bool isMdxResult = (from DataColumn col in dataTable.Columns
                                 where col.ColumnName.IndexOf("].[") > 0
                                 select col).Count() > 0;
+            var measuresColumns = (from DataColumn col in dataTable.Columns
+                                where col.ColumnName.IndexOf(MEASURES_MDX) >= 0
+                                select col);
+            bool hasPlainMeasures = (from DataColumn col in measuresColumns
+                                     where col.ColumnName.IndexOf("].[", col.ColumnName.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length) > 0
+                                     select col).Count() == 0;
             foreach (DataColumn col in dataTable.Columns)
             {
                 bool removeCaption = false;
                 string name = col.ColumnName;
                 bool removeSquareBrackets = !isMdxResult;
+                int measuresMdxPos = name.IndexOf(MEASURES_MDX);// + MEASURES_MDX.Length;
                 if (isMdxResult) {
-                    if (name.IndexOf(MEASURES_MDX) >= 0) {
-                        name = name.Replace(MEASURES_MDX, "");
-                        removeSquareBrackets = true;
+                    if ((measuresMdxPos >= 0 ))
+                    {
+                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length) == -1)
+                        && (name.IndexOf("].[", 0) == MEASURES_MDX.Length-2))
+                        {
+                            removeSquareBrackets = true;
+                        }
+                        name = name.Replace(MEASURES_MDX, measuresMdxPos > 0 ? "\n":"");
                     }
                     else {
-                        removeCaption = true;
+                        removeCaption = hasPlainMeasures;
                     }
                 }
 
                 if (removeSquareBrackets) {
+                    var m = columnPattern.Match(name);
+                    if (m.Success)
+                    {
+                        name = m.Groups["col"].Value;
+                    }
                     // Format column naming for DAX result or if it is a measure name
                     int firstBracket = name.IndexOf('[') + 1;
                     name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
@@ -660,10 +682,13 @@ namespace ADOTabular
             // Update names
             foreach (DaxColumn c in newColumnNames)
             {
+                var dc = dataTable.Columns[c.OriginalName];
+                dc.Caption = c.NewCaption;
+
                 if (!c.UseOriginalName)
                 {
-                    var dc = dataTable.Columns[c.OriginalName];
-                    dc.Caption = c.NewCaption;
+                //    var dc = dataTable.Columns[c.OriginalName];
+                //    dc.Caption = c.NewCaption;
                     dc.ColumnName = c.NewName;
                 }
             }
@@ -676,6 +701,7 @@ namespace ADOTabular
 
         public void SetCube(string cubeName)
         {
+            _currentCube = cubeName;
             _adomdConn.Close();
             _adomdConn = new AdomdConnection(string.Format("{0};Cube={1};Initial Catalog={2}", ConnectionString, cubeName , Database.Name), _connectionType);
         }
@@ -706,9 +732,11 @@ namespace ADOTabular
 
         public string ConnectionStringWithInitialCatalog {
             get {
-                return string.Format("{0};Initial Catalog={1}", this.ConnectionString , _currentDatabase);
+                return string.Format("{0};Initial Catalog={1}{2}", this.ConnectionString , _currentDatabase, CurrentCubeInternal);
             }
         }
+
+        internal object CurrentCubeInternal { get { return  (_currentCube == string.Empty)? string.Empty:string.Format(";Cube={0}", _currentCube); } }
 
         public ADOTabularConnection Clone()
         {

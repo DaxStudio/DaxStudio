@@ -1,0 +1,719 @@
+<return xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxmla="http://schemas.microsoft.com/analysisservices/2003/xmla">
+    <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified">
+      <xsd:element name="root">
+        <xsd:complexType>
+          <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="row" type="row" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+          <xsd:pattern value="[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="xmlDocument">
+        <xsd:sequence>
+          <xsd:any />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="row">
+        <xsd:sequence>
+          <xsd:element sql:field="METADATA" name="METADATA" type="xmlDocument" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+    <row>
+      <xars:METADATA xmlns="http://schemas.microsoft.com/analysisservices/2003/engine" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100="http://schemas.microsoft.com/analysisservices/2008/engine/100" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:xars="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+          <EntityContainer Name="Sandbox">
+            <EntitySet Name="Customer" EntityType="Sandbox.Customer">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Date" EntityType="Sandbox.Date">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Geography" EntityType="Sandbox.Geography">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Product" EntityType="Sandbox.Product">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Product_Category" EntityType="Sandbox.Product_Category">
+              <bi:EntitySet Caption="Product Category" ReferenceName="Product Category" />
+            </EntitySet>
+            <EntitySet Name="Product_Subcategory" EntityType="Sandbox.Product_Subcategory">
+              <bi:EntitySet Caption="Product Subcategory" ReferenceName="Product Subcategory" />
+            </EntitySet>
+            <EntitySet Name="Internet_Sales" EntityType="Sandbox.Internet_Sales">
+              <bi:EntitySet Caption="Internet Sales" ReferenceName="Internet Sales" />
+            </EntitySet>
+            <AssociationSet Name="Customer_Geography_Geography_Geography_Id" Association="Sandbox.Customer_Geography_Geography_Geography_Id">
+              <End EntitySet="Customer" />
+              <End EntitySet="Geography" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id" Association="Sandbox.Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id">
+              <End EntitySet="Product" />
+              <End EntitySet="Product_Subcategory" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Product_Subcategory_Product_Category_Product_Category_Product_Category_Id" Association="Sandbox.Product_Subcategory_Product_Category_Product_Category_Product_Category_Id">
+              <End EntitySet="Product_Subcategory" />
+              <End EntitySet="Product_Category" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Customer_Customer_Customer_Id" Association="Sandbox.Internet_Sales_Customer_Customer_Customer_Id">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Customer" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Product_Product_Product_Id" Association="Sandbox.Internet_Sales_Product_Product_Product_Id">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Product" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date" Association="Sandbox.Internet_Sales_Date_Date_Date">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date2" Association="Sandbox.Internet_Sales_Date_Date_Date2">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet State="Inactive" />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date3" Association="Sandbox.Internet_Sales_Date_Date_Date3">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet State="Inactive" />
+            </AssociationSet>
+            <bi:EntityContainer Caption="AW Internet Sales Tabular Model 2014" Culture="en-US">
+              <bi:CompareOptions IgnoreCase="true" />
+              <bi:ModelCapabilities>
+                <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+              </bi:ModelCapabilities>
+            </bi:EntityContainer>
+          </EntityContainer>
+          <EntityType Name="Customer">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Customer_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Customer Id" ReferenceName="Customer Id" />
+            </Property>
+            <Property Name="Geography_Id" Type="Int64">
+              <bi:Property Caption="Geography Id" ReferenceName="Geography Id" />
+            </Property>
+            <Property Name="Customer_Alternate_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Customer Alternate Id" ReferenceName="Customer Alternate Id" />
+            </Property>
+            <Property Name="Title" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="First_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="First Name" ReferenceName="First Name" />
+            </Property>
+            <Property Name="Middle_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Middle Name" ReferenceName="Middle Name" />
+            </Property>
+            <Property Name="Last_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Last Name" ReferenceName="Last Name" />
+            </Property>
+            <Property Name="Name_Style" Type="Boolean">
+              <bi:Property Caption="Name Style" ReferenceName="Name Style" />
+            </Property>
+            <Property Name="Birth_Date" Type="DateTime">
+              <bi:Property Caption="Birth Date" ReferenceName="Birth Date" />
+            </Property>
+            <Property Name="Marital_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Marital Status" ReferenceName="Marital Status" />
+            </Property>
+            <Property Name="Suffix" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Gender" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Email_Address" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Email Address" ReferenceName="Email Address" />
+            </Property>
+            <Property Name="Yearly_Income" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Yearly Income" ReferenceName="Yearly Income" />
+            </Property>
+            <Property Name="Total_Children" Type="Int64">
+              <bi:Property Caption="Total Children" ReferenceName="Total Children" />
+            </Property>
+            <Property Name="Number_of_Children_At_Home" Type="Int64">
+              <bi:Property Caption="Number of Children At Home" ReferenceName="Number of Children At Home" />
+            </Property>
+            <Property Name="Education" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Occupation" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Owns_House" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Owns House" ReferenceName="Owns House" />
+            </Property>
+            <Property Name="Number_of_Cars_Owned" Type="Int64">
+              <bi:Property Caption="Number of Cars Owned" ReferenceName="Number of Cars Owned" />
+            </Property>
+            <Property Name="Address_Line_1" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Address Line 1" ReferenceName="Address Line 1" />
+            </Property>
+            <Property Name="Address_Line_2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Address Line 2" ReferenceName="Address Line 2" />
+            </Property>
+            <Property Name="Phone" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Date_First_Purchase" Type="DateTime">
+              <bi:Property Caption="Date First Purchase" ReferenceName="Date First Purchase" />
+            </Property>
+            <Property Name="Commute_Distance" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Commute Distance" ReferenceName="Commute Distance" />
+            </Property>
+            <NavigationProperty Name="Geography_Geography_Id" Relationship="Sandbox.Customer_Geography_Geography_Geography_Id" FromRole="Customer_Geography_Id" ToRole="Geography_Geography_Id">
+              <bi:NavigationProperty ReferenceName="Geography_Geography Id" />
+            </NavigationProperty>
+            <bi:EntityType />
+          </EntityType>
+          <EntityType Name="Date">
+            <Key>
+              <PropertyRef Name="Date2" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Date2" Type="DateTime" Nullable="false">
+              <bi:Property Caption="Date" ReferenceName="Date" />
+            </Property>
+            <Property Name="Day_Number_of_Week" Type="Int64">
+              <bi:Property Caption="Day Number of Week" ReferenceName="Day Number of Week" />
+            </Property>
+            <Property Name="Day_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Day Name" ReferenceName="Day Name" />
+            </Property>
+            <Property Name="Day_of_Month" Type="Int64">
+              <bi:Property Caption="Day of Month" ReferenceName="Day of Month" />
+            </Property>
+            <Property Name="Day_of_Year" Type="Int64">
+              <bi:Property Caption="Day of Year" ReferenceName="Day of Year" />
+            </Property>
+            <Property Name="Week_Number_of_Year" Type="Int64">
+              <bi:Property Caption="Week Number of Year" ReferenceName="Week Number of Year" />
+            </Property>
+            <Property Name="Month_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Month Name" ReferenceName="Month Name" />
+            </Property>
+            <Property Name="Month" Type="Int64">
+              <bi:Property />
+            </Property>
+            <Property Name="Calendar_Quarter" Type="Int64">
+              <bi:Property Caption="Calendar Quarter" ReferenceName="Calendar Quarter" />
+            </Property>
+            <Property Name="Calendar_Year" Type="Int64">
+              <bi:Property Caption="Calendar Year" ReferenceName="Calendar Year" />
+            </Property>
+            <Property Name="Calendar_Semester" Type="Int64">
+              <bi:Property Caption="Calendar Semester" ReferenceName="Calendar Semester" />
+            </Property>
+            <Property Name="Fiscal_Quarter" Type="Int64">
+              <bi:Property Caption="Fiscal Quarter" ReferenceName="Fiscal Quarter" />
+            </Property>
+            <Property Name="Fiscal_Year" Type="Int64">
+              <bi:Property Caption="Fiscal Year" ReferenceName="Fiscal Year" />
+            </Property>
+            <Property Name="Fiscal_Semester" Type="Int64">
+              <bi:Property Caption="Fiscal Semester" ReferenceName="Fiscal Semester" />
+            </Property>
+            <Property Name="Month_Calendar" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Month Calendar" ReferenceName="Month Calendar" />
+            </Property>
+            <Property Name="Day_of_Week" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Day of Week" ReferenceName="Day of Week" />
+            </Property>
+            <Property Name="Days_in_Current_Quarter" Type="Int64">
+              <bi:Measure Caption="Days in Current Quarter" ReferenceName="Days in Current Quarter" />
+            </Property>
+            <Property Name="Days_Current_Quarter_to_Date" Type="Int64">
+              <bi:Measure Caption="Days Current Quarter to Date" ReferenceName="Days Current Quarter to Date" />
+            </Property>
+            <bi:EntityType Contents="Time">
+              <bi:Hierarchy Name="Calendar">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Semester">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Semester" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Calendar2" Caption="Calendar" ReferenceName="Calendar">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month_Calendar" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Month" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Hierarchy Name="Fiscal">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Semester">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Semester" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month_Calendar" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Month" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Hierarchy Name="Production">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Week">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Week_Number_of_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Week" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Geography">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Geography_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Geography Id" ReferenceName="Geography Id" />
+            </Property>
+            <Property Name="City" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="State_Province_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="State Province Code" ReferenceName="State Province Code" />
+            </Property>
+            <Property Name="State_Province_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="State Province Name" ReferenceName="State Province Name" />
+            </Property>
+            <Property Name="Country_Region_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Country Region Code" ReferenceName="Country Region Code" />
+            </Property>
+            <Property Name="Country_Region_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Country Region Name" ReferenceName="Country Region Name" />
+            </Property>
+            <Property Name="Postal_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Postal Code" ReferenceName="Postal Code" />
+            </Property>
+            <Property Name="Sales_Territory_Id" Type="Int64">
+              <bi:Property Caption="Sales Territory Id" ReferenceName="Sales Territory Id" />
+            </Property>
+            <bi:EntityType />
+          </EntityType>
+          <EntityType Name="Product">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Product_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Id" ReferenceName="Product Id" />
+            </Property>
+            <Property Name="Product_Alternate_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Alternate Id" ReferenceName="Product Alternate Id" />
+            </Property>
+            <Property Name="Product_Subcategory_Id" Type="Int64">
+              <bi:Property Caption="Product Subcategory Id" ReferenceName="Product Subcategory Id" />
+            </Property>
+            <Property Name="Weight_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Weight Unit Code" ReferenceName="Weight Unit Code" />
+            </Property>
+            <Property Name="Size_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Size Unit Code" ReferenceName="Size Unit Code" />
+            </Property>
+            <Property Name="Product_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Name" ReferenceName="Product Name" />
+            </Property>
+            <Property Name="Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Standard Cost" ReferenceName="Standard Cost" />
+            </Property>
+            <Property Name="Is_Finished_Product" Type="Boolean">
+              <bi:Property Caption="Is Finished Product" ReferenceName="Is Finished Product" />
+            </Property>
+            <Property Name="Color" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Safety_Stock_Level" Type="Int64">
+              <bi:Property Caption="Safety Stock Level" ReferenceName="Safety Stock Level" />
+            </Property>
+            <Property Name="Reorder_Point" Type="Int64">
+              <bi:Property Caption="Reorder Point" ReferenceName="Reorder Point" />
+            </Property>
+            <Property Name="List_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="List Price" ReferenceName="List Price" />
+            </Property>
+            <Property Name="Size" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Size_Range" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Size Range" ReferenceName="Size Range" />
+            </Property>
+            <Property Name="Weight" Type="Double">
+              <bi:Property />
+            </Property>
+            <Property Name="Days_To_Manufacture" Type="Int64">
+              <bi:Property Caption="Days To Manufacture" ReferenceName="Days To Manufacture" />
+            </Property>
+            <Property Name="Product_Line" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Line" ReferenceName="Product Line" />
+            </Property>
+            <Property Name="Dealer_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Dealer Price" ReferenceName="Dealer Price" />
+            </Property>
+            <Property Name="Class" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Style" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Model_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Model Name" ReferenceName="Model Name" />
+            </Property>
+            <Property Name="Large_Photo" Type="Binary" MaxLength="Max" FixedLength="false">
+              <bi:Property Caption="Large Photo" ReferenceName="Large Photo" />
+            </Property>
+            <Property Name="Description" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Start_Date" Type="DateTime">
+              <bi:Property Caption="Start Date" ReferenceName="Start Date" />
+            </Property>
+            <Property Name="End_Date" Type="DateTime">
+              <bi:Property Caption="End Date" ReferenceName="End Date" />
+            </Property>
+            <Property Name="Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property />
+            </Property>
+            <Property Name="Product_Subcategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Subcategory Name" ReferenceName="Product Subcategory Name" />
+            </Property>
+            <Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Category Name" ReferenceName="Product Category Name" />
+            </Property>
+            <NavigationProperty Name="Product_Subcategory_Product_Subcategory_Id" Relationship="Sandbox.Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id" FromRole="Product_Product_Subcategory_Id" ToRole="Product_Subcategory_Product_Subcategory_Id">
+              <bi:NavigationProperty ReferenceName="Product Subcategory_Product Subcategory Id" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Category">
+                <bi:Level Name="Category2" Caption="Category" ReferenceName="Category">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Category_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Subcategory">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Subcategory_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Model">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Model_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Product">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Name" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Product_Category">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Product_Category_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Category Id" ReferenceName="Product Category Id" />
+            </Property>
+            <Property Name="Product_Category_Alternate_Id" Type="Int64">
+              <bi:Property Caption="Product Category Alternate Id" ReferenceName="Product Category Alternate Id" />
+            </Property>
+            <Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Category Name" ReferenceName="Product Category Name" />
+            </Property>
+            <bi:EntityType />
+          </EntityType>
+          <EntityType Name="Product_Subcategory">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Product_Subcategory_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Subcategory Id" ReferenceName="Product Subcategory Id" />
+            </Property>
+            <Property Name="Product_Subcategory_Alternate_Id" Type="Int64">
+              <bi:Property Caption="Product Subcategory Alternate Id" ReferenceName="Product Subcategory Alternate Id" />
+            </Property>
+            <Property Name="Product_Subcategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Subcategory Name" ReferenceName="Product Subcategory Name" />
+            </Property>
+            <Property Name="Product_Category_Id" Type="Int64">
+              <bi:Property Caption="Product Category Id" ReferenceName="Product Category Id" />
+            </Property>
+            <NavigationProperty Name="Product_Category_Product_Category_Id" Relationship="Sandbox.Product_Subcategory_Product_Category_Product_Category_Product_Category_Id" FromRole="Product_Subcategory_Product_Category_Id" ToRole="Product_Category_Product_Category_Id">
+              <bi:NavigationProperty ReferenceName="Product Category_Product Category Id" />
+            </NavigationProperty>
+            <bi:EntityType />
+          </EntityType>
+          <EntityType Name="Internet_Sales">
+            <Key>
+              <PropertyRef Name="RowNumber" />
+            </Key>
+            <Property Name="RowNumber" Type="Int64" Nullable="false">
+              <bi:Property Hidden="true" Contents="RowNumber" Stability="RowNumber" />
+            </Property>
+            <Property Name="Product_Id" Type="Int64">
+              <bi:Property Caption="Product Id" ReferenceName="Product Id" />
+            </Property>
+            <Property Name="Customer_Id" Type="Int64">
+              <bi:Property Caption="Customer Id" ReferenceName="Customer Id" />
+            </Property>
+            <Property Name="Promotion_Id" Type="Int64">
+              <bi:Property Caption="Promotion Id" ReferenceName="Promotion Id" />
+            </Property>
+            <Property Name="Currency_Id" Type="Int64">
+              <bi:Property Caption="Currency Id" ReferenceName="Currency Id" />
+            </Property>
+            <Property Name="Sales_Territory_Id" Type="Int64">
+              <bi:Property Caption="Sales Territory Id" ReferenceName="Sales Territory Id" />
+            </Property>
+            <Property Name="Sales_Order_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Sales Order Number" ReferenceName="Sales Order Number" />
+            </Property>
+            <Property Name="Sales_Order_Line_Number" Type="Int64">
+              <bi:Property Caption="Sales Order Line Number" ReferenceName="Sales Order Line Number" />
+            </Property>
+            <Property Name="Revision_Number" Type="Int64">
+              <bi:Property Caption="Revision Number" ReferenceName="Revision Number" />
+            </Property>
+            <Property Name="Order_Quantity" Type="Int64">
+              <bi:Property Caption="Order Quantity" ReferenceName="Order Quantity" />
+            </Property>
+            <Property Name="Unit_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Unit Price" ReferenceName="Unit Price" />
+            </Property>
+            <Property Name="Extended_Amount" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Extended Amount" ReferenceName="Extended Amount" />
+            </Property>
+            <Property Name="Unit_Price_Discount_Pct" Type="Double">
+              <bi:Property Caption="Unit Price Discount Pct" ReferenceName="Unit Price Discount Pct" />
+            </Property>
+            <Property Name="Discount_Amount" Type="Double">
+              <bi:Property Caption="Discount Amount" ReferenceName="Discount Amount" />
+            </Property>
+            <Property Name="Product_Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Product Standard Cost" ReferenceName="Product Standard Cost" />
+            </Property>
+            <Property Name="Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Total Product Cost" ReferenceName="Total Product Cost" />
+            </Property>
+            <Property Name="Sales_Amount" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Sales Amount" ReferenceName="Sales Amount" />
+            </Property>
+            <Property Name="Tax_Amt" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Tax Amt" ReferenceName="Tax Amt" />
+            </Property>
+            <Property Name="Freight" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property />
+            </Property>
+            <Property Name="Carrier_Tracking_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Carrier Tracking Number" ReferenceName="Carrier Tracking Number" />
+            </Property>
+            <Property Name="Customer_PO_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Customer PO Number" ReferenceName="Customer PO Number" />
+            </Property>
+            <Property Name="Order_Date" Type="DateTime">
+              <bi:Property Caption="Order Date" ReferenceName="Order Date" />
+            </Property>
+            <Property Name="Due_Date" Type="DateTime">
+              <bi:Property Caption="Due Date" ReferenceName="Due Date" />
+            </Property>
+            <Property Name="Ship_Date" Type="DateTime">
+              <bi:Property Caption="Ship Date" ReferenceName="Ship Date" />
+            </Property>
+            <Property Name="Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property />
+            </Property>
+            <Property Name="Internet_Distinct_Count_Sales_Order" Type="Int64">
+              <bi:Measure Caption="Internet Distinct Count Sales Order" ReferenceName="Internet Distinct Count Sales Order" />
+            </Property>
+            <Property Name="Internet_Order_Lines_Count" Type="Int64">
+              <bi:Measure Caption="Internet Order Lines Count" ReferenceName="Internet Order Lines Count" />
+            </Property>
+            <Property Name="Internet_Total_Discount_Amount" Type="Double">
+              <bi:Measure Caption="Internet Total Discount Amount" ReferenceName="Internet Total Discount Amount" />
+            </Property>
+            <Property Name="Internet_Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Product Cost" ReferenceName="Internet Total Product Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+            </Property>
+            <Property Name="Internet_Total_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Sales" ReferenceName="Internet Total Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+            </Property>
+            <Property Name="Internet_Total_Tax_Amt" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Tax Amt" ReferenceName="Internet Total Tax Amt" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+            </Property>
+            <Property Name="Internet_Total_Freight" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Freight" ReferenceName="Internet Total Freight" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+            </Property>
+            <Property Name="Internet_Total_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Margin" ReferenceName="Internet Total Margin" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00" />
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Margin" ReferenceName="Internet Previous Quarter Margin" />
+            </Property>
+            <Property Name="Internet_Current_Quarter_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Current Quarter Margin" ReferenceName="Internet Current Quarter Margin" />
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Margin_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Margin Proportion to QTD" ReferenceName="Internet Previous Quarter Margin Proportion to QTD" />
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Sales" ReferenceName="Internet Previous Quarter Sales" />
+            </Property>
+            <Property Name="Internet_Current_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Current Quarter Sales" ReferenceName="Internet Current Quarter Sales" />
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Sales_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Sales Proportion to QTD" ReferenceName="Internet Previous Quarter Sales Proportion to QTD" />
+            </Property>
+            <Property Name="Internet_Current_Quarter_Sales_Performance" Type="Double">
+              <bi:Measure Caption="Internet Current Quarter Sales Performance" ReferenceName="Internet Current Quarter Sales Performance">
+                <bi:Kpi StatusGraphic="Three Signs Colored" TrendGraphic="Three Circles Colored">
+                  <bi:KpiGoal>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Goal" />
+                  </bi:KpiGoal>
+                  <bi:KpiStatus>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Status" />
+                  </bi:KpiStatus>
+                  <bi:KpiTrend>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Trend" />
+                  </bi:KpiTrend>
+                </bi:Kpi>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Current_Quarter_Margin_Performance" Type="Double">
+              <bi:Measure Caption="Internet Current Quarter Margin Performance" ReferenceName="Internet Current Quarter Margin Performance">
+                <bi:Kpi StatusGraphic="Three Signs Colored" TrendGraphic="Three Circles Colored">
+                  <bi:KpiGoal>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Margin_Performance_Goal" />
+                  </bi:KpiGoal>
+                  <bi:KpiStatus>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Margin_Performance_Status" />
+                  </bi:KpiStatus>
+                  <bi:KpiTrend>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Margin_Performance_Trend" />
+                  </bi:KpiTrend>
+                </bi:Kpi>
+              </bi:Measure>
+            </Property>
+            <NavigationProperty Name="Customer_Customer_Id" Relationship="Sandbox.Internet_Sales_Customer_Customer_Customer_Id" FromRole="Internet_Sales_Customer_Id" ToRole="Customer_Customer_Id">
+              <bi:NavigationProperty ReferenceName="Customer_Customer Id" />
+            </NavigationProperty>
+            <NavigationProperty Name="Product_Product_Id" Relationship="Sandbox.Internet_Sales_Product_Product_Product_Id" FromRole="Internet_Sales_Product_Id" ToRole="Product_Product_Id">
+              <bi:NavigationProperty ReferenceName="Product_Product Id" />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date" Relationship="Sandbox.Internet_Sales_Date_Date_Date" FromRole="Internet_Sales_Order_Date" ToRole="Date_Date">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date2" Relationship="Sandbox.Internet_Sales_Date_Date_Date2" FromRole="Internet_Sales_Due_Date" ToRole="Date_Date2">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date3" Relationship="Sandbox.Internet_Sales_Date_Date_Date3" FromRole="Internet_Sales_Ship_Date" ToRole="Date_Date3">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <bi:EntityType />
+          </EntityType>
+          <Association Name="Customer_Geography_Geography_Geography_Id">
+            <End Role="Customer_Geography_Id" Type="Sandbox.Customer" Multiplicity="*" />
+            <End Role="Geography_Geography_Id" Type="Sandbox.Geography" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id">
+            <End Role="Product_Product_Subcategory_Id" Type="Sandbox.Product" Multiplicity="*" />
+            <End Role="Product_Subcategory_Product_Subcategory_Id" Type="Sandbox.Product_Subcategory" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Product_Subcategory_Product_Category_Product_Category_Product_Category_Id">
+            <End Role="Product_Subcategory_Product_Category_Id" Type="Sandbox.Product_Subcategory" Multiplicity="*" />
+            <End Role="Product_Category_Product_Category_Id" Type="Sandbox.Product_Category" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Customer_Customer_Customer_Id">
+            <End Role="Internet_Sales_Customer_Id" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Customer_Customer_Id" Type="Sandbox.Customer" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Product_Product_Product_Id">
+            <End Role="Internet_Sales_Product_Id" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Product_Product_Id" Type="Sandbox.Product" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date">
+            <End Role="Internet_Sales_Order_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date2">
+            <End Role="Internet_Sales_Due_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date2" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date3">
+            <End Role="Internet_Sales_Ship_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date3" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+        </Schema>
+      </xars:METADATA>
+    </row>
+  </root>
+</return>

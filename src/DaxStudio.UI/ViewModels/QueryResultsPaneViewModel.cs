@@ -10,6 +10,9 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
+using System.Windows.Threading;
+using Microsoft.Windows.Themes;
+using System;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -215,6 +218,64 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedWorkbook { 
             get { return _selectedWorkbook; } 
             set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 
+        }
+
+        public void ResizeGridColumns(DataGrid source, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("DoubleClick fired");
+            string dataContext = string.Empty;
+            if (e.OriginalSource is TextBlock) { dataContext = ((TextBlock)e.OriginalSource).DataContext as string; }
+            if (e.OriginalSource is Border) { dataContext = ((Border)e.OriginalSource).DataContext as string; }
+
+            if (!string.IsNullOrEmpty(dataContext))
+            {
+                for (var i = 0; i < source.Columns.Count; i++)
+                {
+                    if ((string)source.Columns[i].Header == dataContext)
+                    {
+                        ToggleSizing(source.Columns[i]);
+                        break;
+                    }
+                }
+            }
+
+            
+
+            if (e.OriginalSource is System.Windows.Shapes.Rectangle)
+            {
+                if (source.ColumnWidth.UnitType != DataGridLengthUnitType.SizeToCells)
+                {
+                    source.ColumnWidth = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
+                    SetAllColumnWidths(source, DataGridLengthUnitType.SizeToCells,50.0);
+                }
+                else
+                {
+                    source.ColumnWidth = new DataGridLength(1.0, DataGridLengthUnitType.Auto);
+                    SetAllColumnWidths(source, DataGridLengthUnitType.Auto,0);
+                }
+            }
+        }
+
+        private void SetAllColumnWidths(DataGrid source, DataGridLengthUnitType lengthType, double minWidth)
+        {
+            for (int i=0;i < source.Columns.Count;i++)
+            {
+                source.Columns[i].Width = new DataGridLength(1.0, lengthType);
+                source.Columns[i].MinWidth = minWidth;
+            }
+        }
+
+        private void ToggleSizing(DataGridColumn dataGridColumn)
+        {
+            if (dataGridColumn.Width.UnitType != DataGridLengthUnitType.SizeToCells)
+            {
+                dataGridColumn.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
+                dataGridColumn.MinWidth = 50.0;
+            } else
+            {
+                dataGridColumn.Width = new DataGridLength(1.0, DataGridLengthUnitType.Auto);
+                dataGridColumn.MinWidth = 0;
+            }
         }
     }
 }

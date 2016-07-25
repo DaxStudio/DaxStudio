@@ -14,6 +14,7 @@ using System.Windows;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -29,7 +30,7 @@ namespace DaxStudio.UI.ViewModels
             RowNumber = rowNumber;
             Subclass = ev.EventSubclass;
             // TODO: we should implement as optional the removal of aliases and lineage
-            Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().RemoveRowNumberGuid();
+            Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
             // Skip Duration/Cpu Time for Cache Match
             if (Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
@@ -47,7 +48,8 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS \'[^\']*\'";
-        const string searchXmSqlLineage = @" \( [0-9]* \) ";
+        const string searchXmSqlLineage = @" \( [0-9]+ \) ";
+        const string searchXmSqlEmptyArguments = @" \(\s*\) ";
         const string searchXmSqlRowNumberGuid = @"\[RowNumber [0-9A-F ]*\]";
 
         //const string searchDaxQueryPlanSquareBrackets = @"^\'\[([^\[^ ])*\]";
@@ -60,6 +62,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
         static Regex xmSqlAliasRemoval = new Regex(searchXmSqlAlias, RegexOptions.Compiled);
         static Regex xmSqlLineageRemoval = new Regex(searchXmSqlLineage, RegexOptions.Compiled);
+        static Regex xmSqlEmptyArguments = new Regex(searchXmSqlEmptyArguments, RegexOptions.Compiled);
         static Regex xmSqlRowNumberGuidRemoval = new Regex(searchXmSqlRowNumberGuid, RegexOptions.Compiled);
 
         public static string RemoveDaxGuids(this string daxQuery) {
@@ -80,6 +83,9 @@ namespace DaxStudio.UI.ViewModels
         }
         public static string RemoveLineage(this string xmSqlQuery) {
             return xmSqlLineageRemoval.Replace(xmSqlQuery, "");
+        }
+        public static string FixEmptyArguments(this string xmSqlQuery) {
+            return xmSqlEmptyArguments.Replace(xmSqlQuery, " () ");
         }
         public static string RemoveRowNumberGuid(this string xmSqlQuery) {
             return xmSqlRowNumberGuidRemoval.Replace(xmSqlQuery, "");
@@ -107,7 +113,7 @@ namespace DaxStudio.UI.ViewModels
         
     {
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;

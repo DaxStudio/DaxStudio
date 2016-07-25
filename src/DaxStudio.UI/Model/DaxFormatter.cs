@@ -1,17 +1,12 @@
-﻿using DaxStudio.UI.ViewModels;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Serilog;
-using System.Windows.Threading;
 using DaxStudio.UI.Utils;
 using Caliburn.Micro;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -44,7 +39,6 @@ namespace DaxStudio.UI.Model
 
     public class DaxFormatterProxy
     {
-        const int REQUEST_TIMEOUT = 10000;
 
         private static string redirectUrl = null;  // cache the redirected URL
         private static string redirectHost = null;
@@ -124,15 +118,15 @@ namespace DaxStudio.UI.Model
         //    }
         //}
 
-        public static async Task<DaxFormatterResult> FormatDaxAsync(string query)
+        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, IGlobalOptions globalOptions)
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
             var errorFound = false;
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatUri, query);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatUri, query, globalOptions);
             if (output == "\"\"")
             {
                 errorFound = true;
-                output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatVerboseUri, query);
+                output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatVerboseUri, query, globalOptions);
             }
             
             // trim off leading and trailing quotes
@@ -157,7 +151,7 @@ namespace DaxStudio.UI.Model
             return res2;
         }
 
-        private static async Task<string> CallDaxFormatterAsync(string uri, string query)
+        private static async Task<string> CallDaxFormatterAsync(string uri, string query, IGlobalOptions globalOptions)
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
             try
@@ -177,7 +171,7 @@ namespace DaxStudio.UI.Model
 
                 
 
-                await PrimeConnectionAsync(uri);
+                await PrimeConnectionAsync(uri, globalOptions);
 
                 Uri originalUri = new Uri(uri);
                 string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
@@ -185,7 +179,7 @@ namespace DaxStudio.UI.Model
                 var webRequestFactory = IoC.Get<WebRequestFactory>();
                 var wr = webRequestFactory.Create(new Uri(actualUrl));
 
-                wr.Timeout = REQUEST_TIMEOUT;
+                wr.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
                 wr.ContentType = "application/json";
                 wr.Method = "POST";
                 wr.Accept = "application/json, text/javascript, */*; q=0.01";
@@ -223,7 +217,7 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public static async Task PrimeConnectionAsync(string uri)
+        public static async Task PrimeConnectionAsync(string uri, IGlobalOptions globalOptions)
         {
             await Task.Run(() =>
             {
@@ -238,7 +232,7 @@ namespace DaxStudio.UI.Model
                     var redirectRequest =  webRequestFactory.Create(uri) as HttpWebRequest;
 
                     redirectRequest.AllowAutoRedirect = false;
-                    redirectRequest.Timeout = REQUEST_TIMEOUT;
+                    redirectRequest.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
                     try
                     {
                         using (var netResponse = redirectRequest.GetResponse())
@@ -262,9 +256,9 @@ namespace DaxStudio.UI.Model
             });
 
         }
-        public static async Task PrimeConnectionAsync()
+        public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions)
         {
-            await PrimeConnectionAsync(WebRequestFactory.DaxFormatUri);
+            await PrimeConnectionAsync(WebRequestFactory.DaxFormatUri, globalOptions);
         }
         
     }

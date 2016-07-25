@@ -26,6 +26,9 @@ namespace DaxStudio.UI.ViewModels
         private SecureString _proxySecurePassword = new SecureString();
         private int _maxQueryHistory;
         private bool _queryHistoryShowTraceColumns;
+        private int _queryEndEventTimeout;
+        private int _daxFormatterRequestTimeout;
+
         private IEventAggregator _eventAggregator;
 
         public event EventHandler OptionsUpdated;
@@ -44,6 +47,8 @@ namespace DaxStudio.UI.ViewModels
             ProxyPassword = RegistryHelper.GetValue<string>("ProxyPassword", "").Decrypt();
             QueryHistoryMaxItems = RegistryHelper.GetValue<int>("QueryHistoryMaxItems", 200);
             QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
+            QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
+            DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -202,6 +207,40 @@ namespace DaxStudio.UI.ViewModels
                 RegistryHelper.SetValueAsync<bool>("QueryHistoryShowTraceColumns", value);
             }
 
+        }
+
+        public int QueryEndEventTimeout
+        {
+            get
+            {
+                return _queryEndEventTimeout;
+            }
+
+            set
+            {
+                if (_queryEndEventTimeout == value) return;
+                _queryEndEventTimeout = value;
+                NotifyOfPropertyChange(() => QueryEndEventTimeout);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>(nameof(QueryEndEventTimeout), value);
+            }
+        }
+
+        public int DaxFormatterRequestTimeout
+        {
+            get
+            {
+                return _daxFormatterRequestTimeout;
+            }
+
+            set
+            {
+                if (_daxFormatterRequestTimeout == value) return;
+                _daxFormatterRequestTimeout = value;
+                NotifyOfPropertyChange(() => DaxFormatterRequestTimeout);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>(nameof(DaxFormatterRequestTimeout), value);
+            }
         }
     }
 }

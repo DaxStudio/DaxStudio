@@ -112,8 +112,10 @@ namespace DaxStudio.UI.ViewModels
                     }
                     finally
                     {
+                        EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument));
                         NotifyOfPropertyChange(() => SelectedModel);
                         RefreshTables();
+                        
                     }
                 }
             }
@@ -177,12 +179,12 @@ namespace DaxStudio.UI.ViewModels
                     try
                     {
                         IsBusy = true;
-                        using (var conn = Connection.Clone())
-                        {
-                            conn.Open();
-                            _treeViewTables = conn.Database.Models[SelectedModel.Name].TreeViewTables();
-                            //_treeViewTables = SelectedModel.TreeViewTables();
-                        }
+                        //using (var conn = Connection.Clone())
+                        //{
+                        //    conn.Open();
+                        //    _treeViewTables = conn.Database.Models[SelectedModel.Name].TreeViewTables();    
+                        //}
+                        _treeViewTables = SelectedModel.TreeViewTables();
                     }
                     catch (Exception ex)
                     {
@@ -195,6 +197,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }).ContinueWith((taskStatus)=>{    
                     Tables = _treeViewTables;
+                    EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                 });
             }
             

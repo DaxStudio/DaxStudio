@@ -1,5 +1,7 @@
 ﻿using ADOTabular;
+using Caliburn.Micro;
 using DAXEditor;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils.Intellisense;
 using DaxStudio.UI.ViewModels;
 using ICSharpCode.AvalonEdit.CodeCompletion;
@@ -28,18 +30,33 @@ namespace DaxStudio.UI.Utils
         ALL       = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
     }
 
-    public class DaxIntellisenseProvider:IIntellisenseProvider, IInsightProvider
+    public class DaxIntellisenseProvider:
+        IIntellisenseProvider, 
+        IInsightProvider, 
+        IHandle<MetadataLoadedEvent>, 
+        IHandle<DmvsLoadedEvent>,
+        IHandle<FunctionsLoadedEvent>,
+        IHandle<SelectedModelChangedEvent>,
+        IHandle<ConnectionPendingEvent>
     {
         private DAXEditor.DAXEditor _editor;
         private DaxLineState _daxState;
         private bool SpacePressed;
         private bool HasThrownException;
+        private IEventAggregator _eventAggregator;
 
-        public DaxIntellisenseProvider (DocumentViewModel activeDocument, DAXEditor.DAXEditor editor)
+        public DaxIntellisenseProvider (DocumentViewModel activeDocument, DAXEditor.DAXEditor editor, IEventAggregator eventAggregator)
         {
             Document = activeDocument;
             _editor = editor;
+            _eventAggregator = eventAggregator;
+            _eventAggregator.Subscribe(this);
         }
+
+        #region Properties
+        public ADOTabularModel Model { get; private set; }
+
+        #endregion
 
         #region Public IIntellisenseProvider Interface
         public void ProcessTextEntered(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
@@ -107,7 +124,7 @@ namespace DaxStudio.UI.Utils
                             }
                             else
                             {
-                                PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, tableName);
+                                PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState);
                             }
                             break;
                         case "'":
@@ -117,10 +134,10 @@ namespace DaxStudio.UI.Utils
                             switch (_daxState.LineState)
                             {
                                 case LineState.Column:
-                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState.TableName);
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState);
                                     break;
                                 case LineState.Table:
-                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState );
                                     break;
                                 case LineState.Measure:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
@@ -167,6 +184,9 @@ namespace DaxStudio.UI.Utils
                         }
                         else
                         {
+                            Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider" , "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
+                            
+                            completionWindow.Close();
                             _editor.DisposeCompletionWindow();
                             completionWindow = null;
                         }
@@ -274,45 +294,53 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
+        public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref CompletionWindow completionWindow)
         {
             
         }
         #endregion
 
         public DocumentViewModel Document { get; private set; }
+        public ADOTabularDynamicManagementViewCollection Dmvs { get; private set; }
+        public ADOTabularFunctionGroupCollection FunctionGroups { get; private set; }
 
         private DaxLineState ParseLine()
         {
+            //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ParseLine", "start");
             string line = GetCurrentLine();
             int pos = _editor.CaretOffset>0 ? _editor.CaretOffset - 1 : 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
+            Log.Debug("{class} {method} {line} col:{column} off:{offset}", "DaxIntellisenseProvider", "ParseLine", line,loc.Column, docLine.Offset);
             return DaxLineParser.ParseLine(line, loc.Column, docLine.Offset);
         }
         
         private void PopulateCompletionData(IList<ICompletionData> data, IntellisenseMetadataTypes metadataType)
         {
-            PopulateCompletionData(data, metadataType,"");
+            PopulateCompletionData(data, metadataType,null);
         }
-        private void PopulateCompletionData(IList<ICompletionData> data, IntellisenseMetadataTypes metadataType, string tableName)
+        private void PopulateCompletionData(IList<ICompletionData> data, IntellisenseMetadataTypes metadataType, DaxLineState state)
         {
+            // exit early if the Metadata is not cached
+            if (!MetadataIsCached) return;
+
             var tmpData = new List<ICompletionData>();
-            
+            Log.Debug("{class} {method} Type: {metadataType}  Table: {table} Column: {column}", "DaxIntellisenseProvider", "PopulateCompletionData", metadataType.ToString(), state == null ? "-" : state.TableName, state == null ? "-": state.ColumnName);
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Columns)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
             {
-                var tabs = Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables;
+                //var tabs = Document.Connection.Database.Models[Document.MetadataPane.SelectedModelName].Tables;
+                var tabs = Model.Tables;
                 foreach (var tab in tabs)
                 {
                     // add tables
                     if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)) 
-                            tmpData.Add( new DaxCompletionData(this, tab));
+                            tmpData.Add( new DaxCompletionData(this, tab, _daxState));
 
                     // add columns or measures
                     if ((metadataType.HasFlag(IntellisenseMetadataTypes.Columns) 
-                        && ( string.IsNullOrWhiteSpace(tableName)) || (tab.Name.Equals(tableName, StringComparison.CurrentCultureIgnoreCase)))
+                        && ( string.IsNullOrWhiteSpace(_daxState.TableName)) || (tab.Name.Equals(_daxState.TableName, StringComparison.CurrentCultureIgnoreCase)))
                         || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
                     {
                         foreach (var col in tab.Columns)
@@ -321,7 +349,7 @@ namespace DaxStudio.UI.Utils
                                 || col.ColumnType == ADOTabularColumnType.Measure && metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
                             {
 
-                                tmpData.Add(new DaxCompletionData(this, col));
+                                tmpData.Add(new DaxCompletionData(this, col, _daxState));
                             }
                         }
                     }
@@ -385,20 +413,23 @@ namespace DaxStudio.UI.Utils
 
         private string GetCurrentLine()
         {
+            //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "GetCurrentLine", "start");
             int pos = _editor.CaretOffset > 0 ? _editor.CaretOffset - 1: 0;
             var loc = _editor.Document.GetLocation(pos);
             var docLine = _editor.Document.GetLineByOffset(pos);
+            if (docLine.Length == 0) return "";
             string line = _editor.Document.GetText(docLine.Offset, loc.Column);
+            //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "GetCurrentLine", "end");
             return line;
         }
 
 
         // TODO - do we need a way of triggering intellisense manually (ctrl-space) ??
-        public void ProcessKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        public void ProcessKeyDown(object sender, KeyEventArgs e)
         {
             
             if (HasThrownException) return;
-            if (e.Key == System.Windows.Input.Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
+            if (e.Key == Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
             {
                 //TODO show intellisense on ctrl-space
                 System.Diagnostics.Debug.WriteLine("show intellisense");
@@ -406,5 +437,47 @@ namespace DaxStudio.UI.Utils
             }
         }
 
+        public void Handle(MetadataLoadedEvent message)
+        {
+            if (message.Document == Document)
+            {
+                Model = message.Model;
+            }
+        }
+
+        public void Handle(SelectedModelChangedEvent message)
+        {
+            if (Document == message.Document)
+            {
+                Model = null;
+            }
+        }
+
+        public void Handle(DmvsLoadedEvent message)
+        {
+            if (Document == message.Document)
+            {
+                Dmvs = message.DmvCollection;
+            }
+        }
+
+        public void Handle(FunctionsLoadedEvent message)
+        {
+            if (Document == message.Document)
+            {
+                FunctionGroups = message.FunctionGroups;
+            }
+        }
+
+        public void Handle(ConnectionPendingEvent message)
+        {
+            if (message.Document == Document)
+            {
+                FunctionGroups = null;
+                Dmvs = null;
+            }
+        }
+
+        public bool MetadataIsCached { get { return Model != null && FunctionGroups != null && Dmvs != null; } }
     }
 }

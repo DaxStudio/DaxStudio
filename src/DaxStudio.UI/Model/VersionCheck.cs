@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Model
     public class VersionCheck : PropertyChangedBase, IVersionCheck
     {
 
-        private const int CHECK_EVERY_DAYS = 3;
+        //private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         
         private BackgroundWorker worker = new BackgroundWorker();
@@ -38,7 +38,7 @@ namespace DaxStudio.UI.Model
         {
             _eventAggregator = eventAggregator;
             _webRequestFactory = webRequestFactory;
-            if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
+            if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
                 worker.DoWork += new DoWorkEventHandler(worker_DoWork);
                 worker.RunWorkerAsync();
@@ -55,7 +55,7 @@ namespace DaxStudio.UI.Model
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            System.Threading.Thread.Sleep(CHECK_SECONDS_AFTER_STARTUP * 1000); //give DaxStudio a little time to get started up so we don't impede work people are doing with this version check
+            System.Threading.Thread.Sleep(CHECK_SECONDS_AFTER_STARTUP.SecondsToMilliseconds()); //give DaxStudio a little time to get started up so we don't impede work people are doing with this version check
             LastVersionCheck = DateTime.Now;
             CheckVersion();
         }

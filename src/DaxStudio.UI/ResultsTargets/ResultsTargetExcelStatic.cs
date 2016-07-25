@@ -35,7 +35,7 @@ namespace DaxStudio.UI.Model
                         var sw = Stopwatch.StartNew();
 
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteQuery(dq);
+                        var res = runner.ExecuteDataTableQuery(dq);
 
                         sw.Stop();
                         var durationMs = sw.ElapsedMilliseconds;

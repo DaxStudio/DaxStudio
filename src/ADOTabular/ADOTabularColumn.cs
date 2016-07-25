@@ -69,6 +69,13 @@ namespace ADOTabular
  
         public Type DataType { get; set; }
 
+        public bool Nullable { get; internal set; }
+        public long DistinctValueCount { get; internal set; }
+        public string MinValue { get; internal set; }
+        public string MaxValue { get; internal set; }
+        public string FormatString { get; internal set; }
+        public string DefaultAggregateFunction { get; internal set; }
+        public long StringValueMaxLength { get; internal set; }
         public string DataTypeName { get { return DataType==null?"n/a":DataType.ToString().Replace("System.", ""); } }
 
         //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
@@ -114,5 +121,6 @@ namespace ADOTabular
                 }
             }
         }
+
     }
 }

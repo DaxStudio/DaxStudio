@@ -40,6 +40,16 @@ namespace ADOTabular
             _cols.Add(column.Name,column);
         }
 
+        public void Remove(ADOTabularColumn column)
+        {
+            _cols.Remove(column.Name);
+        }
+
+        public void Remove(string columnName)
+        {
+            _cols.Remove(columnName);
+        }
+
         public bool ContainsKey(string index)
         {
             return _cols.ContainsKey(index);

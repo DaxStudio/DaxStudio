@@ -1,0 +1,20 @@
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+
+	<RequestType>DISCOVER_CSDL_METADATA</RequestType>
+
+    <Restrictions>
+		<RestrictionList>
+			<CATALOG_NAME>AW Internet Sales Tabular Model 2014</CATALOG_NAME>
+			<VERSION>2.0</VERSION>
+		</RestrictionList>
+	</Restrictions>
+
+    <Properties>
+		<PropertyList>
+			<Catalog>AW Internet Sales Tabular Model 2014</Catalog>
+   		</PropertyList>
+	</Properties>
+
+</Discover>
+
+

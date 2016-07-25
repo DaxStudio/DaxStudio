@@ -10,6 +10,7 @@ using System.IO;
 using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -65,7 +66,7 @@ namespace DaxStudio.UI.ViewModels
     class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, ISaveState
     {
         [ImportingConstructor]
-        public QueryPlanTraceViewModel(IEventAggregator eventAggregator) : base(eventAggregator)
+        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
             _physicalQueryPlanRows = new BindableCollection<PhysicalQueryPlanRow>();
             _logicalQueryPlanRows = new BindableCollection<LogicalQueryPlanRow>();
