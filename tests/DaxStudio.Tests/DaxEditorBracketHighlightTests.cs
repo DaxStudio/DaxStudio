@@ -157,10 +157,10 @@ EVALUATE
         {
             get { return _text; }
         }
-#pragma warning disable 0169
+#pragma warning disable CS0067
         // required for implementing the interface, but not used for these tests
         public event EventHandler TextChanged;
-#pragma warning restore 0169
+#pragma warning restore CS0067
         public int TextLength
         {
             get { return _text.Length; }

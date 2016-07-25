@@ -31,7 +31,7 @@ namespace DaxStudio.UI.ViewModels
 
         private IEventAggregator _eventAggregator;
 
-        public event EventHandler OptionsUpdated;
+        //public event EventHandler OptionsUpdated;
 
         [ImportingConstructor]
         public OptionsViewModel(IEventAggregator eventAggregator)
