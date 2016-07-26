@@ -194,7 +194,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationFramework.Aero2" />
+    <Reference Include="PresentationFramework.Aero" />
     <Reference Include="Serilog">
       <HintPath>..\..\packages\Serilog.1.4.204\lib\net45\Serilog.dll</HintPath>
     </Reference>
@@ -410,6 +410,7 @@
     <Compile Include="Utils\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
+    <Compile Include="Utils\SystemInfo.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />

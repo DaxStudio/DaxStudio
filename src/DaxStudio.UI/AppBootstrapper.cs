@@ -26,12 +26,7 @@ namespace DaxStudio.UI
 	{
 		CompositionContainer _container;
 	    private Assembly _hostAssembly;
-        //private Func<DependencyObject, IEnumerable<FrameworkElement>> defaultElementLookup;
-	    /*
-        public AppBootstrapper():base(true)
-        {
-        }
-        */
+        
 	    public AppBootstrapper(Assembly hostAssembly, bool useApplication) : base(useApplication)
 	    {
 	        _hostAssembly = hostAssembly;
@@ -51,6 +46,7 @@ namespace DaxStudio.UI
             Log.Error("{Class} {Method} {Exception}", "AppBootstrapper", "OnUnhandledException", e.Exception);
             Log.Error("{Class} {Method} {InnerException}", "AppBootstrapper", "OnUnhandledException-InnerException", e.Exception.InnerException);
         }
+
 	    /// <summary>
 		/// By default, we are configured to use MEF
 		/// </summary>
