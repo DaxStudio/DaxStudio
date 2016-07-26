@@ -27,7 +27,7 @@ namespace DaxStudio.Standalone
         
         private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)
         {
-            Log.Warning("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.RequestingAssembly, args.Name);
+            //Log.Debug("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.RequestingAssembly, args.Name);
             System.Diagnostics.Debug.WriteLine(string.Format("ReqAss: {0}, Name{1}", args.RequestingAssembly, args.Name));
             if (args.Name.StartsWith("Microsoft.AnalysisServices")) return SsasAssemblyResolver.Instance.Resolve(args.Name);
             return null;
@@ -55,7 +55,7 @@ namespace DaxStudio.Standalone
                 Log.Logger = log;
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
-
+                SystemInfo.WriteToLog();
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
 
