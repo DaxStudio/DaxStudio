@@ -43,20 +43,19 @@ namespace DaxStudio.ExcelAddin
             {
                 Log.Verbose("{Class} {Method} {args_Name} {args_RequestingAssembly}", "ThisAddIn", "currentDomain_AssemblyResolve", args.Name, args.RequestingAssembly);
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
-                if (args.Name.Contains("Microsoft.Excel.AdomdClient"))
+                if (args.Name.Contains("Microsoft.Excel.AdomdClient,"))
                 {
                     var ass  = ExcelAdoMdConnections.ExcelAdomdClientAssembly;
                     Log.Verbose("{class} {method} {assembly}", "ThisAddin", "currentDomain_AssemblyResolve", "Microsoft.Excel.AdomdClient Resolved");
                     return ass;
                 }
 
-                if (args.Name.Contains("Microsoft.Excel.Amo"))
+                if (args.Name.Contains("Microsoft.Excel.Amo,"))
                 {
                     var ass = DaxStudio.ExcelAddin.Xmla.ExcelAmoWrapper.ExcelAmoAssembly;
                     Log.Verbose("{class} {method} {assembly}", "ThisAddin", "currentDomain_AssemblyResolve", "Microsoft.Excel.Amo Resolved");
                     return ass;
                 }
-
 
                 return null;
             }

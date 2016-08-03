@@ -95,6 +95,7 @@ namespace ADOTabular.AdomdClientWrappers
                 f();
             }
         }
+
         public void Close()
         {
             if (_type == AdomdType.AnalysisServices)
@@ -106,6 +107,22 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.VoidDelegate f = delegate
                 {
                     _connExcel.Close();
+                };
+                f();
+            }
+        }
+
+        public void Close(bool endSession)
+        {
+            if (_type == AdomdType.AnalysisServices)
+            {
+                _conn.Close(endSession);
+            }
+            else
+            {
+                ExcelAdoMdConnections.VoidDelegate f = delegate
+                {
+                    _connExcel.Close(endSession);
                 };
                 f();
             }
@@ -363,14 +380,20 @@ namespace ADOTabular.AdomdClientWrappers
             if (_type == AdomdType.AnalysisServices)
             {
                 if (_conn != null)
+                {
                     _conn.Dispose();
+                    _conn = null;
+                }
             }
             else
             {
                 ExcelAdoMdConnections.VoidDelegate f = delegate
                 {
                     if (_connExcel != null)
+                    {
                         _connExcel.Dispose();
+                        _connExcel = null;
+                    }
                 };
                 f();
                 

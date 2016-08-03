@@ -300,6 +300,7 @@ namespace DaxStudio.UI.ViewModels
         private IResultsTarget _selectedTarget;
         private bool _queryRunning;
         private QueryTraceStatus _traceStatus;
+        private StatusBarMessage _traceMessage;
         // default to first target if none currently selected
         public IResultsTarget SelectedTarget {
             get { return _selectedTarget ?? AvailableResultsTargets.Where(x => x.IsDefault).First<IResultsTarget>(); }
@@ -431,6 +432,7 @@ namespace DaxStudio.UI.ViewModels
         
         public void Handle(TraceChangingEvent message)
         {
+            _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
@@ -438,6 +440,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(TraceChangedEvent message)
         {
+            if(_traceMessage != null) _traceMessage.Dispose();
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);

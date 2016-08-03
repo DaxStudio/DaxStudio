@@ -24,15 +24,39 @@ namespace DaxStudio.QueryTrace
 
         public void Stop()
         {
+            Stop(true);
+        }
+
+        public void Stop(bool shouldDispose)
+        {
             Status = QueryTraceStatus.Stopping;
             if (_trace != null)
             {
                 _trace.OnEvent -= OnTraceEventInternal;
                 try
                 {
-                    _trace.Drop();
-                    Dispose();
+                    if (_startingTimer != null)
+                    {
+                        if (_startingTimer.Enabled)
+                        {
+                            _startingTimer.Stop();
+                            _startingTimer.Elapsed -= OnTimerElapsed;
+                            _connection.Close(false);
+                        }
+                    }
+                    
+                    if (shouldDispose)
+                    {
+                        _trace.OnEvent -= OnTraceEventInternal;
+                        _trace.Drop();
+                        Dispose();
+                    }
+                    else
+                    {
+                        _trace.Stop();
+                    }
                     Status = QueryTraceStatus.Stopped;
+                    
                 }
                 catch (Exception e)
                 {
@@ -47,6 +71,11 @@ namespace DaxStudio.QueryTrace
         {
 	        get { return _status;  }
             private set {_status = value;}
+        }
+
+        public List<DaxStudioTraceEventClass> Events
+        {
+            get { return _eventsToCapture; }
         }
 
         public event TraceEventHandler TraceEvent;
@@ -74,6 +103,7 @@ namespace DaxStudio.QueryTrace
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName, events);
+            _eventsToCapture = events;
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End");
         }
 
@@ -91,12 +121,11 @@ namespace DaxStudio.QueryTrace
         }
         private void SetupTrace(Trace trace, List<DaxStudioTraceEventClass> events)
         {
+            trace.Events.Clear();
             // Add CommandBegin so we can catch the heartbeat events
-            if (trace.Events.Find(TraceEventClass.CommandBegin) == null)
-                trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
             // Add QueryEnd so we know when to stop the trace
-            if (trace.Events.Find(TraceEventClass.QueryEnd)==null)
-                trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
             
             // catch the events in the ITraceWatcher
             foreach (DaxStudioTraceEventClass eventClass in events)
@@ -108,7 +137,7 @@ namespace DaxStudio.QueryTrace
                 var trcEvent = TraceEventFactory.Create(amoEventClass);
                 trace.Events.Add(trcEvent);
             }
-            trace.Update();   
+            trace.Update();
         }
 
         private XmlNode GetSpidFilter(int spid)
@@ -144,7 +173,7 @@ namespace DaxStudio.QueryTrace
             try
             {
                 if (_trace != null)
-                    if (_trace.IsStarted || Status == QueryTraceStatus.Starting)
+                    if (_trace.IsStarted || Status == QueryTraceStatus.Starting || Status == QueryTraceStatus.Started)
                         return; // exit here if trace is already started
 
                 if (Status != QueryTraceStatus.Started)  Status = QueryTraceStatus.Starting;
@@ -153,12 +182,15 @@ namespace DaxStudio.QueryTrace
                 _connection.Open();
                 _trace = GetTrace();
                 SetupTrace(_trace, _eventsToCapture);
+               
+                _trace.OnEvent += OnTraceEventInternal;
                 _trace.Start();
 
                 // create timer to "ping" the server with DISCOVER_SESSION requests
                 // until the trace events start to fire.
                 if (_startingTimer == null)
                     _startingTimer = new Timer();
+                
                 _startingTimer.Interval = 300;  //TODO - make time interval shorter?
                 _startingTimer.Elapsed += OnTimerElapsed;
                 _startingTimer.Enabled = true;
@@ -189,13 +221,14 @@ namespace DaxStudio.QueryTrace
         {
               if (_trace == null)
               {
-
                   _server = new Server();
                   _server.Connect(_connectionString);
             
                   _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
                   _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
-                  _trace.OnEvent += OnTraceEventInternal;
+                  
+                  // set default stop time in case trace gets disconnected
+                  _trace.StopTime = DateTime.UtcNow.AddHours(24);
                   _trace.Audit = true;
               }
               return _trace;
@@ -222,8 +255,11 @@ namespace DaxStudio.QueryTrace
             // has started capturing events
             if (!_traceStarted)
             {
+                System.Diagnostics.Debug.Print("Pending TraceEvent: {0}", e.EventClass.ToString());
+                Log.Verbose("Pending TraceEvent: {EventClass} - {EventSubClass}", e.EventClass.ToString(), e.EventSubclass.ToString());
                 StopTimer();
                 _traceStarted = true;
+                _connection.Close(false);
                 Status = QueryTraceStatus.Started;
                 if (TraceStarted != null)
                     TraceStarted(this,  null);
@@ -261,7 +297,13 @@ namespace DaxStudio.QueryTrace
             TraceError = (EventHandler<string>)Delegate.RemoveAll(TraceError, TraceError);
         }
 
-#endregion
+        public void Update()
+        {
+            Stop(false);
+            Start();
+        }
+
+        #endregion
 
         public void Dispose()
         {

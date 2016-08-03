@@ -72,11 +72,11 @@ namespace DaxStudio.UI.ViewModels
             _logicalQueryPlanRows = new BindableCollection<LogicalQueryPlanRow>();
         }
 
-        protected override List<TraceEventClass> GetMonitoredEvents()
+        protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
-            return new List<TraceEventClass> 
-                { TraceEventClass.DAXQueryPlan
-                , TraceEventClass.QueryEnd };
+            return new List<DaxStudioTraceEventClass> 
+                { DaxStudioTraceEventClass.DAXQueryPlan
+                , DaxStudioTraceEventClass.QueryEnd };
         }
     
 

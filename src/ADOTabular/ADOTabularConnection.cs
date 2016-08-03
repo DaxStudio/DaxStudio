@@ -429,6 +429,15 @@ namespace ADOTabular
             return cmd.ExecuteNonQuery();
         }
 
+        public void Close(bool endSession)
+        {
+            if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)
+            {
+                _adomdConn.Close(endSession);
+                _spid = 0;
+            }
+        }
+
         public void Close()
         {
             if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)
@@ -436,6 +445,12 @@ namespace ADOTabular
                 _adomdConn.Close();
                 _spid = 0;
             }
+        }
+
+        public void Dispose()
+        {
+            _adomdConn.Dispose();
+            _spid = 0;            
         }
 
         private ADOTabularFunctionGroupCollection _functionGroups;

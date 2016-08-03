@@ -240,26 +240,51 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (_connection == null) return null;
-                if (_tracer == null) // && _connection.Type != AdomdType.Excel)
-                {
-                    if (_connection.IsPowerPivot)
-                    {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers),Host.Proxy.Port);
-                    }
-                    else
-                    {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers));
-                    }
-                    //_tracer.TraceEvent += TracerOnTraceEvent;
-                    _tracer.TraceStarted += TracerOnTraceStarted;
-                    _tracer.TraceCompleted += TracerOnTraceCompleted;
-                    _tracer.TraceError += TracerOnTraceError;
-                }
                 return _tracer;
             }
+        }
+
+        public void CreateTracer()
+        {
+            if (_connection == null) return;
+            if (_tracer == null) // && _connection.Type != AdomdType.Excel)
+            {
+                if (_connection.IsPowerPivot)
+                {
+                    Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
+                    _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port);
+                }
+                else
+                {
+                    Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
+                    _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers));
+                }
+                //_tracer.TraceEvent += TracerOnTraceEvent;
+                _tracer.TraceStarted += TracerOnTraceStarted;
+                _tracer.TraceCompleted += TracerOnTraceCompleted;
+                _tracer.TraceError += TracerOnTraceError;
+            }
+        }
+
+        private void UpdateTraceEvents()
+        {
+            _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+            OutputMessage("Reconfiguring Trace");
+            var events = GetTraceEvents(TraceWatchers);
+            var newEventCnt = 0;
+            _tracer.Events.Clear();
+            _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
+            _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
+            foreach (var e in events)
+            {
+                if (!_tracer.Events.Contains(e))
+                {
+                    _tracer.Events.Add(e);
+                    newEventCnt++;
+                } 
+            }
+            _tracer.Update();
+            Log.Debug("Trace Updated with {count} new events", newEventCnt);
         }
 
         private void TracerOnTraceError(object sender, string e)
@@ -267,10 +292,10 @@ namespace DaxStudio.UI.ViewModels
             OutputError(e);
         }
 
-        private List<TraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
+        private List<DaxStudioTraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
         {
-            var events = new List<TraceEventClass>();
-            foreach (var tw in traceWatchers)
+            var events = new List<DaxStudioTraceEventClass>();
+            foreach (var tw in traceWatchers.Where(t => t.IsChecked == true))
             {
                 foreach (var e in tw.MonitoredEvents)
                 {
@@ -282,11 +307,6 @@ namespace DaxStudio.UI.ViewModels
             }
             return events;
         }
-        // TODO - remove this method
-        //private void TracerOnTraceCompleted(object sender, DaxStudioTraceEventArgs[] capturedEvents)
-        //{
-        //    TracerOnTraceCompleted(sender, capturedEvents.ToList<DaxStudioTraceEventArgs>());
-        //}
 
         private void TracerOnTraceCompleted(object sender, IList<DaxStudioTraceEventArgs> capturedEvents)
         {
@@ -1315,12 +1335,16 @@ namespace DaxStudio.UI.ViewModels
                     ((ServerTimesViewModel)message.TraceWatcher).ServerTimingDetails = ServerTimingDetails;
                 }
 
+                if (Tracer == null) CreateTracer();
+                else UpdateTraceEvents();
+
                 // spin up trace if one is not already running
                 if (Tracer.Status != QueryTraceStatus.Started
                     && Tracer.Status != QueryTraceStatus.Starting)
                 {
                     _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
                     OutputMessage("Waiting for Trace to start");
+                    
                     var t = Tracer;
                     t.StartAsync().ContinueWith((p)=>{
                         if (p.Exception != null)
@@ -1337,14 +1361,22 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
+                var otherTracesRunning = false;
                 ToolWindows.Remove(message.TraceWatcher);
                 foreach (var tw in TraceWatchers)
                 {
-                    if (tw.IsChecked) return;
+                    if (tw.IsChecked) otherTracesRunning = true;
                 }
+                if (otherTracesRunning)
+                {
+                    UpdateTraceEvents();
+                    return;
+                }
+
+                // If we got here no traces are running so shut everything down
                 _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
                 OutputMessage("Stopping Trace");
-                // spin down trace is no tracewatchers are active
+                // spin down trace as no tracewatchers are active
                 Tracer.Stop();
                 ResetTracer();
                 OutputMessage("Trace Stopped");
@@ -1354,6 +1386,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void ResetTracer()
         {
+            Tracer.Stop();
             Tracer.Dispose();
             _tracer = null;
         }
@@ -1591,10 +1624,11 @@ namespace DaxStudio.UI.ViewModels
 
         private void ShutDownTraces()
         {
-            foreach (var tw in TraceWatchers)
-            {
-                if (tw.IsChecked) { tw.IsChecked = false; }
-            }
+            ResetTracer();
+            //foreach (var tw in TraceWatchers)
+            //{
+            //    if (tw.IsChecked) { tw.IsChecked = false; }
+            //}
         }
 
         protected virtual void DoCloseCheck( Action<bool> callback)

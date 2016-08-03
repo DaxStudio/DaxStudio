@@ -119,13 +119,19 @@ namespace DaxStudio.UI.ViewModels
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
-        protected override List<TraceEventClass> GetMonitoredEvents()
+        protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
-            return new List<TraceEventClass> 
-                { TraceEventClass.QuerySubcube
-                , TraceEventClass.VertiPaqSEQueryEnd
-                , TraceEventClass.VertiPaqSEQueryCacheMatch
-                , TraceEventClass.QueryEnd };
+            //return new List<TraceEventClass> 
+            //    { TraceEventClass.QuerySubcube
+            //    , TraceEventClass.VertiPaqSEQueryEnd
+            //    , TraceEventClass.VertiPaqSEQueryCacheMatch
+            //    , TraceEventClass.QueryEnd };
+
+            return new List<DaxStudioTraceEventClass>
+                { DaxStudioTraceEventClass.QuerySubcube
+                , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
+                , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
+                , DaxStudioTraceEventClass.QueryEnd};
         }
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)

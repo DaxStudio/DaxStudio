@@ -21,7 +21,7 @@ namespace DaxStudio.QueryTrace.Interfaces
     {
         Task StartAsync();
         void Stop();
-
+        void Update();
         void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events);
 
         //event TraceEventHandler TraceEvent;
@@ -34,6 +34,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTraceError();
         void OnTracedStarted();
         */
+        List<DaxStudioTraceEventClass> Events { get; }
         QueryTraceStatus Status {get;}
 
         void Dispose();
