@@ -87,8 +87,7 @@ namespace DaxStudio.QueryTrace
         }
 
         public List<DaxStudioTraceEventClass> Events { get { return _eventsToCapture; } }
-        //public event Microsoft.AnalysisServices.TraceEventHandler TraceEvent;
-
+        
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
 
         public event EventHandler TraceStarted;
@@ -101,11 +100,6 @@ namespace DaxStudio.QueryTrace
             {
                 return _status;
             }
-        }
-
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string applicationName, string sessionId, List<DaxStudioTraceEventClass> events)
-        {
-            throw new InvalidOperationException("ConfigureTrace should not be called directly on the SignalR hub");
         }
 
         public void Update()

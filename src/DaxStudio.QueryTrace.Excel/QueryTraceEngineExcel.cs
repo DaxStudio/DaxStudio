@@ -79,7 +79,7 @@ namespace DaxStudio.QueryTrace
             private set {_status = value;}
         }
 
-        public List<DaxStudioTraceEventClass> Events { get { return _eventsToCapture; } }
+        public List<DaxStudioTraceEventClass> Events { get; }
         public delegate void DaxStudioTraceEventHandler(System.Object sender, DaxStudioTraceEventArgs e);
 
         public event DaxStudioTraceEventHandler TraceEvent;
@@ -99,7 +99,7 @@ namespace DaxStudio.QueryTrace
         private ADOTabular.ADOTabularConnection _connection;
         private AdomdType _connectionType;
         private readonly string _sessionId;
-        private List<DaxStudioTraceEventClass> _eventsToCapture;
+        //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
@@ -111,11 +111,11 @@ namespace DaxStudio.QueryTrace
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
-            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, events);
-            _eventsToCapture = events;
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
+            Events = events;
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
+        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName) //, List<DaxStudioTraceEventClass> events)
         {
             //_connectionString = string.Format("{0};SessionId={1}",connectionString,sessionId);
             _connectionString = connectionString;
@@ -123,7 +123,6 @@ namespace DaxStudio.QueryTrace
             _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
             _connectionType = connectionType;
             _applicationName = applicationName;
-            _eventsToCapture = events;
         }
         private void SetupTrace(xlAmo.Trace trace, List<DaxStudioTraceEventClass> events)
         {
@@ -194,7 +193,7 @@ namespace DaxStudio.QueryTrace
                 _connection = new ADOTabular.ADOTabularConnection(string.Format("{0};SessionId={1}", _originalConnectionString, _sessionId), _connectionType);
                 _connection.Open();
                 _trace = GetTrace();
-	            SetupTrace(_trace, _eventsToCapture);
+	            SetupTrace(_trace, Events);
 
 	            _trace.OnEvent += OnTraceEventInternal;
 	            _trace.Start();
@@ -355,7 +354,7 @@ namespace DaxStudio.QueryTrace
 
         public void Update()
         {
-            Stop(true);
+            Stop(false);
             Start();
         }
 

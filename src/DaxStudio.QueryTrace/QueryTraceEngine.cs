@@ -73,10 +73,7 @@ namespace DaxStudio.QueryTrace
             private set {_status = value;}
         }
 
-        public List<DaxStudioTraceEventClass> Events
-        {
-            get { return _eventsToCapture; }
-        }
+        public List<DaxStudioTraceEventClass> Events { get; } 
 
         public event TraceEventHandler TraceEvent;
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
@@ -94,7 +91,7 @@ namespace DaxStudio.QueryTrace
         private ADOTabular.ADOTabularConnection _connection;
         private AdomdType _connectionType;
         private string _sessionId;
-        private List<DaxStudioTraceEventClass> _eventsToCapture;
+        //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
@@ -102,12 +99,13 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
-            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, events);
-            _eventsToCapture = events;
-            Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End");
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
+            Events = events;
+            
+            Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
+        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName)
         {
             Log.Verbose("{class} {method} {event} ConnStr: {connectionString} SessionId: {sessionId}", "QueryTraceEngine", "ConfigureTrace", "Start",connectionString, sessionId);
             _connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
@@ -116,8 +114,7 @@ namespace DaxStudio.QueryTrace
             _connectionType = connectionType;
             _sessionId = sessionId;
             _applicationName = applicationName;
-            _eventsToCapture = events;
-            Log.Verbose("{class} {method} {event} EventCount: {eventcount}", "QueryTraceEngine", "ConfigureTrace", "End", events.Count);
+            Log.Verbose("{class} {method} {event} ", "QueryTraceEngine", "ConfigureTrace", "End");
         }
         private void SetupTrace(Trace trace, List<DaxStudioTraceEventClass> events)
         {
@@ -181,7 +178,7 @@ namespace DaxStudio.QueryTrace
                 _connection = new ADOTabular.ADOTabularConnection(_connectionString, _connectionType);
                 _connection.Open();
                 _trace = GetTrace();
-                SetupTrace(_trace, _eventsToCapture);
+                SetupTrace(_trace, Events);
                
                 _trace.OnEvent += OnTraceEventInternal;
                 _trace.Start();
@@ -219,19 +216,19 @@ namespace DaxStudio.QueryTrace
 
         private Trace GetTrace()
         {
-              if (_trace == null)
-              {
-                  _server = new Server();
-                  _server.Connect(_connectionString);
+            if (_trace == null)
+            {
+                _server = new Server();
+                _server.Connect(_connectionString);
             
-                  _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
-                  _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
-                  
-                  // set default stop time in case trace gets disconnected
-                  _trace.StopTime = DateTime.UtcNow.AddHours(24);
-                  _trace.Audit = true;
-              }
-              return _trace;
+                _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
+                _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
+
+                // set default stop time in case trace gets disconnected
+                _trace.StopTime = DateTime.UtcNow.AddHours(24);
+                _trace.Audit = true;
+            }
+            return _trace;
         }
 
         public void OnTraceEvent( TraceEventArgs e)

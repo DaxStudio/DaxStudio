@@ -1065,19 +1065,6 @@ namespace DaxStudio.UI.ViewModels
 
         public StatusBarViewModel StatusBar { get; set; }
         
-        //public void RegisterTraceWatchers()
-        //{
-        //    if (TraceWatchers == null)
-        //        return;
-        //    foreach (var tw in TraceWatchers)
-        //    {
-        //        if (tw.IsEnabled)
-        //        {
-        //            Tracer.RegisterTraceWatcher(tw);
-        //        }
-        //    }
-        //}
-
 
         public DataTable ResultsTable
         {
