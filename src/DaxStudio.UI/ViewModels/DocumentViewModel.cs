@@ -1866,7 +1866,7 @@ namespace DaxStudio.UI.ViewModels
 
                 try
                 {
-                    if (res.Result.errors == null)
+                    if ((res.Result.errors == null) || (res.Result.errors.Count == 0))
                     {
 
                         _editor.Dispatcher.Invoke(()=>{

@@ -25,8 +25,8 @@ namespace DaxStudio.UI.Utils
         private IWebProxy _proxy;
 
         // Urls
-        public const string DaxFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";
-        public const string DaxFormatVerboseUri = "http://www.daxformatter.com/api/daxformatter/DaxrichFormatverbose";
+        //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
+        public const string DaxTextFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxTextFormat";
 
         //private const string CURRENT_CODEPLEX_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
 #if DEBUG
@@ -62,7 +62,7 @@ namespace DaxStudio.UI.Utils
             //todo - how to check that this works with different proxies...??
             try
             {
-                _proxy = GetProxy(DaxFormatUri);
+                _proxy = GetProxy(DaxTextFormatUri);
             }
             catch (System.Net.WebException)
             {
@@ -77,7 +77,7 @@ namespace DaxStudio.UI.Utils
         {
             _isNetworkOnline = e.IsAvailable;
             // refresh proxy
-            _proxy = GetProxy(DaxFormatUri);
+            _proxy = GetProxy(DaxTextFormatUri);
         }
 
         public HttpWebRequest Create(string uri)
