@@ -22,11 +22,18 @@ namespace DaxStudio.UI.Model
         public string Dax { get; set; }
         public char ListSeparator { get; set; }
         public char DecimalSeparator { get; set; }
+        public string CallerApp { get; set; }
+        public string CallerVersion { get; set; }
 
         public DaxFormatterRequest()
         {
             this.ListSeparator = ',';
             this.DecimalSeparator = '.';
+
+            // Save caller app and version
+            var assemblyName = System.Reflection.Assembly.GetEntryAssembly().GetName();
+            this.CallerApp = assemblyName.Name;
+            this.CallerVersion = assemblyName.Version.ToString();
         }
     }
 
