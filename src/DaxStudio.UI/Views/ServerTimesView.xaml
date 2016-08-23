@@ -218,6 +218,8 @@
                 <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding Subclass, Converter={StaticResource EventSubclass}}" />
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto" 
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"/>
 
