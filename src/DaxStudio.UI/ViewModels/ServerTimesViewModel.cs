@@ -42,8 +42,8 @@ namespace DaxStudio.UI.ViewModels
 
             long rows, bytes;
             if (Query.ExtractEstimatedSize( out rows, out bytes )) {
-                EstimatedRows = rows * 1000;
-                EstimatedKBytes = 1 + bytes; //  / 1024;
+                EstimatedRows = rows;
+                EstimatedKBytes = 1 + bytes / 1024;
             }
         }
         public TraceStorageEngineEvent() { }
