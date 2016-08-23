@@ -284,6 +284,19 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestADOTabularCSDLVisitorKeywords()
+        {
+            var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            var v = new MetaDataVisitorCSDL(c);
+
+            var kw = c.Keywords;
+
+            Assert.AreEqual(true, kw.Count > 5, "More than 5 keywords found");
+
+        }
+
+
+        [TestMethod]
         public void TestColumnRenaming()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);

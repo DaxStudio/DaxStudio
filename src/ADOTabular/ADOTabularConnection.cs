@@ -462,6 +462,21 @@ namespace ADOTabular
             }
         }
 
+        public IEnumerable<string> AllFunctions
+        {
+            get
+            {
+                foreach(var fg in FunctionGroups)
+                {
+                    foreach(var f in fg.Functions )
+                    {
+                        yield return f.Caption;
+                    }
+                }
+                
+            }
+        }
+
         private ADOTabularKeywordCollection _keywords;
         public ADOTabularKeywordCollection Keywords
         {

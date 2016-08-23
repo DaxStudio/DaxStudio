@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
+using System.Linq;
 
 namespace ADOTabular
 {
@@ -549,10 +550,25 @@ namespace ADOTabular
 
         public void Visit(ADOTabularKeywordCollection keywords)
         {
-            DataRowCollection drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0].Rows;
-            foreach (DataRow dr in drKeywords)
+            //DataRowCollection drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0].Rows;
+            //DataRowCollection drFunctions = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Rows;
+            var drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0];
+            var drFunctions = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
+
+            //var ds = drKeywords.DataSet.Tables;
+            //ds.Add(drFunctions);
+
+
+            var kwords = from keyword in drKeywords.AsEnumerable()
+                           join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
+                           from kword in a.DefaultIfEmpty()
+                           where kword == null
+                           select new { Keyword = (string)keyword["Keyword"] , Matched= kword==null?true:false};
+
+            //foreach (DataRow dr in drKeywords)
+            foreach (var dr in kwords)
             {
-                keywords.Add(dr["Keyword"].ToString());
+                keywords.Add(dr.Keyword);
             }
         }
 
