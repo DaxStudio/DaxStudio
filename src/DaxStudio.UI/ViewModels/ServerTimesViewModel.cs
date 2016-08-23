@@ -24,6 +24,8 @@ namespace DaxStudio.UI.ViewModels
         public long Duration { get;  set; }
         public long CpuTime { get;  set; }
         public int RowNumber { get;  set; }
+        public long? EstimatedRows { get; set; }
+        public long? EstimatedKBytes { get; set; }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber)
         {
@@ -36,6 +38,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 Duration = ev.Duration;
                 CpuTime = ev.CpuTime;
+            }
+
+            long rows, bytes;
+            if (Query.ExtractEstimatedSize( out rows, out bytes )) {
+                EstimatedRows = rows * 1000;
+                EstimatedKBytes = 1 + bytes; //  / 1024;
             }
         }
         public TraceStorageEngineEvent() { }
@@ -52,6 +60,8 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlEmptyArguments = @" \(\s*\) ";
         const string searchXmSqlRowNumberGuid = @"\[RowNumber [0-9A-F ]*\]";
 
+        const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
+
         //const string searchDaxQueryPlanSquareBrackets = @"^\'\[([^\[^ ])*\]";
         //const string searchQuotedIdentifiers = @"\'([^ ])*\'";
 
@@ -64,6 +74,8 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlLineageRemoval = new Regex(searchXmSqlLineage, RegexOptions.Compiled);
         static Regex xmSqlEmptyArguments = new Regex(searchXmSqlEmptyArguments, RegexOptions.Compiled);
         static Regex xmSqlRowNumberGuidRemoval = new Regex(searchXmSqlRowNumberGuid, RegexOptions.Compiled);
+
+        static Regex xmSqlPatternSize = new Regex(searchXmSqlPatternSize, RegexOptions.Compiled);
 
         public static string RemoveDaxGuids(this string daxQuery) {
             return guidRemoval.Replace(daxQuery, "");
@@ -104,6 +116,15 @@ namespace DaxStudio.UI.ViewModels
             string daxQueryNoDots = xmSqlDotSeparator.Replace(daxQueryNoBrackets, "[");
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
             return result;
+        }
+
+        public static bool ExtractEstimatedSize( this string daxQuery, out long rows, out long bytes ) {
+            var m = xmSqlPatternSize.Match(daxQuery);
+            string rowsString = m.Groups["rows"].Value;
+            string bytesString = m.Groups["bytes"].Value;
+            bool foundRows = long.TryParse(rowsString, out rows);
+            bool foundBytes = long.TryParse(bytesString, out bytes);
+            return foundRows && foundBytes;
         }
     }
 
