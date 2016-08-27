@@ -81,6 +81,7 @@
       <Word>\*</Word>
       <Word>/</Word>-->
     </Keywords>
+    
 		<Keywords color="Function">
       <Word>ABS</Word>
       <Word>ADDCOLUMNS</Word>
@@ -261,6 +262,7 @@
       <Word>YEAR</Word>
       <Word>YEARFRAC</Word>
     </Keywords>
+    
     <Keywords color="Kword">
       <Word>$SYSTEM</Word>
       <Word>ASC</Word>
@@ -273,16 +275,23 @@
       <Word>MEASURE</Word>
       <Word>ORDER</Word>
       <Word>SELECT</Word>
-      <Word>WHERE</Word>
+      <Word>RETURN</Word>
+      <Word>VAR</Word>
+      <Word>AT</Word>
+      <Word>START</Word>
+
       <!-- These are both keyword and functions...
       <Word>DAY</Word>
       <Word>MONTH</Word>
       <Word>YEAR</Word>
       -->
     </Keywords>
+    
     <Rule foreground="MidnightBlue">[\d\w_]+(?=(\s*\())</Rule>
+    
 		<Rule foreground="DarkBlue">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
 	</RuleSet>
+  
 	<RuleSet name="comments set">
 		<!-- allows nested /**/ comments, coloring them Green/Teal alternately -->
 		<Span foreground="Teal" multiline="true">

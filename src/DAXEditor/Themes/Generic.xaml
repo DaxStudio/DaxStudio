@@ -26,10 +26,10 @@
             <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
             <Setter Property="FlowDirection" Value="LeftToRight"/>
             <!-- AvalonEdit does not support RTL, so ensure we use LTR by default -->
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type local:DAXEditor}">
-                        <!--
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:DAXEditor}">
+                    <!--
                         <ControlTemplate.Resources>
                             <Style TargetType="{x:Type editing:TextArea}">
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -72,14 +72,14 @@
                                 <Setter Property="NonPrintableCharacterBrush" Value="{DynamicResource NonPrintableCharacterBrush}" />
                                 <Setter Property="LinkTextForegroundBrush"    Value="{DynamicResource LinkTextForegroundBrush}" />
                         -->
-                                <!-- Style hyperlink displayed within text in text editor -->
-                        <!--        <Setter Property="LinkTextBackgroundBrush"    Value="{DynamicResource LinkTextBackgroundBrush}" />
+                    <!-- Style hyperlink displayed within text in text editor -->
+                    <!--        <Setter Property="LinkTextBackgroundBrush"    Value="{DynamicResource LinkTextBackgroundBrush}" />
                             </Style>
 
                             <Style TargetType="{x:Type ListBoxItem}" x:Key="CompletionListBoxItem">
                                 <Setter Property="Background"      Value="#FF000000" /> -->
-                                <!-- Background of each item -->
-                                <!--
+                    <!-- Background of each item -->
+                    <!--
                         <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -96,8 +96,8 @@
 							                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                             </Border>
                         -->
-                                            <!-- Simplified triggers: don't want a gray selection background when the ListBox doesn't have focus -->
-                        <!--                    <ControlTemplate.Triggers>
+                    <!-- Simplified triggers: don't want a gray selection background when the ListBox doesn't have focus -->
+                    <!--                    <ControlTemplate.Triggers>
                                                 <Trigger Property="IsSelected" Value="true">
                                                     <Setter Property="Background" Value="#FF393939"/>
                                                     <Setter Property="BorderBrush" TargetName="Bd" Value="#7FFFFFFF" />
@@ -110,10 +110,10 @@
 
                             <Style TargetType="{x:Type AEComplete:CompletionList}">
                         -->
-                                <!-- Setter Property="BorderThickness" Value="5" / -->
-                                <!-- Setter Property="BorderBrush" Value="Green" / -->
-                                <!-- Setter Property="Background" Value="Red" / -->
-                        <!--        <Setter Property="Template">
+                    <!-- Setter Property="BorderThickness" Value="5" / -->
+                    <!-- Setter Property="BorderBrush" Value="Green" / -->
+                    <!-- Setter Property="Background" Value="Red" / -->
+                    <!--        <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="{x:Type AEComplete:CompletionList}">
                                             <AEComplete:CompletionListBox x:Name="PART_ListBox" ItemContainerStyle="{DynamicResource CompletionListBoxItem}">
@@ -130,8 +130,8 @@
                                 </Setter>
                             </Style>
 -->
-                            <!-- Remove window frame fomr pop-up completion window -->
-<!--                            <Style TargetType="{x:Type AEComplete:CompletionWindowBase}">
+                    <!-- Remove window frame fomr pop-up completion window -->
+                    <!--                            <Style TargetType="{x:Type AEComplete:CompletionWindowBase}">
                                 <Setter Property="MaxHeight" Value="600" />
                                 <Setter Property="MaxWidth" Value="215" />
                                 <Setter Property="Background" Value="#00000000" />
@@ -143,11 +143,11 @@
 
                         </ControlTemplate.Resources>
                         -->
-                        <Border Background="{TemplateBinding Background}"
+                    <Border Background="{TemplateBinding Background}"
 							      BorderBrush="{TemplateBinding BorderBrush}"
 							      BorderThickness="{TemplateBinding BorderThickness}">
 
-                            <ScrollViewer Focusable="False"
+                        <ScrollViewer Focusable="False"
 						            Name="PART_ScrollViewer"
 						            CanContentScroll="True"
 						            VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}"
@@ -159,26 +159,26 @@
 						            Padding="{TemplateBinding Padding}"
 						            BorderBrush="{TemplateBinding BorderBrush}"
 					              BorderThickness="{TemplateBinding BorderThickness}">
-                                <ScrollViewer.Template>
-                                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
-                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            <ScrollViewer.Template>
+                                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                                    <Border BorderBrush="{TemplateBinding BorderBrush}"
 					              BorderThickness="{TemplateBinding BorderThickness}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                                            <Grid Background="{TemplateBinding Background}"
+                                        <Grid Background="{TemplateBinding Background}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="*"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
 
-                                                <!-- Display TextEditor content in upper left corner -->
-                                                <ScrollContentPresenter Grid.Column="0" Grid.Row="0"
+                                            <!-- Display TextEditor content in upper left corner -->
+                                            <ScrollContentPresenter Grid.Column="0" Grid.Row="0"
                                             KeyboardNavigation.DirectionalNavigation="Local"
                                             CanContentScroll="True"
                                             CanHorizontallyScroll="True"
@@ -186,22 +186,22 @@
 						                                Content="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DAXEditor}}, Path=TextArea}"
                                             />
 
-                                                <!-- Display Vertical Scrollbar to the right -->
-                                                <ScrollBar Name="PART_VerticalScrollBar"
+                                            <!-- Display Vertical Scrollbar to the right -->
+                                            <ScrollBar Name="PART_VerticalScrollBar"
                                Grid.Column="1"
                                Value="{TemplateBinding VerticalOffset}"
                                Maximum="{TemplateBinding ScrollableHeight}"
                                ViewportSize="{TemplateBinding ViewportHeight}"
                                Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
 
-                                                <!-- Display mini-toolbar and Horizontal scrollbar at the bottom of the view -->
-                                                <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
-                                                <Grid Grid.Column="0" Grid.Row="1" Background="{DynamicResource DialogBackgroundBrush}">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-<!--
+                                            <!-- Display mini-toolbar and Horizontal scrollbar at the bottom of the view -->
+                                            <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
+                                            <Grid Grid.Column="0" Grid.Row="1" Background="{DynamicResource DialogBackgroundBrush}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <!--
                                                     <ComboBox DataContext="{Binding FontScale}"
                                            FontSize="12"
                                            ItemsSource="{Binding FontScaleDefaultValues}"
@@ -231,8 +231,8 @@
                                                     <unit:UnitCombobox.Text>
                                                         <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
                                                     </unit:UnitCombobox.Text>
-                                           </unit:UnitCombobox>
-                                                    
+                                                </unit:UnitCombobox>
+
                                                 <ScrollBar Name="PART_HorizontalScrollBar"
                                    Orientation="Horizontal"
                                    Grid.Column="1"
@@ -240,41 +240,28 @@
                                    Maximum="{TemplateBinding ScrollableWidth}"
                                    ViewportSize="{TemplateBinding ViewportWidth}"
                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
-                                                </Grid>
-                                                <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
-                                                <DockPanel Grid.Column="1" Grid.Row="1" LastChildFill="false" Background="{DynamicResource DialogBackgroundBrush}">
-                                                    <Rectangle Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Width="1" Fill="White" DockPanel.Dock="Left" />
-                                                    <Rectangle Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Height="1" Fill="White" DockPanel.Dock="Top" />
-                                                </DockPanel>
                                             </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </ScrollViewer.Template>
-                            </ScrollViewer>
+                                            <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
+                                            <DockPanel Grid.Column="1" Grid.Row="1" LastChildFill="false" Background="{DynamicResource DialogBackgroundBrush}">
+                                                <Rectangle Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Width="1" Fill="White" DockPanel.Dock="Left" />
+                                                <Rectangle Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Height="1" Fill="White" DockPanel.Dock="Top" />
+                                            </DockPanel>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </ScrollViewer.Template>
+                        </ScrollViewer>
 
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="WordWrap" Value="True">
-                                <Setter TargetName="PART_ScrollViewer" Property="HorizontalScrollBarVisibility" Value="Disabled" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        
-
-    </Style>
-
-    <Style TargetType="{x:Type local:DAXMetadataBrowser}">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DAXMetadataBrowser}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="WordWrap" Value="True">
+                            <Setter TargetName="PART_ScrollViewer" Property="HorizontalScrollBarVisibility" Value="Disabled" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+
     </Style>
+
 </ResourceDictionary>

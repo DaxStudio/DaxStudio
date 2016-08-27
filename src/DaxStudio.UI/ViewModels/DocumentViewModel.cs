@@ -600,6 +600,11 @@ namespace DaxStudio.UI.ViewModels
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;
                 DmvPane.Connection = _connection;
+                Execute.OnUIThread(() =>
+               {
+                   this._editor.UpdateKeywordHighlighting(_connection.Keywords);
+                   this._editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+               });
             }
         }
 

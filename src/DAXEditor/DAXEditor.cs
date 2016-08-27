@@ -17,6 +17,9 @@ using System.Windows.Media;
 using DAXEditor.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
+using System.Reflection;
+using System.IO;
+using System.Text;
 
 namespace DAXEditor
 {
@@ -96,6 +99,32 @@ namespace DAXEditor
             this.DocumentChanged += DaxEditor_DocumentChanged;
             
         }
+
+        internal void UpdateSyntaxRule(string colourName,  IEnumerable<string> wordList)
+        {
+            var kwordRule = this.SyntaxHighlighting.MainRuleSet.Rules.Where(r => r.Color.Name == colourName).FirstOrDefault();
+            var pattern = new StringBuilder();
+            pattern.Append(@"\b(?>");
+            foreach (var word in wordList)
+            {
+                pattern.Append(word.Replace(".", @"\."));
+                pattern.Append("|");
+            }
+            pattern.Remove(pattern.Length - 1, 1);
+            pattern.Append(@")\b");
+            kwordRule.Regex = new Regex(pattern.ToString(), kwordRule.Regex.Options);
+        }
+
+        public void UpdateFunctionHighlighting(IEnumerable<string> functions)
+        {
+            UpdateSyntaxRule("Function", functions);
+        }
+
+        public void UpdateKeywordHighlighting(IEnumerable<string> keywords)
+        {
+            UpdateSyntaxRule("Kword", keywords);
+        }
+
 
         private void DaxEditor_DocumentChanged(object sender, EventArgs e)
         {
