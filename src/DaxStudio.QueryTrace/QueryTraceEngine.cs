@@ -94,9 +94,11 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
+        private IGlobalOptions _globalOptions;
 
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions)
         {
+            _globalOptions = globalOptions;
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
@@ -213,7 +215,7 @@ namespace DaxStudio.QueryTrace
                 RaiseError("Timeout exceeded attempting to start Trace");
             }
         }
-
+        
         private Trace GetTrace()
         {
             if (_trace == null)
@@ -222,7 +224,12 @@ namespace DaxStudio.QueryTrace
                 _server.Connect(_connectionString);
             
                 _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
-                _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
+
+                // Enable automatic filter only if DirectQuery is not enabled - otherwise, it will filter events in the trace event (slower, use DirectQuery with care!)
+                if (!_globalOptions.TraceDirectQuery) {
+                    Log.Verbose("Activate filter {sessionId} - {applicationName}", _sessionId, _applicationName);
+                    _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
+                }
 
                 // set default stop time in case trace gets disconnected
                 _trace.StopTime = DateTime.UtcNow.AddHours(24);
@@ -245,9 +252,17 @@ namespace DaxStudio.QueryTrace
 
         private bool _traceStarted;
         private string _applicationName;
-        
+
+        // private variables
         private void OnTraceEventInternal(object sender, TraceEventArgs e)
         {
+            if (_globalOptions.TraceDirectQuery) {
+                if ((e.SessionID != null) && (e.SessionID != _sessionId)) {
+                    System.Diagnostics.Debug.Print("Skipped event {0} - {1}", e.EventClass.ToString(), e.SessionID);
+                    Log.Verbose("Skipped event {EventClass} - {sessionId}", e.EventClass.ToString(), e.SessionID);
+                    return;
+                }
+            }
             // we are using CommandBegin as a "heartbeat" to check if the trace
             // has started capturing events
             if (!_traceStarted)

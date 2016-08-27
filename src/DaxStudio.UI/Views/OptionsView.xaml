@@ -208,7 +208,24 @@
                     <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
                 </Grid>
             </GroupBox>
-        </WrapPanel>
+            <GroupBox Header="Trace"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                <Grid Margin="5,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="*"/>
+
+                    </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="DirectQuery Trace"/>
+                        <CheckBox Grid.Row="0" Grid.Column="1" x:Name="TraceDirectQuery" VerticalAlignment="Center"/>
+                </Grid>
+            </GroupBox>
+            </WrapPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

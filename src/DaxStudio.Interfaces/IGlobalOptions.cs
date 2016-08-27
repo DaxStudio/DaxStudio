@@ -21,5 +21,6 @@ namespace DaxStudio.Interfaces
         SecureString ProxySecurePassword { get; set; }
         int QueryEndEventTimeout { get; set; }
         int DaxFormatterRequestTimeout { get; set; }
+        bool TraceDirectQuery { get; set; }
     }
 }

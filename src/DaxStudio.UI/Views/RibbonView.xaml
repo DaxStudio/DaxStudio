@@ -635,9 +635,8 @@
                                            />
                     </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>
-                
-                
-                
+
+
                 <Fluent:ToggleButton x:Name="TimingsRightPane" 
                                 IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 
                                 IsEnabled="{Binding ServerTimingsChecked}"

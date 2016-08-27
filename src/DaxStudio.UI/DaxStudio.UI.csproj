@@ -371,6 +371,7 @@
     <Compile Include="Model\DaxFormatter.cs" />
     <Compile Include="Enums\DocumentState.cs" />
     <Compile Include="Interfaces\ISaveState.cs" />
+    <Compile Include="Model\DaxStudioTraceEventClassSubclass.cs" />
     <Compile Include="Model\GlobalQueryHistory.cs" />
     <Compile Include="Model\LinkedQueryResult.cs" />
     <Compile Include="Model\NotifyIcon.cs" />
