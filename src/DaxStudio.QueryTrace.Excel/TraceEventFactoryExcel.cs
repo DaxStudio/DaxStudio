@@ -20,6 +20,8 @@ namespace DaxStudio.QueryTrace
             }
             trc.Columns.Add(xlAmo.TraceColumn.Spid);
             trc.Columns.Add(xlAmo.TraceColumn.SessionID);
+            // In Excel we do not add ActivityID
+            // trc.Columns.Add(xlAmo.TraceColumn.ActivityID);
             switch (eventClass)
             {
                 case xlAmo.TraceEventClass.CommandEnd:

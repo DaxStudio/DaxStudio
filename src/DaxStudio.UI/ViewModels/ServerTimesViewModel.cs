@@ -40,11 +40,11 @@ namespace DaxStudio.UI.ViewModels
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
-            // TODO: we should implement as optional the removal of aliases and lineage
             if (Class == DaxStudioTraceEventClass.DirectQueryEnd) {
                 Query = ev.TextData;
             }
             else {
+                // TODO: we should implement as optional the removal of aliases and lineage
                 Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
             }
             // Skip Duration/Cpu Time for Cache Match
@@ -167,6 +167,7 @@ namespace DaxStudio.UI.ViewModels
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
                 , DaxStudioTraceEventClass.DirectQueryEnd
+                , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
         }
 

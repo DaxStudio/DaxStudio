@@ -252,15 +252,28 @@ namespace DaxStudio.QueryTrace
 
         private bool _traceStarted;
         private string _applicationName;
+        private string _activityId;
 
         // private variables
         private void OnTraceEventInternal(object sender, TraceEventArgs e)
         {
             if (_globalOptions.TraceDirectQuery) {
                 if ((e.SessionID != null) && (e.SessionID != _sessionId)) {
-                    System.Diagnostics.Debug.Print("Skipped event {0} - {1}", e.EventClass.ToString(), e.SessionID);
-                    Log.Verbose("Skipped event {EventClass} - {sessionId}", e.EventClass.ToString(), e.SessionID);
+                    System.Diagnostics.Debug.Print("Skipped event by session {0} - {1}", e.EventClass.ToString(), e.SessionID);
+                    Log.Verbose("Skipped event by session {EventClass} - {sessionId}", e.EventClass.ToString(), e.SessionID);
                     return;
+                }
+                // Check ActivityId only for DirectQueryEnd event (others should be already filtered by SessionID)
+                if (e.EventClass == TraceEventClass.DirectQueryEnd) {
+                    bool bSkipByActivity = string.IsNullOrEmpty(_activityId);
+                    if (!bSkipByActivity) {
+                        bSkipByActivity = e[TraceColumn.ActivityID] != _activityId;
+                    }
+                    if (bSkipByActivity) {
+                        System.Diagnostics.Debug.Print("Skipped event by activity {0} - {1}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
+                        Log.Verbose("Skipped event by activity {EventClass} - {sessionId}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
+                        return;
+                    }
                 }
             }
             // we are using CommandBegin as a "heartbeat" to check if the trace
@@ -269,6 +282,8 @@ namespace DaxStudio.QueryTrace
             {
                 System.Diagnostics.Debug.Print("Pending TraceEvent: {0}", e.EventClass.ToString());
                 Log.Verbose("Pending TraceEvent: {EventClass} - {EventSubClass}", e.EventClass.ToString(), e.EventSubclass.ToString());
+                Log.Verbose("Saving ActivityID: {ActivityID}", e[TraceColumn.ActivityID]);
+
                 StopTimer();
                 _traceStarted = true;
                 _connection.Close(false);
@@ -279,7 +294,14 @@ namespace DaxStudio.QueryTrace
             else
             {
                 System.Diagnostics.Debug.Print("TraceEvent: {0}", e.EventClass.ToString());
-                Log.Verbose("TraceEvent: {EventClass} - {EventSubClass}", e.EventClass.ToString(), e.EventSubclass.ToString());
+                Log.Verbose("TraceEvent: {EventClass} - {EventSubClass} - {ActivityId}", e.EventClass.ToString(), e.EventSubclass.ToString(), e[TraceColumn.ActivityID]);
+                if (e.EventClass == TraceEventClass.QueryBegin) {
+                    // Save activityId and skip event handling
+                    _activityId = e[TraceColumn.ActivityID];
+                    Log.Verbose("Started ActivityId: {EventClass} - {ActivityId}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
+                    return;
+                }
+
                 OnTraceEvent(e);
                 _capturedEvents.Add(new DaxStudioTraceEventArgs(e));
                 if (e.EventClass == TraceEventClass.QueryEnd)
@@ -289,6 +311,9 @@ namespace DaxStudio.QueryTrace
                         TraceCompleted(this, _capturedEvents);
                     // reset the captured events collection
                     _capturedEvents = new List<DaxStudioTraceEventArgs>();
+
+                    // Reset activity ID
+                    _activityId = null;
                 }
             }
         }

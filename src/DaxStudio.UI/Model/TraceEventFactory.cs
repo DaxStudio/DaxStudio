@@ -22,6 +22,8 @@ namespace DaxStudio.UI.Model
             }
             trc.Columns.Add(TraceColumn.Spid);
             trc.Columns.Add(TraceColumn.SessionID);
+            trc.Columns.Add(TraceColumn.ActivityID);
+
             switch (eventClass)
             {
                 case TraceEventClass.CommandEnd:
