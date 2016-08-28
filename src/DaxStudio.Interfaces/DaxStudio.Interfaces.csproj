@@ -89,6 +89,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="IDaxStudioProxy.cs" />

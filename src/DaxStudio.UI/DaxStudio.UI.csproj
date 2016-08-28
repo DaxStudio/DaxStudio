@@ -312,6 +312,7 @@
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />

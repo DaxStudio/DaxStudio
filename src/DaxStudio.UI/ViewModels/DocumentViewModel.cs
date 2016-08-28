@@ -905,6 +905,10 @@ namespace DaxStudio.UI.ViewModels
                         tw.IsBusy = true;
                     }
                 }
+                if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma) {
+                    var dsm = new DelimiterStateMachine(DaxStudio.Interfaces.Enums.DelimiterType.Comma);
+                    daxQuery = dsm.ProcessString(daxQuery);
+                } 
                 _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
@@ -1378,9 +1382,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void ResetTracer()
         {
-            Tracer.Stop();
-            Tracer.Dispose();
-            _tracer = null;
+            if (Tracer != null)
+            {
+                Tracer.Stop();
+                Tracer.Dispose();
+                _tracer = null;
+            }
         }
 
         public void Save()
