@@ -21,8 +21,8 @@ namespace DaxStudio
 
         private static QueryTraceEngineExcel _xlEngine;
         private static QueryTraceEngine _engine;
-
-        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture)
+        
+        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, IGlobalOptions globalOptions)
         {
             try
             {
@@ -52,7 +52,7 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
                         Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture);
+                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture, globalOptions);
                         _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
@@ -67,7 +67,6 @@ namespace DaxStudio
                 Clients.Caller.OnTraceError(string.Format("{0}\n{1}",ex.Message, ex.StackTrace));
             }
         }
-
 
 
         private void OnTraceCompleted(IList<DaxStudioTraceEventArgs> e)

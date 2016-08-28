@@ -257,7 +257,7 @@ namespace DaxStudio.UI.ViewModels
                 else
                 {
                     Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                    _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers));
+                    _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options);
                 }
                 //_tracer.TraceEvent += TracerOnTraceEvent;
                 _tracer.TraceStarted += TracerOnTraceStarted;

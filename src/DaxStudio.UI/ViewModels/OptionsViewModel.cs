@@ -27,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _queryHistoryShowTraceColumns;
         private int _queryEndEventTimeout;
         private int _daxFormatterRequestTimeout;
+        private bool _traceDirectQuery;
 
         private IEventAggregator _eventAggregator;
         private DelimiterType _defaultSeparator;
@@ -50,6 +51,7 @@ namespace DaxStudio.UI.ViewModels
             QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
             DefaultSeparator = (DelimiterType) RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
+            TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -94,7 +96,16 @@ namespace DaxStudio.UI.ViewModels
                 RegistryHelper.SetValueAsync<bool>("EditorEnableIntellisense", value);
             }
         }
-
+        public bool TraceDirectQuery {
+            get { return _traceDirectQuery; }
+            set {
+                if (_traceDirectQuery == value) return;
+                _traceDirectQuery = value;
+                NotifyOfPropertyChange(() => TraceDirectQuery);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("TraceDirectQuery", value);
+            }
+        }
         #region Http Proxy properties
 
         public bool ProxyUseSystem
@@ -262,12 +273,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IEnumerable<DelimiterType> SeparatorTypes
-            {
+        {
             get {
                 var items = Enum.GetValues(typeof(DelimiterType)).Cast<DelimiterType>()
                                 .Where(e => e != DelimiterType.Unknown);
                 return items;
             }
-            }
+        }
     }
 }

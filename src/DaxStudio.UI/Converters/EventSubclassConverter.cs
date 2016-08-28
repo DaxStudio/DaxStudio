@@ -3,13 +3,15 @@ using System.Globalization;
 using System.Windows.Data;
 using Microsoft.AnalysisServices;
 using DaxStudio.QueryTrace;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Converters {
-    class EventSubclassConverter : IValueConverter {
+    class EventClassSubclassConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            var csc = value as DaxStudioTraceEventClassSubclass;
             var sc = value as DaxStudioTraceEventSubclass?;
             if (sc != null) {
-                switch ((DaxStudioTraceEventSubclass)sc) {
+                switch (csc.Subclass) {
                     case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
                         return "Cache";
                     case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
@@ -17,7 +19,25 @@ namespace DaxStudio.UI.Converters {
                     case DaxStudioTraceEventSubclass.VertiPaqScan:
                         return "Scan";
                     default:
-                        return sc.ToString();
+                        return csc.ToString();
+                }
+            } else if (csc != null) {
+                switch (csc.Subclass) {
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
+                        return "Cache";
+                    case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
+                        return "Internal";
+                    case DaxStudioTraceEventSubclass.VertiPaqScan:
+                        return "Scan";
+                    case DaxStudioTraceEventSubclass.NotAvailable:
+                        switch (csc.Class) {
+                            case DaxStudioTraceEventClass.DirectQueryEnd:
+                                return "SQL";
+                            default:
+                                return csc.Class.ToString();
+                        }
+                    default:
+                        return csc.Subclass.ToString();
                 }
             }
             return System.Windows.Data.Binding.DoNothing;

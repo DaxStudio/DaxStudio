@@ -8,9 +8,14 @@ namespace DaxStudio.UI.Model
         {
             var trc = new TraceEvent(eventClass);
             trc.Columns.Add(TraceColumn.EventClass);
-            trc.Columns.Add(TraceColumn.EventSubclass);
             trc.Columns.Add(TraceColumn.TextData);
             trc.Columns.Add(TraceColumn.CurrentTime);
+
+            if (eventClass != TraceEventClass.DirectQueryEnd) {
+                // DirectQuery doesn't have subclasses
+                trc.Columns.Add(TraceColumn.EventSubclass);
+            }
+
             if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
             {
                 trc.Columns.Add(TraceColumn.StartTime);

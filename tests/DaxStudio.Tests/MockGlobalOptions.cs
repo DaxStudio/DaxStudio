@@ -36,5 +36,7 @@ namespace DaxStudio.Tests
         public int QueryHistoryMaxItems { get; set; }
 
         public bool QueryHistoryShowTraceColumns { get; set; }
+
+        public bool TraceDirectQuery { get; set; }
     }
 }
