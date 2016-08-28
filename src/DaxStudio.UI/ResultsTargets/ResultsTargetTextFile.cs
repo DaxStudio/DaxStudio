@@ -87,12 +87,14 @@ namespace DaxStudio.UI.Model
                         string isoDateFormat = string.Format("yyyy-MM-dd hh:mm:ss{0}000", decimalSep);
                         Encoding enc = Encoding.UTF8;
                         switch (dlg.FilterIndex)
-                        { 
-                            case 1:
-                                enc = Encoding.UTF8;
+                        {
+                            case 1: // tab separated
+                                sep = "\t";
+                                break;
+                            case 2: // utf-8 csv
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
-                            case 2:
+                            case 3: //unicode csv
                                 enc = Encoding.Unicode;
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
