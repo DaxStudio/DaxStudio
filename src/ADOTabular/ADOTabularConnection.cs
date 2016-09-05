@@ -429,6 +429,9 @@ namespace ADOTabular
             return cmd.ExecuteNonQuery();
         }
 
+        
+
+
         public void Close(bool endSession)
         {
             if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)

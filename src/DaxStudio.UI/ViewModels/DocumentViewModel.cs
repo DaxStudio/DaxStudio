@@ -1483,13 +1483,20 @@ namespace DaxStudio.UI.ViewModels
             _isLoadingFile = true;
             _displayName = Path.GetFileName(FileName);
             IsDiskFileName = true;
-            using (TextReader tr = new StreamReader(FileName, true))
+            if (File.Exists(FileName))
             {
-                // put contents in edit window
-                GetEditor().Text = tr.ReadToEnd();
-                tr.Close();
+                using (TextReader tr = new StreamReader(FileName, true))
+                {
+                    // put contents in edit window
+                    GetEditor().Text = tr.ReadToEnd();
+                    tr.Close();
+                }
             }
-            
+            else
+            {
+                OutputError(string.Format("The file '{0}' was not found",FileName));
+            }
+
             IsDirty = false;
             State = DocumentState.Loaded;
         }

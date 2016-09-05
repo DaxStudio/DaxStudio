@@ -252,7 +252,7 @@
                         <CheckBox Grid.Row="0" Grid.Column="1" x:Name="TraceDirectQuery" VerticalAlignment="Center"/>
                 </Grid>
             </GroupBox>
->>>>>>> origin/develop
+
             </WrapPanel>
         </ScrollViewer>
     </Grid>
