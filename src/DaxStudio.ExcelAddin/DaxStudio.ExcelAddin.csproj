@@ -232,11 +232,16 @@
       <HintPath>..\..\packages\loggly-csharp-config.4.5.0.3\lib\net45\Loggly.Config.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\130\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\130\SDK\Assemblies\Microsoft.AnalysisServices.Core.DLL</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core">
       <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -365,11 +370,11 @@
     <Compile Include="DaxStudioLauncher.cs" />
     <Compile Include="DaxStudioStandalone.cs" />
     <Compile Include="ExcelHelper.cs" />
-    <None Include="app.Debug.config" >
+    <None Include="app.Debug.config">
       <DependentUpon>app.config</DependentUpon>
     </None>
     <None Include="app.Release.config">
-        <DependentUpon>app.config</DependentUpon>
+      <DependentUpon>app.config</DependentUpon>
     </None>
     <None Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -487,7 +492,7 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="Excel" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Excel" Language="cs" TemplatesPath="VSTOTemplates" DebugInfoExeName="#Software\Microsoft\Office\15.0\Excel\InstallRoot\Path#excel.exe" DebugInfoCommandLine="/x " AddItemTemplatesGuid="{51063C3A-E220-4D12-8922-BDA915ACD783}" />
+        <ProjectProperties HostName="Excel" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Excel" Language="cs" TemplatesPath="VSTOTemplates" DebugInfoExeName="#Software\Microsoft\Office\16.0\Excel\InstallRoot\Path#excel.exe" DebugInfoCommandLine="/x " AddItemTemplatesGuid="{51063C3A-E220-4D12-8922-BDA915ACD783}" />
         <Host Name="Excel" GeneratedCodeNamespace="DaxStudio.ExcelAddin" IconIndex="0">
           <HostItem Name="ThisAddIn" Code="ThisAddIn.cs" CanonicalName="AddIn" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs" />
         </Host>
@@ -518,8 +523,6 @@
   <!-- transofrm the config file so that logging in the app.debug.config is removed when we do a release build -->
   <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v14.0\Web\Microsoft.Web.Publishing.Tasks.dll" />
   <Target Name="AfterBuild">
-    <TransformXml Source="app.config" 
-                  Transform="app.$(Configuration).config" 
-                  Destination="$(OutputPath)\$(AssemblyName).dll.config" />
+    <TransformXml Source="app.config" Transform="app.$(Configuration).config" Destination="$(OutputPath)\$(AssemblyName).dll.config" />
   </Target>
 </Project>

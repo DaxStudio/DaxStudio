@@ -14,6 +14,8 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(TraceColumn.CurrentTime);
             trc.Columns.Add(TraceColumn.Spid);
             trc.Columns.Add(TraceColumn.SessionID);
+            trc.Columns.Add(TraceColumn.ActivityID);
+
 
             if (eventClass != TraceEventClass.DirectQueryEnd) {
                 // DirectQuery doesn't have subclasses
