@@ -16,8 +16,10 @@
 ; Calculated Constants
 #define MyAppFileVersion StringChange(MyAppVersion, ".", "_")
 #define use_dotnetfx45
-#define use_sql2012sp1amo
-#define use_sql2012sp1adomdclient
+;#define use_sql2012sp1amo
+;#define use_sql2012sp1adomdclient
+#define use_sql2016amo
+#define use_sql2016adomdclient
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -109,8 +111,8 @@ Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO D
 #include "scripts\products\excelversion.iss"
 #include "scripts\products\dotnetfx45.iss"
 #include "scripts\products\dotnetassembly.iss"
-#include "scripts\products\sql2012sp1adomdclient.iss"
-#include "scripts\products\sql2012sp1amo.iss"
+#include "scripts\products\sql2016adomdclient.iss"
+#include "scripts\products\sql2016amo.iss"
 
 [UninstallRun]
 Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden; 
@@ -387,7 +389,7 @@ else
 #ifdef use_sql2012sp1adomdclient
   
   if ShouldInstallDependencies() then begin
-    Log('Checking for AdomdClient');
+    Log('Checking for AdomdClient 2012 SP1');
 	  sql2012sp1adomdclient();
   end;
 #endif
@@ -395,8 +397,25 @@ else
 #ifdef use_sql2012sp1amo
   
   if ShouldInstallDependencies() then begin
-    Log('Checking for AMO');
+    Log('Checking for AMO 2012 SP1');
 	  sql2012sp1amo();
+   end;
+#endif
+
+
+#ifdef use_sql2016adomdclient
+  
+  if ShouldInstallDependencies() then begin
+    Log('Checking for AdomdClient 2016');
+	  sql2016adomdclient();
+  end;
+#endif
+
+#ifdef use_sql2016amo
+  
+  if ShouldInstallDependencies() then begin
+    Log('Checking for AMO 2016');
+	  sql2016amo();
    end;
 #endif
 
