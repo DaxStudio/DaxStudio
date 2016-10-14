@@ -1,4 +1,5 @@
 ﻿
+using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AnalysisServices;
 //using AMOTabular;
@@ -13,11 +14,11 @@ namespace DaxStudio.QueryTrace
 {
     public static class QueryTraceEngineFactory
     {
-        public static IQueryTrace CreateLocal(ADOTabular.ADOTabularConnection connection, List<TraceEventClass> events) {
+        public static IQueryTrace CreateLocal(ADOTabular.ADOTabularConnection connection, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions) {
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
-            return new QueryTraceEngine(connection.ConnectionString, connection.Type, connection.SessionId, connection.ApplicationName, dsEvents); 
+            return new QueryTraceEngine(connection.ConnectionString, connection.Type, connection.SessionId, connection.ApplicationName, dsEvents, globalOptions ); 
         }
-        public static IQueryTrace CreateRemote(ADOTabular.ADOTabularConnection connection, List<TraceEventClass> events, int port) {
+        public static IQueryTrace CreateRemote(ADOTabular.ADOTabularConnection connection, List<DaxStudioTraceEventClass> events, int port) {
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
             return new RemoteQueryTraceEngine(connection.ConnectionString,connection.Type,connection.SessionId, dsEvents, port);
         }

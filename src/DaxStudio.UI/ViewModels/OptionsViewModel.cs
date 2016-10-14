@@ -1,13 +1,12 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DaxStudio.UI.Utils;
 using System.Security;
+using DaxStudio.Interfaces.Enums;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -28,8 +27,10 @@ namespace DaxStudio.UI.ViewModels
         private bool _queryHistoryShowTraceColumns;
         private int _queryEndEventTimeout;
         private int _daxFormatterRequestTimeout;
+        private bool _traceDirectQuery;
 
         private IEventAggregator _eventAggregator;
+        private DelimiterType _defaultSeparator;
 
         //public event EventHandler OptionsUpdated;
 
@@ -49,6 +50,8 @@ namespace DaxStudio.UI.ViewModels
             QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
             QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
+            DefaultSeparator = (DelimiterType) RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
+            TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -93,7 +96,16 @@ namespace DaxStudio.UI.ViewModels
                 RegistryHelper.SetValueAsync<bool>("EditorEnableIntellisense", value);
             }
         }
-
+        public bool TraceDirectQuery {
+            get { return _traceDirectQuery; }
+            set {
+                if (_traceDirectQuery == value) return;
+                _traceDirectQuery = value;
+                NotifyOfPropertyChange(() => TraceDirectQuery);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("TraceDirectQuery", value);
+            }
+        }
         #region Http Proxy properties
 
         public bool ProxyUseSystem
@@ -240,6 +252,32 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => DaxFormatterRequestTimeout);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<int>(nameof(DaxFormatterRequestTimeout), value);
+            }
+        }
+
+        public DelimiterType DefaultSeparator
+        {
+            get
+            {
+                return _defaultSeparator;
+            }
+
+            set
+            {
+                if (_defaultSeparator == value) return;
+                _defaultSeparator = value;
+                NotifyOfPropertyChange(() => DefaultSeparator);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>(nameof(DefaultSeparator), (int)value);
+            }
+        }
+
+        public IEnumerable<DelimiterType> SeparatorTypes
+        {
+            get {
+                var items = Enum.GetValues(typeof(DelimiterType)).Cast<DelimiterType>()
+                                .Where(e => e != DelimiterType.Unknown);
+                return items;
             }
         }
     }

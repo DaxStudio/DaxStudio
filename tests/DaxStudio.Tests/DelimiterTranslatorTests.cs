@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Utils.DelimiterTranslator;
+﻿using DaxStudio.Interfaces.Enums;
+using DaxStudio.UI.Utils.DelimiterTranslator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -70,6 +71,18 @@ namespace DaxStudio.Tests
             string expected = "Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
             Assert.AreEqual(expected, actual);
         }
+
+
+        [TestMethod]
+        public void BasicTranslation3Test_3()
+        {
+            string input = "Evaluate Filter(Values('Product'[Categories]); Product[Prod ,;. Rank] = 1,0)";
+            var dsm = new DelimiterStateMachine(DelimiterType.Comma);
+            string actual = dsm.ProcessString(input);
+            string expected = "Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
+            Assert.AreEqual(expected, actual);
+        }
+
 
     }
 }

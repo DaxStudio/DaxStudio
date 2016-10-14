@@ -22,17 +22,25 @@ namespace DaxStudio.UI.Model
         public string Dax { get; set; }
         public char ListSeparator { get; set; }
         public char DecimalSeparator { get; set; }
+        public string CallerApp { get; set; }
+        public string CallerVersion { get; set; }
 
         public DaxFormatterRequest()
         {
             this.ListSeparator = ',';
             this.DecimalSeparator = '.';
+
+            // Save caller app and version
+            var assemblyName = System.Reflection.Assembly.GetEntryAssembly().GetName();
+            this.CallerApp = assemblyName.Name;
+            this.CallerVersion = assemblyName.Version.ToString();
         }
     }
 
     
     public class DaxFormatterResult
     {
+        [JsonProperty(PropertyName = "formatted")]
         public string FormattedDax;
         public List<DaxFormatterError> errors;
     }
@@ -121,32 +129,9 @@ namespace DaxStudio.UI.Model
         public static async Task<DaxFormatterResult> FormatDaxAsync(string query, IGlobalOptions globalOptions)
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            var errorFound = false;
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatUri, query, globalOptions);
-            if (output == "\"\"")
-            {
-                errorFound = true;
-                output = await CallDaxFormatterAsync(WebRequestFactory.DaxFormatVerboseUri, query, globalOptions);
-            }
-            
-            // trim off leading and trailing quotes
-            var o2 = output.Substring(1, output.Length - 2);
-            o2 = o2.Replace("\\r\\n", "\r\n");
-            o2 = o2.TrimEnd( Environment.NewLine.ToCharArray() );
-            o2 = o2.Replace("\\\"", "\"");
-            o2 = o2.Replace("\\\\", "\\");
-            
-            //todo if result is empty string then call out to rich format API to get error message
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, globalOptions);
             var res2 = new DaxFormatterResult();
-            if (errorFound)
-            {
-                JsonConvert.PopulateObject(o2, res2);
-                res2.FormattedDax = "";
-            }
-            else
-            {
-                res2.FormattedDax = o2;
-            }
+            JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
@@ -258,7 +243,7 @@ namespace DaxStudio.UI.Model
         }
         public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions)
         {
-            await PrimeConnectionAsync(WebRequestFactory.DaxFormatUri, globalOptions);
+            await PrimeConnectionAsync(WebRequestFactory.DaxTextFormatUri, globalOptions);
         }
         
     }

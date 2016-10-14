@@ -15,7 +15,7 @@ namespace DaxStudio.UI.Model
 
         public void Dispose()
         {
-            _document.SetStatusBarMessage("Ready");
+            _document?.SetStatusBarMessage("Ready");
             _document = null;
         }
 

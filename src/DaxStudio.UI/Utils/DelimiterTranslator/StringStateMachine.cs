@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,12 +8,7 @@ using System.Threading.Tasks;
 namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
 
-    public enum DelimiterType
-    {
-        Comma,
-        SemiColon,
-        Unknown
-    }
+    
 
     public abstract class StringStateMachine<T> where T : StringStateMachine<T>
     {

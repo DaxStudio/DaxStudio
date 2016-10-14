@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DaxStudio.Interfaces.Enums;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace DaxStudio.Interfaces
 {
@@ -21,5 +18,7 @@ namespace DaxStudio.Interfaces
         SecureString ProxySecurePassword { get; set; }
         int QueryEndEventTimeout { get; set; }
         int DaxFormatterRequestTimeout { get; set; }
+        DelimiterType DefaultSeparator { get; set; }
+        bool TraceDirectQuery { get; set; }
     }
 }

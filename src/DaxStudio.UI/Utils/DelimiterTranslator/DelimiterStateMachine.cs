@@ -1,4 +1,6 @@
 ﻿
+using DaxStudio.Interfaces.Enums;
+
 namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
     public class DelimiterStateMachine : StringStateMachine<DelimiterStateMachine>

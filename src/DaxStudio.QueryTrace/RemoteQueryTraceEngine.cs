@@ -15,6 +15,7 @@ namespace DaxStudio.QueryTrace
         HubConnection hubConnection;
         IHubProxy queryTraceHubProxy;
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
+        private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
 
         public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port)
         {
@@ -22,7 +23,7 @@ namespace DaxStudio.QueryTrace
             // connect to hub
             hubConnection = new HubConnection(string.Format("http://localhost:{0}/",port));
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");
-            
+            _eventsToCapture = events;
             // ==== DEBUG LOGGING =====
             //var writer = new System.IO.StreamWriter(@"d:\temp\SignalR_ClientLog.txt");
             //writer.AutoFlush = true;
@@ -48,7 +49,7 @@ namespace DaxStudio.QueryTrace
         public void Stop()
         {
             _status = QueryTraceStatus.Stopping;
-            queryTraceHubProxy.Invoke("Stop").Wait();
+            queryTraceHubProxy.Invoke("Stop").Wait(3000); // TODO - do we need to timeout or force here if app is closing
             _status = QueryTraceStatus.Stopped;
         }
 
@@ -85,9 +86,8 @@ namespace DaxStudio.QueryTrace
             { TraceCompleted(this, capturedEvents); }
         }
 
-
-        //public event Microsoft.AnalysisServices.TraceEventHandler TraceEvent;
-
+        public List<DaxStudioTraceEventClass> Events { get { return _eventsToCapture; } }
+        
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
 
         public event EventHandler TraceStarted;
@@ -102,11 +102,11 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        public void ConfigureTrace(string connectionString, AdomdType connectionType, string applicationName, string sessionId, List<DaxStudioTraceEventClass> events)
+        public void Update()
         {
-            throw new InvalidOperationException("ConfigureTrace should not be called directly on the SignalR hub");
+            queryTraceHubProxy.Invoke("UpdateEvents", _eventsToCapture).Wait();
+            queryTraceHubProxy.Invoke("Update");
         }
-
 
         public void Dispose()
         {

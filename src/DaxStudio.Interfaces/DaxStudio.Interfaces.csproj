@@ -75,7 +75,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Microsoft.AnalysisServices.DLL</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\130\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -89,6 +89,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="IDaxStudioProxy.cs" />

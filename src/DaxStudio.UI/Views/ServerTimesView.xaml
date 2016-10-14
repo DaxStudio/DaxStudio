@@ -18,7 +18,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <conv:EventSubclassConverter x:Key="EventSubclass"></conv:EventSubclassConverter>
+            <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
@@ -215,9 +215,11 @@
             </DataGrid.RowStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="35" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding Subclass, Converter={StaticResource EventSubclass}}" />
+                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" />
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto" 
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"/>
 

@@ -9,13 +9,18 @@ namespace DaxStudio.QueryTrace
         public static TraceEvent Create(TraceEventClass eventClass)
         {
             var trc = new TraceEvent(eventClass);
-            
             trc.Columns.Add(TraceColumn.EventClass);
-            trc.Columns.Add(TraceColumn.EventSubclass);
             trc.Columns.Add(TraceColumn.TextData);
             trc.Columns.Add(TraceColumn.CurrentTime);
             trc.Columns.Add(TraceColumn.Spid);
             trc.Columns.Add(TraceColumn.SessionID);
+            trc.Columns.Add(TraceColumn.ActivityID);
+
+
+            if (eventClass != TraceEventClass.DirectQueryEnd) {
+                // DirectQuery doesn't have subclasses
+                trc.Columns.Add(TraceColumn.EventSubclass);
+            }
 
             if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
             {

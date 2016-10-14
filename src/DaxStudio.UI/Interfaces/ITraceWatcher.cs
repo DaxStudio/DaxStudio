@@ -7,7 +7,7 @@ namespace DaxStudio.UI.Interfaces
 {
     public interface ITraceWatcher
     {
-        List<TraceEventClass> MonitoredEvents { get; }
+        List<DaxStudioTraceEventClass> MonitoredEvents { get; }
         
         void Reset();
         bool IsEnabled { get; set; }

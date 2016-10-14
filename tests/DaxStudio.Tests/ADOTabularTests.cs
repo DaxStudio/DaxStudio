@@ -103,6 +103,22 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestADOTabularLargeCSDLVisitor()
+        {
+            ADOTabularConnection connection = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL visitor = new MetaDataVisitorCSDL(connection);
+            ADOTabularModel model = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\mtm_csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, model);
+
+            visitor.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(110, tabs.Count);
+            Assert.AreEqual(190, tabs["Orders"].Columns.Where(c => c.ColumnType == ADOTabularColumnType.Column).Count());
+            Assert.AreEqual(347, tabs["Orders"].Columns.Where(c => c.ColumnType == ADOTabularColumnType.Measure).Count());
+        }
+
+        [TestMethod]
         public void TestPowerBICSDLVisitor()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
@@ -266,6 +282,20 @@ namespace DaxStudio.Tests
 
             }
         }
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitorKeywords()
+        {
+            var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            var v = new MetaDataVisitorCSDL(c);
+
+            var kw = c.Keywords;
+
+            Assert.AreEqual(true, kw.Count > 5, "More than 5 keywords found");
+
+        }
+
+
         [TestMethod]
         public void TestColumnRenaming()
         {
@@ -277,14 +307,28 @@ namespace DaxStudio.Tests
             dt.Columns.Add("table2[Column3]");
             dt.Columns.Add("table2[Column 4]");
             dt.Columns.Add("table2[Column, 5]");
-            ADOTabularConnection.FixColumnNaming(dt);
+            dt.Columns.Add("[[Measures] (test)]");
+            ADOTabularConnection.FixColumnNaming(dt, "evaluate 'blah'");
             Assert.AreEqual("table1[Column1]", dt.Columns[0].ColumnName );
             Assert.AreEqual("table2[Column1]",dt.Columns[1].ColumnName );
             Assert.AreEqual("Column2", dt.Columns[2].ColumnName);
             Assert.AreEqual("Column3", dt.Columns[3].ColumnName);
             Assert.AreEqual("Column`4", dt.Columns[4].ColumnName,"spaces must be replaced with backticks");
             Assert.AreEqual("Column``5", dt.Columns[5].ColumnName, "commas must be replaced with backticks");
+            Assert.AreEqual("[Measures] (test)", dt.Columns[6].Caption);
         }
 
+        [TestMethod]
+        public void TestMDXColumnRenaming()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            var dt = new DataTable();
+            dt.Columns.Add("[blah].[blah]");
+            dt.Columns.Add("[Measures].[Test]");
+            ADOTabularConnection.FixColumnNaming(dt, "SELECT [blah].[blah].[blah] on 0 from [Cube]");
+            Assert.AreEqual("[blah].[blah]", dt.Columns[0].ColumnName);
+            Assert.AreEqual("Test", dt.Columns[1].ColumnName);
+            
+        }
     }
 }

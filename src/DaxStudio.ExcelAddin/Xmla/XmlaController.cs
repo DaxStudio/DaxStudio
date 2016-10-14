@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Web.Http;
+﻿using System.Web.Http;
 using System.Threading.Tasks;
 using System.Net.Http;
-using System.Threading;
 using System.Net;
 using System.Net.Http.Headers;
-using Microsoft.AnalysisServices;
 using System.IO;
 using System;
-using System.Diagnostics;
-using System.Xml;
-using System.Xml.Serialization;
 using Serilog;
 using System.Globalization;
 
@@ -41,12 +35,16 @@ namespace DaxStudio.ExcelAddin.Xmla
                 //connStr = string.Format("Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location={0}", loc);
                 //connStr = string.Format("Provider=MSOLAP;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Location={0};", loc);
                 
-                Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "defaulting to Microsoft.AnalysisServices");
+                
                 AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
                 if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= 15)
                 {
                     amoType = AmoWrapper.AmoType.Excel;
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
+                }
+                else
+                {
+                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "defaulting to Microsoft.AnalysisServices");
                 }
 
                 var svr = new AmoWrapper.AmoServer(amoType);

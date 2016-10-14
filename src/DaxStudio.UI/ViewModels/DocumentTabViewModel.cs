@@ -84,24 +84,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewQueryDocument( string fileName)
         {
-            //var newDoc = new DocumentViewModel();
-            var newDoc = _documentFactory(_windowManager, _eventAggregator);
-            //newDoc.Init(_windowManager, _eventAggregator);
-            
+
+            var newDoc = _documentFactory(_windowManager, _eventAggregator);         
             Items.Add(newDoc);
-            
-            
             ActivateItem(newDoc);
             ActiveDocument = newDoc;
             
             if (fileName != string.Empty)
             {
-            //    _eventAggregator.PublishOnUIThread(new LoadFileEvent(fileName));
                 newDoc.DisplayName = "Opening...";
-                //newDoc.OpenFile(fileName);
                 newDoc.FileName = fileName;
-                newDoc.State = DocumentState.LoadPending;
-                //newDoc.OpenFile();
+                newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
             }
             else
             {
@@ -110,9 +103,7 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.DisplayName = newFileName;
                 new System.Action(ChangeConnection).BeginOnUIThread();    
             }
-            //newDoc.IsDirty = false;
             new System.Action(CleanActiveDocument).BeginOnUIThread();
-            
         }
 
         private void CleanActiveDocument()

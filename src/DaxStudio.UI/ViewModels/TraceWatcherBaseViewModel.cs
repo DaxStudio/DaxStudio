@@ -46,7 +46,7 @@ namespace DaxStudio.UI.ViewModels
             MonitoredEvents = GetMonitoredEvents();
         }
 
-        public List<TraceEventClass> MonitoredEvents { get; private set; }
+        public List<DaxStudioTraceEventClass> MonitoredEvents { get; private set; }
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
@@ -55,7 +55,7 @@ namespace DaxStudio.UI.ViewModels
             get { return _events ?? (_events = new List<DaxStudioTraceEventArgs>()); }
         }
 
-        protected abstract List<TraceEventClass> GetMonitoredEvents();
+        protected abstract List<DaxStudioTraceEventClass> GetMonitoredEvents();
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
@@ -73,7 +73,7 @@ namespace DaxStudio.UI.ViewModels
 
             foreach (var e in capturedEvents)
             {
-                if (MonitoredEvents.Contains((TraceEventClass)e.EventClass))
+                if (MonitoredEvents.Contains(e.EventClass))
                 {
                     Events.Add(e);
                 }
@@ -219,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
         private void QueryEndEventTimeout(object sender, ElapsedEventArgs e)
         {
             Reset();
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not recieved - Tracing timeout exceeded"));
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not received - Tracing timeout exceeded"));
         }
 
     }

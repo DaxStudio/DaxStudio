@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.Tests
 {
     class MockGlobalOptions : IGlobalOptions
     {
         public int DaxFormatterRequestTimeout  { get; set;   }
+
+        public DelimiterType DefaultSeparator { get; set; }
 
         public bool EditorEnableIntellisense { get; set; }
 
@@ -33,5 +36,7 @@ namespace DaxStudio.Tests
         public int QueryHistoryMaxItems { get; set; }
 
         public bool QueryHistoryShowTraceColumns { get; set; }
+
+        public bool TraceDirectQuery { get; set; }
     }
 }

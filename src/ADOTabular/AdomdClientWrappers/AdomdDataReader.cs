@@ -1,5 +1,6 @@
 ﻿extern alias ExcelAdomdClientReference;
 using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace ADOTabular.AdomdClientWrappers
@@ -562,5 +563,64 @@ namespace ADOTabular.AdomdClientWrappers
                 }
             } 
         }
+
+        public DataTable ConvertToTable(Dictionary<string,string> formats)
+        {
+            return ConvertToTable(0, formats);
+        }
+
+        public DataTable ConvertToTable(long maxRows)
+        {
+            return ConvertToTable(maxRows, null);
+        }
+
+        public DataTable ConvertToTable()
+        {
+            return ConvertToTable(0, null);
+        }
+
+        public DataTable ConvertToTable(long maxRows, Dictionary<string,string> formats)
+        {
+            if( maxRows == 0)  maxRows = long.MaxValue;
+            long rowCnt = 0;
+            
+            DataTable dtSchema = this.GetSchemaTable();
+            DataTable dt = new DataTable();
+            List<DataColumn> listCols = new List<DataColumn>();
+
+            if (dtSchema != null)
+            {
+                foreach (DataRow drow in dtSchema.Rows)
+                {
+                    string columnName = System.Convert.ToString(drow["ColumnName"]);
+                    DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
+                    //column.Unique = (bool)drow["IsUnique"];
+                    //column.AllowDBNull = (bool)drow["AllowDBNull"];
+                    //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
+                    if (formats?.ContainsKey(columnName)??false) column.ExtendedProperties.Add("FormatString", string.Format("{{0:{0}}}" + formats[columnName]));
+                    listCols.Add(column);
+                    dt.Columns.Add(column);
+                }
+            }
+
+            // Read rows from DataReader and populate the DataTable
+            while (this.Read())
+            {
+                DataRow dataRow = dt.NewRow();
+                for (int i = 0; i < listCols.Count; i++)
+                {
+                    if (listCols[i].ExtendedProperties.ContainsKey("FormatString"))
+                        dataRow[((DataColumn)listCols[i])] = string.Format(listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
+                    else
+                        dataRow[((DataColumn)listCols[i])] = this[i];
+                }
+                dt.Rows.Add(dataRow);
+                rowCnt++;
+                if (rowCnt > maxRows) break;
+            }
+            return dt;  
+
+        }
+
     }
 }

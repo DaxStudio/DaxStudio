@@ -20,5 +20,6 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTraceStarted();
         void OnTraceStopped();
         void GetStatus(QueryTraceStatus status);
+        void UpdateEvents (List<DaxStudioTraceEventClass> events);
     }
 }

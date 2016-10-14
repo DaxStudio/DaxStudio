@@ -76,5 +76,6 @@ namespace DaxStudio.ExcelAddin.Xmla
                 return m_excelAmoAssemblyPath;
             }
         }
+
     }
 }

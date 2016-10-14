@@ -519,7 +519,7 @@
                                SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+;)"
+                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+,)"
                                           Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -573,7 +573,7 @@
                                Fluent:KeyTip.Keys="F"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Find" Text="Find text within the current query" Width ="190"/>
+                        <Fluent:ScreenTip Title="Find (Ctrl-F)" Text="Find text within the current query" Width ="190"/>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 <!-- cal:Message.Attach="[Event Click] = [Action Find()]" -->
@@ -585,7 +585,7 @@
                                FocusManager.IsFocusScope="True">
                 <!-- cal:Message.Attach="[Event Click] = [Action Replace()]" -->
                 <Fluent:Button.ToolTip>
-                    <Fluent:ScreenTip Title="Find" Text="Replace text within the current query" Width ="190"/>
+                    <Fluent:ScreenTip Title="Replace (Ctrl-H)" Text="Replace text within the current query" Width ="190"/>
                 </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
@@ -635,9 +635,8 @@
                                            />
                     </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>
-                
-                
-                
+
+
                 <Fluent:ToggleButton x:Name="TimingsRightPane" 
                                 IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 
                                 IsEnabled="{Binding ServerTimingsChecked}"

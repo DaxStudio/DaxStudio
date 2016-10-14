@@ -187,7 +187,14 @@
             </local:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SwapDelimiters"/>
         </local:InputBindingTrigger>
-        
+
+        <local:InputBindingTrigger>
+            <local:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="OemComma" Modifiers="Control"/>
+            </local:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="SwapDelimiters"/>
+        </local:InputBindingTrigger>
+
         <local:InputBindingTrigger>
             <local:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Z" Modifiers="Control"/>

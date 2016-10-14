@@ -67,7 +67,6 @@ namespace DaxStudio.UI.Model
 
             // Show save file dialog box
             var result = dlg.ShowDialog();
-            
 
             // Process save file dialog box results 
             if (result == true)
@@ -87,12 +86,14 @@ namespace DaxStudio.UI.Model
                         string isoDateFormat = string.Format("yyyy-MM-dd hh:mm:ss{0}000", decimalSep);
                         Encoding enc = Encoding.UTF8;
                         switch (dlg.FilterIndex)
-                        { 
-                            case 1:
-                                enc = Encoding.UTF8;
+                        {
+                            case 1: // tab separated
+                                sep = "\t";
+                                break;
+                            case 2: // utf-8 csv
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
-                            case 2:
+                            case 3: //unicode csv
                                 enc = Encoding.Unicode;
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
@@ -136,10 +137,8 @@ namespace DaxStudio.UI.Model
                                                 sbLine.Append(col.ToString());
                                                 break;
                                             case "System.DateTime":
-                                                //sbLine.Append("\"");
-                                                //sbLine.Append(((DateTime)col).ToString( "s", System.Globalization.CultureInfo.InvariantCulture )); // ISO date format
-                                                sbLine.Append(((DateTime)col).ToString( isoDateFormat)); // ISO date format
-                                                //sbLine.Append("\"");
+                                                if (row.IsNull(iCol)) { sbLine.Append("\"\""); }
+                                                else { sbLine.Append(((DateTime)col).ToString(isoDateFormat)); } // ISO date format
                                                 break;
                                             default:
                                                 sbLine.Append("\"");
@@ -154,8 +153,6 @@ namespace DaxStudio.UI.Model
                                     }
                                     writer.WriteLine(sbLine);
                                     sbLine.Clear();
-                                    //IEnumerable<string> fields = row.ItemArray.Select(field => string.Concat("\"", field.ToString().Replace("\"", "\"\"").Replace("\n"," "), "\""));
-                                    //writer.WriteLine(string.Join(sep, fields));
                                 }
                             }
 

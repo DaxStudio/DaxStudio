@@ -6,17 +6,17 @@ namespace ADOTabular
 {
     public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>
     {
-        private Dictionary<string, ADOTabularFunction> _functions; 
+        private SortedDictionary<string, ADOTabularFunction> _functions; 
         private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularFunctionCollection(ADOTabularConnection adoTabConn)
         {
             _adoTabConn = adoTabConn;
-            _functions = new Dictionary<string, ADOTabularFunction>();
+            _functions = new SortedDictionary<string, ADOTabularFunction>();
         }
 
         public ADOTabularFunctionCollection()
         {
-            _functions = new Dictionary<string, ADOTabularFunction>();
+            _functions = new SortedDictionary<string, ADOTabularFunction>();
         }
 
         public int Count

@@ -10,6 +10,7 @@ namespace DaxStudio.QueryTrace.Interfaces
 {
     public enum QueryTraceStatus
     {
+        Error,
         Stopped,
         Stopping,
         Started,
@@ -21,8 +22,7 @@ namespace DaxStudio.QueryTrace.Interfaces
     {
         Task StartAsync();
         void Stop();
-
-        void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events);
+        void Update();
 
         //event TraceEventHandler TraceEvent;
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
@@ -34,6 +34,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTraceError();
         void OnTracedStarted();
         */
+        List<DaxStudioTraceEventClass> Events { get; }
         QueryTraceStatus Status {get;}
 
         void Dispose();

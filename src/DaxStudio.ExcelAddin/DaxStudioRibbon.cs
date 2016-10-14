@@ -24,7 +24,7 @@ namespace DaxStudio.ExcelAddin
 
         private void Ribbon1Load(object sender, RibbonUIEventArgs e)
         {
-            Log.Verbose("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Start");
+            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Start");
             try {
                 // look for a running DaxStudio.exe instance and 
                 // if we find one try to start a WebHost for it
@@ -42,7 +42,7 @@ namespace DaxStudio.ExcelAddin
             {
                 Log.Error("{Class} {method} {exception} {stacktrace}", "DaxStudioRibbon", "RibbonLoad", ex.Message, ex.StackTrace);
             }
-            Log.Verbose("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Finish");
+            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Finish");
         }
         
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)

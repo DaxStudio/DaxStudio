@@ -401,7 +401,7 @@ namespace ADOTabular
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
             
-            FixColumnNaming(dt);
+            FixColumnNaming(dt, query);
             _runningCommand = null;
             return dt;
         }
@@ -416,7 +416,7 @@ namespace ADOTabular
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
 
-            FixColumnNaming(dt);
+            FixColumnNaming(dt, query);
             return dt;
         }
 
@@ -429,6 +429,18 @@ namespace ADOTabular
             return cmd.ExecuteNonQuery();
         }
 
+        
+
+
+        public void Close(bool endSession)
+        {
+            if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)
+            {
+                _adomdConn.Close(endSession);
+                _spid = 0;
+            }
+        }
+
         public void Close()
         {
             if (_adomdConn.State != ConnectionState.Closed && _adomdConn.State != ConnectionState.Broken)
@@ -438,12 +450,33 @@ namespace ADOTabular
             }
         }
 
+        public void Dispose()
+        {
+            _adomdConn.Dispose();
+            _spid = 0;            
+        }
+
         private ADOTabularFunctionGroupCollection _functionGroups;
         public ADOTabularFunctionGroupCollection FunctionGroups
         {
             get {
                 CacheFunctionGroups();
                 return _functionGroups;
+            }
+        }
+
+        public IEnumerable<string> AllFunctions
+        {
+            get
+            {
+                foreach(var fg in FunctionGroups)
+                {
+                    foreach(var f in fg.Functions )
+                    {
+                        yield return f.Caption;
+                    }
+                }
+                
             }
         }
 
@@ -608,16 +641,17 @@ namespace ADOTabular
             public bool UseOriginalName;
         }
 
-        public static void FixColumnNaming(DataTable dataTable)
+        public static void FixColumnNaming(DataTable dataTable, string query)
         {
             var columnPattern = new Regex(@"\[(?<col>.*)]\d*$",RegexOptions.Compiled);
 
             const string MEASURES_MDX = "[Measures].";
             var newColumnNames = new Collection<DaxColumn>();
             // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
-            bool isMdxResult = (from DataColumn col in dataTable.Columns
-                                where col.ColumnName.IndexOf("].[") > 0
-                                select col).Count() > 0;
+            //bool isMdxResult = (from DataColumn col in dataTable.Columns
+            //                    where col.ColumnName.IndexOf("].[") > 0
+            //                    select col).Count() > 0;
+            bool isMdxResult = IsMdxQuery(query);
             var measuresColumns = (from DataColumn col in dataTable.Columns
                                 where col.ColumnName.IndexOf(MEASURES_MDX) >= 0
                                 select col);
@@ -652,8 +686,8 @@ namespace ADOTabular
                         name = m.Groups["col"].Value;
                     }
                     // Format column naming for DAX result or if it is a measure name
-                    int firstBracket = name.IndexOf('[') + 1;
-                    name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
+                    //int firstBracket = name.IndexOf('[') + 1;
+                    //name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
                 }
                 var dc = new DaxColumn()
                 {
@@ -692,6 +726,12 @@ namespace ADOTabular
                     dc.ColumnName = c.NewName;
                 }
             }
+        }
+
+        private static bool IsMdxQuery(string query)
+        {
+            var trimmedQuery = query.Trim().Substring(0, 6).ToUpperInvariant();
+            return trimmedQuery.StartsWith("WITH") || trimmedQuery.StartsWith("SELECT");
         }
 
         void IDisposable.Dispose()
