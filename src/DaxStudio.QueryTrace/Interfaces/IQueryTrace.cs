@@ -10,6 +10,7 @@ namespace DaxStudio.QueryTrace.Interfaces
 {
     public enum QueryTraceStatus
     {
+        Error,
         Stopped,
         Stopping,
         Started,

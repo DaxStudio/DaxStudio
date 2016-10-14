@@ -48,7 +48,7 @@ namespace ADOTabular
             bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
             string nameUpper = Name.ToUpper();
             //bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
-            bool noSpecialName = !_adoTabConn.Keywords.Contains(nameUpper);
+            bool noSpecialName = !(_adoTabConn.Keywords.Contains(nameUpper) || _adoTabConn.AllFunctions.Contains(nameUpper));
             if (Name.Length > 0
                 && goodFirstCharacter
                 && noSpecialCharacters

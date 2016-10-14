@@ -282,7 +282,8 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedDatabase; }
             set
             {
-                
+                if (value == null) ActiveDocument.SelectedDatabase = null;
+
                 if (value == _selectedDatabase)
                 {
                     NotifyOfPropertyChange(() => SelectedDatabase);

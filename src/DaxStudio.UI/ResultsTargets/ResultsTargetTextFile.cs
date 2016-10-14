@@ -67,7 +67,6 @@ namespace DaxStudio.UI.Model
 
             // Show save file dialog box
             var result = dlg.ShowDialog();
-            
 
             // Process save file dialog box results 
             if (result == true)
@@ -138,10 +137,8 @@ namespace DaxStudio.UI.Model
                                                 sbLine.Append(col.ToString());
                                                 break;
                                             case "System.DateTime":
-                                                //sbLine.Append("\"");
-                                                //sbLine.Append(((DateTime)col).ToString( "s", System.Globalization.CultureInfo.InvariantCulture )); // ISO date format
-                                                sbLine.Append(((DateTime)col).ToString( isoDateFormat)); // ISO date format
-                                                //sbLine.Append("\"");
+                                                if (row.IsNull(iCol)) { sbLine.Append("\"\""); }
+                                                else { sbLine.Append(((DateTime)col).ToString(isoDateFormat)); } // ISO date format
                                                 break;
                                             default:
                                                 sbLine.Append("\"");
@@ -156,8 +153,6 @@ namespace DaxStudio.UI.Model
                                     }
                                     writer.WriteLine(sbLine);
                                     sbLine.Clear();
-                                    //IEnumerable<string> fields = row.ItemArray.Select(field => string.Concat("\"", field.ToString().Replace("\"", "\"\"").Replace("\n"," "), "\""));
-                                    //writer.WriteLine(string.Join(sep, fields));
                                 }
                             }
 

@@ -290,6 +290,7 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceError(object sender, string e)
         {
             OutputError(e);
+            _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
         }
 
         private List<DaxStudioTraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
@@ -326,6 +327,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", "DocumentViewModel", "TracerOnTraceStarted", e);
             Execute.OnUIThread(() => { 
                 OutputMessage("Query Trace Started");
+                TraceWatchers.EnableAll();
                 _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Started));
             }); 
         }
@@ -1321,6 +1323,8 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(TraceWatcherToggleEvent message)
         {
             Log.Verbose("{Class} {Event} TraceWatcher:{TraceWatcher} IsActive:{IsActive}", "DocumentViewModel", "Handle(TraceWatcherToggleEvent", message.TraceWatcher.ToString(), message.IsActive);
+            TraceWatchers.DisableAll();
+
             if (message.IsActive)
             {
                 ToolWindows.Add(message.TraceWatcher);
@@ -1351,7 +1355,7 @@ namespace DaxStudio.UI.ViewModels
                                 OutputError("Error Starting Trace: " + x.Message);
                                 return false;
                             });
-                        }
+                        };
                     },TaskScheduler.Default);
                 }
             }
@@ -1377,7 +1381,9 @@ namespace DaxStudio.UI.ViewModels
                 ResetTracer();
                 OutputMessage("Trace Stopped");
                 _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                TraceWatchers.EnableAll();
             }
+            
         }
 
         private void ResetTracer()
