@@ -727,6 +727,7 @@ namespace ADOTabular
                 }
             }
         }
+        
 
         private static bool IsMdxQuery(string query)
         {

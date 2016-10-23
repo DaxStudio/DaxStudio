@@ -519,7 +519,18 @@ namespace ADOTabular.AdomdClientWrappers
 
         public bool IsDBNull(int i)
         {
-            throw new NotImplementedException();
+            if (_type == AdomdType.AnalysisServices)
+            {
+                return _obj.IsDBNull(i);
+            }
+            else
+            {
+                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
+                {
+                    return _objExcel.IsDBNull(i);
+                };
+                return f();
+            }
         }
 
 

@@ -189,7 +189,7 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
-                return new AdomdDataReader(_obj.ExecuteReader());
+                return new AdomdDataReader(_obj.ExecuteReader( ));
             }
             else
             {
