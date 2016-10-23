@@ -4,6 +4,7 @@ using System.Windows;
 using Caliburn.Micro;
 using DaxStudio.UI;
 using Serilog;
+
 using DaxStudio.UI.Utils;
 namespace DaxStudio.Standalone
 {
@@ -46,18 +47,17 @@ namespace DaxStudio.Standalone
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
 
-                log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+                log = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
 
                 //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
 #if DEBUG
-                Serilog.Debugging.SelfLog.Out = Console.Out;
+                Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
                 Log.Logger = log;
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-
 
                 app.Run();
             }

@@ -9,7 +9,6 @@ using DaxStudio.UI.Utils;
 using DaxStudio.UI.Views;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
-using Microsoft.AnalysisServices;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -33,7 +32,6 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
-using DaxStudio.UI.Eums;
 using DaxStudio.UI.Utils.DelimiterTranslator;
 
 namespace DaxStudio.UI.ViewModels
@@ -98,7 +96,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( GenerateScreenUnitList());
             
-            this.SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
             
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
@@ -143,9 +141,10 @@ namespace DaxStudio.UI.ViewModels
 
         public override void TryClose(bool? dialogResult = null)
         {
-            
             base.TryClose(dialogResult);
         }
+        
+
         private DAXEditor.DAXEditor _editor;
         /// <summary>
         /// Initialization that requires a reference to the editor control needs to happen here
@@ -390,14 +389,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private DocumentView GetDocumentView()
-        {
-            return (DocumentView) GetView();
-        }
-
         private DAXEditor.DAXEditor GetEditor()
         {
-            DocumentView v = GetDocumentView();
+            DocumentView v = (DocumentView)GetView();
             return v != null ? v.daxEditor : null;
         }
 
@@ -604,8 +598,17 @@ namespace DaxStudio.UI.ViewModels
                 DmvPane.Connection = _connection;
                 Execute.OnUIThread(() =>
                {
-                   this._editor.UpdateKeywordHighlighting(_connection.Keywords);
-                   this._editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+                   try
+                   {
+                       if (_editor == null) _editor = GetEditor();
+                       _editor.UpdateKeywordHighlighting(_connection.Keywords);
+                       _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+                       Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
+                   }
+                   catch (Exception ex)
+                   {
+                       Log.Error(ex, "{class} {method} {message}", "DocumentViewModel","UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
+                   }
                });
             }
         }

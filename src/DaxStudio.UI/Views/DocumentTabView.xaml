@@ -7,6 +7,9 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:views="clr-namespace:DaxStudio.UI.Views"
+             xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
+             xmlns:utils="clr-namespace:DaxStudio.UI.Utils"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -14,12 +17,25 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
     </UserControl.Resources>
+    
+    
     <Grid>
         <avalondock:DockingManager 
             x:Name="Items"
-            ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
-            
+            ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"        
              >
+
+
+            <avalondock:DockingManager.LayoutItemTemplateSelector>
+                <selectors:AvalonDockTemplateSelector>
+                    <selectors:AvalonDockTemplateSelector.DocumentViewTemplate>
+                        <DataTemplate>
+                            <views:DocumentView  cal:View.Model="{Binding . }"/>
+                        </DataTemplate>
+                    </selectors:AvalonDockTemplateSelector.DocumentViewTemplate>
+                </selectors:AvalonDockTemplateSelector>
+            </avalondock:DockingManager.LayoutItemTemplateSelector>
+
             <!--
             <avalondock:DockingManager.Theme>
                 <avalondock:GenericTheme />
@@ -52,7 +68,7 @@
                     </StackPanel>
                 </DataTemplate>
             </avalondock:DockingManager.DocumentHeaderTemplate>
-<avalondock:DockingManager.DocumentPaneMenuItemHeaderTemplate>
+            <avalondock:DockingManager.DocumentPaneMenuItemHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Content.DisplayName}"/>
@@ -60,7 +76,8 @@
                 </DataTemplate>
             </avalondock:DockingManager.DocumentPaneMenuItemHeaderTemplate>
             <!-- This can be commented out in the Convention approach, as the Convention Manager has one incorporated -->
-            <!--<avalondock:DockingManager.DocumentTemplate>
+            <!--
+            <avalondock:DockingManager.DocumentTemplate>
                 <DataTemplate>
                     <ContentControl cal:View.Model="{Binding}" 
                                     VerticalContentAlignment="Stretch" 
@@ -68,7 +85,7 @@
                                     IsTabStop="False"/>
                 </DataTemplate>
             </avalondock:DockingManager.DocumentTemplate>
--->
+            -->
             
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="DocumentClosing">

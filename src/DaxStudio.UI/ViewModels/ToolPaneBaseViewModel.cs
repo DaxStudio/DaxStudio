@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Windows;
 using ADOTabular;
@@ -141,6 +142,12 @@ namespace DaxStudio.UI.ViewModels
         {
             return true;
             //            throw new System.NotImplementedException();
+        }
+
+        public bool TryCatchOccurredException(Exception exception)
+        {
+            Log.Error(exception, "An uncaught exception occurred during the drag-drop operation");
+            return false; // indicates that the exception has not been handled here
         }
     }
 

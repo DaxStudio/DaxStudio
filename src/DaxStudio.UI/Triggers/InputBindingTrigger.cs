@@ -7,10 +7,7 @@ namespace DaxStudio.UI.Triggers
 {
     class InputBindingTrigger : TriggerBase<FrameworkElement>, ICommand
     {
-        public InputBindingTrigger()
-        {
 
-        }
         public InputBinding InputBinding
         {
             get { return (InputBinding)GetValue(InputBindingProperty); }
