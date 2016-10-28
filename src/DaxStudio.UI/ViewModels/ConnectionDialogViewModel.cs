@@ -17,18 +17,24 @@ using System.Globalization;
 
 namespace DaxStudio.UI.ViewModels
 {
-    class ConnectionDialogViewModel : Screen  
+    class ConnectionDialogViewModel : Screen
+        , IHandle<ApplicationActivatedEvent>
     {
 
         private readonly IEventAggregator _eventAggregator;
         private readonly string _connectionString;
         private readonly DocumentViewModel _activeDocument;
         private readonly Regex _ppvtRegex;
-        public ConnectionDialogViewModel(string connectionString, IDaxStudioHost host, IEventAggregator eventAggregator, bool hasPowerPivotModel, DocumentViewModel document )
+        public ConnectionDialogViewModel(string connectionString
+            , IDaxStudioHost host
+            , IEventAggregator eventAggregator
+            , bool hasPowerPivotModel
+            , DocumentViewModel document ) 
         {
             try
             {
                 _eventAggregator = eventAggregator;
+                _eventAggregator.Subscribe(this);
                 _connectionString = connectionString;
                 _activeDocument = document;
                 _ppvtRegex = new Regex(@"http://localhost:\d{4}/xmla", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -36,15 +42,7 @@ namespace DaxStudio.UI.ViewModels
                 Host = host;
                 ServerModeSelected = true;
 
-                PowerBIHelper.Refresh();
-                if (PowerBIHelper.Instances.Count > 0)
-                {
-                    PowerBIDesignerDetected = true;
-                    SelectedPowerBIInstance = PowerBIHelper.Instances[0];
-                    NotifyOfPropertyChange(() => PowerBIDesignerDetected);
-                    NotifyOfPropertyChange(() => PowerBIDesignerInstances);
-                    NotifyOfPropertyChange(() => SelectedPowerBIInstance);
-                }
+                RefreshPowerBIInstances();
 
                 ParseConnectionString(); // load up dialog with values from ConnStr
 
@@ -59,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         ServerModeSelected = false;
                         PowerPivotModeSelected = true;
+                        HasPowerPivotModel = true;
                     }
 
                     //}
@@ -72,6 +71,26 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ConnectionDialogViewModel", "ctor", ex.Message, ex.StackTrace);
             }
+        }
+
+        private void RefreshPowerBIInstances()
+        {
+            
+            PowerBIHelper.Refresh();
+            PowerBIDesignerDetected = PowerBIHelper.Instances.Count > 0;
+            if (PowerBIHelper.Instances.Count > 0)
+            {
+                if (SelectedPowerBIInstance == null) SelectedPowerBIInstance = PowerBIHelper.Instances[0];
+            } else
+            {
+                if (PowerBIModeSelected) ServerModeSelected = true;
+                SelectedPowerBIInstance = null;
+            }
+            // update bound properties
+            NotifyOfPropertyChange(() => PowerBIDesignerDetected);
+            NotifyOfPropertyChange(() => PowerBIDesignerInstances);
+            NotifyOfPropertyChange(() => SelectedPowerBIInstance);
+            
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }
@@ -121,6 +140,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value != _serverModeSelected)
                 {
                     _serverModeSelected = value;
+                    NotifyOfPropertyChange(() => ServerModeSelected);
                 }
             }
         }
@@ -422,6 +442,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
+                _eventAggregator.Unsubscribe(this);
                 SelectedServerSetFocus = false;
                 TryClose(true);
             }
@@ -429,6 +450,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
+            _eventAggregator.Unsubscribe(this);
             _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
         }
 
@@ -473,6 +495,12 @@ namespace DaxStudio.UI.ViewModels
             }
             return "";
         }
+
+        public void Handle(ApplicationActivatedEvent message)
+        {
+            RefreshPowerBIInstances();
+        }
+
         private LocaleIdentifier _locale;
         public LocaleIdentifier Locale
         {
@@ -487,6 +515,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private SortedList<string, LocaleIdentifier> _locales;
+        private bool _hasPowerPivotModel;
+
         public SortedList<string, LocaleIdentifier> LocaleOptions
         {
             get
@@ -503,6 +533,13 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
                 return _locales;
+            }
+        }
+
+        public bool HasPowerPivotModel {
+            get { return _hasPowerPivotModel; }
+            private set { _hasPowerPivotModel = value;
+                NotifyOfPropertyChange(() => HasPowerPivotModel);
             }
         }
     }

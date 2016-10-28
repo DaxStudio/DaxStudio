@@ -33,6 +33,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Utils.DelimiterTranslator;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -419,13 +420,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted(bool isCancelled)
         {
+            _queryStopWatch.Stop();
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
-            QueryResultsPane.IsBusy = false;
-            bool svrTimingsEnabled = false;
+            QueryResultsPane.IsBusy = false;  // TODO - this should be some sort of collection of objects with a specific interface, not a hard coded object reference
             currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
             currentQueryDetails.RowCount = this.RowCount;
-            foreach(var tw in TraceWatchers)
+
+            bool svrTimingsEnabled = false;
+            foreach (var tw in TraceWatchers)
             {
                 if (tw.IsChecked) tw.QueryCompleted(isCancelled, currentQueryDetails);
                 var svrTimings = tw as ServerTimesViewModel;
@@ -932,7 +935,6 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                _queryStopWatch.Stop();
                 _timer.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
@@ -991,7 +993,9 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Dispose();
                 NotifyOfPropertyChange(() => ElapsedQueryTime);
                 _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
-                QueryCompleted();
+                // Can't call query completed here as for a DataReader we still need to stream the results back
+                // we can't marke the query as complete until we've finished processing the DataReader
+                //QueryCompleted();
 
             }
 

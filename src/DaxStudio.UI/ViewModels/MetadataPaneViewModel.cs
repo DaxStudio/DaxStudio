@@ -13,7 +13,7 @@ using System;
 using System.Windows.Data;
 using System.Collections;
 using System.Threading.Tasks;
-using DaxStudio.UI.Utils;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {

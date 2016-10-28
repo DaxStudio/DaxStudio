@@ -18,11 +18,22 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:MultiplyConverter x:Key="multiplyConverter" />
         <conv:WorkbookNameConverter x:Key="WorkbookNameConverter" />
+        <conv:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter" />
+            
         <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
+        <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-info@96ppi.png" />
+        <BitmapImage x:Key="question" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-question@96ppi.png" />
+
         <BitmapImage x:Key="Excel" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excel@24px.png" />
         <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
         <BitmapImage x:Key="Database" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-database@24px.png" />
 
+        <conv:ResourceLookupConverter x:Key="EmbeddedSsasIcons">
+            <ResourceDictionary>
+                    <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
+                    <BitmapImage x:Key="Devenv" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-devenv@24px.png" />
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
         <ControlTemplate x:Key="AnimatedExpanderButtonTemp" TargetType="{x:Type ToggleButton}">
             <Border x:Name="ExpanderButtonBorder"
         		Background="{TemplateBinding Background}"
@@ -65,7 +76,7 @@
                                       />
                 </Grid>
             </Border>
-            <ControlTemplate.Triggers>
+        <ControlTemplate.Triggers>
                 <!-- Animate arrow when toggled-->
                 <Trigger Property="IsChecked"
                          Value="True">
@@ -178,7 +189,19 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <ResourceDictionary.MergedDictionaries>
+            <Style TargetType="{x:Type TextBlock}" x:Key="disabledText" >
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+                <Style.Triggers>
+                    <!--<Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextColorKey}}" />
+                    </Trigger>-->
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
         </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -207,7 +230,7 @@
                           VerticalAlignment="Top"  MinWidth="420" Grid.Row="1">
                     <StackPanel Orientation="Vertical">
                         <StackPanel>
-                            <Grid Visibility="{Binding HostIsExcel, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="140" />
                                     <ColumnDefinition Width="*"/>
@@ -216,33 +239,47 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <RadioButton  Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" x:Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding HasPowerPivotModel}">
-                                    <StackPanel Orientation="Horizontal">
-                                    <!--    <Image Source="{StaticResource Excel}" Margin="0,0,5,0" IsEnabled="True"/>-->
-                                        <TextBlock Text="PowerPivot Model" />
-                                    </StackPanel>
-                                </RadioButton>
+                                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                    <RadioButton  Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" x:Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType"  IsEnabled="{Binding HasPowerPivotModel}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <!--    <Image Source="{StaticResource Excel}" Margin="0,0,5,0" IsEnabled="True"/>-->
+                                            <TextBlock IsEnabled="{Binding PowerBIDesignerDetected}" Text="PowerPivot Model" Style="{StaticResource disabledText}" />
+                                        </StackPanel>
+                                    </RadioButton>
+                                    <Image Source="{StaticResource question}" Margin="5,10,0,0" Height="16" Visibility="{Binding PowerBIDesignerDetected, Converter={StaticResource BoolToNotHiddenConverter}}">
+                                        <Image.ToolTip>
+                                            <TextBlock MaxWidth="200" TextWrapping="Wrap">DAX Studio must be launched from an Excel workbook containing a PowerPivot mode in order to use this option.</TextBlock>
+                                        </Image.ToolTip>
+                                    </Image>
+                                </StackPanel>
                                 <Label Content="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  Margin="0,12,5,5" Padding="0" x:Name="lblWorkBook" VerticalAlignment="Top" Grid.Column="1" Foreground="#3571AD"/>
                             </Grid>
                             <StackPanel Margin="18 0 0 0" Orientation="Horizontal"  Visibility="{Binding ShowMissingModelWarning, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Image x:Name="WarningImage" Source="{StaticResource ResourceKey=Warning}" Width="16" Margin="5 2 0 0" IsEnabled="True" />
                                 <Label Content="Warning: PowerPivot model not detected" Height="26" HorizontalAlignment="Left" Margin="0,0,0,0" x:Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000"/>
                             </StackPanel>
-                            <Grid Visibility="{Binding PowerBIDesignerDetected, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="140" />
+                                    <ColumnDefinition Width="145" />
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,12,5,0" x:Name="rdoPowerBI" VerticalAlignment="Top" IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding PowerBIDesignerDetected}">
+                                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                                <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" VerticalAlignment="Top" IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType" IsEnabled="{Binding PowerBIDesignerDetected}">
                                     <StackPanel Orientation="Horizontal">
                                         <!--<Image  Source="{StaticResource PowerBI}" Margin="0,0,5,0"/>-->
-                                        <TextBlock Text="Power BI Desktop"/>
+                                            <TextBlock IsEnabled="{Binding PowerBIDesignerDetected}" Style="{StaticResource disabledText}"><Run Text="PBI"/><Run Text=" / SSDT Model"/></TextBlock>
+                                        
                                     </StackPanel>
                                 </RadioButton>
+                                <Image Source="{StaticResource question}" Margin="5,1,0,0" Height="16" Visibility="{Binding PowerBIDesignerDetected, Converter={StaticResource BoolToNotHiddenConverter}}">
+                                            <Image.ToolTip>
+                                                <TextBlock MaxWidth="200" TextWrapping="Wrap">No running Power BI Desktop or SSDT Integrated Workspaces found.</TextBlock></Image.ToolTip>
+                                        </Image>
+                                </StackPanel>
                                 <ComboBox Height="23" Margin="0,5,5,5" x:Name="cboPowerBI" 
                                           VerticalAlignment="Top"  IsEditable="False"  Grid.Column="1"
 								          ItemsSource="{Binding PowerBIDesignerInstances}" 
@@ -255,7 +292,7 @@
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
                                                 <!--<Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />-->
-                                                <Image  Source="{StaticResource PowerBI}" Margin="0,0,5,0" Width="16" Height="16"/>
+                                                <Image  Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}" Margin="0,0,5,0" Width="16" Height="16"/>
                                                 <TextBlock Text="{Binding Name}" />
                                             </StackPanel>
                                         </DataTemplate>
@@ -265,7 +302,7 @@
                         </StackPanel>
                         <Grid >
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="145" />
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,10,0,0" x:Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType">

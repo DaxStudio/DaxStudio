@@ -1,25 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Windows;
-using ADOTabular;
+﻿using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Properties;
-using System.Linq;
-using ADOTabular.AdomdClientWrappers;
-using Microsoft.Win32;
-using Serilog;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
-using System.Collections.ObjectModel;
 using DaxStudio.UI.Utils;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {

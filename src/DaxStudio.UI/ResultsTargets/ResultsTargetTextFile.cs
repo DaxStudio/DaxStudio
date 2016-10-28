@@ -160,6 +160,10 @@ namespace DaxStudio.UI.Model
                                         }
                                         writer.WriteLine(sbLine);
                                         sbLine.Clear();
+                                        if (iRowCnt % 1000 == 0)
+                                        {
+                                            runner.NewStatusBarMessage(string.Format("Written {0:n0} rows to the file output", iRowCnt));
+                                        }
                                     }
 
                                     
@@ -176,7 +180,7 @@ namespace DaxStudio.UI.Model
                             //runner.QueryCompleted();
                             runner.ActivateOutput();
                         }
-
+                        res.Close();
                     }
                     catch (Exception ex)
                     {
@@ -185,6 +189,11 @@ namespace DaxStudio.UI.Model
 #if DEBUG
                         runner.OutputError(ex.StackTrace);
 #endif
+                    }
+                    finally
+                    {
+                        runner.QueryCompleted();
+                        
                     }
 
                 });

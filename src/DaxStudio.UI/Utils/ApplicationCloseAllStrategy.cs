@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.ViewModels;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
-using DaxStudio.Interfaces;
+using System.Linq;
 using System.Windows;
 
 namespace DaxStudio.UI.Utils {

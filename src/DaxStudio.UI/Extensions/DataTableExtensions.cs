@@ -2,7 +2,7 @@
 using System.Text;
 using System.Windows.Documents;
 
-namespace DaxStudio.UI
+namespace DaxStudio.UI.Extensions
 {
     //static class DataSetExtensions
     //{

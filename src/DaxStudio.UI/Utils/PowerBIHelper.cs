@@ -9,11 +9,17 @@ using Serilog;
 
 namespace DaxStudio.UI.Utils
 {
+    public enum EmbeddedSSASIcon
+    {
+        PowerBI,
+        Devenv
+    }
     public class PowerBIInstance
     {
-        public PowerBIInstance(string name, int port)
+        public PowerBIInstance(string name, int port, EmbeddedSSASIcon icon)
         {
             Port = port;
+            Icon = icon;
             try
             {
                 var dashPos = name.LastIndexOf(" - ");
@@ -33,22 +39,25 @@ namespace DaxStudio.UI.Utils
         }
         public int Port { get; private set; }
         public string Name { get; private set; }
+
+        public EmbeddedSSASIcon Icon { get; private set; }
     }
 
     public class PowerBIHelper
     {
-        private static int _port = 0;
-        private static bool _portSet = false;
+
         private static List<PowerBIInstance> _instances = new List<PowerBIInstance>();
+        private static bool _portSet = false;
         public static void Refresh()
         {
-            _port = 0;
-            _portSet = false;
-            _instances.Clear();
 
+            _instances.Clear();
+            
             ManagementClass mgmtClass = new ManagementClass("Win32_Process");
             foreach (ManagementObject process in mgmtClass.GetInstances())
             {
+                int _port = 0;
+                EmbeddedSSASIcon _icon = EmbeddedSSASIcon.PowerBI;
 
                 string processName = process["Name"].ToString().ToLower();
                 if (processName == "msmdsrv.exe")
@@ -60,7 +69,9 @@ namespace DaxStudio.UI.Utils
                     var parentTitle = "";
                     if (parentPid > 0)
                     {
-                        parentTitle = Process.GetProcessById(parentPid).MainWindowTitle;
+                        var parentProcess = Process.GetProcessById(parentPid);
+                        if (parentProcess.ProcessName == "devenv") _icon = EmbeddedSSASIcon.Devenv;
+                        parentTitle = parentProcess.MainWindowTitle;
                         if (parentTitle.Length == 0)
                         {
                             // for minimized windows we need to use some Win32 api calls to get the title
@@ -85,10 +96,9 @@ namespace DaxStudio.UI.Utils
                             {
                                 Log.Verbose("{class} {method} {message}", "PowerBIHelper", "Refresh", "port.txt found");
                                 string sPort = System.IO.File.ReadAllText(portFile, Encoding.Unicode);
-                                var port = int.Parse(sPort);
-                                _port = port;
+                                _port = int.Parse(sPort);
                                 _portSet = true;
-                                _instances.Add(new PowerBIInstance(parentTitle, port));
+                                _instances.Add(new PowerBIInstance(parentTitle, _port, _icon));
                                 Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
                                 continue;
                             }

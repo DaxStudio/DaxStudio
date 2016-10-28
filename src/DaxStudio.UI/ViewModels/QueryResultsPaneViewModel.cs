@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using System.Data;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Extensions;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows;
@@ -10,9 +11,6 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
-using System.Windows.Threading;
-using Microsoft.Windows.Themes;
-using System;
 
 namespace DaxStudio.UI.ViewModels
 {

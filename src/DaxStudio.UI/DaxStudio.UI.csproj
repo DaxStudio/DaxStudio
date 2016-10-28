@@ -319,6 +319,7 @@
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
+    <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToThicknessConverter.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -430,13 +431,13 @@
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\SystemInfo.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
-    <Compile Include="Utils\StringEncryptionExtensions.cs" />
+    <Compile Include="Extensions\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
     <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="TemplateSelectors\ToolWindowTemplateSelector.cs" />
     <Compile Include="Converters\BoolToHiddenConverter.cs" />
-    <Compile Include="Utils\DatabaseCollectionExtensions.cs" />
-    <Compile Include="Utils\DataSetExtensions.cs" />
+    <Compile Include="Extensions\DatabaseCollectionExtensions.cs" />
+    <Compile Include="Extensions\DataTableExtensions.cs" />
     <Compile Include="DaxStudioDockingManager.cs" />
     <Compile Include="Events\ConnectionChangedEvent.cs" />
     <Compile Include="Events\RunQueryEvent.cs" />
@@ -460,7 +461,7 @@
     <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="Events\ConnectionClosedEvent.cs" />
     <Compile Include="Utils\WebRequestFactory.cs" />
-    <Compile Include="Utils\WindowManagerExtensions.cs" />
+    <Compile Include="Extensions\WindowManagerExtensions.cs" />
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
@@ -997,6 +998,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-swap-delimiters.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-devenv%4024px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-question%4096ppi.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

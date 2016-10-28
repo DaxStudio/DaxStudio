@@ -1,7 +1,7 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
-using DaxStudio.UI.Utils;
+using DaxStudio.UI.Extensions;
 using System.Security;
 using DaxStudio.Interfaces.Enums;
 using System;

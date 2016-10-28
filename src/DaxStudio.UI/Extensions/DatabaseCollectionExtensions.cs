@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.UI.Extensions
 {
     public static class DatabaseCollectionExtensions
     {
