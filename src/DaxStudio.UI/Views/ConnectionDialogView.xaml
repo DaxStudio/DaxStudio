@@ -246,7 +246,7 @@
                                             <TextBlock IsEnabled="{Binding PowerBIDesignerDetected}" Text="PowerPivot Model" Style="{StaticResource disabledText}" />
                                         </StackPanel>
                                     </RadioButton>
-                                    <Image Source="{StaticResource question}" Margin="5,10,0,0" Height="16" Visibility="{Binding PowerBIDesignerDetected, Converter={StaticResource BoolToNotHiddenConverter}}">
+                                    <Image Source="{StaticResource question}" Margin="5,10,0,0" Height="16" Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}">
                                         <Image.ToolTip>
                                             <TextBlock MaxWidth="200" TextWrapping="Wrap">DAX Studio must be launched from an Excel workbook containing a PowerPivot mode in order to use this option.</TextBlock>
                                         </Image.ToolTip>

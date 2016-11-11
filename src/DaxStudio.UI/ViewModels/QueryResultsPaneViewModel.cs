@@ -57,6 +57,28 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=> ResultsDataView);}
         }
 
+        public DataSet ResultsDataSet
+        {
+            get { return _resultsDataSet; }
+            set { _resultsDataSet = value;
+                ShowResultsTable = true;
+                NotifyOfPropertyChange(() => Tables);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            }
+        }
+        private int _selectedTabIndex = -1;
+        public int SelectedTableIndex { get { return _selectedTabIndex; }
+            set { _selectedTabIndex = value;
+                if (_document != null && value >= 0 ) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            }
+        }
+        public DataTableCollection Tables
+        {
+            get { return _resultsDataSet.Tables; }
+        }
+
         public void CopyAllResultsToClipboard(object obj)
         {
             System.Diagnostics.Debug.WriteLine(obj);
@@ -158,9 +180,10 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnBackgroundThread(new SetSelectedWorksheetEvent(_selectedWorksheet));
             }
         }
-
+        private DocumentViewModel _document;
         public void Handle(ActivateDocumentEvent message)
         {
+            _document = message.Document;
             if (_host.IsExcel)
             {
                 // refresh workbooks and worksheet properties if the host is excel
@@ -213,6 +236,8 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = false;
         }
         private string _selectedWorkbook = "";
+        private DataSet _resultsDataSet;
+
         public string SelectedWorkbook { 
             get { return _selectedWorkbook; } 
             set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 

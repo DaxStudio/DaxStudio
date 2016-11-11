@@ -11,8 +11,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
         </ResourceDictionary>

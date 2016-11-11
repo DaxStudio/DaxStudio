@@ -14,7 +14,7 @@ namespace ADOTabular.AdomdClientWrappers
         public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
         {
             _obj = obj;
-            
+           
             _type = AdomdType.AnalysisServices;
             
         }
@@ -180,6 +180,9 @@ namespace ADOTabular.AdomdClientWrappers
                 }
             }
         }
+
+        public ADOTabularConnection Connection { get; internal set; }
+        public string CommandText { get; internal set; }
 
         public bool GetBoolean(int i)
         {

@@ -341,6 +341,7 @@ namespace ADOTabular
                             col.FormatString = formatString;
                             col.StringValueMaxLength = stringValueMaxLength;
                             tab.Columns.Add(col);
+                            _conn.Columns.Add(col.OutputColumnName, col);
                         }
                         else
                         {
@@ -348,6 +349,7 @@ namespace ADOTabular
                             var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi);
                             kpiCol.DataType = Type.GetType(string.Format("System.{0}", dataType));
                             tab.Columns.Add(kpiCol);
+                            _conn.Columns.Add(kpiCol.OutputColumnName, kpiCol);
                         }
                     }
 
@@ -361,6 +363,10 @@ namespace ADOTabular
                     isVisible = true;
                     contents = "";
                     dataType = "";
+                    stringValueMaxLength = -1;
+                    formatString = "";
+                    defaultAggregateFunction = "";
+                    nullable = true;
                     colType = ADOTabularColumnType.Column;
                 }
                 rdr.Read();

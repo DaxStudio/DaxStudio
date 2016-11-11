@@ -63,6 +63,11 @@ namespace ADOTabular
             }
         }
 
+        public string OutputColumnName
+        {
+            get { return DaxName.Replace("'", ""); }
+        }
+
         public string Description { get; set; }
 
         public bool IsVisible { get; private set; }

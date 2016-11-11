@@ -112,12 +112,14 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
+            _physicalQueryPlanRows.Clear();
+            _logicalQueryPlanRows.Clear();
             //ProcessResults();
         }
 
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
-            _physicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan);
+            _physicalQueryPlanRows.AddRange( QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan));
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 

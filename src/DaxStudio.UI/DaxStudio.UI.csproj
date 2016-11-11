@@ -342,6 +342,7 @@
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
+    <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
@@ -557,19 +558,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resources\Styles\MetaDataPaneViewStyle.xaml">
+    <Resource Include="Resources\Styles\MetaDataPaneViewStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\SearchBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Styles\BusyPanel.xaml">
+    </Resource>
+    <Resource Include="Resources\Styles\ScrollingVerticalTabs.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Styles\LabelSpinnerStyle.xaml">
+    </Resource>
+    <Resource Include="Resources\Styles\SearchBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+    <Resource Include="Resources\Styles\BusyPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -54,7 +54,7 @@ namespace DaxStudio.UI.ViewModels
         //private readonly Func<DocumentViewModel> createDocument;
 
 
-        public DocumentViewModel ActiveContent { get; set; }
+        //public DocumentViewModel ActiveContent { get; set; }
 
         public DocumentViewModel ActiveDocument
         {

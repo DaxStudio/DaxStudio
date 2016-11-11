@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace ADOTabular
 {
@@ -75,6 +76,17 @@ namespace ADOTabular
                  </Batch>
                 ", _adoTabConn.Database.Id));
         }
+
+        //private Regex daxColumnRegex = new Regex(@"'?(?<table>.*)'?\[(?<column>[^\]]*)\]", RegexOptions.Compiled);
+        //public ADOTabularColumn FindColumnByName(string fullColumnName)
+        //{
+        //    var m = daxColumnRegex.Match(fullColumnName);
+        //    var tab = m.Groups["table"].Value;
+        //    var col = m.Groups["column"].Value;
+        //    this.Models
+
+        //}
+
         public MetadataImages MetadataImage
         {
             get { return MetadataImages.Database; }

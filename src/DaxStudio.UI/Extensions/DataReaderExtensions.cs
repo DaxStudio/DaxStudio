@@ -118,51 +118,58 @@ namespace DaxStudio.UI.Extensions
         public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader)
         {
 
-            try
+            //try
+            //{
+            ADOTabular.ADOTabularColumn daxCol;
+            DataSet ds = new DataSet();
+            bool moreResults = true;
+            int tableIdx = 1;
+            while (moreResults)
             {
-                DataSet ds = new DataSet();
-                bool moreResults = true;
-                while (moreResults)
+                DataTable dtSchema = reader.GetSchemaTable();
+                DataTable dt = new DataTable(tableIdx.ToString());
+                // You can also use an ArrayList instead of List<>
+                List<DataColumn> listCols = new List<DataColumn>();
+                    
+                if (dtSchema != null)
                 {
-                    DataTable dtSchema = reader.GetSchemaTable();
-                    DataTable dt = new DataTable();
-                    // You can also use an ArrayList instead of List<>
-                    List<DataColumn> listCols = new List<DataColumn>();
-
-                    if (dtSchema != null)
+                    foreach (DataRow drow in dtSchema.Rows)
                     {
-                        foreach (DataRow drow in dtSchema.Rows)
-                        {
-                            string columnName = System.Convert.ToString(drow["ColumnName"]);
-                            DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
-                            column.Unique = (bool)drow["IsUnique"];
-                            column.AllowDBNull = (bool)drow["AllowDBNull"];
-                            column.AutoIncrement = (bool)drow["IsAutoIncrement"];
-                            listCols.Add(column);
-                            dt.Columns.Add(column);
-                        }
+                        string columnName = System.Convert.ToString(drow["ColumnName"]);
+                        DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
+                        column.Unique = (bool)drow["IsUnique"];
+                        column.AllowDBNull = (bool)drow["AllowDBNull"];
+                        //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
+                        daxCol = null;
+                        reader.Connection.Columns.TryGetValue(columnName, out daxCol);
+                        if (daxCol != null) column.ExtendedProperties.Add("FormatString", daxCol.FormatString);
+                        listCols.Add(column);
+                        dt.Columns.Add(column);
                     }
-
-                    // Read rows from DataReader and populate the DataTable
-                    while (reader.Read())
-                    {
-                        DataRow dataRow = dt.NewRow();
-                        for (int i = 0; i < listCols.Count; i++)
-                        {
-                            dataRow[((DataColumn)listCols[i])] = reader[i];
-                        }
-                        dt.Rows.Add(dataRow);
-                    }
-                    ds.Tables.Add(dt);
-                    moreResults = reader.NextResult();
                 }
-                return ds;
+
+                // Read rows from DataReader and populate the DataTable
+                while (reader.Read())
+                {
+                    DataRow dataRow = dt.NewRow();
+                    for (int i = 0; i < listCols.Count; i++)
+                    {
+                        dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
+                    }
+                    dt.Rows.Add(dataRow);
+                }
+                dt.FixColumnNaming(reader.CommandText);
+                ds.Tables.Add(dt);
+                moreResults = reader.NextResult();
+                tableIdx++;
             }
-            catch (Exception ex)
-            {
-                // handle error
-            }
-            return null;
+            return ds;
+            //}
+            //catch (Exception ex)
+            //{
+            //    //TODO  handle error
+            //}
+
         }
     }
 }

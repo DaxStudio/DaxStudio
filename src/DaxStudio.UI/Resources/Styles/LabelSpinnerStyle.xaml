@@ -4,7 +4,7 @@
 
     <conv:OffsetConverter x:Key="OffsetConverter"/>
 
-    <BitmapImage x:Key="SpinnerMask"  UriSource="..\images\spinnermask.png" />
+    <BitmapImage x:Key="SpinnerMask"  UriSource="..\..\images\spinnermask.png" />
 
     <Storyboard x:Key="Rotation">
         <DoubleAnimation Storyboard.TargetName="rotateTransform"
@@ -39,7 +39,7 @@
 
 
                                     <Ellipse.OpacityMask>
-                                        <ImageBrush ImageSource="../images/spinnermask.png" Stretch="None"/>
+                                        <ImageBrush ImageSource="{StaticResource SpinnerMask}" Stretch="None"/>
                                     </Ellipse.OpacityMask>
                                 </Ellipse>
                                 <Grid.OpacityMask>

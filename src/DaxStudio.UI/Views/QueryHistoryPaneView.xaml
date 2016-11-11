@@ -239,8 +239,9 @@
                                 <TextBlock
                                     Text="{Binding Path=RowCount,Mode=OneWay,StringFormat=\{0:#\,###;n/a;0\}}"  
                                     VerticalAlignment="Top" 
-                                    HorizontalAlignment="Right" 
+                                    HorizontalAlignment="Stretch" 
                                     TextTrimming="CharacterEllipsis"
+                                    TextAlignment="Right"
                                 />
                             </DataGridCell>
                         </DataTemplate>

@@ -425,7 +425,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRunQuery);
             QueryResultsPane.IsBusy = false;  // TODO - this should be some sort of collection of objects with a specific interface, not a hard coded object reference
             currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-            currentQueryDetails.RowCount = this.RowCount;
+            currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
 
             bool svrTimingsEnabled = false;
             foreach (var tw in TraceWatchers)
@@ -923,7 +923,7 @@ namespace DaxStudio.UI.ViewModels
                 _queryStopWatch = new Stopwatch();
                 _queryStopWatch.Start();
                 var dt = c.ExecuteDaxQueryDataTable(daxQuery);
-                
+                dt.FixColumnNaming(daxQuery);
                 return dt;
             }
             catch (Exception e)
@@ -1071,7 +1071,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsActive)
                 {
                     currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-                    currentQueryDetails.RowCount = ResultsTable.Rows.Count;
+                    currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
                     _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
                 }
 
@@ -1088,6 +1088,12 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return QueryResultsPane.ResultsDataTable; }
             set { QueryResultsPane.ResultsDataTable = value; }
+        }
+
+        public DataSet ResultsDataSet
+        {
+            get { return QueryResultsPane.ResultsDataSet; }
+            set { QueryResultsPane.ResultsDataSet = value; }
         }
 
         public bool CanRunQuery

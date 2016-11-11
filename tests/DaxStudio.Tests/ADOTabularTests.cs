@@ -6,6 +6,7 @@ using ADOTabular.AdomdClientWrappers;
 using DaxStudio;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.Tests
 {
@@ -308,7 +309,7 @@ namespace DaxStudio.Tests
             dt.Columns.Add("table2[Column 4]");
             dt.Columns.Add("table2[Column, 5]");
             dt.Columns.Add("[[Measures] (test)]");
-            ADOTabularConnection.FixColumnNaming(dt, "evaluate 'blah'");
+            dt.FixColumnNaming( "evaluate 'blah'");
             Assert.AreEqual("table1[Column1]", dt.Columns[0].ColumnName );
             Assert.AreEqual("table2[Column1]",dt.Columns[1].ColumnName );
             Assert.AreEqual("Column2", dt.Columns[2].ColumnName);
@@ -325,7 +326,7 @@ namespace DaxStudio.Tests
             var dt = new DataTable();
             dt.Columns.Add("[blah].[blah]");
             dt.Columns.Add("[Measures].[Test]");
-            ADOTabularConnection.FixColumnNaming(dt, "SELECT [blah].[blah].[blah] on 0 from [Cube]");
+            dt.FixColumnNaming( "SELECT [blah].[blah].[blah] on 0 from [Cube]");
             Assert.AreEqual("[blah].[blah]", dt.Columns[0].ColumnName);
             Assert.AreEqual("Test", dt.Columns[1].ColumnName);
             

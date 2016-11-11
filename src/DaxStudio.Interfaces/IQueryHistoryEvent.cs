@@ -28,7 +28,7 @@ namespace DaxStudio.Interfaces
          string DatabaseName { get;   }
          string FileName { get;   }
 
-         int RowCount { get; set; }
+         string RowCount { get; set; }
 
          QueryStatus Status { get; set; }
     }
