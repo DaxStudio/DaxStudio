@@ -31,7 +31,7 @@ namespace DaxStudio.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            throw new NotImplementedException("This converter only works for one way binding");
+            return Binding.DoNothing;
         }
     }
 
