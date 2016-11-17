@@ -47,6 +47,8 @@ namespace DaxStudio.Tests
         // public void MyTestCleanup() { }
         //
         #endregion
+
+
         /*
         [TestMethod]
         public void TestMethod1()
@@ -101,6 +103,36 @@ namespace DaxStudio.Tests
             Assert.AreEqual(4, tabs.Count);
             Assert.AreEqual(8, tabs["Sales"].Columns.Count());
             Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+        }
+
+        [TestMethod]
+        public void TestADOTabularCSDLVisitTwice()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test", "Test Description", "");
+            using (System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml"))
+            {
+                var tabs = new ADOTabularTableCollection(c, m);
+
+                v.GenerateTablesFromXmlReader(tabs, xr);
+
+                Assert.AreEqual(4, tabs.Count);
+                Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+            }
+
+            m = new ADOTabularModel(c, "Test2", "Test2", "Test2 Description", "");
+            using (System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml"))
+            {
+                var tabs = new ADOTabularTableCollection(c, m);
+
+                v.GenerateTablesFromXmlReader(tabs, xr);
+
+                Assert.AreEqual(4, tabs.Count);
+                Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+            }
         }
 
         [TestMethod]
