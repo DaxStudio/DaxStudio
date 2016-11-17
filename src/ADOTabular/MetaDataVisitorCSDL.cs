@@ -87,6 +87,9 @@ namespace ADOTabular
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
         {
+            // clear out the flat cache of column names
+            _conn.Columns.Clear();
+            
             if (rdr.NameTable != null)
             {
                 var eEntitySet = rdr.NameTable.Add("EntitySet");

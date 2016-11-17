@@ -246,23 +246,37 @@ namespace DaxStudio.UI.ViewModels
 
         public void CreateTracer()
         {
-            if (_connection == null) return;
-            if (_tracer == null) // && _connection.Type != AdomdType.Excel)
+            try
             {
-                if (_connection.IsPowerPivot)
+                if (_connection == null) return;
+                if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
-                    Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                    _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port);
+                    if (_connection.IsPowerPivot)
+                    {
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
+                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options);
+                    }
+                    else
+                    {
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
+                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options);
+                    }
+                    //_tracer.TraceEvent += TracerOnTraceEvent;
+                    _tracer.TraceStarted += TracerOnTraceStarted;
+                    _tracer.TraceCompleted += TracerOnTraceCompleted;
+                    _tracer.TraceError += TracerOnTraceError;
                 }
-                else
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var innerEx in ex.InnerExceptions)
                 {
-                    Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                    _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options);
+                    Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", innerEx.Message, innerEx.StackTrace);
                 }
-                //_tracer.TraceEvent += TracerOnTraceEvent;
-                _tracer.TraceStarted += TracerOnTraceStarted;
-                _tracer.TraceCompleted += TracerOnTraceCompleted;
-                _tracer.TraceError += TracerOnTraceError;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
             }
         }
 
@@ -300,7 +314,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 foreach (var e in tw.MonitoredEvents)
                 {
-                    if (!events.Contains(e))
+                    // Don't add DirectQueryEvent if we are not interested in tracing it
+                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery) continue;
+                    // Add the even to the collection if we don't already have it
+                    if (!events.Contains(e) )
                     {
                         events.Add(e);
                     }
@@ -2014,6 +2031,7 @@ namespace DaxStudio.UI.ViewModels
             this.Databases = MetadataPane.Databases;
             this.MetadataPane.ModelList = this.Connection.Database.Models;
             this.MetadataPane.RefreshMetadata();
+            //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
             OutputMessage("Metadata Refreshed");
         }
         private bool _isFocused;

@@ -83,7 +83,9 @@ namespace ADOTabular
                     this.Open();
                 }
                 var dd = Databases.GetDatabaseDictionary(this.SPID);
-                //if (!dd.ContainsKey(_adomdConn.Database))
+
+                if (_currentDatabase == null && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
+
                 if (!dd.ContainsKey(_currentDatabase))
                 {
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
@@ -665,6 +667,7 @@ namespace ADOTabular
 
         public void Refresh()
         {
+            _columns.Clear();
             _adoTabDatabaseColl = null;
             _db = null;
             _adomdConn.RefreshMetadata();
