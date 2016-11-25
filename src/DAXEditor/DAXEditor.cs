@@ -105,7 +105,12 @@ namespace DAXEditor
             var kwordRule = this.SyntaxHighlighting.MainRuleSet.Rules.Where(r => r.Color.Name == colourName).FirstOrDefault();
             var pattern = new StringBuilder();
             pattern.Append(@"\b(?>");
-            foreach (var word in wordList)
+
+            // the syntaxhighlighting checks the first match so we need to make sure that the longer versions of
+            // funtions come first. eg. CALCULATETABLE before CALCULATE, ALLSELECTED before ALL, etc
+            // sorting them in descending order achieves this
+            var sortedWordList = wordList.OrderByDescending(word => word);
+            foreach (var word in sortedWordList)
             {
                 pattern.Append(word.Replace(".", @"\."));
                 pattern.Append("|");

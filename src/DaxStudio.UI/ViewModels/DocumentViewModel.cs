@@ -621,7 +621,7 @@ namespace DaxStudio.UI.ViewModels
                    try
                    {
                        if (_editor == null) _editor = GetEditor();
-                       _editor.UpdateKeywordHighlighting(_connection.Keywords);
+                   //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
                        _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
                        Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
                    }
