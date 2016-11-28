@@ -7,6 +7,7 @@ using System.IO;
 using System;
 using Serilog;
 using System.Globalization;
+using System.Xml;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -27,8 +28,15 @@ namespace DaxStudio.ExcelAddin.Xmla
                 var addin = Globals.ThisAddIn;
                 var app = addin.Application;
                 var wb = app.ActiveWorkbook;
-
                 loc = wb.FullName;  //@"D:\Data\Presentations\Drop Your DAX\demos\02 DAX filter similar.xlsx";
+
+                // parse request looking for workbook name in Workstation ID
+                // we are using the Workstation ID property to tunnel the location property through
+                // from the UI to the PowerPivot engine. The Location property does not appear to get
+                // serialized through into the XMLA request so we "hijack" the Workstation ID
+                var wsid = ParseRequestForWorkstationID(request);
+                if (!string.IsNullOrEmpty(wsid)) loc = wsid;
+
                 connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{0}\"", loc);
                 //connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={0}", loc);
                 // 2010 conn str
@@ -109,7 +117,26 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
 
         }
-        
+
+        private string ParseRequestForWorkstationID(string request)
+        {
+            string wsid = string.Empty;
+            using (var sr = new StringReader(request))
+            {
+                using (var xmlRdr = new XmlTextReader(sr))
+                {
+                    while (xmlRdr.Read())
+                    {
+                        if (xmlRdr.NodeType == XmlNodeType.Element && xmlRdr.LocalName == "SspropInitWsid")
+                        {
+                            wsid = xmlRdr.ReadElementContentAsString();
+                            return wsid;
+                        }
+                    }
+                }
+            }
+            return wsid;
+        }
     }
     
 }

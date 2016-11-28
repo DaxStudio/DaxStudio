@@ -503,6 +503,10 @@ namespace DaxStudio.UI.ViewModels
             base.OnDeactivate(close);
             _eventAggregator.Unsubscribe(this);
             _eventAggregator.Unsubscribe(QueryResultsPane);
+            foreach (var tw in this.TraceWatchers)
+            {
+                _eventAggregator.Unsubscribe(tw);
+            }
         }
 
         protected override void OnActivate()
@@ -512,6 +516,10 @@ namespace DaxStudio.UI.ViewModels
             base.OnActivate();
             _eventAggregator.Subscribe(this);
             _eventAggregator.Subscribe(QueryResultsPane);
+            foreach (var tw in this.TraceWatchers)
+            {
+                _eventAggregator.Subscribe(tw);
+            }
             _ribbon.SelectedTarget = _selectedTarget;
             var loc = Document.GetLocation(0);
             //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
@@ -1564,7 +1572,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     
                     var cnn = message.PowerPivotModeSelected
-                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType)
+                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}", message.WorkbookName))
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     cnn.IsPowerPivot = message.PowerPivotModeSelected;
                     if (message.PowerBIFileName.Length > 0)

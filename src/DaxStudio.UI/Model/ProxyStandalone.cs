@@ -49,7 +49,7 @@ namespace DaxStudio.UI.Model
             throw new NotImplementedException();
         }
 
-        public ADOTabular.ADOTabularConnection GetPowerPivotConnection(string connectionType)
+        public ADOTabular.ADOTabularConnection GetPowerPivotConnection(string connectionType, string additionalsettings)
         {
             throw new NotImplementedException();
         }
