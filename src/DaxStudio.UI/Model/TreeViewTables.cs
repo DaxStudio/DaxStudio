@@ -178,6 +178,10 @@ namespace DaxStudio.UI.Model
             Description = column.Description;
             DataTypeName = column.DataTypeName;
             MetadataImage = column.MetadataImage;
+            FormatString = column.FormatString;
+            MinValue = column.MinValue;
+            MaxValue = column.MaxValue;
+            DistinctValues = column.DistinctValueCount;
         }
 
         public TreeViewColumn(ADOTabularKpiComponent kpiComponent):base(null)
@@ -218,6 +222,11 @@ namespace DaxStudio.UI.Model
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }
+        public string FormatString { get; private set; }
+        public string MinValue { get; private set; }
+        public string MaxValue { get; private set; }
+
+        public long DistinctValues { get; private set; }
 
         public bool IsMeasure
         {

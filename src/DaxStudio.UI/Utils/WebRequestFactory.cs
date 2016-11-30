@@ -1,16 +1,13 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {

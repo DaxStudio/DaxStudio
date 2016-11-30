@@ -11,10 +11,12 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
@@ -67,9 +69,25 @@
             </ListView>
 -->
 
-            <DataGrid x:Name="ResultsDataView" 
+            <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
+                <!-- Style to hide tabs if only one is present -->
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TabControl}}, Path=Items.Count}" Value="1">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <!-- Tab Content (DataGrid) -->
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+
+                        <DataGrid x:Name="DefaultView" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                      ItemsSource="{Binding ResultsDataView}"
+                      ItemsSource="{Binding DefaultView}"
                       ClipboardCopyMode="IncludeHeader"
                       SelectionMode="Extended"       
                       SelectionUnit="Cell"
@@ -79,31 +97,42 @@
                       HorizontalGridLinesBrush="WhiteSmoke"
                       AutoGenerateColumns="False" 
                       cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]"
-                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=ResultsDataView}"
+                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                       >
-                <!-- ColumnWidth="SizeToCells"
+                            <!-- ColumnWidth="SizeToCells"
                       MinColumnWidth="50"
                       -->
-                <DataGrid.AlternatingRowBackground>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Offset="1" Color="#f2f2f2"/>
-                        <GradientStop Color="#f7f7f7"/>
-                    </LinearGradientBrush>
-                </DataGrid.AlternatingRowBackground>
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
-                        <Setter Property="FontWeight"
+                            <DataGrid.AlternatingRowBackground>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Offset="1" Color="#f2f2f2"/>
+                                    <GradientStop Color="#f7f7f7"/>
+                                </LinearGradientBrush>
+                            </DataGrid.AlternatingRowBackground>
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight"
                   Value="SemiBold" />
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-            </DataGrid>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                        </DataGrid>
 
 
+
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding TableName}"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+            </TabControl>
+
+            
 
         </Grid>
 
@@ -149,7 +178,7 @@
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}" >
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">Running Query...</Label>
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
                 </StackPanel>
             </Grid>
         </Border>

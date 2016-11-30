@@ -21,12 +21,11 @@
             <TextBox x:Name="Output" />
         </ScrollViewer>
         <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="2" FrameworkElement.HorizontalAlignment="Right">
-            <Button Margin="2,2,2,0" Button.IsDefault="True" Click="Ok_Click" Height="20" VerticalAlignment="Top">
-                Ok
+            <Button Margin="2" Click="CopyToClipboardClick">Copy to Clipboard</Button>
+            <Button Margin="2,2,2,0" Button.IsDefault="True" Button.IsCancel="True"  Click="Ok_Click" Height="20" VerticalAlignment="Top">
+                OK
             </Button>
-            <Button FrameworkElement.Margin="2" Button.IsCancel="True" Click="Ok_Click">
-                Cancel
-            </Button>
+            
         </StackPanel>
     </Grid>
 </Window>

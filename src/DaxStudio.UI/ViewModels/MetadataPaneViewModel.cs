@@ -13,7 +13,7 @@ using System;
 using System.Windows.Data;
 using System.Collections;
 using System.Threading.Tasks;
-using DaxStudio.UI.Utils;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -77,6 +77,7 @@ namespace DaxStudio.UI.ViewModels
             var _tmpModel = _selectedModel;
             _selectedModel = null;
             SelectedModel = _tmpModel;
+
         }
 
 
@@ -233,9 +234,12 @@ namespace DaxStudio.UI.ViewModels
         public string CurrentCriteria  { 
             get { return _currentCriteria; }
             set { _currentCriteria = value;
-                NotifyOfPropertyChange(() => CurrentCriteria);
-                NotifyOfPropertyChange(() => HasCriteria);
-                ApplyFilter();
+                if (_currentCriteria.Length >= 2 || _currentCriteria.Length == 0)
+                {
+                    NotifyOfPropertyChange(() => CurrentCriteria);
+                    NotifyOfPropertyChange(() => HasCriteria);
+                    ApplyFilter();
+                }
             }
         }
 
@@ -263,26 +267,45 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _databases = value;
-                var newList = _databases.Select(
-                    db => new DatabaseReference()
-                    {
-                        Name = db,
-                        Caption = Connection.PowerBIFileName.Length > 0 ? Connection.PowerBIFileName : db
-                    }).OrderBy(db => db.Name);
-                _databasesView = CollectionViewSource.GetDefaultView(newList) as ICollectionView;
-                //_databasesView.CustomSort = new DatabaseComparer();
-                NotifyOfPropertyChange(() => DatabasesView);
+                MergeDatabaseView();
                 //NotifyOfPropertyChange(() => Databases);
             }
         }
-        
+
+        private void MergeDatabaseView()
+        {
+            var newList = _databases.Select(
+                                db => new DatabaseReference()
+                                {
+                                    Name = db,
+                                    Caption = Connection.PowerBIFileName.Length > 0 ? Connection.PowerBIFileName : db
+                                }).OrderBy(db => db.Name);
+            
+            // remove deleted databases
+            for (int i= _databasesView.Count -1;i>=0;i--)
+            {
+                var found = newList.Where(db => db.Name == _databasesView[i].Name).Any();
+                if (!found) _databasesView.RemoveAt(i);
+            }
+
+            // add new databases
+            foreach (DatabaseReference dbRef in newList)
+            {
+                var found = _databasesView.Where(db => db.Name == dbRef.Name).DefaultIfEmpty();
+                if (found != null) _databasesView.Add(dbRef);
+            }
+            
+            NotifyOfPropertyChange(() => DatabasesView);
+            if (SelectedDatabase == null) SelectedDatabase = DatabasesView.FirstOrDefault();
+        }
+
         private DatabaseReference _selectedDatabase;
         public DatabaseReference SelectedDatabase
         {
             get { return _selectedDatabase; }
             set
             {
-                if (value == null) ActiveDocument.SelectedDatabase = null;
+                if (value == null)  ActiveDocument.SelectedDatabase = null;
 
                 if (value == _selectedDatabase)
                 {
@@ -291,11 +314,12 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 _selectedDatabase = value;
-                ActiveDocument.SelectedDatabase = value.Name;
+
+                if (value != null) ActiveDocument.SelectedDatabase = value.Name;
                 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase == null || !Connection.Database.Equals(_selectedDatabase))
+                    if (_selectedDatabase != null && !Connection.Database.Equals(_selectedDatabase))
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
                         Connection.ChangeDatabase( _selectedDatabase.Name);
@@ -362,11 +386,20 @@ namespace DaxStudio.UI.ViewModels
             return ss;
         }
 
-        private ICollectionView _databasesView;
-        public ICollectionView DatabasesView
+        //private ICollectionView _databasesView;
+        //public ICollectionView DatabasesView
+        //{
+        //    get { 
+        //        return _databasesView; 
+        //    }
+        //}
+
+        private IObservableCollection<DatabaseReference> _databasesView = new BindableCollection<DatabaseReference>();
+        public IObservableCollection<DatabaseReference> DatabasesView
         {
-            get { 
-                return _databasesView; 
+            get
+            {
+                return _databasesView;
             }
         }
 

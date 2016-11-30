@@ -19,6 +19,7 @@ namespace DaxStudio.Interfaces
         AdomdDataReader ExecuteDataReaderQuery(string daxQuery);
         Task<DataTable> ExecuteQueryAsync(string daxQuery);
         DataTable ResultsTable { get; set; }
+        DataSet ResultsDataSet { get; set; }
         void OutputMessage(string message);
         void OutputMessage(string message, double duration);
         void OutputWarning(string warning);

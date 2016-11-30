@@ -2,16 +2,11 @@
 using Serilog.Events;
 using Serilog.Formatting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Caliburn.Micro;
 using System.IO;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Formatting.Display;
-using Serilog.Formatting.Raw;
 using System.ComponentModel.Composition;
 
 namespace DaxStudio.UI.Utils

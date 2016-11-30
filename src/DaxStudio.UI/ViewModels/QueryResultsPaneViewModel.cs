@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using System.Data;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Extensions;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows;
@@ -10,9 +11,6 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
-using System.Windows.Threading;
-using Microsoft.Windows.Themes;
-using System;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -59,11 +57,36 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=> ResultsDataView);}
         }
 
-        public void CopyAllResultsToClipboard(object obj)
+        public DataSet ResultsDataSet
         {
-            System.Diagnostics.Debug.WriteLine(obj);
-            Clipboard.SetData("CommaSeparatedValue", ResultsDataTable.ToCsv());
+            get { return _resultsDataSet; }
+            set { _resultsDataSet = value;
+                ShowResultsTable = true;
+                NotifyOfPropertyChange(() => Tables);
+                SelectedTableIndex = 0;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            }
         }
+        private int _selectedTabIndex = -1;
+        public int SelectedTableIndex { get { return _selectedTabIndex; }
+            set { _selectedTabIndex = value;
+                if (_document != null && value >= 0 ) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
+                NotifyOfPropertyChange(() => SelectedTableIndex);
+            }
+        }
+        public DataTableCollection Tables
+        {
+            get {
+                if (_resultsDataSet == null) return null;
+                return _resultsDataSet.Tables;
+            }
+        }
+
+        //public void CopyAllResultsToClipboard(object obj)
+        //{
+        //    System.Diagnostics.Debug.WriteLine(obj);
+        //    Clipboard.SetData("CommaSeparatedValue", ResultsDataTable.ToCsv());
+        //}
 
         public DataView ResultsDataView
         { get { return _resultsTable==null?new DataTable("blank").AsDataView():  _resultsTable.AsDataView(); } }
@@ -160,9 +183,10 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnBackgroundThread(new SetSelectedWorksheetEvent(_selectedWorksheet));
             }
         }
-
+        private DocumentViewModel _document;
         public void Handle(ActivateDocumentEvent message)
         {
+            _document = message.Document;
             if (_host.IsExcel)
             {
                 // refresh workbooks and worksheet properties if the host is excel
@@ -215,6 +239,8 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = false;
         }
         private string _selectedWorkbook = "";
+        private DataSet _resultsDataSet;
+
         public string SelectedWorkbook { 
             get { return _selectedWorkbook; } 
             set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 

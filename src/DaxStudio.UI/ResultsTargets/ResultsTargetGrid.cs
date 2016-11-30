@@ -7,6 +7,8 @@ using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using DaxStudio.UI.Extensions;
+using System.Data;
 
 namespace DaxStudio.UI.Model
 {
@@ -37,33 +39,46 @@ namespace DaxStudio.UI.Model
         {
             return Task.Run(() =>
                 {
+                    long durationMs = 0;
+                    int queryCnt = 1;
                     try
                     {
                         runner.OutputMessage("Query Started");
                         var sw = Stopwatch.StartNew();
 
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteDataTableQuery(dq);
-                        if (res != null)
+                        //var res = runner.ExecuteDataTableQuery(dq);
+                        using (var res = runner.ExecuteDataReaderQuery(dq))
                         {
-                            sw.Stop();
-                            var durationMs =sw.ElapsedMilliseconds;
-                            runner.ResultsTable = res;
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                                res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.RowCount = res.Rows.Count;
-                            // activate the result only when Counters are not selected...
-                            runner.ActivateResults();
-                            //runner.QueryCompleted();
+                            if (res != null)
+                            {
+                                runner.ResultsDataSet = res.ConvertToDataSet();
+                                sw.Stop();
+                                durationMs = sw.ElapsedMilliseconds;
+                                var rowCnt = runner.ResultsDataSet.Tables[0].Rows.Count;
+                                foreach (DataTable tbl in runner.ResultsDataSet.Tables)
+                                {
+                                    runner.OutputMessage(
+                                        string.Format("Query {2} Completed ({0:N0} row{1} returned)", tbl.Rows.Count,
+                                                        tbl.Rows.Count == 1 ? "" : "s", queryCnt));
+                                    queryCnt++;
+                                }
+                                runner.RowCount = rowCnt;
+                                // activate the result only when Counters are not selected...
+                                runner.ActivateResults();
+                            }
                         }
-                        
                     }
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+                    }
+                    finally
+                    {
+                        runner.OutputMessage("Query Batch Completed", durationMs);
+                        runner.QueryCompleted();
                     }
                 });
         }

@@ -19,7 +19,7 @@ namespace DaxStudio.UI.ViewModels {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
-        private readonly NotifyIcon notifyIcon;
+        private NotifyIcon notifyIcon;
         private Window _window;
 
         //private ILogger log;
@@ -46,13 +46,15 @@ namespace DaxStudio.UI.ViewModels {
             {
                 Tabs.NewQueryDocument();
             }
-            DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
-            notifyIcon = new NotifyIcon();
             VersionChecker = versionCheck;
+            DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
+            //Execute.OnUIThread(() => { notifyIcon = new NotifyIcon(); });
+            
         }
 
+        
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
@@ -78,7 +80,7 @@ namespace DaxStudio.UI.ViewModels {
             if (dialogResult != false )
             {
                 Ribbon.OnClose();
-                notifyIcon.Dispose();
+                notifyIcon?.Dispose();
             }
         }
         //public override void TryClose()
@@ -108,6 +110,7 @@ namespace DaxStudio.UI.ViewModels {
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
             _window.SetPlacement(RegistryHelper.GetWindowPosition());
+            notifyIcon = new NotifyIcon(_window); 
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)

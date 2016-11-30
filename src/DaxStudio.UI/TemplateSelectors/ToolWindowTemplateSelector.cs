@@ -3,10 +3,10 @@ using System.Windows.Controls;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.UI.TemplateSelectors
 {
 
-    public class AutobinderTemplateSelector : DataTemplateSelector
+    public class ToolWindowTemplateSelector : DataTemplateSelector
     {
         public DataTemplate Template { get; set; }
 
@@ -15,7 +15,9 @@ namespace DaxStudio.UI.Utils
             var win = item as IToolWindow;
             if (win != null)
                 return Template;
-            return null;
+
+            //delegate the call to base class
+            return base.SelectTemplate(item, container);
         }
     }
 

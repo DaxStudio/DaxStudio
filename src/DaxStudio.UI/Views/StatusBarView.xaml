@@ -7,136 +7,71 @@
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="400">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
-        <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
-        <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>
-        <SolidColorBrush x:Key="SpinnerColorBrush" Color="White"></SolidColorBrush>
-        <Storyboard x:Key="Rotation">
-            
-            <DoubleAnimation Storyboard.TargetName="rotateTransform"
-                       Storyboard.TargetProperty="Angle"
-                       From="0" To="360" Duration="00:00:01"
-                       RepeatBehavior="Forever"/>
-        </Storyboard>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
+            <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
+            <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>
+            <SolidColorBrush x:Key="SpinnerColorBrush" Color="White"></SolidColorBrush>
+            <!--<Storyboard x:Key="Rotation">
+                <DoubleAnimation Storyboard.TargetName="rotateTransform"
+                           Storyboard.TargetProperty="Angle"
+                           From="0" To="360" Duration="00:00:01"
+                           RepeatBehavior="Forever"/>
+            </Storyboard>-->
         
-        <ControlTemplate x:Key="Spinner">
-            <Grid Name="LayoutRoot" RenderTransformOrigin="0.5,0.5">
-                <Grid.RenderTransform>
-                    <TransformGroup>
-                        <RotateTransform x:Name="rotateTransform"/>
-                    </TransformGroup>
-                </Grid.RenderTransform>
-                <Ellipse Fill="{DynamicResource SpinnerColorBrush}">
-                    <Ellipse.OpacityMask>
-                        <ImageBrush ImageSource="../Images/SpinnerMask.png" Stretch="None"/>
-                    </Ellipse.OpacityMask>
-                </Ellipse>
-                <Grid.OpacityMask>
-                    <RadialGradientBrush>
-                        <GradientStop Color="Black" Offset="0.96"/>
-                        <GradientStop Color="Transparent" Offset="0.959"/>
-                    </RadialGradientBrush>
-                </Grid.OpacityMask>
-            </Grid>
-        </ControlTemplate>
-        <Color x:Key="DisabledForegroundColor">#FF888888</Color>
-        <!--
-        <Style x:Key="{x:Type StatusBar}"
-       TargetType="{x:Type StatusBar}">
-            <Setter Property="SnapsToDevicePixels" Value="True" />
-            <Setter Property="OverridesDefaultStyle" Value="true" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type StatusBar}">
-                        <Border Padding="1">
-                            
-                            <Border.BorderBrush>
-                                <LinearGradientBrush StartPoint="0,0"
-                                 EndPoint="0,1">
-                                    <LinearGradientBrush.GradientStops>
-                                        <GradientStopCollection>
-                                            <GradientStop Color="{DynamicResource BorderLightColor}"
-                                Offset="0.0" />
-                                            <GradientStop Color="{DynamicResource BorderDarkColor}"
-                                Offset="1.0" />
-                                        </GradientStopCollection>
-                                    </LinearGradientBrush.GradientStops>
-                                </LinearGradientBrush>
-                            </Border.BorderBrush>
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0"
-                                 EndPoint="0,1">
-                                    <LinearGradientBrush.GradientStops>
-                                        <GradientStopCollection>
-                                            <GradientStop Color="{DynamicResource ControlLightColor}"
-                                Offset="0.0" />
-                                            <GradientStop Color="{DynamicResource ControlMediumColor}"
-                                Offset="1.0" />
-                                        </GradientStopCollection>
-                                    </LinearGradientBrush.GradientStops>
-                                </LinearGradientBrush>
+            <Color x:Key="DisabledForegroundColor">#FF888888</Color>
 
-                            </Border.Background>
-                            
-                            <ItemsPresenter />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    -->
+            <Style x:Key="{x:Static StatusBar.SeparatorStyleKey}"
+                TargetType="{x:Type Separator}">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="SnapsToDevicePixels"   Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Separator}">
+                            <Rectangle Width="1" Margin="3">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="#00000000" />
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-        <Style x:Key="{x:Static StatusBar.SeparatorStyleKey}"
-       TargetType="{x:Type Separator}">
-            <Setter Property="OverridesDefaultStyle"
-          Value="True" />
-            <Setter Property="SnapsToDevicePixels"
-          Value="True" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Separator}">
-                        <Rectangle Width="1"
-                   Margin="3">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="#00000000" />
-                            </Rectangle.Fill>
-                        </Rectangle>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="{x:Type StatusBarItem}" TargetType="{x:Type StatusBarItem}">
-            <Setter Property="OverridesDefaultStyle" Value="True" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type StatusBarItem}" >
+            <Style x:Key="{x:Type StatusBarItem}" TargetType="{x:Type StatusBarItem}">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type StatusBarItem}" >
                         
-                        <ContentPresenter Margin="3" Name="ContentSite" />
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled"
-                   Value="false">
-                                <Setter Property="Foreground">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="{StaticResource DisabledForegroundColor}" />
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsEnabled"
-                   Value="true">
-                                <Setter Property="Foreground">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="White" />
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
+                            <ContentPresenter Margin="3" Name="ContentSite" />
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled"  Value="false">
+                                    <Setter Property="Foreground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{StaticResource DisabledForegroundColor}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsEnabled"  Value="true">
+                                    <Setter Property="Foreground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="White" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid >
         <StatusBar >
@@ -163,43 +98,10 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="0">
-                <StackPanel Orientation="Horizontal">
-                <!--    <ContentControl x:Name="Spinner"></ContentControl> -->
-                    <Grid Name="LayoutRoot" RenderTransformOrigin="0.5,0.5" Width="14" Height="14" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Grid.RenderTransform>
-                            <TransformGroup>
-                                <RotateTransform x:Name="rotateTransform"/>
-                            </TransformGroup>
-                        </Grid.RenderTransform>
-                        <Ellipse Fill="{DynamicResource SpinnerColorBrush}">
-                            <Ellipse.OpacityMask>
-                                <ImageBrush ImageSource="../Images/SpinnerMask.png" Stretch="None"/>
-                            </Ellipse.OpacityMask>
-                        </Ellipse>
-                        <Grid.OpacityMask>
-                            <RadialGradientBrush>
-                                <GradientStop Color="Black" Offset="0.96"/>
-                                <GradientStop Color="Transparent" Offset="0.7"/>
-                            </RadialGradientBrush>
-                        </Grid.OpacityMask>
-                        <Grid.Triggers>
-                            <EventTrigger RoutedEvent="Window.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="rotateTransform"
-                                            Storyboard.TargetProperty="Angle"
-                                            From="0" To="360" Duration="00:00:01"
-                                            RepeatBehavior="Forever"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Grid.Triggers>
-                    </Grid>
-                </StackPanel>
+                <Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />
             </StatusBarItem>
             <Separator Grid.Column="1"/>
             <StatusBarItem Grid.Column="2">
-                    <!--<ProgressBar Orientation="Horizontal" Visibility="Visible" IsIndeterminate="True" Width="55" Height="15" />-->
                 
                 <TextBlock x:Name="Message1" Text="{Binding ActiveDocument.StatusBarMessage}" ></TextBlock>
                 

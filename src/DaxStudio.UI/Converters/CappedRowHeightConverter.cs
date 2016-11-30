@@ -25,7 +25,7 @@ namespace DaxStudio.UI.Converters
 
         object[] IMultiValueConverter.ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return new object[] { Binding.DoNothing };
         }
     }
 }

@@ -174,5 +174,6 @@ namespace DaxStudio.UI.ViewModels
         {
             ServerName = string.Empty;
         }
+        
     }
 }

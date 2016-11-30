@@ -32,7 +32,9 @@ namespace DaxStudio.UI.Converters
                     var txtBlock = new FrameworkElementFactory(typeof(TextBlock));
                     
                     txtBlock.SetValue(TextBlock.TextProperty, item.Caption);
-                    txtBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.WrapWithOverflow);        
+                    txtBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.WrapWithOverflow);
+                    if (item.DataType != typeof(string)) txtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
+                    
                     contentPresenter.AppendChild(txtBlock);
                     hdrTemplate.VisualTree = contentPresenter;
                     
@@ -55,11 +57,9 @@ namespace DaxStudio.UI.Converters
                         cellTooltip.SetValue(ToolTip.ContentProperty, cellImgTooltip);
 
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                        
-                        cellImgBlock.SetBinding(Image.SourceProperty, new Binding("[" + item.ColumnName + "]"));
-                        cellImgTooltip.SetBinding(Image.SourceProperty, new Binding("[" + item.ColumnName + "]"));
+                        cellImgBlock.SetBinding(Image.SourceProperty, new Binding(FixBindingPath( item.ColumnName )));
+                        cellImgTooltip.SetBinding(Image.SourceProperty, new Binding(FixBindingPath( item.ColumnName )));
                         cellImgBlock.SetValue(Image.WidthProperty, 50d);
-                        //cellImgBlock.SetValue(FrameworkElement.ToolTipProperty, cellImgTooltip);
                         
                         cellTemplate.VisualTree = cellImgBlock;
                     }
@@ -69,8 +69,13 @@ namespace DaxStudio.UI.Converters
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
                         var colBinding = new Binding(FixBindingPath(item.ColumnName));
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
+
+                        // Bind FormatString if it exists
+                        if (item.ExtendedProperties["FormatString"] != null)
+                            colBinding.StringFormat = item.ExtendedProperties["FormatString"].ToString();
                         
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                        if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
                         cellTemplate.VisualTree = cellTxtBlock;
                         

@@ -35,6 +35,7 @@ namespace DaxStudio.UI.ViewModels
         protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)
         {
             _eventAggregator = eventAggregator;
+            
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             Init();
@@ -136,6 +137,14 @@ namespace DaxStudio.UI.ViewModels
                     _isChecked = value;
                     NotifyOfPropertyChange(() => IsChecked);
                     if (!_isChecked) Reset();
+                    if (value)
+                    {
+                        _eventAggregator.Subscribe(this);
+                    }
+                    else
+                    {
+                        _eventAggregator.Unsubscribe(this);
+                    }
                     _eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
                 }

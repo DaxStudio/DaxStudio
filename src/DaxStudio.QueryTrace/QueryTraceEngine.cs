@@ -217,7 +217,7 @@ namespace DaxStudio.QueryTrace
                 if (_startingTimer == null)
                     _startingTimer = new Timer();
                 
-                _startingTimer.Interval = 500;  //TODO - make time interval shorter?
+                _startingTimer.Interval = 500; 
                 _startingTimer.Elapsed += OnTimerElapsed;
                 _startingTimer.Enabled = true;
                 _startingTimer.Start();
@@ -237,7 +237,7 @@ namespace DaxStudio.QueryTrace
             try
             {
                 Execute.OnUIThread(() => {
-                    // TODO - make sure connection is open
+                    // lock to prevent multiple threads attempting to open the connection
                     lock (connectionLockObj)
                     {
                         if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();

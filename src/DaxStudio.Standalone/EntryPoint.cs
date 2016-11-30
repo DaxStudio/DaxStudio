@@ -4,6 +4,7 @@ using System.Windows;
 using Caliburn.Micro;
 using DaxStudio.UI;
 using Serilog;
+
 using DaxStudio.UI.Utils;
 namespace DaxStudio.Standalone
 {
@@ -46,19 +47,18 @@ namespace DaxStudio.Standalone
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
 
-                log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+                log = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
 
                 //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
 #if DEBUG
-                Serilog.Debugging.SelfLog.Out = Console.Out;
+                Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
                 Log.Logger = log;
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-
-
+                
                 app.Run();
             }
             catch (Exception ex)
@@ -66,6 +66,8 @@ namespace DaxStudio.Standalone
                 Log.Error("Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
 #if DEBUG 
                 MessageBox.Show(ex.Message);
+#else
+                //TODO - use CrashReporter.Net to send bug to DrDump
 #endif
             }
             finally
