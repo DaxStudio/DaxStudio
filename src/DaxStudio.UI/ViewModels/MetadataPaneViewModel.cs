@@ -243,6 +243,29 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _isMouseOverSearch;
+        public bool IsMouseOverSearch {
+            get { return _isMouseOverSearch; }
+            set {
+                System.Diagnostics.Debug.WriteLine("MouseOver: " + value);
+                _isMouseOverSearch = value;
+                NotifyOfPropertyChange(() => IsMouseOverSearch);
+                NotifyOfPropertyChange(() => ExpandSearch);
+            }
+        }
+        private bool _isKeyboardFocusWithinSearch;
+        public bool IsKeyboardFocusWithinSearch {
+            get { return _isKeyboardFocusWithinSearch; }
+            set {
+                System.Diagnostics.Debug.WriteLine("KeyboardFocusWithin: " + value);
+                _isKeyboardFocusWithinSearch = value;
+                NotifyOfPropertyChange(() => IsKeyboardFocusWithinSearch);
+                NotifyOfPropertyChange(() => ExpandSearch);
+            }
+        }
+
+        public bool ExpandSearch { get { return IsMouseOverSearch || IsKeyboardFocusWithinSearch; } }
+
         public bool HasCriteria
         {
             get { return _currentCriteria.Length > 0; }

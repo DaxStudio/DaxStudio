@@ -1,53 +1,11 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="searchBox" TargetType="{x:Type Border}">
-        <!--<Style.Resources>
-            <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
-            <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
-        </Style.Resources>
--->
         <Setter Property="Width" Value="16"/>
         <Setter Property="Height" Value="16"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Margin" Value="2 2 0 2"/>
-        <!--<Setter Property="CornerRadius" Value="3"/>-->
-        <!--<Setter Property="BorderBrush" Value="DarkGray"/>
-        <Setter Property="BorderThickness" Value="1"/>-->
         <Setter Property="Padding" Value="0 2 0 2"/>
-        
-        <!--<Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#F0F0F0" Offset="0.0" />
-                    <GradientStop Color="#C0C0C0" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>-->
-<!--
-        <Style.Triggers>
-            <EventTrigger RoutedEvent="Mouse.MouseEnter">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Storyboard.TargetProperty="(Border.Width)" EasingFunction="{StaticResource ResourceKey=easeInEase}" To="150" Duration="0:0:1.0"/>
-                        <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" EasingFunction="{StaticResource ResourceKey=easeInEase}" To="30" Duration="0:0:1.0"/>
-                        <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="Margin" Storyboard.TargetName="{Binding ElementName=Tables}" BeginTime="00:00:00">
-                            <SplineThicknessKeyFrame KeyTime="00:00:01" Value="0, 70,0,0" />
-                            
-                        </ThicknessAnimationUsingKeyFrames>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-            <EventTrigger RoutedEvent="Mouse.MouseLeave">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Storyboard.TargetProperty="(Border.Width)" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
-                        <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-        </Style.Triggers>
-        -->
-        
     </Style>
 </ResourceDictionary>
