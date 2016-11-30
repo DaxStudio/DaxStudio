@@ -99,7 +99,7 @@
 
         </ResourceDictionary>
     </UserControl.Resources>
-
+    
     <Grid Margin="2 2 2 0" >
 
         <Grid.RowDefinitions>
@@ -174,7 +174,9 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"                         
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"                   
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"         
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
                   Margin="0,2,0,-2">
             <i:Interaction.Behaviors>
                 <beh:TreeViewClipboardBehavior />
@@ -287,7 +289,7 @@
                     </Image>
                     <TextBox Grid.Column="1"
                          x:Name="CurrentCriteria"
-                         Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                          Opacity="0"
                          Padding="2 2 24 0">
                         <i:Interaction.Triggers>
@@ -311,17 +313,18 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Button>
-
                 </Grid>
+
                 <Border.Triggers>
 
                     <EventTrigger RoutedEvent="Mouse.MouseEnter">
                         <BeginStoryboard Storyboard="{StaticResource SearchIn}"/>
                     </EventTrigger>
-                    <EventTrigger RoutedEvent="Mouse.MouseLeave" >
+                    <!--<EventTrigger RoutedEvent="Mouse.MouseLeave" >
                         <BeginStoryboard Storyboard="{StaticResource SearchOut}"/>
-                    </EventTrigger>
+                    </EventTrigger>-->
                 </Border.Triggers>
+                
             </Border>
             <Border x:Name="SearchSpacer" 
                     BorderThickness="0" 
@@ -330,6 +333,7 @@
                     Background="Transparent"
                     Width="{Binding ElementName=Tables, Path=ScrollBarWidth}">
             </Border>
+       
         </StackPanel>
 
 
@@ -340,15 +344,13 @@
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!--
-                    <Views:ucSpinner Foreground="White" Margin="0,0,10,0" />
-                    <TextBlock Margin="0" TextWrapping="Wrap" Text="Running Query..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#7E000000"/>
-                    -->
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock x:Name="BusyMessage"/>
                     </Label>
                 </StackPanel>
             </Grid>
         </Border>
+            
     </Grid>
+       
 </UserControl>

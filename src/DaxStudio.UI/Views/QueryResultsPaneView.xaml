@@ -178,7 +178,7 @@
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}" >
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">Running Query...</Label>
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
                 </StackPanel>
             </Grid>
         </Border>

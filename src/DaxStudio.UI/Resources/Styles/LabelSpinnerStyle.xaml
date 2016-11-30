@@ -6,15 +6,18 @@
 
     <BitmapImage x:Key="SpinnerMask"  UriSource="..\..\images\spinnermask.png" />
 
-    <Storyboard x:Key="Rotation">
+    <Storyboard x:Key="RotationAnimation" x:Name="RotationAnimation">
         <DoubleAnimation Storyboard.TargetName="rotateTransform"
                        Storyboard.TargetProperty="Angle"
                        From="0" To="360" Duration="00:00:01"
                        RepeatBehavior="Forever"/>
     </Storyboard>
 
+
+
     <Style x:Key="LabelSpinnerStyle" TargetType="{x:Type Label}">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>-->
+
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="0"/>
         <!--<Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -26,8 +29,8 @@
                     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
                         <StackPanel Orientation="Horizontal">
                             <Grid Name="LayoutRoot" RenderTransformOrigin="0.5,0.5" 
-                                  Width="{TemplateBinding Height,Converter={StaticResource OffsetConverter},ConverterParameter=3}"
-                                  Height="{TemplateBinding Height,Converter={StaticResource OffsetConverter},ConverterParameter=3}"
+                                  Width="{TemplateBinding Height}"
+                                  Height="{TemplateBinding Height}"
                                   Background="{TemplateBinding Background}">
 
                                 <Grid.RenderTransform>
@@ -35,7 +38,7 @@
                                         <RotateTransform x:Name="rotateTransform"/>
                                     </TransformGroup>
                                 </Grid.RenderTransform>
-                                <Ellipse Margin="2" Fill="{TemplateBinding Foreground }">
+                                <Ellipse Margin="2" Fill="{TemplateBinding Foreground}">
 
 
                                     <Ellipse.OpacityMask>
@@ -49,17 +52,24 @@
                                     </RadialGradientBrush>
                                 </Grid.OpacityMask>
                                 <Grid.Triggers>
-                                    <EventTrigger RoutedEvent="Window.Loaded">
-                                        <BeginStoryboard>
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="rotateTransform"
-                                            Storyboard.TargetProperty="Angle"
-                                            From="0" To="360" Duration="00:00:01"
-                                            RepeatBehavior="Forever"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
+
+                                    <!--<EventTrigger RoutedEvent="Window.Loaded">
+                                        <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
+                                    </EventTrigger>-->
+                                   
+                                 
                                 </Grid.Triggers>
+                                <!--<Grid.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Source={RelativeSource Self}, Path=Visibility}" Value="{x:Static Visibility.Collapsed}">
+                                                <DataTrigger.EnterActions>
+                                                    <StopStoryboard BeginStoryboardName="spinner"/>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>-->
                             </Grid>
                             <ContentPresenter Margin="5,0,0,0" 
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
@@ -72,7 +82,24 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            
                         </Trigger>
+                        <Trigger Property="Visibility" Value="Visible">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard  BeginStoryboardName="AnimationBeginStoryboard"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <!--<Trigger Property="Visibility" Value="Visible">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="RotationAnimation"/>
+                            </Trigger.ExitActions>
+                        </Trigger>-->
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
