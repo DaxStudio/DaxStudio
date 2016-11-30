@@ -176,7 +176,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_connectionProperties.ContainsKey("Application Name"))
                     {
-                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (PowerBI)"))
+                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (Power BI)"))
                         {
                             PowerPivotModeSelected = false;
                             ServerModeSelected = false;
@@ -207,7 +207,7 @@ namespace DaxStudio.UI.ViewModels
                                 ApplicationName = p.Value;
                                 break;
                             default:
-                                AdditionalProperties.Append(string.Format("{0}={1};", p.Key, p.Value));
+                                AdditionalOptions += string.Format("{0}={1};", p.Key, p.Value);
                                 break;
                         }
                     }
@@ -224,7 +224,15 @@ namespace DaxStudio.UI.ViewModels
             }           
         }
 
-        public string AdditionalOptions { get; set; }
+        private string _additionalOptions = string.Empty;
+        public string AdditionalOptions {
+            get { if (_additionalOptions.Trim().EndsWith(";"))
+                    return _additionalOptions;
+                else
+                    return _additionalOptions.Trim() + ";";
+            }
+            set { _additionalOptions = value; }
+        }
 
         private string _dataSource;
         public string DataSource { 
@@ -265,8 +273,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        StringBuilder _additionalProperties = new StringBuilder();
-        public StringBuilder AdditionalProperties { get {return _additionalProperties;  }}
+        //StringBuilder _additionalProperties = new StringBuilder();
+        //public StringBuilder AdditionalProperties { get {return _additionalProperties;  }}
 
         private Dictionary<string, string> SplitConnectionString(string connectionString)
         {
@@ -331,7 +339,10 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetDirectQueryMode()
         {
-            return DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default" ? string.Empty : string.Format("DirectQueryMode={0};", DirectQueryMode);
+            if (DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default")
+                return string.Empty;
+            else
+                return string.Format("DirectQueryMode={0};", DirectQueryMode);
         }
 
         private string GetMdxCompatibilityMode()
@@ -367,39 +378,41 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
-            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6};{7};Application Name={8}", SelectedPowerBIInstance.Port
-                                 , GetMdxCompatibilityMode()
-                                 , GetDirectQueryMode()
-                                 , GetRolesProperty()
-                                 , GetLocaleIdentifier()
-                                 , GetEffectiveUserName()
-                                 , AdditionalProperties
-                                 , AdditionalOptions
-                                 , GetApplicationName("Power BI"));
+            return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6}{7}"
+                        , SelectedPowerBIInstance.Port // 0
+                        , GetMdxCompatibilityMode()    // 1
+                        , GetDirectQueryMode()         // 2 
+                        , GetRolesProperty()           // 3
+                        , GetLocaleIdentifier()        // 4
+                        , GetEffectiveUserName()       // 5
+                        , AdditionalOptions            // 6
+                        , GetApplicationName("Power BI")); // 7
         }
 
         private object GetEffectiveUserName()
         {
-            return EffectiveUserName == string.Empty ? string.Empty : string.Format("EffectiveUserName={0};", EffectiveUserName);
+            if (string.IsNullOrWhiteSpace(EffectiveUserName))
+                return string.Empty;
+            else
+                return string.Format("EffectiveUserName={0};", EffectiveUserName);
         }
 
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6};{7};Application Name={8}", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6};{7}", DataSource
                                  , GetMdxCompatibilityMode()     //1
                                  , GetDirectQueryMode()          //2
                                  , GetRolesProperty()            //3
                                  , GetLocaleIdentifier()         //4
                                  , GetEffectiveUserName()        //5
-                                 , AdditionalProperties          //6
-                                 , AdditionalOptions             //7
-                                 , GetApplicationName("SSAS"));  //8
+                                 , AdditionalOptions             //6
+                                 , GetApplicationName("SSAS"));  //7
         }
 
         private string GetApplicationName(string connectionType)
         {
-            return string.Format("DAX Studio ({0}) - {1}", connectionType, _activeDocument.UniqueID);
+            return string.Format("Application Name=DAX Studio ({0}) - {1}", connectionType, _activeDocument.UniqueID);
         }
 
         /*
@@ -410,7 +423,7 @@ namespace DaxStudio.UI.ViewModels
         */
         private string BuildPowerPivotConnection()
         {    
-            return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot")).ConnectionString;
+            return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot"), string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}",WorkbookName)).ConnectionString;
             
         }
 
@@ -437,6 +450,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Log.Error("{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", ConnectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
                 _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }
@@ -491,7 +505,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Locale.LCID != -1)
             {
-                return string.Format("Locale Identifier={0}", Locale.LCID);
+                return string.Format("Locale Identifier={0};", Locale.LCID);
             }
             return "";
         }
