@@ -26,7 +26,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -101,18 +101,22 @@
     <ProjectReference Include="..\..\src\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\src\DAXEditor\DAXEditor.csproj">
       <Project>{ee4788c1-dca6-465f-8049-28ceace6586f}</Project>
       <Name>DAXEditor</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\src\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\src\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
       <Name>DaxStudio.UI</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

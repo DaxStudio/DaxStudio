@@ -58,7 +58,7 @@ namespace DaxStudio.Standalone
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-
+                
                 app.Run();
             }
             catch (Exception ex)
@@ -66,6 +66,8 @@ namespace DaxStudio.Standalone
                 Log.Error("Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
 #if DEBUG 
                 MessageBox.Show(ex.Message);
+#else
+                //TODO - use CrashReporter.Net to send bug to DrDump
 #endif
             }
             finally

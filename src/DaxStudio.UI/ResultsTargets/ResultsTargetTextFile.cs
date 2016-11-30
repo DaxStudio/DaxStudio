@@ -120,17 +120,8 @@ namespace DaxStudio.UI.Model
                                 if (iFileCnt > 1) fileName = AddFileCntSuffix(fileName, iFileCnt);
                                 using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create), enc))
                                 {
-
-
-                                    // TODO - should I "fix" column names ??
-                                    // write out column headers
+                                    // write out clean column names
                                     writer.WriteLine(string.Join(sep, res.CleanColumnNames()));
-                                    //for (int iCol=0;iCol < iMaxCol;iCol++)
-                                    //{
-                                    //    writer.Write(res.GetName(iCol));
-                                    //    writer.Write(sep);
-                                    //}
-                                    //writer.WriteLine(res.GetName(iMaxCol));
                                     
                                     // write out data
                                     while (res.Read())

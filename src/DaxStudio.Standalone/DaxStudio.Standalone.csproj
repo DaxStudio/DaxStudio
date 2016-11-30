@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -47,11 +48,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -154,14 +156,17 @@
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
       <Name>DaxStudio.UI</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -263,7 +268,7 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>xcopy $(TargetDir)*.* $(SolutionDir)DaxStudio.ExcelAddin\bin\debug\*.* /S /Y</PostBuildEvent>
+    <PostBuildEvent>rem xcopy $(TargetDir)*.* $(SolutionDir)DaxStudio.ExcelAddin\bin\debug\*.* /S /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

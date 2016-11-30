@@ -5,6 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E04330FA-13D0-4B47-BE99-31B788340C09}"
 	ProjectSection(SolutionItems) = preProject
+		common.props = common.props
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		CurrentReleaseVersion.json = CurrentReleaseVersion.json
 		setup-build-env.ps1 = setup-build-env.ps1
@@ -12,9 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.ExcelAddin", "DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj", "{C8769178-B109-4155-ABC2-F4E4587642DB}"
 	ProjectSection(ProjectDependencies) = postProject
-		{5EFEFF14-3052-4DC1-B020-8E259062B899} = {5EFEFF14-3052-4DC1-B020-8E259062B899}
-		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443} = {C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}
-		{EE4788C1-DCA6-465F-8049-28CEACE6586F} = {EE4788C1-DCA6-465F-8049-28CEACE6586F}
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6} = {F92E0BFC-F721-4A08-A4FA-77DC019B14F6}
 	EndProjectSection
 EndProject

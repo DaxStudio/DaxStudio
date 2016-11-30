@@ -117,9 +117,6 @@ namespace DaxStudio.UI.Extensions
 
         public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader)
         {
-
-            //try
-            //{
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
             bool moreResults = true;
@@ -164,11 +161,6 @@ namespace DaxStudio.UI.Extensions
                 tableIdx++;
             }
             return ds;
-            //}
-            //catch (Exception ex)
-            //{
-            //    //TODO  handle error
-            //}
 
         }
     }

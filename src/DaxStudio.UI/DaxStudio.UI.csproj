@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -66,7 +67,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -82,7 +83,7 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -332,6 +333,7 @@
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
+    <Compile Include="Converters\MultiplyConverterWithMin.cs" />
     <Compile Include="Converters\NegativeColourConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
@@ -416,7 +418,6 @@
     <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
-    <Compile Include="Model\TraceEventFactory.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
     <Compile Include="Triggers\InputBindingTrigger.cs">
       <SubType>Code</SubType>
@@ -427,8 +428,10 @@
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
+    <Compile Include="Utils\FixedSizeQueue.cs" />
     <Compile Include="Utils\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
+    <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\SystemInfo.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
@@ -566,14 +569,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Resource>
-    <Resource Include="Resources\Styles\SearchBox.xaml">
+    <Page Include="Resources\Styles\SearchBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Resource>
-    <Resource Include="Resources\Styles\BusyPanel.xaml">
+    </Page>
+    <Page Include="Resources\Styles\BusyPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Resource>
+    </Page>
     <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -694,18 +697,22 @@
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
       <Project>{EE4788C1-DCA6-465F-8049-28CEACE6586F}</Project>
       <Name>DAXEditor</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>
       <Name>DaxStudio.QueryTrace</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\UnitComboLib\UnitComboLib.csproj">
       <Project>{c8c325ad-d7ab-4e56-8a6b-7e8b11eb5443}</Project>

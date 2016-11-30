@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Controls;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Model
 {
@@ -14,7 +16,7 @@ namespace DaxStudio.UI.Model
         private TaskbarIcon icon;
         private string BalloonMessage;
 
-        public NotifyIcon() 
+        public NotifyIcon(Window window) 
         {
             BalloonTitle = "DaxStudio"; //TODO - get current version for title
             Uri iconUri = new Uri("pack://application:,,,/DaxStudio.UI;component/Images/DaxStudio.Ico");
@@ -23,7 +25,10 @@ namespace DaxStudio.UI.Model
             {
                 ico = new System.Drawing.Icon(strm);
             }
-            Dispatcher.CurrentDispatcher.Invoke(new System.Action(() =>
+            
+            //Execute.OnUIThreadAsync( new System.Action(() =>
+            //Dispatcher.CurrentDispatcher.Invoke( new System.Action(() =>
+            window.Dispatcher.Invoke(new System.Action(() =>
             {
                 icon = new TaskbarIcon
                 {

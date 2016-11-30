@@ -141,7 +141,6 @@ namespace DaxStudio.UI.ViewModels
         public bool CanStartDrag(IDragInfo dragInfo)
         {
             return true;
-            //            throw new System.NotImplementedException();
         }
 
         public bool TryCatchOccurredException(Exception exception)

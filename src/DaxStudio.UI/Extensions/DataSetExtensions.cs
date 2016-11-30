@@ -11,6 +11,7 @@ namespace DaxStudio.UI.Extensions
     {
         public static string RowCounts(this DataSet ds)
         {
+            if (ds == null) return "";
             List<string> rowCounts = new List<string>();
             foreach (DataTable t in ds.Tables)
             {

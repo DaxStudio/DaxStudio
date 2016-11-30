@@ -76,14 +76,17 @@ namespace DaxStudio.UI.ViewModels
         }
         public DataTableCollection Tables
         {
-            get { return _resultsDataSet.Tables; }
+            get {
+                if (_resultsDataSet == null) return null;
+                return _resultsDataSet.Tables;
+            }
         }
 
-        public void CopyAllResultsToClipboard(object obj)
-        {
-            System.Diagnostics.Debug.WriteLine(obj);
-            Clipboard.SetData("CommaSeparatedValue", ResultsDataTable.ToCsv());
-        }
+        //public void CopyAllResultsToClipboard(object obj)
+        //{
+        //    System.Diagnostics.Debug.WriteLine(obj);
+        //    Clipboard.SetData("CommaSeparatedValue", ResultsDataTable.ToCsv());
+        //}
 
         public DataView ResultsDataView
         { get { return _resultsTable==null?new DataTable("blank").AsDataView():  _resultsTable.AsDataView(); } }

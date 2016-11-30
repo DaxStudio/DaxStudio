@@ -18,6 +18,7 @@
       wrapped in this namespace at runtime.
   -->
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\Common.props" />
   <PropertyGroup>
     <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -44,7 +45,8 @@
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <BootstrapperEnabled>false</BootstrapperEnabled>
+    <BootstrapperComponentsLocation>Relative</BootstrapperComponentsLocation>
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
@@ -64,6 +66,11 @@
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -119,7 +126,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
@@ -464,18 +471,22 @@
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace.Excel\DaxStudio.QueryTrace.Excel.csproj">
       <Project>{30b02415-0085-4ceb-9c74-efda677c6c88}</Project>
       <Name>DaxStudio.QueryTrace.Excel</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>
       <Name>DaxStudio.QueryTrace</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
