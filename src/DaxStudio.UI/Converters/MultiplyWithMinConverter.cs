@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace DaxStudio.UI.Converters
 {
-    public class MultiplyConverterWithMin : IMultiValueConverter
+    public class MultiplyWithMinConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -16,11 +16,13 @@ namespace DaxStudio.UI.Converters
             for (int i = 0; i < values.Length; i++)
             {
                 if (values[i] is double)
+                {
                     result *= (double)values[i];
+                }
             }
 
-            int minVal = 0;
-            int.TryParse(parameter.ToString(), out minVal);
+            double minVal = 0;
+            double.TryParse(parameter.ToString(), out minVal);
             if (result < minVal) return minVal;
 
             return result;

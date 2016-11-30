@@ -307,6 +307,8 @@
     <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
+    <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
+    <Compile Include="AttachedProperties\MouseObserver.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
@@ -333,7 +335,7 @@
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
-    <Compile Include="Converters\MultiplyConverterWithMin.cs" />
+    <Compile Include="Converters\MultiplyWithMinConverter.cs" />
     <Compile Include="Converters\NegativeColourConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
     <Compile Include="Converters\DynamicDataGridConverter.cs" />
@@ -569,10 +571,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Resource>
-    <Page Include="Resources\Styles\SearchBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Resources\Styles\BusyPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
