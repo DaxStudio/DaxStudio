@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Utils.Intellisense
+namespace DaxStudio.Tests.Mocks
 {
-    public interface IInsightProvider
+    class MockInsightProvider
     {
-        void ShowInsight(string text);
     }
 }

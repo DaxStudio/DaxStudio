@@ -309,6 +309,16 @@ namespace DAXEditor
         CompletionWindow completionWindow;
         public InsightWindow InsightWindow { get; set; }
 
+        TextArea IEditor.TextArea
+        {
+            get
+            {
+                return TextArea;
+            }
+
+
+        }
+
         void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
             IntellisenseProvider.ProcessTextEntered(sender, e,ref completionWindow);
@@ -474,6 +484,21 @@ namespace DAXEditor
         public void EnableIntellisense(IIntellisenseProvider provider)
         {
             this.IntellisenseProvider = provider;
+        }
+
+        public DocumentLine DocumentGetLineByOffset(int pos)
+        {
+            return Document.GetLineByOffset(pos);
+        }
+
+        public string DocumentGetText(int offset, int length)
+        {
+            return Document.GetText(offset, length);
+        }
+
+        public string DocumentGetText(TextSegment segment)
+        {
+            return Document.GetText(segment);
         }
     }
 }

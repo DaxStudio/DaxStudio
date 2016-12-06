@@ -39,13 +39,13 @@ namespace DaxStudio.UI.Utils
         IHandle<SelectedModelChangedEvent>,
         IHandle<ConnectionPendingEvent>
     {
-        private DAXEditor.DAXEditor _editor;
+        private IEditor _editor;
         private DaxLineState _daxState;
         private bool SpacePressed;
         private bool HasThrownException;
         private IEventAggregator _eventAggregator;
 
-        public DaxIntellisenseProvider (DocumentViewModel activeDocument, DAXEditor.DAXEditor editor, IEventAggregator eventAggregator)
+        public DaxIntellisenseProvider (DocumentViewModel activeDocument, IEditor editor, IEventAggregator eventAggregator)
         {
             Document = activeDocument;
             _editor = editor;
@@ -155,7 +155,7 @@ namespace DaxStudio.UI.Utils
                     {
                         //var line = GetCurrentLine();
                         //System.Diagnostics.Debug.Assert(line.Length >= _daxState.EndOffset);
-                        var txt = _editor.Document.GetText(new TextSegment() { StartOffset = _daxState.StartOffset, EndOffset = _daxState.EndOffset });
+                        var txt = _editor.DocumentGetText(new TextSegment() { StartOffset = _daxState.StartOffset, EndOffset = _daxState.EndOffset });
                         //var txt = line.Substring(_daxState.StartOffset,_daxState.EndOffset - _daxState.StartOffset);
 
                         completionWindow.CompletionList.SelectItem(txt);
@@ -309,8 +309,8 @@ namespace DaxStudio.UI.Utils
             //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ParseLine", "start");
             string line = GetCurrentLine();
             int pos = _editor.CaretOffset>0 ? _editor.CaretOffset - 1 : 0;
-            var loc = _editor.Document.GetLocation(pos);
-            var docLine = _editor.Document.GetLineByOffset(pos);
+            var loc = _editor.DocumentGetLocation(pos);
+            var docLine = _editor.DocumentGetLineByOffset(pos);
             Log.Debug("{class} {method} {line} col:{column} off:{offset}", "DaxIntellisenseProvider", "ParseLine", line,loc.Column, docLine.Offset);
             return DaxLineParser.ParseLine(line, loc.Column, docLine.Offset);
         }
@@ -415,10 +415,10 @@ namespace DaxStudio.UI.Utils
         {
             //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "GetCurrentLine", "start");
             int pos = _editor.CaretOffset > 0 ? _editor.CaretOffset - 1: 0;
-            var loc = _editor.Document.GetLocation(pos);
-            var docLine = _editor.Document.GetLineByOffset(pos);
+            var loc = _editor.DocumentGetLocation(pos);
+            var docLine = _editor.DocumentGetLineByOffset(pos);
             if (docLine.Length == 0) return "";
-            string line = _editor.Document.GetText(docLine.Offset, loc.Column);
+            string line = _editor.DocumentGetText(docLine.Offset, loc.Column);
             //Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "GetCurrentLine", "end");
             return line;
         }

@@ -3,6 +3,7 @@ using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DAXEditor;
 using ICSharpCode.AvalonEdit.Document;
+using DaxStudio.Tests.Mocks;
 
 namespace DaxStudio.Tests
 {

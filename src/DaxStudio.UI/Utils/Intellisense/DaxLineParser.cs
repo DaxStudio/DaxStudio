@@ -273,9 +273,10 @@ namespace DaxStudio.UI.Utils
             return tableName.TrimStart('\'').TrimEnd('\'');
         }
         
-        public static ISegment GetPreceedingWordSegment(TextDocument document, int startOfLineOffset, int column, string line, DaxLineState daxState)
+        public static LinePosition GetPreceedingWordSegment( int startOfLineOffset, int column, string line, DaxLineState daxState)
         {
-            string word = GetPreceedingWord(line);
+            LinePosition segment = new LinePosition();
+            //string word = GetPreceedingWord(line);
             if (daxState != null)
             {
                 switch (daxState.LineState)
@@ -286,17 +287,25 @@ namespace DaxStudio.UI.Utils
                     case LineState.Column:
                     case LineState.Measure:
                     case LineState.MeasureClosed:
-                        word = line.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset);
+                        //word = line.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset);
                         //word = daxState.ColumnName;
+                        segment = new LinePosition() { Offset = startOfLineOffset + daxState.StartOffset, Length = daxState.EndOffset - daxState.StartOffset };
                         break;
                     default:
-                        word = GetPreceedingWord(line.Substring(0,column));
+                        //word = GetPreceedingWord(line.Substring(0,column));
+                        segment = new LinePosition() { Offset = startOfLineOffset + daxState.StartOffset, Length = column - daxState.StartOffset };
                         break;
                 }
             }
 
             //            var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document,endOffset - word.Length, word.Length);
-            var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document, startOfLineOffset + daxState.StartOffset, daxState.EndOffset - daxState.StartOffset);
+
+            //var start = (TextAnchor)document.CreateAnchor(startOfLineOffset + daxState.StartOffset);
+            //var end = (TextAnchor)document.CreateAnchor(daxState.EndOffset);
+
+            //var segment = new LinePosition() { Offset = startOfLineOffset + daxState.StartOffset, Length = daxState.EndOffset - daxState.StartOffset };
+            
+            //var segment = new ICSharpCode.AvalonEdit.Document.AnchorSegment(document, startOfLineOffset + daxState.StartOffset, daxState.EndOffset - daxState.StartOffset);
             Log.Debug("{class} {method} {state} {endOffset} {word}", "DaxLineParser", "GetPreceedingWordSegment",daxState.LineState.ToString(), column, word);
             return segment;
         }

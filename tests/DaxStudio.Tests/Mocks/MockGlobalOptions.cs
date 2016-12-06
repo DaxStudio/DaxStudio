@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Security;
 using DaxStudio.Interfaces.Enums;
 
-namespace DaxStudio.Tests
+namespace DaxStudio.Tests.Mocks
 {
     class MockGlobalOptions : IGlobalOptions
     {
