@@ -31,6 +31,7 @@ namespace DaxStudio.UI.ViewModels
 
         private IEventAggregator _eventAggregator;
         private DelimiterType _defaultSeparator;
+        private bool _showPreReleaseNotifcations;
 
         //public event EventHandler OptionsUpdated;
 
@@ -52,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
             DefaultSeparator = (DelimiterType) RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
             TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
+            ShowPreReleaseNotifcations = RegistryHelper.GetValue<bool>("ShowPreReleaseNotifcations", false);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -278,6 +280,18 @@ namespace DaxStudio.UI.ViewModels
                 var items = Enum.GetValues(typeof(DelimiterType)).Cast<DelimiterType>()
                                 .Where(e => e != DelimiterType.Unknown);
                 return items;
+            }
+        }
+
+        public bool ShowPreReleaseNotifcations {
+            get { return _showPreReleaseNotifcations; }
+            set
+            {
+                if (_showPreReleaseNotifcations == value) return;
+                _showPreReleaseNotifcations = value;
+                NotifyOfPropertyChange(() => ShowPreReleaseNotifcations);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowPreReleaseNotifcations", value);
             }
         }
     }

@@ -20,5 +20,6 @@ namespace DaxStudio.Interfaces
         int DaxFormatterRequestTimeout { get; set; }
         DelimiterType DefaultSeparator { get; set; }
         bool TraceDirectQuery { get; set; }
+        bool ShowPreReleaseNotifcations { get; set; }
     }
 }
