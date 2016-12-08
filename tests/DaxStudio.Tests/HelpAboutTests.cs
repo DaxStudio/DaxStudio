@@ -87,6 +87,14 @@ namespace DaxStudio.Tests
             get { throw new NotImplementedException(); }
         }
 
+        public string DownloadUrl
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public void Update()
         {
             throw new NotImplementedException();

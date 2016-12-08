@@ -37,6 +37,8 @@ namespace DaxStudio.Tests.Mocks
 
         public bool QueryHistoryShowTraceColumns { get; set; }
 
+        public bool ShowPreReleaseNotifcations { get;set;  }
+
         public bool TraceDirectQuery { get; set; }
     }
 }
