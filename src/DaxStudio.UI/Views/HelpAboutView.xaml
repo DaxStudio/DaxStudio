@@ -8,7 +8,7 @@
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     mc:Ignorable="d" 
     d:DesignHeight="300" d:DesignWidth="400"
-    Height="235"
+    Height="215"
     MaxHeight="450"
     MinWidth="480"
     DataContext="{Binding}"
@@ -38,10 +38,9 @@
             <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="20,0,10,0"/>
             <StackPanel Orientation="Vertical">
                 <TextBlock Padding="5" FontSize="48"><Run Text="DAX Studio"/></TextBlock>
-                <TextBlock Padding="5"><Hyperlink NavigateUri="http://daxstudio.codeplex.com" custom:HyperlinkExtensions.IsExternal="true"><Run Text="http://daxstudio.codeplex.com"/></Hyperlink></TextBlock>
+                <TextBlock Padding="5,0,5,5"><Hyperlink NavigateUri="http://daxstudio.codeplex.com" custom:HyperlinkExtensions.IsExternal="true"><Run Text="http://daxstudio.codeplex.com"/></Hyperlink></TextBlock>
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
@@ -56,7 +55,7 @@
                                 <TextBlock Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus}" /></Hyperlink></TextBlock>
                                 <TextBlock x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"></TextBlock>
                             </StackPanel>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Padding="5"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="download installer"/></Hyperlink></TextBlock>
+                            
                         </Grid>
                         <StackPanel Orientation="Horizontal" >
                     <CheckBox x:Name="showDetails" Width="110" IsChecked="False" Content="Show Details" Margin="5,5,0,0" Padding="5,0,0,0" >
@@ -87,7 +86,7 @@
                                     <Storyboard  AutoReverse="False">
                                         <DoubleAnimation  Storyboard.TargetName="dlgHelpAbout"
 											Storyboard.TargetProperty = "(FrameworkElement.Height)"
-											To="235" Duration="0:0:1"/>
+											To="215" Duration="0:0:1"/>
                                         <Storyboard AutoReverse="False">
                                             <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
 												Storyboard.TargetProperty="(UIElement.Opacity)"
