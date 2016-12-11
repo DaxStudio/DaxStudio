@@ -69,10 +69,14 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlSquareBracketsWithSpace = @"(?<!\.)\[([^\[])*\]";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
-        const string searchXmSqlAlias = @" AS \'[^\']*\'";
-        const string searchXmSqlLineage = @" \( [0-9]+ \) ";
+        const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
+        // const string searchXmSqlLineage = @" \( [0-9]+ \) ";
+        const string searchXmSqlLineageBracket = @" \( [0-9]+ \) \]";
+        const string searchXmSqlLineageQuoted = @" \( [0-9]+ \) \'";
+        const string searchXmSqlLineageDollar = @" \( [0-9]+ \) \$";
         const string searchXmSqlEmptyArguments = @" \(\s*\) ";
-        const string searchXmSqlRowNumberGuid = @"\[RowNumber [0-9A-F ]*\]";
+        const string searchXmSqlRowNumberGuidBracket = @"\[RowNumber [0-9A-F ]*\]";
+        const string searchXmSqlRowNumberGuidQuoted = @"\$RowNumber [0-9A-F ]*\'";
 
         const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
 
@@ -85,9 +89,12 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
         static Regex xmSqlAliasRemoval = new Regex(searchXmSqlAlias, RegexOptions.Compiled);
-        static Regex xmSqlLineageRemoval = new Regex(searchXmSqlLineage, RegexOptions.Compiled);
+        static Regex xmSqlLineageBracketRemoval = new Regex(searchXmSqlLineageBracket, RegexOptions.Compiled);
+        static Regex xmSqlLineageQuotedRemoval = new Regex(searchXmSqlLineageQuoted, RegexOptions.Compiled);
+        static Regex xmSqlLineageDollarRemoval = new Regex(searchXmSqlLineageDollar, RegexOptions.Compiled);
         static Regex xmSqlEmptyArguments = new Regex(searchXmSqlEmptyArguments, RegexOptions.Compiled);
-        static Regex xmSqlRowNumberGuidRemoval = new Regex(searchXmSqlRowNumberGuid, RegexOptions.Compiled);
+        static Regex xmSqlRowNumberGuidBracketRemoval = new Regex(searchXmSqlRowNumberGuidBracket, RegexOptions.Compiled);
+        static Regex xmSqlRowNumberGuidQuotedRemoval = new Regex(searchXmSqlRowNumberGuidQuoted, RegexOptions.Compiled);
 
         static Regex xmSqlPatternSize = new Regex(searchXmSqlPatternSize, RegexOptions.Compiled);
 
@@ -108,13 +115,18 @@ namespace DaxStudio.UI.ViewModels
             return xmSqlAliasRemoval.Replace(xmSqlQuery, "");
         }
         public static string RemoveLineage(this string xmSqlQuery) {
-            return xmSqlLineageRemoval.Replace(xmSqlQuery, "");
+            string s = xmSqlLineageBracketRemoval.Replace(xmSqlQuery, "]");
+            s = xmSqlLineageQuotedRemoval.Replace(s, "'");
+            s = xmSqlLineageDollarRemoval.Replace(s, "$");
+            return s;
         }
         public static string FixEmptyArguments(this string xmSqlQuery) {
             return xmSqlEmptyArguments.Replace(xmSqlQuery, " () ");
         }
         public static string RemoveRowNumberGuid(this string xmSqlQuery) {
-            return xmSqlRowNumberGuidRemoval.Replace(xmSqlQuery, "");
+            string s = xmSqlRowNumberGuidBracketRemoval.Replace(xmSqlQuery, "[RowNumber]");
+            s = xmSqlRowNumberGuidQuotedRemoval.Replace(s, "$RowNumber'");
+            return s;
         }
 
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
@@ -132,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
             return result;
         }
 
-        public static bool ExtractEstimatedSize( this string daxQuery, out long rows, out long bytes ) {
+        public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes) {
             var m = xmSqlPatternSize.Match(daxQuery);
             string rowsString = m.Groups["rows"].Value;
             string bytesString = m.Groups["bytes"].Value;
