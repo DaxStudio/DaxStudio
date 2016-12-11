@@ -57,19 +57,24 @@
                 BorderThickness="4"
                 BorderBrush="Transparent" 
                 ToolTip="{Binding Tooltip}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <Image VerticalAlignment="Top"
+                    <Grid MaxWidth="80">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                    
+                        <Image  Grid.Row="0" VerticalAlignment="Top"
                         Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
                         Stretch="None" 
                         Width="32" Height="32" />
-                        <TextBlock Text="{Binding Name}"
+                        <TextBlock Grid.Row="1" Text="{Binding Name}"
                         TextWrapping="Wrap"
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Center" 
                         TextAlignment="Center"
                         />
 
-                    </StackPanel>
+                    </Grid>
                 </Border>
         </DataTemplate>
             

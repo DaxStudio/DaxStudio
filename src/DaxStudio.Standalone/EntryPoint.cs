@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows;
-using Caliburn.Micro;
 using DaxStudio.UI;
 using Serilog;
 
