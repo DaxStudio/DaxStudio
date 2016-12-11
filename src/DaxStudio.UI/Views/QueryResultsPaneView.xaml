@@ -50,35 +50,65 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
 
-
-            <!--
-            <ListView x:Name="ResultsDataView"  
-                      Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                      View="{Binding Path=ResultsDataView,  
-                      Converter={StaticResource DynamicGridViewConverter},
-                      Mode=OneWay,  
-                      UpdateSourceTrigger=PropertyChanged }" 
-                      SelectionMode="Extended"  
-                      >
-                <ListView.Resources>
-                    <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
-                        <Setter Property="RecognizesAccessKey" Value="False"/>
-                    </Style>
-                </ListView.Resources>
-                
-            </ListView>
--->
-
             <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
                 <!-- Style to hide tabs if only one is present -->
                 <TabControl.ItemContainerStyle>
-                    <Style TargetType="{x:Type TabItem}">
+                    <!--<Style TargetType="{x:Type TabItem}">
+                        
+                    </Style>-->
+
+                    <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="border" 
+                                            BorderBrush="LightGray"
+                                            BorderThickness="1,1,0,1"
+                                            Background="WhiteSmoke"
+                                            Margin="0,0,-4,0"
+                                            Padding="0,0,4,0">
+                                    <Grid Name="Panel">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2,2,2"
+                                                          Grid.Column="0"/>
+                                        <TextBlock x:Name="ActiveIndicator" VerticalAlignment="Bottom" FontFamily="Wingdings 3" Text="}" Grid.Column="1" Margin="2"/>
+                                    </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="White" />
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
+                                            <Setter Property="Foreground" Value="White"/>-->
+                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
+                                            <Setter Property="Panel.ZIndex" Value="100"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
+                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="#55002288"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TabControl}}, Path=Items.Count}" Value="1">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
+
+
                 </TabControl.ItemContainerStyle>
 
                 <!-- Tab Content (DataGrid) -->
