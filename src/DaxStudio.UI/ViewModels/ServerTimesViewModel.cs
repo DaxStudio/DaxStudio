@@ -34,6 +34,15 @@ namespace DaxStudio.UI.ViewModels
         public int RowNumber { get;  set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
+        public bool HighlightQuery { get; set; }
+
+        // String that highlight important parts of the query
+        // Currently implemet only the strong (~E~/~S~) for CallbackDataID function 
+        public string QueryRichText {
+            get {
+                return Query.Replace("[CallbackDataID", "[|~S~|CallbackDataID|~E~|");
+            }
+        }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber)
         {
@@ -47,6 +56,9 @@ namespace DaxStudio.UI.ViewModels
                 // TODO: we should implement as optional the removal of aliases and lineage
                 Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
             }
+            // Set flag in case any highlight is present
+            HighlightQuery = QueryRichText.Contains("|~E~|");
+
             // Skip Duration/Cpu Time for Cache Match
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {

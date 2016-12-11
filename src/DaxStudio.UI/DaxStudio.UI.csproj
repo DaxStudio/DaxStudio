@@ -316,6 +316,7 @@
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
+    <Compile Include="Controls\BindableRichTextBox.cs" />
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
@@ -346,6 +347,7 @@
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
+    <Compile Include="Converters\StringToXamlConverter.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
