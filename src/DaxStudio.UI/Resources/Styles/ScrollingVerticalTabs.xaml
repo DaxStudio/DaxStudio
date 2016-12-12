@@ -7,8 +7,8 @@
                 <Setter.Value>
                     <ControlTemplate>
                         <!--<Border Background="sc#1, 0.366693377, 0.372125238, 0.6931424">-->
-                        <Border Background="#FFD0CFCF">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding ContentControl.Content}"/>
+                    <Border Background="#FFD0CFCF">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding ContentControl.Content}"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
