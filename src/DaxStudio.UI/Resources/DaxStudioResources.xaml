@@ -4,8 +4,9 @@
     
     <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
     <Color x:Key="WhiteColor}">#FFCCCCCC</Color>
+    <Color x:Key="DaxStudioBlue">#FF0072C6</Color> 
     
-    <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
+    <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
     <SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>
 
     <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->

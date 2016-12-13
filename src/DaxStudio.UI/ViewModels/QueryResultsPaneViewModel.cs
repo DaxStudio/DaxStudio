@@ -11,6 +11,8 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
+using System.Drawing;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -302,6 +304,34 @@ namespace DaxStudio.UI.ViewModels
                 dataGridColumn.Width = new DataGridLength(1.0, DataGridLengthUnitType.Auto);
                 dataGridColumn.MinWidth = 0;
             }
+        }
+
+        public Brush TabItemBrush
+        {
+            get
+            {
+                return  (Brush)GetValueFromStyle(typeof(TabItem), Control.BackgroundProperty) ?? Brushes.LightSkyBlue;
+            }
+        }
+
+        private static object GetValueFromStyle(object styleKey, DependencyProperty property)
+        {
+            Style style = Application.Current.TryFindResource(styleKey) as Style;
+            while (style != null)
+            {
+                var setter =
+                    style.Setters
+                        .OfType<Setter>()
+                        .FirstOrDefault(s => s.Property == property);
+
+                if (setter != null)
+                {
+                    return setter.Value;
+                }
+
+                style = style.BasedOn;
+            }
+            return null;
         }
     }
 }

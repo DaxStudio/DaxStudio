@@ -20,9 +20,10 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
+            <!--<conv:LeftMarginConverter x:Key="LeftMarginConverter"/>-->
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-            <SolidColorBrush x:Key="SpinnerColorBrush" Color="White"></SolidColorBrush>
 
+            <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
 
             <Style TargetType="FrameworkElement" x:Key="FadeInAnimation">
                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -50,53 +51,72 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
 
+            <!--  -->
             <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
                 <!-- Style to hide tabs if only one is present -->
                 <TabControl.ItemContainerStyle>
-                    <!--<Style TargetType="{x:Type TabItem}">
-                        
-                    </Style>-->
 
                     <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
-                                    <Border x:Name="border" 
+                                    
+                                        <Border x:Name="border" 
                                             BorderBrush="LightGray"
                                             BorderThickness="1,1,0,1"
-                                            Background="WhiteSmoke"
-                                            Margin="0,0,-4,0"
-                                            Padding="0,0,4,0">
-                                    <Grid Name="Panel">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <ContentPresenter x:Name="ContentSite"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Center"
-                                        ContentSource="Header"
-                                        Margin="10,2,2,2"
-                                                          Grid.Column="0"/>
-                                        <TextBlock x:Name="ActiveIndicator" VerticalAlignment="Bottom" FontFamily="Wingdings 3" Text="}" Grid.Column="1" Margin="2"/>
-                                    </Grid>
-                                    </Border>
+                                            Margin="2,0,-2,0"
+                                            CornerRadius="2,0,0,2"
+                                                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                                                <!--Background="{Binding TabItemBrush, Mode=OneWay}"-->
+                                                
+                                            <!--<Border.Background>
+                                            <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
+                                                <GradientStop Color="#FFFFFFFF" Offset="0" />
+                                                <GradientStop Color="#F9FFFFFF" Offset="0.375" />
+                                                <GradientStop Color="#E5FFFFFF" Offset="0.625" />
+                                                <GradientStop Color="#C6FFFFFF" Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>-->
+                                            <Grid Name="Panel" Background="Transparent">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ContentPresenter x:Name="ContentSite"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            ContentSource="Header"
+                                            Margin="10,2,2,2"
+                                            Grid.Column="0"/>
+                                                <TextBlock x:Name="ActiveIndicator" VerticalAlignment="Bottom" FontFamily="Wingdings 3" Text="}" Grid.Column="1" Margin="2"/>
+                                            </Grid>
+                                        </Border>
+       
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Panel" Property="Background" Value="White" />
+                                            <Setter TargetName="border" Property="Background" Value="White" />
                                             <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
                                             <!--<Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
                                             <Setter Property="Foreground" Value="White"/>-->
                                             <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
                                             <Setter Property="Panel.ZIndex" Value="100"/>
+                                            <Setter Property="Margin" Value="-2,0,-2,0"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="False">
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
                                             <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>
                                         </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
+                                        <!--<Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Panel" Property="Background" Value="#55002288"/>
-                                        </Trigger>
+                                        </Trigger>-->
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="False"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" TargetName="border"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" TargetName="border"/>
+                                        </MultiTrigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -205,7 +225,7 @@
 
         <!-- Busy overlay -->
         <Border 
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}" >
+            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
