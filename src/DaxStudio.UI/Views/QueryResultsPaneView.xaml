@@ -1,4 +1,4 @@
-﻿<UserControl xmlns:Views="clr-namespace:DaxStudio.UI.Views"  x:Class="DaxStudio.UI.Views.QueryResultsPaneView"
+<UserControl xmlns:Views="clr-namespace:DaxStudio.UI.Views"  x:Class="DaxStudio.UI.Views.QueryResultsPaneView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -94,10 +94,11 @@
        
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="border" Property="Background" Value="White" />
+
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="White" />-->
                                             <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
-                                            <!--<Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
-                                            <Setter Property="Foreground" Value="White"/>-->
+                                            <Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
+                                            <Setter Property="Foreground" Value="White"/>
                                             <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
                                             <Setter Property="Panel.ZIndex" Value="100"/>
                                             <Setter Property="Margin" Value="-2,0,-2,0"/>
@@ -117,6 +118,8 @@
                                             <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" TargetName="border"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" TargetName="border"/>
                                         </MultiTrigger>
+                                      
+                                        </<UserControl>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
