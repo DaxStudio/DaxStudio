@@ -49,7 +49,22 @@
                       Destination="$(Dest2016DllConfigFile)" />
   </Target>
   
-  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016">
+  <Target Name="DeletePdb" DependsOnTargets="Build">
+    <ItemGroup>
+        <FilesToDelete Include=".\Release\*.pdb"/>
+    </ItemGroup>   
+    <Delete Files="@(FilesToDelete)" />   
+  </Target>
+  
+  
+  <Target Name="DeleteXml" DependsOnTargets="Build">
+    <ItemGroup>
+        <FilesToDelete Include=".\Release\*.xml"/>
+    </ItemGroup>   
+    <Delete Files="@(FilesToDelete)" />   
+  </Target>
+  
+  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; DeleteXml; DeletePdb">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
   

@@ -64,10 +64,10 @@
                                         <Border x:Name="border" 
                                             BorderBrush="LightGray"
                                             BorderThickness="1,1,0,1"
-                                            Margin="2,0,-2,0"
+                                            Margin="2,0,0,0"
                                             CornerRadius="2,0,0,2"
-                                                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-                                                <!--Background="{Binding TabItemBrush, Mode=OneWay}"-->
+                                            Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                                            <!--Background="{Binding TabItemBrush, Mode=OneWay}"-->
                                                 
                                             <!--<Border.Background>
                                             <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
@@ -79,16 +79,19 @@
                                         </Border.Background>-->
                                             <Grid Name="Panel" Background="Transparent">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <ContentPresenter x:Name="ContentSite"
                                             VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
+                                            HorizontalAlignment="Right"
                                             ContentSource="Header"
-                                            Margin="10,2,2,2"
+                                            Margin="8,2,2,2"
                                             Grid.Column="0"/>
-                                                <TextBlock x:Name="ActiveIndicator" VerticalAlignment="Bottom" FontFamily="Wingdings 3" Text="}" Grid.Column="1" Margin="2"/>
+                                                <TextBlock x:Name="ActiveIndicator" 
+                                                           VerticalAlignment="Bottom" 
+                                                           FontFamily="Wingdings 3" 
+                                                           Text="}" Grid.Column="1" Margin="2"/>
                                             </Grid>
                                         </Border>
        
@@ -97,11 +100,13 @@
 
                                             <!--<Setter TargetName="Panel" Property="Background" Value="White" />-->
                                             <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
-                                            <Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
+                                            <Setter TargetName="border" Property="Background" Value="#FF0072C6"/>
+                                            <Setter TargetName="border" Property="BorderBrush" Value="#FF0072C6"/>
                                             <Setter Property="Foreground" Value="White"/>
                                             <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
                                             <Setter Property="Panel.ZIndex" Value="100"/>
-                                            <Setter Property="Margin" Value="-2,0,-2,0"/>
+                                            <Setter TargetName="border" Property="Margin" Value="0,0,0,0"/>
+                                            <Setter TargetName="border" Property="Padding" Value="2,0,0,0"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="False">
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
@@ -118,8 +123,7 @@
                                             <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" TargetName="border"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" TargetName="border"/>
                                         </MultiTrigger>
-                                      
-                                        </<UserControl>
+                                 
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
