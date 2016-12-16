@@ -1,5 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using System;
@@ -73,7 +74,6 @@ namespace DaxStudio.UI.Model
             {
                 // Save document 
                 fileName = dlg.FileName;
-        
                 return Task.Run(() =>
                 {
 
@@ -97,83 +97,108 @@ namespace DaxStudio.UI.Model
                                 enc = Encoding.Unicode;
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
-                        } 
+                        }
 
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteDataTableQuery(dq);
-                        //AdomdDataReader res = runner.ExecuteDataReaderQuery(dq);
-                        
+                        //var res = runner.ExecuteDataTableQuery(dq);
+                        AdomdDataReader res = runner.ExecuteDataReaderQuery(dq);
+
                         if (res != null)
                         {
                             sw.Stop();
                             var durationMs = sw.ElapsedMilliseconds;
-                            runner.ResultsTable = res;
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                                res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.RowCount = res.Rows.Count;
+                            //runner.ResultsTable = res;
+                            runner.OutputMessage("Command Complete, writing output file");
+
                             var sbLine = new StringBuilder();
-                            using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create), enc))
+                            bool moreResults = true;
+                            int iFileCnt = 1;
+                            while (moreResults)
                             {
-                                // write out column headers
-                                IEnumerable<string> columnNames = res.Columns.Cast<DataColumn>().
-                                                                    Select(column => column.ColumnName);
-                                writer.WriteLine(string.Join(sep, columnNames));
-                                
-                                string[] columnTypes = res.Columns.Cast<DataColumn>().
-                                                                    Select(column => column.DataType.ToString()).ToArray();
-                                int iCol = 0;
-                                int iColCnt = res.Columns.Count;
-                                // write out data
-                                foreach (DataRow row in res.Rows)
+                                int iMaxCol = res.FieldCount - 1;
+                                int iRowCnt = 0;
+                                if (iFileCnt > 1) fileName = AddFileCntSuffix(fileName, iFileCnt);
+                                using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create), enc))
                                 {
-                                    iCol = 0;
-                                    foreach (var col in row.ItemArray)
+                                    // write out clean column names
+                                    writer.WriteLine(string.Join(sep, res.CleanColumnNames()));
+                                    
+                                    // write out data
+                                    while (res.Read())
                                     {
-                                        switch(columnTypes[iCol] )
+                                        iRowCnt++;
+                                        for (int iCol = 0; iCol < res.FieldCount; iCol++)
                                         {
-                                            case "System.Decimal":
-                                            case "System.Int64":
-                                                sbLine.Append(col.ToString());
-                                                break;
-                                            case "System.DateTime":
-                                                if (row.IsNull(iCol)) { sbLine.Append("\"\""); }
-                                                else { sbLine.Append(((DateTime)col).ToString(isoDateFormat)); } // ISO date format
-                                                break;
-                                            default:
-                                                sbLine.Append("\"");
-                                                sbLine.Append(col.ToString().Replace("\"", "\"\"").Replace("\n"," "));
-                                                sbLine.Append("\"");
-                                                break;
+                                            switch (res.GetDataTypeName(iCol) )
+                                            {
+                                                case "Decimal":
+                                                case "Int64":
+                                                    if (!res.IsDBNull(iCol)) sbLine.Append(res.GetString(iCol));
+                                                    break;
+                                                case "DateTime":
+                                                    if (res.IsDBNull(iCol)) { sbLine.Append("\"\""); }
+                                                    else { sbLine.Append(res.GetDateTime(iCol).ToString(isoDateFormat)); } // ISO date format
+                                                    break;
+                                                default:
+                                                    sbLine.Append("\"");
+                                                    if (!res.IsDBNull(iCol)) sbLine.Append(res.GetString(iCol).Replace("\"", "\"\"").Replace("\n", " "));
+                                                    sbLine.Append("\"");
+                                                    break;
+                                            }
+
+                                            if (iCol < iMaxCol)
+                                            { sbLine.Append(sep); }
                                         }
-
-                                        iCol++;
-                                        if (iCol < iColCnt)
-                                        { sbLine.Append(sep); }
+                                        writer.WriteLine(sbLine);
+                                        sbLine.Clear();
+                                        if (iRowCnt % 1000 == 0)
+                                        {
+                                            runner.NewStatusBarMessage(string.Format("Written {0:n0} rows to the file output", iRowCnt));
+                                        }
                                     }
-                                    writer.WriteLine(sbLine);
-                                    sbLine.Clear();
-                                }
-                            }
 
+                                    
+                                }
+                                runner.OutputMessage(
+                                        string.Format("Query Completed ({0:N0} row{1} returned)"
+                                                    , iRowCnt
+                                                    , iRowCnt == 1 ? "" : "s"), durationMs);
+                                runner.RowCount = iRowCnt;
+                                moreResults = res.NextResult();
+                                iFileCnt++;
+                            }
                             runner.SetResultsMessage("Query results written to file", OutputTargets.Grid);
                             //runner.QueryCompleted();
                             runner.ActivateOutput();
                         }
-
+                        res.Close();
                     }
                     catch (Exception ex)
                     {
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+#if DEBUG
+                        runner.OutputError(ex.StackTrace);
+#endif
+                    }
+                    finally
+                    {
+                        runner.QueryCompleted();
+                        
                     }
 
                 });
-                
+
             }
+            // else dialog was cancelled so return an empty task.
             return Task.Run(() => { });
         }
 
-        
+        private string AddFileCntSuffix(string fileName, int iFileCnt)
+        {
+            FileInfo fi = new FileInfo(fileName);
+            var newName = string.Format("{0}\\{1}_{2}{3}", fi.DirectoryName.TrimEnd('\\'), fi.Name.Substring(0,fi.Name.Length - fi.Extension.Length), iFileCnt, fi.Extension);
+            return newName;
+        }
     }
 }

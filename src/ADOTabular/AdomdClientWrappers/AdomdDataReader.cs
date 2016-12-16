@@ -14,7 +14,7 @@ namespace ADOTabular.AdomdClientWrappers
         public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
         {
             _obj = obj;
-            
+           
             _type = AdomdType.AnalysisServices;
             
         }
@@ -180,6 +180,9 @@ namespace ADOTabular.AdomdClientWrappers
                 }
             }
         }
+
+        public ADOTabularConnection Connection { get; internal set; }
+        public string CommandText { get; internal set; }
 
         public bool GetBoolean(int i)
         {
@@ -519,7 +522,18 @@ namespace ADOTabular.AdomdClientWrappers
 
         public bool IsDBNull(int i)
         {
-            throw new NotImplementedException();
+            if (_type == AdomdType.AnalysisServices)
+            {
+                return _obj.IsDBNull(i);
+            }
+            else
+            {
+                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
+                {
+                    return _objExcel.IsDBNull(i);
+                };
+                return f();
+            }
         }
 
 

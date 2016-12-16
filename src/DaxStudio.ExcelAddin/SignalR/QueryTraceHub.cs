@@ -3,17 +3,61 @@ using Microsoft.AspNet.SignalR.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.QueryTrace;
-using Microsoft.AnalysisServices;
 using DaxStudio.Interfaces;
 using DaxStudio.ExcelAddin;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
+using DaxStudio.Interfaces.Enums;
+using System.Security;
 
 namespace DaxStudio
 {
+    class StubGlobalOptions : IGlobalOptions
+    {
+        public int DaxFormatterRequestTimeout { get; set; }
+
+        public DelimiterType DefaultSeparator { get; set; }
+
+        public bool EditorEnableIntellisense { get; set; }
+
+        public string EditorFontFamily { get; set; }
+
+        public double EditorFontSize { get; set; }
+
+        public bool EditorShowLineNumbers { get; set; }
+
+        public string ProxyAddress { get; set; }
+
+        public SecureString ProxySecurePassword { get; set; }
+
+        public string ProxyUser { get; set; }
+
+        public bool ProxyUseSystem { get; set; }
+
+        public int QueryEndEventTimeout { get; set; }
+
+        public int QueryHistoryMaxItems { get; set; }
+
+        public bool QueryHistoryShowTraceColumns { get;set; }
+
+        public bool ShowPreReleaseNotifcations { get;set; }
+
+        public bool TraceDirectQuery
+        {
+            get
+            {
+                return false;
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+
     [HubName("QueryTrace")]
     public class QueryTraceHub:Hub<IQueryTraceHub>
     {
@@ -21,8 +65,13 @@ namespace DaxStudio
 
         private static QueryTraceEngineExcel _xlEngine;
         private static QueryTraceEngine _engine;
-        
-        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, IGlobalOptions globalOptions)
+        //public void ConstructQueryTraceEngine(ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture)
+        //{
+        //    var stubGlobalOptions =  new StubGlobalOptions();
+        //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
+        //}
+
+        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture) //, IGlobalOptions globalOptions)
         {
             try
             {
@@ -52,7 +101,7 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
                         Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture, globalOptions);
+                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture, new StubGlobalOptions());
                         _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });

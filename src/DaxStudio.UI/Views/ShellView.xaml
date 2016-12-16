@@ -11,18 +11,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+        xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
                      
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
-        Style="{DynamicResource MetroWindowStyle}"
+        
         MinHeight="460"
         MinWidth="460"                    
         Height="720"
         Width="1120"
         Top="5"
         >
+    <!-- Style="{DynamicResource MetroWindowStyle}"-->
     <!--Fluent:MetroColors.ThemeColorKey="#FF0072C6"-->
     <Fluent:RibbonWindow.Resources>
         
@@ -30,12 +32,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/Fluent;Component/Themes/Metro/White.xaml" />-->
+
                 <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Office2013/Generic.xaml"/>
+
                 <!--<ResourceDictionary Source="/DaxStudio;Component/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/DaxStudio;Component/Themes/ColorsWhite.xaml" />-->
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -112,123 +116,123 @@
             <cal:ActionMessage MethodName="ContentRendered" />
         </i:EventTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F5"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="RunQuery"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="X" Modifiers="Alt"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="RunQuery"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="N" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="NewDocument"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="O" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="OpenDocument"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="S" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SaveCurrentDocument"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="U" Modifiers="Control+Shift"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SelectionToUpper"/>
-        </local:InputBindingTrigger>
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        </triggers:InputBindingTrigger>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="L" Modifiers="Control+Shift"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SelectionToLower"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="U" Modifiers="Control+Alt"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="UncommentSelection"/>
-        </local:InputBindingTrigger>
-        
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        </triggers:InputBindingTrigger>
+
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="C" Modifiers="Control+Alt"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="CommentSelection"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Y" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Redo"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="OemSemicolon" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SwapDelimiters"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="OemComma" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="SwapDelimiters"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Z" Modifiers="Control"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Undo"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Delete" Modifiers="Alt"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Undo"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F3" />
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="Find"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F3" Modifiers="Shift"/>
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="FindPrev"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
 
-        <local:InputBindingTrigger>
-            <local:InputBindingTrigger.InputBinding>
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F6" />
-            </local:InputBindingTrigger.InputBinding>
+            </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="FormatQuery"/>
-        </local:InputBindingTrigger>
+        </triggers:InputBindingTrigger>
         
     </i:Interaction.Triggers>
     <Grid>

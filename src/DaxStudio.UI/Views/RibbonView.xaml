@@ -57,19 +57,24 @@
                 BorderThickness="4"
                 BorderBrush="Transparent" 
                 ToolTip="{Binding Tooltip}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <Image VerticalAlignment="Top"
+                    <Grid MaxWidth="80">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                    
+                        <Image  Grid.Row="0" VerticalAlignment="Top"
                         Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
                         Stretch="None" 
                         Width="32" Height="32" />
-                        <TextBlock Text="{Binding Name}"
+                        <TextBlock Grid.Row="1" Text="{Binding Name}"
                         TextWrapping="Wrap"
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Center" 
                         TextAlignment="Center"
                         />
 
-                    </StackPanel>
+                    </Grid>
                 </Border>
         </DataTemplate>
             
@@ -432,7 +437,8 @@
                                cal:Message.Attach="[Event Click] = [Action Undo()]"
                                Icon="{StaticResource UndoIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Margin="4,0">
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Undo (Ctrl+Z)"
                                           Text="Undoes previous actions"
@@ -445,7 +451,8 @@
                                cal:Message.Attach="[Event Click] = [Action Redo()]"
                                Icon="{StaticResource RedoIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Margin="4,0">
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Redo (Ctrl+Y)"
                                           Text="Re-does changes that were previously undone"
@@ -478,7 +485,8 @@
                                Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
-                               Margin="0,0,10,0">
+                               Margin="0,0,10,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Format Query"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
@@ -492,7 +500,8 @@
                                cal:Message.Attach="[Event Click] = [Action ToUpper()]"
                                Icon="{StaticResource ToUpperIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Margin="4,0">
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
                                           Text="Converts the selected text to Uppercase"
@@ -504,7 +513,8 @@
                                cal:Message.Attach="[Event Click] = [Action ToLower()]"
                                Icon="{StaticResource ToLowerIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Margin="4,0">
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
                                           Text="Converts the selected text to Lowercase"
@@ -517,7 +527,8 @@
                                cal:Message.Attach="[Event Click] = [Action SwapDelimiters()]"
                                Icon="{StaticResource SwapDelimitersIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Margin="4,0">
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+,)"
                                           Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"

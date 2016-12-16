@@ -83,7 +83,9 @@ namespace ADOTabular
                     this.Open();
                 }
                 var dd = Databases.GetDatabaseDictionary(this.SPID);
-                //if (!dd.ContainsKey(_adomdConn.Database))
+
+                if (_currentDatabase == null && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
+
                 if (!dd.ContainsKey(_currentDatabase))
                 {
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
@@ -366,6 +368,8 @@ namespace ADOTabular
             //var dt = new DataTable("DAXResult");
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
+            rdr.Connection = this;
+            rdr.CommandText = query;
             return rdr;
             //int iRow = 0;
             //dt.BeginLoadData();
@@ -400,8 +404,7 @@ namespace ADOTabular
             var dt = new DataTable("DAXResult");
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
-            
-            FixColumnNaming(dt, query);
+
             _runningCommand = null;
             return dt;
         }
@@ -416,7 +419,6 @@ namespace ADOTabular
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             da.Fill(dt);
 
-            FixColumnNaming(dt, query);
             return dt;
         }
 
@@ -633,106 +635,6 @@ namespace ADOTabular
 
         public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
-        internal class DaxColumn {
-            public string OriginalName;
-            public string OriginalCaption;
-            public string NewName;
-            public string NewCaption;
-            public bool UseOriginalName;
-        }
-
-        public static void FixColumnNaming(DataTable dataTable, string query)
-        {
-            var columnPattern = new Regex(@"\[(?<col>.*)]\d*$",RegexOptions.Compiled);
-
-            const string MEASURES_MDX = "[Measures].";
-            var newColumnNames = new Collection<DaxColumn>();
-            // If at least one column has the Mdx syntax, identify the result as an MDX query (hoping the assumption is always true...)
-            //bool isMdxResult = (from DataColumn col in dataTable.Columns
-            //                    where col.ColumnName.IndexOf("].[") > 0
-            //                    select col).Count() > 0;
-            bool isMdxResult = IsMdxQuery(query);
-            var measuresColumns = (from DataColumn col in dataTable.Columns
-                                where col.ColumnName.IndexOf(MEASURES_MDX) >= 0
-                                select col);
-            bool hasPlainMeasures = (from DataColumn col in measuresColumns
-                                     where col.ColumnName.IndexOf("].[", col.ColumnName.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length) > 0
-                                     select col).Count() == 0;
-            foreach (DataColumn col in dataTable.Columns)
-            {
-                bool removeCaption = false;
-                string name = col.ColumnName;
-                bool removeSquareBrackets = !isMdxResult;
-                int measuresMdxPos = name.IndexOf(MEASURES_MDX);// + MEASURES_MDX.Length;
-                if (isMdxResult) {
-                    if ((measuresMdxPos >= 0 ))
-                    {
-                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length) == -1)
-                        && (name.IndexOf("].[", 0) == MEASURES_MDX.Length-2))
-                        {
-                            removeSquareBrackets = true;
-                        }
-                        name = name.Replace(MEASURES_MDX, measuresMdxPos > 0 ? "\n":"");
-                    }
-                    else {
-                        removeCaption = hasPlainMeasures;
-                    }
-                }
-
-                if (removeSquareBrackets) {
-                    var m = columnPattern.Match(name);
-                    if (m.Success)
-                    {
-                        name = m.Groups["col"].Value;
-                    }
-                    // Format column naming for DAX result or if it is a measure name
-                    //int firstBracket = name.IndexOf('[') + 1;
-                    //name = firstBracket == 0 ? name : name.Substring(firstBracket, name.Length - firstBracket - 1);
-                }
-                var dc = new DaxColumn()
-                {
-                    OriginalCaption = col.Caption,
-                    OriginalName = col.ColumnName,
-                    NewCaption = (removeCaption) ? "" : name,
-                    NewName = name.Replace(' ', '`').Replace(',','`'),
-                };
-                newColumnNames.Add(dc);
-                //col.Caption = (removeCaption) ? "" : name;
-                //col.ColumnName = name.Replace(' ', '_');
-            }
-            // check for duplicate names
-            
-            for(var outerIdx =0;outerIdx < newColumnNames.Count;outerIdx++)
-            {
-                for (var innerIdx=outerIdx+1;innerIdx < newColumnNames.Count; innerIdx++)
-                { 
-                    if (newColumnNames[outerIdx].NewName == newColumnNames[innerIdx].NewName)
-                    {
-                        newColumnNames[outerIdx].UseOriginalName = true;
-                        newColumnNames[innerIdx].UseOriginalName = true;
-                    }
-                }
-            }
-            // Update names
-            foreach (DaxColumn c in newColumnNames)
-            {
-                var dc = dataTable.Columns[c.OriginalName];
-                dc.Caption = c.NewCaption;
-
-                if (!c.UseOriginalName)
-                {
-                //    var dc = dataTable.Columns[c.OriginalName];
-                //    dc.Caption = c.NewCaption;
-                    dc.ColumnName = c.NewName;
-                }
-            }
-        }
-
-        private static bool IsMdxQuery(string query)
-        {
-            var trimmedQuery = query.Trim().Substring(0, 6).ToUpperInvariant();
-            return trimmedQuery.StartsWith("WITH") || trimmedQuery.StartsWith("SELECT");
-        }
 
         void IDisposable.Dispose()
         {
@@ -765,6 +667,7 @@ namespace ADOTabular
 
         public void Refresh()
         {
+            _columns.Clear();
             _adoTabDatabaseColl = null;
             _db = null;
             _adomdConn.RefreshMetadata();
@@ -778,9 +681,11 @@ namespace ADOTabular
 
         internal object CurrentCubeInternal { get { return  (_currentCube == string.Empty)? string.Empty:string.Format(";Cube={0}", _currentCube); } }
 
+        private Dictionary<string, ADOTabularColumn> _columns = new Dictionary<string, ADOTabularColumn>();
+        public Dictionary<string,ADOTabularColumn> Columns { get { return _columns; } }
+
         public ADOTabularConnection Clone()
         {
-            
             return new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
         }
     }

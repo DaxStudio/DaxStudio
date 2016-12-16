@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Tests
+namespace DaxStudio.Tests.Mocks
 {
     class MockEventAggregator : IEventAggregator
     {

@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Text;
-using ADOTabular;
-using DaxStudio;
-using DaxStudio.UI;
 using DaxStudio.Interfaces;
-using System.Data;
 using Caliburn.Micro;
-using DaxStudio.UI.Events;
 using Serilog;
 
 namespace DaxStudio.Standalone

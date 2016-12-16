@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.Tests.Mocks;
 
 namespace DaxStudio.Tests
 {

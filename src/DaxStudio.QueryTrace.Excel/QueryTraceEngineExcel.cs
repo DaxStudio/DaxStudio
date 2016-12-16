@@ -136,6 +136,9 @@ namespace DaxStudio.QueryTrace
             // catch the events in the ITraceWatcher
             foreach (DaxStudioTraceEventClass eventClass in events)
             {
+                // PowerPivot in Excel does not have direct query events, so skip it if makes it this far
+                if (eventClass == DaxStudioTraceEventClass.DirectQueryEnd) continue;
+
                 var amoEventClass = (ExcelAmo.Microsoft.AnalysisServices.TraceEventClass)eventClass;
                 if (trace.Events.Find(amoEventClass) != null)
                     continue;

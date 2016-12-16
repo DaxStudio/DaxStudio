@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 
 namespace DaxStudio.UI.Utils
 {
-    class DaxCompletionData:ICompletionData
+    public class DaxCompletionData:ICompletionData
     {
         private readonly string _text;
         private readonly object _content;
@@ -83,12 +83,19 @@ _insightProvider = insightProvider;
 
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
-            Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset,completionSegment.EndOffset,completionSegment.Length );
+            CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
+        }
+
+        public void CompleteInternal(IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+        {
+            Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
             // walk back to start of word
-            var newSegment = GetPreceedingWordSegment(textArea, completionSegment);
+            var newSegment = GetPreceedingWordSegment(document, completionSegment);
+            var replaceOffset = newSegment.Offset;
+            var replaceLength = newSegment.Length;
             var funcParamStart = Text.IndexOf("«");
-            string insertionText = funcParamStart > 0?Text.Substring(0, funcParamStart):Text;
-            
+            string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
+
             if (insertionRequestEventArgs is TextCompositionEventArgs)
             {
                 // if the insertion char is the same as the last char in the 
@@ -96,31 +103,32 @@ _insightProvider = insightProvider;
                 var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
                 if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
             }
-            if(completionSegment.EndOffset <= textArea.Document.TextLength-1)
+            if (completionSegment.EndOffset <= document.TextLength - 1)
             {
                 var lastCompletionChar = insertionText[insertionText.Length - 1];
-                var lastDocumentChar = textArea.Document.GetCharAt(completionSegment.EndOffset);
+                var lastDocumentChar = document.GetCharAt(completionSegment.EndOffset);
                 Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
-                if (lastCompletionChar == lastDocumentChar) newSegment = new AnchorSegment(textArea.Document, newSegment.Offset, newSegment.Length + 1);
+                if (lastCompletionChar == lastDocumentChar) replaceLength++;
             }
-            textArea.Document.Replace(newSegment, insertionText);
+            document.Replace(newSegment.Offset, newSegment.Length, insertionText);
             _insightProvider.ShowInsight(insertionText);
         }
 
-        private ISegment GetPreceedingWordSegment(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment)
+        private LinePosition GetPreceedingWordSegment(IDocument document, ICSharpCode.AvalonEdit.Document.ISegment completionSegment)
         {
             string line = "";
             
             int pos = completionSegment.EndOffset - 1;
-            var loc = textArea.Document.GetLocation(pos);
+            var loc = document.GetLocation(pos);
             Log.Debug("{class} {method} pos:{position}", "DaxCompletionData", "GetPreceedingWordSegment", pos);
-            var docLine = textArea.Document.GetLineByOffset(pos);
+            var docLine = document.GetLineByOffset(pos);
             //line = textArea.Document.GetText(docLine.Offset, loc.Column);
-            line = textArea.Document.GetText(docLine.Offset, docLine.Length);
+            line = document.GetText(docLine.Offset, docLine.Length);
+            
             Log.Verbose("{class} {method} {message}", "DaxCompletionData", "GetPreceedingWordSegment", "line: " + line);
             var daxState = DaxLineParser.ParseLine(line, loc.Column, 0);
             //TODO - look ahead to see if we have a table/column/function end character that we should replace upto
-            return DaxLineParser.GetPreceedingWordSegment(textArea.Document,docLine.Offset, loc.Column, line, daxState);
+            return DaxLineParser.GetPreceedingWordSegment(docLine.Offset, loc.Column, line, daxState);
             
         }
 
@@ -188,5 +196,11 @@ _insightProvider = insightProvider;
             }
             return null;
         }
+    }
+
+    public struct LinePosition
+    {
+        public int Offset;
+        public int Length;
     }
 }

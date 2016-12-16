@@ -217,7 +217,7 @@ namespace DaxStudio.UI.Behaviours
                     _element.SizeChanged += OnSizeChanged;
                 };
                 
-                // todo - no application when running as Excel Addin - need to find dispatcher some other way
+                //  no application when running as Excel Addin - need to reference dispatcher using _element
                 _timer = new Timer(x => _element.Dispatcher.BeginInvoke(resizeAndEnableSize), null, Delay,
                                    RefreshTime);
             }

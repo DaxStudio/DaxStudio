@@ -199,5 +199,9 @@ namespace DaxStudio.Checker
         public static string StripRootPath(string name, string rootPath) =>
             name.Substring((name.IndexOf(rootPath) + rootPath.Length) + 1);
 
+        private void CopyToClipboardClick(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(this.Output.Text);
+        }
     }
 }

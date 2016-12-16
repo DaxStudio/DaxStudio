@@ -75,7 +75,7 @@
 			Grid.Column="0"/>
 		<!-- Editor -->
         <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
-            <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Vertical">
+            <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
             <GroupBox Header="Editor" Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
 	            <Grid Margin="5,5,0,0">
 		        <Grid.ColumnDefinitions>
@@ -252,7 +252,30 @@
                         <CheckBox Grid.Row="0" Grid.Column="1" x:Name="TraceDirectQuery" VerticalAlignment="Center"/>
                 </Grid>
             </GroupBox>
+                <GroupBox Header="Version Notifications"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                    <Grid Margin="5,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
 
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Show Pre-Releases"/>
+                        <Grid Grid.Column="1" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" />
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,5,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
+                        </Grid>
+                    </Grid>
+                </GroupBox>
             </WrapPanel>
         </ScrollViewer>
     </Grid>

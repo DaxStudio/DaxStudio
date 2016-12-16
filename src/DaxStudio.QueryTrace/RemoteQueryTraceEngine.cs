@@ -1,4 +1,5 @@
 ﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json.Linq;
@@ -17,7 +18,7 @@ namespace DaxStudio.QueryTrace
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
 
-        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port)
+        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
@@ -35,7 +36,7 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
             hubConnection.Start().Wait();
             // configure trace
-            Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQUeryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
+            Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQueryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
             queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events).Wait();
             // wire up hub events
 

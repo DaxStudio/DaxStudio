@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.UI.Extensions
 {
     
     public static class WindowManagerExtensions

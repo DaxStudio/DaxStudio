@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Windows;
 using Xceed.Wpf.AvalonDock;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Utils;
 using Microsoft.Win32;
-using DaxStudio.UI.Model;
 using Serilog;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Eums;
+using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -58,7 +54,7 @@ namespace DaxStudio.UI.ViewModels
         //private readonly Func<DocumentViewModel> createDocument;
 
 
-        public DocumentViewModel ActiveContent { get; set; }
+        //public DocumentViewModel ActiveContent { get; set; }
 
         public DocumentViewModel ActiveDocument
         {
@@ -161,44 +157,6 @@ namespace DaxStudio.UI.ViewModels
 
             doc.TryClose();     // TryClose and give the document a chance to block the close
         }
-
-
-
-        /*
-        public IEnumerable<IResult> DocumentClosing(DocumentViewModel document, DocumentClosingEventArgs e)
-        {
-            return HandleScriptClosing(document, () => e.Cancel = true);
-        }
-
-        public void DocumentClosed(DocumentViewModel document)
-        {
-            Items.Remove(document);
-        }
-
-        private IEnumerable<IResult> HandleScriptClosing(DocumentViewModel document)
-        {
-            return HandleScriptClosing(document, null);
-        }
-        
-        private IEnumerable<IResult> HandleScriptClosing(DocumentViewModel document, Action cancelCallback)
-        {
-            if (document.IsDirty)
-            {
-                var message = Result.ShowMessageBox(document.FileName, string.Format("Do you want to save changes to {0}", document.FileName), MessageBoxButton.YesNoCancel);
-                yield return message;
-
-                if (message.Result == MessageBoxResult.Cancel)
-                {
-                    yield return Result.Cancel(cancelCallback);
-                }
-                else if (message.Result == MessageBoxResult.Yes)
-                {
-                    foreach (var result in scriptDialogStrategy.SaveAs(document, true, path => fileSystem.WriteAllText(path, document.FileContent)))
-                        yield return result;
-                }
-            }
-        }
-        */
 
         public void Activate(object document)
         {

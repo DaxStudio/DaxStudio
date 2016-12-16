@@ -105,7 +105,12 @@ namespace DAXEditor
             var kwordRule = this.SyntaxHighlighting.MainRuleSet.Rules.Where(r => r.Color.Name == colourName).FirstOrDefault();
             var pattern = new StringBuilder();
             pattern.Append(@"\b(?>");
-            foreach (var word in wordList)
+
+            // the syntaxhighlighting checks the first match so we need to make sure that the longer versions of
+            // funtions come first. eg. CALCULATETABLE before CALCULATE, ALLSELECTED before ALL, etc
+            // sorting them in descending order achieves this
+            var sortedWordList = wordList.OrderByDescending(word => word);
+            foreach (var word in sortedWordList)
             {
                 pattern.Append(word.Replace(".", @"\."));
                 pattern.Append("|");
@@ -304,6 +309,16 @@ namespace DAXEditor
         CompletionWindow completionWindow;
         public InsightWindow InsightWindow { get; set; }
 
+        TextArea IEditor.TextArea
+        {
+            get
+            {
+                return TextArea;
+            }
+
+
+        }
+
         void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
             IntellisenseProvider.ProcessTextEntered(sender, e,ref completionWindow);
@@ -469,6 +484,21 @@ namespace DAXEditor
         public void EnableIntellisense(IIntellisenseProvider provider)
         {
             this.IntellisenseProvider = provider;
+        }
+
+        public DocumentLine DocumentGetLineByOffset(int pos)
+        {
+            return Document.GetLineByOffset(pos);
+        }
+
+        public string DocumentGetText(int offset, int length)
+        {
+            return Document.GetText(offset, length);
+        }
+
+        public string DocumentGetText(TextSegment segment)
+        {
+            return Document.GetText(segment);
         }
     }
 }

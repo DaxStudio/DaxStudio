@@ -53,7 +53,7 @@ namespace DaxStudio.UI.Events
         public string ServerName { get; private set; }
         public string DatabaseName { get; private set; }
         public string FileName { get; private set; }
-        public int RowCount { get; set; }
+        public string RowCount { get; set; }
         [JsonIgnore]
         public QueryStatus Status { get; set; }
         [JsonIgnore]

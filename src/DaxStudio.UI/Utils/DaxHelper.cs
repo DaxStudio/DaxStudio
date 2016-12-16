@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Utils
 {
     public static class DaxHelper
     {
-        //TODO - detects a parameter
+        // detects a parameter
         const string paramRegex = @"@[^\[\]\s]*\b+(?![^\[]*\])";
         
         public static string PreProcessQuery(string query)

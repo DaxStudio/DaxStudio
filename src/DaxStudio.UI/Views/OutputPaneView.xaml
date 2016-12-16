@@ -9,7 +9,7 @@
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
         <conv:ResourceLookupConverter x:Key="Icons">
@@ -54,7 +54,7 @@
                                             <ScaleTransform/>
                                             <SkewTransform/>
                                             <RotateTransform/>
-                                            <TranslateTransform Y="4"/>
+                                            <TranslateTransform Y="3"/>
                                         </TransformGroup>
                                     </TextBlock.RenderTransform>
                                 </TextBlock>

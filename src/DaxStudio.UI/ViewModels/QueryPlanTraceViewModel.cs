@@ -27,18 +27,24 @@ namespace DaxStudio.UI.ViewModels
             Operation = line.Trim();
             IndentedOperation = new string(' ', Level * SPACE_PER_LEVEL) + Operation;
         }
-        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
-            where T : QueryPlanRow, new() {
-            int rowNumber = 0;
+        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan,int startingRowNumber)
+            where T : QueryPlanRow, new()
+        {
+            int rowNumber = startingRowNumber;
             return new BindableCollection<T>((
                 from row in physicalQueryPlan.Split(new[] { '\r', '\n' })
                 where row.Trim().Length > 0
                 select row)
-            .Select( (line) => {
+            .Select((line) => {
                 var operation = new T();
                 operation.PrepareQueryPlanRow(line, ++rowNumber);
-                return operation; 
+                return operation;
             }).ToList());
+        }
+
+        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
+            where T : QueryPlanRow, new() {
+            return PrepareQueryPlan<T>(physicalQueryPlan, 0);
         }
     }
 
@@ -112,12 +118,14 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
+            _physicalQueryPlanRows.Clear();
+            _logicalQueryPlanRows.Clear();
             //ProcessResults();
         }
 
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
-            _physicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan);
+            _physicalQueryPlanRows.AddRange( QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 

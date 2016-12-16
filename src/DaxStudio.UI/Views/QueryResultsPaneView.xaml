@@ -11,10 +11,12 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
@@ -48,28 +50,75 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
 
+            <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
+                <!-- Style to hide tabs if only one is present -->
+                <TabControl.ItemContainerStyle>
+                    <!--<Style TargetType="{x:Type TabItem}">
+                        
+                    </Style>-->
 
-            <!--
-            <ListView x:Name="ResultsDataView"  
-                      Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                      View="{Binding Path=ResultsDataView,  
-                      Converter={StaticResource DynamicGridViewConverter},
-                      Mode=OneWay,  
-                      UpdateSourceTrigger=PropertyChanged }" 
-                      SelectionMode="Extended"  
-                      >
-                <ListView.Resources>
-                    <Style x:Key="HeaderContentPresenter"  TargetType="ContentPresenter">
-                        <Setter Property="RecognizesAccessKey" Value="False"/>
+                    <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="border" 
+                                            BorderBrush="LightGray"
+                                            BorderThickness="1,1,0,1"
+                                            Background="WhiteSmoke"
+                                            Margin="0,0,-4,0"
+                                            Padding="0,0,4,0">
+                                    <Grid Name="Panel">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2,2,2"
+                                                          Grid.Column="0"/>
+                                        <TextBlock x:Name="ActiveIndicator" VerticalAlignment="Bottom" FontFamily="Wingdings 3" Text="}" Grid.Column="1" Margin="2"/>
+                                    </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="White" />-->
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
+                                            <Setter TargetName="Panel" Property="Background" Value="#FF0072C6"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
+                                            <Setter Property="Panel.ZIndex" Value="100"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
+                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <!--<Setter TargetName="Panel" Property="Background" Value="#55002288"/>-->
+                                            <Setter TargetName="Panel" Property="Background" Value="#550072C6"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TabControl}}, Path=Items.Count}" Value="1">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
-                </ListView.Resources>
-                
-            </ListView>
--->
 
-            <DataGrid x:Name="ResultsDataView" 
+
+                </TabControl.ItemContainerStyle>
+
+                <!-- Tab Content (DataGrid) -->
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+
+                        <DataGrid x:Name="DefaultView" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                      ItemsSource="{Binding ResultsDataView}"
+                      ItemsSource="{Binding DefaultView}"
                       ClipboardCopyMode="IncludeHeader"
                       SelectionMode="Extended"       
                       SelectionUnit="Cell"
@@ -79,31 +128,42 @@
                       HorizontalGridLinesBrush="WhiteSmoke"
                       AutoGenerateColumns="False" 
                       cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]"
-                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=ResultsDataView}"
+                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                       >
-                <!-- ColumnWidth="SizeToCells"
+                            <!-- ColumnWidth="SizeToCells"
                       MinColumnWidth="50"
                       -->
-                <DataGrid.AlternatingRowBackground>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Offset="1" Color="#f2f2f2"/>
-                        <GradientStop Color="#f7f7f7"/>
-                    </LinearGradientBrush>
-                </DataGrid.AlternatingRowBackground>
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
-                        <Setter Property="FontWeight"
+                            <DataGrid.AlternatingRowBackground>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Offset="1" Color="#f2f2f2"/>
+                                    <GradientStop Color="#f7f7f7"/>
+                                </LinearGradientBrush>
+                            </DataGrid.AlternatingRowBackground>
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontWeight"
                   Value="SemiBold" />
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-            </DataGrid>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                        </DataGrid>
 
 
+
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding TableName}"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+            </TabControl>
+
+            
 
         </Grid>
 
@@ -149,7 +209,7 @@
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}" >
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">Running Query...</Label>
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
                 </StackPanel>
             </Grid>
         </Border>

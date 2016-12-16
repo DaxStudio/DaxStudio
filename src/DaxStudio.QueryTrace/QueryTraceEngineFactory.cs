@@ -18,9 +18,9 @@ namespace DaxStudio.QueryTrace
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
             return new QueryTraceEngine(connection.ConnectionString, connection.Type, connection.SessionId, connection.ApplicationName, dsEvents, globalOptions ); 
         }
-        public static IQueryTrace CreateRemote(ADOTabular.ADOTabularConnection connection, List<DaxStudioTraceEventClass> events, int port) {
+        public static IQueryTrace CreateRemote(ADOTabular.ADOTabularConnection connection, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions) {
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
-            return new RemoteQueryTraceEngine(connection.ConnectionString,connection.Type,connection.SessionId, dsEvents, port);
+            return new RemoteQueryTraceEngine(connection.ConnectionString,connection.Type,connection.SessionId, dsEvents, port, globalOptions);
         }
     }
 }

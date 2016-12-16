@@ -7,6 +7,7 @@
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"    
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
@@ -15,12 +16,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/BusyPanel.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
+            <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
@@ -220,8 +222,18 @@
                 <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto" 
-                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"/>
+                <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
+                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
 
             </DataGrid.Columns>
             <DataGrid.Style>
@@ -245,22 +257,21 @@
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
                       Margin="0"/>
         <ScrollViewer>
-        <TextBox Padding="5,5,5,5"
+        <custom:BindableRichTextBox Padding="5,5,5,5"
                  MinWidth="200"
                  MinHeight="100"
-                 TextWrapping="Wrap"
-                 Text="{Binding ElementName=ListEvents, Path=SelectedItem.Query, Mode=OneWay}"
+                 IsReadOnly="True"
                  BorderThickness="0"
-                 IsReadOnly="True">
-        
-            <TextBox.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
-                    <Separator/>
-                    <MenuItem Command="SelectAll"></MenuItem>
-                </ContextMenu>
-            </TextBox.ContextMenu>
-        </TextBox>
+                 Document="{Binding ElementName=ListEvents, Path=SelectedItem.QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" 
+                 >
+                <custom:BindableRichTextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                        <Separator/>
+                        <MenuItem Command="SelectAll"></MenuItem>
+                    </ContextMenu>
+                </custom:BindableRichTextBox.ContextMenu>
+            </custom:BindableRichTextBox>
             <ScrollViewer.Style>
                 <Style>
                     <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />
@@ -280,11 +291,7 @@
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!--
-                    <Views:ucSpinner Foreground="White" Margin="0,0,10,0" />
-                    <TextBlock Margin="0" TextWrapping="Wrap" Text="Running Query..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#7E000000"/>
-                    -->
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000">
+                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock x:Name="BusyMessage"/>
                     </Label>
                 </StackPanel>

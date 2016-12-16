@@ -3,10 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using ADOTabular.AdomdClientWrappers;
 using Microsoft.Office.Tools.Ribbon;
-using Microsoft.Owin.Hosting;
 using Serilog;
-using DaxStudio.ExcelAddin;
-using Caliburn.Micro;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -20,7 +17,7 @@ namespace DaxStudio.ExcelAddin
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
             CreateRibbonObjects();
-            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
+            log = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
             Log.Logger = log;
             Log.Information("============ Excel Add-in Startup =============");
             

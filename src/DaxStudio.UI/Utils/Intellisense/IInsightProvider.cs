@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils.Intellisense
 {
-    interface IInsightProvider
+    public interface IInsightProvider
     {
         void ShowInsight(string text);
     }

@@ -13,6 +13,7 @@
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
+    xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -186,6 +187,7 @@
                         </Style>
                     </Setter.Value>
                 </Setter>
+                
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -193,6 +195,7 @@
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
+                
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -200,6 +203,7 @@
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
+                
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -213,7 +217,7 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     -->
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
@@ -255,13 +259,13 @@
             </avalondock:DockingManager.AnchorableTitleTemplate>
             <avalondock:DockingManager.LayoutItemTemplateSelector>
 
-                <local:AutobinderTemplateSelector>
-                    <local:AutobinderTemplateSelector.Template>
+                <selectors:ToolWindowTemplateSelector>
+                    <selectors:ToolWindowTemplateSelector.Template>
                         <DataTemplate>
                             <ContentControl cal:View.Model="{Binding . }" IsTabStop="False" />
                         </DataTemplate>
-                    </local:AutobinderTemplateSelector.Template>
-                </local:AutobinderTemplateSelector>
+                    </selectors:ToolWindowTemplateSelector.Template>
+                </selectors:ToolWindowTemplateSelector>
             </avalondock:DockingManager.LayoutItemTemplateSelector>
 
             <!-- cal:Message.Attach="[Event DocumentClosing]=[Action DocumentClosing($this)]" -->

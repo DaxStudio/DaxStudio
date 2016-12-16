@@ -1,7 +1,10 @@
-﻿using DAXEditor;
+﻿using System;
+using DAXEditor;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 
-namespace DaxStudio.Tests
+namespace DaxStudio.Tests.Mocks
 {
     public class MockEditor : IEditor
     {
@@ -48,6 +51,21 @@ namespace DaxStudio.Tests
         public int Line { get { return _line; } }
         public int Column { get { return _col; } }
 
+        public InsightWindow InsightWindow {get; set;}
+
+        public TextArea TextArea
+        {
+            get
+            {
+                return new TextArea();
+            }
+            
+        }
+
+        public TextDocument Document { get;set; }
+
+        public int CaretOffset { get;set; }
+
         public ICSharpCode.AvalonEdit.Document.TextLocation DocumentGetLocation(int offset)
         {
             var lines = _text.Substring(offset).Split('\n');
@@ -55,9 +73,42 @@ namespace DaxStudio.Tests
             return loc;
         }
 
+        public string DocumentGetText(int offset, int length)
+        {
+            return _text.Substring(offset, length);
+        }
+
+        public DocumentLine DocumentGetLineByOffset(int pos)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string DocumentGetText(TextSegment segment)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DocumentReplace(int offset, int length, string newText)
         {
             _text = _text.Substring(0, offset) + newText + _text.Substring(offset + length);
         }
+
+        public void SetIsInComment(bool value)
+        {
+            _isInComment = value;
+        }
+
+        private bool _isInComment = false;
+        public bool IsInComment()
+        {
+            return _isInComment;
+        }
+
+        public void DisposeCompletionWindow()
+        {
+            // do nothing
+        }
+
+
     }
 }

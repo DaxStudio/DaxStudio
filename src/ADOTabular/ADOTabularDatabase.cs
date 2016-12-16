@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace ADOTabular
 {
@@ -20,12 +21,24 @@ namespace ADOTabular
 
         public bool HasSchemaChanged()
         {
-            var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(_adoTabConn.SPID, true);
-            var dd = ddColl[_databaseName];
-            if (dd.LastUpdate > _lastUpdate)
+            try
             {
-                _lastUpdate = dd.LastUpdate;
-                return true;
+                var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(_adoTabConn.SPID, true);
+                var dd = ddColl[_databaseName];
+                if (dd.LastUpdate > _lastUpdate)
+                {
+                    _lastUpdate = dd.LastUpdate;
+                    return true;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                // do nothing - probably trying to check for changes while query is still running
+                System.Diagnostics.Debug.WriteLine("HasSchemaChanged Error: {0}", ex.Message);
+            }
+            catch (Exception)
+            {
+                throw;
             }
             return false;
         }
@@ -63,6 +76,17 @@ namespace ADOTabular
                  </Batch>
                 ", _adoTabConn.Database.Id));
         }
+
+        //private Regex daxColumnRegex = new Regex(@"'?(?<table>.*)'?\[(?<column>[^\]]*)\]", RegexOptions.Compiled);
+        //public ADOTabularColumn FindColumnByName(string fullColumnName)
+        //{
+        //    var m = daxColumnRegex.Match(fullColumnName);
+        //    var tab = m.Groups["table"].Value;
+        //    var col = m.Groups["column"].Value;
+        //    this.Models
+
+        //}
+
         public MetadataImages MetadataImage
         {
             get { return MetadataImages.Database; }

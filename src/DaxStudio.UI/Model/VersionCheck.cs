@@ -23,21 +23,31 @@ namespace DaxStudio.UI.Model
         
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
-        private WebRequestFactory _webRequestFactory;
+        private readonly WebRequestFactory _webRequestFactory;
+        private string _downloadUrl = "https://daxstudio.codeplex.com/releases";
+        private readonly IGlobalOptions _globalOptions;
+
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
         /// </summary>
         private Version _serverVersion;
+
+        private Version _productionVersion;
+        private Version _prereleaseVersion;
+        private string _productionDownloadUrl;
+        private string _prereleaseDownloadUrl;
+        private string _serverVersionType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
         /// </summary>
         /// <param name="eventAggregator">A reference to the event aggregator so we can publish an event when a new version is found.</param>
         [ImportingConstructor]
-        public VersionCheck(IEventAggregator eventAggregator, WebRequestFactory webRequestFactory)
+        public VersionCheck(IEventAggregator eventAggregator, WebRequestFactory webRequestFactory, IGlobalOptions globalOptions)
         {
             _eventAggregator = eventAggregator;
             _webRequestFactory = webRequestFactory;
+            _globalOptions = globalOptions;
             if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
                 worker.DoWork += new DoWorkEventHandler(worker_DoWork);
@@ -141,11 +151,11 @@ namespace DaxStudio.UI.Model
                 if (_serverVersion == null)
                 { VersionStatus = "(Unable to get version information)"; }
                 else if (LocalVersion.CompareTo(_serverVersion) > 0)
-                { VersionStatus = string.Format("(Ahead of official release - {0} )", _serverVersion.ToString(3)); }
+                { VersionStatus = string.Format("(Ahead of {1} Version - {0} )", _serverVersion.ToString(3), ServerVersionType); }
                 else if (LocalVersion.CompareTo(_serverVersion) == 0)
-                { VersionStatus = "(Latest Official Release)"; }
+                { VersionStatus = string.Format("(Latest {1} Version)", ServerVersionType); }
                 else
-                { VersionStatus = string.Format("(New Version available - {0})", _serverVersion.ToString(3)); }
+                { VersionStatus = string.Format("(New {1} Version available - {0})", _serverVersion.ToString(3), ServerVersionType); }
             
                 NotifyOfPropertyChange(() => VersionStatus);
 
@@ -185,7 +195,7 @@ namespace DaxStudio.UI.Model
 
         //}
 
-
+            // This code runs async in a background worker
         private void PopulateServerVersionFromGithub(WebRequestFactory wrf)
         {
             
@@ -193,31 +203,61 @@ namespace DaxStudio.UI.Model
             {
                 
                 string json = "";
-                //await Task.Run(() => {
-                    try
-                    {
-                         json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl)); 
+
+                try
+                {
+#if DEBUG
+                    json = File.ReadAllText(@"..\..\..\src\CurrentReleaseVersion.json");
                     
-                    }
-                    catch (System.Net.WebException wex)
+#else
+                    json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
+#endif           
+                }
+                catch (System.Net.WebException wex)
+                {
+                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError &&  ((HttpWebResponse)wex.Response).StatusCode == HttpStatusCode.ProxyAuthenticationRequired )
                     {
-                        if (wex.Status == System.Net.WebExceptionStatus.ProtocolError &&  ((HttpWebResponse)wex.Response).StatusCode == HttpStatusCode.ProxyAuthenticationRequired )
-                        {
-                            // assume proxy auth error and re-try with current user credentials
-                            http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                            json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
-                        }
-                        else
-                        {
-                            throw;
-                        }
+                        // assume proxy auth error and re-try with current user credentials
+                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                        json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
                     }
-                //});
+                    else
+                    {
+                        throw;
+                    }
+                }
 
                 JObject jobj = JObject.Parse(json);
 
-                this._serverVersion = Version.Parse((string)jobj["Version"]);
-                this.DownloadUrl = (string)jobj["DownloadUrl"];
+                _productionVersion = Version.Parse((string)jobj["Version"]);
+                _productionDownloadUrl = (string)jobj["DownloadUrl"];
+
+                _prereleaseVersion = Version.Parse((string)jobj["PreRelease"]["Version"]);
+                _prereleaseDownloadUrl = (string)jobj["PreRelease"]["DownloadUrl"];
+
+                if (_globalOptions.ShowPreReleaseNotifcations && _productionVersion.CompareTo(_prereleaseVersion) < 0)
+                {
+                    ServerVersionType = "Pre-Release";
+                    _serverVersion = _prereleaseVersion;
+                    _downloadUrl = _prereleaseDownloadUrl;
+                }
+                else
+                {
+                    ServerVersionType = "Production";
+                    _serverVersion = _productionVersion;
+                    DownloadUrl = _productionDownloadUrl;
+                }
+                
+                
+                
+            }
+        }
+
+        public string ServerVersionType {
+            get { return _serverVersionType; }
+            set {
+                _serverVersionType = value;
+                NotifyOfPropertyChange(() => ServerVersionType);
             }
         }
 
@@ -242,7 +282,8 @@ namespace DaxStudio.UI.Model
             var ver = this.ServerVersion;
         }
 
-        private string _downloadUrl = "https://daxstudio.codeplex.com/releases"; 
+
+
         public string DownloadUrl { 
             get { return _downloadUrl; } 
             set { if (value == _downloadUrl) return; 

@@ -34,6 +34,10 @@ namespace DaxStudio.UI.ViewModels
                     // todo - should we be checking for exceptions in this continuation
                     CheckingUpdateStatus = false;
                     UpdateStatus = VersionChecker.VersionStatus;
+                    VersionIsLatest = VersionChecker.VersionIsLatest;
+                    DownloadUrl = VersionChecker.DownloadUrl;
+                    NotifyOfPropertyChange(() => VersionIsLatest);
+                    NotifyOfPropertyChange(() => DownloadUrl);
                     NotifyOfPropertyChange(() => UpdateStatus);
                     NotifyOfPropertyChange(() => CheckingUpdateStatus);
                 },TaskScheduler.Default);
@@ -92,6 +96,8 @@ namespace DaxStudio.UI.ViewModels
             get;
             set;
         }
+        public string DownloadUrl { get; private set; }
+        public bool VersionIsLatest { get; private set; }
     }
 
     public class ReferencedAssembly
