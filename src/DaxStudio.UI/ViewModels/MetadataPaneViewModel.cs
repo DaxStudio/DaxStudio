@@ -437,6 +437,12 @@ namespace DaxStudio.UI.ViewModels
         }
         public string BusyMessage { get { return "Loading"; } }
         #endregion
+
+        public void ColumnTooltipOpening(object param)
+        {
+            System.Diagnostics.Debug.WriteLine("ColumnToolTipOpening {0}", param);
+        }
+
     }
 
 

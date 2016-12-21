@@ -226,7 +226,8 @@
 
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
 
-                                        <TextBlock x:Name="Caption" Text="{Binding Caption}">
+                                        <TextBlock x:Name="Caption" Text="{Binding Caption}" 
+                                                   cal:Message.Attach="[Event TooltipOpening] = [Action ColumnToolTipOpening($this)]">
                                             <TextBlock.ToolTip>
                                                 <StackPanel Orientation="Vertical" >
                                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">

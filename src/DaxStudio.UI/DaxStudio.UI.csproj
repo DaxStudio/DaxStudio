@@ -578,6 +578,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Styles\DaxStudio.RadioButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1017,6 +1021,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-question%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-question%4016px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-warning.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

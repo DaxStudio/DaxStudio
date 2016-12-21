@@ -42,6 +42,7 @@ namespace DaxStudio.UI.Controls
         void TreeViewEx_LayoutUpdated(object sender, EventArgs e)
         {
             var sv = this.GetChildOfType<ScrollViewer>();
+            if (sv == null) return;
             var vis = sv.ComputedVerticalScrollBarVisibility;
             
             if (vis == System.Windows.Visibility.Collapsed)
