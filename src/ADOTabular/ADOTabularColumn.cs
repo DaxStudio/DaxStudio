@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -6,7 +7,7 @@ namespace ADOTabular
 {
 
 
-    public  class ADOTabularColumn:IADOTabularObject
+    public  class ADOTabularColumn:IADOTabularColumn
     {
 
         public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
@@ -75,7 +76,7 @@ namespace ADOTabular
         public Type DataType { get; set; }
 
         public bool Nullable { get; internal set; }
-        public long DistinctValueCount { get; internal set; }
+        public long DistinctValues { get; internal set; }
         public string MinValue { get; internal set; }
         public string MaxValue { get; internal set; }
         public string FormatString { get; internal set; }
@@ -126,6 +127,33 @@ namespace ADOTabular
                 }
             }
         }
+        
 
+        public void UpdateBasicStats(ADOTabularConnection connection)
+        {
+
+            var qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+            if (DataType == typeof(string))
+            {
+                qry = string.Format("EVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+            }
+            var dt = connection.ExecuteDaxQueryDataTable(qry);
+            MinValue = dt.Rows[0][0].ToString();
+            MaxValue = dt.Rows[0][1].ToString();
+            DistinctValues = (long)dt.Rows[0][2]; 
+        }
+
+        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        {
+            var qry = string.Format("EVALUATE SAMPLE({0}, DISTINCT({1}), RAND())", sampleSize, DaxName);
+            var dt = connection.ExecuteDaxQueryDataTable(qry);
+            List<string> _tmp = new List<string>(10);
+            foreach(DataRow dr in dt.Rows)
+            {
+                _tmp.Add(dr[0].ToString());
+            }
+            return _tmp;
+            
+        }
     }
 }

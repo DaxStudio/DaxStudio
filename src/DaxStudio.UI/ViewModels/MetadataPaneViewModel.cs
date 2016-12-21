@@ -437,6 +437,17 @@ namespace DaxStudio.UI.ViewModels
         }
         public string BusyMessage { get { return "Loading"; } }
         #endregion
+
+        public void ColumnTooltipOpening(TreeViewColumn column)
+        {
+            if ( column.Column.GetType() != typeof(ADOTabularColumn) ) return;
+            ADOTabularColumn col = (ADOTabularColumn)column.Column;
+            if (col.ColumnType != ADOTabularColumnType.Column) return;
+            // TODO - make an option for the sample size
+            if (!column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
+            if (!column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
+            
+         }
     }
 
 

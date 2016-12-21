@@ -171,9 +171,20 @@ namespace DaxStudio.UI.Model
       Description
 
     */
-        private IADOTabularObject _column;
+        private IADOTabularObject _tabularObject;
+        private IADOTabularColumn _column;
+        private List<string> _sampleData;
+        private bool _updatingBasicStats = false;
+        private bool _updatingSampleData = false;
+        private string _minValue = string.Empty;
+        private string _maxValue = string.Empty;
+        private long _distinctValues = 0;
+
+
         public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren):base(getChildren)
         {
+            _sampleData = new List<string>();
+            _tabularObject = column;
             _column = column;
             Description = column.Description;
             DataTypeName = column.DataTypeName;
@@ -181,12 +192,14 @@ namespace DaxStudio.UI.Model
             FormatString = column.FormatString;
             MinValue = column.MinValue;
             MaxValue = column.MaxValue;
-            DistinctValues = column.DistinctValueCount;
+            DistinctValues = column.DistinctValues;
         }
 
+        public bool HasBasicStats { get { return MaxValue != MinValue && DistinctValues != 1; } }
+        public bool HasSampleData { get { return _sampleData.Count > 0; } }
         public TreeViewColumn(ADOTabularKpiComponent kpiComponent):base(null)
         {
-            _column = kpiComponent;
+            _tabularObject = kpiComponent;
             DataTypeName = kpiComponent.DataTypeName;
             
             MetadataImage = MetadataImages.Measure;
@@ -195,13 +208,13 @@ namespace DaxStudio.UI.Model
         public TreeViewColumn(ADOTabularKpi kpi)
             : base(null)
         {
-            _column = kpi;
+            _tabularObject = kpi;
             DataTypeName = kpi.DataTypeName;
             MetadataImage = MetadataImages.Kpi;
         }
         public TreeViewColumn(ADOTabularLevel level):base(null)
         {
-            _column = level;
+            _tabularObject = level;
             Description = level.Column.Description;
             DataTypeName = level.Column.DataTypeName;
 
@@ -211,22 +224,34 @@ namespace DaxStudio.UI.Model
         public TreeViewColumn(ADOTabularHierarchy hier)
             : base(null)
         {
-            _column = hier;
+            _tabularObject = hier;
             MetadataImage = MetadataImages.Hierarchy;
         }
         public MetadataImages MetadataImage { get; set; }
-        public string Caption { get { return _column.Caption; } }
+        public string Caption { get { return _tabularObject.Caption; } }
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
-        string IADOTabularObject.DaxName { get { return _column.DaxName; } }
+        string IADOTabularObject.DaxName { get { return _tabularObject.DaxName; } }
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }
         public string FormatString { get; private set; }
-        public string MinValue { get; private set; }
-        public string MaxValue { get; private set; }
+        public string MinValue { get { return _minValue; }
+            private set { _minValue = value;
+                NotifyOfPropertyChange(() => MinValue);
+            }
+        }
+        public string MaxValue { get { return _maxValue; }
+            private set { _maxValue = value;
+                NotifyOfPropertyChange(() => MaxValue);
+            }
+        }
 
-        public long DistinctValues { get; private set; }
+        public long DistinctValues { get { return _distinctValues; }
+            private set { _distinctValues = value;
+                NotifyOfPropertyChange(() => DistinctValues);
+            }
+        }
 
         public bool IsMeasure
         {
@@ -240,7 +265,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return this._column;
+                return this._tabularObject;
             }
         }
 
@@ -248,5 +273,67 @@ namespace DaxStudio.UI.Model
         {
             return String.IsNullOrEmpty(criteria) || Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
+
+        public async void GetSampleDataAsync(ADOTabularConnection connection, int sampleSize)
+        {
+            UpdatingSampleData = true;
+            try
+            {
+                await Task.Run(() => {
+                    using (var newConn = connection.Clone())
+                    {
+                        SampleData = _column.GetSampleData(newConn, sampleSize);
+                    }
+                });
+            }
+            finally
+            {
+                UpdatingSampleData = false;
+            }
+        }
+
+        public List<string> SampleData
+        {
+            get { return _sampleData; }
+            set { _sampleData = value;
+                NotifyOfPropertyChange(() => SampleData);
+            }
+        }
+
+        public async void UpdateBasicStatsAsync(ADOTabularConnection connection )
+        {
+            UpdatingBasicStats = true;
+            try {
+                await Task.Run(() => {
+                    _column.UpdateBasicStats(connection);
+                    MinValue = _column.MinValue;
+                    MaxValue = _column.MaxValue;
+                    DistinctValues = _column.DistinctValues;
+                });
+            }
+            finally
+            {
+                UpdatingBasicStats = false;
+            }
+        }
+        public bool UpdatingSampleData
+        {
+            get { return _updatingSampleData; }
+            private set
+            {
+                _updatingSampleData = value;
+                NotifyOfPropertyChange(() => UpdatingSampleData);
+            }
+        }
+
+        public bool UpdatingBasicStats {
+            get { return _updatingBasicStats; }
+            private set {
+                _updatingBasicStats = value;
+                NotifyOfPropertyChange(() => UpdatingBasicStats);
+            }
+        }
+
+        
     }
 }

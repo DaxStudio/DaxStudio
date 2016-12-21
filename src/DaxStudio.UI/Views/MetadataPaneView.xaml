@@ -16,10 +16,38 @@
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+             xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
+
+        
+
         <ResourceDictionary>
+            <Style TargetType="{x:Type ToolTip}">
+                <Setter Property="Foreground" Value="#FF575757" />
+                <Setter Property="Background" Value="#FFFFFFFF" />
+                <Setter Property="Padding" Value="5,1,6,2" />
+                <Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
+                            <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
+                                <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                    <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                </Border>
+                            </themes:SystemDropShadowChrome>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="HasDropShadow" Value="True">
+                                    <Setter TargetName="Shdw" Property="Margin" Value="0,0,5,5" />
+                                    <Setter TargetName="Shdw" Property="themes:SystemDropShadowChrome.Color" Value="#71000000" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
@@ -226,19 +254,49 @@
 
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
 
-                                        <TextBlock x:Name="Caption" Text="{Binding Caption}">
+                                        <TextBlock x:Name="Caption" Text="{Binding Caption}"
+                                                   cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
+                                                   ToolTipService.HasDropShadow="True"
+                                                   >
                                             <TextBlock.ToolTip>
-                                                <StackPanel Orientation="Vertical" >
-                                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
-                                                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                                        <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                                        <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                                    </StackPanel>
-                                                    <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
-                                                    <TextBlock Text="{Binding FormatString}"/>
-                                                </StackPanel>
+
+                                                    <Grid>
+
+                                                            <StackPanel Orientation="Vertical" Margin="5">
+                                                                <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                                                    <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                                                    <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                                                </StackPanel>
+                                                                <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
+                                                                <TextBlock Text="{Binding FormatString}"/>
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition/>
+                                                                        <RowDefinition/>
+                                                                        <RowDefinition/>
+                                                                    </Grid.RowDefinitions>
+                                                                    <TextBlock>Distinct Values:</TextBlock>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding DistinctValues}"></TextBlock>
+                                                                    <TextBlock Grid.Row="1">Min:</TextBlock>
+                                                                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding MinValue}"/>
+                                                                    <TextBlock Grid.Row="2">Max:</TextBlock>
+                                                                    <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding MaxValue}"/>
+                                                                </Grid>
+                                                                <Line Stroke="Black" HorizontalAlignment="Stretch"
+                                                              X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"
+                                                              StrokeDashArray="2 2" StrokeThickness="1" Margin="5" />
+                                                                <TextBlock Foreground="{StaticResource DataTypeBrush}">Sample Data</TextBlock>
+                                                                <ItemsControl ItemsSource="{Binding SampleData}"></ItemsControl>
+                                                            </StackPanel>
+                                                    </Grid>
+
                                             </TextBlock.ToolTip>                                
                                             </TextBlock>
                                         <!--

@@ -152,6 +152,7 @@
     <Compile Include="DatabaseProfile\UserHierarchy.cs" />
     <Compile Include="DatabaseProfile\UserHierarchyCollection.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
+    <Compile Include="IADOTabularColumn.cs" />
     <Compile Include="IADOTabularObject.cs" />
     <Compile Include="MetaDataVisitorCSDL.cs" />
     <Compile Include="IMetaDataVisitor.cs" />

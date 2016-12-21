@@ -153,7 +153,7 @@ namespace DaxStudio.UI.Model
                 else if (LocalVersion.CompareTo(_serverVersion) > 0)
                 { VersionStatus = string.Format("(Ahead of {1} Version - {0} )", _serverVersion.ToString(3), ServerVersionType); }
                 else if (LocalVersion.CompareTo(_serverVersion) == 0)
-                { VersionStatus = string.Format("(Latest {1} Version)", ServerVersionType); }
+                { VersionStatus = string.Format("(Latest {0} Version)", ServerVersionType); }
                 else
                 { VersionStatus = string.Format("(New {1} Version available - {0})", _serverVersion.ToString(3), ServerVersionType); }
             
