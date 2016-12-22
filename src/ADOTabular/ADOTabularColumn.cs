@@ -132,7 +132,7 @@ namespace ADOTabular
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
 
-            var qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+            var qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", DISTINCTCOUNT({0}) )", DaxName);
             if (DataType == typeof(string))
             {
                 qry = string.Format("EVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
@@ -145,14 +145,14 @@ namespace ADOTabular
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            var qry = string.Format("EVALUATE SAMPLE({0}, DISTINCT({1}), RAND())", sampleSize, DaxName);
+            var qry = string.Format("EVALUATE TOPNSKIP({0}, 0, ALL({1}), RAND())", sampleSize * 2, DaxName);
             var dt = connection.ExecuteDaxQueryDataTable(qry);
             List<string> _tmp = new List<string>(10);
             foreach(DataRow dr in dt.Rows)
             {
-                _tmp.Add(dr[0].ToString());
+                _tmp.Add(string.Format(string.Format("{{0:{0}}}", FormatString), dr[0]));
             }
-            return _tmp;
+            return _tmp.Distinct().Take(sampleSize).ToList();
             
         }
     }

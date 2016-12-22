@@ -148,6 +148,10 @@ namespace DaxStudio.UI.Model
         {
             get { return _table.DaxName; }
         }
+        public int ColumnCount
+        {
+            get { return _table.Columns.Count; }
+        }
     }
 
     public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
@@ -197,6 +201,23 @@ namespace DaxStudio.UI.Model
 
         public bool HasBasicStats { get { return MaxValue != MinValue && DistinctValues != 1; } }
         public bool HasSampleData { get { return _sampleData.Count > 0; } }
+
+        public bool ShowMinMax { get {
+                if ( _column.GetType() != typeof(ADOTabularColumn)) return false;
+                if (MinValue == string.Empty && MaxValue == string.Empty) return false;
+                return true;
+            }
+        }
+
+        public bool ShowSampleData
+        {
+            get
+            {
+                return HasSampleData && _column.GetType() == typeof(ADOTabularColumn) ;
+            }
+        }
+
+        public bool ShowDistinctValues { get { return typeof(ADOTabularColumn) == _column.GetType(); } }
         public TreeViewColumn(ADOTabularKpiComponent kpiComponent):base(null)
         {
             _tabularObject = kpiComponent;

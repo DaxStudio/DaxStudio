@@ -347,6 +347,7 @@
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringToXamlConverter.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
