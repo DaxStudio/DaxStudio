@@ -344,6 +344,7 @@ namespace DaxStudio.UI.Model
             {
                 _updatingSampleData = value;
                 NotifyOfPropertyChange(() => UpdatingSampleData);
+                NotifyOfPropertyChange(() => ShowSampleData);
             }
         }
 
@@ -352,6 +353,8 @@ namespace DaxStudio.UI.Model
             private set {
                 _updatingBasicStats = value;
                 NotifyOfPropertyChange(() => UpdatingBasicStats);
+                NotifyOfPropertyChange(() => ShowDistinctValues);
+                NotifyOfPropertyChange(() => ShowMinMax);
             }
         }
 
