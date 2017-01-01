@@ -606,10 +606,11 @@ namespace ADOTabular
                             datanode.Add(new XElement(mdXmlField.GetName(col), fieldContent.ToString()));
                         }
                     }
-                    piXml.Add(datanode);
                 }
+                piXml.Add(datanode);
             }
-            return piXml.ToString();
+            string s = piXml.ToString();
+            return s;
         }
         public void Visit(MetadataInfo.DaxMetadata daxMetadata) { 
             string ssasVersion = GetSsasVersion();
