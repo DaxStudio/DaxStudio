@@ -17,6 +17,7 @@ using System.ComponentModel.Composition;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -34,6 +35,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Utils.DelimiterTranslator;
 using DaxStudio.UI.Extensions;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1459,6 +1461,45 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void ExportDaxFunctions() {
+            // Configure save file dialog box
+            var dlg = new Microsoft.Win32.SaveFileDialog {
+                FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
+                DefaultExt = ".zip",
+                Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process save file dialog box results 
+            if (result == true) {
+                // Save document 
+                ExportDaxFunctions(dlg.FileName);
+            }
+        }
+        public void ExportDaxFunctions(string path) {
+            var info = DaxMetadataInfo;
+            string extension = Path.GetExtension(path).ToLower();
+            if (extension == ".zip") {
+                string pathJson = string.Format( @".\{0}.json", Path.GetFileNameWithoutExtension(path) );
+                Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
+                using (Package package = Package.Open(path, FileMode.Create)) {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(),Encoding.Unicode)) {
+                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                        tw.Close();
+                    }
+                    package.Close();
+                }
+            }
+            else {
+                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode)) {
+                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    tw.Close();
+                }
+            }
+        }
+
         public void SaveAs()
         {
             // Configure save file dialog box
@@ -2140,6 +2181,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 _serverVersion = value;
                 NotifyOfPropertyChange(() => ServerVersion);
+            }
+        }
+
+        public ADOTabular.MetadataInfo.DaxMetadata DaxMetadataInfo
+        {
+            get {
+                return _connection.DaxMetadataInfo;
             }
         }
 
