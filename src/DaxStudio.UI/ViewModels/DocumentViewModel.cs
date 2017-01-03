@@ -36,6 +36,8 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Utils.DelimiterTranslator;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1461,6 +1463,50 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public async void PublishDaxFunctions() {
+            // Ping server to see whether the version is already there
+            string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
+            string metadataFilename = Path.GetTempFileName(); 
+            try {
+                using (var client = GetHttpClient()) {
+                    client.Timeout = new TimeSpan(0, 0, 60); // set 30 second timeout
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Ping version {0} to DaxVersioning ", ssasVersion));
+                    HttpResponseMessage response = await client.PostAsJsonAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
+                    if (!response.IsSuccessStatusCode) {
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Error from ping version: ", response.StatusCode.ToString()));
+                        return;
+                    }
+                    response.EnsureSuccessStatusCode(); // probably redundant
+                    string productFound = response.Content.ReadAsStringAsync().Result;
+                    if (!(string.IsNullOrEmpty(productFound) || productFound == "null")) {
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Result from ping version {0} : {1}", ssasVersion, productFound));
+                        return;
+                    }
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "No products from ping version - preparing metadata file");
+
+                    // Always compress content
+                    ExportDaxFunctions(metadataFilename, true);
+
+                    var requestContent = new MultipartFormDataContent();
+                    var fileContent = File.ReadAllBytes(metadataFilename);
+                    var metadataContent = new ByteArrayContent(fileContent);
+
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading file {0} ({1} bytes)", metadataFilename, fileContent.Count()));
+                    metadataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("fileUpload") {
+                        FileName = string.Format("DAX Functions {0}.zip", ssasVersion)
+                    };
+                    requestContent.Add(metadataContent);
+                    await client.PostAsync("api/v1/uploadversion", requestContent);
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "Upload completed");
+                }
+            }
+            finally {
+                // Remove temporary filename
+                if (File.Exists(metadataFilename)) {
+                    File.Delete(metadataFilename);
+                }
+            }
+        }
         public void ExportDaxFunctions() {
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog {
@@ -1479,9 +1525,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public void ExportDaxFunctions(string path) {
-            var info = DaxMetadataInfo;
             string extension = Path.GetExtension(path).ToLower();
-            if (extension == ".zip") {
+            bool compression = (extension == ".zip");
+            ExportDaxFunctions(path, compression);
+        }
+
+        public void ExportDaxFunctions(string path, bool compression) {
+            var info = DaxMetadataInfo;
+            if (compression) {
                 string pathJson = string.Format( @".\{0}.json", Path.GetFileNameWithoutExtension(path) );
                 Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
                 using (Package package = Package.Open(path, FileMode.Create)) {
@@ -1500,6 +1551,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        // TODO: move Versionrequest definition elsewhere?
+        public class VersionRequest {
+            public string SsasVersion { get; set; }
+        }
+        internal HttpClient GetHttpClient() {
+            var client = new HttpClient();
+            
+            //Uri _baseUri = new Uri(string.Format("http://localhost:1941/"));
+            Uri _baseUri = new Uri(string.Format("http://daxversioningservice.azurewebsites.net/"));
+            client.BaseAddress = _baseUri;
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client;
+        }
+
+        //
         public void SaveAs()
         {
             // Configure save file dialog box
