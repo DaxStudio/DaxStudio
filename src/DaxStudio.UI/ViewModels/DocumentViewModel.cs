@@ -1464,6 +1464,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public async void PublishDaxFunctions() {
+            Stopwatch publishStopWatch = new Stopwatch();
+            publishStopWatch.Start();
+
             // Ping server to see whether the version is already there
             string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
             string metadataFilename = Path.GetTempFileName(); 
@@ -1473,13 +1476,19 @@ namespace DaxStudio.UI.ViewModels
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Ping version {0} to DaxVersioning ", ssasVersion));
                     HttpResponseMessage response = await client.PostAsJsonAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
                     if (!response.IsSuccessStatusCode) {
-                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Error from ping version: ", response.StatusCode.ToString()));
+                        publishStopWatch.Stop();
+                        string pingResult = string.Format("Error from ping version: ", response.StatusCode.ToString());
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
+                        OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
                     }
                     response.EnsureSuccessStatusCode(); // probably redundant
                     string productFound = response.Content.ReadAsStringAsync().Result;
                     if (!(string.IsNullOrEmpty(productFound) || productFound == "null")) {
-                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Result from ping version {0} : {1}", ssasVersion, productFound));
+                        publishStopWatch.Stop();
+                        string pingResult = string.Format("Result from ping version {0} : {1}", ssasVersion, productFound);
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
+                        OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
                     }
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "No products from ping version - preparing metadata file");
@@ -1491,13 +1500,18 @@ namespace DaxStudio.UI.ViewModels
                     var fileContent = File.ReadAllBytes(metadataFilename);
                     var metadataContent = new ByteArrayContent(fileContent);
 
-                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading file {0} ({1} bytes)", metadataFilename, fileContent.Count()));
+                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Count());
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading {0}", uploadingMessage));
+
                     metadataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("fileUpload") {
                         FileName = string.Format("DAX Functions {0}.zip", ssasVersion)
                     };
                     requestContent.Add(metadataContent);
                     await client.PostAsync("api/v1/uploadversion", requestContent);
+
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "Upload completed");
+                    publishStopWatch.Stop();
+                    OutputMessage(string.Format("Uploaded DAX metadata v.{0}: {1}", ssasVersion, uploadingMessage), publishStopWatch.ElapsedMilliseconds);
                 }
             }
             finally {
