@@ -27,6 +27,7 @@
             <SolidColorBrush x:Key="RedBrush" Color="Red" />
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
@@ -93,7 +94,7 @@
                     <BitmapImage x:Key="UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
-            
+
             <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
             <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
             <!-- To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}} , Path=ActualWidth,Converter={StaticResource OffsetConverter}, ConverterParameter='5' }"  -->
@@ -112,8 +113,8 @@
                     <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="2,2,2,2"/>
                 </ThicknessAnimationUsingKeyFrames>
                 <DoubleAnimation Storyboard.TargetName="CurrentCriteria"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="1" Duration="0:0:0.2" />
+								Storyboard.TargetProperty="(UIElement.Opacity)"
+								To="1" Duration="0:0:0.2" />
                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchSpacer" Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.15" Duration="0">
                     <DiscreteObjectKeyFrame Value="{x:Static Visibility.Collapsed}" />
                 </ObjectAnimationUsingKeyFrames>
@@ -155,12 +156,10 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-
-
         </ResourceDictionary>
-        
+
     </UserControl.Resources>
-    
+
     <Grid Margin="2 2 2 0" >
 
         <Grid.RowDefinitions>
@@ -195,7 +194,6 @@
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   IsSynchronizedWithCurrentItem="True" Template="{DynamicResource MetroComboBoxControlTemplate}"
-                  
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>
@@ -229,7 +227,7 @@
         <ContentControl Grid.Row="2">
             <Control.Template>
                 <ControlTemplate>
-            <Grid >
+                    <Grid >
                         <!-- Tables -->
                         <ctrl:TreeViewEx x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                                         Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
@@ -271,7 +269,6 @@
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
 
-
                                 <!-- Column Template -->
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}">
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
@@ -280,7 +277,6 @@
 
                                         <TextBlock x:Name="Caption" Text="{Binding Caption}"
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
-                                                   ToolTipService.HasDropShadow="True"
                                                    >
                                             <TextBlock.ToolTip>
                                                 <Grid>
@@ -312,7 +308,7 @@
                                                                        Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}">Min:</TextBlock>
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="3"
                                                                        Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}">Max:</TextBlock>
-                                                            
+
                                                             <TextBlock Grid.Column="1" Text="{Binding FormatString}"/>
                                                             <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Path=DistinctValues, StringFormat={}{0:N0}}"
                                                                        Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"></TextBlock>
@@ -337,56 +333,36 @@
                                                                 </TextBlock.Text>
                                                             </TextBlock>
                                                         </Grid>
+
+                                                        <TextBlock Foreground="{StaticResource DataTypeBrush}"
+                                                              Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}">Sample Data</TextBlock>
                                                         <Line Stroke="Black" HorizontalAlignment="Stretch"
                                                               X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"
                                                               StrokeDashArray="2 2" StrokeThickness="1" Margin="5"
                                                               Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                                                <TextBlock Foreground="{StaticResource DataTypeBrush}"
-                                                                           Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}">Sample Data</TextBlock>
-                                                                <ItemsControl ItemsSource="{Binding SampleData}" HorizontalAlignment="Left">
+                                                        <ItemsControl ItemsSource="{Binding SampleData}" 
+                                                              HorizontalAlignment="Left"
+                                                              Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToNotVisibleConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
                                                                     <TextBlock Style="{StaticResource SampleDataListItem}" Text="{Binding Path=. }"/>
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </StackPanel>
-                                                    </Grid>
+                                                        </ItemsControl>
+                                                        <TextBlock Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                   Text="Updating Sample Data..."/>
+                                                    </StackPanel>
+                                                </Grid>
 
                                             </TextBlock.ToolTip>                                
                                             </TextBlock>
-                                        <!--
-                    <Popup PlacementTarget="{Binding ElementName=Caption}" Placement="Bottom" HorizontalOffset="15">
-                        <Popup.IsOpen>
-                            <MultiBinding Mode="OneWay" Converter="{StaticResource BooleanOrConverter}">
-                                <Binding Mode="OneWay" ElementName="Caption" Path="IsMouseOver"/>
-                                <Binding RelativeSource="{RelativeSource Self}" Path="IsMouseOver" />
-                            </MultiBinding>
-                        </Popup.IsOpen>
-                        <Border Background="Snow">
-                        <StackPanel Orientation="Vertical" >
-                            <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
-                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                            </StackPanel>
-                            <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
-                            <TextBlock HorizontalAlignment="Right">
-                                <Hyperlink>Show Stats</Hyperlink>
-                            </TextBlock>
-                        </StackPanel>
-                        </Border>
-                    </Popup>
--->
 
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
-                                                        cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
-                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }">
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }">
                                                 <MenuItem Header="Define Measure"
-                                                            cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
+                                                        cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
@@ -395,7 +371,7 @@
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>
                         </ctrl:TreeViewEx>
-            
+
                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
                             <Border Style="{StaticResource searchBox}" 
                                     Grid.Row="1" 
@@ -408,7 +384,7 @@
                                 <Border.Tag>
                                     <sys:Double>0.0</sys:Double>
                                 </Border.Tag>
-                                
+
                                 <Border.Width>
                                     <MultiBinding Converter="{StaticResource multiplyWithMinConverter}" ConverterParameter="16">
                                         <Binding Path="ActualWidth" ElementName="Tables"/>
@@ -499,5 +475,5 @@
             </Control.Template>
         </ContentControl>
     </Grid>
-       
+
 </UserControl>

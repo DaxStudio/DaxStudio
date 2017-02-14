@@ -31,9 +31,11 @@ namespace DaxStudio.Checker
 
         private void CheckADOMD()
         {
+            //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"
+
             this.Output.Text = this.Output.Text + "\n\nChecking ADOMD.NET\n";
             this.Output.Text = this.Output.Text + "=======================\n";
-            string format = "Microsoft.AnalysisServices.adomdclient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
+            string format = "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
             for (int i = 11; i <= 13; i++)
             {
                 try

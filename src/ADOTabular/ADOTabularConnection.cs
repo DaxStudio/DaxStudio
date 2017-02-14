@@ -686,7 +686,13 @@ namespace ADOTabular
 
         public ADOTabularConnection Clone()
         {
-            return new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            // copy keywords, functiongroups, DMV's
+            cnn._functionGroups = _functionGroups;
+            cnn._keywords = _keywords;
+            cnn._serverMode = _serverMode;
+            cnn._dmvCollection = _dmvCollection;
+            return cnn;
         }
     }
 

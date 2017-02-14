@@ -326,10 +326,13 @@ namespace DaxStudio.UI.Model
             UpdatingBasicStats = true;
             try {
                 await Task.Run(() => {
-                    _column.UpdateBasicStats(connection);
-                    MinValue = _column.MinValue;
-                    MaxValue = _column.MaxValue;
-                    DistinctValues = _column.DistinctValues;
+                    using (var newConn = connection.Clone())
+                    {
+                        _column.UpdateBasicStats(newConn);
+                        MinValue = _column.MinValue;
+                        MaxValue = _column.MaxValue;
+                        DistinctValues = _column.DistinctValues;
+                    }
                 });
             }
             finally

@@ -342,7 +342,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && !Connection.Database.Equals(_selectedDatabase))
+                    if (_selectedDatabase != null && Connection.Database.Name != _selectedDatabase.Name)
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
                         Connection.ChangeDatabase( _selectedDatabase.Name);

@@ -132,11 +132,25 @@ namespace ADOTabular
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
 
-            var qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", DISTINCTCOUNT({0}) )", DaxName);
-            if (DataType == typeof(string))
+            string qry = "";
+
+            switch (Type.GetTypeCode(DataType))
             {
-                qry = string.Format("EVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                case TypeCode.Boolean:
+                    qry = string.Format("EVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    break;
+                case TypeCode.Empty:
+                    qry = string.Format("EVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    break;
+                case TypeCode.String:
+                    qry = string.Format("EVALUATE ROW(\"Min\", FIRSTNONBLANK({0},1),\"Max\", LASTNONBLANK({0},1), \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    break;
+                default:
+                    qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", DISTINCTCOUNT({0}) )", DaxName);
+                    break;
+
             }
+            
             var dt = connection.ExecuteDaxQueryDataTable(qry);
             MinValue = dt.Rows[0][0].ToString();
             MaxValue = dt.Rows[0][1].ToString();
@@ -145,15 +159,18 @@ namespace ADOTabular
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            var qry = string.Format("EVALUATE TOPNSKIP({0}, 0, ALL({1}), RAND())", sampleSize * 2, DaxName);
+            string qryTempalte = "EVALUATE SAMPLE({0}, ALL({1}), RAND()) ORDER BY {1}";
+            if (connection.AllFunctions.Contains("TOPNSKIP"))
+                qryTempalte = "EVALUATE TOPNSKIP({0}, 0, ALL({1}), RAND()) ORDER BY {1}";
+
+            var qry = string.Format(qryTempalte, sampleSize * 2, DaxName);
             var dt = connection.ExecuteDaxQueryDataTable(qry);
-            List<string> _tmp = new List<string>(10);
+            List<string> _tmp = new List<string>(sampleSize * 2);
             foreach(DataRow dr in dt.Rows)
             {
                 _tmp.Add(string.Format(string.Format("{{0:{0}}}", FormatString), dr[0]));
             }
             return _tmp.Distinct().Take(sampleSize).ToList();
-            
         }
     }
 }
