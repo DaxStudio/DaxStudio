@@ -5,6 +5,7 @@ using System.IO;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace ADOTabular
 {
@@ -579,6 +580,93 @@ namespace ADOTabular
             {
                 keywords.Add(dr.Keyword);
             }
+            
+        }
+
+        private static int? GetInt(IDataRecord dr, int column) {
+            return dr.IsDBNull(column) ? (int?)null : dr.GetInt32(column);
+        }
+        private static string GetString(IDataRecord dr, int column) {
+            return dr.IsDBNull(column) ? null : dr.GetString(column);
+        }
+        private static string GetXmlString(IDataRecord dr, int column) {
+            // Use the original AdomdDataReader (we don't have to use the proxy here!)
+            Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField = dr.GetValue(column) as Microsoft.AnalysisServices.AdomdClient.AdomdDataReader;
+            if (mdXmlField == null) {
+                return null;
+            }
+            XElement piXml = new XElement("PARAMETERINFO");
+            while (mdXmlField.Read()) {
+                XElement datanode = new XElement("Parameter");
+                for (int col = 0; col < mdXmlField.FieldCount; col++) {
+                    string fieldName = mdXmlField.GetName(col);
+                    if (fieldName != "") {
+                        var fieldContent = mdXmlField[col];
+                        if (fieldContent != null) {
+                            datanode.Add(new XElement(mdXmlField.GetName(col), fieldContent.ToString()));
+                        }
+                    }
+                }
+                piXml.Add(datanode);
+            }
+            string s = piXml.ToString();
+            return s;
+        }
+        public void Visit(MetadataInfo.DaxMetadata daxMetadata) { 
+            string ssasVersion = GetSsasVersion();
+            daxMetadata.Version = new MetadataInfo.SsasVersion {
+                SSAS_VERSION = ssasVersion,
+                CAPTURE_DATE = DateTime.Now
+            };
+            AdomdDataReader result = _conn.ExecuteReader("SELECT * FROM $SYSTEM.MDSCHEMA_FUNCTIONS");
+            while (result.Read()) {
+                // Filters only DAX functions
+                int? origin = GetInt(result, result.GetOrdinal("ORIGIN"));
+                if (origin == null) continue;
+                if (origin != 3 && origin != 4) continue;
+
+                var SSAS_VERSION = ssasVersion;
+                var FUNCTION_NAME = GetString(result, result.GetOrdinal("FUNCTION_NAME"));
+                var DESCRIPTION = GetString(result, result.GetOrdinal("DESCRIPTION"));
+                var PARAMETER_LIST = GetString(result, result.GetOrdinal("PARAMETER_LIST"));
+                var RETURN_TYPE = GetInt(result, result.GetOrdinal("RETURN_TYPE"));
+                var ORIGIN = origin;
+                var INTERFACE_NAME = GetString(result, result.GetOrdinal("INTERFACE_NAME"));
+                var LIBRARY_NAME = GetString(result, result.GetOrdinal("LIBRARY_NAME"));
+                var DLL_NAME = GetString(result, result.GetOrdinal("DLL_NAME"));
+                var HELP_FILE = GetString(result, result.GetOrdinal("HELP_FILE"));
+                var HELP_CONTEXT = GetInt(result, result.GetOrdinal("HELP_CONTEXT"));
+                var OBJECT = GetString(result, result.GetOrdinal("OBJECT"));
+                var CAPTION = GetString(result, result.GetOrdinal("CAPTION"));
+                var PARAMETERINFO = GetXmlString(result, result.GetOrdinal("PARAMETERINFO"));
+                var DIRECTQUERY_PUSHABLE = (result.FieldCount >= 14 ? GetInt(result, result.GetOrdinal("DIRECTQUERY_PUSHABLE")) : null);
+
+                var function = new MetadataInfo.DaxFunction {
+                    SSAS_VERSION = ssasVersion,
+                    FUNCTION_NAME = GetString(result, result.GetOrdinal("FUNCTION_NAME")),
+                    DESCRIPTION = GetString(result, result.GetOrdinal("DESCRIPTION")),
+                    PARAMETER_LIST = GetString(result, result.GetOrdinal("PARAMETER_LIST")),
+                    RETURN_TYPE = GetInt(result, result.GetOrdinal("RETURN_TYPE")),
+                    ORIGIN = origin,
+                    INTERFACE_NAME = GetString(result, result.GetOrdinal("INTERFACE_NAME")),
+                    LIBRARY_NAME = GetString(result, result.GetOrdinal("LIBRARY_NAME")),
+                    DLL_NAME = GetString(result, result.GetOrdinal("DLL_NAME")),
+                    HELP_FILE = GetString(result, result.GetOrdinal("HELP_FILE")),
+                    HELP_CONTEXT = GetInt(result, result.GetOrdinal("HELP_CONTEXT")),
+                    OBJECT = GetString(result, result.GetOrdinal("OBJECT")),
+                    CAPTION = GetString(result, result.GetOrdinal("CAPTION")),
+                    PARAMETERINFO = GetXmlString(result, result.GetOrdinal("PARAMETERINFO")),
+                    DIRECTQUERY_PUSHABLE = (result.FieldCount >= 14 ? GetInt(result, result.GetOrdinal("DIRECTQUERY_PUSHABLE")) : null)
+                };
+                daxMetadata.DaxFunctions.Add(function);
+            }
+        }
+
+        private string GetSsasVersion() {
+            var drProperties = _conn.GetSchemaDataSet("DISCOVER_PROPERTIES", null, false).Tables[0].Select("PROPERTYNAME = 'DBMSVersion'");
+            var dr = drProperties.Single();
+            string ssasVersion = dr["Value"].ToString();
+            return ssasVersion;
         }
 
         public SortedDictionary<string, ADOTabularMeasure> Visit(ADOTabularMeasureCollection measures)

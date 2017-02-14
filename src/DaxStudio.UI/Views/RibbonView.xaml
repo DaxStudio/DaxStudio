@@ -222,6 +222,26 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
+                    <Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="PublishDaxFunctions">
+
+                                </cal:ActionMessage>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                    </Fluent:Button>                    <Fluent:Button Name="btnExportDaxFunctions" Header="Export DAX Functions" Foreground="White">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="ExportDaxFunctions">
+
+                                </cal:ActionMessage>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                    </Fluent:Button>
+
                     <Fluent:BackstageTabItem Header="Options"  >
                         <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />
                     </Fluent:BackstageTabItem>

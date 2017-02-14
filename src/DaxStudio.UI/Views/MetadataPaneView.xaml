@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
+<UserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -274,7 +274,6 @@
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
 
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
-
                                         <TextBlock x:Name="Caption" Text="{Binding Caption}"
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
                                                    >

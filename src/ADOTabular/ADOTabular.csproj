@@ -154,6 +154,9 @@
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="IADOTabularColumn.cs" />
     <Compile Include="IADOTabularObject.cs" />
+    <Compile Include="MetadataInfo\DaxFunction.cs" />
+    <Compile Include="MetadataInfo\DaxMetadata.cs" />
+    <Compile Include="MetadataInfo\SsasVersion.cs" />
     <Compile Include="MetaDataVisitorCSDL.cs" />
     <Compile Include="IMetaDataVisitor.cs" />
     <Compile Include="MetaDataVisitorADOMD.cs" />

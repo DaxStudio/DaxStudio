@@ -217,6 +217,13 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument.SaveAs();
         }
+        public void ExportDaxFunctions() {
+            ActiveDocument.ExportDaxFunctions();
+        }
+
+        public void PublishDaxFunctions() {
+            ActiveDocument.PublishDaxFunctions();
+        }
 
         public void Connect()
         {

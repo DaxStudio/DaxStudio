@@ -107,6 +107,8 @@ namespace ADOTabular
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
+
+            // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
         private void CacheFunctionGroups()
@@ -126,6 +128,7 @@ namespace ADOTabular
                        ConnectionChanged(this,new EventArgs());
                }
                */
+
         public void ChangeDatabase(string database)
         {
             _currentDatabase = database;
@@ -480,6 +483,18 @@ namespace ADOTabular
                 }
                 
             }
+        }
+
+        private MetadataInfo.DaxMetadata _daxMetadataInfo;
+        public MetadataInfo.DaxMetadata DaxMetadataInfo {
+            get {
+                CacheDaxMetadataInfo();
+                return _daxMetadataInfo;
+            }
+        }
+
+        public void CacheDaxMetadataInfo() {
+            if (_daxMetadataInfo == null) _daxMetadataInfo = new MetadataInfo.DaxMetadata(this);
         }
 
         private ADOTabularKeywordCollection _keywords;
