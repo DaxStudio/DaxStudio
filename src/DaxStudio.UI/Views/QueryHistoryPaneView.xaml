@@ -6,6 +6,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:clr="clr-namespace:System;assembly=mscorlib"
              xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
@@ -193,7 +194,7 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         
-        <DataGrid x:Name="QueryHistory" 
+        <controls:DataGridNoContextMenu x:Name="QueryHistory" 
                 CanUserSortColumns="True"
                 ClipboardCopyMode="IncludeHeader"
                 SelectionMode="Single"   
@@ -220,16 +221,28 @@
                 </LinearGradientBrush>
             </DataGrid.AlternatingRowBackground>
 
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy to Query Window" /> <!-- cal:Message.Attach="[Event Click] = [Action QueryHistoryDoubleClick($datacontext)]"/>-->
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Start Time" SortDirection="Descending">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                <DataGridCell.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Hello"/>
+                                    </ContextMenu>
+                                </DataGridCell.ContextMenu>
                                 <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  VerticalAlignment="Top" HorizontalAlignment="Left"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis" IsEnabled="False" />
                             </DataGridCell>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
+                    
                 </DataGridTemplateColumn>
                 
                 <DataGridTemplateColumn SortMemberPath="RowCount" Header="Rows" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
@@ -370,7 +383,7 @@
 
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" />
             </DataGrid.Columns>
-        </DataGrid>
+        </controls:DataGridNoContextMenu>
 
     </Grid>
 </UserControl>
