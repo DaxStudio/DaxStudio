@@ -91,6 +91,11 @@ namespace ADOTabular
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 //var db = dd[_adomdConn.Database];
+                if (_currentDatabase == "" || dd.Count == 0)
+                {
+                    // return an empty database object if there is no current database or no databases on the server
+                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue);
+                }
                 var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
