@@ -21,5 +21,7 @@ namespace DaxStudio.Interfaces
         DelimiterType DefaultSeparator { get; set; }
         bool TraceDirectQuery { get; set; }
         bool ShowPreReleaseNotifcations { get; set; }
+        bool ShowTooltipBasicStats { get; set; }
+        bool ShowTooltipSampleData { get; set; }
     }
 }

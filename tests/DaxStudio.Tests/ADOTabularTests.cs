@@ -102,7 +102,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(4, tabs.Count);
             Assert.AreEqual(8, tabs["Sales"].Columns.Count());
-            Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+            Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace DaxStudio.Tests
 
                 Assert.AreEqual(4, tabs.Count);
                 Assert.AreEqual(8, tabs["Sales"].Columns.Count());
-                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
             }
 
             m = new ADOTabularModel(c, "Test2", "Test2", "Test2 Description", "");
@@ -131,7 +131,7 @@ namespace DaxStudio.Tests
 
                 Assert.AreEqual(4, tabs.Count);
                 Assert.AreEqual(8, tabs["Sales"].Columns.Count());
-                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValueCount);
+                Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
             }
         }
 
@@ -164,7 +164,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(13, tabs.Count, "Wrong number of tables in database");
             Assert.AreEqual(2, tabs["ProductCategory"].Columns.Count(), "Wrong Column Count in ProductCategory");
-            Assert.AreEqual(8, tabs["ProductCategory"].Columns["ProductCategory"].DistinctValueCount);
+            Assert.AreEqual(8, tabs["ProductCategory"].Columns["ProductCategory"].DistinctValues);
         }
 
         [TestMethod]

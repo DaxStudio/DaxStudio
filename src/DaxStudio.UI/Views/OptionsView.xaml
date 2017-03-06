@@ -276,6 +276,25 @@
                         </Grid>
                     </Grid>
                 </GroupBox>
+                <GroupBox Header="Metadata Tooltips"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                <Grid Margin="5,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Grid.Column="1" Content="Show Basic Statistics"/>
+                        <Label Grid.Row="1" Grid.Column="1" Content="Show Sample Data"/>
+                        <CheckBox Grid.Column="0" x:Name="ShowTooltipBasicStats" VerticalAlignment="Top" Margin="2,7,2,0" />
+                        <CheckBox Grid.Column="0" Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Margin="2,7,2,0" />
+
+                    
+                    </Grid>
+                </GroupBox>
             </WrapPanel>
         </ScrollViewer>
     </Grid>

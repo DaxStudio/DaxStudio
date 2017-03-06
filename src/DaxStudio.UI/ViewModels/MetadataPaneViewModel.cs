@@ -14,6 +14,7 @@ using System.Windows.Data;
 using System.Collections;
 using System.Threading.Tasks;
 using DaxStudio.UI.Extensions;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -21,16 +22,21 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class MetadataPaneViewModel:ToolPaneBaseViewModel
         , IDragSource
-
     {
         private string _modelName;
         private readonly DocumentViewModel _activeDocument;
+        private readonly IGlobalOptions _globalOptions;
+        //private readonly IEventAggregator _eventAggregator;
+
         [ImportingConstructor]
-        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document):base(connection,eventAggregator)
+        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions):base(connection,eventAggregator)
         {
             _activeDocument = document;
             _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
+        //    _eventAggregator = eventAggregator;
+            _globalOptions = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
+            eventAggregator.Subscribe(this);
         }
 
         private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -165,16 +171,18 @@ namespace DaxStudio.UI.ViewModels
             { _treeViewTables = value;
             NotifyOfPropertyChange(() => Tables);
             }
-
         }
 
         private void RefreshTables()
         {
-            if (SelectedModel == null) return;
+            if (SelectedModel == null) {
+                Tables = null;  // if there is no selected model clear the table collection
+                return; 
+            }
             if (_treeViewTables == null)
             {
                 
-                // TODO run async Task.Factory.s
+                // Load tables async
                 Task.Run(() =>
                 {
                     try
@@ -185,7 +193,7 @@ namespace DaxStudio.UI.ViewModels
                         //    conn.Open();
                         //    _treeViewTables = conn.Database.Models[SelectedModel.Name].TreeViewTables();    
                         //}
-                        _treeViewTables = SelectedModel.TreeViewTables();
+                        _treeViewTables = SelectedModel.TreeViewTables( _globalOptions );
                     }
                     catch (Exception ex)
                     {
@@ -201,8 +209,6 @@ namespace DaxStudio.UI.ViewModels
                     EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                 });
             }
-            
-            //return SelectedModel == null ? null : SelectedModel.TreeViewTables();
 
         }
 
@@ -342,7 +348,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && !Connection.Database.Equals(_selectedDatabase))
+                    if (_selectedDatabase != null && Connection.Database.Name != _selectedDatabase.Name)
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
                         Connection.ChangeDatabase( _selectedDatabase.Name);
@@ -438,10 +444,16 @@ namespace DaxStudio.UI.ViewModels
         public string BusyMessage { get { return "Loading"; } }
         #endregion
 
-        public void ColumnTooltipOpening(object param)
+        public void ColumnTooltipOpening(TreeViewColumn column)
         {
-            System.Diagnostics.Debug.WriteLine("ColumnToolTipOpening {0}", param);
-        }
+            if ( column.Column.GetType() != typeof(ADOTabularColumn) ) return;
+            ADOTabularColumn col = (ADOTabularColumn)column.Column;
+            if (col.ColumnType != ADOTabularColumnType.Column) return;
+            // TODO - make an option for the sample size
+            if (_globalOptions.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
+            if (_globalOptions.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
+         }
+
 
     }
 

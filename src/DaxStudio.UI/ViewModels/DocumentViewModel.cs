@@ -105,7 +105,7 @@ namespace DaxStudio.UI.ViewModels
             
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
-            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this);
+            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this, _options);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
@@ -1725,6 +1725,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
         {
+            if (Connection != null && Connection.State == ConnectionState.Open)
+            {
+                Connection.Close();
+                Connection.Dispose();
+            }
+
             Connection = cnn;
             this.IsPowerPivot = message.PowerPivotModeSelected;
             this.Spid = cnn.SPID;

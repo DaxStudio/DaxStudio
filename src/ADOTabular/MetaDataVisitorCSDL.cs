@@ -341,7 +341,7 @@ namespace ADOTabular
                             col.Nullable = nullable;
                             col.MinValue = minValue;
                             col.MaxValue = maxValue;
-                            col.DistinctValueCount = distinctValueCount;
+                            col.DistinctValues = distinctValueCount;
                             col.FormatString = formatString;
                             col.StringValueMaxLength = stringValueMaxLength;
                             tab.Columns.Add(col);
