@@ -125,6 +125,13 @@
 
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="E" Modifiers="Ctrl"/>
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="RunQuery"/>
+        </triggers:InputBindingTrigger>
+
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="X" Modifiers="Alt"/>
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="RunQuery"/>

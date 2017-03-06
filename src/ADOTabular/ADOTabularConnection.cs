@@ -91,6 +91,11 @@ namespace ADOTabular
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 //var db = dd[_adomdConn.Database];
+                if (_currentDatabase == "" || dd.Count == 0)
+                {
+                    // return an empty database object if there is no current database or no databases on the server
+                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue);
+                }
                 var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
@@ -701,7 +706,13 @@ namespace ADOTabular
 
         public ADOTabularConnection Clone()
         {
-            return new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            // copy keywords, functiongroups, DMV's
+            cnn._functionGroups = _functionGroups;
+            cnn._keywords = _keywords;
+            cnn._serverMode = _serverMode;
+            cnn._dmvCollection = _dmvCollection;
+            return cnn;
         }
     }
 

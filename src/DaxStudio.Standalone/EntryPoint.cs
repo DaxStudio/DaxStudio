@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows;
 using DaxStudio.UI;
 using Serilog;
+using Serilog.Sinks.RollingFile;
 
 using DaxStudio.UI.Utils;
 namespace DaxStudio.Standalone
@@ -44,11 +45,10 @@ namespace DaxStudio.Standalone
                 var app = new Application();
                 // then load Caliburn Micro bootstrapper
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
-
-
-                log = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
-
-                //log = new LoggerConfiguration().WriteTo.Loggly().CreateLogger();
+                
+                var config = new LoggerConfiguration().ReadFrom.AppSettings();
+                log = config.CreateLogger();
+                
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif

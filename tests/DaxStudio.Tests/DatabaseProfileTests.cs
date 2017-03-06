@@ -18,7 +18,7 @@ namespace DaxStudio.Tests
         [TestInitialize]
         public void Setup()
         {
-            ConnectionString = @"Data Source=localhost\tab12;Initial Catalog=AdventureWorks2012";
+            ConnectionString = @"Data Source=localhost\tab16;Initial Catalog=AdventureWorks2012";
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace DaxStudio.Tests
             var profile = DatabaseProfiler.Create(db);
 
             Assert.AreEqual(db.Name, profile.Name);
-            Assert.AreEqual(15, profile.Tables.Count);
+            Assert.AreEqual(17, profile.Tables.Count);
 
             JsonSerializer serializer = new JsonSerializer();
             //serializer.Converters.Add(new JavaScriptDateTimeConverter());
