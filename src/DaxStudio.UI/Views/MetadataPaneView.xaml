@@ -48,7 +48,7 @@
             <Style x:Key="SampleDataListItem" TargetType="{x:Type TextBlock}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding DataTypeName}" Value="String">
+                    <DataTrigger Binding="{Binding DataContext.DataTypeName,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=TreeViewItem }}" Value="String">
                         <Setter Property="HorizontalAlignment" Value="Left"/>
                     </DataTrigger>
                 </Style.Triggers>
@@ -339,17 +339,20 @@
                                                               X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"
                                                               StrokeDashArray="2 2" StrokeThickness="1" Margin="5"
                                                               Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                        <Grid Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}">
                                                         <ItemsControl ItemsSource="{Binding SampleData}" 
                                                               HorizontalAlignment="Left"
                                                               Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToNotVisibleConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
-                                                                    <TextBlock Style="{StaticResource SampleDataListItem}" Text="{Binding Path=. }"/>
+                                                                        <!-- -->
+                                                                        <TextBlock Style="{StaticResource SampleDataListItem}" Text="{Binding Path=. }" />
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
                                                         <TextBlock Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToVisibilityConverter}}"
                                                                    Text="Updating Sample Data..."/>
+                                                        </Grid>
                                                     </StackPanel>
                                                 </Grid>
 

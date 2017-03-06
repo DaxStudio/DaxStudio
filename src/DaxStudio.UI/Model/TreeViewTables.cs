@@ -5,33 +5,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
 
     public static class ADOTabularModelExtensions
     {
-        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model )
+        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options )
         {
             var lst = new List<FilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
-                lst.Add(new TreeViewTable(t, t.TreeViewColumns));
+                lst.Add(new TreeViewTable(t, t.TreeViewColumns,options));
             }
             return lst;   
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, IGlobalOptions options)
         {
             var lst = new List<FilterableTreeViewItem>();
             foreach (var c in table.Columns)
             {
-                lst.Add( new TreeViewColumn(c, c.TreeViewColumnChildren));
+                lst.Add( new TreeViewColumn(c, c.TreeViewColumnChildren, options));
             }
             return lst;
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column, IGlobalOptions options)
         {
             var lst = new List<FilterableTreeViewItem>();
             var hier = column as ADOTabularHierarchy;
@@ -39,7 +40,7 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var lvl in hier.Levels)
                 {
-                    lst.Add( new TreeViewColumn(lvl));
+                    lst.Add( new TreeViewColumn(lvl,options));
                 }
             }
             var kpi = column as ADOTabularKpi;
@@ -47,7 +48,7 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var comp in kpi.Components)
                 {
-                    lst.Add( new TreeViewColumn(comp));
+                    lst.Add( new TreeViewColumn(comp,options));
                 }
             }
             return lst;
@@ -55,12 +56,14 @@ namespace DaxStudio.UI.Model
 
     }
 
-    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate();
+    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options);
     public class FilterableTreeViewItem : PropertyChangedBase
     {
         GetChildrenDelegate _getChildren;
-        public FilterableTreeViewItem(GetChildrenDelegate getChildren)
+        IGlobalOptions _options;
+        public FilterableTreeViewItem(GetChildrenDelegate getChildren, IGlobalOptions options)
         {
+            _options = options;
             _getChildren = getChildren;
         }
 
@@ -69,7 +72,7 @@ namespace DaxStudio.UI.Model
             get
             {
                 if (_children == null && _getChildren != null)
-                { _children = _getChildren.Invoke(); }
+                { _children = _getChildren.Invoke(_options); }
                 return _children;
             }
         }
@@ -98,6 +101,12 @@ namespace DaxStudio.UI.Model
                 _isExpanded = value;
                 NotifyOfPropertyChange(()=> IsExpanded);
             }
+        }
+
+        public IGlobalOptions Options
+        {
+            get { return _options; }
+            set { _options = value; }
         }
 
         public void ApplyCriteria(string criteria, Stack<FilterableTreeViewItem> ancestors)
@@ -129,7 +138,7 @@ namespace DaxStudio.UI.Model
     class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
     {
         private readonly ADOTabularTable _table;
-        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren):base(getChildren)
+        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options):base(getChildren,options)
         {
             _table = table;
         }
@@ -183,13 +192,14 @@ namespace DaxStudio.UI.Model
         private string _minValue = string.Empty;
         private string _maxValue = string.Empty;
         private long _distinctValues = 0;
+        //private IGlobalOptions _options;
 
-
-        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren):base(getChildren)
+        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options):base(getChildren, options)
         {
             _sampleData = new List<string>();
             _tabularObject = column;
             _column = column;
+            Options = options;
             Description = column.Description;
             DataTypeName = column.DataTypeName;
             MetadataImage = column.MetadataImage;
@@ -200,10 +210,11 @@ namespace DaxStudio.UI.Model
         }
 
         public bool HasBasicStats { get { return MaxValue != MinValue && DistinctValues != 1; } }
-        public bool HasSampleData { get { return _sampleData.Count > 0; } }
+        public bool HasSampleData { get { return _sampleData != null && _sampleData.Count > 0; } }
 
         public bool ShowMinMax { get {
-                if ( _column.GetType() != typeof(ADOTabularColumn)) return false;
+                if (!Options.ShowTooltipBasicStats) return false;
+                if ( _column != null &&_column.GetType() != typeof(ADOTabularColumn)) return false;
                 if (MinValue == string.Empty && MaxValue == string.Empty) return false;
                 return true;
             }
@@ -213,28 +224,35 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return HasSampleData && _column.GetType() == typeof(ADOTabularColumn) ;
+                if (!Options.ShowTooltipSampleData) return false;
+                return HasSampleData && _column != null && _column.GetType() == typeof(ADOTabularColumn) ;
             }
         }
 
-        public bool ShowDistinctValues { get { return typeof(ADOTabularColumn) == _column.GetType(); } }
-        public TreeViewColumn(ADOTabularKpiComponent kpiComponent):base(null)
+        public bool ShowDistinctValues { get {
+                if (!Options.ShowTooltipBasicStats) return false;
+                return _column != null && typeof(ADOTabularColumn) == _column.GetType(); }
+        }
+        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options):base(null,null)
         {
+            Options = options;
             _tabularObject = kpiComponent;
             DataTypeName = kpiComponent.DataTypeName;
             
             MetadataImage = MetadataImages.Measure;
         }
 
-        public TreeViewColumn(ADOTabularKpi kpi)
-            : base(null)
+        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options)
+            : base(null, options)
         {
+            Options = options;
             _tabularObject = kpi;
             DataTypeName = kpi.DataTypeName;
             MetadataImage = MetadataImages.Kpi;
         }
-        public TreeViewColumn(ADOTabularLevel level):base(null)
+        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options):base(null, options)
         {
+            Options = options;
             _tabularObject = level;
             Description = level.Column.Description;
             DataTypeName = level.Column.DataTypeName;
@@ -242,9 +260,10 @@ namespace DaxStudio.UI.Model
             MetadataImage = MetadataImages.Column;            
         }
 
-        public TreeViewColumn(ADOTabularHierarchy hier)
-            : base(null)
+        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options)
+            : base(null,options)
         {
+            Options = options;
             _tabularObject = hier;
             MetadataImage = MetadataImages.Hierarchy;
         }
@@ -278,7 +297,8 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return this.MetadataImage == MetadataImages.Measure;
+                return this.MetadataImage == MetadataImages.Measure 
+                    || this.MetadataImage == MetadataImages.HiddenMeasure;
             }
         }
 

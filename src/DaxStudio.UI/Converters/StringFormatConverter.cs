@@ -20,20 +20,23 @@ namespace DaxStudio.UI.Converters
             if ((string)values[0] == string.Empty) return string.Empty;
             if (values[1] == DependencyProperty.UnsetValue) return values[0].ToString();
             object val = null;
-            switch ((string)values[2]) //DataTypeName
+            if (values[0] != null)
             {
-                case "DateTime":
-                    val = DateTime.Parse((string)values[0]);
-                    break;
-                case "String":
-                    val = (string)values[0];
-                    break;
-                case "Int64":
-                    val = long.Parse((string)values[0]);
-                    break;
-                case "Decimal":
-                    val = decimal.Parse((string)values[0]);
-                    break;
+                switch ((string)values[2]) //DataTypeName
+                {
+                    case "DateTime":
+                        val = DateTime.Parse((string)values[0]);
+                        break;
+                    case "String":
+                        val = (string)values[0];
+                        break;
+                    case "Int64":
+                        val = long.Parse((string)values[0]);
+                        break;
+                    case "Decimal":
+                        val = decimal.Parse((string)values[0]);
+                        break;
+                }
             }
             return string.Format(string.Format("{{0:{0}}}",(string)values[1]), val);
         }

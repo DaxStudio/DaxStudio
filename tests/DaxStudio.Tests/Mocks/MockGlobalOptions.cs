@@ -40,5 +40,7 @@ namespace DaxStudio.Tests.Mocks
         public bool ShowPreReleaseNotifcations { get;set;  }
 
         public bool TraceDirectQuery { get; set; }
+        public bool ShowTooltipSampleData { get; set; }
+        public bool ShowTooltipBasicStats { get; set; }
     }
 }

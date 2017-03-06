@@ -44,6 +44,10 @@ namespace DaxStudio
 
         public bool ShowPreReleaseNotifcations { get;set; }
 
+        public bool ShowTooltipBasicStats { get; set; }
+
+        public bool ShowTooltipSampleData { get; set; }
+
         public bool TraceDirectQuery
         {
             get
