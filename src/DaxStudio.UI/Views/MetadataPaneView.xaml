@@ -366,6 +366,12 @@
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
+                                                <MenuItem Header="Define Dependent Measures"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineDependentMeasures($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define and Expand Measure"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]">
+                                                </MenuItem>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 

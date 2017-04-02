@@ -1314,7 +1314,7 @@ namespace DaxStudio.UI.ViewModels
 
         //RRomano: Should this be on DaxEditor?
 
-        private Regex defineMeasureRegex = new Regex("(?<=DEFINE)((.|\n)*?)(?=EVALUATE)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private Regex defineMeasureRegex = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=EVALUATE|\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
@@ -1323,8 +1323,10 @@ namespace DaxStudio.UI.ViewModels
             // Try to find the DEFINE statements
 
             var currentText = editor.Text;                      
-
+            
             var measureDeclaration = string.Format("MEASURE {0} = {1}", measureName, measureExpression);
+            // TODO - expand measure expression and generate other measures here!!
+
 
             // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
             if (defineMeasureRegex.IsMatch(currentText))
