@@ -342,19 +342,20 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 }
 
-                _selectedDatabase = value;
-
+                
                 if (value != null) ActiveDocument.SelectedDatabase = value.Name;
                 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && Connection.Database.Name != _selectedDatabase.Name)
+                    if (_selectedDatabase != null &&  Connection.Database.Name != _selectedDatabase.Name) //!Connection.Database.Equals(_selectedDatabase))
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
-                        Connection.ChangeDatabase( _selectedDatabase.Name);
+                        Connection.ChangeDatabase( value.Name);
                         ModelList = Connection.Database.Models;
                     }
                 }
+
+                _selectedDatabase = value;
 
                 NotifyOfPropertyChange(() => SelectedDatabase);
 
