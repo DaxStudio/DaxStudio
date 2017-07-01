@@ -218,11 +218,13 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.SaveAs();
         }
         public void ExportDaxFunctions() {
-            ActiveDocument.ExportDaxFunctions();
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent());
+            //ActiveDocument.ExportDaxFunctions();
         }
 
         public void PublishDaxFunctions() {
-            ActiveDocument.PublishDaxFunctions();
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
+            //ActiveDocument.PublishDaxFunctions();
         }
 
         public void Connect()

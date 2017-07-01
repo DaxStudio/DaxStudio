@@ -468,6 +468,15 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ServerTimingDetails);
             } 
         }
+
+        public override bool FilterForCurrentSession
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)

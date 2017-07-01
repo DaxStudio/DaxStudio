@@ -41,11 +41,12 @@
     <StartupObject>DaxStudio.Checker.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>daxstudio.ico</ApplicationIcon>
+    <ApplicationIcon>DaxStudioChecker.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
@@ -57,6 +58,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Checker.cs" />
+    <Compile Include="SystemInfo.cs" />
+    <Compile Include="TextBoxExtensions.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -98,7 +102,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="daxstudio.ico" />
+    <Resource Include="DaxStudioChecker.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

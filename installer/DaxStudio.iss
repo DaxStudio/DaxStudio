@@ -36,6 +36,8 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
+UseSetupLdr=Yes
+
 
 LicenseFile=eula.rtf
 ;OutputBaseFilename=DaxStudio_{#MyAppFileVersion}_setup
@@ -70,20 +72,21 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-;Source: "D:\Codeplex_x64\DaxStudio\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
 Source: "..\release\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
+
 ;Standalone configs
-Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2012DllsFound
-Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014DllsFound
-Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2016DllsFound
+Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2016DllsFound
+;Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014DllsFound
+Source: "..\release\DaxStudio.exe.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2017DllsFound
+
 ;Excel Addin configs
-Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsSQL2012DllsFound Or IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014DllsFound And Not IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2016DllsFound And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsSQL2016DllsFound Or IsExcel2010Installed
+;Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014DllsFound And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2017DllsFound And Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -144,7 +147,7 @@ Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; Valu
 ;add file association for .dax files
 Root: "HKCR"; Subkey: ".dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
 Root: "HKCR"; Subkey: "DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" ""%1"""; Flags: uninsdeletekey
+Root: "HKCR"; Subkey: "DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
 Root: "HKCR"; Subkey: "DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0"; Flags: uninsdeletevalue
 
 [CustomMessages]
@@ -155,7 +158,6 @@ Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
 
 [Code]
-
 // If there is a command-line parameter "skipdependencies=true", don't check for them }
 function ShouldInstallDependencies(): Boolean;
 begin
@@ -213,7 +215,7 @@ procedure CleanDisabledItems;
 var
   I: Integer;
   J: Integer;
-  RegKeys: array[1..2] of string;
+  RegKeys: array[1..3] of string;
   RegKeyCnt: Integer;
   Names: TArrayOfString;
   ResultStr: AnsiString;
@@ -221,10 +223,12 @@ var
 begin
   RegKeys[1] := 'Software\Microsoft\Office\14.0\Excel\Resiliency\DisabledItems';    // Excel 2010
   RegKeys[2] := 'Software\Microsoft\Office\15.0\Excel\Resiliency\DisabledItems';    // Excel 2013
-  RegKeyCnt := 2; //GetArrayLength(RegKeys);
+  RegKeys[3] := 'Software\Microsoft\Office\16.0\Excel\Resiliency\DisabledItems';    // Excel 2016
+  RegKeyCnt := 3; //GetArrayLength(RegKeys);
 
   // for each version of Excel
-  for I := 1 to RegKeyCnt do
+  //for I := 1 to RegKeyCnt do
+  for I := 1 to GetArrayLength(RegKeys) do
   begin
     If  RegKeyExists(HKEY_CURRENT_USER, RegKeys[I]) then
     begin  
@@ -483,7 +487,10 @@ begin
 	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'13.0.0.0000') = 0 ) ;
 end;
 
-         
+function IsSQL2017DllsFound(): boolean;
+begin
+	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'14.0.0.0000') = 0 ) ;
+end;         
 
 /////////////////////////////////////////////////////////////////////
 function GetUninstallString(): String;
@@ -552,3 +559,9 @@ begin
     end;
   end;
 end;
+
+const 
+   ComponentList = 'CORE - core components| EXCEL - Excel Addin'; 
+   TaskList = 'DESKTOPICON - adds a desktop icon'; 
+   ParameterList = '/SKIPDEPENDENCIES=True/False - Skips the standard dependency checks'; 
+#include "scripts/clihelp.iss"

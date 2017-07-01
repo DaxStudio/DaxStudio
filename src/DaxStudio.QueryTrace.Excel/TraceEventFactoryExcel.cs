@@ -14,6 +14,11 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(xlAmo.TraceColumn.EventSubclass);
             trc.Columns.Add(xlAmo.TraceColumn.TextData);
             trc.Columns.Add(xlAmo.TraceColumn.CurrentTime);
+            if (eventClass == xlAmo.TraceEventClass.QueryEnd)
+            {
+                trc.Columns.Add(xlAmo.TraceColumn.EndTime);
+                trc.Columns.Add(xlAmo.TraceColumn.NTUserName);
+            }
             if (eventClass != xlAmo.TraceEventClass.VertiPaqSEQueryCacheMatch)
             {
                 trc.Columns.Add(xlAmo.TraceColumn.StartTime);

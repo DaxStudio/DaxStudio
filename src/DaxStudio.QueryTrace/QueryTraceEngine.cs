@@ -49,7 +49,7 @@ namespace DaxStudio.QueryTrace
 
                         if (shouldDispose)
                         {
-                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "Stop", "Disposing underlyinhg trace");
+                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "Stop", "Disposing underlying trace");
                             //_trace.OnEvent -= OnTraceEventInternal;
                             //_trace.Drop();
                             DisposeTrace();
@@ -109,19 +109,19 @@ namespace DaxStudio.QueryTrace
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private IGlobalOptions _globalOptions;
         private object connectionLockObj = new object();
-
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions)
+        private bool _filterForCurrentSession = true;
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession)
         {
             _globalOptions = globalOptions;
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
-            ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, filterForCurrentSession);
             Events = events;
-            
+            _filterForCurrentSession = filterForCurrentSession;
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName)
+        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, bool filterForCurrentSession)
         {
             Log.Verbose("{class} {method} {event} ConnStr: {connectionString} SessionId: {sessionId}", "QueryTraceEngine", "ConfigureTrace", "Start",connectionString, sessionId);
             _connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
@@ -274,7 +274,7 @@ namespace DaxStudio.QueryTrace
                 _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
 
                 // Enable automatic filter only if DirectQuery is not enabled - otherwise, it will filter events in the trace event (slower, use DirectQuery with care!)
-                if (!_globalOptions.TraceDirectQuery) {
+                if (!_globalOptions.TraceDirectQuery && _filterForCurrentSession) {
                     Log.Verbose("Activate filter {sessionId} - {applicationName}", _sessionId, _applicationName);
                     _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
                 }

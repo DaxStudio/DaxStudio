@@ -3,9 +3,11 @@ using System.Reflection;
 using System.Windows;
 using DaxStudio.UI;
 using Serilog;
-using Serilog.Sinks.RollingFile;
-
 using DaxStudio.UI.Utils;
+using System.IO;
+using Fclp;
+using DaxStudio.Common;
+
 namespace DaxStudio.Standalone
 {
     public static class EntryPoint 
@@ -41,13 +43,34 @@ namespace DaxStudio.Standalone
         {
             try
             {
+
                 // need to create application first
                 var app = new Application();
                 // then load Caliburn Micro bootstrapper
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
-                
+
+                // read command line arguments
+                app.ReadCommandLineArgs();
+
+                // check if user is holding shift key down
+                bool isLoggingKeyDown = (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl)
+                                    || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl));
+
+                app.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
+
                 var config = new LoggerConfiguration().ReadFrom.AppSettings();
+
+                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder), Constants.StandaloneLogFileName);
+
+                var logCmdLineSwitch = app.Args().LoggingEnabled;
+
+                if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
+                    config.WriteTo.RollingFile(logPath
+                            , retainedFileCountLimit: 10
+                            , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose);
+
                 log = config.CreateLogger();
+
                 
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -56,8 +79,12 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
+                if (isLoggingKeyDown) log.Information("Logging enabled due to Ctrl key being held down");
+                if (logCmdLineSwitch) log.Information("Logging enabled by Excel Add=in");
+                Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
+
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-                
+
                 app.Run();
             }
             catch (Exception ex)
@@ -66,14 +93,52 @@ namespace DaxStudio.Standalone
 #if DEBUG 
                 MessageBox.Show(ex.Message);
 #else
-                //TODO - use CrashReporter.Net to send bug to DrDump
+                // use CrashReporter.Net to send bug to DrDump
+                CrashReporter.ReportCrash(ex);
 #endif
+
             }
             finally
             {
                 Log.Information("============ DaxStudio Shutdown =============");
+                Log.CloseAndFlush();
             }
         }
-        
+
+        private static void ReadCommandLineArgs(this Application app)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+
+            var p = new FluentCommandLineParser();
+            p.Setup<int>('p', "port")
+                .Callback(port => app.Args().Port = port);
+
+            p.Setup<bool>('l', "log")
+                .Callback(log => app.Args().LoggingEnabledByCommandLine = log)
+                .WithDescription("Enable Debug Logging")
+                .SetDefault(false);
+
+            p.Setup<string>('f', "file")
+                .Callback(file => app.Args().FileName = file)
+                .WithDescription("Name of file to open");
+
+            p.Parse(args);
+
+            //
+            //int port;
+
+            //for (int i = 1; i < args.Length;i++)
+            //{
+            //    if (args[i].ToLower() == "log" )
+            //    {
+            //        app.Properties.Add("LoggingEnabledByCommandLine", true);
+            //    }
+            //    if (int.TryParse( args[i], out port))
+            //    {
+            //        app.Properties.Add("Port", port);
+            //    }
+            //}
+            
+        }
     }
 }

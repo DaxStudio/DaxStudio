@@ -59,7 +59,9 @@ namespace DaxStudio.Standalone
         {
             if (_assemblies.ContainsKey(name)) return _assemblies[name];
             Assembly ass = null;
-            if (name.StartsWith("Microsoft.AnalysisServices,") || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,"))
+            if (name.StartsWith("Microsoft.AnalysisServices,") 
+                || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,") 
+                || name.StartsWith("Microsoft.AnalysisServices.Core,"))
             {
                 var an = new AssemblyName(name);
                 ass = GetAssembly(an);

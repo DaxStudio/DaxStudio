@@ -12,5 +12,7 @@ namespace DaxStudio.Interfaces
         ADOTabular.AdomdClientWrappers.AdomdType ConnectionType { get; }
 
         string CommandLineFileName { get; }
+        int Port { get;  }
+        bool DebugLogging { get; }
     }
 }

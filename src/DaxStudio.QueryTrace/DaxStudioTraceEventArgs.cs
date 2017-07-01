@@ -29,7 +29,16 @@ namespace DaxStudio.QueryTrace
             } catch (ArgumentNullException) {
                 Duration = 0;
             }
+            try {
+                NTUserName = e.NTUserName;
+            }
+            catch (ArgumentNullException)
+            {
+                NTUserName = string.Empty;
+            }
 
+            StartTime = e.StartTime;
+            //EndTime = e.EndTime;
             TextData = e.TextData;
             EventClassName = e.EventClass.ToString();
             EventSubclassName = e.EventSubclass.ToString();
@@ -67,5 +76,9 @@ namespace DaxStudio.QueryTrace
 
         public DaxStudioTraceEventClass EventClass { get { return _eventClass; } }
         public DaxStudioTraceEventSubclass EventSubclass { get { return _eventSubclass; } }
+
+        public string NTUserName { get; private set; }
+        //public DateTime EndTime { get; private set; }
+        public DateTime StartTime { get; private set; }
     }
 }

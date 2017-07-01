@@ -171,7 +171,8 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                               Margin="0">
                 <!--   Height="{Binding ElementName=QueryText ,Path=ActualHeight,Converter={StaticResource CappedHeightConverter}, ConverterParameter='55'}"-->
-                <DataGridCell Margin="0" Padding="0" cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                <DataGridCell Margin="0" Padding="0" 
+                              cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                     <TextBlock x:Name="QueryText"
                         Text="{Binding Path=QueryText,Mode=OneWay}"  
                         VerticalAlignment="Top" 
@@ -350,7 +351,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  
+                                           VerticalAlignment="Top" 
+                                           HorizontalAlignment="Left"
                                            TextTrimming="CharacterEllipsis"/>
                             </DataGridCell>
                         </DataTemplate>
@@ -373,8 +376,11 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <TextBlock Text="{Binding Path=DatabaseName,Mode=OneWay}"  VerticalAlignment="Top" HorizontalAlignment="Left"
+                            <DataGridCell 
+                                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                <TextBlock Text="{Binding Path=DatabaseName,Mode=OneWay}"  
+                                           VerticalAlignment="Top" 
+                                           HorizontalAlignment="Left"
                                            TextTrimming="CharacterEllipsis"/>
                             </DataGridCell>
                         </DataTemplate>

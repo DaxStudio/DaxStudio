@@ -50,7 +50,7 @@
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
-    <ApplicationVersion>1.0.1.0</ApplicationVersion>
+    <ApplicationVersion>1.1.2.0</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
@@ -226,9 +226,9 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
-    <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\130\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
+      <HintPath>..\..\..\..\Codeplex\ASSP\ASSP\dlls\2016\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -373,24 +373,31 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AmoWrapper\AmoServer.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="DataSetExtensions.cs" />
     <Compile Include="DaxStudioLauncher.cs" />
     <Compile Include="DaxStudioStandalone.cs" />
     <Compile Include="ExcelHelper.cs" />
     <None Include="app.Debug.config">
       <DependentUpon>app.config</DependentUpon>
+      <SubType>Designer</SubType>
     </None>
     <None Include="app.Release.config">
       <DependentUpon>app.config</DependentUpon>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </None>
+    <Compile Include="ExcelInfo.cs" />
     <Compile Include="IDaxStudioLauncher.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Ribbon.cs">
+      <DependentUpon>Ribbon.xml</DependentUpon>
     </Compile>
     <Compile Include="SignalR\QueryTraceHub.cs" />
     <Compile Include="WebHost.cs" />
@@ -433,9 +440,6 @@
     <Compile Include="DaxStudioRibbon.Designer.cs">
       <DependentUpon>DaxStudioRibbon.cs</DependentUpon>
     </Compile>
-    <Compile Include="Ribbon.cs">
-      <XmlRibbon>true</XmlRibbon>
-    </Compile>
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -452,6 +456,10 @@
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
       <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
+      <Project>{508a1faa-9157-4474-94b4-fdbf76ffa74b}</Project>
+      <Name>DaxStudio.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>

@@ -5,12 +5,14 @@
     <SourceExeConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.standalone\app.config</SourceExeConfigFile>
     <Dest2014ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</Dest2014ExeConfigFile>
 	<Dest2016ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2016.config</Dest2016ExeConfigFile>
+	<Dest2017ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2017.config</Dest2017ExeConfigFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <SourceDllConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.exceladdin\app.config</SourceDllConfigFile>
     <Dest2014DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</Dest2014DllConfigFile>
 	<Dest2016DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2016.config</Dest2016DllConfigFile>
+	<Dest2017DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2017.config</Dest2017DllConfigFile>
   </PropertyGroup>
 
   <Target Name="Clean">
@@ -47,6 +49,17 @@
       <TransformXml Source="$(SourceDllConfigFile)"
                       Transform="app.2016.config"
                       Destination="$(Dest2016DllConfigFile)" />
+  </Target>
+  
+  <Target Name="Configs2017" DependsOnTargets="Build" >
+      <Message Text="Creating configs for SQL 2017 dependencies"/>
+    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
+      <TransformXml Source="$(SourceExeConfigFile)"
+                  Transform="app.2017.config"
+                  Destination="$(Dest2017ExeConfigFile)" />
+      <TransformXml Source="$(SourceDllConfigFile)"
+                      Transform="app.2017.config"
+                      Destination="$(Dest2017DllConfigFile)" />
   </Target>
   
   <Target Name="DeletePdb" DependsOnTargets="Build">
@@ -101,10 +114,10 @@
 	IgnoreExitCode="true"/>
   </Target>
   
-  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; DeleteXml; DeletePdb">
+  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
-  <Target Name="InstallerWthSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; DeleteXml; DeletePdb; SignAssemblies">
+  <Target Name="InstallerWthSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignAssemblies">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
 

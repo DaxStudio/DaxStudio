@@ -60,6 +60,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<NavigateToLocationEvent>
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<OutputMessage>
+        , IHandle<ExportDaxFunctionsEvent>
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
@@ -122,7 +123,7 @@ namespace DaxStudio.UI.ViewModels
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
-            var t = DaxFormatterProxy.PrimeConnectionAsync(_options);
+            var t = DaxFormatterProxy.PrimeConnectionAsync(_options, _eventAggregator);
 
         }
 
@@ -258,12 +259,12 @@ namespace DaxStudio.UI.ViewModels
                     if (_connection.IsPowerPivot)
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options);
+                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     else
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options);
+                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
@@ -282,6 +283,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
             }
+        }
+
+        private bool ShouldFilterForCurrentSession(BindableCollection<ITraceWatcher> traceWatchers)
+        {
+            var w = traceWatchers.FirstOrDefault(tw => tw.IsChecked && tw.FilterForCurrentSession);
+            if (w != null) return true;
+            return false;
         }
 
         private void UpdateTraceEvents()
@@ -2038,7 +2046,7 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry, _options).ContinueWith((res) => {
+            DaxFormatterProxy.FormatDaxAsync(qry, _options, _eventAggregator).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 
@@ -2276,6 +2284,12 @@ namespace DaxStudio.UI.ViewModels
             get {
                 return _connection.DaxMetadataInfo;
             }
+        }
+
+        public void Handle(ExportDaxFunctionsEvent exportFunctions)
+        {
+            if (exportFunctions.AutoDelete) PublishDaxFunctions();
+            else ExportDaxFunctions();
         }
 
         #region ISaveable 

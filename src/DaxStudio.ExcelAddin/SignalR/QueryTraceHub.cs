@@ -75,7 +75,7 @@ namespace DaxStudio
         //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
         //}
 
-        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture) //, IGlobalOptions globalOptions)
+        public void ConstructQueryTraceEngine( ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession) //, IGlobalOptions globalOptions)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace DaxStudio
                         // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
                         VoidDelegate f = delegate
                         {    
-                            _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture);
+                            _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture, filterForCurrentSession);
                             _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                             _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                             _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
@@ -105,7 +105,7 @@ namespace DaxStudio
                     {
                         connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
                         Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture, new StubGlobalOptions());
+                        _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId,"", eventsToCapture, new StubGlobalOptions(),filterForCurrentSession );
                         _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });

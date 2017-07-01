@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
+using System;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -198,6 +199,15 @@ namespace DaxStudio.UI.ViewModels
             }
             set { }
         }
+
+        public override bool FilterForCurrentSession
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         void ISaveState.Save(string filename)
         {
             var m = new QueryPlanModel()

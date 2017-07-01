@@ -4,23 +4,46 @@ using System.Windows;
 using ADOTabular.AdomdClientWrappers;
 using Microsoft.Office.Tools.Ribbon;
 using Serilog;
+using System.IO;
+using DaxStudio.UI.Utils;
+//using DaxStudio.Common;
 
 namespace DaxStudio.ExcelAddin
 {
     public partial class ThisAddIn
     {
-        private static bool _inShutdown ;
+        private static bool _inShutdown;
         private static DaxStudioLauncher _launcher;
+        private bool _debugLogEnabled;
         public ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
-        { 
-            var currentDomain = AppDomain.CurrentDomain;
-            currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
-            CreateRibbonObjects();
-            log = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
-            Log.Logger = log;
-            Log.Information("============ Excel Add-in Startup =============");
-            
+        {
+            try
+            {
+                var loggingKeyDown = false;
+                var currentDomain = AppDomain.CurrentDomain;
+                currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+
+                var config = new LoggerConfiguration().ReadFrom.AppSettings();
+                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl)
+                    || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl))
+                {
+                    loggingKeyDown = true;
+                    _debugLogEnabled = true;
+                    var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder)
+                                                , Constants.ExcelLogFileName);
+                    config.WriteTo.RollingFile(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose, retainedFileCountLimit: 10);
+                }
+                log = config.CreateLogger();
+                Log.Logger = log;
+                Log.Information("============ Excel Add-in Startup =============");
+                ExcelInfo.WriteToLog(this);
+                if (loggingKeyDown) Log.Information("Logging enabled by Ctrl Key at startup");
+                CreateRibbonObjects();
+            } catch (Exception ex)
+            {
+                CrashReporter.ReportCrash(ex);
+            }
         }
 
         private DaxStudioRibbon _ribbon;
@@ -28,6 +51,7 @@ namespace DaxStudio.ExcelAddin
         protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
         {
             this._ribbon = new DaxStudioRibbon();
+            _ribbon.btnDax.Tag = _debugLogEnabled;
             return new IRibbonExtension[] {this._ribbon};
             //return base.CreateRibbonObjects();
         }
@@ -53,6 +77,8 @@ namespace DaxStudio.ExcelAddin
                     Log.Verbose("{class} {method} {assembly}", "ThisAddin", "currentDomain_AssemblyResolve", "Microsoft.Excel.Amo Resolved");
                     return ass;
                 }
+
+
 
                 return null;
             }

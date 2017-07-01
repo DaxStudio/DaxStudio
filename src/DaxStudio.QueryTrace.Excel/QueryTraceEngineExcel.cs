@@ -102,18 +102,21 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-
+        
         //public delegate void TraceStartedHandler(object sender);//, TraceStartedEventArgs eventArgs);
 
         
-        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
+        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession)
         {
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
+            FilterForCurrentSession = filterForCurrentSession;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
             Events = events;
         }
+
+        public bool FilterForCurrentSession { get; private set; }
 
         private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName) //, List<DaxStudioTraceEventClass> events)
         {
@@ -259,7 +262,7 @@ namespace DaxStudio.QueryTrace
                 _server = new xlAmo.Server();
                 _server.Connect(_connectionString);
                 _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
-                _trace.Filter = GetSessionIdFilter(_sessionId);
+                if (FilterForCurrentSession) _trace.Filter = GetSessionIdFilter(_sessionId);
                 // set default stop time in case trace gets disconnected
                 //_trace.StopTime = DateTime.UtcNow.AddHours(24);
                 Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "GetTrace", "created new trace");

@@ -6,6 +6,6 @@ namespace DaxStudio.ExcelAddin
     [ComVisible(true)]
     public interface IDaxStudioLauncher
     {
-        void Launch();
+        void Launch(bool enableLogging);
     }
 }

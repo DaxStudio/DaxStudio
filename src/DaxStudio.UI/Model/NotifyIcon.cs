@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
-using System.Windows.Threading;
-using System.Windows.Controls;
-using Caliburn.Micro;
 
 namespace DaxStudio.UI.Model
 {
@@ -15,16 +8,12 @@ namespace DaxStudio.UI.Model
     {
         private TaskbarIcon icon;
         private string BalloonMessage;
+        private System.Drawing.Icon _icon;
 
         public NotifyIcon(Window window) 
         {
-            BalloonTitle = "DaxStudio"; //TODO - get current version for title
-            Uri iconUri = new Uri("pack://application:,,,/DaxStudio.UI;component/Images/DaxStudio.Ico");
-            System.Drawing.Icon ico;
-            using (var strm = Application.GetResourceStream(iconUri).Stream)
-            {
-                ico = new System.Drawing.Icon(strm);
-            }
+            BalloonTitle = "DAX Studio"; //TODO - get current version for title
+            System.Drawing.Icon ico = Icon;
             
             //Execute.OnUIThreadAsync( new System.Action(() =>
             //Dispatcher.CurrentDispatcher.Invoke( new System.Action(() =>
@@ -34,12 +23,28 @@ namespace DaxStudio.UI.Model
                 {
                     Name = "NotifyIcon",
                     Icon = ico,
-                    Visibility = Visibility.Collapsed
+                    Visibility = Visibility.Collapsed,
+                    ToolTipText = "DAX Studio"
                 };
+                
                 icon.TrayBalloonTipClicked += icon_TrayBalloonTipClicked;
                 icon.TrayLeftMouseDown += icon_TrayMouseDown;
                 icon.TrayRightMouseDown += icon_TrayMouseDown;
             }));
+        }
+
+        private System.Drawing.Icon Icon {
+            get {
+                if (_icon == null)
+                {
+                    Uri iconUri = new Uri("pack://application:,,,/DaxStudio.UI;component/Images/DaxStudio.Ico");
+                    using (var strm = Application.GetResourceStream(iconUri).Stream)
+                    {
+                        _icon = new System.Drawing.Icon(strm);
+                    }
+                }
+                return _icon;
+            }
         }
 
         private void icon_TrayMouseDown(object sender, RoutedEventArgs e)
@@ -49,15 +54,16 @@ namespace DaxStudio.UI.Model
 
         private void icon_TrayBalloonTipClicked(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start(DownloadUrl);
+            if (DownloadUrl != null)
+                System.Diagnostics.Process.Start(DownloadUrl);
         }
 
         public string DownloadUrl { get; set; }
 
         public void Notify(string message, string downloadUrl)
         {
-            DownloadUrl = downloadUrl;
             BalloonMessage = message;
+            DownloadUrl = downloadUrl;
             icon.Visibility = Visibility.Visible;
             icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info); 
         }

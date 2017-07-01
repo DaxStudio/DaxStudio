@@ -60,7 +60,7 @@
 
 
     </UserControl.Resources>
-	<Grid Margin="35,25,0,0">
+	<Grid Margin="35,25,5,5">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="*"/>
 			
@@ -74,6 +74,8 @@
 			Grid.Row="0"
 			Grid.Column="0"/>
 		<!-- Editor -->
+        <TabControl Grid.Row="1">
+            <TabItem Header="Standard">
         <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
             <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
             <GroupBox Header="Editor" Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
@@ -295,7 +297,23 @@
                     
                     </Grid>
                 </GroupBox>
-            </WrapPanel>
+                        <GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        </GroupBox>
+                    </WrapPanel>
         </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Advanced">
+                <ScrollViewer>
+                    <WrapPanel>
+                        <GroupBox Header="Publish Functions" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                            <StackPanel>
+                            <Button Margin="5">Publish Functions</Button>
+                            <Button Margin="5">Export Functions</Button>
+                            </StackPanel>
+                        </GroupBox>
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

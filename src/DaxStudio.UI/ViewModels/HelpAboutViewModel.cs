@@ -7,6 +7,9 @@ using DaxStudio.UI.Events;
 using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Diagnostics;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -14,10 +17,12 @@ namespace DaxStudio.UI.ViewModels
     public class HelpAboutViewModel : Screen
     {
         private IEventAggregator _eventAggregator;
+        private IDaxStudioHost _host;
 
         [ImportingConstructor]
-        public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker) {
+        public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker, IDaxStudioHost host) {
             _eventAggregator = eventAggregator;
+            _host = host;
             DisplayName = "About DaxStudio";
             CheckingUpdateStatus = true;
             UpdateStatus = "Checking for Updates...";
@@ -98,6 +103,15 @@ namespace DaxStudio.UI.ViewModels
         }
         public string DownloadUrl { get; private set; }
         public bool VersionIsLatest { get; private set; }
+
+        public bool IsLoggingEnabled { get { return _host.DebugLogging; } }
+
+        public void OpenLogFolder()
+        {
+            Process.Start(Constants.LogFolder);
+        }
+
+        public string LogFolder { get { return @"file:///" + Environment.ExpandEnvironmentVariables(Constants.LogFolder); } }
     }
 
     public class ReferencedAssembly

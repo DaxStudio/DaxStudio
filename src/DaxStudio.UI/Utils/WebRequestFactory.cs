@@ -8,6 +8,7 @@ using System.ComponentModel.Composition;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
@@ -18,7 +19,7 @@ namespace DaxStudio.UI.Utils
         private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
  
         // private variables
-        private readonly IGlobalOptions _globalOptions;
+        private IGlobalOptions _globalOptions;
         private IWebProxy _proxy;
 
         // Urls
@@ -36,37 +37,53 @@ namespace DaxStudio.UI.Utils
         private bool _isNetworkOnline = false;
         private IEventAggregator _eventAggregator;
 
-        [ImportingConstructor]
-        public WebRequestFactory(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        async public static Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
-            Log.Verbose("{class} {method} {message}", "WebRequestFactory","ctor","start");
+            var wrf = new WebRequestFactory();
+            await wrf.InitializeAsync(globalOptions, eventAggregator);
+            return wrf;
+        }
+
+        private WebRequestFactory() { }
+
+        //[ImportingConstructor]
+        async private Task<WebRequestFactory> InitializeAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        {
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
+            await Task.Run( () =>
+            {
+                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
 
-            NetworkChange.NetworkAvailabilityChanged 
-                += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
-            try
-            {
-                int connDesc;
-                _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
-            }
-            catch
-            {
-                Log.Error("{class} {method} {message}", "WebRequestFactory", "ctor", "call to InternetGetConnectedState failed");
-                _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
-            }
 
-            //todo - how to check that this works with different proxies...??
-            try
-            {
-                _proxy = GetProxy(DaxTextFormatUri);
-            }
-            catch (System.Net.WebException)
-            {
-                Log.Error("{class} {method} {message}", "WebRequestFactory", "ctor", "call to GetProxy failed");
-                _isNetworkOnline = false;
-            }
-            Log.Verbose("{class} {method} {message}", "WebRequestFactory", "ctor", "end");
+                NetworkChange.NetworkAvailabilityChanged
+                    += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+                try
+                {
+                    int connDesc;
+                    _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
+                }
+                catch
+                {
+                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
+                    _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
+                }
+
+                //todo - how to check that this works with different proxies...??
+                try
+                {
+                    _proxy = GetProxy(DaxTextFormatUri);
+                }
+                catch (System.Net.WebException)
+                {
+                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
+                    _isNetworkOnline = false;
+                }
+
+                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
+                //return this;
+            });
+            return this;
         }
 
         // ...

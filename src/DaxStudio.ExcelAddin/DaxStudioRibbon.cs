@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Serilog;
 using DaxStudio.Interfaces;
+using System.Windows;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -48,16 +49,18 @@ namespace DaxStudio.ExcelAddin
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
             try {
-                Launch();
+                RibbonButton btn = (RibbonButton)sender;
+                var enableLogging = (bool)btn.Tag;
+                Launch(enableLogging);
             }
             catch (Exception ex)
             {
-                
+                MessageBox.Show($"The following Error occurred while trying to launch the DAX Studio User Interface/n{ex.Message}", "DAX Studio Excel Add-in");    
                 Log.Error("{Class} {method} {exception} {stacktrace}", "DaxStudioRibbon", "BtnDaxClick", ex.Message, ex.StackTrace);
             }
         }
 
-        public void Launch()
+        public void Launch(bool enableLogging)
         {
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Entering Launch()");
             // Find free port and start the web host
@@ -82,7 +85,10 @@ namespace DaxStudio.ExcelAddin
 
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process
-            _client = Process.Start(new ProcessStartInfo(path, _port.ToString()));
+            ProcessStartInfo psi = new ProcessStartInfo(path);
+            psi.Arguments = string.Format("-port {0}", _port);
+            if (enableLogging) psi.Arguments += " -log";
+            _client = Process.Start(psi);
 
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Exiting Launch()");
         }

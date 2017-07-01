@@ -2,7 +2,7 @@
 // to manage Analysis Services instances
 
 [CustomMessages]
-amo_title=SQL Server 2012 Analysis Management Objects
+amo_title=SQL Server 2016 Analysis Management Objects
 
 en.amo_size=4.1 MB
 ;de.amo_size=2,7 MB

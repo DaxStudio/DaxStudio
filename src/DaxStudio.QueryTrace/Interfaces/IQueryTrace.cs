@@ -36,7 +36,6 @@ namespace DaxStudio.QueryTrace.Interfaces
         */
         List<DaxStudioTraceEventClass> Events { get; }
         QueryTraceStatus Status {get;}
-
         void Dispose();
     }
 }

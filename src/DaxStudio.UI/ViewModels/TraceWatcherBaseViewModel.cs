@@ -79,7 +79,7 @@ namespace DaxStudio.UI.ViewModels
                     Events.Add(e);
                 }
             }
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAlEvents", "starting ProcessResults");
+            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAllEvents", "starting ProcessResults");
             ProcessResults();
             IsBusy = false;
         }
@@ -209,6 +209,9 @@ namespace DaxStudio.UI.ViewModels
         Timer _timeout;
 
         public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
+
+        public abstract bool FilterForCurrentSession { get; }
+        
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {

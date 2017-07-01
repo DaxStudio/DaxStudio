@@ -7,6 +7,7 @@ using Serilog;
 using DaxStudio.UI.Utils;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using System.ComponentModel.Composition;
 
 namespace DaxStudio.UI.Model
 {
@@ -45,6 +46,7 @@ namespace DaxStudio.UI.Model
         public List<DaxFormatterError> errors;
     }
 
+    [Export]
     public class DaxFormatterProxy
     {
 
@@ -126,17 +128,18 @@ namespace DaxStudio.UI.Model
         //    }
         //}
 
-        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, IGlobalOptions globalOptions)
+
+        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, globalOptions);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, globalOptions, eventAggregator);
             var res2 = new DaxFormatterResult();
             JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
 
-        private static async Task<string> CallDaxFormatterAsync(string uri, string query, IGlobalOptions globalOptions)
+        private static async Task<string> CallDaxFormatterAsync(string uri, string query, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
             try
@@ -156,12 +159,13 @@ namespace DaxStudio.UI.Model
 
                 
 
-                await PrimeConnectionAsync(uri, globalOptions);
+                await PrimeConnectionAsync(uri, globalOptions,eventAggregator);
 
                 Uri originalUri = new Uri(uri);
                 string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
 
-                var webRequestFactory = IoC.Get<WebRequestFactory>();
+                //var webRequestFactory = IoC.Get<WebRequestFactory>();
+                var webRequestFactory = await WebRequestFactory.CreateAsync( globalOptions, eventAggregator);
                 var wr = webRequestFactory.Create(new Uri(actualUrl));
 
                 wr.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
@@ -202,18 +206,19 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public static async Task PrimeConnectionAsync(string uri, IGlobalOptions globalOptions)
+        public static async Task PrimeConnectionAsync(string uri, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
                 if (redirectHost == null)
                 {
-                    
+
 
                     // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
                     // The following 2 requests are doing manual POST re-direct
-                    var webRequestFactory = IoC.Get<WebRequestFactory>();
+                    //var webRequestFactory = IoC.Get<WebRequestFactory>();
+                    WebRequestFactory webRequestFactory = await WebRequestFactory.CreateAsync(globalOptions, eventAggregator);
                     var redirectRequest =  webRequestFactory.Create(uri) as HttpWebRequest;
 
                     redirectRequest.AllowAutoRedirect = false;
@@ -241,9 +246,9 @@ namespace DaxStudio.UI.Model
             });
 
         }
-        public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions)
+        public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
-            await PrimeConnectionAsync(WebRequestFactory.DaxTextFormatUri, globalOptions);
+            await PrimeConnectionAsync(WebRequestFactory.DaxTextFormatUri, globalOptions, eventAggregator);
         }
         
     }

@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using System;
 using DaxStudio.UI.Model;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace DaxStudio.UI
 {
@@ -50,6 +51,19 @@ namespace DaxStudio.UI
             if (regDaxStudio == null) return defaultValue;
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
         }
+
+        public static bool IsFileLoggingEnabled()
+        {
+            if (!KeyExists("IsFileLoggingEnabled")) return false;
+            return GetValue<bool>("IsFileLoggingEnabled");
+        }
+
+        public static bool KeyExists(string subKey)
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            return (regDaxStudio.GetSubKeyNames().ToList().Contains(subKey));
+        }
+
 
         public static T GetValue<T>(string subKey)
         {

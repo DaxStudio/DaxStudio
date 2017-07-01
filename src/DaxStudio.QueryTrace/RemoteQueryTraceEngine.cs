@@ -18,7 +18,7 @@ namespace DaxStudio.QueryTrace
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
 
-        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions)
+        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
@@ -37,7 +37,7 @@ namespace DaxStudio.QueryTrace
             hubConnection.Start().Wait();
             // configure trace
             Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQueryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
-            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events).Wait();
+            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events, filterForCurrentSession).Wait();
             // wire up hub events
 
         }

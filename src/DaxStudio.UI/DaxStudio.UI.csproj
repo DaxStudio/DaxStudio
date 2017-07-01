@@ -350,6 +350,8 @@
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringToXamlConverter.cs" />
+    <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
+    <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
@@ -477,8 +479,10 @@
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
+    <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
+    <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Views\OptionsView.xaml.cs">
       <DependentUpon>OptionsView.xaml</DependentUpon>
     </Compile>
@@ -551,6 +555,9 @@
     <Compile Include="Views\SaveDialogView.xaml.cs">
       <DependentUpon>SaveDialogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\AllServerQueriesView.xaml.cs">
+      <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ServerTimesView.xaml.cs">
       <DependentUpon>ServerTimesView.xaml</DependentUpon>
     </Compile>
@@ -611,6 +618,10 @@
     <Page Include="Views\SaveDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AllServerQueriesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>
@@ -710,6 +721,10 @@
       <Project>{EE4788C1-DCA6-465F-8049-28CEACE6586F}</Project>
       <Name>DAXEditor</Name>
       <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
+      <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
+      <Name>DaxStudio.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
