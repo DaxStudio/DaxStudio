@@ -89,7 +89,7 @@ namespace ADOTabular
         {
             get
             {
-                if (this.MetadataImage != MetadataImages.Measure)
+                if ((this.MetadataImage != MetadataImages.Measure) && (this.MetadataImage != MetadataImages.HiddenMeasure))
                 {
                     return null;
                 }
