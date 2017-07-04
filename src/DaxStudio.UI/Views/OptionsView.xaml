@@ -307,8 +307,16 @@
                     <WrapPanel>
                         <GroupBox Header="Publish Functions" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                             <StackPanel>
-                            <Button Margin="5">Publish Functions</Button>
-                            <Button Margin="5">Export Functions</Button>
+                            <Button Margin="5" Name="PublishDaxFunctions" >Publish Functions
+                                    <!--<i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Click">
+                                            <cal:ActionMessage MethodName="PublishDaxFunctions">
+
+                                            </cal:ActionMessage>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>-->
+                                </Button>
+                            <Button Margin="5" Name="ExportDAXFunctions">Export Functions</Button>
                             </StackPanel>
                         </GroupBox>
                     </WrapPanel>

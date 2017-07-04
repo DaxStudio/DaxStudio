@@ -7,6 +7,8 @@ using DaxStudio.Interfaces.Enums;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using DaxStudio.UI.Events;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -323,6 +325,16 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ShowTooltipSampleData", value);
             }
+        }
+
+        public void ExportDaxFunctions()
+        {
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent());
+        }
+
+        public void PublishDaxFunctions()
+        {
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
     }
 }

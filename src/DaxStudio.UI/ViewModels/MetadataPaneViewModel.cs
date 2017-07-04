@@ -46,6 +46,11 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanSelectDatabase);
                 NotifyOfPropertyChange(() => CanSelectModel);
             }
+            if (e.PropertyName == "SelectedDatabase") {
+                var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == ActiveDocument.SelectedDatabase);
+                if (selectedDB !=null) SelectedDatabase = selectedDB;
+                // TODO - should we log a warning here?
+            }
         }
 
         public DocumentViewModel ActiveDocument { get { return _activeDocument; }  }

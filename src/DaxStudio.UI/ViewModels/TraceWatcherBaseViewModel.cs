@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices;
 using Serilog;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using System.Timers;
-using System;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
@@ -39,6 +36,7 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             Init();
+            
             //_eventAggregator.Subscribe(this); 
         }
 
@@ -136,6 +134,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _isChecked = value;
                     NotifyOfPropertyChange(() => IsChecked);
+
                     if (!_isChecked) Reset();
                     if (value)
                     {
@@ -145,6 +144,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         _eventAggregator.Unsubscribe(this);
                     }
+                    
                     _eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
                 }
@@ -153,26 +153,29 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DocumentConnectionUpdateEvent message)
         {
-            CheckEnabled(message.Connection);
+            CheckEnabled(message.Connection, message.ActiveTrace);
         }
 
-        public void CheckEnabled(IConnection _connection)
+        public void CheckEnabled(IConnection connection, ITraceWatcher active)
         {
-            if (_connection == null) {
+            if (connection == null) {
                 IsEnabled = false;
                 IsChecked = false;
                 return; 
             }
-            if (!_connection.IsConnected)
+            if (!connection.IsConnected)
             {
                 // if connection has been closed or broken then uncheck and disable
                 IsEnabled = false;
                 IsChecked = false;
                 return;
             }
-
+            IsAdminConnection = connection.IsAdminConnection;
             //IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
-            IsEnabled = (_connection.IsAdminConnection && _connection.IsConnected);
+            if (active != null)
+                IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
+            else
+                IsEnabled = (connection.IsAdminConnection && connection.IsConnected);
         }
 
         private bool _isBusy = false;
@@ -211,7 +214,12 @@ namespace DaxStudio.UI.ViewModels
         public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
 
         public abstract bool FilterForCurrentSession { get; }
-        
+        public bool IsAdminConnection { get; private set; }
+        public string DisableReason { get {
+                if (!IsAdminConnection) return "You must have Admin rights on the server to enable traces";
+                return "You cannot have both session traces and all queries traces enabled at the same time";
+            }
+        }
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {

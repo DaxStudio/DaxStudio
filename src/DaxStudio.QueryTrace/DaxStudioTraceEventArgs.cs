@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AnalysisServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,32 @@ namespace DaxStudio.QueryTrace
         
         public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e)
         {
+            EventClassName = e.EventClass.ToString();
+            EventSubclassName = e.EventSubclass.ToString();
+            Enum.TryParse<DaxStudioTraceEventClass>(EventClassName, out _eventClass);
+            Enum.TryParse<DaxStudioTraceEventSubclass>(EventSubclassName, out _eventSubclass);
+
+            TextData = e.TextData;
+            /*
+            switch (e.EventClass)
+            {
+                case TraceEventClass.QueryEnd:
+                    Duration = e.Duration;
+                    DatabaseName = e.DatabaseName;
+                    StartTime = e.StartTime;
+                    NTUserName = e.NTUserName;
+                    
+                    break;
+                case TraceEventClass.VertiPaqSEQueryCacheMatch:
+                    StartTime = e.StartTime;
+                    break;
+                case TraceEventClass.CommandBegin:
+
+                default:
+                    throw new ArgumentException($"No mapping for the event class {e.EventClass.ToString()} was found");
+
+            }
+            */
             // not all events have CpuTime
             try {
                 CpuTime = e.CpuTime;
@@ -24,26 +51,24 @@ namespace DaxStudio.QueryTrace
                 CpuTime = 0;
             }
             // not all events have a duration
-            try { 
+            try
+            {
                 Duration = e.Duration;
-            } catch (ArgumentNullException) {
-                Duration = 0;
-            }
-            try {
-                NTUserName = e.NTUserName;
             }
             catch (ArgumentNullException)
             {
-                NTUserName = string.Empty;
+                Duration = 0;
             }
+            if (e.NTUserName != null)
+                NTUserName = e.NTUserName;
+            
+            if (e.DatabaseName != null) 
+                DatabaseName = e.DatabaseName;
 
             StartTime = e.StartTime;
-            //EndTime = e.EndTime;
-            TextData = e.TextData;
-            EventClassName = e.EventClass.ToString();
-            EventSubclassName = e.EventSubclass.ToString();
-            Enum.TryParse<DaxStudioTraceEventClass>(EventClassName,out _eventClass);
-            Enum.TryParse<DaxStudioTraceEventSubclass>(EventSubclassName, out _eventSubclass);
+            //if (e.EndTime != null) 
+            //    EndTime = e.EndTime;
+            
         }
 
         public DaxStudioTraceEventArgs() { }
@@ -76,9 +101,9 @@ namespace DaxStudio.QueryTrace
 
         public DaxStudioTraceEventClass EventClass { get { return _eventClass; } }
         public DaxStudioTraceEventSubclass EventSubclass { get { return _eventSubclass; } }
-
         public string NTUserName { get; private set; }
-        //public DateTime EndTime { get; private set; }
+        public DateTime EndTime { get; private set; }
         public DateTime StartTime { get; private set; }
+        public string DatabaseName { get; private set; }
     }
 }

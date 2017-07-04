@@ -490,8 +490,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _selectedDatabase = value;
                     Connection.ChangeDatabase(value);
-                    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases));
+                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
                     NotifyOfPropertyChange(() => SelectedDatabase);
+                    
                 }
             }
         }
@@ -627,11 +629,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (value == null) return;
                 _connection = value;
-
+                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
                 {
-                    traceWatcher.CheckEnabled(this);   
+                    traceWatcher.CheckEnabled(this,activeTrace);   
                 }
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;
@@ -1312,6 +1314,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(SendTextToEditor message)
         {
+            if (!string.IsNullOrEmpty(message.DatabaseName))
+            {
+                if (Databases.Contains(message.DatabaseName))
+                    if (SelectedDatabase != message.DatabaseName)
+                    {
+                        SelectedDatabase = message.DatabaseName;
+                        OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                    }
+                    else
+                        OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+            }
             InsertTextAtSelection(message.TextToSend);
         }
 
@@ -1367,8 +1380,8 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null? "<null>":message.Connection.ConnectionString, message.DatabaseName);
             
             UpdateConnections(message.Connection, message.DatabaseName);
-            
-            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases));     
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));     
         }
 
 
@@ -1409,6 +1422,12 @@ namespace DaxStudio.UI.ViewModels
                             });
                         };
                     },TaskScheduler.Default);
+                }
+                // Disable other tracewatchers with different filter for current session values
+                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                foreach(var tw in TraceWatchers)
+                {
+                    tw.CheckEnabled(this, activeTrace);
                 }
             }
             else
@@ -1725,7 +1744,8 @@ namespace DaxStudio.UI.ViewModels
                 }).ContinueWith((antecendant) =>
                     {
                         // todo - should we be checking for exceptions in this continuation
-                        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases));//,IsPowerPivotConnection));
+                        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));//,IsPowerPivotConnection));
                         _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                         LoadState();
                         msg.Dispose(); //reset the status message

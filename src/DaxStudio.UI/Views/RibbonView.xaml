@@ -90,9 +90,10 @@
                                      ClickMode="Press" Width="Auto" 
                                      Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
-                                     IsEnabled="{Binding IsEnabled}">
+                                     IsEnabled="{Binding IsEnabled}"
+                                     >
                     <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" />
+                        <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" DisableReason="{Binding DisableReason}" />
                     </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>               
                 
@@ -222,7 +223,7 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-                    <Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
+                    <!--<Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
                                 <cal:ActionMessage MethodName="PublishDaxFunctions">
@@ -240,7 +241,7 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
 
-                    </Fluent:Button>
+                    </Fluent:Button>-->
 
                     <Fluent:BackstageTabItem Header="Options"  >
                         <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />

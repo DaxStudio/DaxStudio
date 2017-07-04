@@ -217,15 +217,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument.SaveAs();
         }
-        public void ExportDaxFunctions() {
-            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent());
-            //ActiveDocument.ExportDaxFunctions();
-        }
-
-        public void PublishDaxFunctions() {
-            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
-            //ActiveDocument.PublishDaxFunctions();
-        }
+        
 
         public void Connect()
         {
@@ -373,9 +365,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateTraceWatchers()
         {
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
-                tw.CheckEnabled(ActiveDocument);
+                tw.CheckEnabled(ActiveDocument, activeTrace);
             }
         }
 

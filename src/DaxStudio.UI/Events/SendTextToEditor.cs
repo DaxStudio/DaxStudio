@@ -10,8 +10,15 @@ namespace DaxStudio.UI.Events
         public SendTextToEditor(string textToSend)
         {
             TextToSend = textToSend;
+            DatabaseName = string.Empty;
+        }
+        public SendTextToEditor(string textToSend, string databaseName)
+        {
+            TextToSend = textToSend;
+            DatabaseName = databaseName;
         }
 
         public string TextToSend { get; set; }
+        public string DatabaseName { get; set; }
     }
 }

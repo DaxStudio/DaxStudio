@@ -17,6 +17,7 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(TraceColumn.ActivityID);
             if (eventClass == TraceEventClass.QueryEnd)
             {
+                trc.Columns.Add(TraceColumn.DatabaseName);
                 trc.Columns.Add(TraceColumn.EndTime);
                 trc.Columns.Add(TraceColumn.NTUserName);
             }
