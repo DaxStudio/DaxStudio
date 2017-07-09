@@ -190,6 +190,7 @@
 			<Setter.Value>
 				<Style TargetType="{x:Type avalondock:LayoutAnchorablePaneControl}">
 					<Setter Property="TabStripPlacement" Value="Bottom"/>
+                    
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="{x:Type avalondock:LayoutAnchorablePaneControl}">

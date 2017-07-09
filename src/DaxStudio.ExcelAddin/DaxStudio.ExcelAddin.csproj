@@ -373,7 +373,6 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AmoWrapper\AmoServer.cs" />
-    <Compile Include="Constants.cs" />
     <Compile Include="DataSetExtensions.cs" />
     <Compile Include="DaxStudioLauncher.cs" />
     <Compile Include="DaxStudioStandalone.cs" />

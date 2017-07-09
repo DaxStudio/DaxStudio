@@ -7,6 +7,7 @@ namespace DaxStudio.UI.Utils
     public static class CrashReporter
     {
         private static Guid applicationID = new Guid("ca045521-7046-4979-9db9-3418a1352e94");
+        
         public static void ReportCrash(Exception exception)
         {
             var reportCrash = new ReportCrash
@@ -14,7 +15,7 @@ namespace DaxStudio.UI.Utils
                 CurrentCulture = new CultureInfo("en-US"),
                 AnalyzeWithDoctorDump = true,
                 DeveloperMessage = "",
-                
+                ToEmail = "daxstudiocrash@gmail.com",
                 DoctorDumpSettings = new DoctorDumpSettings()
                 {
                     ApplicationID = applicationID,
@@ -26,5 +27,6 @@ namespace DaxStudio.UI.Utils
             reportCrash.Send(exception);
 
         }
+        
     }
 }

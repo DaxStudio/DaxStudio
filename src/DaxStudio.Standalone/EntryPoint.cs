@@ -43,6 +43,18 @@ namespace DaxStudio.Standalone
         {
             try
             {
+                // Setup logging
+                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
+                var config = new LoggerConfiguration()
+                    .ReadFrom.AppSettings()
+                    .MinimumLevel.ControlledBy(levelSwitch);
+
+                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder), 
+                                            Constants.StandaloneLogFileName);
+                config.WriteTo.RollingFile(logPath
+                        , retainedFileCountLimit: 10);
+
+                log = config.CreateLogger();
 
                 // need to create application first
                 var app = new Application();
@@ -53,25 +65,23 @@ namespace DaxStudio.Standalone
                 app.ReadCommandLineArgs();
 
                 // check if user is holding shift key down
-                bool isLoggingKeyDown = (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl)
-                                    || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl));
+                bool isLoggingKeyDown = (System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey1)
+                                    || System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey2));
 
                 app.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
-
-                var config = new LoggerConfiguration().ReadFrom.AppSettings();
-
-                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder), Constants.StandaloneLogFileName);
-
-                var logCmdLineSwitch = app.Args().LoggingEnabled;
-
-                if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
-                    config.WriteTo.RollingFile(logPath
-                            , retainedFileCountLimit: 10
-                            , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose);
-
-                log = config.CreateLogger();
-
                 
+                var logCmdLineSwitch = app.Args().LoggingEnabled;
+                
+
+                //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
+                if (isLoggingKeyDown || logCmdLineSwitch)
+                {
+                    levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
+                    Log.Debug("Debug Logging Enabled");
+                }
+
+                //RegistryHelper.IsFileLoggingEnabled();
+
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
@@ -79,8 +89,8 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
-                if (isLoggingKeyDown) log.Information("Logging enabled due to Ctrl key being held down");
-                if (logCmdLineSwitch) log.Information("Logging enabled by Excel Add=in");
+                if (isLoggingKeyDown) log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
+                if (logCmdLineSwitch) log.Information("Logging enabled by Excel Add-in");
                 Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;

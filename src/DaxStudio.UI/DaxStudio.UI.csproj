@@ -439,6 +439,7 @@
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
+    <Compile Include="Utils\DisabledCommand.cs" />
     <Compile Include="Utils\FixedSizeQueue.cs" />
     <Compile Include="Utils\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />

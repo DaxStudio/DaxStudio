@@ -105,7 +105,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanClose
         {
-            get { return false; }
+            get { return true; }
             set { }
         }
         public bool CanHide

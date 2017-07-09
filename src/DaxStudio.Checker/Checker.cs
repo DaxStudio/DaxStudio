@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -73,7 +72,7 @@ namespace DaxStudio.Checker
             // run reg process
             //var currentPath = Assembly.GetEntryAssembly().Location;
             var tempPath = Path.GetTempPath();
-            var fusionPath = Path.Combine(tempPath, "Fusion");
+            var fusionPath = Path.Combine(tempPath, "Fusion\\");
             var regPath = Path.Combine(tempPath, "DaxStudioFusionLogging.reg");
             Directory.CreateDirectory(fusionPath);
 
@@ -124,6 +123,8 @@ namespace DaxStudio.Checker
             Output.AppendLine("=======================");
             Output.AppendRange("").Indent(20);
             Output.OutputOSInfo();
+            Output.AppendLine();
+            Output.OutputCultureInfo();
         }
         public void CheckLibrary(string shortName, string longNameFormat)
         {

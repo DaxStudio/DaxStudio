@@ -241,6 +241,7 @@
                             <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
                             <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
+                            <Setter Property="DockAsDocumentCommand" Value="{Binding Model.DockAsDocumentCommand}" />
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
                 </local:PanesStyleSelector>

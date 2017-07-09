@@ -170,9 +170,9 @@ end;
 // Display command line usage when help option passed
 procedure DisplayHelp();
 var
-	i, maxLen:	Integer;
+//	i, maxLen:	Integer;
 	RTFHeaderM, RTFBody:	String;
-	compArr, compItem, taskArr, taskItem:	Array of String;
+//	compArr, compItem, taskArr, taskItem:	Array of String;
 
 begin
 	// Setup help message box

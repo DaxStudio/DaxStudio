@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Management;
+using System.Threading;
 
 namespace DaxStudio.Checker
 {
@@ -13,6 +14,21 @@ namespace DaxStudio.Checker
             output.AppendLine($"OSArchitecture  = {osInfo.Architecture}");
             output.AppendLine($"VisibleMemoryGB = {osInfo.TotalVisibleMemory.ToString("n2")}");
             output.AppendLine($"FreeMemoryGB    = {osInfo.TotalFreeMemory.ToString("n2")}");
+
+        }
+
+        public static void OutputCultureInfo(this System.Windows.Controls.RichTextBox output)
+        {
+            var curCulture = Thread.CurrentThread.CurrentCulture;
+            output.AppendLine($"Culture Name              = {curCulture.Name}");
+            output.AppendLine($"Culture DisplayName       = {curCulture.DisplayName}");
+            output.AppendLine($"Culture EnglishName       = {curCulture.EnglishName}");
+            output.AppendLine($"Culture 2-Letter ISO Name = {curCulture.TwoLetterISOLanguageName}");
+            output.AppendLine($"Culture DecimalSeparator  = {curCulture.NumberFormat.NumberDecimalSeparator}");
+            output.AppendLine($"Culture GroupSeparator    = {curCulture.NumberFormat.NumberGroupSeparator}");
+            output.AppendLine($"Culture CurrencySymbol    = {curCulture.NumberFormat.CurrencySymbol}");
+            output.AppendLine($"Culture ShortDatePattern  = {curCulture.DateTimeFormat.ShortDatePattern}");
+
 
         }
 

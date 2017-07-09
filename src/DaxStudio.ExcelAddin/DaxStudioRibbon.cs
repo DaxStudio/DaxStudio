@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using Serilog;
 using DaxStudio.Interfaces;
 using System.Windows;
+using DaxStudio.Common;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -46,17 +47,27 @@ namespace DaxStudio.ExcelAddin
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Finish");
         }
         
+        public bool DebugLoggingEnabled { get; set; }
+
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
             try {
                 RibbonButton btn = (RibbonButton)sender;
-                var enableLogging = (bool)btn.Tag;
+                var enableLogging = DebugLoggingEnabled;// (bool)btn.Tag;
                 Launch(enableLogging);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"The following Error occurred while trying to launch the DAX Studio User Interface/n{ex.Message}", "DAX Studio Excel Add-in");    
-                Log.Error("{Class} {method} {exception} {stacktrace}", "DaxStudioRibbon", "BtnDaxClick", ex.Message, ex.StackTrace);
+                var msg = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    msg += $"\n{inner.Message}";
+                    inner = inner.InnerException;
+                }
+
+                MessageBox.Show($"The following Error occurred while trying to launch the DAX Studio User Interface\n{msg}", "DAX Studio Excel Add-in");    
+                Log.Error(ex, "{Class} {method} {exception} {stacktrace}", "DaxStudioRibbon", "BtnDaxClick", ex.Message, ex.StackTrace);
             }
         }
 
@@ -89,7 +100,11 @@ namespace DaxStudio.ExcelAddin
             psi.Arguments = string.Format("-port {0}", _port);
             if (enableLogging) psi.Arguments += " -log";
             _client = Process.Start(psi);
-
+            if (!_client.WaitForInputIdle(Constants.ExcelUIStartupTimeout))
+            {
+                Log.Error("Launching User Interface from Excel exceeded the {timeout} ms timeout", Constants.ExcelUIStartupTimeout);
+                MessageBox.Show("The DAX Studio User Interface is taking a long time to load");
+            }
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Exiting Launch()");
         }
 

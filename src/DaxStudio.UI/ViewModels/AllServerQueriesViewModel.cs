@@ -9,14 +9,14 @@ using DaxStudio.UI.Models;
 using System.IO;
 using Newtonsoft.Json;
 using System.Text;
-using System;
 using DaxStudio.Controls.DataGridFilter;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
 
     class AllServerQueriesViewModel
-        : TraceWatcherBaseViewModel, ISaveState, IViewAware
+        : TraceWatcherBaseViewModel, ISaveState //, IViewAware
         
     {
         [ImportingConstructor]
@@ -62,8 +62,8 @@ namespace DaxStudio.UI.ViewModels
  
         private readonly BindableCollection<QueryEvent> _queryEvents;
         private bool _isPaused;
-
-        public event EventHandler<ViewAttachedEventArgs> ViewAttached;
+        public new bool CanClose { get { return true; } }
+        //public event EventHandler<ViewAttachedEventArgs> ViewAttached;
 
         public IObservableCollection<QueryEvent> QueryEvents 
         {
@@ -189,9 +189,12 @@ namespace DaxStudio.UI.ViewModels
             var filters = controller.GetFiltersForColumns();
 
             var columnFilter = filters.FirstOrDefault(w => w.Key == column);
-            columnFilter.Value.QueryString = value;
+            if (columnFilter.Key != null)
+            {
+                columnFilter.Value.QueryString = value;
 
-            controller.SetFiltersForColumns(filters);
+                controller.SetFiltersForColumns(filters);
+            }
         }
 
         #endregion
