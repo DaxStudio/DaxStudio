@@ -212,15 +212,34 @@ namespace DaxStudio.Checker
             var xlVer = GetCurrentExcelVersion();
             Output.AppendLine($"Detected Excel Version: {xlVer} - {(ExcelVersions)xlVer}");
 
-            GetExcelDetails();
+            var excelBitness = GetExcelDetails();
             Output.AppendLine();
 
             // check registry entries
             string name = @"SOFTWARE\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
-            RegistryKey key = Registry.LocalMachine.OpenSubKey(name);
+            RegistryKey baseKey= RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            switch (excelBitness)
+            {
+                case MachineType.x64:
+                    baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                    break;
+                case MachineType.x86:
+                    baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                    break;
+                default:
+                    Output.AppendRange("  ERROR:").Color("Red").Bold();
+                    Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
+                    break;
+            }
+
+            RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
+
             Output.AppendLine("DAX Studio Excel Add-in Registry keys");
             if (key == null)
-                Output.AppendLine("WARNING: DAX Studio Excel addin registry keys not found!");
+            {
+                Output.AppendRange("  ERROR:").Color("Red").Bold();
+                Output.AppendLine(" DAX Studio Excel addin registry keys not found!");
+            }
             else
                 PrintSubkeyValues(key);
             Output.AppendLine();
@@ -274,13 +293,13 @@ namespace DaxStudio.Checker
 
         #region Helper Functions
 
-        private void GetExcelDetails()
+        private MachineType GetExcelDetails()
         {
             var appPath = (string)Registry.GetValue(  @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe",null,"");
             Output.AppendLine($"Excel Path: {appPath}");
             var excelArch = GetMachineType(appPath);
             Output.AppendLine($"Excel Architecture: {excelArch}");
-
+            return excelArch;
         }
 
         public enum MachineType
@@ -309,7 +328,8 @@ namespace DaxStudio.Checker
             var path = GetExcelAddinLocation();
             if (string.IsNullOrWhiteSpace(path))
             {
-                Output.AppendLine("  WARNING: could not locate the Excel add-in location in the registry");
+                Output.AppendRange("  ERROR:").Color("Red").Bold();
+                Output.AppendLine(" could not locate the Excel add-in location in the registry");
             }
             else
             {

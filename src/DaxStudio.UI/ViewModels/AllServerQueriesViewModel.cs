@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using System.Text;
 using DaxStudio.Controls.DataGridFilter;
 using System.Linq;
+using System;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -35,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults() {
 
-            if (IsPaused) return; // exit here if we are paused
+            //if (IsPaused) return; // exit here if we are paused
 
             if (Events != null) {
                 foreach (var traceEvent in Events) {
@@ -61,8 +63,8 @@ namespace DaxStudio.UI.ViewModels
         
  
         private readonly BindableCollection<QueryEvent> _queryEvents;
-        private bool _isPaused;
-        public new bool CanClose { get { return true; } }
+        
+        public new bool CanHide { get { return true; } }
         //public event EventHandler<ViewAttachedEventArgs> ViewAttached;
 
         public IObservableCollection<QueryEvent> QueryEvents 
@@ -99,28 +101,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanSendAllQueriesToEditor);
         }
 
-        public void Pause()
-        {
-            IsPaused = true;
-        }
-
-        public void Start()
-        {
-            IsPaused = false;
-        }
-
-        public bool IsPaused
-        {
-            get { return _isPaused; }
-            set
-            {
-                _isPaused = value;
-                NotifyOfPropertyChange(() => CanPause);
-                NotifyOfPropertyChange(() => CanStart);
-            }
-        }
-        public bool CanPause { get { return !IsPaused; } }
-        public bool CanStart { get { return IsPaused; } }
+        
         public bool CanClearAllEvents { get { return QueryEvents.Count > 0; } }
         public override void OnReset() {
             IsBusy = false;
@@ -163,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".allQueries";
             if (!File.Exists(filename)) return;
 
-            IsChecked = true;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
             

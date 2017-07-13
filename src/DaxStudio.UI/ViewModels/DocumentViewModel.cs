@@ -61,6 +61,8 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<OutputMessage>
         , IHandle<ExportDaxFunctionsEvent>
+        , IHandle<CloseTraceWindowEvent>
+        , IHandle<ShowTraceWindowEvent>
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
@@ -1392,69 +1394,81 @@ namespace DaxStudio.UI.ViewModels
 
             if (message.IsActive)
             {
-                ToolWindows.Add(message.TraceWatcher);
-
-                // synch the ribbon buttons and the server timings pane
-                if (message.TraceWatcher is ServerTimesViewModel && message.TraceWatcher.IsChecked)
-                {
-                    ((ServerTimesViewModel)message.TraceWatcher).ServerTimingDetails = ServerTimingDetails;
-                }
-
-                if (Tracer == null) CreateTracer();
-                else UpdateTraceEvents();
-
-                // spin up trace if one is not already running
-                if (Tracer.Status != QueryTraceStatus.Started
-                    && Tracer.Status != QueryTraceStatus.Starting)
-                {
-                    _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
-                    OutputMessage("Waiting for Trace to start");
-                    
-                    var t = Tracer;
-                    t.StartAsync().ContinueWith((p)=>{
-                        if (p.Exception != null)
-                        {
-                            p.Exception.Handle((x) =>
-                            {
-                                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
-                                OutputError("Error Starting Trace: " + x.Message);
-                                return false;
-                            });
-                        };
-                    },TaskScheduler.Default);
-                }
-                // Disable other tracewatchers with different filter for current session values
-                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                foreach(var tw in TraceWatchers)
-                {
-                    tw.CheckEnabled(this, activeTrace);
-                }
+                EnableTrace(message.TraceWatcher);
             }
             else
             {
-                var otherTracesRunning = false;
-                ToolWindows.Remove(message.TraceWatcher);
-                foreach (var tw in TraceWatchers)
-                {
-                    if (tw.IsChecked) otherTracesRunning = true;
-                }
-                if (otherTracesRunning)
-                {
-                    UpdateTraceEvents();
-                    return;
-                }
-
-                // If we got here no traces are running so shut everything down
-                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
-                OutputMessage("Stopping Trace");
-                // spin down trace as no tracewatchers are active
-                Tracer.Stop();
-                ResetTracer();
-                OutputMessage("Trace Stopped");
-                _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
-                TraceWatchers.EnableAll();
+                DisableTrace(message.TraceWatcher);
             }
-            
+
+        }
+
+        private void DisableTrace(ITraceWatcher watcher)
+        {
+            var otherTracesRunning = false;
+            //ToolWindows.Remove(watcher);
+            foreach (var tw in TraceWatchers)
+            {
+                if (tw.IsChecked) otherTracesRunning = true;
+            }
+            if (otherTracesRunning)
+            {
+                UpdateTraceEvents();
+                return;
+            }
+
+            // If we got here no traces are running so shut everything down
+            _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
+            OutputMessage("Stopping Trace");
+            // spin down trace as no tracewatchers are active
+            Tracer.Stop();
+            ResetTracer();
+            OutputMessage("Trace Stopped");
+            _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
+            TraceWatchers.EnableAll();
+        }
+
+        private void EnableTrace(ITraceWatcher watcher)
+        {
+            if (!ToolWindows.Contains(watcher))
+                ToolWindows.Add(watcher);
+
+            // synch the ribbon buttons and the server timings pane
+            if (watcher is ServerTimesViewModel && watcher.IsChecked)
+            {
+                ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+            }
+
+            if (Tracer == null) CreateTracer();
+            else UpdateTraceEvents();
+
+            // spin up trace if one is not already running
+            if (Tracer.Status != QueryTraceStatus.Started
+                && Tracer.Status != QueryTraceStatus.Starting)
+            {
+                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                OutputMessage("Waiting for Trace to start");
+
+                var t = Tracer;
+                t.StartAsync().ContinueWith((p) =>
+                {
+                    if (p.Exception != null)
+                    {
+                        p.Exception.Handle((x) =>
+                        {
+                            Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
+                            OutputError("Error Starting Trace: " + x.Message);
+                            return false;
+                        });
+                    };
+                }, TaskScheduler.Default);
+            }
+            // Disable other tracewatchers with different filter for current session values
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+            foreach (var tw in TraceWatchers)
+            {
+                tw.CheckEnabled(this, activeTrace);
+            }
         }
 
         private void ResetTracer()
@@ -1478,6 +1492,7 @@ namespace DaxStudio.UI.ViewModels
                     tw.Write(GetEditor().Text);
                     tw.Close();
                 }
+                // Save all visible TraceWatchers
                 foreach (var tw in ToolWindows)
                 {
                     var saver = tw as ISaveState;
@@ -1661,7 +1676,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!_isLoadingFile) return;
             // we can only load trace watchers if we are connected to a server
-            if (!this.IsConnected) return;
+            //if (!this.IsConnected) return;
 
             foreach (var tw in TraceWatchers)
             {
@@ -1691,6 +1706,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 OutputError(string.Format("The file '{0}' was not found",FileName));
             }
+
+            LoadState();
 
             IsDirty = false;
             State = DocumentState.Loaded;
@@ -1747,7 +1764,7 @@ namespace DaxStudio.UI.ViewModels
                         var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                         _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));//,IsPowerPivotConnection));
                         _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
-                        LoadState();
+                        //LoadState();
                         msg.Dispose(); //reset the status message
                     }, TaskScheduler.Default);
             
@@ -2312,6 +2329,17 @@ namespace DaxStudio.UI.ViewModels
         {
             if (exportFunctions.AutoDelete) PublishDaxFunctions();
             else ExportDaxFunctions();
+        }
+
+        public void Handle(CloseTraceWindowEvent message)
+        {
+            message.TraceWatcher.IsChecked = false;
+            ToolWindows.Remove(message.TraceWatcher);
+        }
+
+        public void Handle(ShowTraceWindowEvent message)
+        {
+            ToolWindows.Add(message.TraceWatcher);
         }
 
         #region ISaveable 

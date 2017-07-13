@@ -12,6 +12,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using System;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -200,13 +201,7 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
-        public override bool FilterForCurrentSession
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool FilterForCurrentSession { get { return true; } }
 
         void ISaveState.Save(string filename)
         {
@@ -224,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".queryPlans";
             if (!File.Exists(filename)) return;
 
-            this.IsChecked = true;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             QueryPlanModel m = JsonConvert.DeserializeObject<QueryPlanModel>(data);
 

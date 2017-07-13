@@ -52,7 +52,7 @@ namespace DaxStudio.ExcelAddin
 
         private DaxStudioRibbon _ribbon;
         
-        protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
+        protected override IRibbonExtension[] CreateRibbonObjects()
         {
             if (_ribbon == null)
             {

@@ -4,10 +4,14 @@
     
     <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
     <Color x:Key="WhiteColor}">#FFCCCCCC</Color>
-    <Color x:Key="DaxStudioBlue">#FF0072C6</Color> 
+    <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
+    <Color x:Key="WarningBarBackgroundColor">#FFFBFF92</Color>
+    <Color x:Key="MutedTextColor">#FF626161</Color>
     
     <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
     <SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>
+    <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
 
     <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
     <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">

@@ -297,8 +297,8 @@
                     
                     </Grid>
                 </GroupBox>
-                        <GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
-                        </GroupBox>
+                        <!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        </GroupBox>-->
                     </WrapPanel>
         </ScrollViewer>
             </TabItem>

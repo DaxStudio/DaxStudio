@@ -9,6 +9,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using System.Timers;
 using DaxStudio.UI.Utils;
+using System;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,19 +33,31 @@ namespace DaxStudio.UI.ViewModels
         protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)
         {
             _eventAggregator = eventAggregator;
-            
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
+            HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
             Init();
             
             //_eventAggregator.Subscribe(this); 
         }
+
+        private bool CanHideTrace(object obj)
+        {
+            return CanHide;
+        }
+
+        public  void HideTrace(object obj)
+        {
+            _eventAggregator.PublishOnUIThread(new CloseTraceWindowEvent(this));
+        }
+        
 
         private void Init()
         {
             MonitoredEvents = GetMonitoredEvents();
         }
 
+        public DelegateCommand HideCommand { get; set; }
         public List<DaxStudioTraceEventClass> MonitoredEvents { get; private set; }
         public TraceEventClass WaitForEvent { get; set; }
 
@@ -78,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAllEvents", "starting ProcessResults");
-            ProcessResults();
+            if (!IsPaused) ProcessResults();
             IsBusy = false;
         }
 
@@ -86,6 +99,7 @@ namespace DaxStudio.UI.ViewModels
         // reset any stored state
         public void Reset()
         {
+            IsPaused = false;
             Events.Clear();
             OnReset();
         }
@@ -95,6 +109,13 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public abstract string Title { get; set; }
 
+        public virtual string TraceStatusText {
+            get {
+                if (!IsChecked) return $"Trace is not currently active, click on the {Title} button in the ribbon to start tracing";
+                //TODO - should we show this for paused states too??
+                //if (IsPaused) return $"Trace is paused, click on the start button in the toolbar below to re-start tracing";
+                return string.Empty; } }
+
         public abstract string ToolTipText { get; set; }
 
         public virtual string DefaultDockingPane
@@ -103,14 +124,14 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
-        public bool CanClose
+        public bool CanCloseWindow
         {
             get { return true; }
             set { }
         }
         public bool CanHide
         {
-            get { return false; }
+            get { return true; }
             set { }
         }
         public int AutoHideMinHeight { get; set; }
@@ -133,8 +154,11 @@ namespace DaxStudio.UI.ViewModels
                 if (_isChecked != value)
                 {
                     _isChecked = value;
+                    NotifyOfPropertyChange(() => CanPause);
+                    NotifyOfPropertyChange(() => CanStart);
+                    NotifyOfPropertyChange(() => IsTraceRunning);
                     NotifyOfPropertyChange(() => IsChecked);
-
+                    NotifyOfPropertyChange(() => TraceStatusText);
                     if (!_isChecked) Reset();
                     if (value)
                     {
@@ -198,8 +222,11 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryStartedEvent message)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
-            IsBusy = true;
-            Reset();
+            if (!IsPaused)
+            {
+                IsBusy = true;
+                Reset();
+            }
         }
 
         public void Handle(CancelQueryEvent message)
@@ -212,6 +239,34 @@ namespace DaxStudio.UI.ViewModels
         Timer _timeout;
 
         public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
+
+        private bool _isPaused;
+        public void Pause()
+        {
+            IsPaused = true;
+        }
+
+        public void Start()
+        {
+            IsPaused = false;
+        }
+
+        public bool IsPaused
+        {
+            get { return _isPaused; }
+            set
+            {
+                _isPaused = value;
+                NotifyOfPropertyChange(() => IsTraceRunning);
+                NotifyOfPropertyChange(() => IsPaused);
+                NotifyOfPropertyChange(() => CanPause);
+                NotifyOfPropertyChange(() => CanStart);
+            }
+        }
+
+        public bool IsTraceRunning { get { return IsChecked && !IsPaused; } }
+        public bool CanPause { get { return IsChecked && !IsPaused; } }
+        public bool CanStart { get { return IsChecked && IsPaused; } }
 
         public abstract bool FilterForCurrentSession { get; }
         public bool IsAdminConnection { get; private set; }

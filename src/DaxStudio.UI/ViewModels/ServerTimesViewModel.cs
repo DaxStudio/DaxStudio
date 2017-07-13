@@ -422,7 +422,7 @@ namespace DaxStudio.UI.ViewModels
                 StoreageEngineEvents =  this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration
             };
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             File.WriteAllText(filename + ".serverTimings" , json);
 
         }
@@ -432,7 +432,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".serverTimings";
             if (!File.Exists(filename)) return;
 
-            this.IsChecked = true;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data);
 
@@ -451,6 +451,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
+       
 
         #region Properties to handle layout changes
 

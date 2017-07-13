@@ -14,13 +14,19 @@
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
-    xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties">
+    xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
+    xmlns:conv="clr-namespace:DaxStudio.UI.Converters">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Views/DaxStudioTemplates.xaml" />-->
+
             </ResourceDictionary.MergedDictionaries>
 
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotHiddenConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToHiddenConverter"/>
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -229,6 +235,52 @@
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
+            <avalondock:DockingManager.AnchorableHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Converter={StaticResource BoolToNotHiddenConverter},Path=Content.IsTraceRunning
+                                    , FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                            >
+                            
+                        </TextBlock>
+                        <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Converter={StaticResource BoolToNotHiddenConverter},Path=Content.IsPaused
+                                    , FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                            />
+                        <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsChecked
+                                   , FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                            />
+                        <TextBlock Text="{Binding Path=Content.Title}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </avalondock:DockingManager.AnchorableHeaderTemplate>
+            <avalondock:DockingManager.AnchorableTitleTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Text="{Binding Path=Content.Title}"/>
+                        <!-- TODO - dynamically inject the following buttons only for tracewatchers -->
+                        <!-- 
+                        <Button Grid.Column="1" FontFamily="Webdings">4</Button>
+                        <Button Grid.Column="2" FontFamily="Webdings">;</Button>
+                        <Button Grid.Column="3">&lt;</Button>
+                        -->
+                    </Grid>
+                </DataTemplate>
+            </avalondock:DockingManager.AnchorableTitleTemplate>
+
+            
             <avalondock:DockingManager.LayoutItemContainerStyleSelector>
                 <local:PanesStyleSelector>
                     <local:PanesStyleSelector.ToolStyle>
@@ -239,9 +291,12 @@
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                             <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
                             <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
-                            <Setter Property="CanClose" Value="{Binding Model.CanClose}" />
+                            <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
-                            <Setter Property="DockAsDocumentCommand" Value="{Binding Model.DockAsDocumentCommand}" />
+                            <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
+                            <!--<Setter Property="DockAsDocumentCommand" Value="{Binding Model.DockAsDocumentCommand}" />-->
+                            
+                            <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
                 </local:PanesStyleSelector>
@@ -253,11 +308,12 @@
                 </ControlTemplate>
             </avalondock:DockingManager.AnchorablePaneTemplate>
             -->
-            <avalondock:DockingManager.AnchorableTitleTemplate>
+            
+            <!--<avalondock:DockingManager.AnchorableTitleTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}"></TextBlock>
                 </DataTemplate>
-            </avalondock:DockingManager.AnchorableTitleTemplate>
+            </avalondock:DockingManager.AnchorableTitleTemplate>-->
             <avalondock:DockingManager.LayoutItemTemplateSelector>
 
                 <selectors:ToolWindowTemplateSelector>
@@ -276,18 +332,7 @@
                 <avalondock:LayoutPanel Orientation="Horizontal">
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
                         <avalondock:LayoutAnchorablePane Name="DockLeft">
-                            <!--
-                            <avalondock:LayoutAnchorable Title="MetaData" CanClose="False" CanHide="False">
-                                <ContentControl cal:View.Model="{Binding MetadataPane}" cal:View.ApplyConventions="true"></ContentControl>
-                            </avalondock:LayoutAnchorable>
-                            <avalondock:LayoutAnchorable Title="Functions" CanClose="False" CanHide="False">
-                                <ContentControl cal:View.Model="{Binding FunctionPane}" cal:View.ApplyConventions="true"></ContentControl>
-                            </avalondock:LayoutAnchorable>
-                            <avalondock:LayoutAnchorable Title="DMV" CanClose="False" CanHide="False">
-                                <ContentControl cal:View.Model="{Binding DmvPane}" cal:View.ApplyConventions="true"></ContentControl>
-                            </avalondock:LayoutAnchorable>
-                            -->
-
+                            
                         </avalondock:LayoutAnchorablePane>
                     </avalondock:LayoutAnchorablePaneGroup>
 
@@ -353,14 +398,7 @@
                         <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="170" DockHeight="260">
 
                             <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
-                                <!--
-                                <avalondock:LayoutAnchorable x:Name="OutputAnchorable"  Title="Output"   CanClose="False" CanHide="False" AutoHideMinHeight="100">
-                                    <ContentControl x:Name="Output" cal:View.Model="{Binding OutputPane}" cal:View.ApplyConventions="true"></ContentControl>
-                                </avalondock:LayoutAnchorable>
-                                <avalondock:LayoutAnchorable x:Name="QueryResultsAnchorable" Title="Results"  CanClose="False" CanHide="False" AutoHideMinHeight="100">
-                                    <ContentControl x:Name="QueryResults" cal:View.Model="{Binding QueryResultsPane}" ></ContentControl>
-                                </avalondock:LayoutAnchorable>
-                                -->
+                                
                             </avalondock:LayoutAnchorablePane>
                         </avalondock:LayoutAnchorablePaneGroup>
                     </avalondock:LayoutPanel>

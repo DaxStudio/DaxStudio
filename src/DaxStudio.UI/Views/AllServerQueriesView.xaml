@@ -29,6 +29,7 @@
             <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
             <BitmapImage x:Key="StartIcon" UriSource="..\images\AllServerQueries\Play.png"></BitmapImage>
             <BitmapImage x:Key="PauseIcon" UriSource="..\images\AllServerQueries\Pause.png"></BitmapImage>
@@ -80,10 +81,11 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <StackPanel Orientation="Vertical" Width="Auto">
+        <TextBlock Name="TraceStatusText" Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" Background="{DynamicResource WarningBarBackgroundBrush}" Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+        <StackPanel Orientation="Vertical" Width="Auto" Grid.Row="1">
             <StackPanel Orientation="Horizontal" Margin="0" >
                 
                 <Button Name="Start" ToolTip="Start Trace" BorderBrush="LightGray">
