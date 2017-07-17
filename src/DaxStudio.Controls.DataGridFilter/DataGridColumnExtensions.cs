@@ -84,5 +84,7 @@ namespace DaxStudio.Controls.DataGridFilter
             target.SetValue(DoNotGenerateFilterControlProperty, value);
         }
         #endregion
+
+        
     }
 }

@@ -15,6 +15,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -198,14 +199,15 @@ namespace DaxStudio.UI.ViewModels
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults() {
-            FormulaEngineDuration = 0;
-            StorageEngineDuration = 0;
-            TotalCpuDuration = 0;
-            StorageEngineCpu = 0;
-            StorageEngineQueryCount = 0;
-            VertipaqCacheMatches = 0;
-            TotalDuration = 0;
-            _storageEngineEvents.Clear();
+            //FormulaEngineDuration = 0;
+            //StorageEngineDuration = 0;
+            //TotalCpuDuration = 0;
+            //StorageEngineCpu = 0;
+            //StorageEngineQueryCount = 0;
+            //VertipaqCacheMatches = 0;
+            //TotalDuration = 0;
+            //_storageEngineEvents.Clear();
+            ClearAll();
 
             if (Events != null) {
                 foreach (var traceEvent in Events) {
@@ -495,6 +497,27 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #endregion
+
+        #region Title Bar Button Methods
+
+        public override void ClearAll()
+        {
+            FormulaEngineDuration = 0;
+            StorageEngineDuration = 0;
+            TotalCpuDuration = 0;
+            StorageEngineCpu = 0;
+            StorageEngineQueryCount = 0;
+            VertipaqCacheMatches = 0;
+            TotalDuration = 0;
+            _storageEngineEvents.Clear();
+            NotifyOfPropertyChange(() => StorageEngineEvents);
+        }
+
+        public override void CopyAll()
+        {
+            Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
+        }
         #endregion
     }
 }

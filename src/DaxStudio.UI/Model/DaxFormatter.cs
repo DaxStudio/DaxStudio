@@ -8,6 +8,7 @@ using DaxStudio.UI.Utils;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {

@@ -2,7 +2,7 @@
 using DaxStudio.UI.Interfaces;
 using System.Linq;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.UI.Extensions
 {
     public static class TraceWatcherCollectionExtensions
     {

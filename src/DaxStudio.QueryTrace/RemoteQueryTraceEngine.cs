@@ -17,14 +17,15 @@ namespace DaxStudio.QueryTrace
         IHubProxy queryTraceHubProxy;
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
-
-        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession)
+        private readonly string _powerBIFileName = string.Empty;
+        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
             hubConnection = new HubConnection(string.Format("http://localhost:{0}/",port));
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");
             _eventsToCapture = events;
+            _powerBIFileName = powerBIFileName;
             // ==== DEBUG LOGGING =====
             //var writer = new System.IO.StreamWriter(@"d:\temp\SignalR_ClientLog.txt");
             //writer.AutoFlush = true;
@@ -37,7 +38,7 @@ namespace DaxStudio.QueryTrace
             hubConnection.Start().Wait();
             // configure trace
             Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQueryTraceEngine", "<constructor>", "about to create remote engine", connectionType.ToString(), sessionId, events.Count);
-            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events, filterForCurrentSession).Wait();
+            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionType, sessionId, events, filterForCurrentSession,_powerBIFileName).Wait();
             // wire up hub events
 
         }

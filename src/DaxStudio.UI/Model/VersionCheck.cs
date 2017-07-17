@@ -4,6 +4,7 @@ namespace DaxStudio.UI.Model
     using DaxStudio.Interfaces;
     using DaxStudio.UI.Events;
     using DaxStudio.UI.Utils;
+    using Extensions;
     using Newtonsoft.Json.Linq;
     using Serilog;
     using System;

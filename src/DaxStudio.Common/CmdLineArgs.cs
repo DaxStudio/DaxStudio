@@ -81,5 +81,20 @@ namespace DaxStudio.Common
                 return LoggingEnabledByCommandLine || LoggingEnabledByHotKey;
             }
         }
+
+        public bool TriggerCrashTest {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.CrashTest))
+                    return (bool)_app.Properties[AppProperties.CrashTest];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.CrashTest))
+                    _app.Properties[AppProperties.CrashTest] = value;
+                _app.Properties.Add(AppProperties.CrashTest, value);
+            }
+        }
     }
 }

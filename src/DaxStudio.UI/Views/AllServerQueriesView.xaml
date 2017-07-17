@@ -11,10 +11,14 @@
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
+       xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
     <UserControl.Resources>
+        
+        
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
@@ -31,13 +35,15 @@
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
-            <BitmapImage x:Key="StartIcon" UriSource="..\images\AllServerQueries\Play.png"></BitmapImage>
-            <BitmapImage x:Key="PauseIcon" UriSource="..\images\AllServerQueries\Pause.png"></BitmapImage>
-            <BitmapImage x:Key="ClearIcon" UriSource="..\images\AllServerQueries\Clear2.png"></BitmapImage>
-            <BitmapImage x:Key="CopyAllIcon" UriSource="..\images\AllServerQueries\CopyAll.png"></BitmapImage>
-            <BitmapImage x:Key="Filters" UriSource="..\images\AllServerQueries\Filters.png"></BitmapImage>
-            <BitmapImage x:Key="ClearFilters" UriSource="..\images\AllServerQueries\ClearFilters.png"></BitmapImage>
-            
+
+
+            <col:ArrayList x:Key="QueryTypes">
+                <sys:String>DAX</sys:String>
+                <sys:String>Dmx</sys:String>
+                <sys:String>Mdx</sys:String>
+                <sys:String>Sql</sys:String>
+            </col:ArrayList>
+
             <Style x:Key="ImageEnabled" TargetType="Image">
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
@@ -57,7 +63,7 @@
             </Style>
 
             <DataTemplate x:Key="QueryTextCell">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
+                <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
                     <DataGridCell Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
@@ -69,9 +75,9 @@
                         </TextBlock>
 
                     </DataGridCell>
-                </ScrollViewer>
+                <!--</ScrollViewer>-->
             </DataTemplate>
-
+            
             
         </ResourceDictionary>
     </UserControl.Resources>
@@ -84,35 +90,17 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Name="TraceStatusText" Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" Background="{DynamicResource WarningBarBackgroundBrush}" Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
-        <StackPanel Orientation="Vertical" Width="Auto" Grid.Row="1">
-            <StackPanel Orientation="Horizontal" Margin="0" >
-                
-                <Button Name="Start" ToolTip="Start Trace" BorderBrush="LightGray">
-                    <Image Source="{StaticResource StartIcon}" Width="12" Style="{StaticResource ImageEnabled}" />
-                </Button>
-                <Button Name="Pause" ToolTip="Pause Trace" BorderBrush="LightGray">
-                    <Image Source="{StaticResource PauseIcon}" Width="12" Style="{StaticResource ImageEnabled}"/>
-                </Button>
-                <Button Name="ClearAllEvents" ToolTip="Clear all queries" BorderBrush="LightGray">
-                    <Image Source="{StaticResource ClearIcon}" Width="12" Style="{StaticResource ImageEnabled}"/>
-                </Button>
-                <Separator Width="5" Foreground="Transparent" Background="Transparent"/>
-                <Button Name="SendAllQueriesToEditor" ToolTip="Sends all captured queries to the Editor pane" BorderBrush="LightGray" >
-                    <Image Source="{StaticResource CopyAllIcon}" Width="12" Style="{StaticResource ImageEnabled}"/>
-                </Button>
-                <Separator Width="5" Foreground="Transparent" Background="Transparent"></Separator>
-                <ToggleButton Name="ShowFilter" IsChecked="{Binding Path=(filter:DataGridExtensions.IsFilterVisible), 
-                                              ElementName=QueryEvents}" BorderBrush="LightGray" ToolTip="Show Filters">
-                    <Image Source="{StaticResource Filters}" Width="12"></Image></ToggleButton>
-                <Button Name="ClearAllFilters" Command="{Binding Path=(filter:DataGridExtensions.ClearFilterCommand), 
-                                       ElementName=QueryEvents}" BorderBrush="LightGray" ToolTip="Clear All Filters">
-                    <Image Source="{StaticResource ClearFilters}" Width="12"></Image></Button>
-            </StackPanel>
-        <controls:DataGridNoContextMenu x:Name="QueryEvents" 
+        
+        <TextBlock Name="TraceStatusText" 
+                   Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
+                   Background="{DynamicResource WarningBarBackgroundBrush}" 
+                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+        
+            <controls:DataGridNoContextMenu x:Name="QueryEvents" 
+                    Grid.Row="1"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
-                    filter:DataGridExtensions.IsFilterVisible="False"
+                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
                         
                        ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
 		                       TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
@@ -134,14 +122,14 @@
                   FrozenColumnCount="1"
                   GridLinesVisibility="None" 
                   BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
-
                   >
-            <!-- 
+                
+                <!-- 
             extenders:DataGridBehavior.Autoscroll="True"
             extenders:DataGridBehavior.Autoscroll="{Binding AutoScroll}"-->
 
-            <DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
+                <DataGrid.Resources>
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
@@ -185,10 +173,22 @@
                     IsReadOnly="True" 
                     Width="65" 
                     Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  
-                    
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True" />
-                <DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" Binding="{Binding QueryType}" />
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                
+                <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
+                                        Binding="{Binding QueryType}" />-->
+
+                <DataGridComboBoxColumn Header="Type" Width="40" 
+                                        filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
+                                        ItemsSource="{StaticResource QueryTypes}"
+                                        SelectedItemBinding="{Binding QueryType}">
+                </DataGridComboBoxColumn>
+
+                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
+                                    Binding="{Binding Duration, StringFormat='#,0'}" 
+                                    ElementStyle="{StaticResource AlignRight}"
+                                    
+                                    />
                     <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
                                             filter:DataGridColumnExtensions.CustomBindingPath="Username">
                         <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
@@ -250,7 +250,6 @@
 -->
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
-        </StackPanel>
 
         <!-- Busy overlay -->
         <Border 

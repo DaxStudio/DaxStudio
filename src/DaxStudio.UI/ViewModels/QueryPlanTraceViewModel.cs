@@ -13,6 +13,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using System;
 using System.Windows;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -119,9 +120,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void OnReset() {
             IsBusy = false;
-            Events.Clear();
-            _physicalQueryPlanRows.Clear();
-            _logicalQueryPlanRows.Clear();
+            ClearAll();
             //ProcessResults();
         }
 
@@ -203,6 +202,8 @@ namespace DaxStudio.UI.ViewModels
 
         public override bool FilterForCurrentSession { get { return true; } }
 
+        #region ISaveState Methods
+
         void ISaveState.Save(string filename)
         {
             var m = new QueryPlanModel()
@@ -230,5 +231,23 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
         }
+        #endregion
+
+        #region Title Bar Button Methods
+
+        public override void ClearAll()
+        {
+            Events.Clear();
+            _physicalQueryPlanRows.Clear();
+            _logicalQueryPlanRows.Clear();
+            NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
+            NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+        }
+
+        public override void CopyAll()
+        {
+            Log.Warning("CopyAll method not implemented for QueryPlanTraceViewModel");
+        }
+        #endregion
     }
 }

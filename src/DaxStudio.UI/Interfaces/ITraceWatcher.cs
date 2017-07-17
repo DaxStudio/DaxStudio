@@ -17,6 +17,7 @@ namespace DaxStudio.UI.Interfaces
         void CheckEnabled(IConnection connection, ITraceWatcher active);
         string DisableReason { get; }
         string ToolTipText { get; }
+        bool IsPaused { get; set; }
 
         void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents);
 

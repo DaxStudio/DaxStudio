@@ -12,7 +12,7 @@ namespace DaxStudio.Common
         internal const string LoggingEnabledByCommandLine = "LoggingEnabledByCommandLine";
         internal const string PortNumber = "PortNumber";
         internal const string FileName = "FileName";
-
+        internal const string CrashTest = "CrashTest";
         public static CmdLineArgs Args(this System.Windows.Application app)
         {
             return new CmdLineArgs(app);

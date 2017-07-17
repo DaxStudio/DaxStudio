@@ -10,12 +10,13 @@ using DaxStudio.QueryTrace;
 using System.Timers;
 using DaxStudio.UI.Utils;
 using System;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
     [InheritedExport(typeof(ITraceWatcher)), PartCreationPolicy(CreationPolicy.NonShared)]
     public abstract class TraceWatcherBaseViewModel 
-        : PropertyChangedBase
+        : Screen
         , IToolWindow
         , ITraceWatcher
         , IHandle<DocumentConnectionUpdateEvent>
@@ -156,6 +157,7 @@ namespace DaxStudio.UI.ViewModels
                     _isChecked = value;
                     NotifyOfPropertyChange(() => CanPause);
                     NotifyOfPropertyChange(() => CanStart);
+                    NotifyOfPropertyChange(() => CanStop);
                     NotifyOfPropertyChange(() => IsTraceRunning);
                     NotifyOfPropertyChange(() => IsChecked);
                     NotifyOfPropertyChange(() => TraceStatusText);
@@ -240,6 +242,8 @@ namespace DaxStudio.UI.ViewModels
 
         public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
 
+
+        #region Title Bar Button methods and properties
         private bool _isPaused;
         public void Pause()
         {
@@ -248,7 +252,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void Start()
         {
+            IsChecked = true;
             IsPaused = false;
+        }
+
+        public bool CanStop { get { return IsChecked; } }
+        public void Stop()
+        {
+            IsPaused = false;
+            IsChecked = false;
         }
 
         public bool IsPaused
@@ -265,8 +277,21 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool IsTraceRunning { get { return IsChecked && !IsPaused; } }
-        public bool CanPause { get { return IsChecked && !IsPaused; } }
-        public bool CanStart { get { return IsChecked && IsPaused; } }
+        public bool CanPause { get { return IsEnabled && (IsChecked && !IsPaused); } }
+        public bool CanStart { get { return IsEnabled && (IsPaused || !IsChecked); } }
+        
+
+        public abstract void ClearAll();
+        public virtual bool IsCopyAllVisible { get { return false; } }
+        public abstract void CopyAll();
+
+        public virtual bool IsFilterVisible { get { return false; } }
+        public virtual void ClearFilters() { }
+
+        private bool _showFilters = false;
+        public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
+
+        #endregion
 
         public abstract bool FilterForCurrentSession { get; }
         public bool IsAdminConnection { get; private set; }

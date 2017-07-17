@@ -296,7 +296,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
                         if (columnItemsSourceBinding == null)
                         {
-                            System.Windows.Setter styleSetter = column.EditingElementStyle.Setters.First(s => ((System.Windows.Setter)s).Property == DataGridComboBoxColumn.ItemsSourceProperty) as System.Windows.Setter;
+                            System.Windows.Setter styleSetter = column.EditingElementStyle.Setters.FirstOrDefault(s => ((System.Windows.Setter)s).Property == DataGridComboBoxColumn.ItemsSourceProperty) as System.Windows.Setter;
                             if (styleSetter != null)
                                 columnItemsSourceBinding = styleSetter.Value as Binding;
                         }
@@ -372,7 +372,11 @@ namespace DaxStudio.Controls.DataGridFilter
 
         private string getValuePropertyBindingPath(DataGridColumn column)
         {
-            string path = String.Empty;
+            string path = (string)column.GetValue(DataGridColumnExtensions.CustomBindingPathProperty);
+
+            if (!string.IsNullOrEmpty(path)) return path;
+
+            path = String.Empty;
 
             if (column is DataGridBoundColumn)
             {
@@ -423,7 +427,7 @@ namespace DaxStudio.Controls.DataGridFilter
                     {
                         if (DataGridComboBoxExtensions.GetIsTextFilter(comboColumn))
                         {
-                            path += "." + comboColumn.DisplayMemberPath; 
+                            path += "." + comboColumn.DisplayMemberPath;
                         }
                         else
                         {
@@ -432,7 +436,7 @@ namespace DaxStudio.Controls.DataGridFilter
                     }
                 }
             }
-            if (string.IsNullOrEmpty(path)) path = (string)column.GetValue(DataGridColumnExtensions.CustomBindingPathProperty);
+            
             return path;
         }
 
@@ -515,6 +519,12 @@ namespace DaxStudio.Controls.DataGridFilter
                 }
             }
 
+            if (l != null && l.Count == 0)
+            {
+                //HACK: getting type from empty generic collection
+                elementType = DataGridItemsSource.GetType().GetGenericArguments()[0];
+                typeInitialized = true;
+            }
             return elementType;
         }
 

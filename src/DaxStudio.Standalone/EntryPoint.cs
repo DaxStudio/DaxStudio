@@ -7,6 +7,7 @@ using DaxStudio.UI.Utils;
 using System.IO;
 using Fclp;
 using DaxStudio.Common;
+using System.Windows.Controls;
 
 namespace DaxStudio.Standalone
 {
@@ -95,16 +96,23 @@ namespace DaxStudio.Standalone
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
+                if (app.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+
+                // force control tooltips to display even if disabled
+                ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
+                    typeof(Control),
+                    new FrameworkPropertyMetadata(true));
+
                 app.Run();
             }
             catch (Exception ex)
             {
-                Log.Error("Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
+                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
 #if DEBUG 
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
 #else
                 // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex);
+                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal startup crash" );
 #endif
 
             }
@@ -131,6 +139,12 @@ namespace DaxStudio.Standalone
             p.Setup<string>('f', "file")
                 .Callback(file => app.Args().FileName = file)
                 .WithDescription("Name of file to open");
+
+            p.Setup<bool>('c', "crashtest")
+                .Callback(crashtest => app.Args().TriggerCrashTest = crashtest)
+                .WithDescription("Used for testing the Crash Test reporting")
+                .SetDefault(false);
+                
 
             p.Parse(args);
 

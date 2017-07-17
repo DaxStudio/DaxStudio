@@ -949,7 +949,7 @@ namespace DaxStudio.UI.ViewModels
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
-                    if (tw.IsChecked)
+                    if (tw.IsChecked && !tw.IsPaused)
                     {
                         tw.IsBusy = true;
                     }
@@ -1005,7 +1005,7 @@ namespace DaxStudio.UI.ViewModels
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
-                    if (tw.IsChecked)
+                    if (tw.IsChecked && !tw.IsPaused)
                     {
                         tw.IsBusy = true;
                     }

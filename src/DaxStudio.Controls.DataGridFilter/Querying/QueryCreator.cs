@@ -149,6 +149,10 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                 {
                     parameterValue = Convert.ChangeType(stringValue, typeof(Boolean));
                 }
+                else if (type == typeof(String))
+                {
+                    parameterValue = stringValue;
+                }
                 else
                 {
                     parameterValue = Convert.ChangeType(stringValue, typeof(Double));//TODO use "real" number type

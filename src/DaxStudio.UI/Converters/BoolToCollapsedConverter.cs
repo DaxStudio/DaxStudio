@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Converters
     
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is Boolean && !(bool)value)
+            if (value is Boolean && (bool)value)
             {
                 return Visibility.Visible;
             }
@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is Visibility && (Visibility)value != Visibility.Visible)
+            if (value is Visibility && (Visibility)value == Visibility.Visible)
             {
                 return true;
             }
@@ -31,7 +31,7 @@ namespace DaxStudio.UI.Converters
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is Boolean && (bool)value)
+            if (value is Boolean && !(bool)value)
             {
                 return Visibility.Visible;
             }

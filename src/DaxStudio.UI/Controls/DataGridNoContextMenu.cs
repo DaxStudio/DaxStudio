@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace DaxStudio.UI.Controls
 {
@@ -11,5 +13,6 @@ namespace DaxStudio.UI.Controls
             //base.OnContextMenuOpening(e);
             e.Handled = true;
         }
+
     }
 }

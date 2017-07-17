@@ -13,19 +13,30 @@ using DaxStudio.Controls.DataGridFilter;
 using System.Linq;
 using System;
 using System.Windows;
+using DaxStudio.UI.Extensions;
+using System.ComponentModel;
+using System.Windows.Data;
+using System.Collections.ObjectModel;
 
 namespace DaxStudio.UI.ViewModels
 {
 
     class AllServerQueriesViewModel
-        : TraceWatcherBaseViewModel, ISaveState //, IViewAware
+        : TraceWatcherBaseViewModel, ISaveState , IViewAware
         
     {
         [ImportingConstructor]
         public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
+            QueryTypes = new ObservableCollection<string>();
+            QueryTypes.Add("DAX");
+            QueryTypes.Add("Dmx");
+            QueryTypes.Add("Mdx");
+            QueryTypes.Add("Sql");
         }
+        
+        public ObservableCollection<string> QueryTypes { get; set; }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
@@ -46,9 +57,9 @@ namespace DaxStudio.UI.ViewModels
                         StartTime = traceEvent.StartTime,
                         //EndTime = traceEvent.EndTime,
                         Username = traceEvent.NTUserName,
-                        Query = traceEvent.TextData,
+                        Query = traceEvent.TextData.StripLineBreaks(), // strip out newlines
                         Duration = traceEvent.Duration,
-                        DatabaseName = traceEvent.DatabaseName
+                        DatabaseName = traceEvent.DatabaseFriendlyName
                         
                     });
                 }
@@ -56,8 +67,8 @@ namespace DaxStudio.UI.ViewModels
                 Events.Clear();
 
                 NotifyOfPropertyChange(() => QueryEvents);
-                NotifyOfPropertyChange(() => CanClearAllEvents);
-                NotifyOfPropertyChange(() => CanSendAllQueriesToEditor);
+                NotifyOfPropertyChange(() => CanClearAll);
+                NotifyOfPropertyChange(() => CanCopyAll);
             }
         }
         
@@ -94,15 +105,15 @@ namespace DaxStudio.UI.ViewModels
 
         public override bool FilterForCurrentSession { get { return false; } }
 
-        public void ClearAllEvents()
+        public override void ClearAll()
         {
             QueryEvents.Clear();
-            NotifyOfPropertyChange(() => CanClearAllEvents);
-            NotifyOfPropertyChange(() => CanSendAllQueriesToEditor);
+            NotifyOfPropertyChange(() => CanClearAll);
+            NotifyOfPropertyChange(() => CanCopyAll);
         }
 
         
-        public bool CanClearAllEvents { get { return QueryEvents.Count > 0; } }
+        public bool CanClearAll { get { return QueryEvents.Count > 0; } }
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
@@ -111,20 +122,37 @@ namespace DaxStudio.UI.ViewModels
 
         public QueryEvent SelectedQuery { get; set; }
 
-        public bool CanSendAllQueriesToEditor { get { return QueryEvents.Count > 0; } }
+        public override bool IsCopyAllVisible { get { return true; } }
+        public override bool IsFilterVisible { get { return true; } }
 
-        public void SendAllQueriesToEditor()
+        public bool CanCopyAll { get { return QueryEvents.Count > 0; } }
+
+        public override void CopyAll()
         {
+            //We need to get the default view as that is where any filtering is done
+            ICollectionView view = CollectionViewSource.GetDefaultView(QueryEvents);
+
             var sb = new StringBuilder();
-            foreach (var q in QueryEvents)
+            foreach (var itm in view)
             {
-                sb.AppendLine();
-                sb.AppendLine($"// {q.QueryType} query against Database: {q.DatabaseName} ");
-                sb.AppendLine($"{q.Query}");
+                var q = itm as QueryEvent;
+                if (q != null)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"// {q.QueryType} query against Database: {q.DatabaseName} ");
+                    sb.AppendLine($"{q.Query}");
+                }
 
             }
             sb.AppendLine();
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
+        }
+
+        public override void ClearFilters()
+        {
+            var vw = GetView() as Views.AllServerQueriesView;
+            var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
+            controller.ClearFilter();
         }
 
         public void QueryDoubleClick(QueryEvent query)
@@ -153,20 +181,12 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => QueryEvents);
         }
 
-        private Views.AllServerQueriesView _view;
-        public void AttachView(object view, object context = null)
-        {
-            _view = view as Views.AllServerQueriesView;
-        }
-
-        public object GetView(object context = null)
-        {
-            return _view;
-        }
+        
 
         public void SetDefaultFilter(string column, string value)
         {
-            var controller = DataGridExtensions.GetDataGridFilterQueryController(_view.QueryEvents);
+            var vw = this.GetView() as Views.AllServerQueriesView;
+            var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
             var filters = controller.GetFiltersForColumns();
 
             var columnFilter = filters.FirstOrDefault(w => w.Key == column);

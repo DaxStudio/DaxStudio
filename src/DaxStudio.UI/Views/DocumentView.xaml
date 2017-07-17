@@ -9,6 +9,7 @@
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+    xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
@@ -25,8 +26,8 @@
 
             </ResourceDictionary.MergedDictionaries>
 
-            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotHiddenConverter"/>
-            <conv:BoolToCollapsedConverter x:Key="BoolToHiddenConverter"/>
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -211,6 +212,16 @@
                 </Setter>
                 
             </Style>
+
+            <Style x:Key="ButtonImage" TargetType="Image">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.5" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+
         </ResourceDictionary>
     </UserControl.Resources>
     <i:Interaction.Behaviors>
@@ -235,23 +246,23 @@
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
+
             <avalondock:DockingManager.AnchorableHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToNotHiddenConverter},Path=Content.IsTraceRunning
+                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter},Path=Content.IsTraceRunning
                                     , FallbackValue=Collapsed}"
-                                   Foreground="{StaticResource MutedTextBrush}"
-                            >
-                            
-                        </TextBlock>
+                                   Foreground="{StaticResource MutedTextBrush}" />
+
+
                         <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToNotHiddenConverter},Path=Content.IsPaused
+                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter},Path=Content.IsPaused
                                     , FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                             />
                         <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsChecked
+                                   Visibility="{Binding Converter={StaticResource BoolToNotCollapsedConverter},Path=Content.IsChecked
                                    , FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                             />
@@ -259,6 +270,7 @@
                     </StackPanel>
                 </DataTemplate>
             </avalondock:DockingManager.AnchorableHeaderTemplate>
+
             <avalondock:DockingManager.AnchorableTitleTemplate>
                 <DataTemplate>
                     <Grid>
@@ -270,16 +282,127 @@
                         </Grid.ColumnDefinitions>
                         
                         <TextBlock Text="{Binding Path=Content.Title}"/>
-                        <!-- TODO - dynamically inject the following buttons only for tracewatchers -->
-                        <!-- 
-                        <Button Grid.Column="1" FontFamily="Webdings">4</Button>
-                        <Button Grid.Column="2" FontFamily="Webdings">;</Button>
-                        <Button Grid.Column="3">&lt;</Button>
-                        -->
                     </Grid>
                 </DataTemplate>
             </avalondock:DockingManager.AnchorableTitleTemplate>
 
+            <avalondock:DockingManager.AnchorableTitleTemplateSelector>
+                <selectors:TraceWindowTemplateSelector>
+                    <selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding Path=Content.Title}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                    <selectors:TraceWindowTemplateSelector.TraceTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!--<TextBlock Text="{Binding Path=Content.Title}" HorizontalAlignment="Center" Grid.Column="1"/>-->
+                                
+                                <!-- dynamically inject the following buttons only for tracewatchers -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,15,0">
+                                    <Button x:Name="Start" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}" >
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip 
+                                                Title="Start"
+                                                Text="Starts a Trace that has been paused or stopped"
+                                                DisableReason="{Binding Path=DisableReason}">
+                                                
+                                            </Fluent:ScreenTip>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceStart}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <Button x:Name="Pause" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip 
+                                                Title="Pause"
+                                                Text="Pauses a running trace so that it stops processing events"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TracePause}" Style="{StaticResource ButtonImage}"/>
+                                        </Border>
+                                        
+                                    </Button>
+                                    <Button x:Name="Stop" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Stop"
+                                                Text="Stops a running trace" />
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceStop}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
+                                    <!-- clear -->
+                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Clear All"
+                                                Text="Clears all the results from the trace"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceClearAll}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <!-- copy all -->
+                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}"
+                                            Visibility="{Binding Path=IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Copy All"
+                                                Text="Copies all the current trace results to the editor window"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceCopyAll}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
+                                    <!-- filter -->
+                                    <ToggleButton x:Name="ShowFilters" BorderThickness="0" Padding="2" 
+                                                  cal:Bind.Model="{Binding Content}" 
+                                                  Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <ToggleButton.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Show Filters"
+                                                Text="Displays the filter controls"/>
+                                        </ToggleButton.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </ToggleButton>
+                                    <!-- Clear filters -->
+                                    <Button x:Name="ClearFilters" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}" 
+                                            Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Clear Filters"
+                                                Text="Clears all column filters"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </selectors:TraceWindowTemplateSelector.TraceTemplate>
+                </selectors:TraceWindowTemplateSelector>
+            </avalondock:DockingManager.AnchorableTitleTemplateSelector>
             
             <avalondock:DockingManager.LayoutItemContainerStyleSelector>
                 <local:PanesStyleSelector>
@@ -294,7 +417,7 @@
                             <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
-                            <!--<Setter Property="DockAsDocumentCommand" Value="{Binding Model.DockAsDocumentCommand}" />-->
+                            <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
                             
                             <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>

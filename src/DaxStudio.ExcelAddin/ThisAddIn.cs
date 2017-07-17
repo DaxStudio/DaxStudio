@@ -46,7 +46,7 @@ namespace DaxStudio.ExcelAddin
                 CreateRibbonObjects();
             } catch (Exception ex)
             {
-                CrashReporter.ReportCrash(ex);
+                CrashReporter.ReportCrash(ex,"DAX Studio Excel Addin fatal startup exception");
             }
         }
 

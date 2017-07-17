@@ -75,7 +75,7 @@ namespace DaxStudio.QueryTrace
             }
             catch (Exception ex)
             {
-                Execute.OnUIThread( () => RaiseError("Stop:" + ex.Message ));
+                Execute.OnUIThread( () => RaiseError("QueryTraceEngine.Stop:" + ex.Message ));
             }
         }
 
@@ -110,14 +110,16 @@ namespace DaxStudio.QueryTrace
         private IGlobalOptions _globalOptions;
         private object connectionLockObj = new object();
         private bool _filterForCurrentSession = true;
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession)
+        private readonly string _powerBIFileName = string.Empty;
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
         {
+            Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start", connectionString, sessionId);
             _globalOptions = globalOptions;
-            Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start",connectionString,sessionId);
             Status = QueryTraceStatus.Stopped;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName, filterForCurrentSession);
             Events = events;
             _filterForCurrentSession = filterForCurrentSession;
+            _powerBIFileName = powerBIFileName;
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
@@ -370,9 +372,9 @@ namespace DaxStudio.QueryTrace
                         Log.Verbose("Started ActivityId: {EventClass} - {ActivityId}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
                         return;
                     }
-
+                    
                     OnTraceEvent(e);
-                    _capturedEvents.Add(new DaxStudioTraceEventArgs(e));
+                    _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBIFileName));
                     if (e.EventClass == TraceEventClass.QueryEnd)
                     {
                         // Raise an event with the captured events
