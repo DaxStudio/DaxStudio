@@ -28,6 +28,7 @@ namespace DaxStudio.Controls.DataGridFilter
         }
 
         #region Overrides
+
         protected override void OnPropertyChanged(
             DependencyPropertyChangedEventArgs e)
         {
@@ -57,7 +58,33 @@ namespace DaxStudio.Controls.DataGridFilter
         }
 
         public static readonly DependencyProperty FilterCurrentDataProperty =
-            DependencyProperty.Register("FilterCurrentData", typeof(FilterData), typeof(DataGridColumnFilter));
+            DependencyProperty.Register("FilterCurrentData", typeof(FilterData), typeof(DataGridColumnFilter), new PropertyMetadata(null,OnFilterCurrentDataChanged));
+
+        private static void OnFilterCurrentDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var colFilter = d as DataGridColumnFilter;
+            if (colFilter != null)
+                if (colFilter.AssignedDataGridColumn is DataGridColumn)
+                    if (colFilter.FilterCurrentData != null)
+                    {
+                        colFilter.FilterCurrentData.FilterChangedEvent += colFilter.FilterChangedEvent;
+                        colFilter.FilterCurrentData.FilterClearedEvent += colFilter.FilterClearedEvent;
+                    }
+                    
+        }
+
+        private void FilterChangedEvent(object sender, EventArgs e)
+        {
+            IsFiltered = !string.IsNullOrEmpty(this.FilterCurrentData.QueryString) 
+                        || !string.IsNullOrEmpty(this.FilterCurrentData.QueryStringTo);
+            DataGridColumnExtensions.SetIsFiltered(AssignedDataGridColumn, IsFiltered); 
+        }
+
+        private void FilterClearedEvent(object sender, EventArgs e)
+        {
+            IsFiltered = false;
+            DataGridColumnExtensions.SetIsFiltered(AssignedDataGridColumn, false);
+        }
 
         public DataGridColumnHeader AssignedDataGridColumnHeader
         {
@@ -95,11 +122,30 @@ namespace DaxStudio.Controls.DataGridFilter
         public static readonly DependencyProperty DataGridItemsSourceProperty =
             DependencyProperty.Register("DataGridItemsSource", typeof(IEnumerable), typeof(DataGridColumnFilter));
 
+
+        //private bool _isFiltered = false;
+        //public bool IsFiltered
+        //{
+        //    get { return _isFiltered; }
+        //    set { if (_isFiltered != value) { _isFiltered = value;   } }
+        //}
+
+        public bool IsFiltered
+        {
+            get { return (bool)GetValue(IsFilteredProperty); }
+            set { SetValue(IsFilteredProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsFilteredProperty =
+            DependencyProperty.Register("IsFiltered", typeof(bool), typeof(DataGridColumnFilter));
+
         public bool IsFilteringInProgress
         {
             get { return (bool)GetValue(IsFilteringInProgressProperty); }
             set { SetValue(IsFilteringInProgressProperty, value); }
         }
+
+
 
         public static readonly DependencyProperty IsFilteringInProgressProperty =
             DependencyProperty.Register("IsFilteringInProgress", typeof(bool), typeof(DataGridColumnFilter));

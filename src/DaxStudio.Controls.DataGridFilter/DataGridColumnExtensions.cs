@@ -3,12 +3,14 @@ using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
-    public class DataGridColumnExtensions:DependencyObject
+    public class DataGridColumnExtensions//:DependencyObject
     {
+        public DataGridColumnExtensions() { }
+
         #region CustomBindingPath Dependency Property
         public static DependencyProperty CustomBindingPathProperty =
             DependencyProperty.RegisterAttached("CustomBindingPath",
-                typeof(string), typeof(DataGridColumn));
+                typeof(string), typeof(DataGridColumn), new PropertyMetadata(string.Empty));
 
         public static string GetCustomBindingPath(DependencyObject target)
         {
@@ -85,6 +87,5 @@ namespace DaxStudio.Controls.DataGridFilter
         }
         #endregion
 
-        
     }
 }

@@ -26,6 +26,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
 
         #region Filter Change Notification
         public event EventHandler<EventArgs> FilterChangedEvent;
+        public event EventHandler<EventArgs> FilterClearedEvent;
         private bool isClearData;
 
         private void OnFilterChangedEvent()
@@ -72,6 +73,16 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                 if (filterChanged && !isClearData) temp(this, EventArgs.Empty);
             }
         }
+
+        private void OnFilterClearedEvent()
+        {
+            EventHandler<EventArgs> temp = FilterClearedEvent;
+
+            if (temp != null)
+            {
+                temp(this, EventArgs.Empty);
+            }
+        }
         #endregion
         public void ClearData()
         {
@@ -80,6 +91,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
             Operator           = FilterOperator.Undefined;
             if (QueryString   != String.Empty) QueryString = null;
             if (QueryStringTo != String.Empty) QueryStringTo = null;
+            OnFilterClearedEvent();
 
             isClearData = false;
         }

@@ -297,6 +297,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsAdminConnection { get; private set; }
         public string DisableReason { get {
                 if (!IsAdminConnection) return "You must have Admin rights on the server to enable traces";
+                if (IsChecked && IsEnabled) return "Trace is already running";
                 return "You cannot have both session traces and all queries traces enabled at the same time";
             }
         }

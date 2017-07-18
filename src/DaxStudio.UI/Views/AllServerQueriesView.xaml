@@ -38,10 +38,11 @@
 
 
             <col:ArrayList x:Key="QueryTypes">
+                <x:Static Member="sys:String.Empty" />
                 <sys:String>DAX</sys:String>
-                <sys:String>Dmx</sys:String>
-                <sys:String>Mdx</sys:String>
-                <sys:String>Sql</sys:String>
+                <sys:String>DMX</sys:String>
+                <sys:String>MDX</sys:String>
+                <sys:String>SQL</sys:String>
             </col:ArrayList>
 
             <Style x:Key="ImageEnabled" TargetType="Image">
@@ -194,19 +195,18 @@
                         <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
-                                    <DataGridCell Margin="0" Padding="0" 
+                                
+                                <DataGridCell Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Username"
-                                                   
-                            Text="{Binding Path=Username,Mode=OneWay}"  
-                            VerticalAlignment="Top" 
-                            HorizontalAlignment="Left"   
-                            TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding Username}">
+                                        <TextBlock x:Name="Username"   
+                                            Text="{Binding Path=Username,Mode=OneWay}"  
+                                            VerticalAlignment="Top" 
+                                            HorizontalAlignment="Left"   
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding Username}">
                                         </TextBlock>
-                                    </DataGridCell>
-                                </ScrollViewer>
+                                </DataGridCell>
+                                
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -230,12 +230,12 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
+                <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
                                             filter:DataGridColumnExtensions.CustomBindingPath="Query"
                                             filter:DataGridColumnExtensions.IsContainsTextSearch="True"
                                             />
 
-                    <!--<DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
+                <!--<DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">

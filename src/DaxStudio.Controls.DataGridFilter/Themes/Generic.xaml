@@ -419,7 +419,7 @@
                                         Path=FilterCurrentData.QueryString,
                                         Mode=TwoWay,
                                         UpdateSourceTrigger=Explicit}"
-                                        Grid.Column="2" Name="PART_TextBoxFilter">
+                                        Grid.Column="2" x:Name="PART_TextBoxFilter">
                                 
                             </support:DelayTextBox>
                             <!-- Numeric -->
@@ -725,7 +725,7 @@
                         </Grid.RowDefinitions>
   
                         <local:DataGridColumnFilter Margin="1" Grid.Column="0" Grid.Row="0"
-                        
+                        x:Name="dgColumnFilter"
                             FilterCurrentData ="{Binding 
                                     RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, 
                                     Path=Tag, 
@@ -765,13 +765,24 @@
                                      Padding ="{TemplateBinding Padding}"
                                      SeparatorVisibility="{TemplateBinding SeparatorVisibility}"
                                      SeparatorBrush="{TemplateBinding SeparatorBrush}">
-
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                            
                             <TextBlock Grid.Column="0" Grid.Row="1"  Text="{TemplateBinding  Content}" 
                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                        TextWrapping="Wrap"></TextBlock>
-
+                                <TextBlock Text="*" HorizontalAlignment="Right" 
+                                           ToolTip="Filter Applied"
+                                           Visibility="{Binding Path=(IsFiltered), 
+                                              ElementName=dgColumnFilter,
+                                              Converter={StaticResource booleanToVisibilityConverter}}"
+                                           />
+                            </Grid>
                         </theme:DataGridHeaderBorder>
 
                         <Thumb Grid.Column="0" Grid.Row="1" Name="PART_LeftHeaderGripper" HorizontalAlignment="Left">

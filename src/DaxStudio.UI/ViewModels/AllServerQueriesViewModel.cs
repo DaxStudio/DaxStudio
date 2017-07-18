@@ -53,7 +53,7 @@ namespace DaxStudio.UI.ViewModels
             if (Events != null) {
                 foreach (var traceEvent in Events) {
                     QueryEvents.Insert(0,new QueryEvent() {
-                        QueryType = traceEvent.EventSubclassName.Substring(0,3),
+                        QueryType = traceEvent.EventSubclassName.Substring(0,3).ToUpper(),
                         StartTime = traceEvent.StartTime,
                         //EndTime = traceEvent.EndTime,
                         Username = traceEvent.NTUserName,
@@ -84,6 +84,8 @@ namespace DaxStudio.UI.ViewModels
                 return _queryEvents;
             }
         }
+
+        
 
         public string DefaultQueryFilter { get { return "cat"; } }
 
