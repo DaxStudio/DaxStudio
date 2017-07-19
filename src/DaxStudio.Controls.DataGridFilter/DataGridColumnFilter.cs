@@ -77,13 +77,11 @@ namespace DaxStudio.Controls.DataGridFilter
         {
             IsFiltered = !string.IsNullOrEmpty(this.FilterCurrentData.QueryString) 
                         || !string.IsNullOrEmpty(this.FilterCurrentData.QueryStringTo);
-            DataGridColumnExtensions.SetIsFiltered(AssignedDataGridColumn, IsFiltered); 
         }
 
         private void FilterClearedEvent(object sender, EventArgs e)
         {
             IsFiltered = false;
-            DataGridColumnExtensions.SetIsFiltered(AssignedDataGridColumn, false);
         }
 
         public DataGridColumnHeader AssignedDataGridColumnHeader
