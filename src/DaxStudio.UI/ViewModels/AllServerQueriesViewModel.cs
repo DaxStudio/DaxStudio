@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
                         StartTime = traceEvent.StartTime,
                         //EndTime = traceEvent.EndTime,
                         Username = traceEvent.NTUserName,
-                        Query = traceEvent.TextData.StripLineBreaks(), // strip out newlines
+                        Query = traceEvent.TextData,
                         Duration = traceEvent.Duration,
                         DatabaseName = traceEvent.DatabaseFriendlyName
                         

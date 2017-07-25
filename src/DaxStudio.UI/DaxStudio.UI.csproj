@@ -354,6 +354,7 @@
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringToVisibilityConverter.cs" />
     <Compile Include="Converters\StringToXamlConverter.cs" />
+    <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
     <Compile Include="Enums\QueryEndSubClass.cs" />
     <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
     <Compile Include="Events\LoggingEnabledEvent.cs" />

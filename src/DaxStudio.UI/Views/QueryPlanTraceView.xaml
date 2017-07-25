@@ -10,21 +10,29 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         </ResourceDictionary>
         
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
-        <DataGrid Grid.Row="0" SelectedItem="{Binding SelectedPhysicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
+        <TextBlock Name="TraceStatusText" 
+                   Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
+                   Background="{DynamicResource WarningBarBackgroundBrush}" 
+                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+
+        <DataGrid Grid.Row="1" SelectedItem="{Binding SelectedPhysicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
                   behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
                   ItemsSource="{Binding PhysicalQueryPlanRows}" 
                   SelectionMode="Extended"
@@ -80,13 +88,13 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
-        <GridSplitter Grid.Row="1" Height="5"  ResizeDirection="Rows" 
+        <GridSplitter Grid.Row="2" Height="5"  ResizeDirection="Rows" 
             Grid.Column="0"
             Width="Auto" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
             Margin="0"/>
-        <DataGrid Grid.Row="2" SelectedItem="{Binding SelectedLogicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
+        <DataGrid Grid.Row="3" SelectedItem="{Binding SelectedLogicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
                   behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
                   ItemsSource="{Binding LogicalQueryPlanRows}" 
                   SelectionMode="Extended"
@@ -145,7 +153,7 @@
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="3" Style="{StaticResource BusyPanel}">
+                Grid.RowSpan="4" Style="{StaticResource BusyPanel}">
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

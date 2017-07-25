@@ -1109,7 +1109,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
 
                 // if the server times trace watcher is not active then just record client timings
-                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsActive)
+                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked)
                 {
                     currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
                     currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
@@ -1508,6 +1508,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public async void PublishDaxFunctions() {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the publish functions option", "Publish DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             Stopwatch publishStopWatch = new Stopwatch();
             publishStopWatch.Start();
 
@@ -1566,6 +1572,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public void ExportDaxFunctions() {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog {
                 FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,

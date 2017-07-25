@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Interfaces
         bool CanHide { get; set; }
         int AutoHideMinHeight { get; set; }
         bool IsSelected { get; set; }
-        bool IsActive { get; set; }
+        //bool IsActive { get; set; }
         //TODO ContentId IconSource
     }
 }

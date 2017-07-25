@@ -50,7 +50,12 @@ namespace DaxStudio.UI.ViewModels {
                 Tabs.NewQueryDocument();
             }
             VersionChecker = versionCheck;
+
+#if BETA
+            DisplayName = string.Format("DaxStudio - {0} (BETA)", Version.ToString(4));
+#else
             DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
+#endif
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
         }
@@ -151,7 +156,7 @@ namespace DaxStudio.UI.ViewModels {
             }
         }
 
-        #region Overlay code
+#region Overlay code
         private int _overlayDependencies;
         public void ShowOverlay()
         {
@@ -169,9 +174,9 @@ namespace DaxStudio.UI.ViewModels {
         {
             get { return _overlayDependencies > 0; }
         }
-        #endregion
+#endregion
 
-        #region Global Keyboard Hooks
+#region Global Keyboard Hooks
         public void RunQuery()
         {
             Ribbon.RunQuery();
@@ -242,7 +247,7 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.SwapDelimiters();
         }
 
-        #endregion
+#endregion
     }
 
 

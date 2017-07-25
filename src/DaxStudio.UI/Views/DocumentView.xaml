@@ -413,7 +413,7 @@
                             <!--<Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>-->
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                             <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
-                            <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
+                            <!--<Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>-->
                             <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>

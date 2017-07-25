@@ -120,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void OnReset() {
             IsBusy = false;
-            ClearAll();
+            //ClearAll();
             //ProcessResults();
         }
 

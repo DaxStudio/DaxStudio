@@ -112,7 +112,8 @@ namespace DaxStudio.UI.ViewModels
 
         public virtual string TraceStatusText {
             get {
-                if (!IsChecked) return $"Trace is not currently active, click on the {Title} button in the ribbon to start tracing";
+                if (IsEnabled && !IsChecked) return $"Trace is not currently active, click on the {Title} button in the ribbon to resume tracing";
+                if (!IsEnabled) return DisableReason;
                 //TODO - should we show this for paused states too??
                 //if (IsPaused) return $"Trace is paused, click on the start button in the toolbar below to re-start tracing";
                 return string.Empty; } }
@@ -144,7 +145,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=> IsEnabled);} 
         }
 
-        public bool IsActive { get; set; }
+        //public bool IsActive { get; set; }
 
         private bool _isChecked;
         public bool IsChecked
@@ -161,7 +162,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => IsTraceRunning);
                     NotifyOfPropertyChange(() => IsChecked);
                     NotifyOfPropertyChange(() => TraceStatusText);
-                    if (!_isChecked) Reset();
+                    //if (!_isChecked) Reset();
                     if (value)
                     {
                         _eventAggregator.Subscribe(this);

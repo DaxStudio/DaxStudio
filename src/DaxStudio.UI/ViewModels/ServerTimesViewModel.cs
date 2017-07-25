@@ -457,7 +457,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?2:0; } }
+        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?4:1; } }
         public int TextGridRowSpan { get { return ServerTimingDetails.LayoutBottom? 1:3; } }
         public int TextGridColumn { get { return ServerTimingDetails.LayoutBottom?2:4; } }
 

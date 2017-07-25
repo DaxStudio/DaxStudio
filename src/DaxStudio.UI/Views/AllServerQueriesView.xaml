@@ -26,16 +26,10 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
-            <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
-            <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
-            <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
-            <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
-            <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
+
+            <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-            <sys:Double x:Key="BarWidth">100.0</sys:Double>
-
 
             <col:ArrayList x:Key="QueryTypes">
                 <x:Static Member="sys:String.Empty" />
@@ -44,14 +38,6 @@
                 <sys:String>MDX</sys:String>
                 <sys:String>SQL</sys:String>
             </col:ArrayList>
-
-            <Style x:Key="ImageEnabled" TargetType="Image">
-                <Style.Triggers>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Opacity" Value="0.50"></Setter>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
 
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="ContentTemplate">
@@ -68,7 +54,7 @@
                     <DataGridCell Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
-                            Text="{Binding Path=Query,Mode=OneWay}"  
+                            Text="{Binding Path=Query,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
                             VerticalAlignment="Top" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
@@ -96,8 +82,8 @@
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
-        
-            <controls:DataGridNoContextMenu x:Name="QueryEvents" 
+
+        <controls:DataGridNoContextMenu x:Name="QueryEvents" 
                     Grid.Row="1"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
@@ -124,12 +110,8 @@
                   GridLinesVisibility="None" 
                   BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
                   >
-                
-                <!-- 
-            extenders:DataGridBehavior.Autoscroll="True"
-            extenders:DataGridBehavior.Autoscroll="{Binding AutoScroll}"-->
 
-                <DataGrid.Resources>
+            <DataGrid.Resources>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
