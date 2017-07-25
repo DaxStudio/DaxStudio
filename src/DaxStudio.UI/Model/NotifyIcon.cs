@@ -15,8 +15,6 @@ namespace DaxStudio.UI.Model
             BalloonTitle = "DAX Studio"; //TODO - get current version for title
             System.Drawing.Icon ico = Icon;
             
-            //Execute.OnUIThreadAsync( new System.Action(() =>
-            //Dispatcher.CurrentDispatcher.Invoke( new System.Action(() =>
             window.Dispatcher.Invoke(new System.Action(() =>
             {
                 icon = new TaskbarIcon

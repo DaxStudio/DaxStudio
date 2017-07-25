@@ -14,6 +14,7 @@ namespace DaxStudio.ExcelAddin.Xmla
     [RoutePrefix("xmla")]
     public class XmlaController : ApiController
     {
+        const int EXCEL_2013 = 15; // version number for Excel 2013
 
         [HttpPost]
         [Route("")]
@@ -35,17 +36,20 @@ namespace DaxStudio.ExcelAddin.Xmla
                 // from the UI to the PowerPivot engine. The Location property does not appear to get
                 // serialized through into the XMLA request so we "hijack" the Workstation ID
                 var wsid = ParseRequestForWorkstationID(request);
-                if (!string.IsNullOrEmpty(wsid)) loc = wsid;
+                if (!string.IsNullOrEmpty(wsid)) {
+                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Resetting Location based on WorkstationID to: " + loc);
+                    loc = wsid;
+                }
 
                 connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{0}\"", loc);
                 //connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={0}", loc);
                 // 2010 conn str
                 //connStr = string.Format("Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location={0}", loc);
                 //connStr = string.Format("Provider=MSOLAP;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Location={0};", loc);
-                
-                
+
+                Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "About to Load AmoWrapper");
                 AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
-                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= 15)
+                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= EXCEL_2013)
                 {
                     amoType = AmoWrapper.AmoType.Excel;
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
@@ -61,8 +65,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 // STEP 1: send the request to server.
                 Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
                 System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
-                
-                System.Xml.XmlReader xmlaResponseFromServer=null; // will be used to parse the XML/A response from server
+                System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
                 string fullEnvelopeResponseFromServer = "";
                 try
                 {
@@ -115,7 +118,6 @@ namespace DaxStudio.ExcelAddin.Xmla
                 expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex.Message));
                 return expResult;
             }
-
         }
 
         private string ParseRequestForWorkstationID(string request)

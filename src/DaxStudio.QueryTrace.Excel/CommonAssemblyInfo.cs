@@ -5,10 +5,10 @@ using System.Reflection;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DaxStudio.codeplex.com")]
-[assembly: AssemblyProduct("DAX Studio")]
-[assembly: AssemblyCopyright("Copyright © DAX Studio 2016")] 
+[assembly: AssemblyProduct("DaxStudio")]
+[assembly: AssemblyCopyright("Copyright © DaxStudio 2016")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion(    "2.7.0.81")]
-[assembly: AssemblyFileVersion("2.7.0.81")]
+[assembly: AssemblyVersion(    "2.7.0.80")]
+[assembly: AssemblyFileVersion("2.7.0.80")]
 

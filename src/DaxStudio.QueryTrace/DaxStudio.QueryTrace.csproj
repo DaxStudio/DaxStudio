@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonAssemblyInfo.cs" />
     <Compile Include="DaxStudioTraceEventArgs.cs" />
     <Compile Include="DaxStudioTraceEventClass.cs" />
     <Compile Include="DaxStudioTraceEventSubclass.cs" />
