@@ -102,7 +102,6 @@
                   Width="Auto"
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
-                                        
                   HeadersVisibility="Column"
                   ClipboardCopyMode="ExcludeHeader"
                   ScrollViewer.CanContentScroll="False"
@@ -173,7 +172,8 @@
                                     
                                     />
                     <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="Username">
+                                            filter:DataGridColumnExtensions.CustomBindingPath="Username"
+                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
                         <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -193,7 +193,8 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName">
+                                            filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
+                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
                         <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">

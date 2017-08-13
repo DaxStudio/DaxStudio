@@ -23,5 +23,7 @@ namespace DaxStudio.Interfaces
         bool ShowPreReleaseNotifcations { get; set; }
         bool ShowTooltipBasicStats { get; set; }
         bool ShowTooltipSampleData { get; set; }
+        bool CanPublishDaxFunctions { get; set; }
+        bool ExcludeHeadersWhenCopyingResults { get; set; }
     }
 }

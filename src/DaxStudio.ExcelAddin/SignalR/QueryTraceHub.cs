@@ -62,7 +62,8 @@ namespace DaxStudio
                 throw new NotImplementedException();
             }
         }
-    }
+
+        public bool ExcludeHeadersWhenCopyingResults { get; set; }
 
     [HubName("QueryTrace")]
     public class QueryTraceHub:Hub<IQueryTraceHub>

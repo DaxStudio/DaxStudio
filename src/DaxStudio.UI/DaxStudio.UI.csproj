@@ -321,6 +321,7 @@
     <Compile Include="Behaviours\ResultsGridClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\DataGridEnhancedCopy.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
