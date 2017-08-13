@@ -627,6 +627,11 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnections"
                 , value == null ? "<null>" : value.ConnectionString
                 , selectedDatabase);          
+            if (value != null && value.State != ConnectionState.Open)
+            {
+                OutputPane.AddWarning(string.Format("Connection for server {0} is not open",value.ServerName));
+                return;
+            }
             using (NewStatusBarMessage("Refreshing Metadata..."))
             {
                 if (value == null) return;
@@ -1513,7 +1518,7 @@ namespace DaxStudio.UI.ViewModels
                 MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the publish functions option", "Publish DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
+            
             Stopwatch publishStopWatch = new Stopwatch();
             publishStopWatch.Start();
 
@@ -1521,6 +1526,7 @@ namespace DaxStudio.UI.ViewModels
             string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
             string metadataFilename = Path.GetTempFileName(); 
             try {
+                _options.CanPublishDaxFunctions = false;
                 using (var client = GetHttpClient()) {
                     client.Timeout = new TimeSpan(0, 0, 60); // set 30 second timeout
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Ping version {0} to DaxVersioning ", ssasVersion));
@@ -1569,6 +1575,7 @@ namespace DaxStudio.UI.ViewModels
                 if (File.Exists(metadataFilename)) {
                     File.Delete(metadataFilename);
                 }
+                _options.CanPublishDaxFunctions = true;
             }
         }
         public void ExportDaxFunctions() {
@@ -1789,6 +1796,8 @@ namespace DaxStudio.UI.ViewModels
                 Connection.Dispose();
             }
 
+            if (cnn != null && cnn.State != ConnectionState.Open) cnn.Open();
+
             Connection = cnn;
             this.IsPowerPivot = message.PowerPivotModeSelected;
             this.Spid = cnn.SPID;
@@ -1802,7 +1811,10 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
-                { ServerName = "<Not Connected>"; }
+                {
+                    ServerName = "<Not Connected>";
+                    Connection = null;
+                }
                 else
                 {
                     if (Connection.IsPowerPivot)
@@ -1845,8 +1857,9 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Handle(CancelConnectEvent message)
         {
+            if (Connection == null) return;
             // refresh the other views with the existing connection details
-            _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
+            if (Connection.State == ConnectionState.Open) _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
         }
 
         public IResult GetShutdownTask()

@@ -60,6 +60,7 @@ namespace DaxStudio.UI.ViewModels
             ShowPreReleaseNotifcations = RegistryHelper.GetValue<bool>("ShowPreReleaseNotifcations", false);
             ShowTooltipBasicStats = RegistryHelper.GetValue<bool>("ShowTooltipBasicStats", true);
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
+            ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -324,6 +325,38 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ShowTooltipSampleData);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ShowTooltipSampleData", value);
+            }
+        }
+
+        private bool _canPublishDaxFunctions = true; 
+        public bool CanPublishDaxFunctions
+        {
+            get
+            {
+                return _canPublishDaxFunctions;
+            }
+
+            set
+            {
+                _canPublishDaxFunctions = value;
+                NotifyOfPropertyChange(() => CanPublishDaxFunctions);
+            }
+        }
+
+        private bool _excludeHeadersWhenCopyingResults = false;
+        public bool ExcludeHeadersWhenCopyingResults
+        {
+            get
+            {
+                return _excludeHeadersWhenCopyingResults;
+            }
+
+            set
+            {
+                _excludeHeadersWhenCopyingResults = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ExcludeHeadersWhenCopyingResults", value);
+                NotifyOfPropertyChange(() => ExcludeHeadersWhenCopyingResults);
             }
         }
 

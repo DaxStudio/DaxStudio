@@ -29,7 +29,9 @@ namespace DaxStudio.UI.ViewModels
         {
             base.OnConnectionChanged();//isSameServer);
             //if (isSameServer) return;
+            if (Connection == null) return;
             NotifyOfPropertyChange(()=> DmvQueries);
+            
             EventAggregator.PublishOnUIThread(new DmvsLoadedEvent(Document, Connection.DynamicManagementViews));
         }
         public override string DefaultDockingPane

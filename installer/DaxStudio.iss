@@ -116,6 +116,8 @@ Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO D
 #include "scripts\products\dotnetassembly.iss"
 #include "scripts\products\sql2016adomdclient.iss"
 #include "scripts\products\sql2016amo.iss"
+#include "scripts\products\sql2017adomdclient.iss"
+#include "scripts\products\sql2017amo.iss"
 
 [UninstallRun]
 Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden; 
@@ -156,6 +158,7 @@ win_sp_title=Windows %1 Service Pack %2
 [Components]
 Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
+Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
 [Code]
 // If there is a command-line parameter "skipdependencies=true", don't check for them }
@@ -315,55 +318,7 @@ begin
 	msi45('4.5');
 #endif
 
-  {
-	//install .netfx 2.0 sp2 if possible; if not sp1 if possible; if not .netfx 2.0
-#ifdef use_dotnetfx20
-	//check if .netfx 2.0 can be installed on this OS
-	if not minwinspversion(5, 0, 3) then begin
-		msgbox(fmtmessage(custommessage('depinstall_missing'), [fmtmessage(custommessage('win_sp_title'), ['2000', '3'])]), mberror, mb_ok);
-		exit;
-	end;
-	if not minwinspversion(5, 1, 2) then begin
-		msgbox(fmtmessage(custommessage('depinstall_missing'), [fmtmessage(custommessage('win_sp_title'), ['XP', '2'])]), mberror, mb_ok);
-		exit;
-	end;
-
-	if minwinversion(5, 1) then begin
-
-		dotnetfx20sp2();
-#ifdef use_dotnetfx20lp
-		dotnetfx20sp2lp();
-#endif
-	end else begin
-		if minwinversion(5, 0) and minwinspversion(5, 0, 4) then begin
-#ifdef use_kb835732
-			kb835732();
-#endif
-			dotnetfx20sp1();
-#ifdef use_dotnetfx20lp
-			dotnetfx20sp1lp();
-#endif
-		end else begin
-			dotnetfx20();
-#ifdef use_dotnetfx20lp
-			dotnetfx20lp();
-#endif
-		end;
-	end;
-#endif
-
-#ifdef use_dotnetfx35
-	//dotnetfx35();
-	dotnetfx35sp1();
-#ifdef use_dotnetfx35lp
-	//dotnetfx35lp();
-	dotnetfx35sp1lp();
-#endif
-#endif
-  }
-#ifdef use_wic
-	wic();
-#endif
+ 
 
 if ShouldInstallDependencies() then
   Log('Checking for Dependencies')
@@ -391,7 +346,6 @@ else
 #endif
 
 #ifdef use_sql2012sp1adomdclient
-  
   if ShouldInstallDependencies() then begin
     Log('Checking for AdomdClient 2012 SP1');
 	  sql2012sp1adomdclient();
@@ -399,7 +353,6 @@ else
 #endif
 
 #ifdef use_sql2012sp1amo
-  
   if ShouldInstallDependencies() then begin
     Log('Checking for AMO 2012 SP1');
 	  sql2012sp1amo();
@@ -407,23 +360,49 @@ else
 #endif
 
 
-#ifdef use_sql2016adomdclient
-  
-  if ShouldInstallDependencies() then begin
-    Log('Checking for AdomdClient 2016');
-	  sql2016adomdclient();
-  end;
-#endif
-
-#ifdef use_sql2016amo
-  
-  if ShouldInstallDependencies() then begin
-    Log('Checking for AMO 2016');
-	  sql2016amo();
-   end;
-#endif
 
 	Result := true;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+Log('Processing custom page actions for ' + IntToStr(CurPageID));
+  if CurPageID = wpReady then begin
+    Log('Processing custom Ready page actions');
+    if IsComponentSelected('ASAzureSupport') then begin
+      Log('Installing Azure Support');
+
+        if ShouldInstallDependencies() then begin
+       //#ifdef use_sql2017adomdclient
+          Log('Checking for AdomdClient 2017');
+          sql2017adomdclient();
+      //#endif
+
+      //#ifdef use_sql2017amo
+          Log('Checking for AMO 2017');
+          sql2017amo();
+       //#endif
+         end;
+
+    end;
+
+    if IsComponentSelected('AS Azure Support') = False then begin
+      #ifdef use_sql2016adomdclient
+        if ShouldInstallDependencies() then begin
+          Log('Checking for AdomdClient 2016');
+          sql2016adomdclient();
+        end;
+      #endif
+
+      #ifdef use_sql2016amo
+        if ShouldInstallDependencies() then begin
+          Log('Checking for AMO 2016');
+          sql2016amo();
+         end;
+      #endif
+    end;
+
+  end;
 end;
 
 

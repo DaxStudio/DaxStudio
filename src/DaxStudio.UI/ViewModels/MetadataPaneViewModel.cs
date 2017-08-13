@@ -198,7 +198,7 @@ namespace DaxStudio.UI.ViewModels
                         //    conn.Open();
                         //    _treeViewTables = conn.Database.Models[SelectedModel.Name].TreeViewTables();    
                         //}
-                        _treeViewTables = SelectedModel.TreeViewTables( _globalOptions );
+                        _treeViewTables = SelectedModel.TreeViewTables( _globalOptions, EventAggregator );
                     }
                     catch (Exception ex)
                     {
@@ -352,10 +352,14 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null &&  Connection.Database.Name != _selectedDatabase.Name) //!Connection.Database.Equals(_selectedDatabase))
+                    if (_selectedDatabase != null &&  Connection.Database.Name != _selectedDatabase.Name && value != null) //!Connection.Database.Equals(_selectedDatabase))
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
                         Connection.ChangeDatabase( value.Name);
+                        
+                    }
+                    if (Connection.Database != null )
+                    {
                         ModelList = Connection.Database.Models;
                     }
                 }

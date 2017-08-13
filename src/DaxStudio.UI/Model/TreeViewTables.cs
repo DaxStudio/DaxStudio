@@ -6,33 +6,35 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model
 {
 
     public static class ADOTabularModelExtensions
     {
-        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options )
+        
+        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator )
         {
             var lst = new List<FilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
-                lst.Add(new TreeViewTable(t, t.TreeViewColumns,options));
+                lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator));
             }
             return lst;   
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, IGlobalOptions options)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator)
         {
             var lst = new List<FilterableTreeViewItem>();
             foreach (var c in table.Columns)
             {
-                lst.Add( new TreeViewColumn(c, c.TreeViewColumnChildren, options));
+                lst.Add( new TreeViewColumn(c, c.TreeViewColumnChildren, options, eventAggregator));
             }
             return lst;
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column, IGlobalOptions options)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column, IGlobalOptions options,IEventAggregator eventAggregator)
         {
             var lst = new List<FilterableTreeViewItem>();
             var hier = column as ADOTabularHierarchy;
@@ -40,7 +42,7 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var lvl in hier.Levels)
                 {
-                    lst.Add( new TreeViewColumn(lvl,options));
+                    lst.Add( new TreeViewColumn(lvl,options,eventAggregator));
                 }
             }
             var kpi = column as ADOTabularKpi;
@@ -48,7 +50,7 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var comp in kpi.Components)
                 {
-                    lst.Add( new TreeViewColumn(comp,options));
+                    lst.Add( new TreeViewColumn(comp,options,eventAggregator));
                 }
             }
             return lst;
@@ -56,13 +58,15 @@ namespace DaxStudio.UI.Model
 
     }
 
-    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options);
+    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
     public class FilterableTreeViewItem : PropertyChangedBase
     {
-        GetChildrenDelegate _getChildren;
-        IGlobalOptions _options;
-        public FilterableTreeViewItem(GetChildrenDelegate getChildren, IGlobalOptions options)
+        protected GetChildrenDelegate _getChildren;
+        protected IGlobalOptions _options;
+        protected IEventAggregator _eventAggregator;
+        public FilterableTreeViewItem(GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             _options = options;
             _getChildren = getChildren;
         }
@@ -72,7 +76,7 @@ namespace DaxStudio.UI.Model
             get
             {
                 if (_children == null && _getChildren != null)
-                { _children = _getChildren.Invoke(_options); }
+                { _children = _getChildren.Invoke(_options, _eventAggregator); }
                 return _children;
             }
         }
@@ -138,8 +142,10 @@ namespace DaxStudio.UI.Model
     class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
     {
         private readonly ADOTabularTable _table;
-        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options):base(getChildren,options)
+        
+        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator):base(getChildren,options,eventAggregator)
         {
+        
             _table = table;
         }
 
@@ -192,10 +198,10 @@ namespace DaxStudio.UI.Model
         private string _minValue = string.Empty;
         private string _maxValue = string.Empty;
         private long _distinctValues = 0;
-        //private IGlobalOptions _options;
 
-        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options):base(getChildren, options)
+        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator):base(getChildren, options,eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             _sampleData = new List<string>();
             _tabularObject = column;
             _column = column;
@@ -233,7 +239,7 @@ namespace DaxStudio.UI.Model
                 if (!Options.ShowTooltipBasicStats) return false;
                 return _column != null && typeof(ADOTabularColumn) == _column.GetType(); }
         }
-        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options):base(null,null)
+        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator):base(null,null,eventAggregator)
         {
             Options = options;
             _tabularObject = kpiComponent;
@@ -242,15 +248,15 @@ namespace DaxStudio.UI.Model
             MetadataImage = MetadataImages.Measure;
         }
 
-        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options)
-            : base(null, options)
+        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator)
+            : base(null, options,eventAggregator)
         {
             Options = options;
             _tabularObject = kpi;
             DataTypeName = kpi.DataTypeName;
             MetadataImage = MetadataImages.Kpi;
         }
-        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options):base(null, options)
+        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator):base(null, options,eventAggregator)
         {
             Options = options;
             _tabularObject = level;
@@ -260,8 +266,8 @@ namespace DaxStudio.UI.Model
             MetadataImage = MetadataImages.Column;            
         }
 
-        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options)
-            : base(null,options)
+        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator)
+            : base(null,options,eventAggregator)
         {
             Options = options;
             _tabularObject = hier;
@@ -320,12 +326,16 @@ namespace DaxStudio.UI.Model
             UpdatingSampleData = true;
             try
             {
-                await Task.Run(() => {
+                await Task.Run(() => {                    
                     using (var newConn = connection.Clone())
                     {
                         SampleData = _column.GetSampleData(newConn, sampleSize);
                     }
                 });
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip sample data: {ex.Message}"));
             }
             finally
             {
@@ -351,9 +361,13 @@ namespace DaxStudio.UI.Model
                         _column.UpdateBasicStats(newConn);
                         MinValue = _column.MinValue;
                         MaxValue = _column.MaxValue;
-                        DistinctValues = _column.DistinctValues;
+                        DistinctValues = _column.DistinctValues;   
                     }
                 });
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
             }
             finally
             {

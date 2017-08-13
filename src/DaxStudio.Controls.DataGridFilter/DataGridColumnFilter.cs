@@ -75,8 +75,14 @@ namespace DaxStudio.Controls.DataGridFilter
 
         private void FilterChangedEvent(object sender, EventArgs e)
         {
-            IsFiltered = !string.IsNullOrEmpty(this.FilterCurrentData.QueryString) 
-                        || !string.IsNullOrEmpty(this.FilterCurrentData.QueryStringTo);
+            if (this.FilterCurrentData != null)
+            {
+                IsFiltered = !string.IsNullOrEmpty(this.FilterCurrentData.QueryString)
+                            || !string.IsNullOrEmpty(this.FilterCurrentData.QueryStringTo);
+            } else
+            {
+                IsFiltered = false;
+            }
         }
 
         private void FilterClearedEvent(object sender, EventArgs e)
@@ -718,17 +724,40 @@ namespace DaxStudio.Controls.DataGridFilter
 
         void query_FilteringFinished(object sender, EventArgs e)
         {
-            if (FilterCurrentData.Equals((sender as QueryController).ColumnFilterData))
+            if (FilterCurrentData == null)
             {
-                this.IsFilteringInProgress = false;
+                if ((sender as QueryController).ColumnFilterData != null)
+                {
+                    this.IsFilteringInProgress = true;
+                }
+                else
+                {
+                    this.IsFilteringInProgress = false;
+                }
+            }
+            else
+            {
+                if (FilterCurrentData.Equals((sender as QueryController).ColumnFilterData))
+                {
+                    this.IsFilteringInProgress = false;
+                }
             }
         }
 
         void query_FilteringStarted(object sender, EventArgs e)
         {
-            if (FilterCurrentData.Equals((sender as QueryController).ColumnFilterData))
+            if (FilterCurrentData == null) {
+                if ((sender as QueryController).ColumnFilterData != null)
+                {
+                    this.IsFilteringInProgress = true;
+                }
+            }
+            else
             {
-                this.IsFilteringInProgress = true;
+                if (FilterCurrentData.Equals((sender as QueryController).ColumnFilterData))
+                {
+                    this.IsFilteringInProgress = true;
+                }
             }
         }
         #endregion

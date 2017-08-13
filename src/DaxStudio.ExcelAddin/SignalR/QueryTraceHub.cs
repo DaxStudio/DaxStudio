@@ -28,6 +28,8 @@ namespace DaxStudio
 
         public bool EditorShowLineNumbers { get; set; }
 
+        public bool CanPublishDaxFunctions { get; set; }
+
         public string ProxyAddress { get; set; }
 
         public SecureString ProxySecurePassword { get; set; }

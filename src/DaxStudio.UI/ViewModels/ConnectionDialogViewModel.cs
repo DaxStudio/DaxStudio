@@ -450,7 +450,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error("{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", ConnectionString);
+                Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", ConnectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
                 _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }
@@ -458,7 +458,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.Unsubscribe(this);
                 SelectedServerSetFocus = false;
-                TryClose(true);
+                this.TryClose();
+            //    TryClose(true);
             }
         }
 

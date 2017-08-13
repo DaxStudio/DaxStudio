@@ -312,11 +312,13 @@
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
+    <Compile Include="Behaviours\ClipboardBehaviour.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
+    <Compile Include="Behaviours\ResultsGridClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
