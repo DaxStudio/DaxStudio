@@ -156,6 +156,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_isChecked != value)
                 {
                     _isChecked = value;
+                    if (!_isChecked) IsPaused = false; // make sure pause is set to false if we are not checked
                     NotifyOfPropertyChange(() => CanPause);
                     NotifyOfPropertyChange(() => CanStart);
                     NotifyOfPropertyChange(() => CanStop);

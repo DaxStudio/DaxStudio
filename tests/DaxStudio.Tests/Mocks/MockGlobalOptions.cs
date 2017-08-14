@@ -29,5 +29,7 @@ namespace DaxStudio.Tests.Mocks
         public bool ShowTooltipSampleData { get; set; }
         public bool ShowTooltipBasicStats { get; set; }
         public bool CanPublishDaxFunctions { get; set; }
+
+        public bool ExcludeHeadersWhenCopyingResults { get; set; }
     }
 }
