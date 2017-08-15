@@ -612,11 +612,14 @@ namespace ADOTabular
             string s = piXml.ToString();
             return s;
         }
-        public void Visit(MetadataInfo.DaxMetadata daxMetadata) { 
+        public void Visit(MetadataInfo.DaxMetadata daxMetadata) {
             string ssasVersion = GetSsasVersion();
+            Product productInfo = GetProduct(ssasVersion);
             daxMetadata.Version = new MetadataInfo.SsasVersion {
                 SSAS_VERSION = ssasVersion,
-                CAPTURE_DATE = DateTime.Now
+                CAPTURE_DATE = DateTime.Now,
+                PRODUCT_TYPE = productInfo.Type,
+                PRODUCT_NAME = productInfo.Name
             };
             AdomdDataReader result = _conn.ExecuteReader("SELECT * FROM $SYSTEM.MDSCHEMA_FUNCTIONS");
             while (result.Read()) {
@@ -667,6 +670,62 @@ namespace ADOTabular
             var dr = drProperties.Single();
             string ssasVersion = dr["Value"].ToString();
             return ssasVersion;
+        }
+
+        public struct Product {
+            public string Type;
+            public string Name;
+        }
+
+        private Product GetProduct(string ssasVersion) {
+            string serverName = _conn.ServerName;
+            string serverId = _conn.ServerId;
+            Product product;
+            product.Type = null;
+            product.Name = null;
+            if (_conn.Type == AdomdType.Excel) {
+                product.Type = "Excel";
+                if (ssasVersion.StartsWith("13.")) {
+                    product.Name = "Excel 2016";
+                }
+                else if (ssasVersion.StartsWith("11.")) {
+                    product.Name = "Excel 2013";
+                }
+                else {
+                    product.Name = product.Type;
+                }
+            }
+            else if (serverName.StartsWith("asazure://")) {
+                product.Type = "Azure AS";
+                product.Name = product.Type;
+            }
+            else if (serverId.Contains(@"\AnalysisServicesWorkspace")) {
+                product.Type = "Power BI";
+                product.Name = product.Type;
+            }
+            else if (serverId.Contains(@"\DataToolsInstance")) {
+                product.Type = "SSDT";
+                product.Name = product.Type;
+            }
+            else {
+                product.Type = "SSAS Tabular";
+                if (ssasVersion.StartsWith("14.")) {
+                    product.Name = "SSAS 2017";
+                }
+                else if (ssasVersion.StartsWith("13.")) {
+                    product.Name = "SSAS 2016";
+                }
+                else if (ssasVersion.StartsWith("12.")) {
+                    product.Name = "SSAS 2014";
+                }
+                else if (ssasVersion.StartsWith("11.")) {
+                    product.Name = "SSAS 2012";
+                }
+                else {
+                    product.Name = product.Type;
+                }
+            }
+            return product;
         }
 
         public SortedDictionary<string, ADOTabularMeasure> Visit(ADOTabularMeasureCollection measures)

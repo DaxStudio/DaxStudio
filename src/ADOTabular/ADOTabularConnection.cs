@@ -595,6 +595,42 @@ namespace ADOTabular
             return "Unknown";
         }
 
+
+        private string _serverId;
+        public string ServerId {
+            get {
+                if (_serverId == null) {
+                    _serverId = GetServerId();
+                }
+                return _serverId;
+            }
+        }
+
+        private string GetServerId() {
+
+            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+                                                 new AdomdRestrictionCollection
+                                                     {
+                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+                                                     }, true);
+            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
+
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata))) {
+                if (rdr.NameTable != null) {
+                    var eSvrMode = rdr.NameTable.Add("ID");
+
+                    while (rdr.Read()) {
+                        if (rdr.NodeType == XmlNodeType.Element
+                            && rdr.LocalName == eSvrMode) {
+                            return rdr.ReadElementContentAsString();
+                        }
+
+                    }
+                }
+            }
+            return "Unknown";
+        }
+
         private int _spid;
         public int SPID
         {
