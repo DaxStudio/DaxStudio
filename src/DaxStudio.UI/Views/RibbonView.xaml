@@ -35,7 +35,7 @@
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
-        
+        <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -736,6 +736,28 @@
             </Fluent:RibbonGroupBox>
                  
         </Fluent:RibbonTabItem>
+
+            <!-- DEBUG Ribbon -->
+        <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Analysis">
+                <Fluent:Button Name="ExportAnalysisData"
+                                   Header="Export Analysis Data"
+                                   cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
+                                   Icon="{StaticResource RefreshIcon}"
+                                   LargeIcon="{StaticResource RefreshIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Export Analysis Data"
+                                              Text="Exports information to allow for detailed analysis of the model design"
+                                              DisableReason="{Binding ClearCacheDisableReason}"
+                                              ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+        </Fluent:RibbonTabItem>    
+            
             
         <!-- Help Tab -->
         <Fluent:RibbonTabItem Header="Help">

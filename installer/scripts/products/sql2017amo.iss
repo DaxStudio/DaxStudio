@@ -2,12 +2,12 @@
 // to manage Analysis Services instances
 
 [CustomMessages]
-amo_title=SQL Server 2017 Analysis Management Objects
+amo14_title=SQL Server 2017 Analysis Management Objects
 
-en.amo_size=4.1 MB
+en.amo14_size=4.1 MB
 ;de.amo_size=2,7 MB
 
-en.amo_size_x64=6.5 MB
+en.amo14_size_x64=6.5 MB
 ;de.amo_x64=3,5 MB
 
 
@@ -32,8 +32,8 @@ begin
 		if (not IsIA64()) then
 			AddProduct('SQL_AS_AMO.msi',
 				' /passive',
-				CustomMessage('amo_title'),
-				CustomMessage('amo_size' + GetArchitectureString()),
+				CustomMessage('amo14_title'),
+				CustomMessage('amo14_size' + GetArchitectureString()),
 				GetString(amo14_url, amo14_url_x64, ''),
 				false, false);
 	end;

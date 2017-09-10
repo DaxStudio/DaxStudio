@@ -560,5 +560,21 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.SwapDelimiters();
         }
 
+        public bool IsDebugBuild
+        {
+            get {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+
+            }
+        }
+
+        public void ExportAnalysisData()
+        {
+            _activeDocument.ExportAnalysisData();
+        }
     }
 }

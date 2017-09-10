@@ -314,7 +314,7 @@
         </ScrollViewer>
             </TabItem>
             <TabItem Header="Advanced">
-                <ScrollViewer>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <WrapPanel>
                         <GroupBox Header="Publish Functions" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                             <StackPanel>

@@ -2,19 +2,19 @@
 // to manage Analysis Services instances
 
 [CustomMessages]
-amo_title=SQL Server 2016 Analysis Management Objects
+amo13_title=SQL Server 2016 Analysis Management Objects
 
-en.amo_size=4.1 MB
+en.amo13_size=4.1 MB
 ;de.amo_size=2,7 MB
 
-en.amo_size_x64=6.5 MB
+en.amo13_size_x64=6.5 MB
 ;de.amo_x64=3,5 MB
 
 
 [Code]
 const
-	amo_url =     'http://download.microsoft.com/download/8/7/2/872BCECA-C849-4B40-8EBE-21D48CDF1456/ENU/x86/SQL_AS_AMO.msi';
-	amo_url_x64 = 'http://download.microsoft.com/download/8/7/2/872BCECA-C849-4B40-8EBE-21D48CDF1456/ENU/x64/SQL_AS_AMO.msi';
+	amo13_url =     'http://download.microsoft.com/download/8/7/2/872BCECA-C849-4B40-8EBE-21D48CDF1456/ENU/x86/SQL_AS_AMO.msi';
+	amo13_url_x64 = 'http://download.microsoft.com/download/8/7/2/872BCECA-C849-4B40-8EBE-21D48CDF1456/ENU/x64/SQL_AS_AMO.msi';
    
 procedure sql2016amo();
 var
@@ -32,9 +32,9 @@ begin
 		if (not IsIA64()) then
 			AddProduct('SQL_AS_AMO.msi',
 				' /passive',
-				CustomMessage('amo_title'),
-				CustomMessage('amo_size' + GetArchitectureString()),
-				GetString(amo_url, amo_url_x64, ''),
+				CustomMessage('amo13_title'),
+				CustomMessage('amo13_size' + GetArchitectureString()),
+				GetString(amo13_url, amo13_url_x64, ''),
 				false, false);
 	end;
 end;

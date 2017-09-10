@@ -227,13 +227,7 @@
     <i:Interaction.Behaviors>
         <beh:FindReplaceBehavior />
     </i:Interaction.Behaviors>
-    <!--
-<i:Interaction.Triggers>    
-        <i:EventTrigger EventName="ContentRendered">
-            <cal:ActionMessage MethodName="OnContentRendered" />
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
-    -->
+
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="*"></RowDefinition>

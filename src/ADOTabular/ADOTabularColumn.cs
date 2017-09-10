@@ -152,10 +152,17 @@ namespace ADOTabular
             }
             
             var dt = connection.ExecuteDaxQueryDataTable(qry);
-            MinValue = dt.Rows[0][0].ToString();
-            MaxValue = dt.Rows[0][1].ToString();
-            DistinctValues = (long)dt.Rows[0][2]; 
+            
+                MinValue = dt.Rows[0][0].ToString();
+                MaxValue = dt.Rows[0][1].ToString();
+            if (dt.Rows[0][2] == DBNull.Value) {
+                DistinctValues = 0;
+            }
+            else { 
+                DistinctValues = (long)dt.Rows[0][2];
+            }
         }
+
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {

@@ -623,7 +623,7 @@ namespace DaxStudio.UI.ViewModels
         private void UpdateConnections(ADOTabularConnection value,string selectedDatabase)
         {
             _logger.Info("In UpdateConnections");
-
+            OutputPane.AddInformation("Establishing Connection");
             Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnections"
                 , value == null ? "<null>" : value.ConnectionString
                 , selectedDatabase);          
@@ -640,6 +640,10 @@ namespace DaxStudio.UI.ViewModels
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
                 {
+                    // on change of connection we need to disable traces as the will
+                    // be pointing to the old connection
+                    traceWatcher.IsChecked = false;
+                    // then we need to check if the new connection can be traced
                     traceWatcher.CheckEnabled(this,activeTrace);   
                 }
                 MetadataPane.Connection = _connection;
@@ -702,7 +706,8 @@ namespace DaxStudio.UI.ViewModels
                             
                     Log.Debug("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
                     msg.Dispose();
-                    Execute.BeginOnUIThread(() =>
+
+                    Execute.OnUIThread(() =>
                     {
                         var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this);
 
@@ -716,6 +721,7 @@ namespace DaxStudio.UI.ViewModels
                                             { "AllowsTransparency",true}
                                         });
                     });
+                    
                 }
                 catch (Exception ex)
                 {
@@ -2389,6 +2395,68 @@ namespace DaxStudio.UI.ViewModels
                 var ext = Path.GetExtension(DisplayName).TrimStart('.').TrimEnd('*').ToUpper();
                 return ext == "DAX" ? "" : ext;
             } 
+        }
+        #endregion
+
+        #region Export Analysis Data
+
+        public void ExportAnalysisData()
+        {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            // Configure save file dialog box
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "DaxStudioModelAnalyzer_" + this.SelectedDatabase,
+                DefaultExt = ".zip",
+                Filter = "Analyzer Data (ZIP)|*.zip|Analyzer Data|*.json"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process save file dialog box results 
+            if (result == true)
+            {
+                // Save document 
+                ExportAnalysisData(dlg.FileName);
+            }
+        }
+        public void ExportAnalysisData(string path)
+        {
+            string extension = Path.GetExtension(path).ToLower();
+            bool compression = (extension == ".zip");
+            ExportAnalysisData(path, compression);
+        }
+
+        public void ExportAnalysisData(string path, bool compression)
+        {
+            var info = ModelAnalyzer.Create(_connection);
+            if (compression)
+            {
+                string pathJson = string.Format(@".\{0}.json", Path.GetFileNameWithoutExtension(path));
+                Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
+                using (Package package = Package.Open(path, FileMode.Create))
+                {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    {
+                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                        tw.Close();
+                    }
+                    package.Close();
+                }
+            }
+            else
+            {
+                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))
+                {
+                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    tw.Close();
+                }
+            }
         }
         #endregion
     }

@@ -2,13 +2,9 @@
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-//using DaxStudio.UI.Model;
 using System.Linq;
-using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
 using System.IO;
-using System;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using System.Windows;
 using DaxStudio.UI.Interfaces;
