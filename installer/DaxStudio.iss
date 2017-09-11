@@ -386,9 +386,10 @@ Log('Processing custom page actions for ' + IntToStr(CurPageID));
        //#endif
          end;
 
-    end;
-
-    if IsComponentSelected('AS Azure Support') = False then begin
+    end
+    else
+    //if Not IsComponentSelected('AS Azure Support') then 
+    begin
       #ifdef use_sql2016adomdclient
         if ShouldInstallDependencies() then begin
           Log('Checking for AdomdClient 2016');

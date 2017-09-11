@@ -20,6 +20,8 @@ procedure sql2017amo();
 var
 //	version: string;
   maxVersion: string;
+  new_amo14_url: string;
+  new_amo14_url_x64: string;
 begin
 	//CHECK NOT FINISHED YET
 
@@ -28,13 +30,17 @@ begin
 
   // if maxVersion is less than 13.0.0.0000
 	if (CompareAssemblyVersion(maxVersion ,'14.0.0.0000') < 0 ) or (( not IsAssemblyInstalled('Microsoft.AnalysisServices', '14.0.0.0' ) ) And IsExcel2010Installed()) then begin
-
-		if (not IsIA64()) then
+    
+    // get download locations
+    new_amo14_url := getRedirect( amo14_url);
+    new_amo14_url_x64 := getRedirect( amo14_url_x64);
+		
+    if (not IsIA64()) then
 			AddProduct('SQL_AS_AMO.msi',
 				' /passive',
 				CustomMessage('amo14_title'),
 				CustomMessage('amo14_size' + GetArchitectureString()),
-				GetString(amo14_url, amo14_url_x64, ''),
+				GetString(new_amo14_url, new_amo14_url_x64, ''),
 				false, false);
 	end;
 end;

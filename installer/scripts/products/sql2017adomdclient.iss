@@ -23,39 +23,42 @@ begin
   WinHttpReq.Open('GET', url, false);
   WinHttpReq.Send();
 
-  if WinHttpReq.Status <> 200 then begin
-    MsgBox('Could not run service to get encrypted password.', mbError, MB_OK);
-  end else
-  begin
-  //MsgBox('SUCCESS', mbInformation, MB_OK);
-  end; 
-  if Length(WinHttpReq.ResponseText) > 0 then begin
-    MsgBox('Response: ' + WinHttpReq.ResponseText, mbError, MB_OK);
-  end;
-  Result := 'hello';
+  if WinHttpReq.Status = 302 then begin
+      Log(WinHttpReq.getResponseHeader('Location'));
+      Log(WinHttpReq.Status);
+      Result := WinHttpReq.getResponseHeader('Location');
+    end 
+  else
+    begin
+      Result := '';
+    end; 
 end;
 
   
 procedure sql2017adomdClient();
 var
 	maxVersion: string;
-  newurl: string;
+  new_adomdclient14_url: string;
+  new_adomdclient14_url_x64: string;
 begin
 	//CHECK NOT FINISHED YET
 
 	maxVersion := GetMaxAssemblyVersion('Microsoft.AnalysisServices.AdomdClient');
 
   //msgbox('Compare adomdclient ' + IntToStr(CompareAssemblyVersion(maxVersion ,'11.0.0.0000')),mbInformation,MB_OK);
-    newurl := getRedirect( adomdclient14_url);
   // if maxVersion is less than 13.0.0.0000
 	if (CompareAssemblyVersion(maxVersion ,'14.0.0.0000') < 0 ) or (( not IsAssemblyInstalled('Microsoft.AnalysisServices.AdomdClient', '14.0.0.0' ) ) And IsExcel2010Installed()) then begin
     Log('Adding Product SQL 2017 ADOMDClient');
+    // get download locations
+    new_adomdclient14_url := getRedirect( adomdclient14_url);
+    new_adomdclient14_url_x64 := getRedirect( adomdclient14_url_x64);
+
 		if (not IsIA64()) then
 			AddProduct('SQL_AS_ADOMD.msi',
 				' /passive',
 				CustomMessage('adomdclient14_title'),
 				CustomMessage('adomdclient14_size' + GetArchitectureString()),
-				GetString(adomdclient14_url, adomdclient14_url_x64, ''),
+				GetString(new_adomdclient14_url, new_adomdclient14_url_x64, ''),
 				false, false);
 	end;
 end;
