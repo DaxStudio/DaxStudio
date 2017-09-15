@@ -2451,6 +2451,7 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 // create gz file
+                var gzfile = Path.Combine( Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
 
                 using (FileStream fs = new FileStream(gzfile, FileMode.CreateNew))
                 using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
