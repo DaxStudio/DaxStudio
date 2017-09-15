@@ -38,6 +38,7 @@ using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.IO.Compression;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2448,6 +2449,17 @@ namespace DaxStudio.UI.ViewModels
                     }
                     package.Close();
                 }
+
+                // create gz file
+
+                using (FileStream fs = new FileStream(gzfile, FileMode.CreateNew))
+                using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
+                using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
+                {
+                    ms.Position = 0;
+                    ms.CopyTo(zipStream);
+                }
+
             }
             else
             {

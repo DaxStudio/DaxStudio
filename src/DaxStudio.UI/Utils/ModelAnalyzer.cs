@@ -239,8 +239,8 @@ FROM $SYSTEM.TMSCHEMA_COLUMNS
 
         private static void PostProcessUnusedColumns(Microsoft.AnalysisServices.Database db, DataSet result)
         {
-            // Look for hidden columns, not used in sort by and not in hierarchies and not referenced in calcs
-            throw new NotImplementedException();
+            // TODO Look for hidden columns, not used in sort by and not in hierarchies and not referenced in calcs
+            //throw new NotImplementedException();
         }
 
         private static void AddDatabaseTable(Microsoft.AnalysisServices.Database db, DataSet result)
