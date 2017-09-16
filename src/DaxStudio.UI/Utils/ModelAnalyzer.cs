@@ -18,6 +18,10 @@ namespace DaxStudio.UI.Utils
 
         private class ModelAnalyzerRelationship
         {
+            /// <summary>
+            /// Relationship for compatibility level 1100 (Tabular/TOM)
+            /// </summary>
+            /// <param name="relationship"></param>
             public ModelAnalyzerRelationship(SingleColumnRelationship relationship)
             {
                 IsActive = relationship.IsActive;
@@ -32,6 +36,22 @@ namespace DaxStudio.UI.Utils
 
             }
 
+            /// <summary>
+            /// Relationship for compatibility level 1100 (Multidimensional/XML)
+            /// </summary>
+            /// <param name="relationship"></param>
+            public ModelAnalyzerRelationship(Microsoft.AnalysisServices.Relationship relationship) {
+                IsActive = (relationship.ActiveState == ActiveState.ActiveStateActive);
+                Name = relationship.ID;
+                CrossFilteringBehavior = relationship.CrossFilterDirection.ToString();
+                FromTable = relationship.FromRelationshipEnd.DimensionID;
+                FromColumn = null; // TODO - we don't know this for compatibility level 1100
+                FromCardinality = null; // TODO - we don't know this for compatibility level 1100
+                ToTable = relationship.ToRelationshipEnd.DimensionID;
+                ToColumn = null; // TODO - we don't know this for compatibility level 1100
+                ToCardinality = null; // TODO - we don't know this for compatibility level 1100
+
+            }
             public string FromCardinality { get; private set; }
             public string FromColumn { get; private set; }
             public string FromTable { get; private set; }
@@ -72,7 +92,8 @@ SELECT
     ROWS_COUNT AS ROWS_IN_TABLE
 FROM  $SYSTEM.DISCOVER_STORAGE_TABLES
 WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'
-ORDER BY DIMENSION_NAME"
+ORDER BY DIMENSION_NAME
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -85,7 +106,8 @@ SELECT
     ROWS_COUNT - 3 AS COLUMN_CARDINALITY
 FROM $SYSTEM.DISCOVER_STORAGE_TABLES
 WHERE LEFT ( TABLE_ID, 2 ) = 'H$'
-ORDER BY TABLE_ID"
+ORDER BY TABLE_ID
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -100,7 +122,9 @@ SELECT
     DICTIONARY_SIZE AS DICTIONARY_SIZE_BYTES,
     COLUMN_ENCODING AS COLUMN_ENCODING_INT
 FROM  $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS
-WHERE COLUMN_TYPE = 'BASIC_DATA'"
+WHERE COLUMN_TYPE = 'BASIC_DATA'
+ORDER BY [DIMENSION_NAME] + '_' + [ATTRIBUTE_NAME] ASC
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -120,7 +144,7 @@ SELECT
     VERTIPAQ_STATE
 FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
 WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'
-"
+ORDER BY [DIMENSION_NAME] + '_' + [COLUMN_ID] ASC"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -134,7 +158,9 @@ SELECT
     USED_SIZE,
     TABLE_ID AS COLUMN_HIERARCHY_ID
 FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-WHERE LEFT ( TABLE_ID, 2 ) = 'H$'"
+WHERE LEFT ( TABLE_ID, 2 ) = 'H$'
+ORDER BY [DIMENSION_NAME] + '_' + [COLUMN_ID] ASC
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -146,7 +172,9 @@ SELECT
     USED_SIZE,
     TABLE_ID AS HIERARCHY_ID
 FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-WHERE LEFT ( TABLE_ID, 2 ) = 'U$'"
+WHERE LEFT ( TABLE_ID, 2 ) = 'U$'
+ORDER BY [DIMENSION_NAME] + '_' + [COLUMN_ID] ASC
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -157,7 +185,9 @@ SELECT
     USED_SIZE,
     TABLE_ID AS RELATIONSHIP_ID
 FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-WHERE LEFT ( TABLE_ID, 2 ) = 'R$'"
+WHERE LEFT ( TABLE_ID, 2 ) = 'R$'
+ORDER BY [DIMENSION_NAME] + '_' + [TABLE_ID] ASC
+"
                 },
                 new ModelAnalyzerTable()
                 {
@@ -195,6 +225,7 @@ SELECT
     [DisplayFolder],
     [FormatString]
 FROM $SYSTEM.TMSCHEMA_MEASURES
+ORDER BY [Name] ASC
 "
                  },
                 new ModelAnalyzerTable()
@@ -208,7 +239,8 @@ SELECT DISTINCT
     '' AS [Description]
 FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY  
 WHERE OBJECT_TYPE = 'CALC_COLUMN'  
-ORDER BY [TABLE]+[OBJECT]"
+ORDER BY [TABLE] + '_' + [OBJECT] ASC
+"
                  },
                 new ModelAnalyzerTable()
                  {
@@ -246,7 +278,9 @@ SELECT
     [KeepUniqueRows],
     [DisplayOrdinal],
     [ErrorMessage]
-FROM $SYSTEM.TMSCHEMA_COLUMNS"
+FROM $SYSTEM.TMSCHEMA_COLUMNS
+ORDER BY [TableID] ASC
+"
                  },
                 new ModelAnalyzerTable()
                  {
@@ -261,6 +295,7 @@ SELECT
     [IsHidden],
     [SystemFlags]
 FROM $SYSTEM.TMSCHEMA_TABLES
+ORDER BY [Name] ASC
 "
                  },
                 new ModelAnalyzerTable()
@@ -283,6 +318,7 @@ SELECT
     [SecurityFilteringBehavior],
     [State]
 FROM $SYSTEM.TMSCHEMA_RELATIONSHIPS
+ORDER BY [FromTableID] ASC
 "
                  },
                 new ModelAnalyzerTable()
@@ -302,6 +338,7 @@ SELECT
     [ErrorMessage]
 FROM [$system].[TMSCHEMA_PARTITIONS]
 WHERE [Type] = 2
+ORDER BY [Name] ASC
 "
                  }
             };
@@ -389,9 +426,13 @@ WHERE [Type] = 2
             var rels = new List<ModelAnalyzerRelationship>();
             foreach (Dimension dim in db.Dimensions)
             {
-                foreach (SingleColumnRelationship rel in dim.Relationships)
+                foreach (var scanRel in dim.Relationships)
                 {
-                    rels.Add(new ModelAnalyzerRelationship(rel));
+                    // Check whether the relationship is a known type, otherwise skips it
+                    Microsoft.AnalysisServices.Relationship rel = scanRel as Microsoft.AnalysisServices.Relationship;
+                    if (rel != null) {
+                        rels.Add(new ModelAnalyzerRelationship(rel));
+                    }
                 }
             }
 
@@ -403,9 +444,13 @@ WHERE [Type] = 2
         private static void ProcessTabularRelationships(Microsoft.AnalysisServices.Tabular.Model model,DataSet result)
         {
             var rels = new List<ModelAnalyzerRelationship>();
-            foreach (SingleColumnRelationship rel in model.Relationships)
+            foreach (SingleColumnRelationship scanRel in model.Relationships)
             {
-                rels.Add(new ModelAnalyzerRelationship(rel));
+                // Check whether the relationship is a known type, otherwise skips it
+                SingleColumnRelationship rel = scanRel as SingleColumnRelationship;
+                if (rel != null) {
+                    rels.Add(new ModelAnalyzerRelationship(rel));
+                }
             }
             
             var relationshipsTable = rels.ToDataTable();
@@ -431,10 +476,6 @@ WHERE [Type] = 2
         {
             var columnTable = result.Tables["Columns.1100"];
             var columnCardinalityTable = result.Tables["ColumnsCardinality.1100"];
-
-            // Skip preprocessing whether columns or cardinality are not available
-            if (columnTable == null) return;
-            if (columnCardinalityTable == null) return;
 
             columnTable.Columns.Add(new System.Data.DataColumn("RowCount", typeof(long)));
             
