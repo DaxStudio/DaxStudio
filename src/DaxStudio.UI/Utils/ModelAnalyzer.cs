@@ -44,43 +44,55 @@ namespace DaxStudio.UI.Utils
         }
         private class ModelAnalyzerTable
         {
-
             public string TableName;
             public string Query;
             public int MinCompatibilityLevel = 1100;
+            /// <summary>
+            /// ignore the query in case it is no longer supported in a compatibility level
+            /// usually there is a replacement with another query depending on the 
+            /// compatibility level, applying a proper range for different queries
+            /// However, it is possible to create multiple versions of the same table 
+            /// with different compatibility levels (to enable support with different and older reports)
+            /// </summary>
+            public int MaxCompatibilityLevel = int.MaxValue; 
         }
 
-        private static List<ModelAnalyzerTable> GetQueries()
-        {
+
+        private static List<ModelAnalyzerTable> GetQueries() {
             return new List<ModelAnalyzerTable>
             {
                 new ModelAnalyzerTable()
                 {
                     TableName = "Tables",
-                    Query = @"SELECT 
+                    MinCompatibilityLevel = 1100,
+                    Query = @"
+SELECT 
     DIMENSION_NAME AS TABLE_NAME, 
- TABLE_ID AS TABLE_ID,
+    TABLE_ID AS TABLE_ID,
     ROWS_COUNT AS ROWS_IN_TABLE
 FROM  $SYSTEM.DISCOVER_STORAGE_TABLES
 WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'
 ORDER BY DIMENSION_NAME"
-                }
-                , new ModelAnalyzerTable()
+                },
+                new ModelAnalyzerTable()
                 {
-                    TableName = "Columns Cardinality",
+                    TableName = "ColumnsCardinality",
                     MinCompatibilityLevel = 1100,
-                    Query = @"SELECT
+                    Query = @"
+SELECT
     DIMENSION_NAME AS TABLE_NAME, 
     TABLE_ID AS COLUMN_HIERARCHY_ID,
     ROWS_COUNT - 3 AS COLUMN_CARDINALITY
 FROM $SYSTEM.DISCOVER_STORAGE_TABLES
 WHERE LEFT ( TABLE_ID, 2 ) = 'H$'
 ORDER BY TABLE_ID"
-                }
-                , new ModelAnalyzerTable()
+                },
+                new ModelAnalyzerTable()
                 {
                     TableName = "Columns",
-                    Query = @"SELECT
+                    MinCompatibilityLevel = 1100,
+                    Query = @"
+SELECT
     DIMENSION_NAME AS TABLE_NAME, 
     COLUMN_ID AS COLUMN_ID, 
     ATTRIBUTE_NAME AS COLUMN_NAME, 
@@ -89,11 +101,12 @@ ORDER BY TABLE_ID"
     COLUMN_ENCODING AS COLUMN_ENCODING_INT
 FROM  $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS
 WHERE COLUMN_TYPE = 'BASIC_DATA'"
-                }
-                , new ModelAnalyzerTable()
+                },
+                new ModelAnalyzerTable()
                 {
-                    TableName = "Columns Segments",
-                    Query = @"SELECT 
+                    TableName = "ColumnsSegments",
+                    Query = @"
+SELECT 
     DIMENSION_NAME AS TABLE_NAME, 
     PARTITION_NAME, 
     COLUMN_ID AS COLUMN_NAME, 
@@ -106,125 +119,208 @@ WHERE COLUMN_TYPE = 'BASIC_DATA'"
     BOOKMARK_BITS_COUNT,
     VERTIPAQ_STATE
 FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
---WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'
+WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'
 "
                 },
-//                new ModelAnalyzerTable()
-//                {
-//                    TableName = "Columns Hierarchies",
-//                    Query = @"SELECT 
-//    DIMENSION_NAME AS TABLE_NAME, 
-//    COLUMN_ID AS STRUCTURE_NAME,
-//    SEGMENT_NUMBER, 
-//    TABLE_PARTITION_NUMBER, 
-//    USED_SIZE,
-//    TABLE_ID AS COLUMN_HIERARCHY_ID
-//FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-//WHERE LEFT ( TABLE_ID, 2 ) = 'H$'"
-//                },
-//                new ModelAnalyzerTable()
-//                {
-//                    TableName = "User Hierarchies",
-//                    Query = @"SELECT 
-//    DIMENSION_NAME AS TABLE_NAME, 
-//    COLUMN_ID AS STRUCTURE_NAME,
-//    USED_SIZE,
-//    TABLE_ID AS HIERARCHY_ID
-//FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-//WHERE LEFT ( TABLE_ID, 2 ) = 'U$'"
-//                }
-//                , new ModelAnalyzerTable()
-//                {
-//                    TableName = "Relationship Storage",
-//                    Query = @"SELECT 
-//    DIMENSION_NAME AS TABLE_NAME, 
-//    USED_SIZE,
-//    TABLE_ID AS RELATIONSHIP_ID
-//FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
-//WHERE LEFT ( TABLE_ID, 2 ) = 'R$'"
-//                },
                 new ModelAnalyzerTable()
                 {
-                TableName = "Table Names",
-                Query = @"SELECT 
-    RIGHT ( TABLE_SCHEMA, LEN ( TABLE_SCHEMA ) - 1 ) AS TABLE_NAME,
-    TABLE_NAME AS TABLE_ID
-FROM $SYSTEM.DBSCHEMA_TABLES
-WHERE TABLE_TYPE = 'SYSTEM TABLE'
-  AND LEFT(TABLE_SCHEMA,1)='$'
-"
-                }
-                ,new ModelAnalyzerTable()
-                 {
-                     TableName = "Measures Expressions",
-                     Query = @"SELECT DISTINCT 
+                    TableName = "ColumnsHierarchies",
+                    Query = @"
+SELECT 
+    DIMENSION_NAME AS TABLE_NAME, 
+    COLUMN_ID AS STRUCTURE_NAME,
+    SEGMENT_NUMBER, 
+    TABLE_PARTITION_NUMBER, 
+    USED_SIZE,
+    TABLE_ID AS COLUMN_HIERARCHY_ID
+FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
+WHERE LEFT ( TABLE_ID, 2 ) = 'H$'"
+                },
+                new ModelAnalyzerTable()
+                {
+                    TableName = "UserHierarchies",
+                    Query = @"
+SELECT 
+    DIMENSION_NAME AS TABLE_NAME, 
+    COLUMN_ID AS STRUCTURE_NAME,
+    USED_SIZE,
+    TABLE_ID AS HIERARCHY_ID
+FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
+WHERE LEFT ( TABLE_ID, 2 ) = 'U$'"
+                },
+                new ModelAnalyzerTable()
+                {
+                    TableName = "RelationshipsSize",
+                    Query = @"
+SELECT 
+    DIMENSION_NAME AS TABLE_NAME, 
+    USED_SIZE,
+    TABLE_ID AS RELATIONSHIP_ID
+FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMN_SEGMENTS
+WHERE LEFT ( TABLE_ID, 2 ) = 'R$'"
+                },
+                new ModelAnalyzerTable()
+                {
+                     TableName = "MeasuresExpressions",
+                     Query = @"
+SELECT DISTINCT 
     [MEASUREGROUP_NAME] as [Table], 
     [MEASURE_NAME] as [Measure], 
-    '=' + [EXPRESSION] as [DAX Expression], 
+    '=' + [EXPRESSION] as [Expression], 
     [DESCRIPTION] as [Description],
-    [MEASURE_IS_VISIBLE]   
+    NOT [MEASURE_IS_VISIBLE] as [IsHidden],
+	DATA_TYPE AS [DataType],
+	MEASURE_DISPLAY_FOLDER as [DisplayFolder],
+	DEFAULT_FORMAT_STRING as [FormatString]
 FROM $SYSTEM.MDSCHEMA_MEASURES 
 WHERE MEASURE_NAME <> '__XL_Count of Models'
 AND MEASURE_NAME <> '__Default measure'
-AND EXPRESSION > '' 
+AND EXPRESSION <> '' 
 ORDER BY [MEASUREGROUP_NAME] + '_' + [MEASURE_NAME] ASC
 "
-                 }
-                 ,new ModelAnalyzerTable()
+                },
+                new ModelAnalyzerTable()
+                {
+                     TableName = "MeasuresExpressions",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT
+    [TableID],
+    [Name] AS [Measure],
+    TRIM ( [Expression] ) as [Expression], 
+    [Description],
+    [IsHidden],
+    [State],
+    [DataType],
+    [DisplayFolder],
+    [FormatString]
+FROM $SYSTEM.TMSCHEMA_MEASURES
+"
+                 },
+                new ModelAnalyzerTable()
                  {
-                     TableName = "Columns Expressions",
-                     Query = @"SELECT DISTINCT  
+                     TableName = "ColumnsExpressions",
+                     Query = @"
+SELECT DISTINCT  
     [TABLE] AS [Table], 
     [OBJECT] as [Column], 
-    TRIM( '=' +  [EXPRESSION] ) as [DAX Expression],
+    TRIM( '=' +  [EXPRESSION] ) as [Expression],
     '' AS [Description]
 FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY  
 WHERE OBJECT_TYPE = 'CALC_COLUMN'  
 ORDER BY [TABLE]+[OBJECT]"
-                 }
-                 , new ModelAnalyzerTable()
+                 },
+                new ModelAnalyzerTable()
                  {
-                     TableName = "TMSCHEMA Tables",
+                     TableName = "ColumnsMetadata",
                      MinCompatibilityLevel = 1200,
-                     Query = @"SELECT 
-[ID],
-[Name],
-IsHidden
+                     Query = @"
+SELECT    
+    [TableID],    
+    [ID] AS [ColumnID],    
+    [ExplicitName],
+    [InferredName],
+    TRIM ( [Expression] ) AS [Expression],
+    [Description],
+    [DisplayFolder],
+    [IsHidden],
+    [State],
+    [FormatString],
+    [ExplicitDataType],
+    [InferredDataType],
+    [SourceProviderType],
+    [DataCategory],
+    [IsUnique],
+    [IsKey],
+    [IsNullable],
+    [Alignment],
+    [IsDefaultLabel],
+    [IsDefaultImage],
+    [SummarizeBy],
+    [Type],
+    [ColumnOriginID],
+    [SourceColumn],
+    [IsAvailableInMDX],
+    [SortByColumnID],
+    [SystemFlags],
+    [KeepUniqueRows],
+    [DisplayOrdinal],
+    [ErrorMessage]
+FROM $SYSTEM.TMSCHEMA_COLUMNS"
+                 },
+                new ModelAnalyzerTable()
+                 {
+                     TableName = "TablesMetadata",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT 
+    [ID] AS [TableID], 
+    [Name] AS [Table],
+    [DataCategory],
+    [Description],
+    [IsHidden],
+    [SystemFlags]
 FROM $SYSTEM.TMSCHEMA_TABLES
 "
-                 }
-                 , new ModelAnalyzerTable()
+                 },
+                new ModelAnalyzerTable()
                  {
-                     TableName = "TMSCHEMA Columns",
+                     TableName = "Relationships",
                      MinCompatibilityLevel = 1200,
-                     Query = @"SELECT 
-[ID],
-TableID,
-ExplicitName,
-IsHidden,
-Expression,
-SortByColumnID
-FROM $SYSTEM.TMSCHEMA_COLUMNS
+                     Query = @"
+SELECT    
+    [ID] AS [RelationshipID],
+    [FromTableID],
+    [FromColumnID],
+    [FromCardinality] AS [FromCardinalityType],
+    [ToTableID],
+    [ToColumnID],
+    [ToCardinality] AS [ToCardinalityType],
+    [IsActive] AS [Active],
+    [CrossFilteringBehavior],
+    [JoinOnDateBehavior],
+    [RelyOnReferentialIntegrity],
+    [SecurityFilteringBehavior],
+    [State]
+FROM $SYSTEM.TMSCHEMA_RELATIONSHIPS
+"
+                 },
+                new ModelAnalyzerTable()
+                 {
+                     TableName = "TablesExpressions",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT 
+    [TableID], 
+    [Name] AS [Table],
+    [Description],
+    TRIM ( [QueryDefinition] ) AS [Expression],
+    [State],
+    [Mode],
+    [DataView],
+    [SystemFlags],
+    [ErrorMessage]
+FROM [$system].[TMSCHEMA_PARTITIONS]
+WHERE [Type] = 2
 "
                  }
             };
         }
 
-        public static DataSet Create(ADOTabularConnection cnn)
-        {
+        public static DataSet Create(ADOTabularConnection cnn) {
             DataSet result = new DataSet();
             var db = GetAmoDatabase(cnn);
 
             AddDatabaseTable(db, result);
 
-            foreach (var qry in GetQueries())
-            {
-                // skip over this query if the compatibility level is higher than the current database
+            foreach (var qry in GetQueries()) {
+                // skip over this query if the compatibility level is not supported for the current database
                 if (qry.MinCompatibilityLevel > db.CompatibilityLevel) continue;
+                if (qry.MaxCompatibilityLevel < db.CompatibilityLevel) continue;
 
                 System.Diagnostics.Debug.WriteLine("Processing Table - {0}", qry.TableName);
                 var dt = cnn.ExecuteDaxQueryDataTable(qry.Query);
-                dt.TableName = qry.TableName;
+                dt.TableName = qry.TableName + "." + qry.MinCompatibilityLevel.ToString();
                 result.Tables.Add(dt);
             }
 
@@ -233,7 +329,7 @@ FROM $SYSTEM.TMSCHEMA_COLUMNS
             PostProcessTables(result);
             PostProcessUnusedColumns(db, result);
             AddRelationshipsTable(db, result);
-            
+
             return result;
         }
 
@@ -319,8 +415,8 @@ FROM $SYSTEM.TMSCHEMA_COLUMNS
 
         private static void PostProcessTables(DataSet result)
         {
-            var tableTable = result.Tables["Tables"];
-            var columnTable = result.Tables["Columns"];
+            var tableTable = result.Tables["Tables.1100"];
+            var columnTable = result.Tables["Columns.1100"];
             foreach (DataRow tableRow in tableTable.Rows)
             {
                 var filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID LIKE 'RowNumber %'", tableRow["TABLE_NAME"]);
@@ -333,8 +429,12 @@ FROM $SYSTEM.TMSCHEMA_COLUMNS
 
         private static void PostProcessColumCardinality(DataSet result)
         {
-            var columnTable = result.Tables["Columns"];
-            var columnCardinalityTable = result.Tables["Columns Cardinality"];
+            var columnTable = result.Tables["Columns.1100"];
+            var columnCardinalityTable = result.Tables["ColumnsCardinality.1100"];
+
+            // Skip preprocessing whether columns or cardinality are not available
+            if (columnTable == null) return;
+            if (columnCardinalityTable == null) return;
 
             columnTable.Columns.Add(new System.Data.DataColumn("RowCount", typeof(long)));
             
