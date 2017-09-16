@@ -192,6 +192,7 @@ ORDER BY [DIMENSION_NAME] + '_' + [TABLE_ID] ASC
                 new ModelAnalyzerTable()
                 {
                      TableName = "MeasuresExpressions",
+                     MinCompatibilityLevel = 1200,
                      Query = @"
 SELECT DISTINCT 
     [MEASUREGROUP_NAME] as [Table], 
@@ -464,11 +465,12 @@ ORDER BY [Name] ASC
             var columnTable = result.Tables["Columns.1100"];
             foreach (DataRow tableRow in tableTable.Rows)
             {
+                // TODO - I'm not sure the following code is necessary or we use the PostProcessColumCardinality instead
                 var filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID LIKE 'RowNumber %'", tableRow["TABLE_NAME"]);
                 var row = columnTable.Select(filterExpression).FirstOrDefault();
                 
                 if (row != null)
-                    row["RowCount"] = (long)tableRow["ROWS_IN_TABLE"];
+                    row["COLUMN_CARDINALITY"] = (long)tableRow["ROWS_IN_TABLE"];
             }
         }
 
@@ -477,7 +479,7 @@ ORDER BY [Name] ASC
             var columnTable = result.Tables["Columns.1100"];
             var columnCardinalityTable = result.Tables["ColumnsCardinality.1100"];
 
-            columnTable.Columns.Add(new System.Data.DataColumn("RowCount", typeof(long)));
+            columnTable.Columns.Add(new System.Data.DataColumn("COLUMN_CARDINALITY", typeof(long)));
             
             foreach (DataRow columnRow in columnCardinalityTable.Rows)
             {
@@ -486,14 +488,15 @@ ORDER BY [Name] ASC
                 var filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID = '{1}'", columnRow["TABLE_NAME"], columnName);
                 var row = columnTable.Select(filterExpression).FirstOrDefault();
                 if (row != null)
-                    row["RowCount"] = columnRow["COLUMN_CARDINALITY"];
+                    row["COLUMN_CARDINALITY"] = columnRow["COLUMN_CARDINALITY"];
                 else
                 {
+                    // TODO - I'm not sure the following code is necessary or we use the PostProcessTables instead
                     filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID LIKE 'RowNumber %'", columnRow["TABLE_NAME"]);
                     row = columnTable.Select(filterExpression).FirstOrDefault();
                     var table = result.Tables["Tables"].Select(String.Format("TABLE_NAME = '{0}'", columnRow["TABLE_NAME"].ToString())).FirstOrDefault();
                     if (row != null && table != null)
-                        row["RowCount"] = (long)table["ROWS_IN_TABLE"];
+                        row["COLUMN_CARDINALITY"] = (long)table["ROWS_IN_TABLE"];
                 }
             }
         }
