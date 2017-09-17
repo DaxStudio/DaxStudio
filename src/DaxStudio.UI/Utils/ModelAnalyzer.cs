@@ -192,12 +192,12 @@ ORDER BY [DIMENSION_NAME] + '_' + [TABLE_ID] ASC
                 new ModelAnalyzerTable()
                 {
                      TableName = "MeasuresExpressions",
-                     MinCompatibilityLevel = 1200,
+                     MinCompatibilityLevel = 1100,
                      Query = @"
 SELECT DISTINCT 
     [MEASUREGROUP_NAME] as [Table], 
     [MEASURE_NAME] as [Measure], 
-    '=' + [EXPRESSION] as [Expression], 
+    TRIM ( [Expression] ) as [Expression], 
     [DESCRIPTION] as [Description],
     NOT [MEASURE_IS_VISIBLE] as [IsHidden],
 	DATA_TYPE AS [DataType],
@@ -206,7 +206,8 @@ SELECT DISTINCT
 FROM $SYSTEM.MDSCHEMA_MEASURES 
 WHERE MEASURE_NAME <> '__XL_Count of Models'
 AND MEASURE_NAME <> '__Default measure'
-AND EXPRESSION <> '' 
+AND TRIM ( [Expression] ) <> '' 
+AND TRIM ( [MEASUREGROUP_NAME] ) <> ''
 ORDER BY [MEASUREGROUP_NAME] + '_' + [MEASURE_NAME] ASC
 "
                 },
@@ -236,7 +237,7 @@ ORDER BY [Name] ASC
 SELECT DISTINCT  
     [TABLE] AS [Table], 
     [OBJECT] as [Column], 
-    TRIM( '=' +  [EXPRESSION] ) as [Expression],
+    TRIM ( [EXPRESSION] ) as [Expression],
     '' AS [Description]
 FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY  
 WHERE OBJECT_TYPE = 'CALC_COLUMN'  
@@ -341,6 +342,36 @@ FROM [$system].[TMSCHEMA_PARTITIONS]
 WHERE [Type] = 2
 ORDER BY [Name] ASC
 "
+                 },
+                new ModelAnalyzerTable()
+                 {
+                     TableName = "Roles",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT 
+    [ID] AS [RoleID],
+    [Name] AS [Role],
+    [Description],
+    [ModelPermission]
+FROM $SYSTEM.TMSCHEMA_ROLES
+ORDER BY [Name] ASC
+"
+                 },
+                new ModelAnalyzerTable()
+                 {
+                     TableName = "TablesPermissions",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT
+    [ID] AS [PermissionID],
+    [RoleID],
+    [TableID],
+    TRIM ( [FilterExpression] ) AS [FilterExpression],
+    [State],
+    [ErrorMessage]
+FROM $SYSTEM.TMSCHEMA_TABLE_PERMISSIONS
+ORDER BY [TableID] ASC
+"
                  }
             };
         }
@@ -356,7 +387,7 @@ ORDER BY [Name] ASC
                 if (qry.MinCompatibilityLevel > db.CompatibilityLevel) continue;
                 if (qry.MaxCompatibilityLevel < db.CompatibilityLevel) continue;
 
-                System.Diagnostics.Debug.WriteLine("Processing Table - {0}", qry.TableName);
+                System.Diagnostics.Debug.WriteLine(String.Format("Processing Table - {0}", qry.TableName));
                 var dt = cnn.ExecuteDaxQueryDataTable(qry.Query);
                 dt.TableName = qry.TableName + "." + qry.MinCompatibilityLevel.ToString();
                 result.Tables.Add(dt);
