@@ -33,8 +33,8 @@ navbar-links:
     - Feature List: "documentation/features"
     - Installation: "documentation/installation"
     - Troubleshooting: "documentation/troubleshooting"
-  Discussions: "https://gitter.im/daxstudio/Lobby"
-  "Issues / Requests": "issues.html"
+#  Discussions: "https://gitter.im/daxstudio/Lobby"
+  "Issues / Requests": "issues"
 
 # Image to show in the navigation bar - image must be a square (width = height)
 # Remove this parameter if you don't want an image in the navbar
