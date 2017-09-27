@@ -356,7 +356,10 @@ namespace ADOTabular
 
         public ConnectionState State
         {
-            get { return _adomdConn.State; }
+            get {
+                if (_adomdConn == null) return ConnectionState.Closed;
+                return _adomdConn.State;
+            }
         }
 
         public void EndExecuteDaxReader(IAsyncResult result)
