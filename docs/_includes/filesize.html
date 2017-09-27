@@ -1,0 +1,1 @@
+{% assign mb = 1048576 | divided_by: 100 %}{% assign size = include.number | divided_by: mb %}{% assign slice_pos = size | split: '' | size | minus: 2 %}{% assign size_int = size | slice: 0, slice_pos %}{% assign size_dec = size | slice: -2, 2 %}{{size_int}}.{{size_dec}}Mb
