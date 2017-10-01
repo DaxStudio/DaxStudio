@@ -315,7 +315,7 @@ namespace DaxStudio.QueryTrace
         {
             try
             {
-                if (_globalOptions.TraceDirectQuery)
+                if (_globalOptions.TraceDirectQuery && _filterForCurrentSession)
                 {
                     if ((e.SessionID != null) && (e.SessionID != _sessionId))
                     {
