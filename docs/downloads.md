@@ -8,7 +8,7 @@ layout: page
 {% assign download_count = release.assets[0].download_count  %}
 {% assign download_size = release.assets[0].size %}
 - [{{ release.name }}]({{ release.assets[0].browser_download_url }})
-   Downloads: {% include intcomma.html number=download_count %} \| Size: {% include filesize.html number=download_size %} \| Date: {% if release.assets[0].created_at  %}{{ release.assets[0].created_at | date_to_string }} {% else %} N/A {% endif %}
+   Size: {% include filesize.html number=download_size %} \| Date: {% if release.assets[0].created_at  %}{{ release.assets[0].created_at | date_to_string }} {% else %} N/A {% endif %}
    {% endif %}
 {% endfor %}
 
