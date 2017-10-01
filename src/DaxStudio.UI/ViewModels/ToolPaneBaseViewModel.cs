@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Windows;
@@ -8,6 +9,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
 using Serilog;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -58,9 +60,107 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //RRomano: Needed to set the TreeViewColumn as Public, if I do $dataContext.Column always sends NULL to DefineMeasure (Caliburn issue?)
+        private string ExpandDependentMeasure( string measureName) {
+            var model = Connection.Database.Models.BaseModel;
+            var modelMeasures = (from t in model.Tables
+                                 from m in t.Measures
+                                 select m).ToList();
 
-        public void DefineMeasure(TreeViewColumn item)
+            var finalMeasure = modelMeasures.First(m => m.Name == measureName);
+
+            var resultExpression = finalMeasure.Expression;
+            
+            bool foundDependentMeasures;
+            do {
+                foundDependentMeasures = false;
+                foreach (var modelMeasure in modelMeasures) {
+                    string daxMeasureName = "[" + modelMeasure.Name + "]";
+                    string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    if (newExpression != resultExpression) {
+                        resultExpression = newExpression;
+                        foundDependentMeasures = true;
+                    }
+                     
+                }
+            } while (foundDependentMeasures);
+
+            return resultExpression;
+        }
+
+        private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
+            var model = Connection.Database.Models.BaseModel;
+            var modelMeasures = (from t in model.Tables
+                                 from m in t.Measures
+                                 select m).ToList();
+
+            var dependentMeasures = new List<ADOTabularMeasure>();
+            dependentMeasures.Add(modelMeasures.First(m => m.Name == measureName ));
+
+            bool foundDependentMeasures; 
+            do {
+                foundDependentMeasures = false;
+                foreach ( var modelMeasure in modelMeasures ) {
+                    string daxMeasureName = "[" + modelMeasure.Name + "]";
+                    // Iterates a copy so the original list can be modified
+                    foreach ( var scanMeasure in dependentMeasures.ToList() ) {
+                        if (modelMeasure == scanMeasure) continue;
+                        string dax = scanMeasure.Expression;
+                        if (dax.Contains( daxMeasureName )) {
+                            if (!dependentMeasures.Contains(modelMeasure)) {
+                                dependentMeasures.Add(modelMeasure);
+                                foundDependentMeasures = true;
+                            }
+                        }
+                    }
+                }
+            } while (foundDependentMeasures);
+            
+            return dependentMeasures;
+        }
+
+        // mrusso: create a list of all the measures that have to be included in the query 
+        //         in order to have all the dependencies local to the query (it's easier to debug)
+        //         potential issue: we'll create multiple copies of the same measures if the user executes
+        //         this request multiple time for the same measure
+        //         we could avoid that by parsing existing local measures in the query, but it could be 
+        //         a future improvement, having this feature without such a control is already useful
+        public void DefineDependentMeasures (TreeViewColumn item) {
+            try {
+                if (item == null) {
+                    return;
+                }
+
+                ADOTabularColumn column;
+
+                if (item.Column is ADOTabularKpiComponent) {
+                    var kpiComponent = (ADOTabularKpiComponent)item.Column;
+                    column = (ADOTabularColumn)kpiComponent.Column;
+                }
+                else {
+                    column = (ADOTabularColumn)item.Column;
+                }
+
+                var dependentMeasures = FindDependentMeasures(column.Name);
+                foreach ( var measure in dependentMeasures ) {
+                    EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                }
+            }
+            catch (System.Exception ex) {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasureTree", ex.Message, ex.StackTrace);
+            }
+        }
+
+        public void DefineExpandMeasure(TreeViewColumn item) {
+            DefineMeasure(item, true);
+        }
+
+
+        //RRomano: Needed to set the TreeViewColumn as Public, if I do $dataContext.Column always sends NULL to DefineMeasure (Caliburn issue?)
+        public void DefineMeasure(TreeViewColumn item) {
+            DefineMeasure(item, false);
+        }
+
+        public void DefineMeasure(TreeViewColumn item, bool expandMeasure)
         {
             try
             {
@@ -91,13 +191,15 @@ namespace DaxStudio.UI.ViewModels
                     column = (ADOTabularColumn)item.Column;
                 }
 
-                if (string.IsNullOrEmpty(measureName))
-                {
+                if (string.IsNullOrEmpty(measureName)) {
                     measureName = string.Format("{0}[{1}]", column.Table.DaxName, column.Name);
                 }
 
-                if (string.IsNullOrEmpty(measureExpression))
-                {
+                if (expandMeasure) {
+                    measureExpression = ExpandDependentMeasure(column.Name);
+                }
+
+                if (string.IsNullOrEmpty(measureExpression)) {
                     measureExpression = column.MeasureExpression;
                 }
 

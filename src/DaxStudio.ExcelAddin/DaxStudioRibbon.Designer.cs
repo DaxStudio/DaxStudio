@@ -60,10 +60,9 @@
             this.btnDax.Image = global::DaxStudio.Properties.Resources.daxstudio_logo_32x32;
             this.btnDax.Label = "DAX Studio";
             this.btnDax.Name = "btnDax";
-            this.btnDax.ScreenTip = "Exectute DAX query";
+            this.btnDax.ScreenTip = "Launch DAX Studio";
             this.btnDax.ShowImage = true;
             this.btnDax.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.BtnDaxClick);
-            
             // 
             // DaxStudioRibbon
             // 

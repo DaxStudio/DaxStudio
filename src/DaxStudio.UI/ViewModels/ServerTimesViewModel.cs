@@ -2,19 +2,16 @@
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-//using DaxStudio.UI.Model;
 using System.Linq;
-using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
 using System.IO;
-using System;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using System.Windows;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -37,10 +34,10 @@ namespace DaxStudio.UI.ViewModels
         public bool HighlightQuery { get; set; }
 
         // String that highlight important parts of the query
-        // Currently implemet only the strong (~E~/~S~) for CallbackDataID function 
+        // Currently implement only the strong (~E~/~S~) for CallbackDataID function 
         public string QueryRichText {
             get {
-                return Query.Replace("[CallbackDataID", "[|~S~|CallbackDataID|~E~|");
+                return Query.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
             }
         }
 
@@ -198,14 +195,15 @@ namespace DaxStudio.UI.ViewModels
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults() {
-            FormulaEngineDuration = 0;
-            StorageEngineDuration = 0;
-            TotalCpuDuration = 0;
-            StorageEngineCpu = 0;
-            StorageEngineQueryCount = 0;
-            VertipaqCacheMatches = 0;
-            TotalDuration = 0;
-            _storageEngineEvents.Clear();
+            //FormulaEngineDuration = 0;
+            //StorageEngineDuration = 0;
+            //TotalCpuDuration = 0;
+            //StorageEngineCpu = 0;
+            //StorageEngineQueryCount = 0;
+            //VertipaqCacheMatches = 0;
+            //TotalDuration = 0;
+            //_storageEngineEvents.Clear();
+            ClearAll();
 
             if (Events != null) {
                 foreach (var traceEvent in Events) {
@@ -422,7 +420,7 @@ namespace DaxStudio.UI.ViewModels
                 StoreageEngineEvents =  this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration
             };
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             File.WriteAllText(filename + ".serverTimings" , json);
 
         }
@@ -432,7 +430,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".serverTimings";
             if (!File.Exists(filename)) return;
 
-            this.IsChecked = true;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data);
 
@@ -451,10 +449,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
+       
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?2:0; } }
+        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?4:1; } }
         public int TextGridRowSpan { get { return ServerTimingDetails.LayoutBottom? 1:3; } }
         public int TextGridColumn { get { return ServerTimingDetails.LayoutBottom?2:4; } }
 
@@ -468,6 +467,15 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ServerTimingDetails);
             } 
         }
+
+        public override bool FilterForCurrentSession
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -485,6 +493,27 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #endregion
+
+        #region Title Bar Button Methods
+
+        public override void ClearAll()
+        {
+            FormulaEngineDuration = 0;
+            StorageEngineDuration = 0;
+            TotalCpuDuration = 0;
+            StorageEngineCpu = 0;
+            StorageEngineQueryCount = 0;
+            VertipaqCacheMatches = 0;
+            TotalDuration = 0;
+            _storageEngineEvents.Clear();
+            NotifyOfPropertyChange(() => StorageEngineEvents);
+        }
+
+        public override void CopyAll()
+        {
+            Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
+        }
         #endregion
     }
 }

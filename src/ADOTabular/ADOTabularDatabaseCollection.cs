@@ -102,22 +102,22 @@ namespace ADOTabular
 
         private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-            _databaseDictionary = new Dictionary<string, DatabaseDetails>();
+            var databaseDictionary = new Dictionary<string, DatabaseDetails>();
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
-                _databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
+                databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString()
                 ));
             }
-            return _databaseDictionary;
+            return databaseDictionary;
         }
 
         private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXML()
         {
             
-            _databaseDictionary = new Dictionary<string, DatabaseDetails>();
+            var databaseDictionary = new Dictionary<string, DatabaseDetails>();
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection
@@ -162,7 +162,7 @@ namespace ADOTabular
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    _databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate));
+                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate));
                                     break;
                                 }
 
@@ -172,7 +172,7 @@ namespace ADOTabular
                     }
                 }
             }
-            return _databaseDictionary;
+            return databaseDictionary;
         }
 
         public string this[int index]

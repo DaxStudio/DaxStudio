@@ -1,9 +1,19 @@
 ﻿<ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock">
 	<!-- Resource dictionary entries should be defined here. -->
-	<Style x:Key="DockingManagerStyle2" TargetType="{x:Type avalondock:DockingManager}">
+
+    <!--<conv:ResourceLookupConverter x:Key="TraceStatusIcons">
+        <ResourceDictionary>
+            <BitmapImage x:Key="Play" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/Play.png"/>
+            <BitmapImage x:Key="Pause" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/Pause.png"/>
+            <BitmapImage x:Key="Stop" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/Clear.png"/>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>-->
+
+    <Style x:Key="DockingManagerStyle2" TargetType="{x:Type avalondock:DockingManager}">
 		<Setter Property="DocumentPaneControlStyle">
 			<Setter.Value>
 				<Style TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
@@ -190,6 +200,7 @@
 			<Setter.Value>
 				<Style TargetType="{x:Type avalondock:LayoutAnchorablePaneControl}">
 					<Setter Property="TabStripPlacement" Value="Bottom"/>
+                    
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="{x:Type avalondock:LayoutAnchorablePaneControl}">
@@ -228,6 +239,7 @@
 					<Setter Property="ItemTemplate">
 						<Setter.Value>
 							<DataTemplate>
+                                <!-- TODO insert a template so that we can show TraceStatusIcons -->
 								<avalondock:LayoutAnchorableTabItem Model="{Binding}"/>
 							</DataTemplate>
 						</Setter.Value>
@@ -303,34 +315,38 @@
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
-		<Setter Property="AnchorableHeaderTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="Auto"/>
-							<ColumnDefinition/>
-						</Grid.ColumnDefinitions>
-						<Image x:Name="icon" Stretch="Uniform">
-							<Image.Source>
-								<Binding Path="IconSource">
-									<Binding.Converter>
-										<avalondock:NullToDoNothingConverter/>
-									</Binding.Converter>
-								</Binding>
-							</Image.Source>
-						</Image>
-						<TextBlock x:Name="title" Grid.Column="1" Margin="4,0,0,0" Text="{Binding Title}" TextTrimming="CharacterEllipsis"/>
-					</Grid>
-					<DataTemplate.Triggers>
-						<DataTrigger Binding="{Binding IconSource}" Value="{x:Null}">
-							<Setter Property="Margin" TargetName="title" Value="0"/>
-						</DataTrigger>
-					</DataTemplate.Triggers>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-		<Setter Property="DocumentTitleTemplate">
+        <Setter Property="AnchorableHeaderTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Image x:Name="icon" Stretch="Uniform">
+                            <Image.Source>
+                                <Binding  Path="IconSource">
+                                    <Binding.Converter>
+                                        <avalondock:NullToDoNothingConverter/>
+                                    </Binding.Converter>
+                                </Binding>
+                            </Image.Source>
+                        </Image>
+                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0"
+                                   Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsChecked}"
+                                   />
+
+                        <TextBlock x:Name="title" Grid.Column="1" Margin="4,0,0,0" Text="{Binding Path=Content.Title}" TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IconSource}" Value="{x:Null}">
+                            <Setter Property="Margin" TargetName="title" Value="0"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="DocumentTitleTemplate">
 			<Setter.Value>
 				<DataTemplate>
 					<TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"/>
@@ -349,7 +365,7 @@
 				<ContextMenu>
 					<MenuItem Command="{Binding FloatCommand}" Header="Float"/>
 					<MenuItem Command="{Binding DockCommand}" Header="Dock"/>
-					<MenuItem Command="{Binding DockAsDocumentCommand}" Header="Dock as Tabbed Document"/>
+					<!--<MenuItem Command="{Binding DockAsDocumentCommand}" Header="Dock as Tabbed Document"/>-->
 					<MenuItem Command="{Binding AutoHideCommand}" Header="Auto Hide"/>
 					<MenuItem Command="{Binding CloseCommand}" Header="Close">
 						<MenuItem.Visibility>
@@ -429,11 +445,11 @@
 				<DataTemplate>
 					<Image Stretch="Uniform">
 						<Image.Source>
-							<Binding Path="IconSource">
-								<Binding.Converter>
-									<avalondock:NullToDoNothingConverter/>
-								</Binding.Converter>
-							</Binding>
+                            <Binding>
+                                <Binding.Converter>
+                                    <avalondock:NullToDoNothingConverter/>
+                                </Binding.Converter>
+                            </Binding>
 						</Image.Source>
 					</Image>
 				</DataTemplate>

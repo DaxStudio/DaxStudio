@@ -18,9 +18,14 @@ namespace DaxStudio
         {
             _launcher = launcher;
         }
-        public void Launch()
+        //public void Launch()
+        //{
+        //    _launcher.Launch();
+        //}
+
+        public void Launch(bool enableLogging)
         {
-            _launcher.Launch();
+            _launcher.Launch(enableLogging);
         }
     }
 }

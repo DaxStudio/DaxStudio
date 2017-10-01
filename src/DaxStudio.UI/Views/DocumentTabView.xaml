@@ -23,7 +23,7 @@
         <avalondock:DockingManager 
             x:Name="Items"
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"        
-             >
+            >
 
 
             <avalondock:DockingManager.LayoutItemTemplateSelector>
@@ -36,14 +36,32 @@
                 </selectors:AvalonDockTemplateSelector>
             </avalondock:DockingManager.LayoutItemTemplateSelector>
 
-            
+
             <avalondock:DockingManager.Theme>
                 <avalondock:GenericTheme />
             </avalondock:DockingManager.Theme>
-            
+
             <!-- Note the Binding to "Content". This is how AvalonDock holds the model -->
             <!-- Header Template used for both solutions. Note that AvalonDock has default Templates itself -->
-            
+            <avalondock:DockingManager.AnchorableHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="AAA"></TextBlock>
+                        <TextBlock Text="{Binding Path=Content.Title}"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+                    
+            </avalondock:DockingManager.AnchorableHeaderTemplate>
+            <avalondock:DockingManager.AnchorableTitleTemplate>
+                <ItemContainerTemplate>
+                    <Border>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="AAA"/>
+                            <TextBlock Text="{Binding Content.Title}"/>
+                        </StackPanel>
+                    </Border>
+                </ItemContainerTemplate>
+            </avalondock:DockingManager.AnchorableTitleTemplate>
             <avalondock:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
@@ -86,7 +104,9 @@
                 </DataTemplate>
             </avalondock:DockingManager.DocumentTemplate>
             -->
+
             
+
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="DocumentClosing">
                     <cal:ActionMessage MethodName="TabClosing">
@@ -96,6 +116,6 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
             
-        </avalondock:DockingManager >
+        </avalondock:DockingManager>
     </Grid>
 </UserControl>

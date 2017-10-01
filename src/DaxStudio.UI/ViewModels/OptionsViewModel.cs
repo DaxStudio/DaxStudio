@@ -7,6 +7,8 @@ using DaxStudio.Interfaces.Enums;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using DaxStudio.UI.Events;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,6 +34,8 @@ namespace DaxStudio.UI.ViewModels
         private IEventAggregator _eventAggregator;
         private DelimiterType _defaultSeparator;
         private bool _showPreReleaseNotifcations;
+        private bool _showTooltipBasicStats;
+        private bool _showTooltipSampleData;
 
         //public event EventHandler OptionsUpdated;
 
@@ -39,9 +43,9 @@ namespace DaxStudio.UI.ViewModels
         public OptionsViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily","Lucida Console"); 
+            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", "Lucida Console");
             EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", 11);
-            EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers",true);
+            EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers", true);
             EditorEnableIntellisense = RegistryHelper.GetValue<bool>("EditorEnableIntellisense", true);
             ProxyUseSystem = RegistryHelper.GetValue<bool>("ProxyUseSystem", true);
             ProxyAddress = RegistryHelper.GetValue<string>("ProxyAddress", "");
@@ -51,9 +55,12 @@ namespace DaxStudio.UI.ViewModels
             QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
             QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
-            DefaultSeparator = (DelimiterType) RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
+            DefaultSeparator = (DelimiterType)RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
             TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
             ShowPreReleaseNotifcations = RegistryHelper.GetValue<bool>("ShowPreReleaseNotifcations", false);
+            ShowTooltipBasicStats = RegistryHelper.GetValue<bool>("ShowTooltipBasicStats", true);
+            ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
+            ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -293,6 +300,74 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ShowPreReleaseNotifcations", value);
             }
+        }
+
+        public bool ShowTooltipBasicStats
+        {
+            get { return _showTooltipBasicStats; }
+            set
+            {
+                if (_showTooltipBasicStats == value) return;
+                _showTooltipBasicStats = value;
+                NotifyOfPropertyChange(() => ShowTooltipBasicStats);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowTooltipBasicStats", value);
+            }
+        }
+
+        public bool ShowTooltipSampleData
+        {
+            get { return _showTooltipSampleData; }
+            set
+            {
+                if (_showTooltipSampleData == value) return;
+                _showTooltipSampleData = value;
+                NotifyOfPropertyChange(() => ShowTooltipSampleData);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowTooltipSampleData", value);
+            }
+        }
+
+        private bool _canPublishDaxFunctions = true; 
+        public bool CanPublishDaxFunctions
+        {
+            get
+            {
+                return _canPublishDaxFunctions;
+            }
+
+            set
+            {
+                _canPublishDaxFunctions = value;
+                NotifyOfPropertyChange(() => CanPublishDaxFunctions);
+            }
+        }
+
+        private bool _excludeHeadersWhenCopyingResults = false;
+        public bool ExcludeHeadersWhenCopyingResults
+        {
+            get
+            {
+                return _excludeHeadersWhenCopyingResults;
+            }
+
+            set
+            {
+                _excludeHeadersWhenCopyingResults = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ExcludeHeadersWhenCopyingResults", value);
+                NotifyOfPropertyChange(() => ExcludeHeadersWhenCopyingResults);
+            }
+        }
+
+        public void ExportDaxFunctions()
+        {
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent());
+        }
+
+        public void PublishDaxFunctions()
+        {
+            _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
     }
 }

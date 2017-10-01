@@ -8,8 +8,12 @@ namespace DaxStudio.UI.Events
         public UpdateConnectionEvent(ADOTabular.ADOTabularConnection connection) //, bool isPowerPivotConnection)
         {
             Connection = connection;
-            DatabaseName = connection==null?string.Empty:connection.Database.Name;
-            //IsPowerPivotConnection = isPowerPivotConnection;
+            DatabaseName = string.Empty;
+            if (Connection != null)
+            {
+                DatabaseName = connection.State == System.Data.ConnectionState.Open ?  connection.Database.Name : string.Empty;
+                //IsPowerPivotConnection = isPowerPivotConnection;
+            }
         }
         
         public UpdateConnectionEvent(ADOTabular.ADOTabularConnection connection,string databaseName)//, bool isPowerPivotConnection)

@@ -5,27 +5,39 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DaxStudio.Checker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525" Loaded="OnLoaded">
+        Title="DAX Studio Checker" Loaded="OnLoaded" Icon="DaxStudioChecker.ico">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition RowDefinition.Height="Auto" />
             <RowDefinition RowDefinition.Height="Auto" />
             <RowDefinition RowDefinition.Height="*" />
             <RowDefinition RowDefinition.Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel StackPanel.Orientation="Horizontal">
-            <Label>
+        <Menu x:Name="menu" HorizontalAlignment="Left" Height="Auto" Margin="0,0,0,0" VerticalAlignment="Top" Width="Auto">
+            <MenuItem Header="_File">
+                <MenuItem Header="Enable _Fusion Logging" HorizontalAlignment="Left" Width="Auto" Click="OnToggleFusionLoggingMenuClick" IsCheckable="True" x:Name="menuToggleFusionLogging"/>
+                <MenuItem Header="_Open Fusion Log Folder" HorizontalAlignment="Left" Width="Auto" Click="OnOpenFusionLogFolderMenuClick" IsCheckable="True" x:Name="menuOpenFusionLogFolder"/>
+                <Separator HorizontalAlignment="Left" Height="1" Width="30"/>
+                <MenuItem Header="Enable _VSTO Alerts" HorizontalAlignment="Left" Width="Auto" Click="OnToggleVSTOLoggingMenuClick" IsCheckable="True" x:Name="menuToggleVSTOLogging"/>
+                <Separator HorizontalAlignment="Left" Height="1" Width="30"/>
+                <MenuItem Header="_Quit" HorizontalAlignment="Left" Width="Auto" Click="OnQuitMenuClick" x:Name="menuQuit" />
+            </MenuItem>
+        </Menu>
+        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="1">
+            <!--<Label>
                 Dependency Checks:
-            </Label>
+            </Label>-->
         </StackPanel>
-        <ScrollViewer Grid.Row="1">
-            <TextBox x:Name="Output" />
+        <ScrollViewer Grid.Row="2">
+            <RichTextBox x:Name="Output" Block.LineHeight="10" />
         </ScrollViewer>
-        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="2" FrameworkElement.HorizontalAlignment="Right">
-            <Button Margin="2" Click="CopyToClipboardClick">Copy to Clipboard</Button>
-            <Button Margin="2,2,2,0" Button.IsDefault="True" Button.IsCancel="True"  Click="Ok_Click" Height="20" VerticalAlignment="Top">
+        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="3" FrameworkElement.HorizontalAlignment="Right" Margin="8">
+            <Button Margin="2" Padding="3" Click="CopyToClipboardClick">Copy to Clipboard</Button>
+            <Button Margin="2" Padding="3" Button.IsDefault="True" Button.IsCancel="True"  Click="Ok_Click" MinWidth="50" VerticalAlignment="Top">
                 OK
             </Button>
-            
+
         </StackPanel>
+
     </Grid>
 </Window>

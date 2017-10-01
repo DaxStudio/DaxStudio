@@ -4,7 +4,7 @@
         <tabs>
             <tab idMso="TabAddIns">
                 <group id="group1">
-                    <button id="btnDax" onAction="BtnDaxClick" screentip="Exectute DAX query" label="DAX Studio" size="large" />
+                    <button id="btnDax" onAction="BtnDaxClick" screentip="Execute DAX query" label="DAX Studio" size="large" />
                 </group>
             </tab>
         </tabs>

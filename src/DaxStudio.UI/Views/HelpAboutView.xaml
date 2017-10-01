@@ -99,7 +99,7 @@
 
                         </CheckBox.Triggers>
                     </CheckBox>
-
+                            <TextBlock Margin="20 5 0 0"><Hyperlink NavigateUri="{Binding LogFolder}" custom:HyperlinkExtensions.IsExternal="True"><Run> Open Log Folder</Run></Hyperlink></TextBlock>
                 </StackPanel>
             </StackPanel>
         </StackPanel>

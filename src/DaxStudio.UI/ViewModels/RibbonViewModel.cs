@@ -217,6 +217,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument.SaveAs();
         }
+        
 
         public void Connect()
         {
@@ -364,9 +365,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateTraceWatchers()
         {
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
-                tw.CheckEnabled(ActiveDocument);
+                tw.CheckEnabled(ActiveDocument, activeTrace);
             }
         }
 
@@ -558,5 +560,21 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.SwapDelimiters();
         }
 
+        public bool IsDebugBuild
+        {
+            get {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+
+            }
+        }
+
+        public void ExportAnalysisData()
+        {
+            _activeDocument.ExportAnalysisData();
+        }
     }
 }

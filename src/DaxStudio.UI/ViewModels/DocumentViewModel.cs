@@ -17,6 +17,7 @@ using System.ComponentModel.Composition;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -34,6 +35,10 @@ using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Utils.DelimiterTranslator;
 using DaxStudio.UI.Extensions;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.IO.Compression;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -56,6 +61,9 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<NavigateToLocationEvent>
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<OutputMessage>
+        , IHandle<ExportDaxFunctionsEvent>
+        , IHandle<CloseTraceWindowEvent>
+        , IHandle<ShowTraceWindowEvent>
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
@@ -101,7 +109,7 @@ namespace DaxStudio.UI.ViewModels
             
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
-            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this);
+            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this, _options);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
@@ -118,7 +126,7 @@ namespace DaxStudio.UI.ViewModels
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
-            var t = DaxFormatterProxy.PrimeConnectionAsync(_options);
+            var t = DaxFormatterProxy.PrimeConnectionAsync(_options, _eventAggregator);
 
         }
 
@@ -254,12 +262,12 @@ namespace DaxStudio.UI.ViewModels
                     if (_connection.IsPowerPivot)
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options);
+                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     else
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options);
+                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
@@ -278,6 +286,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
             }
+        }
+
+        private bool ShouldFilterForCurrentSession(BindableCollection<ITraceWatcher> traceWatchers)
+        {
+            var w = traceWatchers.FirstOrDefault(tw => tw.IsChecked && tw.FilterForCurrentSession);
+            if (w != null) return true;
+            return false;
         }
 
         private void UpdateTraceEvents()
@@ -478,8 +493,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _selectedDatabase = value;
                     Connection.ChangeDatabase(value);
-                    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases));
+                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
                     NotifyOfPropertyChange(() => SelectedDatabase);
+                    
                 }
             }
         }
@@ -607,19 +624,28 @@ namespace DaxStudio.UI.ViewModels
         private void UpdateConnections(ADOTabularConnection value,string selectedDatabase)
         {
             _logger.Info("In UpdateConnections");
-
+            OutputPane.AddInformation("Establishing Connection");
             Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnections"
                 , value == null ? "<null>" : value.ConnectionString
                 , selectedDatabase);          
+            if (value != null && value.State != ConnectionState.Open)
+            {
+                OutputPane.AddWarning(string.Format("Connection for server {0} is not open",value.ServerName));
+                return;
+            }
             using (NewStatusBarMessage("Refreshing Metadata..."))
             {
                 if (value == null) return;
                 _connection = value;
-
+                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
                 {
-                    traceWatcher.CheckEnabled(this);   
+                    // on change of connection we need to disable traces as the will
+                    // be pointing to the old connection
+                    traceWatcher.IsChecked = false;
+                    // then we need to check if the new connection can be traced
+                    traceWatcher.CheckEnabled(this,activeTrace);   
                 }
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;
@@ -681,7 +707,8 @@ namespace DaxStudio.UI.ViewModels
                             
                     Log.Debug("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
                     msg.Dispose();
-                    Execute.BeginOnUIThread(() =>
+
+                    Execute.OnUIThread(() =>
                     {
                         var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this);
 
@@ -695,6 +722,7 @@ namespace DaxStudio.UI.ViewModels
                                             { "AllowsTransparency",true}
                                         });
                     });
+                    
                 }
                 catch (Exception ex)
                 {
@@ -933,7 +961,7 @@ namespace DaxStudio.UI.ViewModels
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
-                    if (tw.IsChecked)
+                    if (tw.IsChecked && !tw.IsPaused)
                     {
                         tw.IsBusy = true;
                     }
@@ -989,7 +1017,7 @@ namespace DaxStudio.UI.ViewModels
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
-                    if (tw.IsChecked)
+                    if (tw.IsChecked && !tw.IsPaused)
                     {
                         tw.IsBusy = true;
                     }
@@ -1093,7 +1121,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
 
                 // if the server times trace watcher is not active then just record client timings
-                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsActive)
+                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked)
                 {
                     currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
                     currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
@@ -1300,6 +1328,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(SendTextToEditor message)
         {
+            if (!string.IsNullOrEmpty(message.DatabaseName))
+            {
+                if (Databases.Contains(message.DatabaseName))
+                    if (SelectedDatabase != message.DatabaseName)
+                    {
+                        SelectedDatabase = message.DatabaseName;
+                        OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                    }
+                    else
+                        OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+            }
             InsertTextAtSelection(message.TextToSend);
         }
 
@@ -1310,7 +1349,7 @@ namespace DaxStudio.UI.ViewModels
 
         //RRomano: Should this be on DaxEditor?
 
-        private Regex defineMeasureRegex = new Regex("(?<=DEFINE)((.|\n)*?)(?=EVALUATE)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private Regex defineMeasureRegex = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=EVALUATE|\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
@@ -1319,8 +1358,10 @@ namespace DaxStudio.UI.ViewModels
             // Try to find the DEFINE statements
 
             var currentText = editor.Text;                      
-
+            
             var measureDeclaration = string.Format("MEASURE {0} = {1}", measureName, measureExpression);
+            // TODO - expand measure expression and generate other measures here!!
+
 
             // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
             if (defineMeasureRegex.IsMatch(currentText))
@@ -1353,8 +1394,8 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null? "<null>":message.Connection.ConnectionString, message.DatabaseName);
             
             UpdateConnections(message.Connection, message.DatabaseName);
-            
-            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases));     
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));     
         }
 
 
@@ -1365,63 +1406,81 @@ namespace DaxStudio.UI.ViewModels
 
             if (message.IsActive)
             {
-                ToolWindows.Add(message.TraceWatcher);
-
-                // synch the ribbon buttons and the server timings pane
-                if (message.TraceWatcher is ServerTimesViewModel && message.TraceWatcher.IsChecked)
-                {
-                    ((ServerTimesViewModel)message.TraceWatcher).ServerTimingDetails = ServerTimingDetails;
-                }
-
-                if (Tracer == null) CreateTracer();
-                else UpdateTraceEvents();
-
-                // spin up trace if one is not already running
-                if (Tracer.Status != QueryTraceStatus.Started
-                    && Tracer.Status != QueryTraceStatus.Starting)
-                {
-                    _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
-                    OutputMessage("Waiting for Trace to start");
-                    
-                    var t = Tracer;
-                    t.StartAsync().ContinueWith((p)=>{
-                        if (p.Exception != null)
-                        {
-                            p.Exception.Handle((x) =>
-                            {
-                                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
-                                OutputError("Error Starting Trace: " + x.Message);
-                                return false;
-                            });
-                        };
-                    },TaskScheduler.Default);
-                }
+                EnableTrace(message.TraceWatcher);
             }
             else
             {
-                var otherTracesRunning = false;
-                ToolWindows.Remove(message.TraceWatcher);
-                foreach (var tw in TraceWatchers)
-                {
-                    if (tw.IsChecked) otherTracesRunning = true;
-                }
-                if (otherTracesRunning)
-                {
-                    UpdateTraceEvents();
-                    return;
-                }
-
-                // If we got here no traces are running so shut everything down
-                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
-                OutputMessage("Stopping Trace");
-                // spin down trace as no tracewatchers are active
-                Tracer.Stop();
-                ResetTracer();
-                OutputMessage("Trace Stopped");
-                _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
-                TraceWatchers.EnableAll();
+                DisableTrace(message.TraceWatcher);
             }
-            
+
+        }
+
+        private void DisableTrace(ITraceWatcher watcher)
+        {
+            var otherTracesRunning = false;
+            //ToolWindows.Remove(watcher);
+            foreach (var tw in TraceWatchers)
+            {
+                if (tw.IsChecked) otherTracesRunning = true;
+            }
+            if (otherTracesRunning)
+            {
+                UpdateTraceEvents();
+                return;
+            }
+
+            // If we got here no traces are running so shut everything down
+            _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
+            OutputMessage("Stopping Trace");
+            // spin down trace as no tracewatchers are active
+            Tracer.Stop();
+            ResetTracer();
+            OutputMessage("Trace Stopped");
+            _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
+            TraceWatchers.EnableAll();
+        }
+
+        private void EnableTrace(ITraceWatcher watcher)
+        {
+            if (!ToolWindows.Contains(watcher))
+                ToolWindows.Add(watcher);
+
+            // synch the ribbon buttons and the server timings pane
+            if (watcher is ServerTimesViewModel && watcher.IsChecked)
+            {
+                ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+            }
+
+            if (Tracer == null) CreateTracer();
+            else UpdateTraceEvents();
+
+            // spin up trace if one is not already running
+            if (Tracer.Status != QueryTraceStatus.Started
+                && Tracer.Status != QueryTraceStatus.Starting)
+            {
+                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                OutputMessage("Waiting for Trace to start");
+
+                var t = Tracer;
+                t.StartAsync().ContinueWith((p) =>
+                {
+                    if (p.Exception != null)
+                    {
+                        p.Exception.Handle((x) =>
+                        {
+                            Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
+                            OutputError("Error Starting Trace: " + x.Message);
+                            return false;
+                        });
+                    };
+                }, TaskScheduler.Default);
+            }
+            // Disable other tracewatchers with different filter for current session values
+            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+            foreach (var tw in TraceWatchers)
+            {
+                tw.CheckEnabled(this, activeTrace);
+            }
         }
 
         private void ResetTracer()
@@ -1445,6 +1504,7 @@ namespace DaxStudio.UI.ViewModels
                     tw.Write(GetEditor().Text);
                     tw.Close();
                 }
+                // Save all visible TraceWatchers
                 foreach (var tw in ToolWindows)
                 {
                     var saver = tw as ISaveState;
@@ -1459,6 +1519,137 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public async void PublishDaxFunctions() {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the publish functions option", "Publish DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            
+            Stopwatch publishStopWatch = new Stopwatch();
+            publishStopWatch.Start();
+
+            // Ping server to see whether the version is already there
+            string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
+            string metadataFilename = Path.GetTempFileName(); 
+            try {
+                _options.CanPublishDaxFunctions = false;
+                using (var client = GetHttpClient()) {
+                    client.Timeout = new TimeSpan(0, 0, 60); // set 30 second timeout
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Ping version {0} to DaxVersioning ", ssasVersion));
+                    HttpResponseMessage response = await client.PostAsJsonAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
+                    if (!response.IsSuccessStatusCode) {
+                        publishStopWatch.Stop();
+                        string pingResult = string.Format("Error from ping version: ", response.StatusCode.ToString());
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
+                        OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
+                        return;
+                    }
+                    response.EnsureSuccessStatusCode(); // probably redundant
+                    string productFound = response.Content.ReadAsStringAsync().Result;
+                    if (!(string.IsNullOrEmpty(productFound) || productFound == "null")) {
+                        publishStopWatch.Stop();
+                        string pingResult = string.Format("Result from ping version {0} : {1}", ssasVersion, productFound);
+                        Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
+                        OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
+                        return;
+                    }
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "No products from ping version - preparing metadata file");
+
+                    // Always compress content
+                    ExportDaxFunctions(metadataFilename, true);
+
+                    var requestContent = new MultipartFormDataContent();
+                    var fileContent = File.ReadAllBytes(metadataFilename);
+                    var metadataContent = new ByteArrayContent(fileContent);
+
+                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Count());
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading {0}", uploadingMessage));
+
+                    metadataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("fileUpload") {
+                        FileName = string.Format("DAX Functions {0}.zip", ssasVersion)
+                    };
+                    requestContent.Add(metadataContent);
+                    await client.PostAsync("api/v1/uploadversion", requestContent);
+
+                    Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", "Upload completed");
+                    publishStopWatch.Stop();
+                    OutputMessage(string.Format("Uploaded DAX metadata v.{0}: {1}", ssasVersion, uploadingMessage), publishStopWatch.ElapsedMilliseconds);
+                }
+            }
+            finally {
+                // Remove temporary filename
+                if (File.Exists(metadataFilename)) {
+                    File.Delete(metadataFilename);
+                }
+                _options.CanPublishDaxFunctions = true;
+            }
+        }
+        public void ExportDaxFunctions() {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            // Configure save file dialog box
+            var dlg = new Microsoft.Win32.SaveFileDialog {
+                FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
+                DefaultExt = ".zip",
+                Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process save file dialog box results 
+            if (result == true) {
+                // Save document 
+                ExportDaxFunctions(dlg.FileName);
+            }
+        }
+        public void ExportDaxFunctions(string path) {
+            string extension = Path.GetExtension(path).ToLower();
+            bool compression = (extension == ".zip");
+            ExportDaxFunctions(path, compression);
+        }
+
+        public void ExportDaxFunctions(string path, bool compression) {
+            var info = DaxMetadataInfo;
+            if (compression) {
+                string pathJson = string.Format( @".\{0}.json", Path.GetFileNameWithoutExtension(path) );
+                Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
+                using (Package package = Package.Open(path, FileMode.Create)) {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(),Encoding.Unicode)) {
+                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                        tw.Close();
+                    }
+                    package.Close();
+                }
+            }
+            else {
+                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode)) {
+                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    tw.Close();
+                }
+            }
+        }
+
+        // TODO: move Versionrequest definition elsewhere?
+        public class VersionRequest {
+            public string SsasVersion { get; set; }
+        }
+        internal HttpClient GetHttpClient() {
+            var client = new HttpClient();
+            
+            //Uri _baseUri = new Uri(string.Format("http://localhost:1941/"));
+            Uri _baseUri = new Uri(string.Format("http://daxversioningservice.azurewebsites.net/"));
+            client.BaseAddress = _baseUri;
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client;
+        }
+
+        //
         public void SaveAs()
         {
             // Configure save file dialog box
@@ -1510,7 +1701,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!_isLoadingFile) return;
             // we can only load trace watchers if we are connected to a server
-            if (!this.IsConnected) return;
+            //if (!this.IsConnected) return;
 
             foreach (var tw in TraceWatchers)
             {
@@ -1540,6 +1731,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 OutputError(string.Format("The file '{0}' was not found",FileName));
             }
+
+            LoadState();
 
             IsDirty = false;
             State = DocumentState.Loaded;
@@ -1593,9 +1786,10 @@ namespace DaxStudio.UI.ViewModels
                 }).ContinueWith((antecendant) =>
                     {
                         // todo - should we be checking for exceptions in this continuation
-                        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases));//,IsPowerPivotConnection));
+                        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));//,IsPowerPivotConnection));
                         _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
-                        LoadState();
+                        //LoadState();
                         msg.Dispose(); //reset the status message
                     }, TaskScheduler.Default);
             
@@ -1603,6 +1797,14 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
         {
+            if (Connection != null && Connection.State == ConnectionState.Open)
+            {
+                Connection.Close();
+                Connection.Dispose();
+            }
+
+            if (cnn != null && cnn.State != ConnectionState.Open) cnn.Open();
+
             Connection = cnn;
             this.IsPowerPivot = message.PowerPivotModeSelected;
             this.Spid = cnn.SPID;
@@ -1616,7 +1818,10 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
-                { ServerName = "<Not Connected>"; }
+                {
+                    ServerName = "<Not Connected>";
+                    Connection = null;
+                }
                 else
                 {
                     if (Connection.IsPowerPivot)
@@ -1659,8 +1864,9 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Handle(CancelConnectEvent message)
         {
+            if (Connection == null) return;
             // refresh the other views with the existing connection details
-            _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
+            if (Connection.State == ConnectionState.Open) _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
         }
 
         public IResult GetShutdownTask()
@@ -1910,7 +2116,7 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry, _options).ContinueWith((res) => {
+            DaxFormatterProxy.FormatDaxAsync(qry, _options, _eventAggregator).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 
@@ -2143,6 +2349,30 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public ADOTabular.MetadataInfo.DaxMetadata DaxMetadataInfo
+        {
+            get {
+                return _connection.DaxMetadataInfo;
+            }
+        }
+
+        public void Handle(ExportDaxFunctionsEvent exportFunctions)
+        {
+            if (exportFunctions.AutoDelete) PublishDaxFunctions();
+            else ExportDaxFunctions();
+        }
+
+        public void Handle(CloseTraceWindowEvent message)
+        {
+            message.TraceWatcher.IsChecked = false;
+            ToolWindows.Remove(message.TraceWatcher);
+        }
+
+        public void Handle(ShowTraceWindowEvent message)
+        {
+            ToolWindows.Add(message.TraceWatcher);
+        }
+
         #region ISaveable 
         public FileIcons Icon { get { 
             
@@ -2166,6 +2396,80 @@ namespace DaxStudio.UI.ViewModels
                 var ext = Path.GetExtension(DisplayName).TrimStart('.').TrimEnd('*').ToUpper();
                 return ext == "DAX" ? "" : ext;
             } 
+        }
+        #endregion
+
+        #region Export Analysis Data
+
+        public void ExportAnalysisData()
+        {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            // Configure save file dialog box
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "DaxStudioModelAnalyzer_" + this.SelectedDatabase,
+                DefaultExt = ".zip",
+                Filter = "Analyzer Data (ZIP)|*.zip|Analyzer Data|*.json"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process save file dialog box results 
+            if (result == true)
+            {
+                // Save document 
+                ExportAnalysisData(dlg.FileName);
+            }
+        }
+        public void ExportAnalysisData(string path)
+        {
+            string extension = Path.GetExtension(path).ToLower();
+            bool compression = (extension == ".zip");
+            ExportAnalysisData(path, compression);
+        }
+
+        public void ExportAnalysisData(string path, bool compression)
+        {
+            var info = ModelAnalyzer.Create(_connection);
+            if (compression)
+            {
+                string pathJson = string.Format(@".\{0}.json", Path.GetFileNameWithoutExtension(path));
+                Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
+                using (Package package = Package.Open(path, FileMode.Create))
+                {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    {
+                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                        tw.Close();
+                    }
+                    package.Close();
+                }
+
+                // create gz file
+                var gzfile = Path.Combine( Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
+
+                using (FileStream fs = new FileStream(gzfile, FileMode.Create))
+                using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
+                using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
+                {
+                    ms.Position = 0;
+                    ms.CopyTo(zipStream);
+                }
+
+            }
+            else
+            {
+                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))
+                {
+                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    tw.Close();
+                }
+            }
         }
         #endregion
     }

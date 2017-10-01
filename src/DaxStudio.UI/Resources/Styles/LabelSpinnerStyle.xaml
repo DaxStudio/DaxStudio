@@ -16,12 +16,9 @@
 
 
     <Style x:Key="LabelSpinnerStyle" TargetType="{x:Type Label}">
-        <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>-->
-
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="0"/>
-        <!--<Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="VerticalContentAlignment" Value="Top"/>-->
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Label}">
@@ -53,23 +50,9 @@
                                 </Grid.OpacityMask>
                                 <Grid.Triggers>
 
-                                    <!--<EventTrigger RoutedEvent="Window.Loaded">
-                                        <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
-                                    </EventTrigger>-->
-                                   
-                                 
+
                                 </Grid.Triggers>
-                                <!--<Grid.Style>
-                                    <Style>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Source={RelativeSource Self}, Path=Visibility}" Value="{x:Static Visibility.Collapsed}">
-                                                <DataTrigger.EnterActions>
-                                                    <StopStoryboard BeginStoryboardName="spinner"/>
-                                                </DataTrigger.EnterActions>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Grid.Style>-->
+
                             </Grid>
                             <ContentPresenter Margin="5,0,0,0" 
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
@@ -84,6 +67,7 @@
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                             
                         </Trigger>
+                        
                         <Trigger Property="Visibility" Value="Visible">
                             <Trigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
@@ -92,14 +76,7 @@
                                 <StopStoryboard  BeginStoryboardName="AnimationBeginStoryboard"/>
                             </Trigger.ExitActions>
                         </Trigger>
-                        <!--<Trigger Property="Visibility" Value="Visible">
-                            <Trigger.EnterActions>
-                                <BeginStoryboard Storyboard="{StaticResource RotationAnimation}" x:Name="AnimationBeginStoryboard"/>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <RemoveStoryboard BeginStoryboardName="RotationAnimation"/>
-                            </Trigger.ExitActions>
-                        </Trigger>-->
+
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

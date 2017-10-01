@@ -24,6 +24,7 @@ namespace ADOTabular
             try
             {
                 var ddColl = _adoTabConn.Databases.GetDatabaseDictionary(_adoTabConn.SPID, true);
+                if (ddColl.Count == 0) return false; // no databases on server
                 var dd = ddColl[_databaseName];
                 if (dd.LastUpdate > _lastUpdate)
                 {

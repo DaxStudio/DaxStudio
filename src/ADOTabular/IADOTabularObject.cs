@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace ADOTabular
 {
     public interface IADOTabularObject
@@ -6,5 +8,6 @@ namespace ADOTabular
         string Caption { get;  }
     
         string DaxName { get; }
+        
     }
 }

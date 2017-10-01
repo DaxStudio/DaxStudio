@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
 using System.Drawing;
 using System.Linq;
+using System;
+using DaxStudio.UI.Views;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,18 +28,21 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryStartedEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<QueryFinishedEvent>
+        , IHandle<UpdateGlobalOptions>
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
+        private readonly IGlobalOptions _options;
 
         [ImportingConstructor]
-        public QueryResultsPaneViewModel(IEventAggregator eventAggregator, IDaxStudioHost host) : this(new DataTable("Empty"))
+        public QueryResultsPaneViewModel(IEventAggregator eventAggregator, IDaxStudioHost host, IGlobalOptions options) : this(new DataTable("Empty"))
         {
             _eventAggregator = eventAggregator;
             //_eventAggregator.Subscribe(this);
             _host = host;
+            _options = options;
         }
 
         public QueryResultsPaneViewModel(DataTable resultsTable)
@@ -248,6 +253,10 @@ namespace DaxStudio.UI.ViewModels
             set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 
         }
 
+        public void CopyingRowClipboardContent(DataGrid source, DataGridRowClipboardEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine(e.ClipboardRowContent[0]);
+        }
         public void ResizeGridColumns(DataGrid source, MouseButtonEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("DoubleClick fired");
@@ -332,6 +341,21 @@ namespace DaxStudio.UI.ViewModels
                 style = style.BasedOn;
             }
             return null;
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            NotifyOfPropertyChange(() => ClipboardCopyMode);
+            
+        }
+
+        public DataGridClipboardCopyMode ClipboardCopyMode
+        {
+            get
+            {
+                if (_options.ExcludeHeadersWhenCopyingResults) return DataGridClipboardCopyMode.ExcludeHeader;
+                return DataGridClipboardCopyMode.IncludeHeader;
+            }
         }
     }
 }

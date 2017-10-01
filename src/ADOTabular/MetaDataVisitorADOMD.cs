@@ -161,8 +161,10 @@ namespace ADOTabular
             throw new System.NotImplementedException();
         }
 
+        public void Visit(MetadataInfo.DaxMetadata daxMetadata) {
+            throw new System.NotImplementedException();
+        }
 
-  
     }
 
 }

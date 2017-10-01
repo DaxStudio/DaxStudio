@@ -13,9 +13,11 @@ namespace DaxStudio.UI.Interfaces
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
         bool IsBusy { get; set; }
-        void CheckEnabled(IConnection connection);
-
+        bool FilterForCurrentSession { get; }
+        void CheckEnabled(IConnection connection, ITraceWatcher active);
+        string DisableReason { get; }
         string ToolTipText { get; }
+        bool IsPaused { get; set; }
 
         void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents);
 

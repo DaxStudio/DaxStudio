@@ -51,6 +51,7 @@ namespace DaxStudio.UI.Extensions
                 @this.ShowDialog(model,null,settings);
 
             }
+
             finally
             {
                 shellViewModel.HideOverlay();

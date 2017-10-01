@@ -36,6 +36,8 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
+UseSetupLdr=Yes
+
 
 LicenseFile=eula.rtf
 ;OutputBaseFilename=DaxStudio_{#MyAppFileVersion}_setup
@@ -70,20 +72,23 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-;Source: "D:\Codeplex_x64\DaxStudio\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
 Source: "..\release\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
+
 ;Standalone configs
-Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2012DllsFound
-Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014DllsFound
-Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2016DllsFound
+;Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2016DllsFound
+;Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014DllsFound
+Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: Not IsComponentSelected('ASAzureSupport')
+Source: "..\release\DaxStudio.exe.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsComponentSelected('ASAzureSupport')
+
 ;Excel Addin configs
-Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsSQL2012DllsFound Or IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014DllsFound And Not IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2016DllsFound And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
+;Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014DllsFound And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And Not IsExcel2010Installed
+Source: "..\release\DaxStudio.dll.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2017DllsFound And Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -113,6 +118,8 @@ Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO D
 #include "scripts\products\dotnetassembly.iss"
 #include "scripts\products\sql2016adomdclient.iss"
 #include "scripts\products\sql2016amo.iss"
+#include "scripts\products\sql2017adomdclient.iss"
+#include "scripts\products\sql2017amo.iss"
 
 [UninstallRun]
 Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden; 
@@ -141,10 +148,11 @@ Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelA
 Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 ;Clean up beta Excel x64 Addin keys
 Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+;put keys under the following for a per user install HCKU\SOFTWARE\Classes
 ;add file association for .dax files
 Root: "HKCR"; Subkey: ".dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
 Root: "HKCR"; Subkey: "DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" ""%1"""; Flags: uninsdeletekey
+Root: "HKCR"; Subkey: "DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
 Root: "HKCR"; Subkey: "DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0"; Flags: uninsdeletevalue
 
 [CustomMessages]
@@ -153,9 +161,9 @@ win_sp_title=Windows %1 Service Pack %2
 [Components]
 Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
+Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
 [Code]
-
 // If there is a command-line parameter "skipdependencies=true", don't check for them }
 function ShouldInstallDependencies(): Boolean;
 begin
@@ -213,7 +221,7 @@ procedure CleanDisabledItems;
 var
   I: Integer;
   J: Integer;
-  RegKeys: array[1..2] of string;
+  RegKeys: array[1..3] of string;
   RegKeyCnt: Integer;
   Names: TArrayOfString;
   ResultStr: AnsiString;
@@ -221,10 +229,12 @@ var
 begin
   RegKeys[1] := 'Software\Microsoft\Office\14.0\Excel\Resiliency\DisabledItems';    // Excel 2010
   RegKeys[2] := 'Software\Microsoft\Office\15.0\Excel\Resiliency\DisabledItems';    // Excel 2013
-  RegKeyCnt := 2; //GetArrayLength(RegKeys);
+  RegKeys[3] := 'Software\Microsoft\Office\16.0\Excel\Resiliency\DisabledItems';    // Excel 2016
+  RegKeyCnt := 3; //GetArrayLength(RegKeys);
 
   // for each version of Excel
-  for I := 1 to RegKeyCnt do
+  //for I := 1 to RegKeyCnt do
+  for I := 1 to GetArrayLength(RegKeys) do
   begin
     If  RegKeyExists(HKEY_CURRENT_USER, RegKeys[I]) then
     begin  
@@ -311,55 +321,7 @@ begin
 	msi45('4.5');
 #endif
 
-  {
-	//install .netfx 2.0 sp2 if possible; if not sp1 if possible; if not .netfx 2.0
-#ifdef use_dotnetfx20
-	//check if .netfx 2.0 can be installed on this OS
-	if not minwinspversion(5, 0, 3) then begin
-		msgbox(fmtmessage(custommessage('depinstall_missing'), [fmtmessage(custommessage('win_sp_title'), ['2000', '3'])]), mberror, mb_ok);
-		exit;
-	end;
-	if not minwinspversion(5, 1, 2) then begin
-		msgbox(fmtmessage(custommessage('depinstall_missing'), [fmtmessage(custommessage('win_sp_title'), ['XP', '2'])]), mberror, mb_ok);
-		exit;
-	end;
-
-	if minwinversion(5, 1) then begin
-
-		dotnetfx20sp2();
-#ifdef use_dotnetfx20lp
-		dotnetfx20sp2lp();
-#endif
-	end else begin
-		if minwinversion(5, 0) and minwinspversion(5, 0, 4) then begin
-#ifdef use_kb835732
-			kb835732();
-#endif
-			dotnetfx20sp1();
-#ifdef use_dotnetfx20lp
-			dotnetfx20sp1lp();
-#endif
-		end else begin
-			dotnetfx20();
-#ifdef use_dotnetfx20lp
-			dotnetfx20lp();
-#endif
-		end;
-	end;
-#endif
-
-#ifdef use_dotnetfx35
-	//dotnetfx35();
-	dotnetfx35sp1();
-#ifdef use_dotnetfx35lp
-	//dotnetfx35lp();
-	dotnetfx35sp1lp();
-#endif
-#endif
-  }
-#ifdef use_wic
-	wic();
-#endif
+ 
 
 if ShouldInstallDependencies() then
   Log('Checking for Dependencies')
@@ -387,7 +349,6 @@ else
 #endif
 
 #ifdef use_sql2012sp1adomdclient
-  
   if ShouldInstallDependencies() then begin
     Log('Checking for AdomdClient 2012 SP1');
 	  sql2012sp1adomdclient();
@@ -395,7 +356,6 @@ else
 #endif
 
 #ifdef use_sql2012sp1amo
-  
   if ShouldInstallDependencies() then begin
     Log('Checking for AMO 2012 SP1');
 	  sql2012sp1amo();
@@ -403,23 +363,50 @@ else
 #endif
 
 
-#ifdef use_sql2016adomdclient
-  
-  if ShouldInstallDependencies() then begin
-    Log('Checking for AdomdClient 2016');
-	  sql2016adomdclient();
-  end;
-#endif
-
-#ifdef use_sql2016amo
-  
-  if ShouldInstallDependencies() then begin
-    Log('Checking for AMO 2016');
-	  sql2016amo();
-   end;
-#endif
 
 	Result := true;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+Log('Processing custom page actions for ' + IntToStr(CurPageID));
+  if CurPageID = wpReady then begin
+    Log('Processing custom Ready page actions');
+    if IsComponentSelected('ASAzureSupport') then begin
+      Log('Installing Azure Support');
+
+        if ShouldInstallDependencies() then begin
+       //#ifdef use_sql2017adomdclient
+          Log('Checking for AdomdClient 2017');
+          sql2017adomdclient();
+      //#endif
+
+      //#ifdef use_sql2017amo
+          Log('Checking for AMO 2017');
+          sql2017amo();
+       //#endif
+         end;
+
+    end
+    else
+    //if Not IsComponentSelected('AS Azure Support') then 
+    begin
+      #ifdef use_sql2016adomdclient
+        if ShouldInstallDependencies() then begin
+          Log('Checking for AdomdClient 2016');
+          sql2016adomdclient();
+        end;
+      #endif
+
+      #ifdef use_sql2016amo
+        if ShouldInstallDependencies() then begin
+          Log('Checking for AMO 2016');
+          sql2016amo();
+         end;
+      #endif
+    end;
+
+  end;
 end;
 
 
@@ -480,10 +467,13 @@ end;
 
 function IsSQL2016DllsFound(): boolean;
 begin
-	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'13.0.0.0000') = 0 ) ;
+	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'13.0.0.0000') = 0 )  Or  IsComponentSelected('AsAzureSupport') = False;
 end;
 
-         
+function IsSQL2017DllsFound(): boolean;
+begin
+	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'14.0.0.0000') = 0 ) Or  IsComponentSelected('AsAzureSupport') = True ;
+end;         
 
 /////////////////////////////////////////////////////////////////////
 function GetUninstallString(): String;
@@ -552,3 +542,9 @@ begin
     end;
   end;
 end;
+
+const 
+   ComponentList = 'CORE - core components| EXCEL - Excel Addin'; 
+   TaskList = 'DESKTOPICON - adds a desktop icon'; 
+   ParameterList = '/SKIPDEPENDENCIES=True/False - Skips the standard dependency checks'; 
+#include "scripts/clihelp.iss"

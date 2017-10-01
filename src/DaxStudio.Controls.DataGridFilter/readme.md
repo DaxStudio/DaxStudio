@@ -1,0 +1,1 @@
+Code forked from https://www.codeproject.com/Articles/42227/Automatic-WPF-Toolkit-DataGrid-Filtering

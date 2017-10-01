@@ -83,7 +83,7 @@ namespace DaxStudio.UI.Model
                         var sw = Stopwatch.StartNew();
                         string sep = "\t";
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-                        string isoDateFormat = string.Format("yyyy-MM-dd hh:mm:ss{0}000", decimalSep);
+                        string isoDateFormat = string.Format("yyyy-MM-dd HH:mm:ss{0}000", decimalSep);
                         Encoding enc = Encoding.UTF8;
                         switch (dlg.FilterIndex)
                         {

@@ -6,6 +6,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
     <UserControl.Resources>
@@ -142,10 +143,12 @@
                 <TabControl.ContentTemplate>
                     <DataTemplate>
 
-                        <DataGrid x:Name="DefaultView" 
+                        <DataGrid
+                        
+                            x:Name="DefaultView" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
                       ItemsSource="{Binding DefaultView}"
-                      ClipboardCopyMode="IncludeHeader"
+                      ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       SelectionMode="Extended"       
                       SelectionUnit="Cell"
                       CanUserAddRows="False"
@@ -153,9 +156,11 @@
                       VerticalGridLinesBrush="WhiteSmoke" 
                       HorizontalGridLinesBrush="WhiteSmoke"
                       AutoGenerateColumns="False" 
-                      cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]"
+                      cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
+                                  , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                       custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
-                      >
+                      
+                                  >
                             <!-- ColumnWidth="SizeToCells"
                       MinColumnWidth="50"
                       -->
@@ -177,8 +182,6 @@
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
-
-
 
                     </DataTemplate>
                 </TabControl.ContentTemplate>
