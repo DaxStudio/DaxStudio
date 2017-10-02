@@ -11,5 +11,3 @@ This video introduces new features that improves the debug experience in DAX Stu
 ## DAX Studio 2.1 - analyze query plans and find bottlenecks
 DAX Studio introduced important features to analyze the query plan and find bottlenecks in your DAX code
 <iframe width="854" height="480" src="https://www.youtube.com/embed/MD97SSM12oc" frameborder="0" allowfullscreen></iframe>
-
-MD97SSM12oc
