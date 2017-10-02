@@ -397,9 +397,9 @@
                         </ComboBox>
 
                         <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  x:Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
-                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"  Grid.Column="1" Grid.Row="2"/>
+                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"  Grid.Column="1" Grid.Row="2" Width="298"/>
                         <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
-                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Row="3" Grid.Column="1"  />
+                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Row="3" Grid.Column="1" Width="298" />
                         <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="4" x:Name="cboLocales" 
 							VerticalAlignment="Top" 
@@ -409,7 +409,10 @@
 							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
 
                         <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
-                        <TextBox x:Name="AdditionalOptions" Grid.Row="5" Grid.Column="1" MinHeight="85"/>
+                        <ScrollViewer Grid.Row="5" Grid.Column="1" Height="85" Width="298" >
+                        <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                        </ScrollViewer>
                     </Grid>
                 </Expander>
                 <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" 

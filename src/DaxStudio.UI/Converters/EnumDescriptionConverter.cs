@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Data;
@@ -11,18 +12,26 @@ namespace DaxStudio.UI.Converters
         {
             private string GetEnumDescription(Enum enumObj)
             {
-                FieldInfo fieldInfo = enumObj.GetType().GetField(enumObj.ToString());
-
-                object[] attribArray = fieldInfo.GetCustomAttributes(false);
-
-                if (attribArray.Length == 0)
+                try
                 {
-                    return enumObj.ToString();
+                    FieldInfo fieldInfo = enumObj.GetType().GetField(enumObj.ToString());
+
+                    object[] attribArray = fieldInfo.GetCustomAttributes(false);
+
+                    if (attribArray.Length == 0)
+                    {
+                        return enumObj.ToString();
+                    }
+                    else
+                    {
+                        DescriptionAttribute attrib = attribArray[0] as DescriptionAttribute;
+                        return attrib.Description;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    DescriptionAttribute attrib = attribArray[0] as DescriptionAttribute;
-                    return attrib.Description;
+                    Debug.Assert(false, "Error in GetEnumDescription", ex.Message);
+                    return string.Empty;
                 }
             }
 

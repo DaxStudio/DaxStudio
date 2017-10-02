@@ -58,15 +58,16 @@ namespace DaxStudio.UI.Events
         public QueryStatus Status { get; set; }
         [JsonIgnore]
         public double QueryTextLines { get; private set; }
-        public double QueryTextHeight { get { 
-            if (QueryTextLines > 3) {
-                return 3 * _lineHeight + _padding;
+        public double QueryTextHeight {
+            get { 
+                if (QueryTextLines > 3) {
+                    return 3 * _lineHeight + _padding;
+                }
+                else
+                {
+                    return QueryTextLines * _lineHeight + _padding;
+                }
             }
-            else
-            {
-                return QueryTextLines * _lineHeight + _padding;
-            }
-        }
         }
 
     }

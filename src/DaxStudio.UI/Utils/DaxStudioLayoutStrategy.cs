@@ -12,6 +12,7 @@ namespace DaxStudio.UI.Utils
             var myViewModel = anchorableToShow.Content as IToolWindow;
             if (myViewModel != null)
             {
+                
                 var lap = layout.Descendents();
                 var pane = lap.OfType<LayoutAnchorablePane>().FirstOrDefault(d => d.Name == myViewModel.DefaultDockingPane);
                 if (pane != null)

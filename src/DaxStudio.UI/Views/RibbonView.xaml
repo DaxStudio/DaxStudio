@@ -23,17 +23,19 @@
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
-            </ResourceDictionary>
+                    <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png"/>
+                </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
         <conv:ResourceLookupConverter x:Key="TraceIconsLarger">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@96ppi.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@96ppi.png"/>
+                <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@96ppi.png"/>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
-        
+        <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
         <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
@@ -90,9 +92,10 @@
                                      ClickMode="Press" Width="Auto" 
                                      Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
-                                     IsEnabled="{Binding IsEnabled}">
+                                     IsEnabled="{Binding IsEnabled}"
+                                     >
                     <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" />
+                        <Fluent:ScreenTip Title="{Binding Title}" Text="{Binding ToolTipText}" DisableReason="{Binding DisableReason}" />
                     </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>               
                 
@@ -222,6 +225,26 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
+                    <!--<Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="PublishDaxFunctions">
+
+                                </cal:ActionMessage>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                    </Fluent:Button>                    <Fluent:Button Name="btnExportDaxFunctions" Header="Export DAX Functions" Foreground="White">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="ExportDaxFunctions">
+
+                                </cal:ActionMessage>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                    </Fluent:Button>-->
+
                     <Fluent:BackstageTabItem Header="Options"  >
                         <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />
                     </Fluent:BackstageTabItem>
@@ -713,6 +736,28 @@
             </Fluent:RibbonGroupBox>
                  
         </Fluent:RibbonTabItem>
+
+            <!-- DEBUG Ribbon -->
+        <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Analysis">
+                <Fluent:Button Name="ExportAnalysisData"
+                                   Header="Export Analysis Data"
+                                   cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
+                                   Icon="{StaticResource RefreshIcon}"
+                                   LargeIcon="{StaticResource RefreshIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Export Analysis Data"
+                                              Text="Exports information to allow for detailed analysis of the model design"
+                                              DisableReason="{Binding ClearCacheDisableReason}"
+                                              ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+        </Fluent:RibbonTabItem>    
+            
             
         <!-- Help Tab -->
         <Fluent:RibbonTabItem Header="Help">

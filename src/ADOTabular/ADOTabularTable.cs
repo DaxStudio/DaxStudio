@@ -7,7 +7,6 @@ namespace ADOTabular
     public class ADOTabularTable :IADOTabularObject
     {
         private readonly ADOTabularConnection _adoTabConn;
-        private readonly ADOTabularModel _model;
         private ADOTabularColumnCollection _columnColl;
         private ADOTabularMeasureCollection _measuresColl;        
 
@@ -81,10 +80,7 @@ namespace ADOTabular
             get { return _measuresColl ?? (_measuresColl = new ADOTabularMeasureCollection(_adoTabConn, this)); }
         }
 
-        public ADOTabularModel Model
-        {
-            get { return _model;}
-        }
+        public ADOTabularModel Model { get; private set; }
 
         public MetadataImages MetadataImage
         {

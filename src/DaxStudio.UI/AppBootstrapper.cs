@@ -110,7 +110,10 @@ namespace DaxStudio.UI
 	            //VisibilityBindingConvention.Install();
 
 	            LogManager.GetLog = type => new DebugLogger(type);
-	        }
+
+                // Add Application object to MEF catalog
+                _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);
+            }
 	        catch (Exception e)
 	        {
 	            Debug.WriteLine(e);

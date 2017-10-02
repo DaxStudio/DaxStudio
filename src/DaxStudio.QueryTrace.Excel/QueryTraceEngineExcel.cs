@@ -102,18 +102,21 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-
+        private string _friendlyServerName = "";
         //public delegate void TraceStartedHandler(object sender);//, TraceStartedEventArgs eventArgs);
 
         
-        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events)
+        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession)
         {
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
+            FilterForCurrentSession = filterForCurrentSession;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
             Events = events;
         }
+
+        public bool FilterForCurrentSession { get; private set; }
 
         private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName) //, List<DaxStudioTraceEventClass> events)
         {
@@ -259,7 +262,7 @@ namespace DaxStudio.QueryTrace
                 _server = new xlAmo.Server();
                 _server.Connect(_connectionString);
                 _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
-                _trace.Filter = GetSessionIdFilter(_sessionId);
+                if (FilterForCurrentSession) _trace.Filter = GetSessionIdFilter(_sessionId);
                 // set default stop time in case trace gets disconnected
                 //_trace.StopTime = DateTime.UtcNow.AddHours(24);
                 Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "GetTrace", "created new trace");
@@ -269,8 +272,7 @@ namespace DaxStudio.QueryTrace
 
         public void OnTraceEvent( DaxStudioTraceEventArgs e)
         {
-            if (TraceEvent != null)
-                TraceEvent(this, e);
+            TraceEvent?.Invoke(this, e);
         }
 
         public void RaiseError( string message)
@@ -294,19 +296,20 @@ namespace DaxStudio.QueryTrace
                 _connection.Dispose();
                 _connection = null;
                 Status = QueryTraceStatus.Started;
-                if (TraceStarted != null)
-                    TraceStarted(this,  null);
+                TraceStarted?.Invoke(this, null);
+
+                var f = new System.IO.FileInfo(_trace.Parent.Name);
+                _friendlyServerName = f.Name;
             }
             else
             {
                 Log.Debug("{class} {method} TraceEvent: {eventClass}", "QueryTraceEngineExcel", "OnTraceEventInternal", e.EventClass.ToString());
                 //OnTraceEvent(e);
-                _capturedEvents.Add( CreateTraceEventArg(e));
+                _capturedEvents.Add( CreateTraceEventArg(e, _friendlyServerName));
                 if (e.EventClass == xlAmo.TraceEventClass.QueryEnd)
                 {
                     // Raise an event with the captured events
-                    if (TraceCompleted != null)
-                        TraceCompleted(this, _capturedEvents);
+                    TraceCompleted?.Invoke(this, _capturedEvents);
                     // reset the captured events collection
                     _capturedEvents = new List<DaxStudioTraceEventArgs>();
                 }
@@ -322,11 +325,11 @@ namespace DaxStudio.QueryTrace
         }
 
 #endregion
-        private DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent)
+        private DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent, string xlsxFile)
         {
             long cpuTime;
             long duration;
-
+            DateTime eventTime = DateTime.Now;
             // not all events have CpuTime
             try
             {
@@ -345,13 +348,25 @@ namespace DaxStudio.QueryTrace
             {
                 duration = 0;
             }
+            try
+            {
+                eventTime = traceEvent.CurrentTime;
+                eventTime = traceEvent.StartTime;
+            }
+            catch (ArgumentNullException)
+            {
+                //do nothing - leave whatever value worked DateTime.Now / CurrentTime / StartTime
+            }
+                    
 
             var dsEvent = new DaxStudioTraceEventArgs(  
                 traceEvent.EventClass.ToString(),
                 traceEvent.EventSubclass.ToString(),
                 duration, 
                 cpuTime, 
-                traceEvent.TextData);   
+                traceEvent.TextData,
+                xlsxFile,
+                eventTime); 
             return dsEvent;
         }
 

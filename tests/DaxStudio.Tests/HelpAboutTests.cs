@@ -16,7 +16,8 @@ namespace DaxStudio.Tests
         {
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk );
+            var stubHost = new Mocks.MockDaxStudioHost();
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost );
             var ra = hlp.ReferencedAssemblies;
             Assert.IsTrue(ra.Count >= 32);
         }
@@ -25,7 +26,8 @@ namespace DaxStudio.Tests
         {
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk);
+            var stubHost = new Mocks.MockDaxStudioHost();
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost);
             var ra = hlp.ReferencedAssemblies;
             foreach (var a in ra)
             {

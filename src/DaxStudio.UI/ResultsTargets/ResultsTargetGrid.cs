@@ -48,11 +48,14 @@ namespace DaxStudio.UI.Model
 
                         var dq = runner.QueryText;
                         //var res = runner.ExecuteDataTableQuery(dq);
-                        using (var res = runner.ExecuteDataReaderQuery(dq))
+                        using (var dataReader = runner.ExecuteDataReaderQuery(dq))
                         {
-                            if (res != null)
+                            if (dataReader != null)
                             {
-                                runner.ResultsDataSet = res.ConvertToDataSet();
+                                Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
+                                runner.ResultsDataSet = dataReader.ConvertToDataSet();
+                                Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
+
                                 sw.Stop();
                                 durationMs = sw.ElapsedMilliseconds;
                                 var rowCnt = runner.ResultsDataSet.Tables[0].Rows.Count;

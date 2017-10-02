@@ -91,6 +91,11 @@ namespace ADOTabular
                     dd = Databases.GetDatabaseDictionary(this.SPID, true);
                 }
                 //var db = dd[_adomdConn.Database];
+                if (_currentDatabase == "" || dd.Count == 0)
+                {
+                    // return an empty database object if there is no current database or no databases on the server
+                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue);
+                }
                 var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
@@ -107,6 +112,8 @@ namespace ADOTabular
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
+
+            // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
         private void CacheFunctionGroups()
@@ -126,6 +133,7 @@ namespace ADOTabular
                        ConnectionChanged(this,new EventArgs());
                }
                */
+
         public void ChangeDatabase(string database)
         {
             _currentDatabase = database;
@@ -348,7 +356,10 @@ namespace ADOTabular
 
         public ConnectionState State
         {
-            get { return _adomdConn.State; }
+            get {
+                if (_adomdConn == null) return ConnectionState.Closed;
+                return _adomdConn.State;
+            }
         }
 
         public void EndExecuteDaxReader(IAsyncResult result)
@@ -482,6 +493,18 @@ namespace ADOTabular
             }
         }
 
+        private MetadataInfo.DaxMetadata _daxMetadataInfo;
+        public MetadataInfo.DaxMetadata DaxMetadataInfo {
+            get {
+                CacheDaxMetadataInfo();
+                return _daxMetadataInfo;
+            }
+        }
+
+        public void CacheDaxMetadataInfo() {
+            if (_daxMetadataInfo == null) _daxMetadataInfo = new MetadataInfo.DaxMetadata(this);
+        }
+
         private ADOTabularKeywordCollection _keywords;
         public ADOTabularKeywordCollection Keywords
         {
@@ -566,6 +589,42 @@ namespace ADOTabular
                         if (rdr.NodeType == XmlNodeType.Element
                             && rdr.LocalName == eSvrMode)
                         {
+                            return rdr.ReadElementContentAsString();
+                        }
+
+                    }
+                }
+            }
+            return "Unknown";
+        }
+
+
+        private string _serverId;
+        public string ServerId {
+            get {
+                if (_serverId == null) {
+                    _serverId = GetServerId();
+                }
+                return _serverId;
+            }
+        }
+
+        private string GetServerId() {
+
+            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+                                                 new AdomdRestrictionCollection
+                                                     {
+                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+                                                     }, true);
+            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
+
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata))) {
+                if (rdr.NameTable != null) {
+                    var eSvrMode = rdr.NameTable.Add("ID");
+
+                    while (rdr.Read()) {
+                        if (rdr.NodeType == XmlNodeType.Element
+                            && rdr.LocalName == eSvrMode) {
                             return rdr.ReadElementContentAsString();
                         }
 
@@ -686,7 +745,13 @@ namespace ADOTabular
 
         public ADOTabularConnection Clone()
         {
-            return new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
+            // copy keywords, functiongroups, DMV's
+            cnn._functionGroups = _functionGroups;
+            cnn._keywords = _keywords;
+            cnn._serverMode = _serverMode;
+            cnn._dmvCollection = _dmvCollection;
+            return cnn;
         }
     }
 

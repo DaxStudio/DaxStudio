@@ -1,17 +1,16 @@
 namespace DaxStudio.UI.Model
 {
-    using System;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Xml;
-    using DaxStudio.UI.Events;
     using Caliburn.Micro;
     using DaxStudio.Interfaces;
-    using System.ComponentModel.Composition;
-    using Serilog;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json.Linq;
+    using DaxStudio.UI.Events;
     using DaxStudio.UI.Utils;
+    using Extensions;
+    using Newtonsoft.Json.Linq;
+    using Serilog;
+    using System;
+    using System.ComponentModel;
+    using System.ComponentModel.Composition;
+    using System.IO;
     using System.Net;
 
     [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.Shared)]
@@ -208,7 +207,6 @@ namespace DaxStudio.UI.Model
                 {
 #if DEBUG
                     json = File.ReadAllText(@"..\..\..\src\CurrentReleaseVersion.json");
-                    
 #else
                     json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
 #endif           

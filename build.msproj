@@ -5,12 +5,14 @@
     <SourceExeConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.standalone\app.config</SourceExeConfigFile>
     <Dest2014ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</Dest2014ExeConfigFile>
 	<Dest2016ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2016.config</Dest2016ExeConfigFile>
+	<Dest2017ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2017.config</Dest2017ExeConfigFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <SourceDllConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.exceladdin\app.config</SourceDllConfigFile>
     <Dest2014DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</Dest2014DllConfigFile>
 	<Dest2016DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2016.config</Dest2016DllConfigFile>
+	<Dest2017DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2017.config</Dest2017DllConfigFile>
   </PropertyGroup>
 
   <Target Name="Clean">
@@ -49,6 +51,17 @@
                       Destination="$(Dest2016DllConfigFile)" />
   </Target>
   
+  <Target Name="Configs2017" DependsOnTargets="Build" >
+      <Message Text="Creating configs for SQL 2017 dependencies"/>
+    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
+      <TransformXml Source="$(SourceExeConfigFile)"
+                  Transform="app.2017.config"
+                  Destination="$(Dest2017ExeConfigFile)" />
+      <TransformXml Source="$(SourceDllConfigFile)"
+                      Transform="app.2017.config"
+                      Destination="$(Dest2017DllConfigFile)" />
+  </Target>
+  
   <Target Name="DeletePdb" DependsOnTargets="Build">
     <ItemGroup>
         <FilesToDelete Include=".\Release\*.pdb"/>
@@ -64,8 +77,54 @@
     <Delete Files="@(FilesToDelete)" />   
   </Target>
   
-  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; DeleteXml; DeletePdb">
-    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+  <PropertyGroup>
+    <MyAssemblies>.\Release\DaxStudio.dll</MyAssemblies>
+  </PropertyGroup>
+
+  <Target Name="RetrieveIdentities">
+	<Message Text="Getting Assembly Versions" Importance="high"/>
+    <PropertyGroup>
+	  <MyAssemblyInfo/>
+	</PropertyGroup>
+  
+    <GetAssemblyIdentity
+        AssemblyFiles="$(MyAssemblies)">
+      <Output
+          TaskParameter="Assemblies"
+          ItemName="MyAssemblyInfo"/>
+    </GetAssemblyIdentity>
+<!--	<PropertyGroup>
+        <Pattern>(\d+)\.(\d+)</Pattern>
+        <In>%(myAssemblyInfo.Version)</In>
+        <OutVersion>$([System.Text.RegularExpressions.Regex]::Match($(In), $(Pattern)))</OutVersion>
+    </PropertyGroup>
+	-->
+	<PropertyGroup>
+	  <OutVersion>$([System.Version]::Parse(%(MyAssemblyInfo.Version)).ToString(3).Replace('.','_'))</OutVersion>
+	</PropertyGroup>
+    <Message Text="Files: %(MyAssemblyInfo.Version)" Importance="high"/>
+	<Message Text="Major: $(OutVersion) " Importance="high"/>
   </Target>
   
+  <Target Name="SignAssemblies" DependsOnTargets="Build">
+    <Message Text="Attempting to sign Assemblies" Importance="high" />
+	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' 
+	IgnoreExitCode="true"/>
+	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.dll' 
+	IgnoreExitCode="true"/>
+  </Target>
+  
+  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
+    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+  </Target>
+  <Target Name="InstallerWthSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignAssemblies">
+    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+  </Target>
+
+  
+  <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
+    <Message Text="Attempting to sign installer" Importance="high" />
+	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\daxstudio_$(OutVersion)b_setup.exe' 
+	IgnoreExitCode="true"/>
+  </Target>
 </Project>

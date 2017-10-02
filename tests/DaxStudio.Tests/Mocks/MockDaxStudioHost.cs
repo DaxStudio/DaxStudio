@@ -26,11 +26,27 @@ namespace DaxStudio.Tests.Mocks
             }
         }
 
+        public bool DebugLogging
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public bool IsExcel
         {
             get
             {
                 return false;
+            }
+        }
+
+        public int Port
+        {
+            get
+            {
+                throw new NotImplementedException();
             }
         }
 

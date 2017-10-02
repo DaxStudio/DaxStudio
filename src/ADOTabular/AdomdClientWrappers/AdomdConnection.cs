@@ -9,7 +9,7 @@ namespace ADOTabular.AdomdClientWrappers
         private AdomdType _type;
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
-
+        private Object rowsetLock = new Object();
         public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
         {
             _type = AdomdType.AnalysisServices;
@@ -332,7 +332,10 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     _conn.Open();
                 }
-                return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                lock (rowsetLock)
+                {
+                    return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                }
             }
             else
             {
@@ -350,7 +353,10 @@ namespace ADOTabular.AdomdClientWrappers
                     {
                         _connExcel.Open();
                     }
-                    return _connExcel.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                    lock (rowsetLock)
+                    {
+                        return _connExcel.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                    }
                 };
                 return f();
             }

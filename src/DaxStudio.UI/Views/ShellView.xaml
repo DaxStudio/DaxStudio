@@ -40,6 +40,7 @@
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                
                 <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -119,6 +120,13 @@
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F5"/>
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="RunQuery"/>
+        </triggers:InputBindingTrigger>
+
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding  Key="E" Modifiers="Ctrl"/>
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="RunQuery"/>
         </triggers:InputBindingTrigger>

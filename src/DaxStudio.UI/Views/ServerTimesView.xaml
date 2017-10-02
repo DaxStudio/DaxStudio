@@ -25,6 +25,7 @@
             <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
         </ResourceDictionary>
         
@@ -38,11 +39,18 @@
             <ColumnDefinition Width="{Binding TextColumnWidth}" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Background="White" VerticalScrollBarVisibility="Auto" Grid.Column="0"  Grid.RowSpan="3">
+        <TextBlock Name="TraceStatusText"
+                   Grid.ColumnSpan="5"
+                   Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
+                   Background="{DynamicResource WarningBarBackgroundBrush}" 
+                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+
+        <ScrollViewer Background="White" VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="1"  Grid.RowSpan="3">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -145,13 +153,13 @@
         <GridSplitter Width="5" Grid.Column="1" 
                       Grid.RowSpan="3"
                       ResizeDirection="Columns" 
-                      Grid.Row="0"
+                      Grid.Row="1"
                       Height="Auto" 
                     HorizontalAlignment="Stretch" 
                     VerticalAlignment="Stretch" 
                     Margin="0"/>
         <DataGrid Name="ListEvents" Grid.Column="2" SelectedItem="{Binding SelectedEvent}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
-                  Grid.Row="0"
+                  Grid.Row="1"
                   behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
                   ItemsSource="{Binding StorageEngineEvents}" 
                   SelectionMode="Extended"
@@ -245,19 +253,19 @@
                 
             </DataGrid.Style>
         </DataGrid>
-        <GridSplitter Height="5" Grid.Row="1" Grid.Column="2" ResizeDirection="Rows" HorizontalAlignment="Stretch" 
+        <GridSplitter Height="5" Grid.Row="2" Grid.Column="2" ResizeDirection="Rows" HorizontalAlignment="Stretch" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutBottom}" />
         <GridSplitter Width="5" Grid.Column="3" 
                       Grid.RowSpan="3"
                       ResizeDirection="Columns" 
-                      Grid.Row="0"
+                      Grid.Row="1"
                       Height="Auto" 
                       HorizontalAlignment="Stretch" 
                       VerticalAlignment="Stretch" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
                       Margin="0"/>
-        <ScrollViewer>
-        <custom:BindableRichTextBox Padding="5,5,5,5"
+        <ScrollViewer >
+            <custom:BindableRichTextBox Padding="5,5,5,5"
                  MinWidth="200"
                  MinHeight="100"
                  IsReadOnly="True"
@@ -284,7 +292,7 @@
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="3" 
+                Grid.RowSpan="4" 
             Grid.ColumnSpan="5"
             Style="{StaticResource BusyPanel}" d:IsHidden="True">
                 

@@ -33,7 +33,8 @@
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-clear-then-run@96ppi.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
-
+    
+    <!-- Ribbon icons -->
     <BitmapImage x:Key="DaxStudioIcon" UriSource="..\images\daxstudio_x16.png"></BitmapImage>
     <BitmapImage x:Key="PlayIcon"  UriSource="..\images\icon-run.png"></BitmapImage>
     <BitmapImage x:Key="PlayIconLarger"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
@@ -82,4 +83,12 @@
     <BitmapImage x:Key="BottomPane"  UriSource="..\images\icon-bottompane.png"></BitmapImage>
     <BitmapImage x:Key="FileIcon"  UriSource="..\images\DaxStudio_File3a_x48.png"></BitmapImage>
     <BitmapImage x:Key="SwapDelimitersIcon"  UriSource="..\images\icon-swap-delimiters.png"></BitmapImage>
+    <!-- trace control icons -->
+    <BitmapImage x:Key="TraceStart" UriSource="..\images\TraceControls\play.png"></BitmapImage>
+    <BitmapImage x:Key="TracePause" UriSource="..\images\TraceControls\pause.png"></BitmapImage>
+    <BitmapImage x:Key="TraceStop" UriSource="..\images\TraceControls\stop.png"></BitmapImage>
+    <BitmapImage x:Key="TraceClearAll" UriSource="..\images\TraceControls\trash2.png"></BitmapImage>
+    <BitmapImage x:Key="TraceCopyAll" UriSource="..\images\TraceControls\copyall.png"></BitmapImage>
+    <BitmapImage x:Key="TraceFilter" UriSource="..\images\TraceControls\filter.png"></BitmapImage>
+    <BitmapImage x:Key="TraceClearFilter" UriSource="..\images\TraceControls\clearfilters.png"></BitmapImage>
 </ResourceDictionary>
