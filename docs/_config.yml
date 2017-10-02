@@ -31,6 +31,7 @@ navbar-links:
   Documentation:
     - Home: "documentation"
     - Feature List: "documentation/features"
+    - Videos: "documentation/videos"
     - Installation: "documentation/installation"
     - Troubleshooting: "documentation/troubleshooting"
 #  Discussions: "https://gitter.im/daxstudio/Lobby"
