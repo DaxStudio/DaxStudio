@@ -1,8 +1,8 @@
 ﻿{
-  "Version": "2.6.0.76",
-  "DownloadUrl": "http://github.com/daxstudio/daxstudio/releases",
+  "Version": "2.7.0.97",
+  "DownloadUrl": "http://daxstudio.org",
   "PreRelease": {
-    "Version": "2.6.0.76",
+    "Version": "2.7.0.97",
     "DownloadUrl": "http://github.com/daxstudio/daxstudio/releases"
   }
 }
