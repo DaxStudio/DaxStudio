@@ -426,8 +426,10 @@ namespace DaxStudio.QueryTrace
             try
             {
                 _trace.Drop();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
+                // just log any error, don't rethrow as we are trying to stop the trace anyway
                 Log.Error(ex, "{Class} {Method} Exception while dropping query trace {message}", "QueryTraceEngine", "DisposeTrace", ex.Message);
             }
 

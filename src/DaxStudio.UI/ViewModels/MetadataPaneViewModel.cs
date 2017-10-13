@@ -61,11 +61,19 @@ namespace DaxStudio.UI.ViewModels
             switch (propertyChangedEventArgs.PropertyName)
             {
                 case "ModelList":
-                    if (ModelList.Count > 0)
+                    try
                     {
-                        SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                        if (ModelList.Count > 0)
+                        {
+                            SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                        }
+                        Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
                     }
-                    Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);          
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
+                        EventAggregator.PublishOnUIThread( new OutputMessage( MessageType.Error, "Error refreshing model list: " + ex.Message));
+                    }
                     break;
             }
         }

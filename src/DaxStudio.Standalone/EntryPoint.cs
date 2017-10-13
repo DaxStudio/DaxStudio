@@ -59,6 +59,10 @@ namespace DaxStudio.Standalone
 
                 // need to create application first
                 var app = new Application();
+
+                // add unhandled exception handler
+                app.DispatcherUnhandledException += App_DispatcherUnhandledException;
+
                 // then load Caliburn Micro bootstrapper
                 var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
@@ -121,6 +125,19 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
             }
+        }
+
+        private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            var comException = e.Exception as System.Runtime.InteropServices.COMException;
+
+            // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf datagrid can't access clipboard 
+            if (comException != null && comException.ErrorCode == -2147221040)
+            {
+                e.Handled = true;
+                log.Error(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+            }
+            
         }
 
         private static void ReadCommandLineArgs(this Application app)

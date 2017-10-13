@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Serilog;
 using System.Diagnostics;
@@ -41,8 +39,16 @@ namespace DaxStudio
             }
 
             // Start OWIN host 
-            webApp = WebApp.Start<DaxStudio.ExcelAddin.Xmla.Startup>(url: baseAddress);
-            Log.Information("{class} {method} DaxStudio Host started on port {port}", "WebHost", "Start", port);
+            try
+            {
+                webApp = WebApp.Start<DaxStudio.ExcelAddin.Xmla.Startup>(url: baseAddress);
+                Log.Information("{class} {method} DaxStudio Host started on port {port}", "WebHost", "Start", port);
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "{class} {method} Unable to start Owin {message}", "WebHost", "Start", ex.Message);
+            }
+            
             return port;
         }
 
