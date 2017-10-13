@@ -389,32 +389,41 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshDatabases()
         {
-                    
-            this.Connection.Refresh();
-            var sourceSet = this.Connection.Databases.ToBindableCollection();
 
-            var deletedItems = this.Databases.Except(sourceSet);
-            var newItems = sourceSet.Except(this.Databases);
-            // remove deleted items
-            for(var i = deletedItems.Count()-1;i>=0;i--)
+            try
             {
-                var tmp = deletedItems.ElementAt(i);
-                // Your Action Code
-                Execute.OnUIThread(()=>{
-                    this.Databases.Remove(tmp);
-                });
-            }
-            // add new items
-            foreach (var itm in newItems)
-            {
-                Execute.OnUIThread(()=>{
+                this.Connection.Refresh();
+                var sourceSet = this.Connection.Databases.ToBindableCollection();
+
+                var deletedItems = this.Databases.Except(sourceSet);
+                var newItems = sourceSet.Except(this.Databases);
+                // remove deleted items
+                for (var i = deletedItems.Count() - 1; i >= 0; i--)
+                {
+                    var tmp = deletedItems.ElementAt(i);
                     // Your Action Code
-                    this.Databases.Add(itm);
-                });
+                    Execute.OnUIThread(() =>
+                    {
+                        this.Databases.Remove(tmp);
+                    });
+                }
+                // add new items
+                foreach (var itm in newItems)
+                {
+                    Execute.OnUIThread(() =>
+                    {
+                        // Your Action Code
+                        this.Databases.Add(itm);
+                    });
+                }
+                _databasesView.Refresh();
+                //NotifyOfPropertyChange(() => Databases);
             }
-            _databasesView.Refresh();
-            //NotifyOfPropertyChange(() => Databases);
-                    
+            catch (Exception ex)
+            {
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Unable to refresh the list of databases due to the following error: {0}", ex.Message)));
+            }
+                  
         }
 
         private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)

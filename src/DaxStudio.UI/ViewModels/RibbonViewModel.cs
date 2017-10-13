@@ -37,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isDocumentActivating = false;
         private bool _isConnecting = false;
 
-        private const string urlDaxStudioWiki = "http://daxstudio.codeplex.com/documentation";
+        private const string urlDaxStudioWiki = "http://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 

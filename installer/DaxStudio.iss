@@ -148,6 +148,7 @@ Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelA
 Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 ;Clean up beta Excel x64 Addin keys
 Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+;put keys under the following for a per user install HCKU\SOFTWARE\Classes
 ;add file association for .dax files
 Root: "HKCR"; Subkey: ".dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
 Root: "HKCR"; Subkey: "DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey

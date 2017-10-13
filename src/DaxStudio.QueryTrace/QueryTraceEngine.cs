@@ -315,7 +315,7 @@ namespace DaxStudio.QueryTrace
         {
             try
             {
-                if (_globalOptions.TraceDirectQuery)
+                if (_globalOptions.TraceDirectQuery && _filterForCurrentSession)
                 {
                     if ((e.SessionID != null) && (e.SessionID != _sessionId))
                     {
@@ -423,7 +423,14 @@ namespace DaxStudio.QueryTrace
         {
             if (_trace == null) return; // exit here if trace has already been disposed
             _trace.OnEvent -= OnTraceEventInternal;
-            _trace.Drop();
+            try
+            {
+                _trace.Drop();
+            } catch (Exception ex)
+            {
+                Log.Error(ex, "{Class} {Method} Exception while dropping query trace {message}", "QueryTraceEngine", "DisposeTrace", ex.Message);
+            }
+
             _trace.Dispose();
             _trace = null;
         }

@@ -4,11 +4,11 @@ using System.Reflection;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("DaxStudio.codeplex.com")]
+[assembly: AssemblyCompany("DaxStudio.org")]
 [assembly: AssemblyProduct("DAX Studio")]
 [assembly: AssemblyCopyright("Copyright © DAX Studio 2016")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion(    "2.7.0.96")]
-[assembly: AssemblyFileVersion("2.7.0.96")]
+[assembly: AssemblyVersion(    "2.7.1.99")]
+[assembly: AssemblyFileVersion("2.7.1.99")]
 

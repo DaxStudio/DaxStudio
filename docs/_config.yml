@@ -1,0 +1,241 @@
+# --- General options --- #
+
+# url is the full website URL
+# baseurl is the website's URL without the hostname
+
+# If you are building a simple GitHub user page (http://username.github.io) then use these settings:
+url: "http://daxstudio.org"
+baseurl: ""
+repository: "DaxStudio/DaxStudio"
+# If you are building a GitHub project page then use these settings:
+#url: "http://username.github.io/projectname"
+#baseurl: "/projectname"
+
+# Of course don't forget to change the username and projectname to YOUR username and project
+
+collections:
+  documentation:
+    output: true
+
+# Name of website
+title: "DAX Studio"
+
+# Short description of your site
+description: "The ultimate client tool for working with DAX queries"
+
+# --- Navigation bar options --- #
+
+# List of links in the navigation bar
+navbar-links:
+  Downloads: "downloads"
+  Documentation:
+    - Home: "documentation"
+    - Feature List: "documentation/features"
+    - Installation: "documentation/installation"
+    - Troubleshooting: "documentation/troubleshooting"
+#  Discussions: "https://gitter.im/daxstudio/Lobby"
+  "Issues / Requests": "issues"
+
+# Image to show in the navigation bar - image must be a square (width = height)
+# Remove this parameter if you don't want an image in the navbar
+# avatar: "/img/daxstudio-logo-144.png"
+
+# If you want to have an image logo in the top-left corner instead of the title text,
+# then specify the following parameter
+title-img: /img/daxstudio-logo-144.png
+
+# --- Footer options --- #
+
+# Change all these values or delete the ones you don't want.
+# Important: you must keep the "name" parameter, everything else you can remove
+author:
+  name: DAX Studio
+  email: "youremail@domain.com"
+  facebook: yourname  # eg. daattali
+  github: daxstudio/daxstudio    # eg. daattali
+  twitter: search?q=%23daxstudio   # eg. daattali
+  reddit: yourname    # eg. daattali
+  google-plus: +yourname   # eg. +DeanAttali or 109424658772469020925
+  linkedin: yourname  # eg. daattali
+  xing: yourname      # eg. daattali
+  stackoverflow: yourlink  # eg. "3943160/daattali"
+  snapchat: yourname  # eg. daattali
+  instagram: yourname # eg. daattali
+  youtube: yourlink   # eg. user/daattali or channel/daattali
+  spotify: yourname   # eg. daattali
+  telephone: yourphone   # eg. +14159998888
+
+# Select which links to show in the footer
+footer-links-active:
+  rss: true
+  facebook: false
+  email: false
+  twitter: true
+  google-plus: false
+  github: true
+  reddit: false
+  linkedin: false
+  xing: false
+  stackoverflow: false
+  snapchat: false
+  instagram: false
+  youtube: false
+  spotify: false
+  telephone: false
+
+# Select which share links to show in posts
+share-links-active:
+  twitter: true
+  facebook: true
+  google: false
+  linkedin: true
+
+# How to display the link to the website in the footer
+# Remove this if you don't want a link in the footer
+url-pretty: "DaxStudio.org" 
+
+# --- Misc --- #
+# Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
+#disqus: ""
+
+# Fill in your Google Analytics ID to track your website using GA
+google_analytics: "UA-106947023-1"
+
+# Google Tag Manager ID
+#gtm: ""
+
+# Facebook App ID
+# fb_app_id: ""
+
+# Excerpt Word Length
+# Truncates the excerpt to the specified number of words on the index page
+excerpt_length: 50
+
+# Character used to separate site title and description in HTML document title
+# and RSS feed title
+title-separator: "-"
+
+# --- Don't need to touch anything below here (but you can if you want) --- #
+
+# Output options (more information on Jekyll's site)
+timezone: "America/Vancouver"
+markdown: kramdown
+highlighter: rouge
+permalink: /:year-:month-:day-:title/
+paginate: 5
+
+kramdown:
+  input: GFM
+
+# Default YAML values (more information on Jekyll's site)
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      comments: true  # add comments to all blog posts
+      social-share: true # add social media sharing buttons to all blog posts
+      index: false
+  - scope:
+      path: "" # all files
+    values:
+      layout: "page"
+      show-avatar: true
+  - scope:
+      path: ""
+      type: documentation
+    values:
+      layout: "doco"
+  - scope:
+      path: "_documentation/features"
+    values:
+      layout: "doco"
+      feature: true
+  - scope:
+      path: "_documentation/installation"
+    values:
+      layout: "doco"
+      installation: true
+  - scope:
+      path: "_documentation/troubleshooting"
+    values:
+      layout: "doco"
+      troubleshooting: true
+  - scope:
+      path: "_documentation/faq"
+    values:
+      layout: "doco"
+      faq: true
+
+# Use tags pages (not recommended if you are deploying via GitHub pages, only set to true if deploying locally with ruby)
+link-tags: false
+
+# Exclude these files from production site
+exclude:
+  - CHANGELOG.md
+  - CNAME
+  - Dockerfile
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE
+  - README.md
+  - Vagrantfile
+  - run-local-server.cmd
+
+# prose.io config
+prose:
+  rooturl: '_posts'
+  media: 'img'
+  ignore:
+    - 404.html
+    - LICENSE
+    - feed.xml
+    - _config.yml
+    - /_layouts
+    - /_includes
+    - /css
+    - /img
+    - /js
+  metadata:
+    _posts:
+      - name: "layout"
+        field:
+          element: "hidden"
+          value: "post"
+      - name: "title"
+        field:
+          element: "text"
+          label: "Post title"
+          placeholder: "Title"
+          alterable: true
+      - name: "subtitle"
+        field:
+          element: "textarea"
+          label: "Subtitle"
+          placeholder: "A description of your post."
+          alterable: true
+      - name: "date"
+        field:
+          element: "text"
+          label: "Date"
+          help: "Enter date of post."
+          placeholder: "yyyy-mm-dd"
+          alterable: true
+      - name: "image"
+        field:
+          element: "text"
+          label: "Image"
+          help: "Add a thumbnail image to your post."
+          placeholder: "Thumbnail"
+          alterable: true
+      - name: "published"
+        field:
+          element: "checkbox"
+          label: "Publish"
+          help: "Check to publish post, uncheck to hide."
+
+plugins:
+  - jekyll-paginate
+  - github-pages
+  - jekyll-github-metadata
