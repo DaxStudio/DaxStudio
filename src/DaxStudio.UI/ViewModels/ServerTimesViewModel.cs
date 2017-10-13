@@ -139,6 +139,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
+            bool compatibility1103 = daxQuery.Contains("'[");
+            bool compatibility1200 = daxQuery.Contains("].[");
+
+            // Ignore this removal for 1103 queries (square brackets are only after table name without period)
+            if (compatibility1103)
+            {
+                return daxQuery;
+            }
+            // Ignore this removal if there are no xmSql queries with two names included in square brackets and concatenated by "."
+            if (!compatibility1200)
+            {
+                return daxQuery;
+            }
+
             // TODO: probably it is not necessary to use RemoveSquareBrackets
             // look for a Regex replace expression looking at Regex doc (written on a plane offline)
             string daxQueryNoBracketsOnTableNames = xmSqlSquareBracketsNoSpaceRemoval.Replace(
