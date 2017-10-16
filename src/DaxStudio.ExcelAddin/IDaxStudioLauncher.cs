@@ -7,5 +7,8 @@ namespace DaxStudio.ExcelAddin
     public interface IDaxStudioLauncher
     {
         void Launch(bool enableLogging);
+        void Launch();
     }
+
+    
 }

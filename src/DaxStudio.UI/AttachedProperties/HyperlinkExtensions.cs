@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Documents;
@@ -31,8 +32,15 @@ namespace DaxStudio.UI.AttachedProperties
 
         private static void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-            e.Handled = true;
+            try
+            {
+                Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex,"{class} {method} Unable to navigate to url {url} error: {message}", "HyperlinkExtensions", "Hyperlink_RequestNavigate", e.Uri.AbsoluteUri, ex.Message);
+            }
         }
     }
 }

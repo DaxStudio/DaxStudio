@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Management;
 using Serilog;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Utils
 {
@@ -48,7 +49,7 @@ namespace DaxStudio.UI.Utils
 
         private static List<PowerBIInstance> _instances = new List<PowerBIInstance>();
         private static bool _portSet = false;
-        public static void Refresh()
+        public static void RefreshOld()
         {
 
             _instances.Clear();
@@ -115,6 +116,60 @@ namespace DaxStudio.UI.Utils
                 }
             }
         }
+
+
+        public static void Refresh()
+        {
+
+            _instances.Clear();
+
+            var dict = ManagedIpHelper.GetExtendedTcpDictionary();
+            foreach (var proc in Process.GetProcessesByName("msmdsrv"))
+            { 
+                int _port = 0;
+                EmbeddedSSASIcon _icon = EmbeddedSSASIcon.PowerBI;
+                var parent = proc.GetParent();
+
+                // exit here if the parent == "services" then this is a SSAS instance
+                if (parent.ProcessName.Equals("services", StringComparison.OrdinalIgnoreCase)) continue;
+
+                // if the process was launched from Visual Studio change the icon
+                if (parent.ProcessName == "devenv") _icon = EmbeddedSSASIcon.Devenv;
+
+                // get the window title so that we can parse out the file name
+                var parentTitle = parent.MainWindowTitle;
+                if (parentTitle.Length == 0)
+                {
+                    // for minimized windows we need to use some Win32 api calls to get the title
+                    parentTitle = GetWindowTitle(parent.Id);
+                }
+
+                // try and get the tcp port from the Win32 TcpTable API
+                try
+                {
+                    TcpRow tcpRow = null;
+                    dict.TryGetValue(proc.Id, out tcpRow);
+                    if (tcpRow != null)
+                    {
+                        _port = tcpRow.LocalEndPoint.Port;
+                        _portSet = true;
+                        _instances.Add(new PowerBIInstance(parentTitle, _port, _icon));
+                        Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
+                    }
+                    else
+                    {
+                        Log.Debug("{class} {method} PowerBI port not found for process: {processName} PID: {pid}", "PowerBIHelper", "Refresh", proc.ProcessName, proc.Id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("{class} {Method} {Error} {StackTrace}", "PowerBIHelper", "Refresh", ex.Message, ex.StackTrace);
+                }
+            }
+                
+        }
+
+        
 
         public static List<PowerBIInstance> Instances
         {

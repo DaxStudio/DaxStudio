@@ -38,7 +38,7 @@
             <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="20,0,10,0"/>
             <StackPanel Orientation="Vertical">
                 <TextBlock Padding="5" FontSize="48"><Run Text="DAX Studio"/></TextBlock>
-                <TextBlock Padding="5,0,5,5"><Hyperlink NavigateUri="http://daxstudio.codeplex.com" custom:HyperlinkExtensions.IsExternal="true"><Run Text="http://daxstudio.codeplex.com"/></Hyperlink></TextBlock>
+                <TextBlock Padding="5,0,5,5"><Hyperlink NavigateUri="http://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true"><Run Text="http://daxstudio.org"/></Hyperlink></TextBlock>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>

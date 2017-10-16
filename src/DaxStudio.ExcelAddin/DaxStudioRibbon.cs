@@ -108,6 +108,10 @@ namespace DaxStudio.ExcelAddin
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Exiting Launch()");
         }
 
+        public void Launch()
+        {
+            Launch(false);
+        }
 
         private void DaxStudioRibbon_Close(object sender, EventArgs e)
         {
@@ -137,6 +141,7 @@ namespace DaxStudio.ExcelAddin
             //}
 
         }
+
 
     }
 }

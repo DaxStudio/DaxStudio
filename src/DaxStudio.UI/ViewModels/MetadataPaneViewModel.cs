@@ -61,11 +61,19 @@ namespace DaxStudio.UI.ViewModels
             switch (propertyChangedEventArgs.PropertyName)
             {
                 case "ModelList":
-                    if (ModelList.Count > 0)
+                    try
                     {
-                        SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                        if (ModelList.Count > 0)
+                        {
+                            SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                        }
+                        Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
                     }
-                    Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);          
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
+                        EventAggregator.PublishOnUIThread( new OutputMessage( MessageType.Error, "Error refreshing model list: " + ex.Message));
+                    }
                     break;
             }
         }
@@ -389,32 +397,41 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshDatabases()
         {
-                    
-            this.Connection.Refresh();
-            var sourceSet = this.Connection.Databases.ToBindableCollection();
 
-            var deletedItems = this.Databases.Except(sourceSet);
-            var newItems = sourceSet.Except(this.Databases);
-            // remove deleted items
-            for(var i = deletedItems.Count()-1;i>=0;i--)
+            try
             {
-                var tmp = deletedItems.ElementAt(i);
-                // Your Action Code
-                Execute.OnUIThread(()=>{
-                    this.Databases.Remove(tmp);
-                });
-            }
-            // add new items
-            foreach (var itm in newItems)
-            {
-                Execute.OnUIThread(()=>{
+                this.Connection.Refresh();
+                var sourceSet = this.Connection.Databases.ToBindableCollection();
+
+                var deletedItems = this.Databases.Except(sourceSet);
+                var newItems = sourceSet.Except(this.Databases);
+                // remove deleted items
+                for (var i = deletedItems.Count() - 1; i >= 0; i--)
+                {
+                    var tmp = deletedItems.ElementAt(i);
                     // Your Action Code
-                    this.Databases.Add(itm);
-                });
+                    Execute.OnUIThread(() =>
+                    {
+                        this.Databases.Remove(tmp);
+                    });
+                }
+                // add new items
+                foreach (var itm in newItems)
+                {
+                    Execute.OnUIThread(() =>
+                    {
+                        // Your Action Code
+                        this.Databases.Add(itm);
+                    });
+                }
+                _databasesView.Refresh();
+                //NotifyOfPropertyChange(() => Databases);
             }
-            _databasesView.Refresh();
-            //NotifyOfPropertyChange(() => Databases);
-                    
+            catch (Exception ex)
+            {
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Unable to refresh the list of databases due to the following error: {0}", ex.Message)));
+            }
+                  
         }
 
         private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)

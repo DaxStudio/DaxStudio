@@ -125,7 +125,7 @@
     <value>DAX Studio</value>
   </data>
   <data name="DocumentationUrl" xml:space="preserve">
-    <value>http://daxstudio.codeplex.com/documentation</value>
+    <value>http://daxstudio.org</value>
   </data>
   <data name="MsdnForumsUrl" xml:space="preserve">
     <value>http://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/</value>

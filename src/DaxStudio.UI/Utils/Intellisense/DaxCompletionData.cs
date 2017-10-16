@@ -89,32 +89,38 @@ _insightProvider = insightProvider;
         public void CompleteInternal(IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
-            // walk back to start of word
-            var newSegment = GetPreceedingWordSegment(document, completionSegment);
-            var replaceOffset = newSegment.Offset;
-            var replaceLength = newSegment.Length;
-            var funcParamStart = Text.IndexOf("«");
-            string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
+            try
+            {
+                // walk back to start of word
+                var newSegment = GetPreceedingWordSegment(document, completionSegment);
+                var replaceOffset = newSegment.Offset;
+                var replaceLength = newSegment.Length;
+                var funcParamStart = Text.IndexOf("«");
+                string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
 
-            if (insertionRequestEventArgs is TextCompositionEventArgs)
+                if (insertionRequestEventArgs is TextCompositionEventArgs)
+                {
+                    // if the insertion char is the same as the last char in the 
+                    // insertion text then trim it off
+                    var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
+                    if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
+                }
+                if (completionSegment.EndOffset <= document.TextLength - 1)
+                {
+                    var lastCompletionChar = insertionText[insertionText.Length - 1];
+                    var lastDocumentChar = document.GetCharAt(completionSegment.EndOffset);
+                    Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
+                    if (lastCompletionChar == lastDocumentChar) replaceLength++;
+                }
+                document.Replace(newSegment.Offset, newSegment.Length, insertionText);
+                _insightProvider.ShowInsight(insertionText);
+            } catch (Exception ex)
             {
-                // if the insertion char is the same as the last char in the 
-                // insertion text then trim it off
-                var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
-                if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
+                Log.Fatal(ex, "{class} {method} Error inserting code completion data {message}", "DaxCompletionData", "CompleteInternal", ex.Message);
             }
-            if (completionSegment.EndOffset <= document.TextLength - 1)
-            {
-                var lastCompletionChar = insertionText[insertionText.Length - 1];
-                var lastDocumentChar = document.GetCharAt(completionSegment.EndOffset);
-                Log.Debug("{class} {method} {lastCompletionChar} vs {lastDocumentChar} off: {offset} len:{length}", "DaxCompletionData", "Complete", lastCompletionChar, lastDocumentChar, newSegment.Offset, newSegment.Length);
-                if (lastCompletionChar == lastDocumentChar) replaceLength++;
-            }
-            document.Replace(newSegment.Offset, newSegment.Length, insertionText);
-            _insightProvider.ShowInsight(insertionText);
         }
 
-        private LinePosition GetPreceedingWordSegment(IDocument document, ICSharpCode.AvalonEdit.Document.ISegment completionSegment)
+        private LinePosition GetPreceedingWordSegment(IDocument document, ISegment completionSegment)
         {
             string line = "";
             

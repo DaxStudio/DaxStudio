@@ -423,7 +423,16 @@ namespace DaxStudio.QueryTrace
         {
             if (_trace == null) return; // exit here if trace has already been disposed
             _trace.OnEvent -= OnTraceEventInternal;
-            _trace.Drop();
+            try
+            {
+                _trace.Drop();
+            }
+            catch (Exception ex)
+            {
+                // just log any error, don't rethrow as we are trying to stop the trace anyway
+                Log.Error(ex, "{Class} {Method} Exception while dropping query trace {message}", "QueryTraceEngine", "DisposeTrace", ex.Message);
+            }
+
             _trace.Dispose();
             _trace = null;
         }

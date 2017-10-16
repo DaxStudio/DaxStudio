@@ -366,6 +366,7 @@
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
+    <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
@@ -456,6 +457,7 @@
     <Compile Include="Utils\FixedSizeQueue.cs" />
     <Compile Include="Extensions\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
+    <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\SystemInfo.cs" />

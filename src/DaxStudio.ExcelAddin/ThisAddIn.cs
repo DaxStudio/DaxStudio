@@ -23,6 +23,7 @@ namespace DaxStudio.ExcelAddin
                 var loggingKeyDown = false;
                 var currentDomain = AppDomain.CurrentDomain;
                 currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
+                currentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
                 var config = new LoggerConfiguration().ReadFrom.AppSettings();
                 if (System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey1)
@@ -33,6 +34,7 @@ namespace DaxStudio.ExcelAddin
                     var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder)
                                                 , Constants.ExcelLogFileName);
                     config.WriteTo.RollingFile(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
+                    
                 }
                 log = config.CreateLogger();
                 Log.Logger = log;
@@ -48,6 +50,13 @@ namespace DaxStudio.ExcelAddin
             {
                 CrashReporter.ReportCrash(ex,"DAX Studio Excel Addin fatal startup exception");
             }
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var ex = e.ExceptionObject as Exception;
+            Log.Fatal(ex, "{class} {method} {message} {stacktrace}", "ThisAddin", "CurrentDomain_UnhandledException", ex.Message, ex.StackTrace);
+            CrashReporter.ReportCrash(ex, "DAX Studio Excel Addin - ApplicationDomain.UnhandledException");
         }
 
         private DaxStudioRibbon _ribbon;

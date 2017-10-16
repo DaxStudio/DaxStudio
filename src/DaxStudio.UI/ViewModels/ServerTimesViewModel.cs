@@ -74,8 +74,8 @@ namespace DaxStudio.UI.ViewModels
 
     public static class TraceStorageEngineExtensions {
         const string searchGuid = @"([_-]\{?([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}?)";
-        const string searchXmSqlSquareBracketsNoSpace = @"(?<!\.)\[([^\[^ ])*\]";
-        const string searchXmSqlSquareBracketsWithSpace = @"(?<!\.)\[([^\[])*\]";
+        //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
+        const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
@@ -94,7 +94,7 @@ namespace DaxStudio.UI.ViewModels
 
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
-        static Regex xmSqlSquareBracketsNoSpaceRemoval = new Regex(searchXmSqlSquareBracketsNoSpace, RegexOptions.Compiled);
+        //static Regex xmSqlSquareBracketsNoSpaceRemoval = new Regex(searchXmSqlSquareBracketsNoSpace, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
         static Regex xmSqlAliasRemoval = new Regex(searchXmSqlAlias, RegexOptions.Compiled);
@@ -139,14 +139,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
-            // TODO: probably it is not necessary to use RemoveSquareBrackets
-            // look for a Regex replace expression looking at Regex doc (written on a plane offline)
-            string daxQueryNoBracketsOnTableNames = xmSqlSquareBracketsNoSpaceRemoval.Replace(
-                        daxQuery,
-                        RemoveSquareBracketsNoSpace
-                    );
+            // Reviewed on 2017-10-13
+            // The first removal should be useless and I commented it.
+            // Code was originally written on a plane offline... 
+            // string daxQueryNoBracketsOnTableNames = xmSqlSquareBracketsNoSpaceRemoval.Replace(
+            //             daxQuery,
+            //             RemoveSquareBracketsNoSpace
+            //        );
             string daxQueryNoBrackets = xmSqlSquareBracketsWithSpaceRemoval.Replace(
-                            daxQueryNoBracketsOnTableNames,
+                            daxQuery,  // daxQueryNoBracketsOnTableNames,
                             RemoveSquareBracketsWithSpace);
             string daxQueryNoDots = xmSqlDotSeparator.Replace(daxQueryNoBrackets, "[");
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);

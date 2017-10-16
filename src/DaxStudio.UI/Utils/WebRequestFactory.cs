@@ -26,13 +26,12 @@ namespace DaxStudio.UI.Utils
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
         public const string DaxTextFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxTextFormat";
 
-        //private const string CURRENT_CODEPLEX_VERSION_URL = "https://daxstudio.svn.codeplex.com/svn/DaxStudio/CurrentReleaseVersion.xml";
 #if DEBUG
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
 #else
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
 #endif
-        //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.codeplex.com/releases";
+        //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.org";
 
         private bool _isNetworkOnline = false;
         private IEventAggregator _eventAggregator;
