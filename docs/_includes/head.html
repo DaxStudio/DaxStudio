@@ -19,8 +19,6 @@
     {% endfor %}
   {% endif %}
 
-  <script  type="text/javascript" src="{{ '/js/google-download-tracker.js' | prepend: site.baseurl | replace: '//', '/' }}" />
-
   {% if layout.common-css %}
     {% for css in layout.common-css %}
       <link rel="stylesheet" href="{{ css | prepend: site.baseurl | replace: '//', '/' }}" />
