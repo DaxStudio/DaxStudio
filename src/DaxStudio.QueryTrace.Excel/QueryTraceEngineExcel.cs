@@ -353,6 +353,7 @@ namespace DaxStudio.QueryTrace
                 eventTime = traceEvent.CurrentTime;
                 eventTime = traceEvent.StartTime;
             }
+            catch (NullReferenceException) { }
             catch (ArgumentNullException)
             {
                 //do nothing - leave whatever value worked DateTime.Now / CurrentTime / StartTime

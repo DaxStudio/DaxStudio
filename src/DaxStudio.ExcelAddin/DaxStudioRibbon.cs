@@ -52,6 +52,15 @@ namespace DaxStudio.ExcelAddin
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
             try {
+                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
+                //if (!xl.HasPowerPivotData())
+                //{
+                //    MessageBox.Show("The Active Workbook must have a PowerPivot in order to launch DAX Studio");
+                //    return;
+                //}
+                    
+
+
                 RibbonButton btn = (RibbonButton)sender;
                 var enableLogging = DebugLoggingEnabled;// (bool)btn.Tag;
                 Launch(enableLogging);
