@@ -13,15 +13,11 @@
 
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }} {{ site.title-separator }} {{ site.description }}" href="{{ site.baseurl }}/feed.xml" />
 
-  {% include gtm_head.html %}
-
   {% if layout.common-ext-css %}
     {% for css in layout.common-ext-css %}
       {% include ext-css.html css=css %}
     {% endfor %}
   {% endif %}
-
-  <script  type="text/javascript" src="{{ '/js/google-download-tracker.js' | prepend: site.baseurl | replace: '//', '/' }}" />
 
   {% if layout.common-css %}
     {% for css in layout.common-css %}
