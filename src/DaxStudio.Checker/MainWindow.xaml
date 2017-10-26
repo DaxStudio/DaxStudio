@@ -29,7 +29,7 @@
             </Label>-->
         </StackPanel>
         <ScrollViewer Grid.Row="2">
-            <RichTextBox x:Name="Output" Block.LineHeight="10" />
+            <RichTextBox x:Name="Output" Block.LineHeight="1" FontFamily="Consolas" />
         </ScrollViewer>
         <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="3" FrameworkElement.HorizontalAlignment="Right" Margin="8">
             <Button Margin="2" Padding="3" Click="CopyToClipboardClick">Copy to Clipboard</Button>
