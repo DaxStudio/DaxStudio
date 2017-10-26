@@ -31,6 +31,7 @@ namespace DaxStudio.Checker
                 checker = new Checker(Output);
                 checker.SetFusionLoggingState(menuToggleFusionLogging);
                 checker.SetVSTOLoggingState(menuToggleVSTOLogging);
+                checker.ShowVersionInfo();
                 checker.CheckOSInfo();
                 checker.CheckNetFramework();
                 checker.CheckLibrary("AMO",       "Microsoft.AnalysisServices, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");

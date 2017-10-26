@@ -1,9 +1,8 @@
 ---
 title: Dependency Checks
 ---
-# Dependency Check
 
-**Note:** The functionality of the script below has been wrapped up in a small program which you can download from [http://daxstudio.codeplex.com/releases/view/618744](here) and run. It has some extended functionality which can check for configuration mismatches
+> **Note:** The functionality of the script below has been wrapped up in a small program called [DAX Studio Checker](../daxstudio-checker) which is installed as part of DAX Studio. It has some extended functionality which can check for configuration mismatches. It covers all the items in the legacy script below and more.
 
 The following will print out the versions of the external dependencies. You can just copy and paste it into the PowerShell ISE.
 {% highlight powershell %}

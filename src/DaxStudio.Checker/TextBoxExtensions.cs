@@ -11,6 +11,8 @@ namespace DaxStudio.Checker
 {
     public static class TextBoxExtensions
     {
+
+        public const string INDENT = "    ";
         public static void AppendLine(this System.Windows.Controls.RichTextBox myOutput)
         {
             myOutput.AppendText("\n");
@@ -29,19 +31,30 @@ namespace DaxStudio.Checker
             myOutput.AppendRange(text + "\r").Color(colour);
         }
 
-        public static TextRange Indent(this System.Windows.Controls.RichTextBox myOutput)
+        public static void AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text)
         {
-            //myOutput.AppendText(text + "\r");
-            //myOutput.Document.Blocks.Add(new Paragraph(new Run(text + "\r")));
-            return  myOutput.AppendRange("   ");
+            myOutput.AppendIndentedLine(text, "Black");
         }
+
+        public static void AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text, string colour)
+        {
+            myOutput.AppendRange(INDENT + text + "\r\n").Color(colour);
+        }
+
+        //public static TextRange Indent(this System.Windows.Controls.RichTextBox myOutput)
+        //{
+        //    //myOutput.AppendText(text + "\r");
+        //    //myOutput.Document.Blocks.Add(new Paragraph(new Run(text + "\r")));
+        //    return  myOutput.AppendRange("   ");
+        //}
 
         
 
 
         public static void AppendHeaderLine(this System.Windows.Controls.RichTextBox myOutput, string text)
         {
-            myOutput.AppendRange(text +"\n").Bold().Size("14pt").Indent(0);
+            myOutput.AppendLine();
+            myOutput.AppendRange(text +"\n").Bold().Size("14pt");
             //var inline = new Run();
             
             //myOutput.Document.Blocks.Add( new Paragraph( new Bold( new Underline( new Run( text + "\r")))));
@@ -89,6 +102,15 @@ namespace DaxStudio.Checker
         public static TextRange Indent( this TextRange range, int margin)
         {
             range.ApplyPropertyValue(Paragraph.MarginProperty, new Thickness(margin,0,0,0));
+            return range;
+        }
+
+        public static TextRange Indent(this TextRange range)
+        {
+            string[] lines = range.Text.Split('\n');
+            lines[lines.Length - 1] = INDENT + lines[lines.Length - 1];
+            //range.ApplyPropertyValue(Paragraph.MarginProperty, new Thickness(margin, 0, 0, 0));
+            range.Text = string.Join("\n", lines);
             return range;
         }
 

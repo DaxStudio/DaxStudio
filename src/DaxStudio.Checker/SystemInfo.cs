@@ -9,27 +9,26 @@ namespace DaxStudio.Checker
         public static void OutputOSInfo(this System.Windows.Controls.RichTextBox output)
         {
             var osInfo = GetOSInfo();
-            output.AppendLine($"OSCaption       = {osInfo.Name}");
-            output.AppendLine($"OSVersion       = {osInfo.Version.ToString()}");
-            output.AppendLine($"OSArchitecture  = {osInfo.Architecture}");
-            output.AppendLine($"VisibleMemoryGB = {osInfo.TotalVisibleMemory.ToString("n2")}");
-            output.AppendLine($"FreeMemoryGB    = {osInfo.TotalFreeMemory.ToString("n2")}");
+            output.AppendIndentedLine($"OSCaption       = {osInfo.Name}");
+            output.AppendIndentedLine($"OSVersion       = {osInfo.Version.ToString()}");
+            output.AppendIndentedLine($"OSArchitecture  = {osInfo.Architecture}");
+            output.AppendIndentedLine($"VisibleMemoryGB = {osInfo.TotalVisibleMemory.ToString("n2")}");
+            output.AppendIndentedLine($"FreeMemoryGB    = {osInfo.TotalFreeMemory.ToString("n2")}");
 
         }
 
         public static void OutputCultureInfo(this System.Windows.Controls.RichTextBox output)
         {
             var curCulture = Thread.CurrentThread.CurrentCulture;
-            output.AppendLine($"Culture Name              = {curCulture.Name}");
-            output.AppendLine($"Culture DisplayName       = {curCulture.DisplayName}");
-            output.AppendLine($"Culture EnglishName       = {curCulture.EnglishName}");
-            output.AppendLine($"Culture 2-Letter ISO Name = {curCulture.TwoLetterISOLanguageName}");
-            output.AppendLine($"Culture DecimalSeparator  = {curCulture.NumberFormat.NumberDecimalSeparator}");
-            output.AppendLine($"Culture GroupSeparator    = {curCulture.NumberFormat.NumberGroupSeparator}");
-            output.AppendLine($"Culture CurrencySymbol    = {curCulture.NumberFormat.CurrencySymbol}");
-            output.AppendLine($"Culture ShortDatePattern  = {curCulture.DateTimeFormat.ShortDatePattern}");
-
-
+            //output.AppendRange("").Indent();
+            output.AppendIndentedLine($"Culture Name              = {curCulture.Name}");
+            output.AppendIndentedLine($"Culture DisplayName       = {curCulture.DisplayName}");
+            output.AppendIndentedLine($"Culture EnglishName       = {curCulture.EnglishName}");
+            output.AppendIndentedLine($"Culture 2-Letter ISO Name = {curCulture.TwoLetterISOLanguageName}");
+            output.AppendIndentedLine($"Culture DecimalSeparator  = {curCulture.NumberFormat.NumberDecimalSeparator}");
+            output.AppendIndentedLine($"Culture GroupSeparator    = {curCulture.NumberFormat.NumberGroupSeparator}");
+            output.AppendIndentedLine($"Culture CurrencySymbol    = {curCulture.NumberFormat.CurrencySymbol}");
+            output.AppendIndentedLine($"Culture ShortDatePattern  = {curCulture.DateTimeFormat.ShortDatePattern}");
         }
 
         private static OSInfo GetOSInfo()

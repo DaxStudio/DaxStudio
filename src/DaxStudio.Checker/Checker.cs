@@ -30,6 +30,9 @@ namespace DaxStudio.Checker
         private const int minMSLibVer = 13;
         private const int maxMSLibVer = 13;
         private RichTextBox _output;
+        private const string DEFAULT_DAX_STUDIO_PATH = @"c:\Program Files\DAX Studio\DAXStudio.exe";
+
+       
 
         #region Public Properties
         public RichTextBox Output { get { return _output; } }
@@ -117,11 +120,17 @@ namespace DaxStudio.Checker
 
         #region Top Level Functions
 
+        internal void ShowVersionInfo()
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            Output.AppendIndentedLine($"Version =  v{version}");
+        }
+
         public void CheckOSInfo()
         {
             Output.AppendHeaderLine("Checking Operating System");
             Output.AppendLine("=======================");
-            Output.AppendRange("").Indent(20);
+            //Output.AppendRange("").Indent(20);
             Output.OutputOSInfo();
             Output.AppendLine();
             Output.OutputCultureInfo();
@@ -129,7 +138,6 @@ namespace DaxStudio.Checker
         public void CheckLibrary(string shortName, string longNameFormat)
         {
             //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"
-            Output.AppendLine();
             Output.AppendHeaderLine($"Checking {shortName}");
             Output.AppendLine("=======================");
 
@@ -141,9 +149,9 @@ namespace DaxStudio.Checker
                     if (assembly != null)
                     {
                         //Output.Indent();
-                        Output.AppendRange("PASS > " ).Color("Green").Bold().Indent(20);
-                        Output.AppendRange(assembly.FullName);
-                        Output.AppendRange("\r");
+                        Output.AppendRange("    PASS > " ).Color("Green").Bold();
+                        Output.AppendLine(assembly.FullName);
+                        
                         string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
                         AdomdVersions.Add(new Version(version));
                     }
@@ -151,44 +159,46 @@ namespace DaxStudio.Checker
                 catch (Exception exception)
                 {
                     //Output.Indent();
-                    var result = i == minMSLibVer ? "FAIL" : "WARN";
+                    var result = i == minMSLibVer ? "    FAIL" : "    WARN";
                     var color = i == minMSLibVer ? "Red" : "Orange";
-                    Output.AppendRange($"{result} > ").Color(color).Bold().Indent(20);
-                    Output.AppendRange(exception.Message);
-                    Output.AppendRange("\r");
+                    Output.AppendRange($"{result} > ").Color(color).Bold();
+                    Output.AppendLine(exception.Message);
                 }
             }
         }
 
         public void CheckDaxStudioBindings()
         {
-            Output.AppendLine();
             Output.AppendHeaderLine("Dax Studio Configuration");
             Output.AppendLine("========================");
             string str = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\DaxStudio", "Path", "");
             if (str == null)
             {
+                Output.AppendRange("      WARN > ").Bold().Color("Orange");
                 Output.AppendLine("Dax Studio registry key not found.");
+                str = DEFAULT_DAX_STUDIO_PATH;
+                Output.AppendIndentedLine($"  Attempting to use default installation path: {str}");
             }
             else
             {
-                Output.AppendLine($"Path: {str}");
+                Output.AppendIndentedLine($"Path: {str}");
                 if (str == "")
                 {
+                    Output.AppendRange("      WARN > ").Bold().Color("Orange");
                     Output.AppendLine("Dax Studio registry 'Path' value not found.");
+                    str = DEFAULT_DAX_STUDIO_PATH;
+                    Output.AppendIndentedLine($"  Attempting to use default installation path: {str}");
                 }
-                else
-                {
-                    string configPath = this.GetConfigPath(str);
-                    if (!File.Exists(configPath))
-                    {
-                        Output.AppendLine(configPath + " file not found.");
-                    }
-                    else
-                    {
-                        ProcessConfigFile(configPath);
-                    }
-                }
+
+            }
+            string configPath = this.GetConfigPath(str);
+            if (!File.Exists(configPath))
+            {
+                Output.AppendIndentedLine(configPath + " file not found.");
+            }
+            else
+            {
+                ProcessConfigFile(configPath);
             }
         }
 
@@ -196,7 +206,7 @@ namespace DaxStudio.Checker
         {
             Output.AppendHeaderLine("Checking .Net Framework");
             Output.AppendLine("=======================");
-            Output.AppendRange("").Indent(20);
+            //Output.AppendRange("").Indent(20);
             string name = @"SOFTWARE\Microsoft\NET Framework Setup\NDP";
             RegistryKey key = Registry.LocalMachine.OpenSubKey(name);
             RecurseKeysForValue(name, key, "Version");
@@ -205,12 +215,11 @@ namespace DaxStudio.Checker
 
         public void CheckExcelAddin()
         {
-            Output.AppendLine();
             Output.AppendHeaderLine("Checking Excel Add-in");
             Output.AppendLine("=======================");
             // TODO
             var xlVer = GetCurrentExcelVersion();
-            Output.AppendLine($"Detected Excel Version: {xlVer} - {(ExcelVersions)xlVer}");
+            Output.AppendIndentedLine($"Detected Excel Version: {xlVer} - {(ExcelVersions)xlVer}");
 
             var excelBitness = GetExcelDetails();
             Output.AppendLine();
@@ -227,17 +236,17 @@ namespace DaxStudio.Checker
                     baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
                     break;
                 default:
-                    Output.AppendRange("  ERROR:").Color("Red").Bold();
+                    Output.AppendRange("      ERROR:").Color("Red").Bold();
                     Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
                     break;
             }
 
             RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
 
-            Output.AppendLine("DAX Studio Excel Add-in Registry keys");
+            Output.AppendIndentedLine("DAX Studio Excel Add-in Registry keys");
             if (key == null)
             {
-                Output.AppendRange("  ERROR:").Color("Red").Bold();
+                Output.AppendRange("      ERROR:").Color("Red").Bold();
                 Output.AppendLine(" DAX Studio Excel addin registry keys not found!");
             }
             else
@@ -260,7 +269,7 @@ namespace DaxStudio.Checker
         private void CheckVSTO()
         {
             Output.AppendLine();
-            Output.AppendLine("Checking VSTO Configuration");
+            Output.AppendIndentedLine("Checking VSTO Configuration");
             
             RegistryKey basekey;
             RegistryKey key;
@@ -274,17 +283,17 @@ namespace DaxStudio.Checker
                 keyPath = @"SOFTWARE\Microsoft\VSTO Runtime Setup";
             }
             var arch = is64 ? "x64" : "x86";
-            Output.AppendLine($"Architecture: {arch}");
+            Output.AppendIndentedLine($"Architecture: {arch}");
             key = basekey.OpenSubKey(keyPath);
 
 //            Output.AppendRange("").Indent(20);
             foreach (var subkeyName in key.GetSubKeyNames())
             {
                 var subkey = key.OpenSubKey(subkeyName);
-                Output.AppendLine($"  {subkeyName}");
+                Output.AppendIndentedLine($"  {subkeyName}");
                 foreach (var valName in subkey.GetValueNames())
                 {
-                    Output.AppendLine($"    {valName} {subkey.GetValue(valName)}");
+                    Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
                 }
             }
         }
@@ -296,9 +305,9 @@ namespace DaxStudio.Checker
         private MachineType GetExcelDetails()
         {
             var appPath = (string)Registry.GetValue(  @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe",null,"");
-            Output.AppendLine($"Excel Path: {appPath}");
+            Output.AppendIndentedLine($"Excel Path: {appPath}");
             var excelArch = GetMachineType(appPath);
-            Output.AppendLine($"Excel Architecture: {excelArch}");
+            Output.AppendIndentedLine($"Excel Architecture: {excelArch}");
             return excelArch;
         }
 
@@ -324,11 +333,11 @@ namespace DaxStudio.Checker
 
         private void TestLoadingOfExcelAddin()
         {
-            Output.AppendLine("Attempting to load Excel Add-in: ");
+            Output.AppendIndentedLine("Attempting to load Excel Add-in: ");
             var path = GetExcelAddinLocation();
             if (string.IsNullOrWhiteSpace(path))
             {
-                Output.AppendRange("  ERROR:").Color("Red").Bold();
+                Output.AppendRange("      ERROR:").Color("Red").Bold();
                 Output.AppendLine(" could not locate the Excel add-in location in the registry");
             }
             else
@@ -336,12 +345,12 @@ namespace DaxStudio.Checker
                 try
                 {
                     var ass = Assembly.LoadFile(path);
-                    Output.AppendRange("  PASS >").Bold().Color("Green");
+                    Output.AppendRange("      PASS >").Bold().Color("Green");
                     Output.AppendLine($" Loaded Excel Add-in: {ass.FullName}");
                 }
                 catch (Exception ex)
                 {
-                    Output.AppendRange("  ERROR >").Bold().Color("Red");
+                    Output.AppendRange("      ERROR >").Bold().Color("Red");
                     Output.AppendLine($" Loading Excel Add-in - {ex.Message}\r\r{ex.StackTrace}");
                 }
             }
@@ -393,7 +402,7 @@ namespace DaxStudio.Checker
 
         private void ListDisabledExcelAddins(string versionYear, int versionNumber)
         {
-            Output.AppendLine($"Checking for Excel {versionYear} Disabled Add-ins");
+            Output.AppendIndentedLine($"Checking for Excel {versionYear} Disabled Add-ins");
             var keyName = $"Software\\Microsoft\\Office\\{versionNumber}.0\\Excel\\Resiliency\\DisabledItems";
             var key = Registry.CurrentUser.OpenSubKey(keyName);
             if (key != null)
@@ -404,16 +413,16 @@ namespace DaxStudio.Checker
                     var str = System.Text.Encoding.Unicode.GetString(val);
                     str = str.Substring(6, str.Length - 9); // trim off first 5 and last 4 chars;
                     if (str.Contains("DaxStudio.vsto"))
-                        Output.AppendRange("  FAIL > ").Bold().Color("Red");
+                        Output.AppendRange("      FAIL > ").Bold().Color("Red");
                     else
-                        Output.AppendRange("  N/A  > ").Bold().Color("Orange");
+                        Output.AppendRange("      N/A  > ").Bold().Color("Orange");
                     
                     Output.AppendLine($" - {str}");
                 }
             }
             else
             {
-                Output.AppendRange("  PASS >").Bold().Color("Green");
+                Output.AppendRange("      PASS >").Bold().Color("Green");
                 Output.AppendLine(" No Disabled items found.");
             }
 
@@ -421,8 +430,8 @@ namespace DaxStudio.Checker
 
         private void ProcessConfigFile(string path)
         {
-            Output.AppendLine("Processing DaxStudio.exe.config file...");
-            Output.AppendLine($"Path: '{path}'");
+            Output.AppendIndentedLine("Processing DaxStudio.exe.config file...");
+            Output.AppendIndentedLine($"Path: '{path}'");
             XmlDocument document = new XmlDocument();
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(document.NameTable);
             nsmgr.AddNamespace("asm", "urn:schemas-microsoft-com:asm.v1");
@@ -430,7 +439,7 @@ namespace DaxStudio.Checker
             FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read);
             document.Load(inStream);
             XmlNodeList list = document.SelectNodes("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly", nsmgr);
-            Output.AppendLine( $"Bindings Found: {list.Count}");
+            Output.AppendIndentedLine( $"Bindings Found: {list.Count}");
 
             XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices']", nsmgr);
             GetBindingRedirect(document, nsmgr, node, "AMO", "13.0.0.0");
@@ -443,11 +452,11 @@ namespace DaxStudio.Checker
             if (node != null)
             {
                 XmlNode bindingNode = node.NextSibling;
-                Output.AppendLine($"{libraryName} : {bindingNode.Attributes["newVersion"].Value}");
+                Output.AppendIndentedLine($"{libraryName} : {bindingNode.Attributes["newVersion"].Value}");
             }
             else
             {
-                Output.AppendLine($"{libraryName} : {libraryDefaultVersion} <default>");
+                Output.AppendIndentedLine($"{libraryName} : {libraryDefaultVersion} <default>");
             }
         }
 
@@ -456,7 +465,7 @@ namespace DaxStudio.Checker
             object obj2 = key.GetValue(valueName);
             if (obj2 != null)
             {
-                Output.AppendLine(StripRootPath(key.Name, rootPath) + " -> " + obj2.ToString());
+                Output.AppendIndentedLine(StripRootPath(key.Name, rootPath) + " -> " + obj2.ToString());
             }
             foreach (string str in key.GetSubKeyNames())
             {
@@ -469,7 +478,7 @@ namespace DaxStudio.Checker
             foreach (string valName in key.GetValueNames())
             {
                 object val = key.GetValue(valName);
-                Output.AppendLine($"   {valName}: {val.ToString()}");
+                Output.AppendIndentedLine($"   {valName}: {val.ToString()}");
             }
         }
 

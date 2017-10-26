@@ -15,7 +15,7 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
         AnalysisServices,
         Excel
     }
-    public class AmoServer
+    public class AmoServer:IDisposable
     {
         internal delegate void VoidDelegate();
         internal delegate T ReturnDelegate<T>();
@@ -82,5 +82,20 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
 
         }
 
+        public void Dispose()
+        {
+            if (_svr != null)
+            {
+                try
+                {
+                    _svr.Dispose();
+                }
+                catch
+                {
+                    // swallow the exception as we should be cleaning up the object anyway
+                }
+
+            }
+        }
     }
 }

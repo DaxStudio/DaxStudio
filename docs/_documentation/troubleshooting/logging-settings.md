@@ -2,8 +2,17 @@
 title: Logging Settings
 ---
 
-## Application Logging
-If Dax Studio crashes or reports errors while running if you enable detailed application logging by enabling serilog in the daxstudio.exe.config file.
+## Enabling Diagnostic Logging
+As of v2.7.0 you can enable diagnostic logging in DAX Studio by holding down the left SHIFT key while starting the application. If you are having issues with the Excel addin you need to hold down the SHIFT key while Excel is starting up. 
+
+Logs are stored in the ```%APPDATA%\DaxStudio\log``` folder. You can either paste this address into the Windows Explorer address bar or the Help - About window also has a link to this location.
+
+![](Help-About.png)
+
+> **Note:** the following sections are included for completeness, but holding the ```SHIFT``` key at startup and the functionality now available in [DAX Studio Checker](../daxstudio-checker) supercedes the need to manually enable logging or check dependencies
+
+## Manually Enabling Diagnostic Logging
+You can manually enable detailed application logging by enabling serilog in the daxstudio.exe.config file.
 
 The start of the daxstudio.exe.config file looks like the following:
 
@@ -29,6 +38,8 @@ To capture a detailed application log perform the following steps:
 
 ## Excel add-in logging
 _Same as above except the config file is called Daxstudio.**dll**.config_
+
+> **Note:** The start-up *fusion* logging detailed below can now be more easily enabled and disabled using the [DAX Studio Checker](../daxstudio-checker) tool
 
 ## Start up Logging
 If Dax Studio fails to even start up this often points to a problem with the dependencies. If this is the case the application crash happens before the application logging above is initialized so it is not able to trap the error. To capture these issues we need to enable a feature of the .Net called "Fusion" logging. Fusion is the part of the .Net framework that finds and load dependencies.
