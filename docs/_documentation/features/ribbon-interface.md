@@ -1,4 +1,6 @@
-# Ribbon Interface
+---
+title: Ribbon Interface
+---
 
 ## Main Ribbon
 The main ribbon contains commands for running queries, connecting to data sources and activating traces

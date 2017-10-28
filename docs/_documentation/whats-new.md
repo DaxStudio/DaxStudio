@@ -1,4 +1,7 @@
-# What's New
+---
+title: What's New
+---
+
 ## v2.0
 * Can run Standalone or as Excel Addin 
 * Office Ribbon UI

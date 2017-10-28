@@ -1,4 +1,6 @@
-# Query Editor
+---
+title: Query Editor
+---
 The query editor pane is where you enter the queries that you want DAX Studio to execute.
 
 It has a number of advanced capabilities including:
