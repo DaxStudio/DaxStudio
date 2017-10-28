@@ -36,7 +36,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                 // from the UI to the PowerPivot engine. The Location property does not appear to get
                 // serialized through into the XMLA request so we "hijack" the Workstation ID
                 var wsid = ParseRequestForWorkstationID(request);
-                if (!string.IsNullOrEmpty(wsid)) {
+                if (!string.IsNullOrEmpty(wsid))
+                {
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Resetting Location based on WorkstationID to: " + loc);
                     loc = wsid;
                 }
@@ -49,7 +50,7 @@ namespace DaxStudio.ExcelAddin.Xmla
 
                 Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "About to Load AmoWrapper");
                 AmoWrapper.AmoType amoType = AmoWrapper.AmoType.AnalysisServices;
-                if (float.Parse(app.Version,CultureInfo.InvariantCulture) >= EXCEL_2013)
+                if (float.Parse(app.Version, CultureInfo.InvariantCulture) >= EXCEL_2013)
                 {
                     amoType = AmoWrapper.AmoType.Excel;
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Loading Microsoft.Excel.Amo");
@@ -59,57 +60,59 @@ namespace DaxStudio.ExcelAddin.Xmla
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "defaulting to Microsoft.AnalysisServices");
                 }
 
-                var svr = new AmoWrapper.AmoServer(amoType);
-                svr.Connect(connStr);
+                using (var svr = new AmoWrapper.AmoServer(amoType))
+                {
+                    svr.Connect(connStr);
 
-                // STEP 1: send the request to server.
-                Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
-                System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
-                System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
-                string fullEnvelopeResponseFromServer = "";
-                try
-                {
-                    //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
-                    xmlaResponseFromServer = svr.SendXmlaRequest(streamWithXmlaRequest);
-                    // STEP 2: read/parse the XML/A response from server.
-                    xmlaResponseFromServer.MoveToContent();
-                    fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
-                    //result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    //result.Content = new StringContent(String.Format("An unexpected error occurred (sending XMLA request): \n{0}", ex.Message));
-                }
-                finally
-                {
-                    streamWithXmlaRequest.Close();
-                }
-
-                HttpResponseMessage result;
-                try
-                {
-                    result = new HttpResponseMessage(HttpStatusCode.OK);
-                    result.Content = new StringContent(fullEnvelopeResponseFromServer);
-
-                    result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
-                    result.Headers.TransferEncodingChunked = true;
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
-                    result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex.Message));
-                }
-                finally
-                {
-                // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
-                    if (xmlaResponseFromServer != null)
+                    // STEP 1: send the request to server.
+                    Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
+                    System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
+                    System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
+                    string fullEnvelopeResponseFromServer = "";
+                    try
                     {
-                        xmlaResponseFromServer.Close();
+                        //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
+                        xmlaResponseFromServer = svr.SendXmlaRequest(streamWithXmlaRequest);
+                        // STEP 2: read/parse the XML/A response from server.
+                        xmlaResponseFromServer.MoveToContent();
+                        fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
                     }
+                    catch (Exception ex)
+                    {
+                        Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
+                        //result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                        //result.Content = new StringContent(String.Format("An unexpected error occurred (sending XMLA request): \n{0}", ex.Message));
+                    }
+                    finally
+                    {
+                        streamWithXmlaRequest.Close();
+                    }
+
+                    HttpResponseMessage result;
+                    try
+                    {
+                        result = new HttpResponseMessage(HttpStatusCode.OK);
+                        result.Content = new StringContent(fullEnvelopeResponseFromServer);
+
+                        result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
+                        result.Headers.TransferEncodingChunked = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
+                        result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                        result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex.Message));
+                    }
+                    finally
+                    {
+                        // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
+                        if (xmlaResponseFromServer != null)
+                        {
+                            xmlaResponseFromServer.Close();
+                        }
+                    }
+                    return result;
                 }
-                return result;
             }
             catch (Exception ex)
             {
@@ -118,6 +121,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex.Message));
                 return expResult;
             }
+        
         }
 
         private string ParseRequestForWorkstationID(string request)
