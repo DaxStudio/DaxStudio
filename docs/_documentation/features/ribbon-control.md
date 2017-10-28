@@ -17,7 +17,7 @@ The ribbon in DAX Studio is split into a number of functional groups
 - **Cut / Copy / Paste** - buttons for standard edit operations, the standard hotkeys for these commands also work
 - Undo / Redo -
 ## Format
-- **Format Query** - this button will send the contents of the query editor (or the current selection) to [http://daxformatter.com](DaxFormatter.com) for [formatting](DaxFormatter-Support)
+- **Format Query** - this button will send the contents of the query editor (or the current selection) to [http://daxformatter.com](DaxFormatter.com) for [formatting](../daxformatter-support)
 - **To Upper** - will convert the current selection to uppercase
 - **To Lower** - will convert the current selection to lowercase
 - **Swap Delimiters** - will convert the current selection between delimiter styles for lists & decimals
@@ -25,8 +25,8 @@ The ribbon in DAX Studio is split into a number of functional groups
 - **Uncomment** - will remove the comment prefixes from the currently selected lines
 - **Merge XML** - will look for a parameters XML block and merge the values into the current query text
 ## Find
-- **Find** - will [find](Find_Replace) the specified text in the query
-- **Replace** - will allow [replacing](Find_Replace) of specified text values
+- **Find** - will [find](../find-replace) the specified text in the query
+- **Replace** - will allow [replacing](../find-replace) of specified text values
 ## Traces
 - **Query Plan** - turns on the display of query plan information (requires admin rights on the data source)
 - **Server Timings** - turns on the display of detailed timing information (requires admin rights on the data source)
@@ -36,5 +36,5 @@ The ribbon in DAX Studio is split into a number of functional groups
 - **Internal** - displays information on storage engine internal events 
 - "Right Layout/Bottom Layout* - Controls where the timing details pane appears
 ## Connect
-- **Connect** - opens a [connection dialog](connection-dialog) so that the user can change the connection for the current query window
+- **Connect** - opens a [connection dialog](../connection-dialog) so that the user can change the connection for the current query window
 - **Refresh Metadata** - will update the metadata of the currently selected model
