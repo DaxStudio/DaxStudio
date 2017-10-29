@@ -24,12 +24,16 @@ The ribbon in DAX Studio is split into a number of functional groups
 - **Comment** - will prefix the lines of the current selection with comment markers
 - **Uncomment** - will remove the comment prefixes from the currently selected lines
 - **Merge XML** - will look for a parameters XML block and merge the values into the current query text
+
 ## Find
 - **Find** - will [find](../find-replace) the specified text in the query
 - **Replace** - will allow [replacing](../find-replace) of specified text values
+
 ## Traces
 - **Query Plan** - turns on the display of query plan information (requires admin rights on the data source)
 - **Server Timings** - turns on the display of detailed timing information (requires admin rights on the data source)
+- **All Queries** - traces all queries against the given data source. This lets you capture queries from other client tools like Excel or Power BI in order to assist in tuning them or learning about how a particular client tool constructs it's queries
+
 ## Server Timings
 - **Scan** - displays information on storage engine scan events
 - **Cache** - displays information on storage engine cache events
