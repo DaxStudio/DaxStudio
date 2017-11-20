@@ -184,9 +184,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnDrop(object sender, DragEventArgs e)
         {
-            e.Handled = true;
-            var data = (string)e.Data.GetData(typeof(string));
-            InsertTextAtSelection(data);
+            if (_editor.SelectionLength == 0)
+            {
+                e.Handled = true;
+                var data = (string)e.Data.GetData(typeof(string));
+                InsertTextAtCaret(data);
+            }
         }
 
         void OnEditorLostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
@@ -503,7 +506,13 @@ namespace DaxStudio.UI.ViewModels
 
         //public string ConnectionString { get { return _connection.ConnectionString; } }
 
-        public string ConnectionStringWithInitialCatalog { get { return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase ); } }
+        public string ConnectionStringWithInitialCatalog {
+            get {
+                //var cubeEquals = this.Connection.IsMultiDimensional ? $";Cube={this.Sele}: "";
+                //return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase );
+                return Connection.ConnectionStringWithInitialCatalog;
+            }
+        }
 
         public MetadataPaneViewModel MetadataPane
         {
@@ -1212,6 +1221,13 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
+
+        private void InsertTextAtCaret(string text)
+        {
+            var editor = GetEditor();
+            editor.Document.Insert(editor.CaretOffset, text);
+            editor.Focus();
+        }
 
         private void InsertTextAtSelection(string text)
         {
@@ -2249,7 +2265,7 @@ namespace DaxStudio.UI.ViewModels
             OutputMessage("Metadata Refreshed");
         }
         private bool _isFocused;
-        public bool IsFocused { get { return _isFocused; } set { _isFocused = value; NotifyOfPropertyChange(()=>IsFocused); } }
+        public bool IsFocused { get { return _isFocused; } set { _isFocused = value;  NotifyOfPropertyChange(()=>IsFocused); } }
 
         public void Handle(SetSelectedWorksheetEvent message)
         {
