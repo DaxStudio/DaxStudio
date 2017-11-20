@@ -111,7 +111,7 @@ namespace DaxStudio.UI.ViewModels
                         _treeViewTables = null;
                         if (_selectedModel != null)
                         {
-                            if (Connection.ServerMode == "Multidimensional")
+                            if (Connection.IsMultiDimensional)
                             {
                                 if (Connection.Is2012SP1OrLater)
                                 {

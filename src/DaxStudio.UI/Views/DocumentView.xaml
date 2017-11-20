@@ -479,6 +479,7 @@
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
+                                                   
                                                    >
 
                                         <ContextMenuService.ContextMenu>
