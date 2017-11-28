@@ -646,6 +646,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (value == null) return;
                 _connection = value;
+                NotifyOfPropertyChange(() => IsAdminConnection);
                 var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
@@ -1972,7 +1973,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection { get { return Spid != -1; } }
+        public bool IsAdminConnection { get { return Spid != -1 || Connection.ConnectionString.Contains("Roles=") ; } }
         public bool IsPowerPivot {get; private set; }
 
         private bool _canCopy = true;

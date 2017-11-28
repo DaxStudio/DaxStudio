@@ -228,13 +228,15 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 if (_type == AdomdType.AnalysisServices)
                 {
-                    return _conn.State;
+                    if (_conn != null) return _conn.State;
+                    return ConnectionState.Closed;
                 }
                 else
                 {
                     ExcelAdoMdConnections.ReturnDelegate<ConnectionState> f = delegate
                     {
-                        return _connExcel.State;
+                        if (_connExcel != null) return _connExcel.State;
+                        return ConnectionState.Closed;
                     };
                     return f();
                 }
