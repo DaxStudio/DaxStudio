@@ -7,13 +7,15 @@ using System.Runtime.InteropServices;
 using System.Management;
 using Serilog;
 using DaxStudio.UI.Extensions;
+using System.Security.Principal;
 
 namespace DaxStudio.UI.Utils
 {
     public enum EmbeddedSSASIcon
     {
         PowerBI,
-        Devenv
+        Devenv,
+        PowerBIReportServer
     }
     public class PowerBIInstance
     {
@@ -133,8 +135,19 @@ namespace DaxStudio.UI.Utils
                 // exit here if the parent == "services" then this is a SSAS instance
                 if (parent.ProcessName.Equals("services", StringComparison.OrdinalIgnoreCase)) continue;
 
+                // exit here if the parent == "RSHostingService" then this is a SSAS instance
+                if (parent.ProcessName.Equals("RSHostingService", StringComparison.OrdinalIgnoreCase))
+                {
+                    // only show PBI Report Server if we are running as admin
+                    // otherwise we won't have any access to the models
+                    if (IsAdministrator())
+                        _icon = EmbeddedSSASIcon.PowerBIReportServer; 
+                    else
+                        continue;
+                }
+
                 // if the process was launched from Visual Studio change the icon
-                if (parent.ProcessName == "devenv") _icon = EmbeddedSSASIcon.Devenv;
+                if (parent.ProcessName.Equals("devenv",StringComparison.OrdinalIgnoreCase)) _icon = EmbeddedSSASIcon.Devenv;
 
                 // get the window title so that we can parse out the file name
                 var parentTitle = parent.MainWindowTitle;
@@ -169,7 +182,12 @@ namespace DaxStudio.UI.Utils
                 
         }
 
-        
+        public static bool IsAdministrator()
+        {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
 
         public static List<PowerBIInstance> Instances
         {

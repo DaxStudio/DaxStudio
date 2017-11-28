@@ -31,6 +31,7 @@
         <conv:ResourceLookupConverter x:Key="EmbeddedSsasIcons">
             <ResourceDictionary>
                     <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
+                    <BitmapImage x:Key="PowerBIReportServer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-PBIReportServer@24px.png" />
                     <BitmapImage x:Key="Devenv" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-devenv@24px.png" />
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
