@@ -15,7 +15,7 @@ namespace DaxStudio.ExcelAddin.Xmla
         public override void Log(ExceptionLoggerContext context)
         {
             Trace.TraceError(context.ExceptionContext.Exception.ToString());
-            Serilog.Log.Error("Exception: {Exception}", context.ExceptionContext.Exception.ToString());
+            Serilog.Log.Error("OWIN Trace Exception: {Exception}", context.ExceptionContext.Exception.ToString());
         }
             
     }

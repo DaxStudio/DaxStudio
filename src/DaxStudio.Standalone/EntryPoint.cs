@@ -135,6 +135,7 @@ namespace DaxStudio.Standalone
             if (comException != null && comException.ErrorCode == -2147221040)
             {
                 e.Handled = true;
+
                 log.Error(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
             }
             

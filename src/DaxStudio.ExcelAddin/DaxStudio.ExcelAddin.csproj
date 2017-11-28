@@ -403,6 +403,7 @@
     <Compile Include="Xmla\OwinExceptionLogger.cs" />
     <Compile Include="Xmla\StaticQueryResult.cs" />
     <Compile Include="Xmla\StaticQueryResultBinder.cs" />
+    <Compile Include="Xmla\UnhandledExceptionMiddleware.cs" />
     <Compile Include="Xmla\WorkbookController.cs" />
     <Compile Include="Xmla\XmlaController.cs" />
     <Compile Include="Xmla\XmlaStartup.cs" />
