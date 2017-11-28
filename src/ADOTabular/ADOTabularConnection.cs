@@ -672,6 +672,11 @@ namespace ADOTabular
         }
 
         
+        public bool IsMultiDimensional { get {
+                return ServerMode == "Multidimensional";
+            }
+        }
+
         public bool IsPowerPivot {get; set;}
 
         // BeginQueryAsync

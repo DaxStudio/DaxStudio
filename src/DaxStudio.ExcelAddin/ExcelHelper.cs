@@ -310,8 +310,9 @@ namespace DaxStudio.ExcelAddin
 
         public void EnsurePowerPivotDataIsLoaded2013()
         {
-            var wbc = FindPowerPivotConnection(_app.ActiveWorkbook);
-            wbc.Refresh();
+            WorkbookConnection wbc = FindPowerPivotConnection(_app.ActiveWorkbook);
+            if (wbc != null) _app.ActiveWorkbook.Model.Initialize();
+            //wbc.Refresh();
         }
 
         public void EnsurePowerPivotDataIsLoaded2010()

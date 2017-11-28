@@ -365,6 +365,7 @@
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
+    <Compile Include="Extensions\ViewAwareExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -1108,6 +1109,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\TraceControls\trash2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-PBIReportServer%4024px.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

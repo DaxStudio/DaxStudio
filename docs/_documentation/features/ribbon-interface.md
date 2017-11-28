@@ -1,4 +1,6 @@
-# Ribbon Interface
+---
+title: Ribbon Interface
+---
 
 ## Main Ribbon
 The main ribbon contains commands for running queries, connecting to data sources and activating traces
@@ -6,7 +8,7 @@ The main ribbon contains commands for running queries, connecting to data source
 * **Run** - will start a query, while a query is running the run button will be disabled until the query finishes (or is cancelled
 * **Stop** - cancels a running query, this button is only enabled while a query is running.
 *  **Clear Cache** -  will clear the cache on a SSAS server, requires admin rights and the button will be disabled if the user does not have them. This button also runs a simple query in order to force the MDX/DAX script to be evaluated.
-* **Output** - lets you select the [output modes](output-modes) for your queries
+* **Output** - lets you select the [output modes](../output-modes) for your queries
 * **Cut/Copy/Paste** - standard clipboard actions
 * **Connect** - lets you change the current connection details
 * **Database** - allows for the selection of the database to query

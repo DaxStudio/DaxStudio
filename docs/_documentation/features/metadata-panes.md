@@ -13,5 +13,5 @@ The function pane shows all the available DAX functions. This information is que
 ![](Metadata Panes_FunctionMetadata.png)
 
 ### DMV Metadata
-DMVs or [Dynamic Management Views](DMV-List) are a way of querying information from the data source. You can get both information about the structure of the data and regarding some of the internal state of the "server" (such as memory usage and the current number of sessions or connections)
+DMVs or [Dynamic Management Views](../dmv-list) are a way of querying information from the data source. You can get both information about the structure of the data and regarding some of the internal state of the "server" (such as memory usage and the current number of sessions or connections)
 ![](Metadata Panes_DMVs.png)

@@ -48,7 +48,7 @@ namespace DaxStudio.Tests
             cnn.Close();
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void TestVertipaqAnalyzerProfile()
         {
             //var cnnStr = ConnectionString;

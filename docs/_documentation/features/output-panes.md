@@ -1,4 +1,6 @@
-# Output Panes
+---
+title: Output Panes
+---
 There are 3 different output panes in DAX Studio
 
 ## Query Results

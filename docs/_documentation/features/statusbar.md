@@ -1,4 +1,6 @@
-# Statusbar
+---
+title: Statusbar
+---
 The statusbar in DAX Studio contains a number of useful bits of information
 
 The left-hand side will show if a query is currently running or not

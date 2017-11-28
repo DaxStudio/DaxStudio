@@ -11,6 +11,7 @@ using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System;
 using Serilog;
+using DaxStudio.Xmla;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -25,6 +26,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             try {
                 HttpConfiguration config = new HttpConfiguration();
 
+                appBuilder.Use<UnhandledExceptionMiddleware>();
                 appBuilder.Map("/signalr", map =>
                 {
                     var hubConfiguration = new HubConfiguration
@@ -39,6 +41,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 config.Formatters.Clear();
                 config.Formatters.Add(new JsonMediaTypeFormatter());
                 config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
+                
                 appBuilder.UseWebApi(config);
             }
             catch (Exception ex)

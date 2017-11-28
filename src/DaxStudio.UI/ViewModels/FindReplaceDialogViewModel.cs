@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DaxStudio.UI.Views;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -125,13 +126,14 @@ namespace DaxStudio.UI.ViewModels
         public bool IsVisible
         {
             get { return _isVisible; }
-            set { _isVisible = value;
-                
-            NotifyOfPropertyChange(() => IsVisible);
-           //     if (value == true)
-           //     {
-           //         FocusOnFindBox();
-           //     }
+            set {
+                _isVisible = value;
+                NotifyOfPropertyChange(() => IsVisible);
+                if (value == true)
+                {
+                    //FocusOnFindBox();
+                    this.SetFocus(() => TextToFind);
+                }
             }
         }
 
