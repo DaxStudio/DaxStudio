@@ -156,6 +156,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryDoubleClick(QueryEvent query)
         {
+            if (query == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
         }
 
