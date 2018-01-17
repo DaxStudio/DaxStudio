@@ -624,7 +624,9 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 
                 UpdateConnections(value,"");
-                Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection==null? "<null>": _connection.ConnectionString);          
+                Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection==null? "<null>": _connection.ConnectionString);
+                NotifyOfPropertyChange(() => IsConnected);
+                NotifyOfPropertyChange(() => IsAdminConnection);
                 _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this)); 
             } 
         }
@@ -798,7 +800,13 @@ namespace DaxStudio.UI.ViewModels
                         }));
                 }
                 qry = GetQueryTextFromEditor();
+                // merge in any parameters
                 qry = DaxHelper.PreProcessQuery(qry);
+                // swap delimiters if not using default style
+                if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
+                {
+                    qry = SwapDelimiters(qry);
+                }
                 return qry;
             }
         }
