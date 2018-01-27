@@ -840,6 +840,13 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             
+            if (editor == null)
+            {
+                Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Undo");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Undo: Unable to get a reference to the editor control"));
+                return;
+            }
+
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.CanUndo) editor.Undo();
@@ -856,6 +863,13 @@ namespace DaxStudio.UI.ViewModels
         public void Redo()
         {
             var editor = this.GetEditor();
+
+            if (editor == null)
+            {
+                Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Redo");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Redo: Unable to get a reference to the editor control"));
+                return;
+            }
 
             if (editor.Dispatcher.CheckAccess())
             {
@@ -1130,6 +1144,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var msg = NewStatusBarMessage("Running Query...");
             _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
+            // todo - something is causing crashes in the following line
             currentQueryDetails = new QueryHistoryEvent(this.QueryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
             currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>

@@ -96,6 +96,7 @@ namespace ADOTabular
                     // return an empty database object if there is no current database or no databases on the server
                     return new ADOTabularDatabase(this, "", "", DateTime.MinValue);
                 }
+                // todo - somehow users are getting here, but the current database is not in the dictionary
                 var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
