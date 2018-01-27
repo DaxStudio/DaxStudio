@@ -22,12 +22,12 @@ namespace DaxStudio.UI.Model
         
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
-        private readonly WebRequestFactory _webRequestFactory;
-        private string _downloadUrl = "https://daxstudio.codeplex.com/releases";
+        private WebRequestFactory _webRequestFactory;
+        private string _downloadUrl = "https://daxstudio.org/downloads";
         private readonly IGlobalOptions _globalOptions;
 
         /// <summary>
-        /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
+        /// The latest version from GitHub. Use a class field to prevent repeat calls, this acts as a cache.
         /// </summary>
         private Version _serverVersion;
 
@@ -42,10 +42,10 @@ namespace DaxStudio.UI.Model
         /// </summary>
         /// <param name="eventAggregator">A reference to the event aggregator so we can publish an event when a new version is found.</param>
         [ImportingConstructor]
-        public VersionCheck(IEventAggregator eventAggregator, WebRequestFactory webRequestFactory, IGlobalOptions globalOptions)
+        public VersionCheck(IEventAggregator eventAggregator,  IGlobalOptions globalOptions)
         {
             _eventAggregator = eventAggregator;
-            _webRequestFactory = webRequestFactory;
+            
             _globalOptions = globalOptions;
             if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
@@ -140,26 +140,36 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(() => VersionStatus);
                 try
                 {
+                    if (_webRequestFactory == null) {
+                        _webRequestFactory = WebRequestFactory.CreateAsync(_globalOptions, _eventAggregator).Result;
+                    }
+        
                     PopulateServerVersionFromGithub(_webRequestFactory);
+                    SetVersionStatus();
                 }
                 catch (Exception ex)
                 {
                     Log.Error("{class} {method} {error}", "VersionCheck", "ServerVersion.get", ex.Message);
                     _eventAggregator.PublishOnUIThread(new ErrorEventArgs(ex));
                 }
-                if (_serverVersion == null)
-                { VersionStatus = "(Unable to get version information)"; }
-                else if (LocalVersion.CompareTo(_serverVersion) > 0)
-                { VersionStatus = string.Format("(Ahead of {1} Version - {0} )", _serverVersion.ToString(3), ServerVersionType); }
-                else if (LocalVersion.CompareTo(_serverVersion) == 0)
-                { VersionStatus = string.Format("(Latest {0} Version)", ServerVersionType); }
-                else
-                { VersionStatus = string.Format("(New {1} Version available - {0})", _serverVersion.ToString(3), ServerVersionType); }
-            
-                NotifyOfPropertyChange(() => VersionStatus);
+                
 
                 return this._serverVersion;
             }
+        }
+
+        private void SetVersionStatus()
+        {
+            if (_serverVersion == null)
+            { VersionStatus = "(Unable to get version information)"; }
+            else if (LocalVersion.CompareTo(_serverVersion) > 0)
+            { VersionStatus = string.Format("(Ahead of {1} Version - {0} )", _serverVersion.ToString(3), ServerVersionType); }
+            else if (LocalVersion.CompareTo(_serverVersion) == 0)
+            { VersionStatus = string.Format("(Latest {0} Version)", ServerVersionType); }
+            else
+            { VersionStatus = string.Format("(New {1} Version available - {0})", _serverVersion.ToString(3), ServerVersionType); }
+
+            NotifyOfPropertyChange(() => VersionStatus);
         }
 
         //private void PopulateServerVersionFromCodeplex()
@@ -194,7 +204,7 @@ namespace DaxStudio.UI.Model
 
         //}
 
-            // This code runs async in a background worker
+        // This code runs async in a background worker
         private void PopulateServerVersionFromGithub(WebRequestFactory wrf)
         {
             
@@ -205,11 +215,11 @@ namespace DaxStudio.UI.Model
 
                 try
                 {
-#if DEBUG
-                    json = File.ReadAllText(@"..\..\..\src\CurrentReleaseVersion.json");
-#else
+//#if DEBUG
+//                    json = File.ReadAllText(@"..\..\..\src\CurrentReleaseVersion.json");
+//#else
                     json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
-#endif           
+//#endif           
                 }
                 catch (System.Net.WebException wex)
                 {

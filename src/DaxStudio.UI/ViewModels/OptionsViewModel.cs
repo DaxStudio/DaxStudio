@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Events;
 using System.Windows;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,6 +33,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _traceDirectQuery;
 
         private IEventAggregator _eventAggregator;
+        
         private DelimiterType _defaultSeparator;
         private bool _showPreReleaseNotifcations;
         private bool _showTooltipBasicStats;
@@ -43,6 +45,8 @@ namespace DaxStudio.UI.ViewModels
         public OptionsViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            
+
             EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", "Lucida Console");
             EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", 11);
             EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers", true);
@@ -128,6 +132,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyDontUseSystem);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ProxyUseSystem", value);
+                WebRequestFactory.ResetProxy();
             }
         }
 
@@ -146,6 +151,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyAddress);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyAddress", value);
+                WebRequestFactory.ResetProxy();
             }
         }
 
@@ -159,6 +165,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyUser);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyUser", value);
+                WebRequestFactory.ResetProxy();
             }
         }
 
@@ -173,6 +180,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("ProxyPassword", value.Encrypt());
                 SetProxySecurePassword(value);
+                WebRequestFactory.ResetProxy();
             }
         }
 

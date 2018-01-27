@@ -4,7 +4,6 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using Serilog;
 using System;
-using System.ComponentModel.Composition;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -12,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
-    [Export]
+
     public class WebRequestFactory: IHandle<UpdateGlobalOptions>
     {
         [DllImport("wininet.dll")]
@@ -20,8 +19,9 @@ namespace DaxStudio.UI.Utils
  
         // private variables
         private IGlobalOptions _globalOptions;
-        private IWebProxy _proxy;
-
+        private static IWebProxy _proxy;
+        private static bool _proxySet = false;
+        private static object _proxyLock = new object();
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
         public const string DaxTextFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxTextFormat";
@@ -71,7 +71,7 @@ namespace DaxStudio.UI.Utils
                 //todo - how to check that this works with different proxies...??
                 try
                 {
-                    _proxy = GetProxy(DaxTextFormatUri);
+                    Proxy = GetProxy(DaxTextFormatUri);
                 }
                 catch (System.Net.WebException)
                 {
@@ -80,7 +80,7 @@ namespace DaxStudio.UI.Utils
                 }
 
                 Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
-                //return this;
+
             });
             return this;
         }
@@ -90,7 +90,7 @@ namespace DaxStudio.UI.Utils
         {
             _isNetworkOnline = e.IsAvailable;
             // refresh proxy
-            _proxy = GetProxy(DaxTextFormatUri);
+            Proxy = GetProxy(DaxTextFormatUri);
         }
 
         public HttpWebRequest Create(string uri)
@@ -100,14 +100,14 @@ namespace DaxStudio.UI.Utils
 
         public HttpWebRequest Create(Uri uri) {
             var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(uri);
-            wr.Proxy = _proxy;
+            wr.Proxy = Proxy;
             return wr;
         }
 
         public WebClient CreateWebClient()
         {
             var wc = new WebClient();
-            wc.Proxy = _proxy;
+            wc.Proxy = Proxy;
             return wc;
         }
 
@@ -115,7 +115,6 @@ namespace DaxStudio.UI.Utils
 
         private IWebProxy GetProxy(string uri)
         {
-            if (_proxy != null) return _proxy;
 
             if (_globalOptions.ProxyUseSystem || _globalOptions.ProxyAddress.Length == 0)
             {
@@ -144,9 +143,17 @@ namespace DaxStudio.UI.Utils
 
         private void UseSystemProxy()
         {
-            _proxy = System.Net.WebRequest.GetSystemWebProxy();
+            Log.Verbose("Using System Proxy");
+            Proxy = System.Net.WebRequest.GetSystemWebProxy();
             if (RequiresProxyCredentials(_proxy))
-                _proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+            {
+                Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                Log.Verbose("Using System Proxy with default credentials");
+            }
+            else
+            {
+                Log.Verbose("Using System Proxy without credentials");
+            }
         }
 
         private static bool RequiresProxyCredentials(IWebProxy proxy)
@@ -177,6 +184,24 @@ namespace DaxStudio.UI.Utils
             _proxy = null;
         }
 
+        internal static void ResetProxy()
+        {
+            _proxy = null;
+        }
+
+        public IWebProxy Proxy
+        {
+            get { lock (_proxyLock) {
+                    if (!_proxySet) {
+                        _proxy = GetProxy(CurrentGithubVersionUrl);
+                        _proxySet = true;
+                    }
+                    return _proxy; } }
+            set { lock (_proxyLock) {
+                    _proxy = value;
+                    _proxySet = true;
+                } }
+        }
 
         #endregion
 
