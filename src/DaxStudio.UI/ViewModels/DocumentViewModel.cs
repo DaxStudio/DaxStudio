@@ -2156,7 +2156,20 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry, _options, _eventAggregator).ContinueWith((res) => {
+            ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
+            if (_connection != null)
+            {
+                info.ServerName = _connection.ServerName;
+                info.ServerEdition = null; // TODO: Set server edition info
+                info.ServerType = null; // TODO: Set server type
+                info.ServerMode = _connection.ServerMode;
+                info.ServerLocation = null; // TODO: Set server location
+                info.ServerVersion = _connection.ServerVersion;
+                info.DatabaseName = _connection.Database.Name;
+                info.DatabaseCompatibilityLevel = null; // TODO: Set database compatibility level
+            }
+
+            DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 
