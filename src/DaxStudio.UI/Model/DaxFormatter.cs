@@ -199,7 +199,7 @@ namespace DaxStudio.UI.Model
 
                 req.ServerName = Crypto.SHA256( serverDbInfo.ServerName );
                 req.ServerEdition = serverDbInfo.ServerEdition;
-                req.ServerType = serverDbInfo.ServerType;
+                req.ServerType = serverDbInfo.ServerType; 
                 req.ServerMode = serverDbInfo.ServerMode;
                 req.ServerLocation = serverDbInfo.ServerLocation;
                 req.ServerVersion = serverDbInfo.ServerVersion;
