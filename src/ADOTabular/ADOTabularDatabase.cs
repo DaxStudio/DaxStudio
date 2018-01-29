@@ -10,13 +10,15 @@ namespace ADOTabular
         private readonly string _databaseId;
         private ADOTabularModelCollection _modelColl;
         private DateTime? _lastUpdate = null;
+        private string _compatLevel;
 
-        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate)
+        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel)
         {
             _adoTabConn = adoTabConn;
             _databaseName = databaseName;
             _databaseId = databaseId;
             _lastUpdate = lastUpdate;
+            _compatLevel = compatLevel;
         }
 
         public bool HasSchemaChanged()
@@ -65,6 +67,14 @@ namespace ADOTabular
             get { return _adoTabConn; }
         }
 
+        public string CompatibilityLevel
+        {
+            get
+            {
+                return _compatLevel;
+            }
+        }
+
         public void ClearCache()
         {
             _adoTabConn.ExecuteCommand(String.Format(@"
@@ -92,5 +102,8 @@ namespace ADOTabular
         {
             get { return MetadataImages.Database; }
         }
+
+        
+
     }
 }

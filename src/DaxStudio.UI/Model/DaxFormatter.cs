@@ -130,17 +130,17 @@ namespace DaxStudio.UI.Model
         //}
 
 
-        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ADOTabular.ADOTabularConnection conn, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, globalOptions, eventAggregator);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, conn, globalOptions, eventAggregator);
             var res2 = new DaxFormatterResult();
             JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
 
-        private static async Task<string> CallDaxFormatterAsync(string uri, string query, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        private static async Task<string> CallDaxFormatterAsync(string uri, string query, ADOTabular.ADOTabularConnection conn, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
             try
@@ -148,6 +148,8 @@ namespace DaxStudio.UI.Model
 
                 DaxFormatterRequest req = new DaxFormatterRequest();
                 req.Dax = query;
+
+                System.Diagnostics.Debug.WriteLine("Location:{0} Edition:{1} Compat:{2}", conn?.ServerLocation, conn?.ServerEdition, conn?.Database.CompatibilityLevel);
 
                 var data = JsonConvert.SerializeObject(req);
 

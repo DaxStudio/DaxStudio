@@ -1458,7 +1458,7 @@ namespace DaxStudio.UI.ViewModels
         private void DisableTrace(ITraceWatcher watcher)
         {
             var otherTracesRunning = false;
-            //ToolWindows.Remove(watcher);
+           
             foreach (var tw in TraceWatchers)
             {
                 if (tw.IsChecked) otherTracesRunning = true;
@@ -1473,7 +1473,6 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
             OutputMessage("Stopping Trace");
             // spin down trace as no tracewatchers are active
-            Tracer.Stop();
             ResetTracer();
             OutputMessage("Trace Stopped");
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
@@ -2156,7 +2155,7 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry, _options, _eventAggregator).ContinueWith((res) => {
+            DaxFormatterProxy.FormatDaxAsync(qry, Connection, _options, _eventAggregator).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 

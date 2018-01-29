@@ -431,21 +431,38 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                string serverType=null;
+                string powerBIFileName = "";
                 var vw = (Window)this.GetView();
                 vw.Visibility = Visibility.Hidden;
-                using (var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
-                {
-                    c.Open();
-                }
+                //using (var c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
+                //{
+                //    c.Open();
+                //}
+                
                 if (ServerModeSelected)
                 {
                     RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
+                    serverType = "SSAS";
                 }
-                var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),"");
+                if (PowerPivotModeSelected) { serverType = "PowerPivot"; }
                 if (PowerBIModeSelected)
                 {
-                    connEvent.PowerBIFileName = SelectedPowerBIInstance.Name;
+                    powerBIFileName = SelectedPowerBIInstance.Name;
+                    switch (SelectedPowerBIInstance.Icon)
+                    {
+                        case EmbeddedSSASIcon.Devenv:
+                            serverType = "SSDT";
+                            break;
+                        case EmbeddedSSASIcon.PowerBI:
+                            serverType = "PBI Desktop";
+                            break;
+                        case EmbeddedSSASIcon.PowerBIReportServer:
+                            serverType = "PBI Report Server";
+                            break;
+                    }
                 }
+                var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
                 _eventAggregator.PublishOnUIThread(connEvent);
             }
             catch (Exception ex)
