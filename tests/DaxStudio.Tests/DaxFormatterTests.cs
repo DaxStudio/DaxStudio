@@ -154,7 +154,7 @@ namespace DaxStudio.Tests
             //var req = new DaxStudio.UI.Model.DaxFormatterRequest();
             //req.Dax = qry;
             var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
-            var t = DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, opt, new MockEventAggregator());
+            var t = DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt, new MockEventAggregator());
             t.Wait();
             DaxStudio.UI.Model.DaxFormatterResult res = t.Result;
             Assert.AreEqual(0, res.FormattedDax.Length);
@@ -206,7 +206,7 @@ ORDER BY
     'SalesTerritory'[SalesTerritory Country] DESC,
     'Product'[Colour]";
             var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry,opt, new MockEventAggregator());
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt, new MockEventAggregator());
             Assert.AreEqual(569, res.FormattedDax.Length, "Query length does not match");
             Assert.AreEqual(formattedQry, res.FormattedDax, "Formatted Query does not match expected format");
             Assert.IsNull(res.errors);
@@ -224,7 +224,7 @@ ORDER BY
             var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
             var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";
             var opt = new MockGlobalOptions() { DaxFormatterRequestTimeout = 10 };
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, opt, new MockEventAggregator());
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt, new MockEventAggregator());
             Assert.AreEqual(expectedQry, res.FormattedDax);
         }
     }

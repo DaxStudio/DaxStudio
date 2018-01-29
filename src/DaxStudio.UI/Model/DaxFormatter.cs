@@ -10,13 +10,46 @@ using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.UI.Extensions;
 
+using System.Security.Cryptography;
+using System.Text;
+
 namespace DaxStudio.UI.Model
 {
+
+    internal static class Crypto
+    {
+        public static string SHA256(string input)
+        {
+            var hasher = new SHA256Managed();
+            var sb = new StringBuilder();
+
+            byte[] hashedBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(input), 0, Encoding.UTF8.GetByteCount(input));
+
+            foreach (var b in hashedBytes)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+    }
+
     public class DaxFormatterError
     {
         public int line;
         public int column;
         public string message;
+    }
+
+    public class ServerDatabaseInfo
+    {
+        public string ServerName; // SHA-256 hash of server name
+        public string ServerEdition; // # Values: null, "Enterprise64", "Developer64", "Standard64"
+        public string ServerType; // Values: null, "SSAS", "PBI Desktop", "SSDT Workspace", "Tabular Editor"
+        public string ServerMode; // Values: null, "SharePoint", "Tabular"
+        public string ServerLocation; // Values: null, "OnPremise", "Azure"
+        public string ServerVersion; // Example: "14.0.800.192"
+        public string DatabaseName; // SHA-256 hash of database name
+        public string DatabaseCompatibilityLevel; // Values: 1200, 1400
     }
 
     public class DaxFormatterRequest
@@ -26,6 +59,20 @@ namespace DaxStudio.UI.Model
         public char DecimalSeparator { get; set; }
         public string CallerApp { get; set; }
         public string CallerVersion { get; set; }
+
+        // TODO: complete server info
+
+        public string ServerName; // SHA-256 hash of server name
+        public string ServerEdition; // # Values: null, "Enterprise64", "Developer64", "Standard64"
+        public string ServerType; // Values: null, "SSAS", "PBI Desktop", "SSDT Workspace", "Tabular Editor"
+        public string ServerMode; // Values: null, "SharePoint", "Tabular"
+        public string ServerLocation; // Values: null, "OnPremise", "Azure"
+        public string ServerVersion; // Example: "14.0.800.192"
+        public string DatabaseName; // SHA-256 hash of database name
+        public string DatabaseCompatibilityLevel; // Values: 1200, 1400
+
+        // TODO: end complete server info
+
 
         public DaxFormatterRequest()
         {
@@ -130,17 +177,18 @@ namespace DaxStudio.UI.Model
         //}
 
 
-        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ADOTabular.ADOTabularConnection conn, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+
+        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, conn, globalOptions, eventAggregator);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, serverDbInfo, globalOptions, eventAggregator);
             var res2 = new DaxFormatterResult();
             JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
-
-        private static async Task<string> CallDaxFormatterAsync(string uri, string query, ADOTabular.ADOTabularConnection conn, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        
+        private static async Task<string> CallDaxFormatterAsync(string uri, string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
             try
@@ -149,7 +197,14 @@ namespace DaxStudio.UI.Model
                 DaxFormatterRequest req = new DaxFormatterRequest();
                 req.Dax = query;
 
-                System.Diagnostics.Debug.WriteLine("Location:{0} Edition:{1} Compat:{2}", conn?.ServerLocation, conn?.ServerEdition, conn?.Database.CompatibilityLevel);
+                req.ServerName = Crypto.SHA256( serverDbInfo.ServerName );
+                req.ServerEdition = serverDbInfo.ServerEdition;
+                req.ServerType = serverDbInfo.ServerType;
+                req.ServerMode = serverDbInfo.ServerMode;
+                req.ServerLocation = serverDbInfo.ServerLocation;
+                req.ServerVersion = serverDbInfo.ServerVersion;
+                req.DatabaseName = Crypto.SHA256( serverDbInfo.DatabaseName );
+                req.DatabaseCompatibilityLevel = serverDbInfo.DatabaseCompatibilityLevel;
 
                 var data = JsonConvert.SerializeObject(req);
 
