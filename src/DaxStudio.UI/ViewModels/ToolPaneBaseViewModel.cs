@@ -10,6 +10,7 @@ using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
 using Serilog;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -71,11 +72,15 @@ namespace DaxStudio.UI.ViewModels
             var resultExpression = finalMeasure.Expression;
             
             bool foundDependentMeasures;
+            
             do {
                 foundDependentMeasures = false;
                 foreach (var modelMeasure in modelMeasures) {
-                    string daxMeasureName = "[" + modelMeasure.Name + "]";
-                    string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    //string daxMeasureName = "[" + modelMeasure.Name + "]";
+                    //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    Regex daxMeasureRegex = new Regex(@"[^\w']\[" + modelMeasure.Name + "]");
+                    string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
+        
                     if (newExpression != resultExpression) {
                         resultExpression = newExpression;
                         foundDependentMeasures = true;
