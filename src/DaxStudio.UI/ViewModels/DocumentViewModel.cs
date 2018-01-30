@@ -1819,10 +1819,13 @@ namespace DaxStudio.UI.ViewModels
                                      ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}", message.WorkbookName))
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     cnn.IsPowerPivot = message.PowerPivotModeSelected;
+                    cnn.ServerType = message.ServerType;
+
                     if (message.PowerBIFileName.Length > 0)
                     {
                         cnn.PowerBIFileName = message.PowerBIFileName;
                     }
+                    
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => {
@@ -2172,13 +2175,13 @@ namespace DaxStudio.UI.ViewModels
             if (_connection != null)
             {
                 info.ServerName = _connection.ServerName;
-                info.ServerEdition = null; // TODO: Set server edition info
-                info.ServerType = null; // TODO: Set server type
+                info.ServerEdition = _connection.ServerEdition; 
+                info.ServerType = _connection.ServerType; 
                 info.ServerMode = _connection.ServerMode;
-                info.ServerLocation = null; // TODO: Set server location
+                info.ServerLocation = _connection.ServerLocation; 
                 info.ServerVersion = _connection.ServerVersion;
                 info.DatabaseName = _connection.Database.Name;
-                info.DatabaseCompatibilityLevel = null; // TODO: Set database compatibility level
+                info.DatabaseCompatibilityLevel = _connection.Database.CompatibilityLevel; 
             }
 
             DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) => {
