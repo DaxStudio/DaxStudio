@@ -766,7 +766,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get { 
                 if (Connection == null) return false;
-                return Connection.State != ConnectionState.Closed && Connection.State != ConnectionState.Broken;
+                return Connection.State == ConnectionState.Open;
             }
         }
 
@@ -795,19 +795,20 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Dispatcher.CurrentDispatcher.Invoke(new Func<string>(() =>
                         { qry = GetQueryTextFromEditor();
-                        qry = DaxHelper.PreProcessQuery(qry);
-                        return qry;
+                            qry = DaxHelper.PreProcessQuery(qry, _eventAggregator);
+                            return qry;
                         }));
                 }
                 qry = GetQueryTextFromEditor();
                 // merge in any parameters
-                qry = DaxHelper.PreProcessQuery(qry);
+                qry = DaxHelper.PreProcessQuery(qry,_eventAggregator);
                 // swap delimiters if not using default style
                 if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
                 {
                     qry = SwapDelimiters(qry);
                 }
                 return qry;
+                
             }
         }
 
@@ -816,7 +817,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             var txt = GetQueryTextFromEditor();
-            txt = DaxHelper.PreProcessQuery(txt);
+            txt = DaxHelper.PreProcessQuery(txt,_eventAggregator);
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
@@ -826,7 +827,7 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                editor.Dispatcher.Invoke(new System.Action(() => 
+                editor.Dispatcher.Invoke(new System.Action(() =>
                 {
                     if (editor.SelectionLength == 0)
                     { editor.Text = txt; }
@@ -1143,8 +1144,19 @@ namespace DaxStudio.UI.ViewModels
         private void RunQueryInternal(RunQueryEvent message)
         {
             var msg = NewStatusBarMessage("Running Query...");
+
+            // somehow people are getting into this method while the connection is not open
+            // even though the CanRun state should be false so this is a double check
+            if (Connection.State != ConnectionState.Open)
+            {
+                Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
+                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
+                return;
+            }
+
             _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
-            // todo - something is causing crashes in the following line
+            
             currentQueryDetails = new QueryHistoryEvent(this.QueryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
             currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
