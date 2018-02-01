@@ -1,22 +1,15 @@
 ﻿using System;
 using Microsoft.Office.Tools.Ribbon;
-using Microsoft.Owin.Hosting;
 using System.Diagnostics;
-using Microsoft.Win32;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Serilog;
-using DaxStudio.Interfaces;
 using System.Windows;
 using DaxStudio.Common;
 
 namespace DaxStudio.ExcelAddin
 {
-    
-    public partial class DaxStudioRibbon :IDaxStudioLauncher
+
+    public partial class DaxStudioRibbon
     {
         private Process _client;
         private int _port;
