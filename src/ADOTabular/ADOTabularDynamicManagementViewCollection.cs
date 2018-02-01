@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
+using System;
 
 namespace ADOTabular
 {
@@ -18,7 +19,15 @@ namespace ADOTabular
         {
             if (_dsDmvs == null)
             {
-                _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
+                try
+                {
+                    // TODO - on error should we return an empty dataset?
+                    _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
+                }
+                catch (Exception)
+                {
+                    return new DataTable("Emtpy");
+                }
             }
             _dsDmvs.Tables[0].DefaultView.Sort = "SchemaName";
             return _dsDmvs.Tables[0].DefaultView.ToTable();
