@@ -94,12 +94,13 @@ namespace ADOTabular
                 if (_currentDatabase == "" || dd.Count == 0)
                 {
                     // return an empty database object if there is no current database or no databases on the server
-                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue);
+                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "");
                 }
+                // todo - somehow users are getting here, but the current database is not in the dictionary
                 var db = dd[_currentDatabase];
                 if (_db == null || db.Name != _db.Name )
                 {
-                    _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate);
+                    _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel);
                     //_db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
                 }
                 return _db;
@@ -112,7 +113,7 @@ namespace ADOTabular
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
-
+            UpdateServerProperties();
             // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
@@ -748,6 +749,54 @@ namespace ADOTabular
         private Dictionary<string, ADOTabularColumn> _columns = new Dictionary<string, ADOTabularColumn>();
         public Dictionary<string,ADOTabularColumn> Columns { get { return _columns; } }
 
+        public string ServerType { get; set; }
+
+        private string _serverLocation = null;
+        public string ServerLocation
+        {
+            get
+            {
+                return _serverLocation;
+            }
+        }
+
+        private string _serverEdition = null;
+        public string ServerEdition
+        {
+            get
+            {
+                return _serverEdition;
+            }
+        }
+
+        private void UpdateServerProperties()
+        {
+            var res = new AdomdRestrictionCollection();
+            res.Add(new AdomdRestriction("ObjectExpansion", "ReferenceOnly"));
+            var props = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA", res, true);
+            var xmla = props.Tables[0].Rows[0][0].ToString();
+            var xdoc = new XmlDocument();
+            var oMgr = new XmlNamespaceManager(xdoc.NameTable);
+            oMgr.AddNamespace("d", "http://schemas.microsoft.com/analysisservices/2003/engine");
+            oMgr.AddNamespace("ddl400", "http://schemas.microsoft.com/analysisservices/2012/engine/400");
+            xdoc.LoadXml(xmla);
+            try
+            {
+                _serverLocation = xdoc.SelectSingleNode("//ddl400:ServerLocation", oMgr).InnerText ?? "";
+            } catch
+            {
+                _serverLocation = "";
+            }
+            try
+            {
+                _serverEdition = xdoc.SelectSingleNode("//d:Edition", oMgr).InnerText ?? "";
+            } catch
+            {
+                _serverEdition = "";
+            }
+        }
+
+
         public ADOTabularConnection Clone()
         {
             var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
@@ -756,6 +805,7 @@ namespace ADOTabular
             cnn._keywords = _keywords;
             cnn._serverMode = _serverMode;
             cnn._dmvCollection = _dmvCollection;
+            cnn.ServerType = ServerType;
             return cnn;
         }
     }

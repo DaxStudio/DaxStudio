@@ -10,6 +10,7 @@ using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
 using Serilog;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -60,25 +61,49 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string ExpandDependentMeasure( string measureName) {
+        private string ExpandDependentMeasure(ADOTabularColumn column)
+        {
+            return ExpandDependentMeasure(column, false);
+        }
+        private string ExpandDependentMeasure(ADOTabularColumn column, bool ignoreNonUniqueMeasureNames) {
+            string measureName = column.Name;
             var model = Connection.Database.Models.BaseModel;
             var modelMeasures = (from t in model.Tables
                                  from m in t.Measures
                                  select m).ToList();
+            var distinctColumns = (from t in model.Tables
+                               from c in t.Columns
+                               where c.ColumnType == ADOTabularColumnType.Column
+                               select c.Name).Distinct().ToList();
 
             var finalMeasure = modelMeasures.First(m => m.Name == measureName);
 
             var resultExpression = finalMeasure.Expression;
             
             bool foundDependentMeasures;
+            
             do {
                 foundDependentMeasures = false;
                 foreach (var modelMeasure in modelMeasures) {
-                    string daxMeasureName = "[" + modelMeasure.Name + "]";
-                    string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    //string daxMeasureName = "[" + modelMeasure.Name + "]";
+                    //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    Regex daxMeasureRegex = new Regex(@"[^\w']\[" + modelMeasure.Name + "]");
+                    
+                    string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
+        
                     if (newExpression != resultExpression) {
                         resultExpression = newExpression;
                         foundDependentMeasures = true;
+                        if (!ignoreNonUniqueMeasureNames)
+                        {
+                            if (distinctColumns.Contains(modelMeasure.Name))
+                            {
+                                // todo - prompt user to see whether to continue
+                                var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
+                                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
+                                throw new InvalidOperationException(msg);
+                            }
+                        }
                     }
                      
                 }
@@ -86,6 +111,8 @@ namespace DaxStudio.UI.ViewModels
 
             return resultExpression;
         }
+
+        
 
         private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
             var model = Connection.Database.Models.BaseModel;
@@ -196,7 +223,19 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 if (expandMeasure) {
-                    measureExpression = ExpandDependentMeasure(column.Name);
+                    try
+                    {
+                        measureExpression = ExpandDependentMeasure(column);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        string msg = ex.Message + "\nThis may lead to incorrect results in cases where the column is referenced without explicitly specifying the table name.\n\nDo you want to continue with the expansion anyway?";
+                        if (MessageBox.Show(msg, "Expand Measure Error", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
+                        {
+                            ExpandDependentMeasure(column, true);
+                        }
+                        else return;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(measureExpression)) {

@@ -62,6 +62,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="RegistryHelpers.cs" />
     <Compile Include="SystemInfo.cs" />
     <Compile Include="TextBoxExtensions.cs" />
     <Page Include="MainWindow.xaml">

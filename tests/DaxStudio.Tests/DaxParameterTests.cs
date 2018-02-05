@@ -128,14 +128,14 @@ SUMMARIZE (
         [TestMethod]
         public void TestQueryParamParsing()
         {
-            var dict = DaxHelper.ParseParams(testParam);
+            var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(14, dict.Count);
         }
 
         [TestMethod]
         public void TestQueryParamReplacement()
         {
-            var dict = DaxHelper.ParseParams(testParam);
+            var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator());
             var finalQry = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             Assert.AreEqual(expectedQry, finalQry);
         }
@@ -143,7 +143,7 @@ SUMMARIZE (
         [TestMethod]
         public void TestPreProcessQuery()
         {
-            var finalQry = DaxHelper.PreProcessQuery(testQuery + "\n" + testParam);
+            var finalQry = DaxHelper.PreProcessQuery(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
             Assert.AreEqual(expectedQry.Replace("\n", ""), finalQry);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[0], (int)finalQry.ToCharArray()[0]);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[5], (int)finalQry.ToCharArray()[5]);
@@ -163,7 +163,7 @@ SUMMARIZE (
           <Value xsi:type=""xsd:string"">Value2</Value>
         </Parameter></Parameters>";
             var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
-            var dict = DaxHelper.ParseParams(testAmbiguousParam);
+            var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
             var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
 
             Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", finalQuery);
@@ -182,7 +182,7 @@ SUMMARIZE (
           <Value>Value2</Value>
         </Parameter></Parameters>";
             var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
-            var dict = DaxHelper.ParseParams(testAmbiguousParam);
+            var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
             var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
 
             Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", finalQuery);

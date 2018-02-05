@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ADOTabular")]
 [assembly: AssemblyDescription("ADOTabular client library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("daxstudio.codeplex.com")]
+[assembly: AssemblyCompany("daxstudio.org")]
 [assembly: AssemblyProduct("ADOTabular")]
 [assembly: AssemblyCopyright("Copyright © Dax Studio 2012")]
 [assembly: AssemblyTrademark("")]

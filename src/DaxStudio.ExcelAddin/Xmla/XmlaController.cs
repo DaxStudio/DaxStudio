@@ -185,13 +185,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
-                    //result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    //result.Content = new StringContent(String.Format("An unexpected error occurred (sending XMLA request): \n{0}", ex.Message));
-                }
-                finally
-                {
-                    streamWithXmlaRequest.Close();
+                    svr.Connect(connStr);
                 }
 
                 HttpResponseMessage result;
@@ -213,9 +207,9 @@ namespace DaxStudio.ExcelAddin.Xmla
                             stream.Flush();
                             stream.Close();
                         } 
-                        catch (Exception ex)
+                        catch (Exception ex2)
                         {
-                            Log.Fatal(ex, "Error Streaming XMLA response");
+                            Log.Fatal(ex2, "Error Streaming XMLA response");
                         }
                         finally
                         {
@@ -233,11 +227,11 @@ namespace DaxStudio.ExcelAddin.Xmla
                     //}
 
                 }
-                catch (Exception ex)
+                catch (Exception ex3)
                 {
-                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex);
+                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex3);
                     result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex.Message));
+                    result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex3.Message));
                 }
                 //finally
                 //{
@@ -249,13 +243,14 @@ namespace DaxStudio.ExcelAddin.Xmla
                 //}
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception ex4)
             {
-                Log.Error("ERROR Connecting: {class} {method} loc: '{loc}' conn:'{connStr}' ex: {exception}", "XmlaController", "PostRawBufferManual", loc, connStr, ex);
+                Log.Error("ERROR Connecting: {class} {method} loc: '{loc}' conn:'{connStr}' ex: {exception}", "XmlaController", "PostRawBufferManual", loc, connStr, ex4);
                 var expResult = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex.Message));
+                expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex4.Message));
                 return expResult;
             }
+        
         }
 
 

@@ -247,6 +247,11 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.SwapDelimiters();
         }
 
+        public void HotKey(object param)
+        {
+            System.Diagnostics.Debug.WriteLine("HotKey" + param.ToString());
+        }
+
 #endregion
     }
 

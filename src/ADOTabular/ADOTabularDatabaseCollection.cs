@@ -11,20 +11,22 @@ namespace ADOTabular
 {
     public class DatabaseDetails
     {
-        public DatabaseDetails(string name, string id, string lastUpdate)
+        public DatabaseDetails(string name, string id, string lastUpdate, string compatLevel)
         {
             Name = name;
             Id = id;
             DateTime lastUpdatedDate = new DateTime(1900,1,1);
             DateTime.TryParse(lastUpdate, out lastUpdatedDate);
-            LastUpdate = lastUpdatedDate; 
+            LastUpdate = lastUpdatedDate;
+            CompatibilityLevel = compatLevel;
         }
 
-        public DatabaseDetails(string name, string lastUpdate) : this(name, string.Empty, lastUpdate) { }
+        public DatabaseDetails(string name, string lastUpdate, string compatLevel) : this(name, string.Empty, lastUpdate, compatLevel) { }
         
         public string Name {get;private set;}
         public string Id {get;private set;}
         public DateTime LastUpdate {get; set;}
+        public string CompatibilityLevel { get; set; }
     }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
@@ -61,7 +63,14 @@ namespace ADOTabular
 
             Dictionary<string,DatabaseDetails> tmpDatabaseDict;
             if (spid != -1)
+            {
                 tmpDatabaseDict = GetDatabaseDictionaryFromXML();
+                var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV();
+                foreach (var db in tmpDatabaseDict.Values)
+                {
+                    db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
+                }
+            }
             else
                 tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
 
@@ -108,7 +117,8 @@ namespace ADOTabular
             {
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
-                    row["DATE_MODIFIED"].ToString()
+                    row["DATE_MODIFIED"].ToString(),
+                    row["COMPATIBILITY_LEVEL"].ToString()
                 ));
             }
             return databaseDictionary;
@@ -142,27 +152,36 @@ namespace ADOTabular
                             string name = "";
                             string id = "";
                             string lastUpdate = "";
+                            string compatLevel = "";
                             while (rdr.Read())
                             {
-                                if (rdr.NodeType == XmlNodeType.Element
-                                    && rdr.LocalName == eName)
+                                if (rdr.NodeType == XmlNodeType.Element)
                                 {
-                                    name = rdr.ReadElementContentAsString();
+                                    switch (rdr.LocalName) { 
+                                        case  "Name":
+                                            name = rdr.ReadElementContentAsString();
+                                            break;
+                                        case "ID":
+                                            id = rdr.ReadElementContentAsString();
+                                            break;
+                                        case "LastUpdate":
+                                            lastUpdate = rdr.ReadElementContentAsString();
+                                            break;
+                                        case "CompatibilityLevel":
+                                            compatLevel = rdr.ReadElementContentAsString();
+                                            break;
+
+                                    }
+
                                 }
-                                if (rdr.NodeType == XmlNodeType.Element
-                                    && rdr.LocalName == eId)
-                                {
-                                    id = rdr.ReadElementContentAsString();
-                                }
-                                if (rdr.NodeType == XmlNodeType.Element
-                                    && rdr.LocalName == eLastUpdate)
-                                {
-                                    lastUpdate = rdr.ReadElementContentAsString();
-                                }
+                                    
+                                    
+                                
+                                
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate));
+                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel));
                                     break;
                                 }
 

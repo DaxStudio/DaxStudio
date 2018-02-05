@@ -120,6 +120,11 @@ namespace DaxStudio.UI
 	        }
 		}
 
+        public IEventAggregator GetEventAggregator()
+        {
+            return GetInstance(typeof(IEventAggregator), null) as IEventAggregator;
+        }
+
 		protected override object GetInstance(Type serviceType, string key)
 		{
 			var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(serviceType) : key;

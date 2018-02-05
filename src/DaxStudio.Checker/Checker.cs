@@ -171,7 +171,7 @@ namespace DaxStudio.Checker
         {
             Output.AppendHeaderLine("Dax Studio Configuration");
             Output.AppendLine("========================");
-            string str = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\DaxStudio", "Path", "");
+            string str = TryGetPathFromRegistry();
             if (str == null)
             {
                 Output.AppendRange("      WARN > ").Bold().Color("Orange");
@@ -200,6 +200,14 @@ namespace DaxStudio.Checker
             {
                 ProcessConfigFile(configPath);
             }
+        }
+
+        private static string TryGetPathFromRegistry()
+        {
+            // get the registry value from either 32 or 64 bit hive
+            var val = RegistryHelpers.GetRegValue(@"SOFTWARE\DaxStudio","Path" ,RegistryHive.LocalMachine);
+            if (val == null) return string.Empty;
+            return val.ToString();
         }
 
         public void CheckNetFramework()

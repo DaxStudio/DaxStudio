@@ -378,19 +378,32 @@ ORDER BY [TableID] ASC
 
         public static DataSet Create(ADOTabularConnection cnn) {
             DataSet result = new DataSet();
+            Dictionary<string, Exception> _processingExceptions = new Dictionary<string, Exception>();
             var db = GetAmoDatabase(cnn);
 
             AddDatabaseTable(db, result);
 
             foreach (var qry in GetQueries()) {
                 // skip over this query if the compatibility level is not supported for the current database
-                if (qry.MinCompatibilityLevel > db.CompatibilityLevel) continue;
+                if (qry.MinCompatibilityLevel >= db.CompatibilityLevel) continue;
                 if (qry.MaxCompatibilityLevel < db.CompatibilityLevel) continue;
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine(String.Format("Processing Table - {0}", qry.TableName));
+                    var dt = cnn.ExecuteDaxQueryDataTable(qry.Query);
+                    dt.TableName = qry.TableName + "." + qry.MinCompatibilityLevel.ToString();
+                    result.Tables.Add(dt);
+                } catch (Exception ex)
+                {
+                    _processingExceptions.Add("Executing Query: " + qry.TableName, ex);
+                }
+            }
 
-                System.Diagnostics.Debug.WriteLine(String.Format("Processing Table - {0}", qry.TableName));
-                var dt = cnn.ExecuteDaxQueryDataTable(qry.Query);
-                dt.TableName = qry.TableName + "." + qry.MinCompatibilityLevel.ToString();
-                result.Tables.Add(dt);
+            if (_processingExceptions.Count != 0)
+            {
+                var meg = string.Join("/n", _processingExceptions.Keys.ToArray());
+                var aggEx = new AggregateException("ModelAnalyzerException: " + msg, _processingExceptions.Values.ToArray());
+                throw aggEx;
             }
 
             // replace some of the lookups between tables

@@ -624,7 +624,9 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 
                 UpdateConnections(value,"");
-                Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection==null? "<null>": _connection.ConnectionString);          
+                Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection==null? "<null>": _connection.ConnectionString);
+                NotifyOfPropertyChange(() => IsConnected);
+                NotifyOfPropertyChange(() => IsAdminConnection);
                 _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this)); 
             } 
         }
@@ -764,7 +766,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get { 
                 if (Connection == null) return false;
-                return Connection.State != ConnectionState.Closed && Connection.State != ConnectionState.Broken;
+                return Connection.State == ConnectionState.Open;
             }
         }
 
@@ -793,13 +795,20 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Dispatcher.CurrentDispatcher.Invoke(new Func<string>(() =>
                         { qry = GetQueryTextFromEditor();
-                        qry = DaxHelper.PreProcessQuery(qry);
-                        return qry;
+                            qry = DaxHelper.PreProcessQuery(qry, _eventAggregator);
+                            return qry;
                         }));
                 }
                 qry = GetQueryTextFromEditor();
-                qry = DaxHelper.PreProcessQuery(qry);
+                // merge in any parameters
+                qry = DaxHelper.PreProcessQuery(qry,_eventAggregator);
+                // swap delimiters if not using default style
+                if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
+                {
+                    qry = SwapDelimiters(qry);
+                }
                 return qry;
+                
             }
         }
 
@@ -808,7 +817,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             var txt = GetQueryTextFromEditor();
-            txt = DaxHelper.PreProcessQuery(txt);
+            txt = DaxHelper.PreProcessQuery(txt,_eventAggregator);
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
@@ -818,7 +827,7 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                editor.Dispatcher.Invoke(new System.Action(() => 
+                editor.Dispatcher.Invoke(new System.Action(() =>
                 {
                     if (editor.SelectionLength == 0)
                     { editor.Text = txt; }
@@ -832,6 +841,13 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             
+            if (editor == null)
+            {
+                Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Undo");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Undo: Unable to get a reference to the editor control"));
+                return;
+            }
+
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.CanUndo) editor.Undo();
@@ -848,6 +864,13 @@ namespace DaxStudio.UI.ViewModels
         public void Redo()
         {
             var editor = this.GetEditor();
+
+            if (editor == null)
+            {
+                Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Redo");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Redo: Unable to get a reference to the editor control"));
+                return;
+            }
 
             if (editor.Dispatcher.CheckAccess())
             {
@@ -1121,7 +1144,19 @@ namespace DaxStudio.UI.ViewModels
         private void RunQueryInternal(RunQueryEvent message)
         {
             var msg = NewStatusBarMessage("Running Query...");
+
+            // somehow people are getting into this method while the connection is not open
+            // even though the CanRun state should be false so this is a double check
+            if (Connection.State != ConnectionState.Open)
+            {
+                Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
+                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
+                return;
+            }
+
             _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
+            
             currentQueryDetails = new QueryHistoryEvent(this.QueryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
             currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
@@ -1435,7 +1470,7 @@ namespace DaxStudio.UI.ViewModels
         private void DisableTrace(ITraceWatcher watcher)
         {
             var otherTracesRunning = false;
-            //ToolWindows.Remove(watcher);
+           
             foreach (var tw in TraceWatchers)
             {
                 if (tw.IsChecked) otherTracesRunning = true;
@@ -1450,7 +1485,6 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
             OutputMessage("Stopping Trace");
             // spin down trace as no tracewatchers are active
-            Tracer.Stop();
             ResetTracer();
             OutputMessage("Trace Stopped");
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
@@ -1785,10 +1819,13 @@ namespace DaxStudio.UI.ViewModels
                                      ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}", message.WorkbookName))
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     cnn.IsPowerPivot = message.PowerPivotModeSelected;
+                    cnn.ServerType = message.ServerType;
+
                     if (message.PowerBIFileName.Length > 0)
                     {
                         cnn.PowerBIFileName = message.PowerBIFileName;
                     }
+                    
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => {
@@ -2133,7 +2170,21 @@ namespace DaxStudio.UI.ViewModels
             }
             Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-            DaxFormatterProxy.FormatDaxAsync(qry, _options, _eventAggregator).ContinueWith((res) => {
+
+            ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
+            if (_connection != null)
+            {
+                info.ServerName = _connection.ServerName;
+                info.ServerEdition = _connection.ServerEdition; 
+                info.ServerType = _connection.ServerType; 
+                info.ServerMode = _connection.ServerMode;
+                info.ServerLocation = _connection.ServerLocation; 
+                info.ServerVersion = _connection.ServerVersion;
+                info.DatabaseName = _connection.Database.Name;
+                info.DatabaseCompatibilityLevel = _connection.Database.CompatibilityLevel; 
+            }
+
+            DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) => {
                 // todo - should we be checking for exceptions in this continuation
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
 
@@ -2447,7 +2498,15 @@ namespace DaxStudio.UI.ViewModels
         {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
-            ExportAnalysisData(path, compression);
+            try
+            {
+                ExportAnalysisData(path, compression);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel","ExportAnalysisData");
+                OutputError("Error exporting metrics: " + ex.Message);
+            }
         }
 
         public void ExportAnalysisData(string path, bool compression)

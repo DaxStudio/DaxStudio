@@ -8,20 +8,16 @@ namespace DaxStudio
     [ClassInterface(ClassInterfaceType.None)]
     public class DaxStudioLauncher:IDaxStudioLauncher
     {
-        private readonly IDaxStudioLauncher _launcher;
-        public DaxStudioLauncher(IDaxStudioLauncher launcher)
+        private readonly DaxStudioRibbon _ribbon;
+        public DaxStudioLauncher(DaxStudioRibbon ribbon)
         {
-            _launcher = launcher;
+            _ribbon = ribbon;
         }
 
         public void Launch()
         {
-            _launcher.Launch(false);
+            _ribbon.Launch(false);
         }
 
-        public void Launch(bool enableLogging)
-        {
-            _launcher.Launch(enableLogging);
-        }
     }
 }

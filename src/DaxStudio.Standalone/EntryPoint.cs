@@ -8,12 +8,16 @@ using System.IO;
 using Fclp;
 using DaxStudio.Common;
 using System.Windows.Controls;
+using Caliburn.Micro;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.Standalone
 {
     public static class EntryPoint 
     {
         public static ILogger log;
+        private static  IEventAggregator _eventAggregator;
+
         static EntryPoint()
         {
 //            log = new LoggerConfiguration().ReadAppSettings().CreateLogger();
@@ -64,8 +68,9 @@ namespace DaxStudio.Standalone
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
 
                 // then load Caliburn Micro bootstrapper
-                var bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
+                AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
+                _eventAggregator = bootstrapper.GetEventAggregator();
                 // read command line arguments
                 app.ReadCommandLineArgs();
 
@@ -135,8 +140,12 @@ namespace DaxStudio.Standalone
             if (comException != null && comException.ErrorCode == -2147221040)
             {
                 e.Handled = true;
-
-                log.Error(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+                if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
+                log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+            }
+            else
+            {
+                Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
             }
             
         }
@@ -165,21 +174,6 @@ namespace DaxStudio.Standalone
                 
 
             p.Parse(args);
-
-            //
-            //int port;
-
-            //for (int i = 1; i < args.Length;i++)
-            //{
-            //    if (args[i].ToLower() == "log" )
-            //    {
-            //        app.Properties.Add("LoggingEnabledByCommandLine", true);
-            //    }
-            //    if (int.TryParse( args[i], out port))
-            //    {
-            //        app.Properties.Add("Port", port);
-            //    }
-            //}
             
         }
     }

@@ -12,7 +12,7 @@ using System.Windows;
 
 // moved to CommonAssemblyInfo.cs at Solution level
 //[assembly: AssemblyConfiguration("")]
-//[assembly: AssemblyCompany("DaxStudio.codeplex.com")]
+//[assembly: AssemblyCompany("DaxStudio.org")]
 //[assembly: AssemblyProduct("DaxStudio.UI")]
 //[assembly: AssemblyCopyright("Copyright © DaxStudio 2013")] 
 //[assembly: AssemblyTrademark("")]
