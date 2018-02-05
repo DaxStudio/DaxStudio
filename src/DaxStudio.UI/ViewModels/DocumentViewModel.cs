@@ -2498,7 +2498,15 @@ namespace DaxStudio.UI.ViewModels
         {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
-            ExportAnalysisData(path, compression);
+            try
+            {
+                ExportAnalysisData(path, compression);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel","ExportAnalysisData");
+                OutputError("Error exporting metrics: " + ex.Message);
+            }
         }
 
         public void ExportAnalysisData(string path, bool compression)
