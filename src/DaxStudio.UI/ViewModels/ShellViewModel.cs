@@ -51,8 +51,8 @@ namespace DaxStudio.UI.ViewModels {
             }
             VersionChecker = versionCheck;
 
-#if BETA
-            DisplayName = string.Format("DaxStudio - {0} (BETA)", Version.ToString(4));
+#if PREVIEW
+            DisplayName = string.Format("DaxStudio - {0} (PREVIEW)", Version.ToString(4));
 #else
             DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
 #endif

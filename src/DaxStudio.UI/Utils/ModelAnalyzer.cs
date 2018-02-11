@@ -401,7 +401,7 @@ ORDER BY [TableID] ASC
 
             if (_processingExceptions.Count != 0)
             {
-                var meg = string.Join("/n", _processingExceptions.Keys.ToArray());
+                var msg = string.Join("/n", _processingExceptions.Keys.ToArray());
                 var aggEx = new AggregateException("ModelAnalyzerException: " + msg, _processingExceptions.Values.ToArray());
                 throw aggEx;
             }
