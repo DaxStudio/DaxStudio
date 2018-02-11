@@ -459,9 +459,11 @@ namespace DaxStudio.UI.ViewModels
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             QueryResultsPane.IsBusy = false;  // TODO - this should be some sort of collection of objects with a specific interface, not a hard coded object reference
-            currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-            currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
-
+            if (currentQueryDetails != null)
+            {
+                currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+                currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
+            }
             bool svrTimingsEnabled = false;
             foreach (var tw in TraceWatchers)
             {
@@ -470,7 +472,7 @@ namespace DaxStudio.UI.ViewModels
                 if (svrTimings != null) { svrTimingsEnabled = true; }
 
             }
-            if (!svrTimingsEnabled)
+            if (!svrTimingsEnabled && currentQueryDetails != null)
             {
                 _eventAggregator.BeginPublishOnUIThread(currentQueryDetails);
             }
@@ -1156,9 +1158,9 @@ namespace DaxStudio.UI.ViewModels
             }
 
             _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
+
+            currentQueryDetails = CreateQueryHistoryEvent(true);
             
-            currentQueryDetails = new QueryHistoryEvent(this.QueryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
-            currentQueryDetails.Status = QueryStatus.Running;
             message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
             {
                 // todo - should we be checking for exceptions in this continuation
@@ -1166,7 +1168,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
 
                 // if the server times trace watcher is not active then just record client timings
-                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked)
+                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
                 {
                     currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
                     currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
@@ -1176,6 +1178,24 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                 msg.Dispose();               
             },TaskScheduler.Default);
+        }
+
+        private IQueryHistoryEvent CreateQueryHistoryEvent(bool includeQueryText)
+        {
+            QueryHistoryEvent qhe = null;
+            try
+            {
+                
+                var queryText = includeQueryText ? this.QueryText : "";
+                qhe = new QueryHistoryEvent(queryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
+                qhe.Status = QueryStatus.Running;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error creating QueryHistory details");
+                OutputWarning("Error saving query details to history pane");
+            }
+            return qhe;
         }
         #endregion
 
@@ -1899,8 +1919,8 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var sw = Stopwatch.StartNew();
-                currentQueryDetails = new QueryHistoryEvent("", DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
-                currentQueryDetails.Status = QueryStatus.Running;
+                currentQueryDetails = CreateQueryHistoryEvent(false);
+                
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
                 await ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
@@ -2308,13 +2328,26 @@ namespace DaxStudio.UI.ViewModels
 
         internal void RefreshMetadata()
         {
-            this.Connection.Refresh();
-            this.MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
-            this.Databases = MetadataPane.Databases;
-            this.MetadataPane.ModelList = this.Connection.Database.Models;
-            this.MetadataPane.RefreshMetadata();
-            //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
-            OutputMessage("Metadata Refreshed");
+            try
+            {
+                this.Connection.Refresh();
+                this.MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
+                this.Databases = MetadataPane.Databases;
+                this.MetadataPane.ModelList = this.Connection.Database.Models;
+                this.MetadataPane.RefreshMetadata();
+                //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
+                OutputMessage("Metadata Refreshed");
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    msg = ex.Message;
+                }
+                OutputError("Error Refreshing Metadata: " + ex.Message);
+            }
         }
         private bool _isFocused;
         public bool IsFocused { get { return _isFocused; } set { _isFocused = value;  NotifyOfPropertyChange(()=>IsFocused); } }
