@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.Common;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace DaxStudio.UI.Extensions
 {
     public static class DataReaderExtensions
     {
+        
+
         internal class DaxColumn
         {
             public string OriginalName { get; set; }
@@ -121,6 +124,7 @@ namespace DaxStudio.UI.Extensions
             DataSet ds = new DataSet();
             bool moreResults = true;
             int tableIdx = 1;
+            int localeId = reader.Connection.LocaleIdentifier;
             while (moreResults)
             {
                 DataTable dtSchema = reader.GetSchemaTable();
@@ -130,16 +134,19 @@ namespace DaxStudio.UI.Extensions
                     
                 if (dtSchema != null)
                 {
-                    foreach (DataRow drow in dtSchema.Rows)
+                    foreach (DataRow row in dtSchema.Rows)
                     {
-                        string columnName = System.Convert.ToString(drow["ColumnName"]);
-                        DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
-                        column.Unique = (bool)drow["IsUnique"];
-                        column.AllowDBNull = (bool)drow["AllowDBNull"];
+                        string columnName = System.Convert.ToString(row["ColumnName"]);
+                        DataColumn column = new DataColumn(columnName, (Type)(row["DataType"]));
+                        column.Unique = (bool)row[Constants.IS_UNIQUE];
+                        column.AllowDBNull = (bool)row[Constants.ALLOW_DBNULL];
                         //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
                         daxCol = null;
                         reader.Connection.Columns.TryGetValue(columnName, out daxCol);
-                        if (daxCol != null) column.ExtendedProperties.Add("FormatString", daxCol.FormatString);
+                        if (daxCol != null) {
+                            column.ExtendedProperties.Add(Constants.FORMAT_STRING, daxCol.FormatString);
+                            if (localeId != 0) column.ExtendedProperties.Add(Constants.LOCALE_ID, localeId);
+                        }
                         listCols.Add(column);
                         dt.Columns.Add(column);
                     }

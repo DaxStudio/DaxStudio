@@ -71,7 +71,8 @@ namespace DaxStudio.UI.Utils
                 //todo - how to check that this works with different proxies...??
                 try
                 {
-                    Proxy = GetProxy(DaxTextFormatUri);
+                    if (Proxy == null)
+                        Proxy = GetProxy(DaxTextFormatUri);
                 }
                 catch (System.Net.WebException)
                 {
@@ -181,12 +182,16 @@ namespace DaxStudio.UI.Utils
         public void Handle(UpdateGlobalOptions message)
         {
             // reset proxy
-            _proxy = null;
+            ResetProxy();
         }
 
         internal static void ResetProxy()
         {
-            _proxy = null;
+            lock (_proxyLock)
+            {
+                _proxy = null;
+                _proxySet = false;
+            }
         }
 
         public IWebProxy Proxy

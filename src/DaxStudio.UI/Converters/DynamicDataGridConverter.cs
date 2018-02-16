@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.Common;
+using System;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
@@ -71,9 +72,11 @@ namespace DaxStudio.UI.Converters
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
 
                         // Bind FormatString if it exists
-                        if (item.ExtendedProperties["FormatString"] != null)
-                            colBinding.StringFormat = item.ExtendedProperties["FormatString"].ToString();
-                        
+                        if (item.ExtendedProperties[Constants.FORMAT_STRING] != null)
+                            colBinding.StringFormat = item.ExtendedProperties[Constants.FORMAT_STRING].ToString();
+                        // set culture if it exists
+                        if (item.ExtendedProperties[Constants.LOCALE_ID] != null)
+                            colBinding.ConverterCulture = new CultureInfo((int)item.ExtendedProperties[Constants.LOCALE_ID]);
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                         if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );

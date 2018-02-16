@@ -247,7 +247,7 @@
                                     <!-- Table Template -->
                                     <StackPanel Orientation="Horizontal">
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" Text="{Binding CriteriaMatched}"/>
+                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="250">
                                                             <StackPanel Orientation="Horizontal">

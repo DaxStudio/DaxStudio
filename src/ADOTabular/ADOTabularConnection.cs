@@ -33,6 +33,7 @@ namespace ADOTabular
         private AdomdConnection _adomdConn; 
         private readonly AdomdType _connectionType;
         private string _currentDatabase;
+        private Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType) 
             : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
@@ -78,32 +79,39 @@ namespace ADOTabular
             {
                 //_adomdConn.UnderlyingConnection.Databases
                 if (_adomdConn == null) return null;
-                if (_adomdConn.State != ConnectionState.Open)
+                try
                 {
-                    this.Open();
-                }
-                var dd = Databases.GetDatabaseDictionary(this.SPID);
+                    if (_adomdConn.State != ConnectionState.Open)
+                    {
+                        this.Open();
+                    }
+                    var dd = Databases.GetDatabaseDictionary(this.SPID);
 
-                if (_currentDatabase == null && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
+                    if (_currentDatabase == null && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
 
-                if (!dd.ContainsKey(_currentDatabase))
-                {
-                    dd = Databases.GetDatabaseDictionary(this.SPID, true);
+                    if (!dd.ContainsKey(_currentDatabase))
+                    {
+                        dd = Databases.GetDatabaseDictionary(this.SPID, true);
+                    }
+                    //var db = dd[_adomdConn.Database];
+                    if (_currentDatabase == "" || dd.Count == 0)
+                    {
+                        // return an empty database object if there is no current database or no databases on the server
+                        return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "");
+                    }
+                    // todo - somehow users are getting here, but the current database is not in the dictionary
+                    var db = dd[_currentDatabase];
+                    if (_db == null || db.Name != _db.Name)
+                    {
+                        _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel);
+                        //_db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
+                    }
+                    return _db;
                 }
-                //var db = dd[_adomdConn.Database];
-                if (_currentDatabase == "" || dd.Count == 0)
+                catch 
                 {
-                    // return an empty database object if there is no current database or no databases on the server
-                    return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "");
+                    return null;
                 }
-                // todo - somehow users are getting here, but the current database is not in the dictionary
-                var db = dd[_currentDatabase];
-                if (_db == null || db.Name != _db.Name )
-                {
-                    _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel);
-                    //_db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
-                }
-                return _db;
             }
         }
 
@@ -766,6 +774,16 @@ namespace ADOTabular
             get
             {
                 return _serverEdition;
+            }
+        }
+
+        public int LocaleIdentifier { get {
+                if (_adomdConn == null) return 0;
+                if (_adomdConn.ConnectionString == null) return 0;
+                if (_adomdConn.ConnectionString.Trim().Length == 0) return 0;
+                var m = _LocaleIdRegex.Match(_adomdConn.ConnectionString);
+                if (!m.Success) return 0;
+                return int.Parse(m.Groups[1].Value);
             }
         }
 

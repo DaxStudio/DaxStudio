@@ -15,5 +15,10 @@ namespace DaxStudio.Common
         public const System.Windows.Input.Key LoggingHotKey2 = System.Windows.Input.Key.RightShift;
         public const string LoggingHotKeyName = "Shift";
         public const int ExcelUIStartupTimeout = 10000;
+
+        public const string FORMAT_STRING = "FormatString";
+        public const string LOCALE_ID = "LocaleId";
+        public const string IS_UNIQUE = "IsUnique";
+        public const string ALLOW_DBNULL = "AllowDBNull";
     }
 }

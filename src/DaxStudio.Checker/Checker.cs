@@ -138,7 +138,7 @@ namespace DaxStudio.Checker
         public void CheckLibrary(string shortName, string longNameFormat)
         {
             //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"
-            Output.AppendHeaderLine($"Checking {shortName}");
+            Output.AppendHeaderLine($"Checking {shortName} (GAC)");
             Output.AppendLine("=======================");
 
             for (int i = minMSLibVer; i <= maxMSLibVer + 2; i++)
@@ -167,6 +167,36 @@ namespace DaxStudio.Checker
             }
         }
 
+        public void CheckLocalLibrary(string shortName, string relativeFilename)
+        {
+            Output.AppendHeaderLine($"Checking {shortName} (Local)");
+            Output.AppendLine("=======================");
+            var fullPath = Path.GetFullPath(relativeFilename);
+            Output.AppendRange("    Attempting to load: ");
+            Output.AppendLine(fullPath);
+            try
+            {
+                Assembly assembly = Assembly.LoadFile(fullPath);
+                if (assembly != null)
+                {
+                    //Output.Indent();
+                    Output.AppendRange("    PASS > ").Color("Green").Bold();
+                    Output.AppendLine(assembly.FullName);
+
+                    string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
+                    AdomdVersions.Add(new Version(version));
+                }
+            }
+            catch (Exception exception)
+            {
+                //Output.Indent();
+                var result =  "    FAIL" ;
+                var color = "Red";
+                Output.AppendRange($"{result} > ").Color(color).Bold();
+                Output.AppendLine(exception.Message);
+            }
+        }
+
         public void CheckDaxStudioBindings()
         {
             Output.AppendHeaderLine("Dax Studio Configuration");
@@ -187,7 +217,11 @@ namespace DaxStudio.Checker
                     Output.AppendRange("      WARN > ").Bold().Color("Orange");
                     Output.AppendLine("Dax Studio registry 'Path' value not found.");
                     str = DEFAULT_DAX_STUDIO_PATH;
-                    Output.AppendIndentedLine($"  Attempting to use default installation path: {str}");
+
+                    string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+                    var directory = Path.GetDirectoryName(path);
+                    str = Path.Combine(directory, "daxstudio.exe");
+                    Output.AppendIndentedLine($"  Attempting to use current path: {str}");
                 }
 
             }
@@ -449,13 +483,13 @@ namespace DaxStudio.Checker
             XmlNodeList list = document.SelectNodes("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly", nsmgr);
             Output.AppendIndentedLine( $"Bindings Found: {list.Count}");
 
-            XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices']", nsmgr);
-            GetBindingRedirect(document, nsmgr, node, "AMO", "13.0.0.0");
+            XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices.Core']", nsmgr);
+            GetBindingRedirect(document, nsmgr, node, "AMO");
             node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices.AdomdClient']", nsmgr);
-            GetBindingRedirect(document, nsmgr, node, "ADOMD", "13.0.0.0");
+            GetBindingRedirect(document, nsmgr, node, "ADOMD");
         }
 
-        private void GetBindingRedirect(XmlDocument document, XmlNamespaceManager nsmgr, XmlNode node, string libraryName, string libraryDefaultVersion)
+        private void GetBindingRedirect(XmlDocument document, XmlNamespaceManager nsmgr, XmlNode node, string libraryName)
         {
             if (node != null)
             {
@@ -464,7 +498,7 @@ namespace DaxStudio.Checker
             }
             else
             {
-                Output.AppendIndentedLine($"{libraryName} : {libraryDefaultVersion} <default>");
+                Output.AppendIndentedLine($"{libraryName} : <default>");
             }
         }
 

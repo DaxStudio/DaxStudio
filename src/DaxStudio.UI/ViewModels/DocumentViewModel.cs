@@ -2194,14 +2194,14 @@ namespace DaxStudio.UI.ViewModels
             ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
             if (_connection != null)
             {
-                info.ServerName = _connection.ServerName;
-                info.ServerEdition = _connection.ServerEdition; 
-                info.ServerType = _connection.ServerType; 
-                info.ServerMode = _connection.ServerMode;
-                info.ServerLocation = _connection.ServerLocation; 
-                info.ServerVersion = _connection.ServerVersion;
-                info.DatabaseName = _connection.Database.Name;
-                info.DatabaseCompatibilityLevel = _connection.Database.CompatibilityLevel; 
+                info.ServerName = _connection.ServerName??"";
+                info.ServerEdition = _connection.ServerEdition??""; 
+                info.ServerType = _connection.ServerType??""; 
+                info.ServerMode = _connection.ServerMode??"";
+                info.ServerLocation = _connection.ServerLocation??""; 
+                info.ServerVersion = _connection.ServerVersion??"";
+                info.DatabaseName = _connection.Database?.Name??"";
+                info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel??""; 
             }
 
             DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) => {
@@ -2243,6 +2243,13 @@ namespace DaxStudio.UI.ViewModels
                             int errCol = err.column + 1;
 
                             _editor.Dispatcher.Invoke(() => { 
+                                // if the error is past the last line of the document
+                                // move back to the last character of the last line
+                                if (errLine > _editor.LineCount)
+                                {
+                                    errLine = _editor.LineCount;
+                                    errCol = _editor.Document.Lines[errLine - 1].TotalLength + 1;
+                                }
                                 // if the error is at the end of text then we need to move in 1 character
                                 var errOffset = _editor.Document.GetOffset(errLine, errCol);
                                 if (errOffset == _editor.Document.TextLength && !_editor.Text.EndsWith(" "))
