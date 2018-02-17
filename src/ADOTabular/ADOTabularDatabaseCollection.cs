@@ -118,8 +118,7 @@ namespace ADOTabular
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
-                    row["COMPATIBILITY_LEVEL"].ToString()
-                ));
+                    row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():""                ));
             }
             return databaseDictionary;
         }
