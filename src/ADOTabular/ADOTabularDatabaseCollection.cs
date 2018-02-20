@@ -152,12 +152,13 @@ namespace ADOTabular
                             string id = "";
                             string lastUpdate = "";
                             string compatLevel = "";
-                            while (rdr.Read())
+                            while (!rdr.EOF)
                             {
                                 if (rdr.NodeType == XmlNodeType.Element)
                                 {
-                                    switch (rdr.LocalName) { 
-                                        case  "Name":
+                                    switch (rdr.LocalName)
+                                    {
+                                        case "Name":
                                             name = rdr.ReadElementContentAsString();
                                             break;
                                         case "ID":
@@ -169,10 +170,12 @@ namespace ADOTabular
                                         case "CompatibilityLevel":
                                             compatLevel = rdr.ReadElementContentAsString();
                                             break;
-
+                                        default:
+                                            rdr.Read();
+                                            break;
                                     }
-
-                                }
+                                    continue;
+                                }                                 
                                     
                                     
                                 
@@ -181,9 +184,10 @@ namespace ADOTabular
                                     && rdr.LocalName == eDatabase)
                                 {
                                     databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel));
-                                    break;
+                                    
                                 }
 
+                                rdr.Read();
                             }
                         }
 
