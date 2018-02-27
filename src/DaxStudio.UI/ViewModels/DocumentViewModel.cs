@@ -2172,124 +2172,132 @@ namespace DaxStudio.UI.ViewModels
 
         public void FormatQuery()
         {
-            var msg = new StatusBarMessage(this, "Formatting Query...");
-
-            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Start");
-            int colOffset = 1;
-            int rowOffset = 1;
-            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Getting Query Text");
-            // todo - do I want to disable the editor control while formatting is in progress???
-            string qry;
-            // if there is a selection send that to DocumentViewModel.com otherwise send all the text
-            qry = _editor.SelectionLength == 0 ? _editor.Text : _editor.SelectedText;
-            if (_editor.SelectionLength > 0)
+            using (var msg = new StatusBarMessage(this, "Formatting Query..."))
             {
-                var loc = _editor.Document.GetLocation(_editor.SelectionStart);
-                colOffset = loc.Column;
-                rowOffset = loc.Line;
-            }
-            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-
-            ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
-            if (_connection != null)
-            {
-                info.ServerName = _connection.ServerName??"";
-                info.ServerEdition = _connection.ServerEdition??""; 
-                info.ServerType = _connection.ServerType??""; 
-                info.ServerMode = _connection.ServerMode??"";
-                info.ServerLocation = _connection.ServerLocation??""; 
-                info.ServerVersion = _connection.ServerVersion??"";
-                info.DatabaseName = _connection.Database?.Name??"";
-                info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel??""; 
-            }
-
-            DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) => {
-                // todo - should we be checking for exceptions in this continuation
-                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
-
-                try
+                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Start");
+                int colOffset = 1;
+                int rowOffset = 1;
+                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Getting Query Text");
+                // todo - do I want to disable the editor control while formatting is in progress???
+                string qry;
+                // if there is a selection send that to DocumentViewModel.com otherwise send all the text
+                qry = _editor.SelectionLength == 0 ? _editor.Text : _editor.SelectedText;
+                if (_editor.SelectionLength > 0)
                 {
-                    if ((res.Result.errors == null) || (res.Result.errors.Count == 0))
-                    {
+                    var loc = _editor.Document.GetLocation(_editor.SelectionStart);
+                    colOffset = loc.Column;
+                    rowOffset = loc.Line;
+                }
+                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
-                        _editor.Dispatcher.Invoke(()=>{
-                            _editor.IsReadOnly = true;
-                            if (_editor.SelectionLength == 0)
+
+                ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
+                if (_connection != null)
+                {
+                    info.ServerName = _connection.ServerName ?? "";
+                    info.ServerEdition = _connection.ServerEdition ?? "";
+                    info.ServerType = _connection.ServerType ?? "";
+                    info.ServerMode = _connection.ServerMode ?? "";
+                    info.ServerLocation = _connection.ServerLocation ?? "";
+                    info.ServerVersion = _connection.ServerVersion ?? "";
+                    info.DatabaseName = _connection.Database?.Name ?? "";
+                    info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel ?? "";
+                }
+
+                if (qry.Trim().Length == 0) return; // no query text to format so exit here
+
+                DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) =>
+                {
+                    // todo - should we be checking for exceptions in this continuation
+                    Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
+
+                    try
+                    {
+                        if ((res.Result.errors == null) || (res.Result.errors.Count == 0))
+                        {
+
+                            _editor.Dispatcher.Invoke(() =>
                             {
-                                _editor.IsEnabled = false;
-                                _editor.Document.BeginUpdate();
-                                _editor.Document.Text = res.Result.FormattedDax.TrimEnd();
-                                _editor.Document.EndUpdate();
-                                _editor.IsEnabled = true;
-                            }
-                            else
+                                _editor.IsReadOnly = true;
+                                if (_editor.SelectionLength == 0)
+                                {
+                                    _editor.IsEnabled = false;
+                                    _editor.Document.BeginUpdate();
+                                    _editor.Document.Text = res.Result.FormattedDax.TrimEnd();
+                                    _editor.Document.EndUpdate();
+                                    _editor.IsEnabled = true;
+                                }
+                                else
+                                {
+
+                                    _editor.SelectedText = res.Result.FormattedDax.TrimEnd();
+                                }
+                                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Query Text updated");
+                                OutputMessage("Query Formatted via daxformatter.com");
+                            });
+                        }
+                        else
+                        {
+
+                            foreach (var err in res.Result.errors)
                             {
-                    
-                                _editor.SelectedText = res.Result.FormattedDax.TrimEnd();
+                                // write error 
+                                // note: daxformatter.com returns 0 based coordinates so we add 1 to them
+                                int errLine = err.line + 1;
+                                int errCol = err.column + 1;
+
+                                _editor.Dispatcher.Invoke(() =>
+                                {
+                                    // if the error is past the last line of the document
+                                    // move back to the last character of the last line
+                                    if (errLine > _editor.LineCount)
+                                    {
+                                        errLine = _editor.LineCount;
+                                        errCol = _editor.Document.Lines[errLine - 1].TotalLength + 1;
+                                    }
+                                    // if the error is at the end of text then we need to move in 1 character
+                                    var errOffset = _editor.Document.GetOffset(errLine, errCol);
+                                    if (errOffset == _editor.Document.TextLength && !_editor.Text.EndsWith(" "))
+                                    {
+                                        _editor.Document.Insert(errOffset, " ");
+                                    }
+
+                                    // TODO - need to figure out if more than 1 character should be highlighted
+
+                                    OutputError(string.Format("Query ({0}, {1}) {2} ", errLine, errCol, err.message), rowOffset, colOffset);
+                                    ActivateOutput();
+                                });
+
+                                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Error markings set");
                             }
-                            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Query Text updated");
-                            OutputMessage("Query Formatted via daxformatter.com");
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var exMsg = ex.Message;
+                        if (ex is AggregateException)
+                        {
+                            exMsg = ex.InnerException.Message;
+                        }
+                        Log.Error("{Class} {Event} {Exception}", "DocumentViewModel", "FormatQuery", ex.Message);
+                        Dispatcher.CurrentDispatcher.Invoke(() =>
+                        {
+                            OutputError(string.Format("DaxFormatter.com Error: {0}", exMsg));
                         });
                     }
-                    else
+                    finally
                     {
-
-                        foreach (var err in res.Result.errors)
+                        _editor.Dispatcher.Invoke(() =>
                         {
-                            // write error 
-                            // note: daxformatter.com returns 0 based coordinates so we add 1 to them
-                            int errLine = err.line + 1;
-                            int errCol = err.column + 1;
-
-                            _editor.Dispatcher.Invoke(() => { 
-                                // if the error is past the last line of the document
-                                // move back to the last character of the last line
-                                if (errLine > _editor.LineCount)
-                                {
-                                    errLine = _editor.LineCount;
-                                    errCol = _editor.Document.Lines[errLine - 1].TotalLength + 1;
-                                }
-                                // if the error is at the end of text then we need to move in 1 character
-                                var errOffset = _editor.Document.GetOffset(errLine, errCol);
-                                if (errOffset == _editor.Document.TextLength && !_editor.Text.EndsWith(" "))
-                                {
-                                    _editor.Document.Insert(errOffset, " ");
-                                }
-
-                                // TODO - need to figure out if more than 1 character should be highlighted
-                            
-                                OutputError(string.Format("Query ({0}, {1}) {2} ", errLine, errCol, err.message), rowOffset , colOffset);
-                                ActivateOutput();
-                            });
-                            
-                            Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Error markings set");
-                        }
-                        
+                            _editor.IsReadOnly = false;
+                        });
+                        msg.Dispose();
+                        Log.Verbose("{class} {method} {end}", "DocumentViewModel", "FormatDax:End");
                     }
-                }
-                catch (Exception ex)
-                {
-                    var exMsg = ex.Message;
-                    if (ex is AggregateException)
-                    {
-                        exMsg = ex.InnerException.Message;
-                    }
-                    Log.Error("{Class} {Event} {Exception}", "DocumentViewModel", "FormatQuery", ex.Message);
-                    Dispatcher.CurrentDispatcher.Invoke(() => { 
-                        OutputError(string.Format("DaxFormatter.com Error: {0}", exMsg)); 
-                    });
-                }
-                finally
-                {
-                    _editor.Dispatcher.Invoke(() => { 
-                        _editor.IsReadOnly = false;
-                    });
-                    msg.Dispose();
-                    Log.Verbose("{class} {method} {end}", "DocumentViewModel", "FormatDax:End");
-                }
-            },TaskScheduler.Default);
-        
+                }, TaskScheduler.Default);
+            }
         }
 
 
@@ -2519,9 +2527,10 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                FileName = "DaxStudioModelAnalyzer_" + this.SelectedDatabase,
-                DefaultExt = ".zip",
-                Filter = "Analyzer Data (ZIP)|*.zip|Analyzer Data|*.json"
+                FileName = "DaxStudioModelMetrics_" + this.SelectedDatabase,
+                DefaultExt = ".vpa",
+                //Filter = "Analyzer Data (vpax)|*.vpax|Analyzer Data Uncompressed (vpa)|*.vpa"
+                Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
             };
 
             // Show save file dialog box
@@ -2536,16 +2545,20 @@ namespace DaxStudio.UI.ViewModels
         }
         public void ExportAnalysisData(string path)
         {
-            string extension = Path.GetExtension(path).ToLower();
-            bool compression = (extension == ".zip");
-            try
+            using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))
             {
-                ExportAnalysisData(path, compression);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel","ExportAnalysisData");
-                OutputError("Error exporting metrics: " + ex.Message);
+                string extension = Path.GetExtension(path).ToLower();
+                bool compression = true;  //(extension == ".vpax");
+                try
+                {
+                    ExportAnalysisData(path, compression);
+                    OutputMessage("Model Metrics exported successfully");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel", "ExportAnalysisData");
+                    OutputError("Error exporting metrics: " + ex.Message);
+                }
             }
         }
 
@@ -2554,21 +2567,21 @@ namespace DaxStudio.UI.ViewModels
             var info = ModelAnalyzer.Create(_connection);
             if (compression)
             {
-                string pathJson = string.Format(@".\{0}.json", Path.GetFileNameWithoutExtension(path));
-                Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
-                using (Package package = Package.Open(path, FileMode.Create))
-                {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
-                    {
-                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                        tw.Close();
-                    }
-                    package.Close();
-                }
+                // create zip file
+                //Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
+                //using (Package package = Package.Open(path, FileMode.Create))
+                //{
+                //    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                //    {
+                //        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                //        tw.Close();
+                //    }
+                //    package.Close();
+                //}
 
                 // create gz file
-                var gzfile = Path.Combine( Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
-
+                //var gzfile = Path.Combine(Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
+                var gzfile = path;
                 using (FileStream fs = new FileStream(gzfile, FileMode.Create))
                 using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
                 using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
