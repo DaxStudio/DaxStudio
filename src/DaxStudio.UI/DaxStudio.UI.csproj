@@ -1121,6 +1121,12 @@
   <ItemGroup>
     <Resource Include="Images\icon-PBIReportServer%4024px.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-export-metrics.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-export-metrics%4096ppi.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

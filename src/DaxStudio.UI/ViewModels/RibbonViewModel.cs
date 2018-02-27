@@ -394,17 +394,31 @@ namespace DaxStudio.UI.ViewModels
 
         public void LinkToDaxStudioWiki()
         {
-            System.Diagnostics.Process.Start(urlDaxStudioWiki);
+            OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");
+                
         }
 
         public void LinkToPowerPivotForum()
         {
-            System.Diagnostics.Process.Start(urlPowerPivotForum);
+            OpenUrl(urlPowerPivotForum, "LinkToPowerPivotForum");
         }
 
         public void LinkToSsasForum()
         {
-            System.Diagnostics.Process.Start(urlSsasForum);
+            OpenUrl(urlSsasForum, "LinkToSsasForum");
+        }
+
+        internal void OpenUrl(string name, string url)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(url);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} Error Launching {method}", "RibbonViewModel", "LinkToDaxStudioWiki");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("The following error occurred while trying to open the {1}: {0}", ex.Message, name)));
+            }
         }
 
         public void Handle(ConnectionPendingEvent message)

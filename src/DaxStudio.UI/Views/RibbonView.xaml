@@ -737,24 +737,32 @@
                  
         </Fluent:RibbonTabItem>
 
-            <!-- DEBUG Ribbon -->
-        <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Fluent:RibbonGroupBox Header="Analysis">
+            <!-- Advanced Ribbon Tab-->
+        <Fluent:RibbonTabItem Header="Advanced" >
+            <Fluent:RibbonGroupBox Header="">
                 <Fluent:Button Name="ExportAnalysisData"
-                                   Header="Export Analysis Data"
+                                   Header="Export Metrics"
                                    cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
-                                   Icon="{StaticResource RefreshIcon}"
-                                   LargeIcon="{StaticResource RefreshIconLarger}"
+                                   Icon="{StaticResource ExportMetricsIcon}"
+                                   LargeIcon="{StaticResource ExportMetricsIconLarger}"
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Small"
                                    >
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Export Analysis Data"
-                                              Text="Exports information to allow for detailed analysis of the model design"
-                                              DisableReason="{Binding ClearCacheDisableReason}"
-                                              ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
+                    <Fluent:ScreenTip Title="Export Metrics"
+                                   Text="Exports information and metrics about your model to allow for detailed analysis of the model design. This export only includes metadata, no actual data is included."
+                                   DisableReason="{Binding ClearCacheDisableReason}"
+                                   ></Fluent:ScreenTip>
+            </Fluent:Button.ToolTip>
                 </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+        </Fluent:RibbonTabItem>
+
+
+        <!-- DEBUG Ribbon -->
+        <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Testing">
+                
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
             

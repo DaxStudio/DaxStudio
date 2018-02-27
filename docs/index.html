@@ -17,7 +17,7 @@ smimg: "/img/daxstudio-logo-144.png"
         <h3><i class="fa fa-download"></i>&nbsp; {{download.name}} </h3>
       </button>
     </a>
-    {% assign download_count = download.assets[0].download_count  %}
+    {% assign download_count = download.assets[0].download_count %}
     {% assign download_size = download.assets[0].size %}
     <div class="download-info"><i class="fa fa-download" title="downloads"></i>Size: {% include filesize.html number=download_size %} | <i class="fa fa-calendar" title="release date"></i> {% if download.assets[0].created_at != nil %}{{ download.assets[0].created_at | date_to_string }} {% else %}N/A{% endif %} </div>
 {% else %}
@@ -68,3 +68,4 @@ DAX Studio is a client tool for executing DAX queries against various data sourc
 </div>
 
 {% endif %}
+<!-- 2.7.4 -->

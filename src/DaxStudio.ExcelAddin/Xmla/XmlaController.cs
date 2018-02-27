@@ -173,7 +173,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                 Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
                 System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
                 System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
-                string fullEnvelopeResponseFromServer = "";
+                
+                HttpResponseMessage result;
                 try
                 {
                     //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
@@ -182,15 +183,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                     // STEP 2: read/parse the XML/A response from server.
                     //xmlaResponseFromServer.MoveToContent();
                     //fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
-                }
-                catch (Exception ex)
-                {
-                    svr.Connect(connStr);
-                }
-
-                HttpResponseMessage result;
-                try
-                {
+                
                     result = Request.CreateResponse(HttpStatusCode.OK); //new HttpResponseMessage(HttpStatusCode.OK);
                     result.Headers.TransferEncodingChunked = true;
 

@@ -321,7 +321,7 @@ namespace DaxStudio.Checker
             if (basekey == null)
             {
                 is64 = false;
-                basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
                 keyPath = @"SOFTWARE\Microsoft\VSTO Runtime Setup";
             }
             var arch = is64 ? "x64" : "x86";
