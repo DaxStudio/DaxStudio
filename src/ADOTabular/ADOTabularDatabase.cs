@@ -85,7 +85,8 @@ namespace ADOTabular
                     </Object>
                    </ClearCache>
                  </Batch>
-                ", _adoTabConn.Database.Id));
+                ", !String.IsNullOrEmpty(_adoTabConn.Database.Id) ? _adoTabConn.Database.Id : _adoTabConn.Database.Name));
+                  // 2018-02-20 Hotfix by MarcoRusso - the Database.Id is an empty string, fixed with Database.Name, but it should be investigated why the Id is empty, then remove this hotfix
         }
 
         //private Regex daxColumnRegex = new Regex(@"'?(?<table>.*)'?\[(?<column>[^\]]*)\]", RegexOptions.Compiled);
