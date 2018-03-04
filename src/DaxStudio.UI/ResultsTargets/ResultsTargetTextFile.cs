@@ -117,8 +117,9 @@ namespace DaxStudio.UI.Model
                             {
                                 int iMaxCol = res.FieldCount - 1;
                                 int iRowCnt = 0;
-                                if (iFileCnt > 1) fileName = AddFileCntSuffix(fileName, iFileCnt);
-                                using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create), enc))
+                                var outputFilename = fileName;
+                                if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+                                using (var writer = new StreamWriter(File.Open(outputFilename, FileMode.Create), enc))
                                 {
                                     // write out clean column names
                                     writer.WriteLine(string.Join(sep, res.CleanColumnNames()));
