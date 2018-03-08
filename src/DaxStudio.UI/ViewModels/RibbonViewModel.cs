@@ -590,5 +590,20 @@ namespace DaxStudio.UI.ViewModels
         {
             _activeDocument.ExportAnalysisData();
         }
+
+        public void ExportDataCSV()
+        {
+            // TODO: Build UI
+            _activeDocument.MetadataPane.ExportDataToFolder(@"c:\temp\DaxStudioCSV");
+            
+        }
+
+        public void ExportDataSQL()
+        {
+            // TODO: Build UI
+            _activeDocument.MetadataPane.ExportDataToSQLServer(@"Data Source=.\sql2017; Initial Catalog=Dummy; Integrated Security=true"
+                , "daxStudio" );
+
+        }
     }
 }

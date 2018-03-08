@@ -762,7 +762,35 @@
         <!-- DEBUG Ribbon -->
         <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="Testing">
-                
+                <Fluent:Button Name="ExportDataCSV"
+                                   Header="Export Data (CSV)"
+                                   cal:Message.Attach="[Event Click] = [Action ExportDataCSV()]"
+                                   Icon="{StaticResource ExportMetricsIcon}"
+                                   LargeIcon="{StaticResource ExportMetricsIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Export Data"
+                                   Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+
+                <Fluent:Button Name="ExportDataSQL"
+                                   Header="Export Data (SQL)"
+                                   cal:Message.Attach="[Event Click] = [Action ExportDataSQL()]"
+                                   Icon="{StaticResource ExportMetricsIcon}"
+                                   LargeIcon="{StaticResource ExportMetricsIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Export Data"
+                                   Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
             
