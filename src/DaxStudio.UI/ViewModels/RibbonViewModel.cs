@@ -591,19 +591,21 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument.ExportAnalysisData();
         }
 
-        public void ExportDataCSV()
+        public void ExportData()
         {
-            // TODO: Build UI
-            _activeDocument.MetadataPane.ExportDataToFolder(@"c:\temp\DaxStudioCSV");
-            
-        }
+            var dialog = new ExportDataDialogViewModel();
 
-        public void ExportDataSQL()
-        {
-            // TODO: Build UI
-            _activeDocument.MetadataPane.ExportDataToSQLServer(@"Data Source=.\sql2017; Initial Catalog=Dummy; Integrated Security=true"
-                , "daxStudio" );
+            dialog.ActiveDocument = _activeDocument;
 
+            _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+
+                });           
         }
     }
 }
