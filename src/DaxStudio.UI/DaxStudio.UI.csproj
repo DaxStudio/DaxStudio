@@ -178,6 +178,9 @@
       <HintPath>..\..\packages\ControlzEx.2.0.1.61\lib\net45\ControlzEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="CsvHelper, Version=7.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CsvHelper.7.0.1\lib\net45\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="Fluent, Version=4.0.3.394, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.4.0.3.394\lib\net45\Fluent.dll</HintPath>
       <Private>True</Private>
@@ -510,6 +513,7 @@
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Views\OptionsView.xaml.cs">
@@ -581,6 +585,9 @@
     <Compile Include="Views\RibbonView.xaml.cs">
       <DependentUpon>RibbonView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExportDataDialogView.xaml.cs">
+      <DependentUpon>ExportDataDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SaveDialogView.xaml.cs">
       <DependentUpon>SaveDialogView.xaml</DependentUpon>
     </Compile>
@@ -644,6 +651,10 @@
     <Page Include="Views\QueryHistoryPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SaveDialogView.xaml">
       <SubType>Designer</SubType>

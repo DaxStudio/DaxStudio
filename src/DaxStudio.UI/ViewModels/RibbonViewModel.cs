@@ -590,5 +590,22 @@ namespace DaxStudio.UI.ViewModels
         {
             _activeDocument.ExportAnalysisData();
         }
+
+        public void ExportData()
+        {
+            var dialog = new ExportDataDialogViewModel();
+
+            dialog.ActiveDocument = _activeDocument;
+
+            _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+
+                });           
+        }
     }
 }
