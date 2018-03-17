@@ -2193,16 +2193,23 @@ namespace DaxStudio.UI.ViewModels
 
 
                 ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
-                if (_connection != null)
+                if (_connection != null && _connection.State == ConnectionState.Open)
                 {
-                    info.ServerName = _connection.ServerName ?? "";
-                    info.ServerEdition = _connection.ServerEdition ?? "";
-                    info.ServerType = _connection.ServerType ?? "";
-                    info.ServerMode = _connection.ServerMode ?? "";
-                    info.ServerLocation = _connection.ServerLocation ?? "";
-                    info.ServerVersion = _connection.ServerVersion ?? "";
-                    info.DatabaseName = _connection.Database?.Name ?? "";
-                    info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel ?? "";
+                    try
+                    {
+                        info.ServerName = _connection.ServerName ?? "";
+                        info.ServerEdition = _connection.ServerEdition ?? "";
+                        info.ServerType = _connection.ServerType ?? "";
+                        info.ServerMode = _connection.ServerMode ?? "";
+                        info.ServerLocation = _connection.ServerLocation ?? "";
+                        info.ServerVersion = _connection.ServerVersion ?? "";
+                        info.DatabaseName = _connection.Database?.Name ?? "";
+                        info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel ?? "";
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "{class} {method} Unable to get server details for daxformatter call", "DocumentViewModel", "FormatQuery");
+                    }
                 }
 
                 if (qry.Trim().Length == 0) return; // no query text to format so exit here
@@ -2528,9 +2535,9 @@ namespace DaxStudio.UI.ViewModels
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 FileName = "DaxStudioModelMetrics_" + this.SelectedDatabase,
-                DefaultExt = ".vpa",
-                //Filter = "Analyzer Data (vpax)|*.vpax|Analyzer Data Uncompressed (vpa)|*.vpa"
-                Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
+                DefaultExt = ".vpax",
+                Filter = "Analyzer Data (vpax)|*.vpax|Analyzer Data (vpa)|*.vpa"
+                //Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
             };
 
             // Show save file dialog box
@@ -2548,38 +2555,27 @@ namespace DaxStudio.UI.ViewModels
             using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))
             {
                 string extension = Path.GetExtension(path).ToLower();
-                bool compression = true;  //(extension == ".vpax");
+                
                 try
                 {
-                    ExportAnalysisData(path, compression);
+                    ExportAnalysisData(path, extension);
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel", "ExportAnalysisData");
-                    OutputError("Error exporting metrics: " + ex.Message);
+                    var exMsg = ex.GetAllMessages();
+                    OutputError("Error exporting metrics: " + exMsg);
                 }
             }
         }
 
-        public void ExportAnalysisData(string path, bool compression)
+        public void ExportAnalysisData(string path, string extension)
         {
             var info = ModelAnalyzer.Create(_connection);
-            if (compression)
+            if (extension == ".vpa")
             {
-                // create zip file
-                //Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
-                //using (Package package = Package.Open(path, FileMode.Create))
-                //{
-                //    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
-                //    {
-                //        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                //        tw.Close();
-                //    }
-                //    package.Close();
-                //}
-
-                // create gz file
+                // create gz compressed file
                 //var gzfile = Path.Combine(Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
                 var gzfile = path;
                 using (FileStream fs = new FileStream(gzfile, FileMode.Create))
@@ -2589,16 +2585,30 @@ namespace DaxStudio.UI.ViewModels
                     ms.Position = 0;
                     ms.CopyTo(zipStream);
                 }
-
             }
             else
             {
-                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))
+                // create zipped .vpax file
+                Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
+                using (Package package = Package.Open(path, FileMode.Create))
                 {
-                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    tw.Close();
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    {
+                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                        tw.Close();
+                    }
+                    package.Close();
                 }
-            }
+
+            }  
+
+            // write uncompressed json data
+            //using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))
+            //{
+            //    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+            //    tw.Close();
+            //}
+            
         }
         #endregion
     }

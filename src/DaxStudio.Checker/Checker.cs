@@ -302,10 +302,41 @@ namespace DaxStudio.Checker
             ListDisabledExcelAddins("2016", 16);
 
             Output.AppendLine();
+            CheckForPowerPivotAddin();
+
+            Output.AppendLine();
             TestLoadingOfExcelAddin();
 
             // Check VSTO
             CheckVSTO();
+        }
+
+        private void CheckForPowerPivotAddin()
+        {
+            var addinKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Office\Excel\Addins");
+            if (addinKey != null)
+            {
+                var subKeys = addinKey.GetSubKeyNames();
+                string addinName = "";
+                for (int i = 0; i < subKeys.Length;i++)
+                {
+                    var subkey = addinKey.OpenSubKey(subKeys[i]);
+                    addinName = subkey.GetValue("FriendlyName").ToString();
+                    if (addinName.IndexOf("Power Pivot") > 0)
+                    {
+                        Output.AppendRange("      PASS > ").Color("Red").Bold();
+                        Output.AppendLine($" Found Excel Addin: {addinName}");
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(addinName))
+                {
+                    Output.AppendRange("      ERROR > ").Color("Red").Bold();
+                    Output.AppendLine(" could not locate the Excel Power Pivot add-in");
+                }
+
+            }
+
         }
 
         private void CheckVSTO()
@@ -328,14 +359,22 @@ namespace DaxStudio.Checker
             Output.AppendIndentedLine($"Architecture: {arch}");
             key = basekey.OpenSubKey(keyPath);
 
-//            Output.AppendRange("").Indent(20);
-            foreach (var subkeyName in key.GetSubKeyNames())
+            //            Output.AppendRange("").Indent(20);
+            if (key == null)
             {
-                var subkey = key.OpenSubKey(subkeyName);
-                Output.AppendIndentedLine($"  {subkeyName}");
-                foreach (var valName in subkey.GetValueNames())
+                Output.AppendRange("      WARN > ").Bold().Color("Orange");
+                Output.AppendLine($"Unable to open {keyPath}");
+            }
+            else
+            {
+                foreach (var subkeyName in key.GetSubKeyNames())
                 {
-                    Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
+                    var subkey = key.OpenSubKey(subkeyName);
+                    Output.AppendIndentedLine($"  {subkeyName}");
+                    foreach (var valName in subkey.GetValueNames())
+                    {
+                        Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
+                    }
                 }
             }
         }

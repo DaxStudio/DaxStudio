@@ -20,6 +20,8 @@ namespace DaxStudio.UI.Model
     {
         public static string SHA256(string input)
         {
+            if (input == null) return "";
+
             var hasher = new SHA256Managed();
             var sb = new StringBuilder();
 
