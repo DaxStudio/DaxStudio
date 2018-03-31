@@ -341,7 +341,7 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = Connection.PowerBIFileName.Length > 0 ? Connection.PowerBIFileName : db
+                                    Caption = Connection.FileName.Length > 0 ? Connection.FileName : db
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases

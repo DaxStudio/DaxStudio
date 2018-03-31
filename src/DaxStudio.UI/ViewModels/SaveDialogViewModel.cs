@@ -47,6 +47,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToggleShouldSave(ISaveable item)
         {
+            if (item == null) return;
             item.ShouldSave = !item.ShouldSave;
         }
 

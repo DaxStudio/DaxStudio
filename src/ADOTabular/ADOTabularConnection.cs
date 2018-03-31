@@ -8,6 +8,7 @@ using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using ADOTabular.Utils;
 
 namespace ADOTabular
 {
@@ -24,19 +25,19 @@ namespace ADOTabular
         Adomd
         ,Csdl
     }
-    
-    public class ADOTabularConnection:IDisposable
+
+    public class ADOTabularConnection : IDisposable
     {
         private AdomdCommand _runningCommand;
 
         public event EventHandler ConnectionChanged;
-        private AdomdConnection _adomdConn; 
+        private AdomdConnection _adomdConn;
         private readonly AdomdType _connectionType;
         private string _currentDatabase;
         private Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public ADOTabularConnection(string connectionString, AdomdType connectionType) 
-            : this(connectionString,connectionType, ADOTabularMetadataDiscovery.Csdl)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType)
+            : this(connectionString, connectionType, ADOTabularMetadataDiscovery.Csdl)
         { }
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, ADOTabularMetadataDiscovery visitorType)
@@ -52,10 +53,10 @@ namespace ADOTabular
         {
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new AdomdConnection(ConnectionString,connectionType);
-            _connectionType = connectionType;    
-         //   _adomdConn.ConnectionString = connectionString;
-            
+            _adomdConn = new AdomdConnection(ConnectionString, connectionType);
+            _connectionType = connectionType;
+            //   _adomdConn.ConnectionString = connectionString;
+
             //_adomdConn.Open();
             if (vistorType == ADOTabularMetadataDiscovery.Adomd)
             {
@@ -74,7 +75,7 @@ namespace ADOTabular
         // returns the current database for the connection
         public ADOTabularDatabase Database
         {
-            
+
             get
             {
                 //_adomdConn.UnderlyingConnection.Databases
@@ -108,7 +109,7 @@ namespace ADOTabular
                     }
                     return _db;
                 }
-                catch 
+                catch
                 {
                     return null;
                 }
@@ -158,7 +159,7 @@ namespace ADOTabular
             //}
             //else
             //{
-                _adomdConn.ChangeDatabase(database);
+            _adomdConn.ChangeDatabase(database);
             //}
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
@@ -185,13 +186,13 @@ namespace ADOTabular
             get { return _adomdConn.Type; }
         }
 
-        
+
 
         public bool SupportsQueryTable
         {
             get
             {
-                return _adomdConn.Type == AdomdType.AnalysisServices; 
+                return _adomdConn.Type == AdomdType.AnalysisServices;
             }
         }
 
@@ -200,8 +201,9 @@ namespace ADOTabular
             return _adomdConn.ConnectionString;
         }
 
-        private string _connectionString="";
-        private Dictionary<string, string> _connectionProps;
+        private string _connectionString = "";
+        private Dictionary<string, string> _connectionProps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase );
+        public Dictionary<string, string> Properties {get{ return _connectionProps; }}
         public string ConnectionString
         {
             get
@@ -230,12 +232,13 @@ namespace ADOTabular
             }
             set { _connectionString = value;
                 _connectionProps = SplitConnectionString(_connectionString);
+                //_connectionProps = ConnectionStringParser.Parse(_connectionString);
             }
         }
 
         private Dictionary<string, string> SplitConnectionString(string connectionString)
         {
-            var props = new Dictionary<string, string>();
+            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var prop in connectionString.Split(';'))
             {
                 if (prop.Trim().Length == 0) continue;
@@ -687,6 +690,7 @@ namespace ADOTabular
         }
 
         public bool IsPowerPivot {get; set;}
+        public bool IsPowerBIorSSDT { get { return !IsPowerPivot && FileName.Length > 0; } }
 
         // BeginQueryAsync
         /*
@@ -706,7 +710,7 @@ namespace ADOTabular
         private string _powerBIFileName = string.Empty;
         private string _currentCube = string.Empty;
 
-        public string PowerBIFileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
+        public string FileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
 
 
         void IDisposable.Dispose()

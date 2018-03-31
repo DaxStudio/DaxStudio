@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeCompletionTests.cs" />
+    <Compile Include="ConnectionStringParserTests.cs" />
     <Compile Include="DatabaseProfileTests.cs" />
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="HelpAboutTests.cs" />

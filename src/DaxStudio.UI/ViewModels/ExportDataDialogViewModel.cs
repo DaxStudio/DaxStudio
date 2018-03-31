@@ -1,18 +1,19 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
-using DaxStudio.UI.Enums;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Data;
 using DaxStudio.UI.Extensions;
 using ADOTabular.AdomdClientWrappers;
 using System.IO;
+using Microsoft.Win32;
+using System;
+using DaxStudio.UI.Events;
+using DaxStudio.UI.Model;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Serilog;
+//using System.Windows.Forms;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -21,9 +22,11 @@ namespace DaxStudio.UI.ViewModels
     public class ExportDataDialogViewModel : Screen
     {
 
+        IEventAggregator _eventAggregator;
         [ImportingConstructor]
-        public ExportDataDialogViewModel()
+        public ExportDataDialogViewModel(IEventAggregator eventAggregator )
         {
+            _eventAggregator = eventAggregator;
             this.IsCSVExport = true;
             this.TruncateTables = true;
         }
@@ -52,8 +55,15 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => IsSQLExport);
             }
         }
-       
-        public string OutputPath { get; set; }
+
+        private string _outputPath = "";
+        public string OutputPath {
+            get { return _outputPath; }
+            set {
+                _outputPath = value;
+                NotifyOfPropertyChange(() => OutputPath);
+            }
+        }
 
         public string ConnectionString { get; set; }
         
@@ -64,8 +74,12 @@ namespace DaxStudio.UI.ViewModels
         public void Export()
         {
             if (IsCSVExport)
-            {              
-                ExportDataToFolder(this.OutputPath);
+            {
+                ActiveDocument.IsQueryRunning = true;
+                Task.Run(() =>
+                {
+                    ExportDataToFolder(this.OutputPath);
+                });
             }
             else if (IsSQLExport)
             {
@@ -81,9 +95,26 @@ namespace DaxStudio.UI.ViewModels
             //TryClose(false);
         }
 
+        public void BrowseFolders()
+        {
+            // TODO show browse folders
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    this.OutputPath = dialog.SelectedPath;
+                }
+            }
+            // set folder
+
+        }
+
         private void ExportDataToFolder(string outputPath)
         {
             var metadataPane = this.ActiveDocument.MetadataPane;
+            var exceptionFound = false;
+            
 
             // TODO: Use async but to be well done need to apply async on the DBCommand & DBConnection
             // TODO: Show warning message?
@@ -96,23 +127,29 @@ namespace DaxStudio.UI.ViewModels
             {
                 Directory.CreateDirectory(outputPath);
             }
-
-            foreach (var table in metadataPane.SelectedModel.Tables)
+            ActiveDocument.IsQueryRunning = true;
+            ActiveDocument.QueryStopWatch.Start();
+            try
             {
-                var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Name}.csv");
-
-                var daxQuery = $"EVALUATE('{table.Name}')";
-
-                using (var textWriter = new System.IO.StreamWriter(csvFilePath, false, System.Text.Encoding.UTF8))
+                foreach (var table in metadataPane.SelectedModel.Tables)
                 {
-                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                    try
                     {
+                        var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Name}.csv");
+                        var daxQuery = $"EVALUATE {table.DaxName}";
                         var rows = 0;
+                        var tableCnt = 0;
+                        var totalTables = metadataPane.SelectedModel.Tables.Count;
 
-                        using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
+                        using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                        using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
+                        using (var reader = ActiveDocument.Connection.ExecuteReader(daxQuery))
                         {
-                            // Header
+                            rows = 0;
+                            tableCnt++;
 
+                            // Write Header
                             foreach (var colName in reader.CleanColumnNames())
                             {
                                 csvWriter.WriteField(colName);
@@ -121,7 +158,6 @@ namespace DaxStudio.UI.ViewModels
                             csvWriter.NextRecord();
 
                             // Write data
-
                             while (reader.Read())
                             {
                                 for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
@@ -132,14 +168,38 @@ namespace DaxStudio.UI.ViewModels
                                 }
 
                                 rows++;
-
+                                if (rows % 5000 == 0) {
+                                    new StatusBarMessage(ActiveDocument, $"Exporting Table {tableCnt} of {totalTables} : {table.Name} ({rows:N0} rows)");
+                                    ActiveDocument.RefreshElapsedTime();
+                                }
                                 csvWriter.NextRecord();
                             }
                         }
+                        
+                        ActiveDocument.RefreshElapsedTime();
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
                     }
-
+                    catch (Exception ex)
+                    {
+                        exceptionFound = true;
+                        Log.Error(ex,"{class} {method} {message}", "ExportDataDialogViewModel","ExportDataToFolder","Error while exporting model to CSV");
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting '{table.Name}':  {ex.Message}"));
+                        break; // exit from the loop if we have caught an exception 
+                    }
+                }
+                // export complete
+                if (!exceptionFound)
+                {
+                    ActiveDocument.QueryStopWatch.Stop();
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {metadataPane.SelectedModel.Tables.Count} tables exported",ActiveDocument.QueryStopWatch.ElapsedMilliseconds));
+                    ActiveDocument.QueryStopWatch.Reset();
                 }
             }
+            finally
+            {
+                ActiveDocument.IsQueryRunning = false;
+            }    
+            
         }
 
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)

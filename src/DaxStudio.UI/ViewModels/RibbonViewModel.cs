@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using System.ComponentModel;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -377,10 +378,27 @@ namespace DaxStudio.UI.ViewModels
         protected DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
-            set { _activeDocument = value;            
+            set {
+                if(_activeDocument != null) _activeDocument.PropertyChanged -= ActiveDocumentPropertyChanged;
+                _activeDocument = value;
+                if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
-        
+
+        private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "IsQueryRunning":
+                    _queryRunning = ActiveDocument.IsQueryRunning;
+                    NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => CanCancelQuery);
+                    NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(() => CanRefreshMetadata);
+                    NotifyOfPropertyChange(() => CanConnect);
+                    break;
+            }
+        }
 
         public void Handle(QueryFinishedEvent message)
         {
@@ -593,7 +611,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ExportData()
         {
-            var dialog = new ExportDataDialogViewModel();
+            var dialog = new ExportDataDialogViewModel(_eventAggregator);
 
             dialog.ActiveDocument = _activeDocument;
 

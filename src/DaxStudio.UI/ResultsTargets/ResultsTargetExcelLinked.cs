@@ -48,13 +48,17 @@ namespace DaxStudio.UI.ResultsTargets
                                     string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
                                 runner.ActivateOutput();
                                 runner.SetResultsMessage("Query sent to Excel for execution", OutputTargets.Linked);
-                                runner.QueryCompleted();
+
                             },TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+                    }
+                    finally
+                    {
+                        runner.QueryCompleted();
                     }
                 });
         }

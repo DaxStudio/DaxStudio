@@ -63,7 +63,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
-                                <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Duration}"></TextBlock>
+                                <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding DurationString}"></TextBlock>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>

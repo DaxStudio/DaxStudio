@@ -52,7 +52,7 @@ namespace DaxStudio.UI.Behaviours
                     var msg = item as OutputMessage;
                     sb.Append(msg.Start);
                     sb.Append("\t");
-                    sb.Append(msg.Duration);
+                    sb.Append(msg.DurationString);
                     sb.Append("\t");
                     sb.Append(msg.Text);
                     sb.Append("\n");

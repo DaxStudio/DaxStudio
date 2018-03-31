@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Model
             };
 
             string fileName = "";
-
+            long durationMs = 0;
             // Show save file dialog box
             var result = dlg.ShowDialog();
 
@@ -84,11 +84,8 @@ namespace DaxStudio.UI.Model
                         var sw = Stopwatch.StartNew();
 
                         string sep = "\t";
-
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-
                         string isoDateFormat = string.Format("yyyy-MM-dd HH:mm:ss{0}000", decimalSep);
-
                         var enc = Encoding.UTF8;
 
                         switch (dlg.FilterIndex)
@@ -105,9 +102,8 @@ namespace DaxStudio.UI.Model
                                 break;
                         }
 
-                        var dq = runner.QueryText;
-
-                        var reader = runner.ExecuteDataReaderQuery(dq);
+                        var daxQuery = runner.QueryText;
+                        var reader = runner.ExecuteDataReaderQuery(daxQuery);
 
                         try
                         {
@@ -115,11 +111,7 @@ namespace DaxStudio.UI.Model
                             {
                                 int iFileCnt = 1;
                                 var outputFilename = fileName;
-                                if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
                                 
-                                sw.Stop();
-                                var durationMs = sw.ElapsedMilliseconds;
-                                //runner.ResultsTable = res;
                                 runner.OutputMessage("Command Complete, writing output file");
 
                                 bool moreResults = true;
@@ -128,8 +120,9 @@ namespace DaxStudio.UI.Model
                                 {
                                     int iMaxCol = reader.FieldCount - 1;
                                     int iRowCnt = 0;
-                                
-                                    using (var textWriter = new System.IO.StreamWriter(outputFileName, false, enc))
+                                    if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+
+                                    using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                                     {
                                         using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
                                         {
@@ -173,11 +166,12 @@ namespace DaxStudio.UI.Model
                                         }
 
                                     }
-                                    
+
                                     runner.OutputMessage(
-                                            string.Format("Query Completed ({0:N0} row{1} returned)"
+                                            string.Format("Query {2} Completed ({0:N0} row{1} returned)"
                                                         , iRowCnt
-                                                        , iRowCnt == 1 ? "" : "s"), durationMs);
+                                                        , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                            );
 
                                     runner.RowCount = iRowCnt;
 
@@ -186,8 +180,10 @@ namespace DaxStudio.UI.Model
                                     iFileCnt++;
                                 }
 
-                                runner.SetResultsMessage("Query results written to file", OutputTargets.Grid);
-                                //runner.QueryCompleted();
+                                sw.Stop();
+                                durationMs = sw.ElapsedMilliseconds;
+
+                                runner.SetResultsMessage("Query results written to file", OutputTargets.File);
                                 runner.ActivateOutput();
                             }
                         }
@@ -210,8 +206,8 @@ namespace DaxStudio.UI.Model
                     }
                     finally
                     {
+                        runner.OutputMessage("Query Batch Completed", durationMs);
                         runner.QueryCompleted();
-
                     }
 
                 });

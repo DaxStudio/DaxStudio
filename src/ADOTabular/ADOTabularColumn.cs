@@ -94,7 +94,8 @@ namespace ADOTabular
                     return null;
                 }
 
-                // Return the measure expression from the table measures dictionary (the measures are loaded and cached on the use of the Table.Measures property)
+                // Return the measure expression from the table measures dictionary 
+                // (the measures are loaded and cached on the use of the Table.Measures property)
 
                 var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 

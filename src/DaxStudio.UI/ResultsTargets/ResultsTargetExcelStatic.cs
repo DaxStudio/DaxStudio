@@ -49,13 +49,16 @@ namespace DaxStudio.UI.Model
                             runner.RowCount = res.Rows.Count;
                             runner.ActivateOutput();
                             runner.SetResultsMessage("Static results sent to Excel", OutputTargets.Static);
-                            runner.QueryCompleted();
                         },TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+                    }
+                    finally
+                    {
+                        runner.QueryCompleted();
                     }
                 });
         }

@@ -20,5 +20,7 @@ namespace DaxStudio.Common
         public const string LOCALE_ID = "LocaleId";
         public const string IS_UNIQUE = "IsUnique";
         public const string ALLOW_DBNULL = "AllowDBNull";
+
+        public const string StatusBarTimerFormat = "mm\\:ss\\.f";
     }
 }

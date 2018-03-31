@@ -27,7 +27,7 @@
     </UserControl.Resources>
     <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
 
-        <Grid>
+        <Grid Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -35,20 +35,28 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Vertical">
-                <StackPanel Orientation="Horizontal">
+                
                     <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
                     <Label Content="Export Data" Foreground="{StaticResource DaxStudioBrush}" 
-                           Margin="3,0"
+                           Margin="0,0,0,10" Padding="0"
                            FontWeight="Light" FontSize="44" ></Label>
                     <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
-                </StackPanel>
-                <TextBlock Padding="10,10,0,5">Destination:</TextBlock>
+                
+                <TextBlock Margin="0,0,0,5">Destination:</TextBlock>
                 <RadioButton GroupName="Destination" Content="CSV" IsChecked="{Binding IsCSVExport}"/>
                 <RadioButton GroupName="Destination" Content="SQL Server" IsChecked="{Binding IsSQLExport}" />
             </StackPanel>
             <StackPanel Grid.Row="2" Orientation="Vertical" Visibility="{Binding IsCSVExport, Converter={StaticResource BoolToVisibilityConverter}}">
                 <TextBlock Padding="10,10,0,5">Output Path:</TextBlock>
-                <TextBox Text="{Binding OutputPath}"></TextBox>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox  Text="{Binding OutputPath}"></TextBox>
+                    <Button Grid.Column="1" x:Name="BrowseFolders">...</Button>
+                </Grid>
             </StackPanel>
             <StackPanel Grid.Row="2" Orientation="Vertical" Visibility="{Binding IsSQLExport, Converter={StaticResource BoolToVisibilityConverter}}">
                 <TextBlock Padding="10,10,0,5">Connection String:</TextBlock>

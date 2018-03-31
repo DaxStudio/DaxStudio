@@ -136,7 +136,7 @@ namespace DaxStudio.UI.Extensions
                 {
                     foreach (DataRow row in dtSchema.Rows)
                     {
-                        string columnName = System.Convert.ToString(row["ColumnName"]);
+                        string columnName = Convert.ToString(row["ColumnName"]);
                         DataColumn column = new DataColumn(columnName, (Type)(row["DataType"]));
                         column.Unique = (bool)row[Constants.IS_UNIQUE];
                         column.AllowDBNull = (bool)row[Constants.ALLOW_DBNULL];

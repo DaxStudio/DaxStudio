@@ -39,6 +39,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.IO.Compression;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -979,6 +980,21 @@ namespace DaxStudio.UI.ViewModels
         #region Execute Query
         private Timer _timer;
         private Stopwatch _queryStopWatch;
+
+        public Stopwatch QueryStopWatch
+        {
+            get
+            {
+                if (_queryStopWatch == null) _queryStopWatch = new Stopwatch();
+                return _queryStopWatch;
+            }
+        }
+
+        public void RefreshElapsedTime()
+        {
+            NotifyOfPropertyChange(() => ElapsedQueryTime);
+        }
+
         public DataTable ExecuteDataTableQuery(string daxQuery)
         {
             int row = 0;
@@ -1091,7 +1107,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ElapsedQueryTime
         {
-            get { return _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString("mm\\:ss\\.f"); }
+            get { return _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(Constants.StatusBarTimerFormat); }
             
         }
 
@@ -1834,18 +1850,24 @@ namespace DaxStudio.UI.ViewModels
             
             Task.Run(() =>
                 {
-                    
+                    //var cnn = message.PowerPivotModeSelected
+                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Extended Properties=\"Location={0};\";Workstation ID=\"{0}\";", message.WorkbookName))
+                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+
                     var cnn = message.PowerPivotModeSelected
-                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}", message.WorkbookName))
+                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
                     cnn.IsPowerPivot = message.PowerPivotModeSelected;
                     cnn.ServerType = message.ServerType;
 
                     if (message.PowerBIFileName.Length > 0)
                     {
-                        cnn.PowerBIFileName = message.PowerBIFileName;
+                        cnn.FileName = message.PowerBIFileName;
                     }
-                    
+                    if (message.WorkbookName.Length > 0)
+                    {
+                        cnn.FileName = message.WorkbookName;
+                    }
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => {
@@ -1857,14 +1879,22 @@ namespace DaxStudio.UI.ViewModels
                         SetupConnection(message, cnn);
                     }
                     
-                }).ContinueWith((antecendant) =>
+                }).ContinueWith((taskResult) =>
                     {
-                        // todo - should we be checking for exceptions in this continuation
-                        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this,Databases,activeTrace));//,IsPowerPivotConnection));
-                        _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
-                        //LoadState();
+                        if (taskResult.IsFaulted)
+                        {
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {taskResult?.Exception?.InnerException?.Message}"));
+                        }
+                        else
+                        {
+                            // todo - should we be checking for exceptions in this continuation
+                            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));//,IsPowerPivotConnection));
+                            _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
+                            //LoadState();
+                        }
                         msg.Dispose(); //reset the status message
+
                     }, TaskScheduler.Default);
             
         }
@@ -2030,7 +2060,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection { get { return Spid != -1 || Connection.ConnectionString.Contains("Roles=") ; } }
+        public bool IsAdminConnection { get { return Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName"); } }
         public bool IsPowerPivot {get; private set; }
 
         private bool _canCopy = true;
@@ -2131,14 +2161,15 @@ namespace DaxStudio.UI.ViewModels
             switch (message.MessageType)
             {
                 case MessageType.Error:
-                        OutputError(message.Text);
-                        break;
+                    OutputError(message.Text);
+                    break;
                 case MessageType.Warning:
-                        OutputWarning(message.Text);
-                        break;
+                    OutputWarning(message.Text);
+                    break;
                 case MessageType.Information:
-                        OutputMessage(message.Text);
-                        break;
+                    if (message.DurationMs > 0) OutputMessage(message.Text,message.DurationMs);
+                    else OutputMessage(message.Text);
+                    break;
             }
         }
 
@@ -2195,15 +2226,17 @@ namespace DaxStudio.UI.ViewModels
                 ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
                 if (_connection != null && _connection.State == ConnectionState.Open)
                 {
+                    var serverName = _connection.IsPowerPivot | _connection.IsPowerBIorSSDT ? _connection.FileName : _connection.ServerName;
+                    var databaseName = _connection.IsPowerPivot | _connection.IsPowerBIorSSDT ? _connection.FileName : _connection.Database?.Name;
                     try
                     {
-                        info.ServerName = _connection.ServerName ?? "";
+                        info.ServerName = serverName ?? "";
                         info.ServerEdition = _connection.ServerEdition ?? "";
                         info.ServerType = _connection.ServerType ?? "";
                         info.ServerMode = _connection.ServerMode ?? "";
                         info.ServerLocation = _connection.ServerLocation ?? "";
                         info.ServerVersion = _connection.ServerVersion ?? "";
-                        info.DatabaseName = _connection.Database?.Name ?? "";
+                        info.DatabaseName = databaseName ?? "";
                         info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel ?? "";
                     }
                     catch (Exception ex)

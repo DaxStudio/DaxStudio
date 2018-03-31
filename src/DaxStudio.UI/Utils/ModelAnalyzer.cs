@@ -15,6 +15,37 @@ namespace DaxStudio.UI.Utils
 
     public static class ModelAnalyzer
     {
+        public static DataTable RecoverColumnExpressions(ADOTabularConnection connection)
+        {
+            /*
+             *  [TABLE] AS [Table], 
+                [OBJECT] as [Column], 
+                TRIM ( [EXPRESSION] ) as [Expression],
+                '' AS [Description]
+             */
+            var result = new DataTable("ColumnExpressions");
+            result.Columns.Add("Table", typeof(string));
+            result.Columns.Add("Column", typeof(string));
+            result.Columns.Add("Expression", typeof(string));
+            result.Columns.Add("Description", typeof(string));
+
+            foreach (var tbl in connection.Database.Models[0].Tables)
+            {
+                foreach (var col in tbl.Columns)
+                {
+                    if (col.ColumnType == ADOTabularColumnType.Column && col.MeasureExpression.Length > 0)
+                    {
+                        var row = result.NewRow();
+                        row["Table"] = tbl.Caption;
+                        row["Column"] = col.Caption;
+                        row["Expression"] = col.MeasureExpression;
+                        row["Description"] = "";
+                        result.Rows.Add(row);
+                    }
+                }
+            }
+            return result;
+        }
 
         private class ModelAnalyzerRelationship
         {
@@ -74,7 +105,8 @@ namespace DaxStudio.UI.Utils
             /// However, it is possible to create multiple versions of the same table 
             /// with different compatibility levels (to enable support with different and older reports)
             /// </summary>
-            public int MaxCompatibilityLevel = int.MaxValue; 
+            public int MaxCompatibilityLevel = int.MaxValue;
+            public Func<ADOTabularConnection, DataTable> RecoverFunction;
         }
 
 
@@ -243,8 +275,11 @@ FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY
 WHERE OBJECT_TYPE = 'CALC_COLUMN'  
 ORDER BY [TABLE] + '_' + [OBJECT] ASC
 "
+                    ,RecoverFunction = ModelAnalyzer.RecoverColumnExpressions
                  },
-                new ModelAnalyzerTable()
+
+
+        new ModelAnalyzerTable()
                  {
                      TableName = "ColumnsMetadata",
                      MinCompatibilityLevel = 1200,
@@ -544,5 +579,7 @@ ORDER BY [TableID] ASC
                 }
             }
         }
+
+        
     }
 }

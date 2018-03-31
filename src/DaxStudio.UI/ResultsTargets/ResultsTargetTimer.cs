@@ -40,6 +40,10 @@ namespace DaxStudio.UI.Model
                 runner.ActivateOutput();
                 runner.OutputError(ex.Message);
             }
+            finally
+            {
+                runner.QueryCompleted();
+            }
         }
 
         public Task OutputResultsAsync(IQueryRunner runner)

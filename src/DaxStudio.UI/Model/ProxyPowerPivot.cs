@@ -204,7 +204,7 @@ namespace DaxStudio.UI.Model
 
         public ADOTabular.ADOTabularConnection GetPowerPivotConnection(string applicationName, string additionalproperties)
         {
-            var connstr = string.Format("Data Source=http://localhost:{0}/xmla;Application Name={1};{2}", _port,applicationName,additionalproperties);
+            var connstr = string.Format("Data Source=http://localhost:{0}/xmla;{1};{2}", _port,applicationName,additionalproperties);
             return new ADOTabular.ADOTabularConnection(connstr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
         }
 
