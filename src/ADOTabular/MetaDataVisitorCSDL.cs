@@ -721,6 +721,9 @@ namespace ADOTabular
                 else if (ssasVersion.StartsWith("11.")) {
                     product.Name = "SSAS 2012";
                 }
+                else if (ssasVersion.StartsWith("10.")) {
+                    product.Name = "SSAS 2012";
+                }
                 else {
                     product.Name = product.Type;
                 }
