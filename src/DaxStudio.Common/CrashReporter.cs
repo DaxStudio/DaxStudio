@@ -17,7 +17,7 @@ namespace DaxStudio.UI.Utils
                 DoctorDumpSettings = new DoctorDumpSettings()
                 {
                     ApplicationID = applicationID,
-                    OpenReportInBrowser = false,
+                    OpenReportInBrowser = true,  // open DrDump report page
                     SendAnonymousReportSilently = true
                 }
             };
