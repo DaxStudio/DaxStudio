@@ -69,18 +69,24 @@ namespace DaxStudio.UI.Model
                                 runner.RowCount = rowCnt;
                                 // activate the result only when Counters are not selected...
                                 runner.ActivateResults();
+                                runner.OutputMessage("Query Batch Completed", durationMs);
                             }
+                            else
+                                runner.OutputError("Query Batch Completed with errors", durationMs);
+
                         }
+                        
                     }
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+                        runner.OutputError("Query Batch Completed with erros", durationMs);
                     }
                     finally
                     {
-                        runner.OutputMessage("Query Batch Completed", durationMs);
+                        
                         runner.QueryCompleted();
                     }
                 });

@@ -33,9 +33,9 @@ namespace DaxStudio.UI.ViewModels
         private static bool _useWholeWord;
         private IEditor editor;
 
-        public FindReplaceDialogViewModel(IEditor editor)
+        public FindReplaceDialogViewModel()
         {            
-            this.editor = editor;
+            //this.editor = editor;
             //_searchDirections = new List<string>();
             //_searchDirections.Add("Next");
             //_searchDirections.Add("Prev");

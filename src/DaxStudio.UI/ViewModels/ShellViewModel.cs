@@ -43,11 +43,13 @@ namespace DaxStudio.UI.ViewModels {
             _app = Application.Current;
             if (_host.CommandLineFileName != string.Empty)
             {
+                //OpenDocument(_host.CommandLineFileName);
                 Tabs.NewQueryDocument(_host.CommandLineFileName);
             }
             else
             {
-                Tabs.NewQueryDocument();
+                NewDocument();
+                //Tabs.NewQueryDocument();
             }
             VersionChecker = versionCheck;
 
@@ -194,7 +196,7 @@ namespace DaxStudio.UI.ViewModels {
 
         public void OpenDocument()
         {
-            _eventAggregator.PublishOnUIThread(new OpenFileEvent());
+            _eventAggregator.PublishOnUIThread(new OpenFileEvent() );
         }
 
         public void SelectionToUpper()
@@ -225,6 +227,11 @@ namespace DaxStudio.UI.ViewModels {
         public void Redo()
         {
             Ribbon.Redo();
+        }
+
+        public void GotoLine()
+        {
+            Ribbon.GotoLine();
         }
 
         public void Find()

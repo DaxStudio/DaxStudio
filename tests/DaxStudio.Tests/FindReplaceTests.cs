@@ -21,7 +21,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindCaseInsensitive()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.TextToFind = "SAMPLE";
             vm.CaseSensitive = false;
             vm.FindText();
@@ -32,7 +33,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindCaseSensitive()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.TextToFind = "SAMPLE";
             vm.CaseSensitive = true;
             vm.FindText();
@@ -49,7 +51,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindWildcard()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.UseWildcards = true;
             vm.TextToFind = "sam*";
             vm.FindText();
@@ -60,7 +63,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindRegEx()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.UseRegex = true;
             vm.TextToFind = "sam[^\\s]*";
             vm.FindText();
@@ -77,7 +81,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void ReplaceTest()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.UseRegex = true;
             vm.TextToFind = "sam[^\\s]*";
             vm.TextToReplace = "hello";
@@ -93,7 +98,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void ReplaceAllTest()
         {
-            vm = new FindReplaceDialogViewModel(ed);
+            vm = new FindReplaceDialogViewModel();
+            vm.Editor = ed;
             vm.UseRegex = true;
             vm.TextToFind = "sam[^\\s]*";
             vm.TextToReplace = "hello";

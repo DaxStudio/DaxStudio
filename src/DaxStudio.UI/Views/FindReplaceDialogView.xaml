@@ -10,6 +10,7 @@
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             
              mc:Ignorable="d" 
              d:DesignWidth="300" 
              d:DesignHeight="100"
@@ -31,7 +32,9 @@
         <BitmapImage x:Key="CaretDown" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/CaretDown_x16.png"/>
         <BitmapImage x:Key="Wildcard" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Wildcard.png"/>
 
-        <Style TargetType="{x:Type ToggleButton}">
+
+
+            <Style TargetType="{x:Type ToggleButton}">
             <!--<span class="code-comment"> Set the ItemTemplate of the ListBox to a DataTemplate which
            explains how to display an object of type BitmapImage. -->
             <Setter Property="Background" Value="Transparent"/>
@@ -104,7 +107,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid d:Visibility="True"  Visibility="{Binding Path=IsVisible,Converter={StaticResource BoolToVisibilityConverter}}"
+    <Grid  ap:DesignModeHelper.Visibility="Visible" Visibility="{Binding Path=IsVisible,Converter={StaticResource BoolToVisibilityConverter}}"
           >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>

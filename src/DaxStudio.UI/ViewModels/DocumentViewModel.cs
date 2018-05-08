@@ -94,7 +94,7 @@ namespace DaxStudio.UI.ViewModels
             _windowManager = windowManager;
             _ribbon = ribbon;
             ServerTimingDetails = serverTimingDetails;
-            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled);
+            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
             _options = options;
             Init(_ribbon);
@@ -122,7 +122,7 @@ namespace DaxStudio.UI.ViewModels
             //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
             
             Document = new TextDocument();
-            FindReplaceDialog = new FindReplaceDialogViewModel(this.GetEditor());
+            FindReplaceDialog = new FindReplaceDialogViewModel();
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
@@ -1254,6 +1254,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputError(string error)
         {
+            OutputError(error, double.NaN);
+        }
+
+        public void OutputError(string error, double durationMs)
+        {
 
             //"Query ( , )"
             var m = _rexQueryError.Match(error);
@@ -1267,7 +1272,7 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                OutputPane.AddError(error);
+                OutputPane.AddError(error, durationMs);
             }
         }
 
@@ -2097,6 +2102,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
+        public GotoLineDialogViewModel GotoLineDialog { get; set; }
 
         #region Highlighting
 
@@ -2136,6 +2142,46 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         public string TextToHighlight { get { return _editor.SelectedText; } }
+
+        public void GotoLine()
+        {
+            //_eventAggregator.PublishOnUIThread(new ConnectionPendingEvent(this));
+            Log.Debug("{class} {method} {event}", "DocumentViewModel", "GotoLine", "start");
+            
+            Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
+            {
+                // todo - should we be checking for exceptions in this continuation
+                try
+                {
+              
+                    Execute.OnUIThread(() =>
+                    {
+                        var gotoLineDialog = new GotoLineDialogViewModel(this._editor);
+
+                        _windowManager.ShowDialogBox(gotoLineDialog, settings: new Dictionary<string, object>
+                                        {
+                                            {"Top", 40},
+                                            { "WindowStyle", WindowStyle.None},
+                                            { "ShowInTaskbar", false},
+                                            { "ResizeMode", ResizeMode.NoResize},
+                                            { "Background", System.Windows.Media.Brushes.Transparent},
+                                            { "AllowsTransparency",true}
+                                        });
+                    });
+
+                }
+                catch (Exception ex)
+                {
+                    // if the task throws an exception the "real" exception is usually in the innerException
+                    var innerMsg = ex.Message;
+                    if (ex.InnerException != null) innerMsg = ex.InnerException.Message;
+                    Log.Error("{class} {method} {message}", "DocumentViewModel", "GotoLine", innerMsg);
+                    OutputError(innerMsg);
+                }
+                
+            }, TaskScheduler.Default);
+
+        }
 
         public void Find()
         {

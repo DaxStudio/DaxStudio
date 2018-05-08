@@ -319,6 +319,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
+    <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
@@ -510,6 +511,7 @@
     <Compile Include="Extensions\WindowManagerExtensions.cs" />
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
+    <Compile Include="ViewModels\GotoLineDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="Model\QueryEvent.cs" />
@@ -517,6 +519,9 @@
     <Compile Include="ViewModels\ExportDataDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
+    <Compile Include="Views\GotoLineDialogView.xaml.cs">
+      <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OptionsView.xaml.cs">
       <DependentUpon>OptionsView.xaml</DependentUpon>
     </Compile>
@@ -630,6 +635,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GotoLineDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

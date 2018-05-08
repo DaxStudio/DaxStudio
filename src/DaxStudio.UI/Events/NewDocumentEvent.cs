@@ -15,6 +15,7 @@ namespace DaxStudio.UI.Events
             _target = target;
         }
 
+
         public IResultsTarget Target
         {
             get
@@ -22,6 +23,7 @@ namespace DaxStudio.UI.Events
                 return _target;
             }
         }
-
+        public string FileName { get; set; }
+        public string ConnectionString { get; set; }
     }
 }

@@ -185,7 +185,8 @@ namespace DaxStudio.UI.Model
 
                                 runner.SetResultsMessage("Query results written to file", OutputTargets.File);
                                 runner.ActivateOutput();
-                            }
+                            } else
+                                runner.OutputError("Query Batch Completed with errors", durationMs);
                         }
                         finally
                         {

@@ -136,12 +136,26 @@ namespace DaxStudio.Standalone
         {
             var comException = e.Exception as System.Runtime.InteropServices.COMException;
 
-            // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf datagrid can't access clipboard 
-            if (comException != null && comException.ErrorCode == -2147221040)
+            
+            if (comException != null )
             {
-                e.Handled = true;
-                if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
-                log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+                switch (comException.ErrorCode)
+                {
+                    case -2147221037: // Data on clipboard is invalid (Exception from HRESULT: 0x800401D3 (CLIPBRD_E_BAD_DATA))
+                        e.Handled = true;
+                        if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
+                        log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
+                        break;
+                    case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf datagrid can't access clipboard 
+                        e.Handled = true;
+                        if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
+                        log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+                        break;
+                    default:
+                        Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                        break;
+                }
+                
             }
             else
             {

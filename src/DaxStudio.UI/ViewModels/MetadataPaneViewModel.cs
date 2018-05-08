@@ -496,6 +496,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
+            if (column == null) return;
+
             if (column.Column.GetType() != typeof(ADOTabularColumn)) return;
             ADOTabularColumn col = (ADOTabularColumn)column.Column;
             if (col.ColumnType != ADOTabularColumnType.Column) return;

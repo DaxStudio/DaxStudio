@@ -85,19 +85,24 @@ namespace DaxStudio.UI.ViewModels
             Items.Add(newDoc);
             ActivateItem(newDoc);
             ActiveDocument = newDoc;
-            
+
             if (fileName != string.Empty)
             {
                 newDoc.DisplayName = "Opening...";
                 newDoc.FileName = fileName;
                 newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
             }
+            // TODO - allow for opening a document with the same connection as the current active one
+            //else if (connStr.length > 0) {
+            //    newDoc.Connection.ConnectionString = connStr;
+            //    newDoc.ChangeConnection();
+            //}
             else
             {
                 var newFileName = string.Format("Query{0}.dax", _documentCount);
                 _documentCount++;
                 newDoc.DisplayName = newFileName;
-                new System.Action(ChangeConnection).BeginOnUIThread();    
+                new System.Action(ChangeConnection).BeginOnUIThread();
             }
             new System.Action(CleanActiveDocument).BeginOnUIThread();
         }

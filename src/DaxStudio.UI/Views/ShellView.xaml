@@ -241,7 +241,14 @@
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="FormatQuery"/>
         </triggers:InputBindingTrigger>
-        
+
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding  Modifiers="Ctrl" Key="G" />
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="GotoLine"/>
+        </triggers:InputBindingTrigger>
+
     </i:Interaction.Triggers>
     <Grid>
         <Grid x:Name="LayoutRoot"
