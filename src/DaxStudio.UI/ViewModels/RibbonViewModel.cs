@@ -509,6 +509,11 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument.Find();
         }
 
+        public void GotoLine()
+        {
+            _activeDocument.GotoLine();
+        }
+
         public void Replace()
         {
             _activeDocument.Replace();
@@ -583,6 +588,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
         {
+            // if a user clicks on the edge of the recent files list
+            // it's possible to hit this method with no selected file
+            // if this happens we need to exit here and ignore the click
+            if (file == null) return; 
+
+            // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
         }
