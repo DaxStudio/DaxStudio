@@ -596,6 +596,10 @@ ORDER BY [TableID] ASC
             
             foreach (DataRow columnRow in columnCardinalityTable.Rows)
             {
+                // TODO: We might get the COLUMN_CARDINALITY from the Columns Storages table if available, 
+                //       so we keep compatibility in case IsAvailableInMDX is set to false and column hierarchy is not available
+                //       by doing this we can remove the calculated column in VertiPaq Analyzer to compute the right estimate
+                //       Marco - 2018-05-22
                 string columnName = columnRow["COLUMN_HIERARCHY_ID"].ToString();
                 columnName = columnName.Split('$')[2];
                 var filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID = '{1}'", columnRow["TABLE_NAME"], columnName);
