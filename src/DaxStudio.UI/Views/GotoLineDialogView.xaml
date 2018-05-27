@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="80" d:DesignWidth="200"
              Width="250"
-             Height="120">
+             Height="140">
     
     <UserControl.Resources>
         
@@ -24,6 +24,7 @@
         <Border Background="White" Padding="15px 10px" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
             <Grid FocusManager.FocusedElement="{Binding ElementName=LineNo}">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="38px"/>
                     <RowDefinition Height="*" />
                     
                     <RowDefinition Height="auto"/>
@@ -33,8 +34,9 @@
                     <ColumnDefinition />
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <Label>Line:</Label>
-                <TextBox x:Name="LineNo" Height="22" VerticalAlignment="Top" Grid.Column="1" Margin="2px" ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=IsFocused}">
+                <Label Content="Goto" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="24" Padding="0" />
+                <Label Grid.Row="1">Line:</Label>
+                <TextBox x:Name="LineNo" Height="22" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Margin="2px" ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=IsFocused}">
                     <Validation.ErrorTemplate>
                         <ControlTemplate>
                             <StackPanel>
@@ -51,7 +53,7 @@
                         </ControlTemplate>
                     </Validation.ErrorTemplate>
                 </TextBox>
-                <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="2px">
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="2px">
                     <TextBlock Margin="0,0,5px,0">(Lines 1 to</TextBlock>
                     <TextBlock x:Name="MaxLines"></TextBlock>
                     <TextBlock>)</TextBlock>

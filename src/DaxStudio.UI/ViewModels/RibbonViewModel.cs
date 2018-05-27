@@ -93,6 +93,15 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget));
         }
 
+        public void NewQueryWithCurrentConnection()
+        {
+            var connectionString = "";
+            if (ActiveDocument != null)
+                if (ActiveDocument.IsConnected)
+                    connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
+        }
+
         public void CommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(true));
@@ -149,6 +158,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
+                if (ActiveDocument == null) return "There is no active Query window";
                 if ( _queryRunning) return  "A query is currently executing";
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
                 if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
@@ -161,6 +171,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
+                if (ActiveDocument == null) return "There is no active Query window";
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
                 if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
                 if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
@@ -173,7 +184,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return !_queryRunning && ActiveDocument.IsConnected && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+                return !_queryRunning && (ActiveDocument != null && ActiveDocument.IsConnected) && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
 
@@ -184,12 +195,12 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanCancelQuery
         {
-            get { return !CanRunQuery && ActiveDocument.IsConnected; }
+            get { return !CanRunQuery && (ActiveDocument != null && ActiveDocument.IsConnected); }
         }
 
         public bool CanClearCache
         {
-            get { return CanRunQuery && ActiveDocument.IsAdminConnection; }
+            get { return CanRunQuery && (ActiveDocument != null && ActiveDocument.IsAdminConnection); }
         }
 
         public string ClearCacheDisableReason
@@ -375,7 +386,7 @@ namespace DaxStudio.UI.ViewModels
 
         private DocumentViewModel _activeDocument;
 
-        protected DocumentViewModel ActiveDocument
+        public DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
             set {
@@ -526,7 +537,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanRefreshMetadata
         {
-            get { return ActiveDocument.IsConnected; }
+            get { return ActiveDocument != null && ActiveDocument.IsConnected; }
         }
 
         internal void FindNow()
@@ -595,7 +606,18 @@ namespace DaxStudio.UI.ViewModels
 
             // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
+            MoveFileToTopOfRecentList(file);
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+        }
+
+        private void MoveFileToTopOfRecentList(DaxFile file)
+        {
+            // remove the file from it's current position
+            RecentFiles.Remove(file);
+            // insert it at the top of the list
+            RecentFiles.Insert(0, file);
+
+            RegistryHelper.SaveFileMRUListToRegistry(this.RecentFiles);
         }
 
         public void SwapDelimiters()

@@ -126,6 +126,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assertions\StringAssertion.cs" />
     <Compile Include="CodeCompletionTests.cs" />
     <Compile Include="ConnectionStringParserTests.cs" />
     <Compile Include="DatabaseProfileTests.cs" />

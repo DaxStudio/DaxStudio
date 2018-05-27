@@ -169,9 +169,8 @@
         </Grid.RowDefinitions>
         <!-- database Dropdown -->
         <ComboBox Grid.Row="0" x:Name="Database" 
-            SelectedItem="{Binding SelectedDatabase}"
-            SelectedValuePath="Name"
-            ItemsSource="{Binding DatabasesView}"   
+            SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
             MinWidth="160" 
             Template="{DynamicResource MetroComboBoxControlTemplate}"
             IsEditable="False"
@@ -187,6 +186,7 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
+        <!-- SelectedValuePath="Name" -->
         <!-- Model Dropdown -->
         <ComboBox Grid.Row="1" 
                   IsEditable="False"

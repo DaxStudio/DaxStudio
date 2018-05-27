@@ -470,18 +470,31 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"
-                                                   Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2" MinWidth="100" 
+                                    <dax:DAXEditor x:Name="daxEditor" 
+                                                   Margin="2,2,2,2" 
+                                                   Padding="8,8,8,8"
+                                                   Grid.Column="0" 
+                                                   Grid.Row="0" 
+                                                   Grid.RowSpan="2" 
+                                                   Grid.ColumnSpan="2" MinWidth="100" 
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                   
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
+                                                   dd:DragDrop.DragHandler="{Binding Path=DataContext,RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
-                                                   
+                                                    DragEnter="daxEditor_DragEnter"
                                                    >
-
+                                        <!-- EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="DragEnter">
+                                                <cal:ActionMessage MethodName="OnDragEnter">
+                                                    
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"

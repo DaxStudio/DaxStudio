@@ -109,7 +109,9 @@ namespace DaxStudio.UI.ViewModels
 
         public ADOTabularModel SelectedModel
         {
-            get { return _selectedModel; }
+            get { //if (_selectedModel == null)
+                    return _selectedModel;
+                }
             set
             {
                 if (_selectedModel != value)
@@ -260,6 +262,7 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 _modelList = value;
                 NotifyOfPropertyChange(() => ModelList);
+                NotifyOfPropertyChange(() => SelectedModel);
             }
         }
 
@@ -365,10 +368,13 @@ namespace DaxStudio.UI.ViewModels
         private DatabaseReference _selectedDatabase;
         public DatabaseReference SelectedDatabase
         {
-            get { return _selectedDatabase; }
+            get {
+                    if (_selectedDatabase == null && Connection.State == ConnectionState.Open)
+                        SelectedDatabase = DatabasesView.Where(db => db.Name == Connection.Database.Name).FirstOrDefault();
+                    return _selectedDatabase; }
             set
             {
-                if (value == null) ActiveDocument.SelectedDatabase = null;
+                //if (value == null) ActiveDocument.SelectedDatabase = null;
 
                 if (value == _selectedDatabase)
                 {
@@ -377,11 +383,11 @@ namespace DaxStudio.UI.ViewModels
                 }
 
 
-                if (value != null) ActiveDocument.SelectedDatabase = value.Name;
+                //if (value != null) ActiveDocument.SelectedDatabase = value.Name;
 
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && Connection.Database.Name != _selectedDatabase.Name && value != null) //!Connection.Database.Equals(_selectedDatabase))
+                    if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name ) //!Connection.Database.Equals(_selectedDatabase))
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
                         Connection.ChangeDatabase(value.Name);
@@ -504,7 +510,12 @@ namespace DaxStudio.UI.ViewModels
             // TODO - make an option for the sample size
             if (_globalOptions.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
             if (_globalOptions.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
-        }                 
+        }
+
+        internal void ChangeDatabase(string databaseName)
+        {
+            SelectedDatabase = DatabasesView.Where(db => db.Name == databaseName).FirstOrDefault();
+        }
     }
 
 

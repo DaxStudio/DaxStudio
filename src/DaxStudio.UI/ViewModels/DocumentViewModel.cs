@@ -40,36 +40,46 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.IO.Compression;
 using DaxStudio.Common;
+using GongSolutions.Wpf.DragDrop;
 
 namespace DaxStudio.UI.ViewModels
 {
+
+    
+
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof (Screen))]
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
-        , IHandle<CancelQueryEvent>
+        
         , IHandle<CancelConnectEvent>
+        , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
         , IHandle<ConnectEvent>
+        , IHandle<CloseTraceWindowEvent>
+        , IHandle<CopyConnectionEvent>
+        , IHandle<DefineMeasureOnEditor>
+        , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
+        , IHandle<NavigateToLocationEvent>
+        , IHandle<OutputMessage>
+        , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<RunQueryEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
-        , IHandle<DefineMeasureOnEditor>
         , IHandle<SetSelectedWorksheetEvent>
+        , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateConnectionEvent> 
-        , IHandle<NavigateToLocationEvent>
-        , IHandle<QueryResultsPaneMessageEvent>
-        , IHandle<OutputMessage>
-        , IHandle<ExportDaxFunctionsEvent>
-        , IHandle<CloseTraceWindowEvent>
-        , IHandle<ShowTraceWindowEvent>
+        , IDropTarget
         , IQueryRunner
         , IHaveShutdownTask
         , IConnection
         , ISaveable
     {
+
+        private readonly Encoding DefaultFileEncoding = Encoding.UTF8;
+
         private ADOTabularConnection _connection;
         private IWindowManager _windowManager;
         private IEventAggregator _eventAggregator;
@@ -85,6 +95,8 @@ namespace DaxStudio.UI.ViewModels
         private Guid _uniqueId;
         private IGlobalOptions _options;
         private IQueryHistoryEvent currentQueryDetails;
+        private Guid _autoSaveId =  Guid.NewGuid();
+        private DocumentViewModel _sourceDocument;
 
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options)
@@ -131,6 +143,24 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        internal void LoadAutoSaveFile(Guid autoSaveId)
+        {
+            _isLoadingFile = true;
+            var text = AutoSaver.GetAutoSaveText(autoSaveId);
+            // put contents in edit window
+            var editor = GetEditor();
+            
+            editor.Dispatcher.Invoke(() => {
+                editor.Text = text;
+            });
+                
+            LoadState();
+
+            State = DocumentState.Loaded;
+
+            _eventAggregator.PublishOnUIThread(new RecoverNextAutoSaveFileEvent());
+        }
+
         /// <summary>
         /// Initialize Scale View with useful units in percent and font point size
         /// </summary>
@@ -154,6 +184,7 @@ namespace DaxStudio.UI.ViewModels
             base.TryClose(dialogResult);
         }
         
+        public Guid AutoSaveId { get { return _autoSaveId; } set { _autoSaveId = value; } }
 
         private DAXEditor.DAXEditor _editor;
         /// <summary>
@@ -174,11 +205,32 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
+                _editor.PreviewDragEnter += OnDragEnter;
                 
             }
-            if (this.State == DocumentState.LoadPending)
+            switch (this.State)
             {
-                OpenFile();
+                case DocumentState.LoadPending:
+                    OpenFile();
+                    break;
+                case DocumentState.RecoveryPending:
+                    LoadAutoSaveFile(AutoSaveId);
+                    break;
+            }
+
+            if (_sourceDocument != null)
+            {
+                var cnn = _sourceDocument.Connection;
+                _eventAggregator.PublishOnUIThread(new ConnectEvent(
+                    cnn.ConnectionStringWithInitialCatalog,
+                    cnn.IsPowerPivot,
+                    cnn.IsPowerPivot ? _sourceDocument.FileName : "",
+                    "",
+                    cnn.IsPowerPivot ? "" : cnn.FileName,
+                    cnn.ServerType)
+                    { DatabaseName = cnn.Database.Name});
+
+                _sourceDocument = null;
             }
         }
 
@@ -187,6 +239,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_editor.SelectionLength == 0)
             {
+                
                 e.Handled = true;
                 var data = (string)e.Data.GetData(typeof(string));
                 InsertTextAtCaret(data);
@@ -209,6 +262,8 @@ namespace DaxStudio.UI.ViewModels
 
         void OnDragOver(object sender, DragEventArgs e)
         {
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragOver Fired"));
+            IntellisenseProvider?.CloseCompletionWindow();
             if (e.Data.Equals(string.Empty))
             {
                 e.Effects = DragDropEffects.None;
@@ -219,7 +274,8 @@ namespace DaxStudio.UI.ViewModels
         {
             //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
-            IsDirty = true;
+            IsDirty = this._editor.Text.Length > 0;
+            LastModifiedUtcTime = DateTime.UtcNow;
             NotifyOfPropertyChange(() => IsDirty);
             NotifyOfPropertyChange(() => DisplayName);
         }
@@ -493,18 +549,21 @@ namespace DaxStudio.UI.ViewModels
                 _selectedDatabase = Connection.Database.Name;
             }
             return _selectedDatabase; }
-            set
-            {
-                if (value != _selectedDatabase)
-                {
-                    _selectedDatabase = value;
-                    Connection.ChangeDatabase(value);
-                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
-                    NotifyOfPropertyChange(() => SelectedDatabase);
-                    
-                }
-            }
+            //set
+            //{
+            //    if (value != _selectedDatabase)
+            //    {
+            //        _selectedDatabase = value;
+            //        Connection.ChangeDatabase(value);
+            //        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+            //        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
+            //        NotifyOfPropertyChange(() => SelectedDatabase);
+
+            //        // set metadata pane SelectedDatabase
+            //        MetadataPane.SelectedDatabase = MetadataPane.DatabasesView.Where(db => db.Name == _selectedDatabase).FirstOrDefault();
+
+            //    }
+            //}
         }
 
         //public string ConnectionString { get { return _connection.ConnectionString; } }
@@ -536,6 +595,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.Unsubscribe(tw);
             }
+        }
+
+        internal void CloseIntellisenseWindows()
+        {
+            IntellisenseProvider?.CloseCompletionWindow();
         }
 
         protected override void OnActivate()
@@ -699,8 +763,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
-        public string SelectedText { get; set; }
+        public string SelectedText { get {
+                var editor = GetEditor();
+                if (editor == null) return "";
+                return editor.SelectedText;
+            }
+        }
         public string Text { get; set; }
         public string FileName { get; set; }
 
@@ -789,22 +857,56 @@ namespace DaxStudio.UI.ViewModels
 
         public QueryResultsPaneViewModel QueryResultsPane { get; set; }
 
+        public QueryInfo QueryInfo { get; set; }
+
+        private DialogResult PreProcessQuery()
+        {
+            // merge in any parameters
+            QueryInfo = new QueryInfo(EditorText, _eventAggregator);
+            DialogResult paramDialogResult = DialogResult.Skip;
+            if (QueryInfo.NeedsParameterValues)
+            {
+                var paramDialog = new QueryParametersDialogViewModel(this, QueryInfo);
+
+
+                _windowManager.ShowDialogBox(paramDialog, settings: new Dictionary<string, object>
+                        {
+                            { "WindowStyle", WindowStyle.None},
+                            { "ShowInTaskbar", false},
+                            { "ResizeMode", ResizeMode.NoResize},
+                            { "Background", System.Windows.Media.Brushes.Transparent},
+                            { "AllowsTransparency",true}
+
+                        });
+                paramDialogResult = paramDialog.DialogResult;
+            }
+                        
+            return paramDialogResult;
+        }
+
         public string QueryText
+        {
+            get {
+                return QueryInfo.ProcessedQuery;
+            }
+        }
+
+        public string EditorText
         {
             get
             {
-                string qry;
+                string qry = string.Empty;
                 if (!Dispatcher.CurrentDispatcher.CheckAccess())
                 {
                     Dispatcher.CurrentDispatcher.Invoke(new Func<string>(() =>
                         { qry = GetQueryTextFromEditor();
-                            qry = DaxHelper.PreProcessQuery(qry, _eventAggregator);
+                            
                             return qry;
                         }));
-                }
-                qry = GetQueryTextFromEditor();
-                // merge in any parameters
-                qry = DaxHelper.PreProcessQuery(qry,_eventAggregator);
+                } else
+                    qry = GetQueryTextFromEditor();
+
+                
                 // swap delimiters if not using default style
                 if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
                 {
@@ -820,7 +922,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             var txt = GetQueryTextFromEditor();
-            txt = DaxHelper.PreProcessQuery(txt,_eventAggregator);
+            var queryProcessor = new QueryInfo(txt, _eventAggregator);
+            txt = queryProcessor.ProcessedQuery;
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
@@ -1157,6 +1260,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=>CanRunQuery);
             if (message.ClearCache) await ClearDatabaseCacheAsync();
             RunQueryInternal(message);
+            
         }
 
         private void RunQueryInternal(RunQueryEvent message)
@@ -1173,27 +1277,36 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
 
-            currentQueryDetails = CreateQueryHistoryEvent(true);
-            
-            message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+
+            if (PreProcessQuery() == DialogResult.Cancel)
             {
+                IsQueryRunning = false;
+            }
+            else
+            {
+                _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
+
+                currentQueryDetails = CreateQueryHistoryEvent(true);
+
+                message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+                {
                 // todo - should we be checking for exceptions in this continuation
                 IsQueryRunning = false;
-                NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => CanRunQuery);
 
                 // if the server times trace watcher is not active then just record client timings
                 if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
-                {
-                    currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-                    currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
-                    _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
-                }
+                    {
+                        currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+                        currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
+                        _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
+                    }
 
-                _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
-                msg.Dispose();               
-            },TaskScheduler.Default);
+                    _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
+                    msg.Dispose();
+                }, TaskScheduler.Default);
+            } 
         }
 
         private IQueryHistoryEvent CreateQueryHistoryEvent(bool includeQueryText)
@@ -1426,7 +1539,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Databases.Contains(message.DatabaseName))
                     if (SelectedDatabase != message.DatabaseName)
                     {
-                        SelectedDatabase = message.DatabaseName;
+                        MetadataPane.ChangeDatabase( message.DatabaseName);
                         OutputMessage($"Current Database changed to '{message.DatabaseName}'");
                     }
                     else
@@ -1585,13 +1698,57 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        internal string AutoSaveFileName {
+            get { return Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder), $"{AutoSaveId.ToString()}.dax"); }
+        }
+
+        // writes the file out to a temp folder in case of crashes or unplanned restarts
+        internal async Task AutoSave()
+        {
+
+            var fileName = AutoSaveFileName;
+            AutoSaver.EnsureDirectoryExists(fileName);
+            var editor = GetEditor();
+            // if the editor is null that means that the view has not been loaded fully yet,
+            // which means that this is a recovered autosave file and we don't need to re-save
+            // it unless the user activates this document and makes a change
+            if (editor == null) return;
+
+            using (TextWriter tw = new StreamWriter(fileName, false, DefaultFileEncoding))
+            {
+                
+                var text = string.Empty;
+                editor.Dispatcher.Invoke(() =>
+                {
+                    text = editor.Text;
+                });
+                await tw.WriteAsync(text);
+                tw.Close();
+            }
+            LastAutoSaveUtcTime = DateTime.UtcNow;
+        }
+
+        internal void DeleteAutoSave()
+        {
+            try
+            {
+                File.Delete(AutoSaveFileName);
+                // trigger an autosave of the workspace to remove this file from the index
+                _eventAggregator.PublishOnUIThreadAsync(new AutoSaveEvent());
+            }
+            catch { }
+        }
+        // this may be overkill, but we track UTC save and modified times just in case a user changes timezones
+        public DateTime LastAutoSaveUtcTime { get; private set; }
+        public DateTime LastModifiedUtcTime { get; private set; }
+
         public void Save()
         {
             if (!IsDiskFileName)
                 SaveAs();
             else
             {
-                using (TextWriter tw = new StreamWriter(FileName, false, Encoding.Unicode))
+                using (TextWriter tw = new StreamWriter(FileName, false, DefaultFileEncoding))
                 {
                     tw.Write(GetEditor().Text);
                     tw.Close();
@@ -1608,6 +1765,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
+                DeleteAutoSave();
             }
         }
 
@@ -1832,14 +1990,17 @@ namespace DaxStudio.UI.ViewModels
         
         public new string DisplayName
         {
-            get { return _displayName + (IsDirty?"*":"") ; }
-            set { _displayName = value; }
+            get { return _displayName;  }
+            set { _displayName = value;
+                NotifyOfPropertyChange(() => DisplayName);
+            }
         }
         
         public void Handle(LoadFileEvent message)
         {
             FileName = message.FileName;
             IsDiskFileName = true;
+            LoadFile();
         }
 
         public void Handle(CancelQueryEvent message)
@@ -1917,9 +2078,13 @@ namespace DaxStudio.UI.ViewModels
             Connection = cnn;
             this.IsPowerPivot = message.PowerPivotModeSelected;
             this.Spid = cnn.SPID;
-            this.SelectedDatabase = cnn.Database.Name;
+            //this.SelectedDatabase = cnn.Database.Name;
             CurrentWorkbookName = message.WorkbookName;
+
+            //SelectedDatabase = message.DatabaseName;
+
             Databases = cnn.Databases.ToBindableCollection();
+            
 
             if (Connection == null)
             { ServerName = "<Not Connected>"; }
@@ -1943,6 +2108,19 @@ namespace DaxStudio.UI.ViewModels
                         ServerName = Connection.ServerName;
                         ServerVersion = Connection.ServerVersion;
                     }
+
+                    if (!string.IsNullOrEmpty(message.DatabaseName))
+                    {
+                        MetadataPane.ChangeDatabase(message.DatabaseName);
+                    }
+
+                    //if (!string.IsNullOrEmpty(message.DatabaseName)) {
+                    //    var selectedDB = Databases.Where(db => db == message.DatabaseName).FirstOrDefault();
+                    //    if (!string.IsNullOrEmpty(selectedDB))
+                    //    Dispatcher.CurrentDispatcher.Invoke(() => { 
+                    //        SelectedDatabase = selectedDB;
+                    //    });
+                    //}
                 }
             }
         }
@@ -2032,7 +2210,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public DocumentState State { get; set; }
+        private DocumentState _documentState;
+        public DocumentState State { get { return _documentState; }
+            set { _documentState = value;
+                // if we are recovering an autosave file then we
+                // know that it's already been autosaved before
+                // so we can set the last saved time to UtcNow
+                if (_documentState == DocumentState.RecoveryPending)
+                    LastAutoSaveUtcTime = DateTime.UtcNow;
+            }
+        }
 
         public string CurrentWorkbookName { get; set; }
 
@@ -2599,6 +2786,15 @@ namespace DaxStudio.UI.ViewModels
                 return ext == "DAX" ? "" : ext;
             } 
         }
+
+        //private Guid _autoSaveRecoveryId = Guid.Empty;
+        //public Guid AutoSaveRecoveryId { get { return _autoSaveRecoveryId; } 
+        //    set {
+        //        _autoSaveRecoveryId = value;
+        //        // we are recovering an autosave file, so it's already been autosaved
+        //        LastAutoSaveUtcTime = DateTime.UtcNow;
+        //    }
+        //}
         #endregion
 
         #region Export Analysis Data
@@ -2671,7 +2867,7 @@ namespace DaxStudio.UI.ViewModels
                 Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
                 using (Package package = Package.Open(path, FileMode.Create))
                 {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
                     {
                         tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
                         tw.Close();
@@ -2688,6 +2884,50 @@ namespace DaxStudio.UI.ViewModels
             //    tw.Close();
             //}
             
+        }
+
+        internal void AppendText(string paramXml)
+        {
+            var editor = this.GetEditor();
+
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.AppendText(paramXml);
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(() => {
+                    editor.AppendText(paramXml);
+                });
+
+            }
+            
+        }
+
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragOver Fired"));
+            IntellisenseProvider?.CloseCompletionWindow();
+            if (dropInfo.Data.Equals(string.Empty))
+            {
+                dropInfo.Effects = DragDropEffects.None;
+            }
+        }
+
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            return;
+        }
+
+        public void OnDragEnter(object sender, System.Windows.DragEventArgs e)
+        {
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragEnter Fired"));
+            IntellisenseProvider?.CloseCompletionWindow();
+        }
+
+        public void Handle(CopyConnectionEvent message)
+        {
+            _sourceDocument = message.SourceDocument;
         }
         #endregion
     }

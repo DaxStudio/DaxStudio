@@ -104,7 +104,7 @@ namespace DaxStudio.UI.Converters
 
         private string FixBindingPath(string columnName)
         {
-            return "[" + columnName.Replace("]","^]").Replace(".","^.").Replace("[","^[") + "]";
+            return "[" + columnName.Replace("]","^]").Replace(".","^.").Replace("[","^[").Replace("^","^^") + "]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

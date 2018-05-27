@@ -9,6 +9,8 @@ using Caliburn.Micro;
 using ADOTabular.AdomdClientWrappers;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
+using DaxStudio.Common;
+using Polly;
 
 namespace DaxStudio.QueryTrace
 {
@@ -243,7 +245,23 @@ namespace DaxStudio.QueryTrace
                     lock (connectionLockObj)
                     {
                         if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-                        _connection.Ping();
+
+                        var policy = Policy
+                            .Handle<Exception>()
+                            .WaitAndRetry(
+                                3,
+                                retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) * 100),
+                                (exception, timeSpan, context) => {
+                                    Log.Error(exception,"{class} {method}", "QueryTraceEngine", "OnTimerElapsed");
+                                    System.Diagnostics.Debug.WriteLine("Error pinging trace connection: " + exception.Message);
+                                    // TODO - should we raise event aggregator 
+                                }
+                            );
+
+                        policy.Execute(() => {
+                            _connection.Ping(); 
+                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTImerElapsed", "Pinging Connection");
+                        });
                     }
                     
                 });
@@ -257,7 +275,7 @@ namespace DaxStudio.QueryTrace
             finally
             {
                 // if past timeout then exit and display error
-                if ((DateTime.UtcNow - utcPingStart).Seconds > 30)
+                if ((DateTime.UtcNow - utcPingStart).Seconds > Constants.TraceStartTimeoutSeconds)
                 {
                     _startingTimer.Stop();
                     DisposeTrace();
@@ -302,8 +320,27 @@ namespace DaxStudio.QueryTrace
 
         public void RaiseError(Exception ex)
         {
-            TraceError?.Invoke(this, ex.Message);
-            Log.Error("{class} {method} {message}/n{stacktrace}", "QueryTraceEngine", "RaiseError", ex.Message, ex.StackTrace);
+            Exception e = ex;
+            while (e.InnerException != null)
+            {
+                e = e.InnerException;
+            }
+            TraceError?.Invoke(this, e.Message);
+            Log.Error(ex,"{class} {method} {message}", "QueryTraceEngine", "RaiseError", GetAllExceptionMessages( ex));
+            if (ex.InnerException != null)
+                Log.Error("{class} {method} {message}/n{stacktrace}", "QueryTraceEngine", "RaiseError (InnerException)", ex.InnerException.Message, ex.InnerException.StackTrace);
+        }
+
+        public string GetAllExceptionMessages(Exception ex)
+        {
+            var innerEx = ex;
+            var msg = "";
+            while (innerEx != null)
+            {
+                msg = innerEx.Message + "\n";
+                innerEx = innerEx.InnerException;
+            }
+            return msg;
         }
 
         private bool _traceStarted;

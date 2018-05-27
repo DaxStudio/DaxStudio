@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using ADOTabular.Utils;
+using System.Data.OleDb;
 
 namespace ADOTabular
 {
@@ -220,7 +221,7 @@ namespace ADOTabular
                                 : "{0};Initial Catalog={1}", connstr, Database.Name);
                 }
                  */ 
-                if (!connstr.Contains("Show Hidden Cubes") && ShowHiddenObjects)
+                if (connstr.IndexOf("Show Hidden Cubes", StringComparison.OrdinalIgnoreCase) == -1 && ShowHiddenObjects)
                 {
                     connstr =
                         string.Format(
@@ -752,7 +753,12 @@ namespace ADOTabular
 
         public string ConnectionStringWithInitialCatalog {
             get {
-                return string.Format("{0};Initial Catalog={1}{2}", this.ConnectionString , _currentDatabase, CurrentCubeInternal);
+                var builder = new OleDbConnectionStringBuilder(ConnectionString);
+                builder["Initial Catalog"] = _currentDatabase;
+                if (!string.IsNullOrEmpty(_currentCube)) builder["Cube"] = _currentCube;
+                return builder.ToString();
+                
+                //return string.Format("{0};Initial Catalog={1}{2}", this.ConnectionString , _currentDatabase, CurrentCubeInternal);
             }
         }
 

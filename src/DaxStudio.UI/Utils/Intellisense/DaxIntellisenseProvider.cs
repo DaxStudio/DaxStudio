@@ -99,6 +99,7 @@ namespace DaxStudio.UI.Utils
                     //InsightWindow insightWindow = new InsightWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
                     
                     completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    completionWindow.PreviewKeyUp += CompletionWindow_PreviewKeyUp;
                     completionWindow.CloseAutomatically = false;
                     
                     completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
@@ -130,6 +131,7 @@ namespace DaxStudio.UI.Utils
                         case "'":
                             PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
                             break;
+
                         default:
                             switch (_daxState.LineState)
                             {
@@ -200,6 +202,7 @@ namespace DaxStudio.UI.Utils
 
                 if (e.Text[0] == '(')
                 {
+                    completionWindow?.Close();
                     var funcName = DaxLineParser.GetPreceedingWord(GetCurrentLine().TrimEnd('(').Trim()).ToLower();
                     Log.Verbose("Func: {Function}", funcName);
                     ShowInsight(funcName);
@@ -211,6 +214,11 @@ namespace DaxStudio.UI.Utils
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
                 Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
+        }
+
+        private void CompletionWindow_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.OemCloseBrackets) _editor.DisposeCompletionWindow();
         }
 
         public void ShowInsight(string funcName)
@@ -296,7 +304,18 @@ namespace DaxStudio.UI.Utils
 
         public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref CompletionWindow completionWindow)
         {
-            
+            if (e.Text.Length > 0 && completionWindow != null)
+            {
+                if (e.Text[0] == '(')
+                {
+                    // Whenever a non-letter is typed while the completion window is open,
+                    // insert the currently selected element.
+                    completionWindow.CompletionList.RequestInsertion(e);
+                    
+                }
+            }
+            // Do not set e.Handled=true.
+            // We still want to insert the character that was typed.
         }
         #endregion
 
@@ -381,6 +400,7 @@ namespace DaxStudio.UI.Utils
             {
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "DEFINE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "ORDER BY", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "ASC", 200.0));
@@ -388,6 +408,10 @@ namespace DaxStudio.UI.Utils
                 tmpData.Add(new DaxCompletionData(this, "SELECT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "FROM", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "WHERE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "VAR", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "RETURN", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "START", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "AT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
@@ -479,5 +503,11 @@ namespace DaxStudio.UI.Utils
         }
 
         public bool MetadataIsCached { get { return Model != null && FunctionGroups != null && Dmvs != null; } }
+
+        public void CloseCompletionWindow()
+        {
+            _editor.InsightWindow.Close();
+            _editor.DisposeCompletionWindow();
+        }
     }
 }

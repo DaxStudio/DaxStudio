@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.ViewModels;
@@ -19,11 +20,13 @@ namespace DaxStudio.UI.Utils {
         bool finalResult;
         Action<bool, IEnumerable<IScreen>> callback;
         private IWindowManager _windowManager;
+        private IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
-        public ApplicationCloseAllStrategy(IWindowManager windowManager )
+        public ApplicationCloseAllStrategy(IWindowManager windowManager, IEventAggregator eventAggregator )
         {
             _windowManager = windowManager;
+            _eventAggregator = eventAggregator;
         }
 
         public void Execute(IEnumerable<IScreen> toClose, Action<bool, IEnumerable<IScreen>> callback)
@@ -58,7 +61,9 @@ namespace DaxStudio.UI.Utils {
                     
                 }
                 else
-                { Evaluate(finalResult); }
+                {
+                    _eventAggregator.PublishOnUIThread(new StopAutoSaveTimerEvent());
+                    Evaluate(finalResult); }
             }
             else
             {

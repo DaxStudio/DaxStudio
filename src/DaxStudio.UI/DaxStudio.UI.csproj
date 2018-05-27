@@ -372,10 +372,18 @@
     <Compile Include="Converters\StringToVisibilityConverter.cs" />
     <Compile Include="Converters\StringToXamlConverter.cs" />
     <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
+    <Compile Include="Enums\DialogResult.cs" />
+    <Compile Include="Enums\OpenDialogResult.cs" />
     <Compile Include="Enums\QueryEndSubClass.cs" />
+    <Compile Include="Events\AutoSaveEvent.cs" />
+    <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
+    <Compile Include="Events\CopyConnectionEvent.cs" />
     <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
     <Compile Include="Events\LoggingEnabledEvent.cs" />
+    <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
+    <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
+    <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
@@ -383,6 +391,10 @@
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Model\AutoSaveIndex.cs" />
+    <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\QueryInfo.cs" />
+    <Compile Include="Model\QueryParameter.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />
@@ -465,6 +477,7 @@
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
+    <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
@@ -473,6 +486,8 @@
     <Compile Include="Extensions\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
+    <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
     <Compile Include="Utils\SystemInfo.cs" />
@@ -517,6 +532,8 @@
     <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\ExportDataDialogViewModel.cs" />
+    <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
+    <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Views\GotoLineDialogView.xaml.cs">
@@ -594,6 +611,12 @@
     <Compile Include="Views\ExportDataDialogView.xaml.cs">
       <DependentUpon>ExportDataDialogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\QueryParametersDialogView.xaml.cs">
+      <DependentUpon>QueryParametersDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AutoSaveRecoverDialogView.xaml.cs">
+      <DependentUpon>AutoSaveRecoverDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SaveDialogView.xaml.cs">
       <DependentUpon>SaveDialogView.xaml</DependentUpon>
     </Compile>
@@ -663,6 +686,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ExportDataDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\QueryParametersDialogView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\AutoSaveRecoverDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

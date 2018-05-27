@@ -30,7 +30,7 @@ namespace DaxStudio.Tests
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext) {
-            ConnectionString = @"Data Source=localhost\tab16;";
+            ConnectionString = @"Data Source=localhost\tab17;";
             //ConnectionString = @"Data Source=.\sql2014tb";
         }
         //

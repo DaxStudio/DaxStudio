@@ -10,7 +10,8 @@ namespace DaxStudio.UI.Enums
     {
         Loaded,
         LoadPending,
-        New
+        New,
+        RecoveryPending
     }
 
 

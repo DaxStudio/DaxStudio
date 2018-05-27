@@ -147,6 +147,13 @@
 
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding   Key="N" Modifiers="Control+Shift"/>
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="NewDocumentWithCurrentConnection"/>
+        </triggers:InputBindingTrigger>
+        
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="O" Modifiers="Control"/>
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="OpenDocument"/>
