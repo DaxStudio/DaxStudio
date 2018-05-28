@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var modelMeasure in modelMeasures) {
                     //string daxMeasureName = "[" + modelMeasure.Name + "]";
                     //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
-                    Regex daxMeasureRegex = new Regex(@"[^\w']\[" + modelMeasure.Name + "]");
+                    Regex daxMeasureRegex = new Regex(@"[^\w']?\[" + modelMeasure.Name + "]");
                     
                     string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
         
