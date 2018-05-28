@@ -319,6 +319,40 @@ FROM $SYSTEM.TMSCHEMA_COLUMNS
 ORDER BY [TableID] ASC
 "
                  },
+        new ModelAnalyzerTable()
+                 {
+                     TableName = "ColumnsStorages",
+                     MinCompatibilityLevel = 1200,
+                     Query = @"
+SELECT
+    [ColumnID],
+    [StoragePosition],
+    [DictionaryStorageID],
+    [Settings],
+    [ColumnFlags],
+    [Collation],
+    [OrderByColumn],
+    [Locale],
+    [BinaryCharacters],
+    [Statistics_DistinctStates],
+    [Statistics_MinDataID],
+    [Statistics_MaxDataID],
+    [Statistics_OriginalMinSegmentDataID],
+    [Statistics_RLESortOrder],
+    [Statistics_RowCount],
+    [Statistics_HasNulls],
+    [Statistics_RLERuns],
+    [Statistics_OthersRLERuns],
+    [Statistics_Usage],
+    [Statistics_DBType],
+    [Statistics_XMType],
+    [Statistics_CompressionType],
+    [Statistics_CompressionParam],
+    [Statistics_EncodingHint]
+FROM $SYSTEM.TMSCHEMA_COLUMN_STORAGES
+ORDER BY [ColumnID] ASC
+"
+                 },
                 new ModelAnalyzerTable()
                  {
                      TableName = "TablesMetadata",
@@ -420,7 +454,7 @@ ORDER BY [TableID] ASC
 
             foreach (var qry in GetQueries()) {
                 // skip over this query if the compatibility level is not supported for the current database
-                if (qry.MinCompatibilityLevel >= db.CompatibilityLevel) continue;
+                if (qry.MinCompatibilityLevel > db.CompatibilityLevel) continue;
                 if (qry.MaxCompatibilityLevel < db.CompatibilityLevel) continue;
                 try
                 {
@@ -562,6 +596,10 @@ ORDER BY [TableID] ASC
             
             foreach (DataRow columnRow in columnCardinalityTable.Rows)
             {
+                // TODO: We might get the COLUMN_CARDINALITY from the Columns Storages table if available, 
+                //       so we keep compatibility in case IsAvailableInMDX is set to false and column hierarchy is not available
+                //       by doing this we can remove the calculated column in VertiPaq Analyzer to compute the right estimate
+                //       Marco - 2018-05-22
                 string columnName = columnRow["COLUMN_HIERARCHY_ID"].ToString();
                 columnName = columnName.Split('$')[2];
                 var filterExpression = string.Format("TABLE_NAME = '{0}' and COLUMN_ID = '{1}'", columnRow["TABLE_NAME"], columnName);
