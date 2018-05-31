@@ -323,6 +323,26 @@
                             <Button Margin="5" Padding="3" Name="ExportDAXFunctions">Export Functions</Button>
                             </StackPanel>
                         </GroupBox>
+
+                        <GroupBox Header="Preview Features" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+
+                                </Grid.RowDefinitions>
+                                <Label Grid.Row="0" Grid.Column="1" Content="Show Export Metrics button"/>
+
+                                <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export metrics about your data model to a .vpax file which can be imported into Vertipaq Analyzer v2</TextBlock>
+
+                            </Grid>
+                        </GroupBox>
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>

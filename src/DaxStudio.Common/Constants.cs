@@ -11,7 +11,7 @@ namespace DaxStudio.Common
         public const string LogFolder = @"%APPDATA%\DaxStudio\log\";
         public const string ExcelLogFileName = "DaxStudioExcel-{Date}.log";
         public const string StandaloneLogFileName = "DaxStudio-{Date}.log";
-        public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveIndex.json";
+        public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveMasterIndex.json";
         public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
 
         public const System.Windows.Input.Key LoggingHotKey1 = System.Windows.Input.Key.LeftShift;

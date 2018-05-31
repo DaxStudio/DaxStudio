@@ -357,8 +357,8 @@ namespace DaxStudio.UI.ViewModels
             // add new databases
             foreach (DatabaseReference dbRef in newList)
             {
-                var found = _databasesView.Where(db => db.Name == dbRef.Name).DefaultIfEmpty();
-                if (found != null) _databasesView.Add(dbRef);
+                var found = _databasesView.Where(db => db.Name == dbRef.Name).FirstOrDefault();
+                if (found == null) _databasesView.Add(dbRef);
             }
 
             NotifyOfPropertyChange(() => DatabasesView);
@@ -376,11 +376,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 //if (value == null) ActiveDocument.SelectedDatabase = null;
 
-                if (value == _selectedDatabase)
-                {
-                    NotifyOfPropertyChange(() => SelectedDatabase);
-                    return;
-                }
+                //if (value == _selectedDatabase)
+                //{
+                //    NotifyOfPropertyChange(() => SelectedDatabase);
+                //    return;
+                //}
 
 
                 //if (value != null) ActiveDocument.SelectedDatabase = value.Name;

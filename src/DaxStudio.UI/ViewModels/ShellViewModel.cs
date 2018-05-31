@@ -10,6 +10,8 @@ using Serilog;
 using System.Windows;
 using DaxStudio.Common;
 using System.Timers;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -48,9 +50,11 @@ namespace DaxStudio.UI.ViewModels
             _host = host;
             _app = Application.Current;
 
+            // TODO - get master auto save indexes and only get crashed index files...
+
             // check for auto-saved files and offer to recover them
-            var autoSaveInfo = AutoSaver.GetAutoSaveIndex();
-            if (autoSaveInfo.Files.Count > 0)
+            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
+            if (autoSaveInfo.Values.Where(idx => idx.ShouldRecover).Count() > 0)
                 RecoverAutoSavedFiles(autoSaveInfo);
             else
             {
@@ -79,9 +83,9 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        private void RecoverAutoSavedFiles(AutoSaveIndex autoSaveInfo)
+        private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
-            Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Files.Count} auto saved files");
+            Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
             // TODO - show recovery dialog
             _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
             

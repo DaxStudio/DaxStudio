@@ -42,7 +42,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private int _documentCount = 1;
         private DocumentViewModel _activeDocument;
-        private AutoSaveIndex _autoSaveRecoveryIndex;
+        private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
@@ -246,14 +246,16 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(AutoSaveRecoveryEvent message)
         {
-            _autoSaveRecoveryIndex = message.AutoSaveIndex;
+            _autoSaveRecoveryIndex = message.AutoSaveMasterIndex;
 
             if (!message.RecoveryInProgress)
             {
                 // if auto save recovery is not already in progress 
                 // prompt the user for which files should be recovered
                 var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
-                autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(message.AutoSaveIndex.Files);
+
+                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover).SelectMany(entry => entry.Files);
+                autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover);
 
                 _windowManager.ShowDialogBox(autoSaveRecoveryDialog, settings: new Dictionary<string, object>
                 {
@@ -269,7 +271,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     message.RecoveryInProgress = true;
 
-                    var fileToOpen = _autoSaveRecoveryIndex.Files.Where(x => x.ShouldOpen).First();
+                    var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
 
                     if (fileToOpen != null)
                     {
@@ -291,7 +293,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(RecoverNextAutoSaveFileEvent message)
         {
             
-            var fileToOpen = _autoSaveRecoveryIndex.Files.Where(x => x.ShouldOpen).FirstOrDefault();
+            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
 
             if (fileToOpen != null)
             {

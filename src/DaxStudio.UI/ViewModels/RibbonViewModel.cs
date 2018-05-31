@@ -30,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<TraceChangedEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<DocumentConnectionUpdateEvent>
+        , IHandle<UpdateGlobalOptions>
 //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -637,6 +638,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showExportMetrics;
+        public bool ShowExportMetrics {
+            get { return _showExportMetrics; }
+            private set {
+                _showExportMetrics = value;
+                NotifyOfPropertyChange(() => ShowExportMetrics);
+            }
+        }
+
         public void ExportAnalysisData()
         {
             _activeDocument.ExportAnalysisData();
@@ -657,6 +667,11 @@ namespace DaxStudio.UI.ViewModels
                     { "AllowsTransparency",true}
 
                 });           
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            ShowExportMetrics = Options.ShowExportMetrics;
         }
     }
 }

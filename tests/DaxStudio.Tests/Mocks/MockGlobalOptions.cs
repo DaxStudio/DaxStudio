@@ -31,5 +31,7 @@ namespace DaxStudio.Tests.Mocks
         public bool CanPublishDaxFunctions { get; set; }
 
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
+
+        public bool ShowExportMetrics { get;set; }
     }
 }

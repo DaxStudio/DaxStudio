@@ -65,6 +65,7 @@ namespace DaxStudio.UI.ViewModels
             ShowTooltipBasicStats = RegistryHelper.GetValue<bool>("ShowTooltipBasicStats", true);
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
+            ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -365,6 +366,23 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ExcludeHeadersWhenCopyingResults", value);
                 NotifyOfPropertyChange(() => ExcludeHeadersWhenCopyingResults);
+            }
+        }
+
+        private bool _showExportMetrics = false;
+        public bool ShowExportMetrics
+        {
+            get
+            {
+                return _showExportMetrics;
+            }
+
+            set
+            {
+                _showExportMetrics = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowExportMetrics", value);
+                NotifyOfPropertyChange(() => ShowExportMetrics);
             }
         }
 

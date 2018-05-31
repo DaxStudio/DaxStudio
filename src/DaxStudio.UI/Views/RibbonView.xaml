@@ -738,7 +738,7 @@
         </Fluent:RibbonTabItem>
 
             <!-- Advanced Ribbon Tab-->
-        <Fluent:RibbonTabItem Header="Advanced" >
+        <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="">
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"

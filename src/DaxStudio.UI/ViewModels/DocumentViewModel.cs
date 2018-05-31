@@ -41,6 +41,7 @@ using System.Net.Http.Headers;
 using System.IO.Compression;
 using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
+using CsvHelper;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -544,11 +545,13 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
         public string SelectedDatabase { get {
-            if (_selectedDatabase == null && IsConnected)
-            {
-                _selectedDatabase = Connection.Database.Name;
+                return Connection.Database.Name;
+                //if (_selectedDatabase == null && IsConnected)
+                //{
+                //    _selectedDatabase = Connection.Database.Name;
+                //}
+                //return _selectedDatabase;
             }
-            return _selectedDatabase; }
             //set
             //{
             //    if (value != _selectedDatabase)
@@ -2229,7 +2232,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _statusBarMessage = "Ready";
-        private string _selectedDatabase;
+        //private string _selectedDatabase;
         public string StatusBarMessage
         {
             get
@@ -2874,6 +2877,38 @@ namespace DaxStudio.UI.ViewModels
                     }
                     package.Close();
                 }
+
+                // create zipped .vpax2 file with individual csv files
+                
+                //using (Package package = Package.Open(path + "2", FileMode.Create))
+                //{
+                //    foreach (DataTable dt in info.Tables)
+                //    {
+                //        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.csv", UriKind.Relative));
+                //        using (StreamWriter sw = new StreamWriter(package.CreatePart(uri2, "application/text", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
+                //        using (CsvWriter csv = new CsvWriter(sw))
+                //        {
+                //            // Write columns
+                //            foreach (DataColumn column in dt.Columns)
+                //            {
+                //                csv.WriteField(column.ColumnName);
+                //            }
+                //            csv.NextRecord();
+
+                //            // Write row values
+                //            foreach (DataRow row in dt.Rows)
+                //            {
+                //                for (var i = 0; i < dt.Columns.Count; i++)
+                //                {
+                //                    csv.WriteField(row[i]);
+                //                }
+                //                csv.NextRecord();
+                //            }
+                            
+                //        }
+                //    }
+                //    package.Close();
+                //}
 
             }  
 

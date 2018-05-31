@@ -55,5 +55,7 @@ namespace DaxStudio.SignalR
         }
 
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
+
+        public bool ShowExportMetrics { get; set; }
     }
 }
