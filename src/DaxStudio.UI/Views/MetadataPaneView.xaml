@@ -245,7 +245,7 @@
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                         <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
@@ -266,6 +266,18 @@
                                                         </StackPanel>
                                                     </TextBlock.ToolTip>    
                                                 </TextBlock>
+                                        <StackPanel.ContextMenu>
+                                            <ContextMenu 
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsTable }"
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                <MenuItem Header="Define Filter Dump Measure"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureOneTable($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define Filter Dump Measure (All tables)"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureAllTables($dataContext)]">
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </StackPanel.ContextMenu>
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
 
@@ -361,8 +373,8 @@
 
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
-                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
-                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }">
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }"
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
@@ -375,6 +387,7 @@
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 
+                                        
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>

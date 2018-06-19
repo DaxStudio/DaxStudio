@@ -139,7 +139,7 @@ namespace DaxStudio.UI.Model
         }
     }
 
-    class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
+    public class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
     {
         private readonly ADOTabularTable _table;
         
@@ -305,6 +305,13 @@ namespace DaxStudio.UI.Model
             {
                 return this.MetadataImage == MetadataImages.Measure 
                     || this.MetadataImage == MetadataImages.HiddenMeasure;
+            }
+        }
+
+        public bool IsTable {
+            get {
+                return this.MetadataImage == MetadataImages.Table
+                    || this.MetadataImage == MetadataImages.HiddenTable;
             }
         }
 

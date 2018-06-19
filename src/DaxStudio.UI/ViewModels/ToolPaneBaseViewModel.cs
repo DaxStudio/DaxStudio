@@ -186,6 +186,48 @@ namespace DaxStudio.UI.ViewModels
         public void DefineMeasure(TreeViewColumn item) {
             DefineMeasure(item, false);
         }
+        public void DefineFilterDumpMeasureAllTables(TreeViewTable item) {
+            DefineFilterDumpMeasure(item, true);
+        }
+        public void DefineFilterDumpMeasureOneTable(TreeViewTable item) {
+            DefineFilterDumpMeasure(item, false);
+        }
+
+        public void DefineFilterDumpMeasure(TreeViewTable item, bool allTables) {
+            if (item == null) {
+                return;
+            }
+            string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption ) );
+            try {
+                var model = Connection.Database.Models.BaseModel;
+                var distinctColumns = (from t in model.Tables
+                                       from c in t.Columns
+                                       where c.ColumnType == ADOTabularColumnType.Column
+                                           && (allTables || t.Caption == item.Caption)
+                                       select c).Distinct().ToList();
+                string measureExpression = "\r\nVAR MaxFilters = 3\r\nRETURN\r\n";
+                bool firstMeasure = true;
+                foreach ( var c in distinctColumns) {
+                    if (!firstMeasure) measureExpression += "\r\n & ";
+                    measureExpression += string.Format(@"IF ( 
+    ISFILTERED ( {0}[{1}] ), 
+    VAR ___f = FILTERS ( {0}[{1}] ) 
+    VAR ___r = COUNTROWS ( ___f ) 
+    VAR ___t = TOPN ( MaxFilters, ___f, {0}[{1}] )
+    VAR ___d = CONCATENATEX ( ___t, {0}[{1}], "", "" )
+    VAR ___x = ""{0}[{1}] = "" & ___d & IF(___r > MaxFilters, "", ... ["" & ___r & "" items selected]"") & "" "" 
+    RETURN ___x & UNICHAR(13) & UNICHAR(10)
+)", c.Table.DaxName, c.Name);
+                    firstMeasure = false;
+                }
+
+                EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
+            }
+            catch (System.Exception ex) {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineFilterDumpMeasure", ex.Message, ex.StackTrace);
+
+            }
+        }
 
         public void DefineMeasure(TreeViewColumn item, bool expandMeasure)
         {
