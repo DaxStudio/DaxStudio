@@ -34,10 +34,12 @@ namespace DaxStudio.UI.ViewModels
         public bool HighlightQuery { get; set; }
 
         // String that highlight important parts of the query
-        // Currently implement only the strong (~E~/~S~) for CallbackDataID function 
+        // Currently implement only the strong (~E~/~S~) for CallbackDataID and EncodeCallback function s
         public string QueryRichText {
             get {
-                return Query.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                string step1 = Query.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                string step2 = step1.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
+                return step2;
             }
         }
 
