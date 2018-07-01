@@ -669,7 +669,19 @@
                                            />
                     </Fluent:ToggleButton.ToolTip>
                 </Fluent:ToggleButton>
-
+                <Fluent:ToggleButton x:Name="TimingsBatch" IsChecked="{Binding ServerTimingDetails.ShowBatch, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Batch"
+                                Icon="{StaticResource TimingsBatch}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Batch"
+                                          Text="Show batch events"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+                
 
                 <Fluent:ToggleButton x:Name="TimingsRightPane" 
                                 IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 

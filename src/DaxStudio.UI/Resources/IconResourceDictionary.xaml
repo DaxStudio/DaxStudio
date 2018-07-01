@@ -78,6 +78,7 @@
     <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-daxformatter@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="MergeIcon"  UriSource="..\images\icon-merge.png"></BitmapImage>
     <BitmapImage x:Key="TimingsInternal"  UriSource="..\images\icon-showinternal.png"></BitmapImage>
+    <BitmapImage x:Key="TimingsBatch"  UriSource="..\images\icon-showbatch.png"></BitmapImage>
     <BitmapImage x:Key="TimingsCache"  UriSource="..\images\icon-showcache.png"></BitmapImage>
     <BitmapImage x:Key="RightPane"  UriSource="..\images\icon-rightpane.png"></BitmapImage>
     <BitmapImage x:Key="BottomPane"  UriSource="..\images\icon-bottompane.png"></BitmapImage>

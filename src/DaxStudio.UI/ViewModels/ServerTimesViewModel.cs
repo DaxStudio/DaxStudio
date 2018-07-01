@@ -348,9 +348,16 @@ namespace DaxStudio.UI.ViewModels
                           where
                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal && ServerTimingDetails.ShowInternal)
                           ||
+                          (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan && ServerTimingDetails.ShowBatch)
+                          ||
                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && ServerTimingDetails.ShowCache)
                           ||
-                          ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal) && ServerTimingDetails.ShowScan)
+                          ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
+                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                           ) && ServerTimingDetails.ShowScan)
+
+
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }

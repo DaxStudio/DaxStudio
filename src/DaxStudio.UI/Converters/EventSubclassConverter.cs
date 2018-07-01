@@ -18,6 +18,8 @@ namespace DaxStudio.UI.Converters {
                         return "Internal";
                     case DaxStudioTraceEventSubclass.VertiPaqScan:
                         return "Scan";
+                    case DaxStudioTraceEventSubclass.BatchVertiPaqScan:
+                        return "Batch";
                     default:
                         return csc.ToString();
                 }
@@ -29,6 +31,8 @@ namespace DaxStudio.UI.Converters {
                         return "Internal";
                     case DaxStudioTraceEventSubclass.VertiPaqScan:
                         return "Scan";
+                    case DaxStudioTraceEventSubclass.BatchVertiPaqScan:
+                        return "Batch";
                     case DaxStudioTraceEventSubclass.NotAvailable:
                         switch (csc.Class) {
                             case DaxStudioTraceEventClass.DirectQueryEnd:

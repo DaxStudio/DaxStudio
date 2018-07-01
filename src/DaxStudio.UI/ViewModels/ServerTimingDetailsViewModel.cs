@@ -16,6 +16,8 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowScan { get {return _showScan;} set {_showScan = value; NotifyOfPropertyChange(() => ShowScan);} }
         private bool _showInternal;
         public bool ShowInternal { get { return _showInternal; } set { _showInternal = value; NotifyOfPropertyChange(() => ShowInternal); } }
+        private bool _showBatch;
+        public bool ShowBatch { get { return _showBatch; } set { _showBatch = value; NotifyOfPropertyChange(() => ShowBatch); } }
         private bool _showCache;
         public bool ShowCache { get { return _showCache; } set { _showCache = value; NotifyOfPropertyChange(() => ShowCache); } }
 
