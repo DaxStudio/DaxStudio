@@ -11,6 +11,8 @@ namespace DaxStudio.SignalR
 
         public DelimiterType DefaultSeparator { get; set; }
 
+        public DaxFormatStyle DefaultDaxFormatStyle { get; set; }
+
         public bool EditorEnableIntellisense { get; set; }
 
         public string EditorFontFamily { get; set; }

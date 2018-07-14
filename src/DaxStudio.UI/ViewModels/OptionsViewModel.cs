@@ -35,6 +35,7 @@ namespace DaxStudio.UI.ViewModels
         private IEventAggregator _eventAggregator;
         
         private DelimiterType _defaultSeparator;
+        private DaxFormatStyle _defaultDaxFormatStyle;
         private bool _showPreReleaseNotifcations;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
@@ -66,6 +67,7 @@ namespace DaxStudio.UI.ViewModels
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
             ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
+            DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
         }
 
         public string EditorFontFamily { get { return _selectedFontFamily; } 
@@ -290,11 +292,32 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public DaxFormatStyle DefaultDaxFormatStyle {
+            get {
+                return _defaultDaxFormatStyle;
+            }
+
+            set {
+                if (_defaultDaxFormatStyle == value) return;
+                _defaultDaxFormatStyle = value;
+                NotifyOfPropertyChange(() => DefaultDaxFormatStyle);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>(nameof(DefaultDaxFormatStyle), (int)value);
+            }
+        }
+
         public IEnumerable<DelimiterType> SeparatorTypes
         {
             get {
                 var items = Enum.GetValues(typeof(DelimiterType)).Cast<DelimiterType>()
                                 .Where(e => e != DelimiterType.Unknown);
+                return items;
+            }
+        }
+
+        public IEnumerable<DaxFormatStyle> DaxFormatStyles {
+            get {
+                var items = Enum.GetValues(typeof(DaxFormatStyle)).Cast<DaxFormatStyle>();
                 return items;
             }
         }

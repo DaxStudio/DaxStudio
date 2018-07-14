@@ -9,7 +9,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="900">
+             d:DesignHeight="587.195" d:DesignWidth="900">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
@@ -77,7 +77,7 @@
 		<!-- Editor -->
         <TabControl Grid.Row="1">
             <TabItem Header="Standard">
-        <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
+        <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,0,0,-42.5" >
             <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
             <GroupBox Header="Editor" Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
 	            <Grid Margin="5,5,0,0">
@@ -307,7 +307,30 @@
                                
                             </Grid>
                         </GroupBox>
+                        <GroupBox Header="Dax Formatter"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
 
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+
+                                </Grid.RowDefinitions>
+                                <Label  Content="Default Format Style:"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding DaxFormatStyles}" SelectedItem="{Binding DefaultDaxFormatStyle}">
+
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                            </Grid>
+                        </GroupBox>
                         <!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                         </GroupBox>-->
            </WrapPanel>

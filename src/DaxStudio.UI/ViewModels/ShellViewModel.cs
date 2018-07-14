@@ -301,9 +301,13 @@ namespace DaxStudio.UI.ViewModels
             Ribbon.FindPrevNow();
         }
 
-        public void FormatQuery()
+        public void FormatQueryAlternate()
         {
-            Ribbon.FormatQuery();
+            Ribbon.FormatQueryAlternate();
+        }
+        public void FormatQueryStandard()
+        {
+            Ribbon.FormatQueryStandard();
         }
 
         public void SwapDelimiters()

@@ -246,9 +246,16 @@
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F6" />
             </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="FormatQuery"/>
+            <cal:ActionMessage MethodName="FormatQueryStandard"/>
         </triggers:InputBindingTrigger>
-
+        
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding Modifiers="Ctrl" Key="F6" />
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="FormatQueryAlternate"/>
+        </triggers:InputBindingTrigger>
+        
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Modifiers="Ctrl" Key="G" />

@@ -113,11 +113,14 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.MergeParameters();
         }
 
-        public void FormatQuery()
+        public void FormatQueryStandard()
         {
-            ActiveDocument.FormatQuery();
+            ActiveDocument.FormatQuery( false );
         }
-
+        public void FormatQueryAlternate()
+        {
+            ActiveDocument.FormatQuery( true );
+        }
         public void Undo()
         {
             ActiveDocument.Undo();

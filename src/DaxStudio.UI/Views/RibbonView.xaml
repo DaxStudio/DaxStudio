@@ -504,14 +504,14 @@
             <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{StaticResource ToUpperIcon}">
                 <Fluent:Button Name="FormatQuery"
                                Header="Format Query"
-                               cal:Message.Attach="[Event Click] = [Action FormatQuery()]"
+                               cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]"
                                Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
                                Margin="0,0,10,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Format Query"
+                        <Fluent:ScreenTip Title="Format Query (F6)"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>

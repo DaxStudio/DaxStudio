@@ -2437,7 +2437,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void FormatQuery()
+        public void FormatQuery( bool formatAlternateStyle ) 
         {
             using (var msg = new StatusBarMessage(this, "Formatting Query..."))
             {
@@ -2483,7 +2483,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (qry.Trim().Length == 0) return; // no query text to format so exit here
 
-                DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator).ContinueWith((res) =>
+                DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator, formatAlternateStyle ).ContinueWith((res) =>
                 {
                     // todo - should we be checking for exceptions in this continuation
                     Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
