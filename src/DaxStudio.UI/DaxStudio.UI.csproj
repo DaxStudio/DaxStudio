@@ -1037,9 +1037,6 @@
     <Resource Include="Images\icon-database%4024px.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon-daxformatter%4016px.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\daxstudio-splash%4096ppi.png" />
     <Resource Include="Images\daxstudio-splash.png" />
   </ItemGroup>
@@ -1052,8 +1049,6 @@
   <ItemGroup>
     <Resource Include="Images\icon-cancel.png" />
     <Resource Include="Images\icon-clearcache.png" />
-    <Resource Include="Images\icon-daxformatter%4096ppi.png" />
-    <Resource Include="Images\icon-daxformatter.png" />
     <Resource Include="Images\icon-info%4096ppi.png" />
     <Resource Include="Images\icon-info.png" />
     <Resource Include="Images\icon-merge%4096ppi.png" />
@@ -1181,10 +1176,14 @@
     <Resource Include="Images\icon-export-metrics%4096ppi.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon-showbatch.png" />
+    <Resource Include="Images\icon-dax-formatter%40216ppi.png" />
+    <Resource Include="Images\icon-dax-formatter%4096ppi.png" />
+    <Resource Include="Images\icon-dax-formatter.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\icon-showbatch%40216ppi.png" />
     <Resource Include="Images\icon-showbatch%4096ppi.png" />
+    <Resource Include="Images\icon-showbatch.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

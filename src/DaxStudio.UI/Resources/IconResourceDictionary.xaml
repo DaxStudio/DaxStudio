@@ -75,7 +75,7 @@
     <BitmapImage x:Key="RefreshIconLarger"  UriSource="..\images\icon-refresh@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="ReplaceIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-replace_x16.png"/>
     <BitmapImage x:Key="FindIconSmall" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/icon-find_x16.png"/>
-    <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-daxformatter@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="DaxFormatterIcon"  UriSource="..\images\icon-dax-formatter@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="MergeIcon"  UriSource="..\images\icon-merge.png"></BitmapImage>
     <BitmapImage x:Key="TimingsInternal"  UriSource="..\images\icon-showinternal.png"></BitmapImage>
     <BitmapImage x:Key="TimingsBatch"  UriSource="..\images\icon-showbatch.png"></BitmapImage>

@@ -138,7 +138,7 @@ namespace DaxStudio.UI.Utils
                     if (process.StartInfo.FileName != currentProcessFileName)
                         _masterAutoSaveIndex[procId].ShouldRecover = true;
                 }
-                catch (ArgumentException ex)
+                catch (ArgumentException )
                 {
                     // if this process id does not exist the previous 
                     // DAX Studio process must have crashed and needs to be recovered
