@@ -39,6 +39,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.IO.Compression;
+using System.Configuration;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1570,7 +1571,10 @@ namespace DaxStudio.UI.ViewModels
                 SaveAs();
             else
             {
-                using (TextWriter tw = new StreamWriter(FileName, false, Encoding.Unicode))
+                var encodingName = ConfigurationManager.AppSettings["FileEditor.Encoding"];
+                var encoding = string.IsNullOrEmpty(encodingName) ? Encoding.Unicode : Encoding.GetEncoding(encodingName);
+
+                using (TextWriter tw = new StreamWriter(FileName, false, encoding))
                 {
                     tw.Write(GetEditor().Text);
                     tw.Close();
