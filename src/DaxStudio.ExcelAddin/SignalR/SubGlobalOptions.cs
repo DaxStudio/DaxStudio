@@ -19,6 +19,10 @@ namespace DaxStudio.SignalR
 
         public double EditorFontSize { get; set; }
 
+        public string ResultFontFamily { get; set; }
+
+        public double ResultFontSize { get; set; }
+
         public bool EditorShowLineNumbers { get; set; }
 
         public bool CanPublishDaxFunctions { get; set; }

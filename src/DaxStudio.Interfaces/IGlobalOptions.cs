@@ -9,6 +9,8 @@ namespace DaxStudio.Interfaces
         bool EditorShowLineNumbers { get; set; }
         double EditorFontSize { get; set; }
         string EditorFontFamily { get; set; }
+        double ResultFontSize { get; set; }
+        string ResultFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
         int QueryHistoryMaxItems { get; set; }
         bool QueryHistoryShowTraceColumns { get; set; }

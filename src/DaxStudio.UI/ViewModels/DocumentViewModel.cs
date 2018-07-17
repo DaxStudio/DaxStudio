@@ -2719,6 +2719,20 @@ namespace DaxStudio.UI.ViewModels
                 this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
                 this.SizeUnitLabel.StringValue = "100";
             }
+            /*
+             * MARCO 2018-07-17 - How to set the font family and size of the result grid?
+            var result = QueryResultsPane;
+            if (result.FontFamily.Source != _options.ResultFontFamily)
+            {
+                result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
+            }
+            if (result.FontSize != _options.ResultFontSize)
+            {
+                result.FontSize = _options.ResultFontSize;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                this.SizeUnitLabel.StringValue = "100";
+            }
+            */
             if (_options.EditorEnableIntellisense)
             {
                 _editor.EnableIntellisense(IntellisenseProvider);

@@ -17,10 +17,12 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(OptionsViewModel))]
     public class OptionsViewModel:Screen, IGlobalOptions
     {
-        private string _selectedFontFamily;
+        private string _selectedEditorFontFamily;
+        private string _selectedResultFontFamily;
         private bool _showLineNumbers;
         private bool _enableIntellisense;
-        private double _fontSize;
+        private double _editorFontSize;
+        private double _resultFontSize;
         private bool _proxyUseSystem;
         private string _proxyAddress;
         private string _proxyUser;
@@ -50,6 +52,8 @@ namespace DaxStudio.UI.ViewModels
 
             EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", "Lucida Console");
             EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", 11);
+            ResultFontFamily = RegistryHelper.GetValue<string>("ResultFontFamily", "Arial");
+            ResultFontSize = RegistryHelper.GetValue<double>("ResultFontSize", 11);
             EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers", true);
             EditorEnableIntellisense = RegistryHelper.GetValue<bool>("EditorEnableIntellisense", true);
             ProxyUseSystem = RegistryHelper.GetValue<bool>("ProxyUseSystem", true);
@@ -70,10 +74,10 @@ namespace DaxStudio.UI.ViewModels
             DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
         }
 
-        public string EditorFontFamily { get { return _selectedFontFamily; } 
+        public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
             set{
-                if (_selectedFontFamily == value) return;
-                _selectedFontFamily = value;
+                if (_selectedEditorFontFamily == value) return;
+                _selectedEditorFontFamily = value;
                 NotifyOfPropertyChange(() => EditorFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("EditorFontFamily", value);
@@ -81,15 +85,39 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public double EditorFontSize { get { return _fontSize; } 
+        public double EditorFontSize { get { return _editorFontSize; } 
             set {
-                if (_fontSize == value) return;
-                _fontSize = value;
+                if (_editorFontSize == value) return;
+                _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("EditorFontSize", value);
             } 
         }
+
+        public string ResultFontFamily {
+            get { return _selectedResultFontFamily; }
+            set {
+                if (_selectedResultFontFamily == value) return;
+                _selectedResultFontFamily = value;
+                NotifyOfPropertyChange(() => ResultFontFamily);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<string>("ResultFontFamily", value);
+
+            }
+        }
+
+        public double ResultFontSize {
+            get { return _resultFontSize; }
+            set {
+                if (_resultFontSize == value) return;
+                _resultFontSize = value;
+                NotifyOfPropertyChange(() => ResultFontSize);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<double>("ResultFontSize", value);
+            }
+        }
+
         public bool EditorShowLineNumbers { get { return _showLineNumbers; }
             set
             {
