@@ -118,7 +118,7 @@ namespace DaxStudio.UI.Extensions
 
 
 
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat = false)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
@@ -131,7 +131,6 @@ namespace DaxStudio.UI.Extensions
                 DataTable dt = new DataTable(tableIdx.ToString());
                 // You can also use an ArrayList instead of List<>
                 List<DataColumn> listCols = new List<DataColumn>();
-                    
                 if (dtSchema != null)
                 {
                     foreach (DataRow row in dtSchema.Rows)
@@ -146,6 +145,38 @@ namespace DaxStudio.UI.Extensions
                         if (daxCol != null) {
                             column.ExtendedProperties.Add(Constants.FORMAT_STRING, daxCol.FormatString);
                             if (localeId != 0) column.ExtendedProperties.Add(Constants.LOCALE_ID, localeId);
+                        }
+                        else if (autoFormat) {
+                            string formatString;
+                            switch (column.DataType.Name)
+                            {
+                                case "Double":
+                                    if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
+                                        formatString = "0.00%";
+                                    }
+                                    else {
+                                        formatString = "#,0.00";
+                                    }
+                                    break;
+                                case "Int64":
+                                    formatString = "#,#";
+                                    break;
+                                case "Decimal":
+                                    if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
+                                        formatString = "0.00%";
+                                    }
+                                    else {
+                                        formatString = "#,0.00";
+                                    }
+                                    break;
+                                default:
+                                    formatString = null;
+                                    break;
+                            }
+                            if (formatString != null) {
+                                column.ExtendedProperties.Add(Constants.FORMAT_STRING, formatString);
+                                if (localeId != 0) column.ExtendedProperties.Add(Constants.LOCALE_ID, localeId);
+                            }
                         }
                         listCols.Add(column);
                         dt.Columns.Add(column);

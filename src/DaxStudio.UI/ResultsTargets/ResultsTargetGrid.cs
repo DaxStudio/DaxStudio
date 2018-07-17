@@ -37,6 +37,9 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
+            // Marco 2018-07-17 The ResultAutoFormat is a not documented setting at the moment
+            // TODO: Implement configuration and expose the option
+            bool autoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false );
             return Task.Run(() =>
                 {
                     long durationMs = 0;
@@ -53,7 +56,7 @@ namespace DaxStudio.UI.Model
                             if (dataReader != null)
                             {
                                 Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                                runner.ResultsDataSet = dataReader.ConvertToDataSet();
+                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat);
                                 Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
 
                                 sw.Stop();
