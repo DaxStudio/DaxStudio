@@ -159,7 +159,7 @@ namespace DaxStudio.UI.Extensions
                                     }
                                     break;
                                 case "Int64":
-                                    formatString = "#,#";
+                                    formatString = "#,0";
                                     break;
                                 case "Decimal":
                                     if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
