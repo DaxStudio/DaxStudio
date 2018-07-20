@@ -279,6 +279,7 @@
       <Word>RETURN</Word>
       <Word>SELECT</Word>
       <Word>START</Word>
+      <Word>TABLE</Word>
       <Word>VAR</Word>
 
       <!-- These are both keyword and functions...
