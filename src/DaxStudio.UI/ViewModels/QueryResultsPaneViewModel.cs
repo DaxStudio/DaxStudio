@@ -171,6 +171,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public double _fontSize;
+        public double FontSize {
+            get { return _fontSize; }
+            set {
+                _fontSize = value;
+                NotifyOfPropertyChange(() => FontSize);
+            }
+        }
 
         public void Handle(QueryResultsPaneMessageEvent message)
         {
@@ -346,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(() => ClipboardCopyMode);
-            
+            NotifyOfPropertyChange(() => FontSize); // TODO ???
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode
