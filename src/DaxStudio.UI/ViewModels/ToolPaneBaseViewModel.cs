@@ -112,13 +112,19 @@ namespace DaxStudio.UI.ViewModels
             return resultExpression;
         }
 
-        
-
-        private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
+        private List<ADOTabularMeasure> GetAllMeasures (string filterTable = null)
+        {
+            bool allTables = (string.IsNullOrEmpty(filterTable));
             var model = Connection.Database.Models.BaseModel;
             var modelMeasures = (from t in model.Tables
                                  from m in t.Measures
+                                 where (allTables || t.Caption == filterTable)
                                  select m).ToList();
+            return modelMeasures;
+        }
+
+        private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
+            var modelMeasures = GetAllMeasures();
 
             var dependentMeasures = new List<ADOTabularMeasure>();
             dependentMeasures.Add(modelMeasures.First(m => m.Name == measureName ));
@@ -177,6 +183,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void DefineAllMeasures(TreeViewTable item, string filterTable)
+        {
+            if (item == null) {
+                return;
+            }
+            try {
+                var measures = GetAllMeasures(filterTable);
+               
+                foreach (var measure in measures) {
+                    EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                }
+            }
+            catch (System.Exception ex) {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasureTree", ex.Message, ex.StackTrace);
+            }
+        }
+
         public void DefineExpandMeasure(TreeViewColumn item) {
             DefineMeasure(item, true);
         }
@@ -186,6 +209,15 @@ namespace DaxStudio.UI.ViewModels
         public void DefineMeasure(TreeViewColumn item) {
             DefineMeasure(item, false);
         }
+        public void DefineAllMeasuresAllTables(TreeViewTable item)
+        {
+            DefineAllMeasures(item, null);
+        }
+        public void DefineAllMeasuresOneTable(TreeViewTable item)
+        {
+            DefineAllMeasures(item, item.Caption);
+        }
+
         public void DefineFilterDumpMeasureAllTables(TreeViewTable item) {
             DefineFilterDumpMeasure(item, true);
         }

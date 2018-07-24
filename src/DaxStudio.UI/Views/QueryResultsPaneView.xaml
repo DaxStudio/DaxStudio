@@ -142,7 +142,7 @@
                 <!-- Tab Content (DataGrid) -->
                 <TabControl.ContentTemplate>
                     <DataTemplate>
-                        <!-- FontSize={ Binding Path=ResultFontSize} " -->
+                        <!-- FontSize={Binding Path=FontSize}" -->
                         <DataGrid
                         
                             x:Name="DefaultView" 

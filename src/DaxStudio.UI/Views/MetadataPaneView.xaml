@@ -276,6 +276,12 @@
                                                 <MenuItem Header="Define Filter Dump Measure (All tables)"
                                                     cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureAllTables($dataContext)]">
                                                 </MenuItem>
+                                                <MenuItem Header="Define All Measures"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresAllTables($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define All Measures (All tables)"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresOneTable($dataContext)]">
+                                                </MenuItem>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
                                     </StackPanel>
@@ -384,6 +390,9 @@
                                                 <MenuItem Header="Define and Expand Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]">
                                                 </MenuItem>
+                                                <MenuItem Header="Define All Measures"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasures($dataContext)]">
+                                                </MenuItem>                                                
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 
