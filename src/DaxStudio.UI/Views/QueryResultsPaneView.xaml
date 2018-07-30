@@ -156,7 +156,7 @@
                       VerticalGridLinesBrush="WhiteSmoke" 
                       HorizontalGridLinesBrush="WhiteSmoke"
                       AutoGenerateColumns="False" 
-                      FontSize="{Binding Path=FontSize}" 
+                      FontSize="{Binding Path=FontSize}"
                       
                       cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
                                   , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            

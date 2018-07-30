@@ -292,7 +292,6 @@
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
 
                                 </Grid.ColumnDefinitions>
