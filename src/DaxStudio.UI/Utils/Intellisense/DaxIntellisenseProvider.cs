@@ -507,8 +507,11 @@ namespace DaxStudio.UI.Utils
 
         public void CloseCompletionWindow()
         {
-            _editor.InsightWindow.Close();
-            _editor.DisposeCompletionWindow();
+            if (_editor.InsightWindow != null)
+            {
+                _editor.InsightWindow?.Close();
+                _editor.DisposeCompletionWindow();
+            }
         }
     }
 }

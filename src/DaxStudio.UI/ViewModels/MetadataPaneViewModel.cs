@@ -399,9 +399,12 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                _selectedDatabase = value;
+                if (_selectedDatabase != value)
+                {
+                    _selectedDatabase = value;
 
-                NotifyOfPropertyChange(() => SelectedDatabase);
+                    NotifyOfPropertyChange(() => SelectedDatabase);
+                }
 
             }
         }
