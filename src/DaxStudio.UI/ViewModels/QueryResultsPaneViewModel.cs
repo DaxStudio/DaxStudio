@@ -15,6 +15,10 @@ using System.Drawing;
 using System.Linq;
 using System;
 using DaxStudio.UI.Views;
+using UnitComboLib.ViewModel;
+using System.Collections.ObjectModel;
+using UnitComboLib.Unit.Screen;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -29,6 +33,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelQueryEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<SizeUnitsUpdatedEvent>
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
@@ -43,6 +48,8 @@ namespace DaxStudio.UI.ViewModels
             //_eventAggregator.Subscribe(this);
             _host = host;
             _options = options;
+            var items = new ObservableCollection<ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
+            SizeUnits = new UnitViewModel(items, new ScreenConverter(), 0);
         }
 
         public QueryResultsPaneViewModel(DataTable resultsTable)
@@ -351,10 +358,25 @@ namespace DaxStudio.UI.ViewModels
             return null;
         }
 
+        public UnitViewModel SizeUnits { get; set; }
+
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(() => ClipboardCopyMode);
-            FontSize = _options.ResultFontSize; 
+
+            if (FontSize != _options.ResultFontSize)
+            {
+                FontSize = _options.ResultFontSize;
+                this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                this.SizeUnits.StringValue = "100";
+                NotifyOfPropertyChange(() => SizeUnits);
+            }
+        }
+
+        public void Handle(SizeUnitsUpdatedEvent message)
+        {
+            SizeUnits.StringValue = message.Units.StringValue;
+            NotifyOfPropertyChange(() => SizeUnits);
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode
