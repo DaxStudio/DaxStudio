@@ -20,6 +20,9 @@ build/
 [Oo]bj/
 [Pp]ackage/
 
+.vs/
+.vscode/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

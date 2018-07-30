@@ -384,6 +384,7 @@
     <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
+    <Compile Include="Events\SizeUnitsUpdatedEvent.cs" />
     <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
     <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
@@ -489,6 +490,7 @@
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />

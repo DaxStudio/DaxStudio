@@ -289,9 +289,11 @@
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Results"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                            <StackPanel Orientation="Vertical">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
+
                                     <ColumnDefinition Width="*"/>
 
                                 </Grid.ColumnDefinitions>
@@ -305,8 +307,8 @@
 
                                 </Grid.RowDefinitions>
 
-                                <Label Grid.Row="0" Grid.Column="1" Content="Font Family"/>
-                                <ComboBox x:Name="ResultFontFamily" Grid.Row="1" Grid.Column="1"
+                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family"/>
+                                <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
 			        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			        ItemTemplate="{DynamicResource FontTemplate}"
                     SelectedItem="{Binding Path=ResultFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
@@ -339,14 +341,27 @@
                                         <Binding Source="{StaticResource myFonts}" />
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
-                                <Label Grid.Row="2" Grid.Column="1" Content="Font Size"/>
-                                <xctk:DoubleUpDown Grid.Row="3" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size"/>
+                                <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+                            </Grid>
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
 
-                                <Label Grid.Row="4" Grid.Column="1" Content="Exclude Headers when copying data" Margin="0,0,40.5,0"/>
-                                <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+
+                                </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Grid.Column="1" Content="Exclude Headers when copying data" Margin="0,0,40.5,0"/>
+                                <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
 
                             </Grid>
+                            </StackPanel>
                         </GroupBox>
                         <GroupBox Header="Dax Formatter"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                             <Grid>
