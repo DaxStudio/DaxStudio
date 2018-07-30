@@ -79,8 +79,9 @@ namespace DaxStudio.UI.ViewModels
         , IConnection
         , ISaveable
     {
-
-        private readonly Encoding DefaultFileEncoding = Encoding.UTF8;
+        // Changed from the original Unicode - if required we could make this an optional setting in future
+        // but UTF8 seems to be the most sensible default going forward
+        private readonly Encoding DefaultFileEncoding = Encoding.UTF8; 
 
         private ADOTabularConnection _connection;
         private IWindowManager _windowManager;
