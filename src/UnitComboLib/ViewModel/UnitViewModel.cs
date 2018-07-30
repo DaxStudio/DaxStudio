@@ -24,7 +24,7 @@
     private double mValue = 0;
     private string mstrValue = "0.0";
 
-    private Converter mUnitConverter = null;
+    private ScreenConverter mUnitConverter = null;
 
     private RelayCommand<Itemkey> mSetSelectedItemCommand = null;
 
@@ -58,7 +58,7 @@
     /// <param name="defaultIndex"></param>
     /// <param name="defaultValue"></param>
     public UnitViewModel(ObservableCollection<ListItem> list,
-                         Converter unitConverter,
+                         ScreenConverter unitConverter,
                          int defaultIndex = 0,
                          double defaultValue = 100)
     {
@@ -93,7 +93,7 @@
           return (int)this.mUnitConverter.Convert(this.SelectedItem.Key, this.mValue, Itemkey.ScreenFontPoints);
 
         // Fallback to default if all else fails
-        return (int)Unit.Screen.ScreenConverter.OneHundretPercentFont;
+        return (int)mUnitConverter.OneHundredPercentFontSize;
       }
 
       set

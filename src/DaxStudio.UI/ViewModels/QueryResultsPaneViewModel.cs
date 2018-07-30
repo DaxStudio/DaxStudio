@@ -49,7 +49,8 @@ namespace DaxStudio.UI.ViewModels
             _host = host;
             _options = options;
             var items = new ObservableCollection<ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
-            SizeUnits = new UnitViewModel(items, new ScreenConverter(), 0);
+            SizeUnits = new UnitViewModel(items, new ScreenConverter(_options.ResultFontSize), 0);
+            //UpdateSettings();
         }
 
         public QueryResultsPaneViewModel(DataTable resultsTable)
@@ -393,7 +394,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FontSize = _options.ResultFontSize;
                 this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
-                this.SizeUnits.StringValue = "100";
+                this.SizeUnits.Value = 100;
                 NotifyOfPropertyChange(() => SizeUnits);
             }
         }

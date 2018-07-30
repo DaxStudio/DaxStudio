@@ -121,7 +121,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( ScreenUnitsHelper.GenerateScreenUnitList());
             
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSize), 0);
             SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
             
             // Initialize default Tool Windows

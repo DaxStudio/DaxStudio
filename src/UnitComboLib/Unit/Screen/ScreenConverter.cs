@@ -17,18 +17,18 @@
       /// <param name="baseFontSize"></param>
       public ScreenConverter(double baseFontSize)
       {
-          OneHundretPercentFont = baseFontSize;
+          OneHundredPercentFontSize = baseFontSize;
       }
 
     /// <summary>
     /// A font size of 12 is equivalent to 100% (percent) display size.
     /// </summary>
-      public static double OneHundretPercentFont { get; set; }
+      public  double OneHundredPercentFontSize { get; set; }
 
     /// <summary>
     /// This is the standard value to scale against when using percent instead of fontsize.
     /// </summary>
-    public const double OneHundretPercent = 100.0;
+    private const double OneHundredPercent = 100.0;
 
     /// <summary>
     /// Convert between different units of screen resolutions.
@@ -42,10 +42,10 @@
       switch (inputUnit)
       {
         case Itemkey.ScreenFontPoints:
-          return ScreenFontPoints.ToUnit(inputValue, outputUnit);
+          return ScreenFontPoints.ToUnit(inputValue, outputUnit, OneHundredPercentFontSize);
 
         case Itemkey.ScreenPercent:
-          return ScreenPercent.ToUnit(inputValue, outputUnit);
+          return ScreenPercent.ToUnit(inputValue, outputUnit, OneHundredPercentFontSize);
 
         default:
           throw new NotImplementedException(outputUnit.ToString());
