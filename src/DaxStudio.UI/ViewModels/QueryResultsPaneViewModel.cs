@@ -362,21 +362,13 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(() => ClipboardCopyMode);
-
-            if (FontSize != _options.ResultFontSize)
-            {
-                FontSize = _options.ResultFontSize;
-                this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
-                this.SizeUnits.StringValue = "100";
-                NotifyOfPropertyChange(() => SizeUnits);
-            }
+            UpdateSettings();
         }
-
+        
         public void Handle(SizeUnitsUpdatedEvent message)
         {
-            SizeUnits.StringValue = message.Units.StringValue;
-            NotifyOfPropertyChange(() => SizeUnits);
+            SizeUnits.Value = message.Units.Value;
+            NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode
@@ -385,6 +377,24 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_options.ExcludeHeadersWhenCopyingResults) return DataGridClipboardCopyMode.ExcludeHeader;
                 return DataGridClipboardCopyMode.IncludeHeader;
+            }
+        }
+
+        protected override void OnViewLoaded(object view)
+        {
+            UpdateSettings();
+        }
+
+        private void UpdateSettings()
+        {
+            NotifyOfPropertyChange(() => ClipboardCopyMode);
+
+            if (FontSize != _options.ResultFontSize)
+            {
+                FontSize = _options.ResultFontSize;
+                this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                this.SizeUnits.StringValue = "100";
+                NotifyOfPropertyChange(() => SizeUnits);
             }
         }
     }
