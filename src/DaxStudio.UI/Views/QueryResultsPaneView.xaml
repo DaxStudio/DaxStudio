@@ -142,7 +142,7 @@
                 <!-- Tab Content (DataGrid) -->
                 <TabControl.ContentTemplate>
                     <DataTemplate>
-                        <!-- FontSize={Binding Path=FontSize}" -->
+                        <!-- FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}"  -->
                         <DataGrid
                         
                             x:Name="DefaultView" 
@@ -156,7 +156,7 @@
                       VerticalGridLinesBrush="WhiteSmoke" 
                       HorizontalGridLinesBrush="WhiteSmoke"
                       AutoGenerateColumns="False" 
-                      FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}" 
+                      FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}"
                       
                       cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
                                   , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
