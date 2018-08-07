@@ -87,7 +87,7 @@ namespace DaxStudio
                 }
             }
 
-            public void StartAsync()
+            public void StartAsync(int startTimeoutSecs)
             {
 
                 if (QueryTraceHub._xlEngine != null)
@@ -96,7 +96,7 @@ namespace DaxStudio
                     // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
                     VoidDelegate f = delegate
                     {
-                        QueryTraceHub._xlEngine.StartAsync().ContinueWith((x) =>
+                        QueryTraceHub._xlEngine.StartAsync(startTimeoutSecs).ContinueWith((x) =>
                         {
                             if (x.IsFaulted)
                             {
@@ -126,7 +126,7 @@ namespace DaxStudio
                 else if (QueryTraceHub._engine != null)
                 {
                     // server or Excel 2010 based traces
-                    QueryTraceHub._engine.StartAsync().ContinueWith((x) =>
+                    QueryTraceHub._engine.StartAsync(startTimeoutSecs).ContinueWith((x) =>
                     {
                         if (x.IsFaulted)
                         {

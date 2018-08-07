@@ -155,7 +155,8 @@
                       CanUserDeleteRows="False"
                       VerticalGridLinesBrush="WhiteSmoke" 
                       HorizontalGridLinesBrush="WhiteSmoke"
-                      AutoGenerateColumns="False" 
+                      AutoGenerateColumns="False"
+                      FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
                       FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}" 
                       
                       cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]

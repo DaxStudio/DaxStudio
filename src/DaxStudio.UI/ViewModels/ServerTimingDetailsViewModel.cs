@@ -21,6 +21,9 @@ namespace DaxStudio.UI.ViewModels
         private bool _showCache;
         public bool ShowCache { get { return _showCache; } set { _showCache = value; NotifyOfPropertyChange(() => ShowCache); } }
 
+        private bool _showRewriteAttempts = true; // default to true
+        public bool ShowRewriteAttempts { get { return _showRewriteAttempts; } set { _showRewriteAttempts = value; NotifyOfPropertyChange(() => ShowRewriteAttempts); } }
+
 
         public bool LayoutRight { get { return !LayoutBottom; } set {LayoutBottom = !value; }}
         private bool _layoutBottom = false;

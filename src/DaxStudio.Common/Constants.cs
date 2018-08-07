@@ -27,6 +27,6 @@ namespace DaxStudio.Common
         public const string StatusBarTimerFormat = "mm\\:ss\\.f";
 
         public const int AutoSaveIntervalMs = 10000; // autosave every 30 seconds
-        public const int TraceStartTimeoutSeconds = 30;
+        //public const int TraceStartTimeoutSeconds = 30;
     }
 }

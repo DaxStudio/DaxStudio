@@ -89,21 +89,16 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-
                                 </Grid.RowDefinitions>
-                                <Label Grid.Row="3" Grid.Column="0" Content="Show Line Numbers"/>
-                                <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" />
-                                <Label Grid.Row="4" Grid.Column="0" Content="Font Family"/>
-                                <ComboBox x:Name="EditorFontFamily" Grid.Row="4" Grid.Column="1"
-			        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			        ItemTemplate="{DynamicResource FontTemplate}"
-                    SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-                    IsSynchronizedWithCurrentItem="True"
-                    VerticalContentAlignment="Center"      >
+                                
+                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family"/>
+                                <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
+			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			                        ItemTemplate="{DynamicResource FontTemplate}"
+                                    SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                                    IsSynchronizedWithCurrentItem="True"
+                                    VerticalContentAlignment="Center"      >
                                     <ComboBox.Resources>
 
                                         <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
@@ -131,11 +126,13 @@
                                         <Binding Source="{StaticResource myFonts}" />
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
-                                <Label Grid.Row="5" Grid.Column="0" Content="Font Size"/>
-                                <xctk:DoubleUpDown Grid.Row="5" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size"/>
+                                <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
                                 <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
-                                <Label Grid.Row="6" Grid.Column="0" Content="Enable Intellisense"/>
-                                <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
+                                <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers"/>
+                                <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
+                                <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense"/>
+                                <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
                             </Grid>
                         </GroupBox>
 
@@ -201,15 +198,21 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-
                                 </Grid.RowDefinitions>
+                                
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:"/>
                                 <xctk:IntegerUpDown x:Name="QueryEndEventTimeout" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
+                                
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:"/>
                                 <xctk:IntegerUpDown x:Name="DaxFormatterRequestTimeout" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
+                                
+                                <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:"/>
+                                <xctk:IntegerUpDown x:Name="TraceStartupTimeout" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
 
@@ -309,11 +312,11 @@
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Font Family"/>
                                 <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
-			        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			        ItemTemplate="{DynamicResource FontTemplate}"
-                    SelectedItem="{Binding Path=ResultFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-                    IsSynchronizedWithCurrentItem="True"
-                    VerticalContentAlignment="Center"      >
+			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			                        ItemTemplate="{DynamicResource FontTemplate}"
+                                    SelectedItem="{Binding Path=ResultFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                                    IsSynchronizedWithCurrentItem="True"
+                                    VerticalContentAlignment="Center"      >
                                     <ComboBox.Resources>
 
                                         <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">

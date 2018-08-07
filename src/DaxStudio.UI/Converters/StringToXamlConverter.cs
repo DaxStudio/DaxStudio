@@ -27,7 +27,7 @@ namespace DaxStudio.UI.Converters {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             FlowDocument doc = new FlowDocument();
 
-            string s = value as string;
+           string s = value as string;
             if (s != null) {
                 Paragraph paragraph = new Paragraph();
                 // paragraph.Margin = new Thickness(0);

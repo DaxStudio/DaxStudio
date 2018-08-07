@@ -20,6 +20,7 @@ namespace DaxStudio.Interfaces
         SecureString ProxySecurePassword { get; set; }
         int QueryEndEventTimeout { get; set; }
         int DaxFormatterRequestTimeout { get; set; }
+        int TraceStartupTimeout { get; set; }
         DelimiterType DefaultSeparator { get; set; }
         DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         bool TraceDirectQuery { get; set; }

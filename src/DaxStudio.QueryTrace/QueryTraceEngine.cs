@@ -14,11 +14,12 @@ using Polly;
 
 namespace DaxStudio.QueryTrace
 {
-    public class QueryTraceEngine: IQueryTrace
+    public class QueryTraceEngine : IQueryTrace
     {
-#region public IQueryTrace interface
-        public Task StartAsync()
+        #region public IQueryTrace interface
+        public Task StartAsync(int startTimeoutSec)
         {
+            TraceStartTimeoutSecs = startTimeoutSec;
             return Task.Run(() => Start());
         }
 
@@ -26,6 +27,8 @@ namespace DaxStudio.QueryTrace
         {
             Stop(true);
         }
+
+        public int TraceStartTimeoutSecs {get; private set;}
 
         public void Stop(bool shouldDispose)
         {
@@ -117,6 +120,7 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start", connectionString, sessionId);
             _globalOptions = globalOptions;
+            
             Status = QueryTraceStatus.Stopped;
             ConfigureTrace(connectionString, connectionType, sessionId, applicationName, filterForCurrentSession);
             Events = events;
@@ -187,7 +191,7 @@ namespace DaxStudio.QueryTrace
             return doc;
         }
 
-        public void Start()
+        private void Start()
         {
             try
             {
@@ -275,7 +279,7 @@ namespace DaxStudio.QueryTrace
             finally
             {
                 // if past timeout then exit and display error
-                if ((DateTime.UtcNow - utcPingStart).Seconds > Constants.TraceStartTimeoutSeconds)
+                if ((DateTime.UtcNow - utcPingStart).Seconds > this.TraceStartTimeoutSecs)
                 {
                     _startingTimer.Stop();
                     DisposeTrace();
@@ -294,7 +298,7 @@ namespace DaxStudio.QueryTrace
                 _trace = _server.Traces.Add( string.Format("DaxStudio_Session_{0}", _sessionId));
 
                 // Enable automatic filter only if DirectQuery is not enabled - otherwise, it will filter events in the trace event (slower, use DirectQuery with care!)
-                if (!_globalOptions.TraceDirectQuery && _filterForCurrentSession) {
+                if ((!_globalOptions.TraceDirectQuery || Version.Parse(_server.Version).Major >= 14 ) && _filterForCurrentSession) {
                     Log.Verbose("Activate filter {sessionId} - {applicationName}", _sessionId, _applicationName);
                     _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
                 }

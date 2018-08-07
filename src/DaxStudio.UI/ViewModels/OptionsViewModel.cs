@@ -17,6 +17,11 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(OptionsViewModel))]
     public class OptionsViewModel:Screen, IGlobalOptions
     {
+        private const string DefaultEditorFontFamily = "Lucida Console";
+        private const int DefaultEditorFontSize = 11;
+        private const string DefaultResultsFontFamily = "Segoe UI";
+        private const int DefaultResultsFontSize = 11;
+
         private string _selectedEditorFontFamily;
         private string _selectedResultFontFamily;
         private bool _showLineNumbers;
@@ -50,10 +55,10 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             
 
-            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", "Lucida Console");
-            EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", 11);
-            ResultFontFamily = RegistryHelper.GetValue<string>("ResultFontFamily", "Arial");
-            ResultFontSize = RegistryHelper.GetValue<double>("ResultFontSize", 11);
+            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", DefaultEditorFontFamily);
+            EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", DefaultEditorFontSize);
+            ResultFontFamily = RegistryHelper.GetValue<string>("ResultFontFamily", DefaultResultsFontFamily);
+            ResultFontSize = RegistryHelper.GetValue<double>("ResultFontSize", DefaultResultsFontSize);
             EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers", true);
             EditorEnableIntellisense = RegistryHelper.GetValue<bool>("EditorEnableIntellisense", true);
             ProxyUseSystem = RegistryHelper.GetValue<bool>("ProxyUseSystem", true);
@@ -64,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
             QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
             QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
+            TraceStartupTimeout = RegistryHelper.GetValue<int>(nameof(TraceStartupTimeout), 30);
             DefaultSeparator = (DelimiterType)RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
             TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
             ShowPreReleaseNotifcations = RegistryHelper.GetValue<bool>("ShowPreReleaseNotifcations", false);
@@ -93,6 +99,18 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("EditorFontSize", value);
             } 
+        }
+
+        public void ResetEditorFont()
+        {
+            EditorFontFamily = DefaultEditorFontFamily;
+            EditorFontSize = DefaultEditorFontSize;
+        }
+
+        public void ResetResultsFont()
+        {
+            ResultFontFamily = DefaultResultsFontFamily;
+            ResultFontSize = DefaultResultsFontSize;
         }
 
         public string ResultFontFamily {
@@ -421,6 +439,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showExportMetrics = false;
+        private int _traceStartupTimeout = 30;
+
         public bool ShowExportMetrics
         {
             get
@@ -434,6 +454,14 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ShowExportMetrics", value);
                 NotifyOfPropertyChange(() => ShowExportMetrics);
+            }
+        }
+
+        public int TraceStartupTimeout { get => _traceStartupTimeout; set {
+                _traceStartupTimeout = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>("TraceStartupTimeout", value);
+                NotifyOfPropertyChange(() => TraceStartupTimeout);
             }
         }
 

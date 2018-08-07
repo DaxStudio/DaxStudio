@@ -6,6 +6,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"    
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
              mc:Ignorable="d" 
@@ -18,15 +19,81 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
             <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
+            <conv:MatchingResultColourConverter x:Key="MatchingResultColourConverter"></conv:MatchingResultColourConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
+
+            
+
+            <!-- Data Templates -->
+        
+            <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
+                 <custom:BindableRichTextBox Padding="5,5,5,5"
+                 MinWidth="200"
+                 MinHeight="100"
+                 IsReadOnly="True"
+                 BorderThickness="0"
+                 DataContext="{Binding}"
+                 Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
+                    
+                        <custom:BindableRichTextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </custom:BindableRichTextBox.ContextMenu>
+                    </custom:BindableRichTextBox>
+            </DataTemplate>
+            
+            <DataTemplate  DataType="{x:Type vm:RewriteTraceEngineEvent}">
+                <StackPanel Margin="5">
+                    <TextBlock Margin="0 0 0 5" FontWeight="DemiBold" Padding="3" Background="#ffececec">Aggregate Rewrite Attempt</TextBlock>
+                
+                    <TextBlock FontWeight="Medium"  Margin="0 0 5 0">Match Result: </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="20 0 0 5 " >
+                        <TextBlock Margin="0 -1 3 0" 
+                                   FontFamily="Wingdings" 
+                                   FontSize="14pt" 
+                                   Foreground="Green"
+                                   Visibility="{Binding MatchFound, Converter={StaticResource BoolToCollapsedConverter}}">ü</TextBlock>
+                        <TextBlock Margin="0 -1 3 0" 
+                                   FontFamily="Wingdings" 
+                                   FontSize="14pt" 
+                                   Visibility="{Binding MatchFound, Converter={StaticResource BoolToNotCollapsedConverter}}"
+                                   Foreground="Red">û</TextBlock>
+                        <TextBlock  x:Name="MatchingResult" Text="{Binding MatchingResult}" Foreground="{Binding MatchingResult, Converter={StaticResource MatchingResultColourConverter}}"></TextBlock>
+                    </StackPanel>
+                    <TextBlock FontWeight="Medium">Original Table:</TextBlock>
+                    <TextBlock Margin="20 0 0 5 " x:Name="Table" Text="{Binding Table}"></TextBlock>
+                    <TextBlock FontWeight="Medium">Mapped To:</TextBlock>
+                    <TextBlock Margin="20 0 0 5 " x:Name="Mapping" Text="{Binding Mapping}"></TextBlock>
+                    
+                    <Expander x:Name="myExpander" Header="Details"
+					    ExpandDirection="Down" IsExpanded="False" 
+					    Template="{StaticResource RevealExpanderTemp}"
+					    Margin="0,5,0,0" >
+                        <!-- Template="{StaticResource RevealExpanderTemp}" -->
+                        <Expander.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock FontWeight="SemiBold" Margin="0,10,0,10" FontSize="13"><Run Text="Details"/></TextBlock>
+                            </DataTemplate>
+                        </Expander.HeaderTemplate>
+                        <TextBlock Text="{Binding TextData}" />
+                    </Expander>
+                </StackPanel>
+            </DataTemplate>
+
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -265,21 +332,12 @@
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
                       Margin="0"/>
         <ScrollViewer >
-            <custom:BindableRichTextBox Padding="5,5,5,5"
-                 MinWidth="200"
-                 MinHeight="100"
-                 IsReadOnly="True"
-                 BorderThickness="0"
-                 Document="{Binding ElementName=ListEvents, Path=SelectedItem.QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" 
-                 >
-                <custom:BindableRichTextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
-                        <Separator/>
-                        <MenuItem Command="SelectAll"></MenuItem>
-                    </ContextMenu>
-                </custom:BindableRichTextBox.ContextMenu>
-            </custom:BindableRichTextBox>
+            <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
+            </ContentControl>
+                <!-- Query Event Template -->
+                
+                
+            
             <ScrollViewer.Style>
                 <Style>
                     <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />

@@ -63,5 +63,6 @@ namespace DaxStudio.SignalR
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
 
         public bool ShowExportMetrics { get; set; }
+        public int TraceStartupTimeout { get; set; }
     }
 }

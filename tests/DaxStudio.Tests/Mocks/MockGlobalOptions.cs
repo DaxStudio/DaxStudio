@@ -36,5 +36,6 @@ namespace DaxStudio.Tests.Mocks
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
 
         public bool ShowExportMetrics { get;set; }
+        public int TraceStartupTimeout { get; set; }
     }
 }

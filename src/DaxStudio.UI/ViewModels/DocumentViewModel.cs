@@ -383,8 +383,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 foreach (var e in tw.MonitoredEvents)
                 {
-                    // Don't add DirectQueryEvent if we are not interested in tracing it
-                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery) continue;
+                    // Don't add DirectQueryEvent if the server does not support direct query session filters 
+                    // and the options has not been enabled in the options screen
+                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters())  continue;
+
+                    // if the server version does not support Aggregate Table Events do not add them
+                    if (e == DaxStudioTraceEventClass.AlternateSourceRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
+
                     // Add the even to the collection if we don't already have it
                     if (!events.Contains(e) )
                     {
@@ -1663,7 +1668,7 @@ namespace DaxStudio.UI.ViewModels
                 OutputMessage("Waiting for Trace to start");
 
                 var t = Tracer;
-                t.StartAsync().ContinueWith((p) =>
+                t.StartAsync(_options.TraceStartupTimeout).ContinueWith((p) =>
                 {
                     if (p.Exception != null)
                     {

@@ -359,6 +359,7 @@
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
+    <Compile Include="Converters\MatchingResultColourConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
     <Compile Include="Converters\MultiplyWithMinConverter.cs" />
     <Compile Include="Converters\NegativeColourConverter.cs" />
@@ -390,6 +391,7 @@
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Extensions\ServerVersionExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
@@ -653,6 +655,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Resource>
+    <Page Include="Resources\ExpanderTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\BusyPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

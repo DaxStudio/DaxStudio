@@ -12,6 +12,8 @@ using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using Serilog;
+using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,8 +28,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public string Query { get;  set; }
-        public long Duration { get;  set; }
-        public long CpuTime { get;  set; }
+        public long? Duration { get;  set; }
+        public long? CpuTime { get;  set; }
         public int RowNumber { get;  set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
@@ -35,11 +37,17 @@ namespace DaxStudio.UI.ViewModels
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for CallbackDataID and EncodeCallback function s
+        private string _queryRichText = "";
         public string QueryRichText {
+            set {
+                var sb = new StringBuilder(value);
+                sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
+                _queryRichText = sb.ToString();
+            }
+
             get {
-                string step1 = Query.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
-                string step2 = step1.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
-                return step2;
+                return _queryRichText;
             }
         }
 
@@ -48,30 +56,61 @@ namespace DaxStudio.UI.ViewModels
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
-            if (Class == DaxStudioTraceEventClass.DirectQueryEnd) {
-                Query = ev.TextData;
+            switch (Class)
+            {
+                //case DaxStudioTraceEventClass.DirectQueryEnd:
+                //    Query = ev.TextData;
+                //    break;
+                case DaxStudioTraceEventClass.AlternateSourceRewriteQuery:
+                    // the rewrite event does not have a query or storage engine timings
+                    break;
+                default:
+                    // TODO: we should implement as optional the removal of aliases and lineage
+                    Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
+                    QueryRichText = Query;
+                    // Set flag in case any highlight is present
+                    HighlightQuery = QueryRichText.Contains("|~E~|");
+                    break;
             }
-            else {
-                // TODO: we should implement as optional the removal of aliases and lineage
-                Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
-            }
-            // Set flag in case any highlight is present
-            HighlightQuery = QueryRichText.Contains("|~E~|");
-
+            
             // Skip Duration/Cpu Time for Cache Match
-            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
+            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
+                && ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
             {
                 Duration = ev.Duration;
                 CpuTime = ev.CpuTime;
             }
-
-            long rows, bytes;
-            if (Query.ExtractEstimatedSize( out rows, out bytes )) {
-                EstimatedRows = rows;
-                EstimatedKBytes = 1 + bytes / 1024;
+            if (Query != null && Query?.Length > 0)
+            {
+                long rows, bytes;
+                if (Query.ExtractEstimatedSize(out rows, out bytes))
+                {
+                    EstimatedRows = rows;
+                    EstimatedKBytes = 1 + bytes / 1024;
+                }
             }
         }
         public TraceStorageEngineEvent() { }
+    }
+
+    public class RewriteTraceEngineEvent : TraceStorageEngineEvent
+    {
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber) : base(ev, rowNumber) {
+            TextData = ev.TextData;
+            JObject rewriteResult = JObject.Parse(ev.TextData);
+            Table = (string)rewriteResult["table"];
+            MatchingResult = (string)rewriteResult["matchingResult"];
+            var mapping = rewriteResult["mapping"];
+            if (mapping.HasValues)
+                Mapping = (string)rewriteResult["mapping"]["table"];
+        }
+
+        public string Table { get; set; }
+        public string MatchingResult { get; set; }
+        public string Mapping { get; set; }
+        public string TextData { get; set; }
+        public bool MatchFound { get { return MatchingResult == "matchFound"; } }
+
     }
 
     public static class TraceStorageEngineExtensions {
@@ -190,6 +229,7 @@ namespace DaxStudio.UI.ViewModels
                 { DaxStudioTraceEventClass.QuerySubcube
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
+                , DaxStudioTraceEventClass.AlternateSourceRewriteQuery
                 , DaxStudioTraceEventClass.DirectQueryEnd
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
@@ -224,6 +264,14 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                    }
+
+                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AlternateSourceRewriteQuery)
+                    {
+                        //StorageEngineDuration += traceEvent.Duration;
+                        //StorageEngineCpu += traceEvent.CpuTime;
+                        //StorageEngineQueryCount++;
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd) {
@@ -356,6 +404,9 @@ namespace DaxStudio.UI.ViewModels
                               && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
                               && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
                            ) && ServerTimingDetails.ShowScan)
+                           ||
+                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
+                          
 
 
                           select e;
@@ -463,11 +514,11 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?4:1; } }
-        public int TextGridRowSpan { get { return ServerTimingDetails.LayoutBottom? 1:3; } }
-        public int TextGridColumn { get { return ServerTimingDetails.LayoutBottom?2:4; } }
+        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ?4:1; } }
+        public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom?? false ? 1:3; } }
+        public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom??false ?2:4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails.LayoutBottom ? new GridLength(0) : new GridLength(1, GridUnitType.Star); }  }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom??false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); }  }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails { get { return _serverTimingDetails; } set {

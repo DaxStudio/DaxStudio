@@ -188,6 +188,17 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public string _fontFamily = "Arial";
+        public string FontFamily
+        {
+            get { return _fontFamily; }
+            set
+            {
+                _fontFamily = value;
+                NotifyOfPropertyChange(() => FontFamily);
+            }
+        }
+
         public void Handle(QueryResultsPaneMessageEvent message)
         {
             ResultsIcon = message.Target.Icon;
@@ -396,6 +407,10 @@ namespace DaxStudio.UI.ViewModels
                 this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
                 this.SizeUnits.Value = 100;
                 NotifyOfPropertyChange(() => SizeUnits);
+            }
+            if (FontFamily != _options.ResultFontFamily)
+            {
+                FontFamily = _options.ResultFontFamily;
             }
         }
     }

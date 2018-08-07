@@ -293,6 +293,7 @@
                             </Grid>
                         </DataTemplate>
                     </selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                    
                     <selectors:TraceWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <Grid>
@@ -306,7 +307,8 @@
                                 
                                 <!-- dynamically inject the following buttons only for tracewatchers -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,15,0">
-                                    <Button x:Name="Start" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}" >
+                                    <Button x:Name="Start" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}" >
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip 
                                                 Title="Start"
@@ -319,7 +321,8 @@
                                             <Image Source="{StaticResource TraceStart}" Style="{StaticResource ButtonImage}"></Image>
                                         </Border>
                                     </Button>
-                                    <Button x:Name="Pause" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="Pause" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip 
                                                 Title="Pause"
@@ -330,7 +333,8 @@
                                         </Border>
                                         
                                     </Button>
-                                    <Button x:Name="Stop" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="Stop" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
                                                 Title="Stop"
@@ -342,7 +346,8 @@
                                     </Button>
                                     <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
                                     <!-- clear -->
-                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
                                                 Title="Clear All"
@@ -353,7 +358,8 @@
                                         </Border>
                                     </Button>
                                     <!-- copy all -->
-                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}"
+                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}"
                                             Visibility="{Binding Path=IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
@@ -379,6 +385,7 @@
                                         </Border>
                                     </ToggleButton>
                                     <!-- Clear filters -->
+
                                     <Button x:Name="ClearFilters" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}" 
                                             Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
@@ -391,6 +398,7 @@
                                             <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"></Image>
                                         </Border>
                                     </Button>
+
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>

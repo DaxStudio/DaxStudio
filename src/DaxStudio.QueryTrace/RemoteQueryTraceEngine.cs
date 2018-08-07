@@ -42,10 +42,14 @@ namespace DaxStudio.QueryTrace
             // wire up hub events
 
         }
-        public async Task StartAsync()
+
+        public int TraceStartTimeoutSecs { get; private set; }
+        public async Task StartAsync(int startTimeoutSecs)
         {
+
             Log.Debug("{class} {method} {message}", "RemoteQueryTraceEngine", "StartAsync", "entered");
-            await queryTraceHubProxy.Invoke("StartAsync");
+            TraceStartTimeoutSecs = startTimeoutSecs;
+            await queryTraceHubProxy.Invoke("StartAsync", startTimeoutSecs);
         }
 
         public void Stop()
