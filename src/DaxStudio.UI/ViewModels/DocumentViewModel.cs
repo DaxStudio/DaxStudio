@@ -1556,11 +1556,22 @@ namespace DaxStudio.UI.ViewModels
 
         //RRomano: Should this be on DaxEditor?
 
-        private Regex defineMeasureRegex = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=EVALUATE|\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        const string MODELMEASURES_BEGIN = "---- MODEL MEASURES BEGIN ----";
+        const string MODELMEASURES_END = "---- MODEL MEASURES END ----";
+        // private Regex defineMeasureRegex = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=EVALUATE|\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private Regex defineMeasureRegex_ModelMeasures = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=" + MODELMEASURES_END + @")", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private Regex defineMeasureRegex_DefineOnly = new Regex(@"(?<=DEFINE([\s\t])*?)(\w(.|\n)*?)(?=\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
             var editor = GetEditor();
+
+            // TODO (Marco 2018-08-04)
+            //
+            // We include a section ---- MODEL MEASURES ----
+            // where we include all the measures
+            // the section ends with ---- END MODEL MEASURES ----
+            // so we append the measures at the end of that section
 
             // Try to find the DEFINE statements
 
@@ -1571,15 +1582,37 @@ namespace DaxStudio.UI.ViewModels
 
 
             // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
-            if (defineMeasureRegex.IsMatch(currentText))
+            if (defineMeasureRegex_ModelMeasures.IsMatch(currentText))
             {                
-                currentText = defineMeasureRegex.Replace(currentText, (m) =>
+                currentText = defineMeasureRegex_ModelMeasures.Replace(currentText, (m) =>
                 {
                     var measuresText = new StringBuilder(m.Groups[1].Value);
 
                     measuresText.AppendLine(measureDeclaration);
 
                     return measuresText.ToString();
+
+
+                });
+
+                editor.Text = currentText;
+
+                editor.Focus();
+            }
+            else if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
+            {
+                currentText = defineMeasureRegex_DefineOnly.Replace(currentText, (m) => 
+                {
+
+                    var newSection = new StringBuilder();
+                    newSection.AppendLine();
+                    newSection.AppendLine(MODELMEASURES_BEGIN);
+                    newSection.AppendLine(measureDeclaration);
+                    newSection.AppendLine(MODELMEASURES_END);
+                    newSection.AppendLine();
+                    newSection.Append(m.Groups[0].Value);
+                    
+                    return newSection.ToString();
 
                 });
 
