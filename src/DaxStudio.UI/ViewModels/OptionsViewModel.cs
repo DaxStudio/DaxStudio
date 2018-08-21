@@ -78,6 +78,7 @@ namespace DaxStudio.UI.ViewModels
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
             ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
             DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
+            
         }
 
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 

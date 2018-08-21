@@ -247,9 +247,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
                                 <CheckBox  Grid.Column="0" x:Name="TraceDirectQuery" VerticalAlignment="Center"/>
                                 <Label Grid.Column="1" Content="DirectQuery Trace"/>
-
+                                <TextBlock>On servers prior to v15 (SSAS 2017)</TextBlock>
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Version Notifications"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
@@ -396,8 +400,8 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Advanced">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <WrapPanel>
+                <ScrollViewer x:Name="AdvancedScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
                         <GroupBox Header="Publish Functions" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                             <StackPanel>
                                 <Button Margin="5" Padding="3" Name="PublishDaxFunctions">Publish Functions</Button>

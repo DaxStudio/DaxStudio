@@ -9,9 +9,13 @@
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:cm="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             BorderBrush="DimGray" BorderThickness="1"
+             cal:View.ApplyConventions="False"
+             >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

@@ -491,11 +491,13 @@
     <Compile Include="Extensions\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
+    <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
+    <Compile Include="Utils\SqlProfilerHelper.cs" />
     <Compile Include="Utils\SystemInfo.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\StringEncryptionExtensions.cs" />
@@ -1194,6 +1196,12 @@
     <Resource Include="Images\icon-showbatch%40216ppi.png" />
     <Resource Include="Images\icon-showbatch%4096ppi.png" />
     <Resource Include="Images\icon-showbatch.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-excel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-profiler.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -699,17 +699,17 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        
-        private void UpdateConnections(ADOTabularConnection value,string selectedDatabase)
+
+        private void UpdateConnections(ADOTabularConnection value, string selectedDatabase)
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
             Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnections"
                 , value == null ? "<null>" : value.ConnectionString
-                , selectedDatabase);          
+                , selectedDatabase);
             if (value != null && value.State != ConnectionState.Open)
             {
-                OutputPane.AddWarning(string.Format("Connection for server {0} is not open",value.ServerName));
+                OutputPane.AddWarning(string.Format("Connection for server {0} is not open", value.ServerName));
                 return;
             }
             using (NewStatusBarMessage("Refreshing Metadata..."))
@@ -725,7 +725,7 @@ namespace DaxStudio.UI.ViewModels
                     // be pointing to the old connection
                     traceWatcher.IsChecked = false;
                     // then we need to check if the new connection can be traced
-                    traceWatcher.CheckEnabled(this,activeTrace);   
+                    traceWatcher.CheckEnabled(this, activeTrace);
                 }
                 MetadataPane.Connection = _connection;
                 FunctionPane.Connection = _connection;
@@ -735,15 +735,20 @@ namespace DaxStudio.UI.ViewModels
                    try
                    {
                        if (_editor == null) _editor = GetEditor();
-                   //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
+                       //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
                        _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
                        Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
                    }
                    catch (Exception ex)
                    {
-                       Log.Error(ex, "{class} {method} {message}", "DocumentViewModel","UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
+                       Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
                    }
                });
+            }
+            if (Connection.Databases.Count == 0) {
+                var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
+                + (Connection.ServerType=="PBI Desktop"?"\nIf your Power BI File is using a Live Connection please connect directly to the source model instead.": "");
+                OutputWarning(msg);
             }
         }
 

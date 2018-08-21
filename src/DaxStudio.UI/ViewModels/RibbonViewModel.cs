@@ -38,6 +38,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IWindowManager _windowManager;
         private bool _isDocumentActivating = false;
         private bool _isConnecting = false;
+        private string _sqlProfilerCommand = "";
 
         private const string urlDaxStudioWiki = "http://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -51,9 +52,11 @@ namespace DaxStudio.UI.ViewModels
             _host = host;
             _windowManager = windowManager;
             Options = options;
+            UpdateGlobalOptions();
             CanCut = true;
             CanCopy = true;
             CanPaste = true;
+            _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
             RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
             InitRunStyles();
         }
@@ -346,11 +349,15 @@ namespace DaxStudio.UI.ViewModels
                 _traceStatus = QueryTraceStatus.Stopped;
             else
                 _traceStatus = ActiveDocument.Tracer.Status;
+
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
+            NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
+            NotifyOfPropertyChange(() => CanLaunchExcel);
+
             if (!ActiveDocument.IsConnected)
             {
                 UpdateTraceWatchers();
@@ -674,7 +681,53 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
+            UpdateGlobalOptions();
+        }
+
+        private void UpdateGlobalOptions()
+        {
             ShowExportMetrics = Options.ShowExportMetrics;
+        }
+
+        public void LaunchSqlProfiler()
+        {
+            var serverName = ActiveDocument.Connection.ServerName;
+            System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
+        }
+
+        public bool CanLaunchSqlProfiler
+        {
+            get
+            {
+                if (ActiveDocument == null) return false;
+                if (ActiveDocument.Connection == null) return false;
+                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+
+                return !string.IsNullOrEmpty(_sqlProfilerCommand);
+            }
+        }
+
+        public void LaunchExcel()
+        {
+            var conn = ActiveDocument.Connection;
+            var datasource = conn.ServerName;
+            var database = conn.Database.Name;
+            var cube = ActiveDocument.MetadataPane.SelectedModelName;
+            OdcHelper.CreateOdcFile(datasource,database,cube);
+            var fileName = OdcHelper.OdcFilePath();
+            System.Diagnostics.Process.Start(fileName);
+        }
+
+        public bool CanLaunchExcel
+        {
+            get
+            {
+                if (ActiveDocument == null) return false;
+                if (ActiveDocument.Connection == null) return false;
+                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+
+                return true;
+            }
         }
     }
 }

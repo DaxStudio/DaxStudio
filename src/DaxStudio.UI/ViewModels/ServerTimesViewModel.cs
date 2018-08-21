@@ -74,11 +74,10 @@ namespace DaxStudio.UI.ViewModels
             }
             
             // Skip Duration/Cpu Time for Cache Match
-            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
-                && ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
+            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
                 Duration = ev.Duration;
-                CpuTime = ev.CpuTime;
+                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted) CpuTime = ev.CpuTime;
             }
             if (Query != null && Query?.Length > 0)
             {
