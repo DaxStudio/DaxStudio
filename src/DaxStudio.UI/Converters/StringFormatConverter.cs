@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
 namespace DaxStudio.UI.Converters
 {
-    
+
     public class StringFormatConverter : IMultiValueConverter
     {
 
@@ -25,17 +21,19 @@ namespace DaxStudio.UI.Converters
                 switch ((string)values[2]) //DataTypeName
                 {
                     case "DateTime":
-                        val = DateTime.Parse((string)values[0]);
-                        break;
+                        DateTime.TryParse((string)values[0],out DateTime outVal );
+                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), outVal);
+                        
                     case "String":
                         val = (string)values[0];
                         break;
                     case "Int64":
-                        val = long.Parse((string)values[0]);
-                        break;
+                        val = long.TryParse((string)values[0],out long longVal);
+                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), longVal);
+                        
                     case "Decimal":
-                        val = decimal.Parse((string)values[0]);
-                        break;
+                        val = decimal.TryParse((string)values[0], out Decimal decVal);
+                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), decVal);
                 }
             }
             return string.Format(string.Format("{{0:{0}}}",(string)values[1]), val);
