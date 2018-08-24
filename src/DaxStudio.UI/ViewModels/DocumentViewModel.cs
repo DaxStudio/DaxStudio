@@ -1787,24 +1787,34 @@ namespace DaxStudio.UI.ViewModels
                 SaveAs();
             else
             {
-                using (TextWriter tw = new StreamWriter(FileName, false, DefaultFileEncoding))
+                try
                 {
-                    tw.Write(GetEditor().Text);
-                    tw.Close();
-                }
-                // Save all visible TraceWatchers
-                foreach (var tw in ToolWindows)
-                {
-                    var saver = tw as ISaveState;
-                    if (saver != null)
+                    using (TextWriter tw = new StreamWriter(FileName, false, DefaultFileEncoding))
                     {
-                        saver.Save(FileName);
+                        tw.Write(GetEditor().Text);
+                        tw.Close();
                     }
+                    // Save all visible TraceWatchers
+                    foreach (var tw in ToolWindows)
+                    {
+                        var saver = tw as ISaveState;
+                        if (saver != null)
+                        {
+                            saver.Save(FileName);
+                        }
+                    }
+                    _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
+                    IsDirty = false;
+                    NotifyOfPropertyChange(() => DisplayName);
+                    DeleteAutoSave();
                 }
-                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
-                IsDirty = false;
-                NotifyOfPropertyChange(() => DisplayName);
-                DeleteAutoSave();
+                catch (Exception ex)
+                {
+                    // catch and report any errors while trying to save
+                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Save", ex.Message);
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+                }
+                
             }
         }
 
