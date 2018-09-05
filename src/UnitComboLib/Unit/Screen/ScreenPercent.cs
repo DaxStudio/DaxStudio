@@ -7,14 +7,16 @@
   /// </summary>
   public class ScreenPercent
   {
-    
-    #region methods
-    /// <summary>
-    /// Convert percentage unit based value into another unit based value.
-    /// </summary>
-    /// <param name="targetUnit"></param>
-    /// <returns></returns>
-    public static double ToUnit(double inputValue, Itemkey targetUnit, double oneHundredPercentFontSize)
+
+        #region methods
+        /// <summary>
+        /// Convert percentage unit based value into another unit based value.
+        /// </summary>
+        /// <param name="inputValue"></param>
+        /// <param name="targetUnit"></param>
+        /// <param name="oneHundredPercentFontSize"></param>
+        /// <returns></returns>
+        public static double ToUnit(double inputValue, Itemkey targetUnit, double oneHundredPercentFontSize)
     {
       switch (targetUnit)
       {

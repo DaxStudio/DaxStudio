@@ -12,6 +12,38 @@
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
 
+    <conv:ResourceLookupConverter x:Key="AggregateRewriteIcons">
+        <ResourceDictionary>
+            <BitmapImage x:Key="Miss" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/AggMiss.png"/>
+            <BitmapImage x:Key="Match" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/AggMatch.png"/>
+            <BitmapImage x:Key="Partial" UriSource="pack://application:,,,/DaxStudio.UI;component/images/AllServerQueries/AggPartial.png"/>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>
+
+    <!--<conv:ResourceLookupConverter x:Key="AggregateRewriteIcons">
+        <ResourceDictionary>
+            --><!-- circle outline --><!--
+            <Viewbox x:Key="Miss" x:Shared="false">
+                <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="24" Height="24">
+                    <Path Stroke="Black" Fill="White" Data="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                </Canvas>
+            </Viewbox>
+            --><!-- filled circle --><!--
+            <Viewbox x:Key="Match" x:Shared="false">
+                <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="24" Height="24">
+                    <Path Stroke="Black" Fill="Black" Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                </Canvas>
+            </Viewbox>
+            --><!-- half-circle--><!--
+            <Viewbox x:Key="Partial" x:Shared="false">
+                <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="24" Height="24">
+                    <Path Fill="Black" Stroke="Black" Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M16.9,7.1C18.2,8.3 19,10.1 19,12C19,13.9 18.1,15.6 16.9,16.9C15.7,18.2 13.9,19 12,19V12L12,5C13.9,5 15.7,5.8 16.9,7.1Z"/>
+                </Canvas>
+            </Viewbox>
+        </ResourceDictionary>
+    </conv:ResourceLookupConverter>-->
+    
+
     <conv:ResourceLookupConverter x:Key="FileIcons">
         <ResourceDictionary>
             <BitmapImage x:Key="Dax" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x32.png"/>
@@ -88,6 +120,8 @@
     <BitmapImage x:Key="ExportMetricsIconLarger"  UriSource="..\images\icon-export-metrics@96ppi.png"></BitmapImage>
     <BitmapImage x:Key="LaunchProfilerIconLarger"  UriSource="..\images\icon-profiler.png"></BitmapImage>
     <BitmapImage x:Key="LaunchExcelIconLarger"  UriSource="..\images\icon-excel.png"></BitmapImage>
+    <BitmapImage x:Key="QuestionIcon"  UriSource="..\images\icon-question@16px.png"></BitmapImage>
+    <BitmapImage x:Key="QuestionIconLarger"  UriSource="..\images\icon-question@96ppi.png"></BitmapImage>
     
     <!-- trace control icons -->
     <BitmapImage x:Key="TraceStart" UriSource="..\images\TraceControls\play.png"></BitmapImage>

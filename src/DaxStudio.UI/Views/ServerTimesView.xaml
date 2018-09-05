@@ -82,11 +82,13 @@
                     <TextBlock Margin="20 0 0 5 " x:Name="Table" Text="{Binding Table}"></TextBlock>
                     <TextBlock FontWeight="Medium">Mapped To:</TextBlock>
                     <TextBlock Margin="20 0 0 5 " x:Name="Mapping" Text="{Binding Mapping}"></TextBlock>
-                    
+
                     <Expander x:Name="myExpander" Header="Details"
 					    ExpandDirection="Down" IsExpanded="False" 
-					    Template="{StaticResource RevealExpanderTemp}"
 					    Margin="0,5,0,0" >
+                        <!-- TODO The template below causes a fatal app crash when the DataTemplate is changed after the expander has been expanded 
+                                  This appears to be some issue with the DoubleAnimation of the Tag in the storyboard  
+                        -->
                         <!-- Template="{StaticResource RevealExpanderTemp}" -->
                         <Expander.HeaderTemplate>
                             <DataTemplate>
@@ -115,8 +117,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock Name="TraceStatusText"
+        <TextBlock x:Name="TraceStatusText"
                    Grid.ColumnSpan="5"
+                   Text="{Binding TraceStatusText}"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>

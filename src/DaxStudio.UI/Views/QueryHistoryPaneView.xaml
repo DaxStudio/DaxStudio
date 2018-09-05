@@ -16,10 +16,10 @@
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:VisbilityToBooleanConverter x:Key="VisibilityToBoolConverter"/>
-        <conv:RowMaxHeightVisibilityConverter x:Key="RowMaxHeightVisibilityConverter"/>
-        <conv:CappedHeightConverter x:Key="CappedHeightConverter"/>
-        <conv:CappedRowHeightConverter x:Key="CappedRowHeightConverter"/>
-        <conv:MaxTextLinesConverter x:Key="MaxTextLinesConverter"/>
+        <!--<conv:RowMaxHeightVisibilityConverter x:Key="RowMaxHeightVisibilityConverter"/>
+        <conv:CappedHeightConverter x:Key="CappedHeightConverter"/>-->
+        <!--<conv:CappedRowHeightConverter x:Key="CappedRowHeightConverter"/>-->
+        <!--<conv:MaxTextLinesConverter x:Key="MaxTextLinesConverter"/>-->
         <conv:NegativeColourConverter x:Key="NegativeColourConverter"/>
 
         <BitmapImage x:Key="FilterIcon" UriSource="..\images\QueryHistory\filter_trans.png"></BitmapImage>

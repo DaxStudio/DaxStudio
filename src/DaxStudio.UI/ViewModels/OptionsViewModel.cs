@@ -76,9 +76,12 @@ namespace DaxStudio.UI.ViewModels
             ShowTooltipBasicStats = RegistryHelper.GetValue<bool>("ShowTooltipBasicStats", true);
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
-            ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
             DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
-            
+
+            // Preview Feature Toggles
+            ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
+            ShowExternalTools = RegistryHelper.GetValue<bool>("ShowExternalTools", false);
+            ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
         }
 
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
@@ -439,9 +442,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showExportMetrics = false;
+        
         private int _traceStartupTimeout = 30;
+        public int TraceStartupTimeout { get => _traceStartupTimeout; set {
+                _traceStartupTimeout = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>("TraceStartupTimeout", value);
+                NotifyOfPropertyChange(() => TraceStartupTimeout);
+            }
+        }
 
+        #region "Preview Toggles"
+
+        // Preview Feature Toggles
+
+        private bool _showExportMetrics = false;
         public bool ShowExportMetrics
         {
             get
@@ -458,13 +473,38 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public int TraceStartupTimeout { get => _traceStartupTimeout; set {
-                _traceStartupTimeout = value;
+        private bool _showExternalTools = false;
+        public bool ShowExternalTools { get => _showExternalTools;
+            set {
+                _showExternalTools = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                RegistryHelper.SetValueAsync<int>("TraceStartupTimeout", value);
-                NotifyOfPropertyChange(() => TraceStartupTimeout);
+                RegistryHelper.SetValueAsync<bool>("ShowExternalTools", value);
+                NotifyOfPropertyChange(() => ShowExternalTools);
             }
         }
+
+        private bool _showExportAllData = false;
+        public bool ShowExportAllData { get => _showExportAllData;
+            set {
+                _showExportAllData = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowExportAllData", value);
+                NotifyOfPropertyChange(() => ShowExportAllData);
+            }
+        }
+
+        private bool _showAggregationRewritesInAllQueries = false;
+        public bool ShowAggregationRewritesInAllQueries { get => _showAggregationRewritesInAllQueries;
+            set
+            {
+                _showAggregationRewritesInAllQueries = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowAggregationRewritesInAllQueries", value);
+                NotifyOfPropertyChange(() => ShowAggregationRewritesInAllQueries);
+            }
+        }
+
+        #endregion
 
         public void ExportDaxFunctions()
         {

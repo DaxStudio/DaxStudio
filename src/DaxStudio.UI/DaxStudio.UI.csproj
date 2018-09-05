@@ -396,6 +396,8 @@
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="JsonConverters\ServerTimingConverter.cs" />
+    <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\QueryInfo.cs" />
@@ -1202,6 +1204,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-profiler.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\AllServerQueries\AggMatch.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\AllServerQueries\AggMiss.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\AllServerQueries\AggPartial.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

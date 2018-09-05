@@ -8,12 +8,14 @@
   public static class ScreenFontPoints
   {
 
-    /// <summary>
-    /// Convert a font size to other values.
-    /// </summary>
-    /// <param name="targetUnit"></param>
-    /// <returns></returns>
-    public static double ToUnit(double inputValue, Itemkey targetUnit, double oneHundredPercentFontSize)
+        /// <summary>
+        /// Convert a font size to other values.
+        /// </summary>
+        /// <param name="inputValue"></param>
+        /// <param name="targetUnit"></param>
+        /// <param name="oneHundredPercentFontSize"></param>
+        /// <returns></returns>
+        public static double ToUnit(double inputValue, Itemkey targetUnit, double oneHundredPercentFontSize)
     {
       switch (targetUnit)
       {

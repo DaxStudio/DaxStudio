@@ -132,7 +132,7 @@ Name: "standalone"; Description: "DaxStudio Core"
 Name: "custom"; Description: "Custom"; Flags: iscustom
 
 [Registry]
-Root: "HKCU"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core
+Root: "HKLM"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core
 ;Excel x86 Addin Keys
 Root: "HKLM32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe

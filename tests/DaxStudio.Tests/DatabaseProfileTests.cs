@@ -14,7 +14,7 @@ namespace DaxStudio.Tests
         [TestInitialize]
         public void Setup()
         {
-            ConnectionString = @"Data Source=localhost\tab16;Initial Catalog=AdventureWorks2012";
+            ConnectionString = @"Data Source=localhost\tab17;Initial Catalog=Adventure Works";
         }
 
         [TestMethod]

@@ -37,5 +37,8 @@ namespace DaxStudio.Tests.Mocks
 
         public bool ShowExportMetrics { get;set; }
         public int TraceStartupTimeout { get; set; }
+        public bool ShowExternalTools { get; set; }
+        public bool ShowExportAllData { get; set; }
+        public bool ShowAggregationRewritesInAllQueries { get; set; }
     }
 }

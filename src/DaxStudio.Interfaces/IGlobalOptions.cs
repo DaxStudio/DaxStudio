@@ -29,7 +29,10 @@ namespace DaxStudio.Interfaces
         bool ShowTooltipSampleData { get; set; }
         bool CanPublishDaxFunctions { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
-
+        // Preview Features
         bool ShowExportMetrics { get; set; }
+        bool ShowExternalTools { get; set; }
+        bool ShowExportAllData { get; set; }
+        bool ShowAggregationRewritesInAllQueries { get; set; }
     }
 }

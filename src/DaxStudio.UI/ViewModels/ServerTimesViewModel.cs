@@ -14,6 +14,7 @@ using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using DaxStudio.UI.JsonConverters;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -94,20 +95,30 @@ namespace DaxStudio.UI.ViewModels
 
     public class RewriteTraceEngineEvent : TraceStorageEngineEvent
     {
+
+        public RewriteTraceEngineEvent() { }
+
         public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber) : base(ev, rowNumber) {
             TextData = ev.TextData;
-            JObject rewriteResult = JObject.Parse(ev.TextData);
-            Table = (string)rewriteResult["table"];
-            MatchingResult = (string)rewriteResult["matchingResult"];
-            var mapping = rewriteResult["mapping"];
-            if (mapping.HasValues)
-                Mapping = (string)rewriteResult["mapping"]["table"];
         }
-
+        
         public string Table { get; set; }
         public string MatchingResult { get; set; }
         public string Mapping { get; set; }
-        public string TextData { get; set; }
+        private string _textData;
+        public string TextData { get { return _textData; } set {
+                _textData = value;
+                if (_textData == null) return;
+                JObject rewriteResult = JObject.Parse(_textData);
+                Table = (string)rewriteResult["table"];
+                MatchingResult = (string)rewriteResult["matchingResult"];
+                var mapping = rewriteResult["mapping"];
+                if (mapping.HasValues)
+                    Mapping = (string)rewriteResult["mapping"]["table"];
+                Query = $"<{MatchingResult}>";
+            }
+        }
+        public new string Query { get; set; } = "";
         public bool MatchFound { get { return MatchingResult == "matchFound"; } }
 
     }
@@ -210,9 +221,10 @@ namespace DaxStudio.UI.ViewModels
         
     {
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails) : base(eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
+            ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
@@ -492,7 +504,14 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
-            ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data);
+
+            var eventConverter = new ServerTimingConverter();
+            var deseralizeSettings = new JsonSerializerSettings();
+            deseralizeSettings.Converters.Add(eventConverter);
+            deseralizeSettings.TypeNameAssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+            deseralizeSettings.TypeNameHandling = TypeNameHandling.Auto;
+
+            ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data, deseralizeSettings);
 
             FormulaEngineDuration = m.FormulaEngineDuration;
             StorageEngineDuration = m.StorageEngineDuration;

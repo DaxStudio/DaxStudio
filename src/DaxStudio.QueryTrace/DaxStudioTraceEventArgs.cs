@@ -79,9 +79,13 @@ namespace DaxStudio.QueryTrace
             {
                 
             }
-            //if (e.EndTime != null) 
-            //    EndTime = e.EndTime;
-            
+
+            try
+            {
+                RequestID = e[TraceColumn.RequestID];
+            }
+            catch 
+            { }
         }
 
         // This default constructor is required to allow deserializeing from JSON when tracing PowerPivot
@@ -127,5 +131,6 @@ namespace DaxStudio.QueryTrace
         public string DatabaseName { get; set; }
 
         public string DatabaseFriendlyName { get; set; }
+        public string RequestID { get; set; }
     }
 }

@@ -648,12 +648,47 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool ShowAdvancedTab
+        {
+            get
+            {
+                return ShowExportMetrics | ShowExternalTools | ShowExportAllData;
+            }
+        }
+
+
+        private bool _showExternalTools;
+        public bool ShowExternalTools
+        {
+            get { return _showExternalTools; }
+            private set
+            {
+                _showExternalTools = value;
+                NotifyOfPropertyChange(() => ShowExternalTools);
+                NotifyOfPropertyChange(() => ShowAdvancedTab);
+            }
+        }
+
+
+        private bool _showExportAllData;
+        public bool ShowExportAllData
+        {
+            get { return _showExportAllData; }
+            private set
+            {
+                _showExportAllData = value;
+                NotifyOfPropertyChange(() => ShowExportAllData);
+                NotifyOfPropertyChange(() => ShowAdvancedTab);
+            }
+        }
+
         private bool _showExportMetrics;
         public bool ShowExportMetrics {
             get { return _showExportMetrics; }
             private set {
                 _showExportMetrics = value;
                 NotifyOfPropertyChange(() => ShowExportMetrics);
+                NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
 
@@ -687,6 +722,9 @@ namespace DaxStudio.UI.ViewModels
         private void UpdateGlobalOptions()
         {
             ShowExportMetrics = Options.ShowExportMetrics;
+            ShowExternalTools = Options.ShowExternalTools;
+            ShowExportAllData = Options.ShowExportAllData;
+
         }
 
         public void LaunchSqlProfiler()

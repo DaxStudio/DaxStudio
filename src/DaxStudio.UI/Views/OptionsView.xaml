@@ -8,8 +8,9 @@
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             mc:Ignorable="d" 
-             d:DesignHeight="587.195" d:DesignWidth="900">
+    xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+    mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
@@ -45,6 +46,14 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
+            <Style TargetType="{x:Type GroupBox}">
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="MinWidth" Value="300"/>
+                <Setter Property="Foreground" Value="{StaticResource DaxStudioBrush}"/>
+                <Setter Property="Width" Value="375" />
+                <Setter Property="Padding" Value="5"/>
+            </Style>
             <!--<Style TargetType="{x:Type TextBox}">
                 <Style.Resources>
                     <SolidColorBrush 
@@ -52,6 +61,46 @@
                     Color="Blue" />
                 </Style.Resources>
             </Style>-->
+
+            <Style x:Key="checkboxLeftSideText" TargetType="{x:Type CheckBox}">
+                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                <Setter Property="FocusVisualStyle"  Value="{DynamicResource CheckBoxFocusVisual}"/>
+                <Setter Property="Background" Value="{DynamicResource NormalBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource NormalBorderBrush}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type CheckBox}">
+
+                            <DockPanel 
+                              HorizontalAlignment="Stretch" 
+                              VerticalAlignment="Top" 
+                              Width="Auto" 
+                              LastChildFill="True">
+
+                            <Microsoft_Windows_Themes:BulletChrome 
+                                DockPanel.Dock="Right" 
+                                Margin="7,0,0,0"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                IsChecked="{TemplateBinding IsChecked}" 
+                                RenderMouseOver="{TemplateBinding IsMouseOver}" 
+                                RenderPressed="{TemplateBinding IsPressed}" 
+                                HorizontalAlignment="Stretch" 
+                                VerticalAlignment="Center" 
+                                Width="Auto" 
+                                Height="Auto"/>
+
+                            <ContentPresenter 
+                                Content="{TemplateBinding Content}" 
+                                RecognizesAccessKey="True" 
+                                Height="Auto" 
+                                HorizontalAlignment="Left" />
+                            </DockPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
@@ -77,9 +126,9 @@
         <!-- Editor -->
         <TabControl Grid.Row="1">
             <TabItem Header="Standard">
-                <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,0,0,-42.5" >
-                    <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
-                        <GroupBox Header="Editor" Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
+                    <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
+                        <GroupBox Header="Editor">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -92,7 +141,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family"/>
+                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
                                 <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
 			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			                        ItemTemplate="{DynamicResource FontTemplate}"
@@ -126,17 +175,17 @@
                                         <Binding Source="{StaticResource myFonts}" />
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size"/>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
                                 <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
                                 <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
-                                <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers"/>
+                                <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
-                                <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense"/>
+                                <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
                             </Grid>
                         </GroupBox>
 
-                        <GroupBox Header="Proxy" MinWidth="300"  Width="375" Margin="0,0,10,0" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Proxy"  >
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -151,13 +200,16 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="0" Content="Use System Proxy"/>
-                                <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center"/>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" />
+                                <Label Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Right" Content="Use System Proxy:"/>
+                                <!-- Style="{StaticResource checkboxLeftSideText}" -->
+                                <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center" >
+         
+                                </CheckBox>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right" />
                                 <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
-                                <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}"/>
+                                <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
                                 <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" IsReadOnly="{Binding Path=ProxyUseSystem}"/>
-                                <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}" />
+                                <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
                                 <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" Focusable="{Binding Path=ProxyDontUseSystem}">
                                     <i:Interaction.Behaviors>
                                         <beh:PasswordBoxBindingBehavior SecurePassword="{Binding ProxySecurePassword}"/>
@@ -166,7 +218,7 @@
                             </Grid>
                         </GroupBox>
                         <!-- Query History -->
-                        <GroupBox Header="Query History"  Margin="0,0,10,0" MinWidth="300"  Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Query History">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -182,14 +234,14 @@
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:"/>
+                                <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="QueryHistoryMaxItems" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="500" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:"/>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                             </Grid>
                         </GroupBox>
 
-                        <GroupBox Header="Timeouts"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Timeouts">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -202,21 +254,21 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:"/>
+                                <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="QueryEndEventTimeout" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
                                 
-                                <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:"/>
+                                <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="DaxFormatterRequestTimeout" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
                                 
-                                <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:"/>
+                                <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="TraceStartupTimeout" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
 
-                        <GroupBox Header="Separators"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Separators">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -241,25 +293,42 @@
                             </Grid>
                         </GroupBox>
 
-                        <GroupBox Header="Trace"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Trace"  >
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
+                                    
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <CheckBox  Grid.Column="0" x:Name="TraceDirectQuery" VerticalAlignment="Center"/>
-                                <Label Grid.Column="1" Content="DirectQuery Trace"/>
-                                <TextBlock>On servers prior to v15 (SSAS 2017)</TextBlock>
+                                
+                                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                                    <CheckBox  Grid.Column="0" x:Name="TraceDirectQuery" Content="DirectQuery Trace"/>
+                                    <Image Source="{StaticResource QuestionIcon}" Width="16" HorizontalAlignment="Right" ToolTipService.HasDropShadow="True" Margin="5,0,0,0" >
+                                        <Image.ToolTip>
+                                            <Grid Width="300" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock  Margin="6" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="14">DirectQuery Trace</TextBlock>
+                                                <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="6">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible
+                                                </TextBlock>
+                                            </Grid>
+                                        </Image.ToolTip>
+                                        
+                                    </Image>
+                                </StackPanel>
+                                <!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>-->
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Version Notifications"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Version Notifications">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="20"/>
 
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
@@ -270,32 +339,27 @@
 
 
                                 </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <Label  Grid.Column="1" Content="Show Pre-Releases"/>
+                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
 
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Metadata Tooltips"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Metadata Tooltips">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-
                                 </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="1" Content="Show Basic Statistics"/>
-                                <Label Grid.Row="1" Grid.Column="1" Content="Show Sample Data"/>
-                                <CheckBox Grid.Column="0" x:Name="ShowTooltipBasicStats" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Column="0" Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Margin="2,7,2,0" />
 
+                                <CheckBox x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
 
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Results"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Results">
                             <StackPanel Orientation="Vertical">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
@@ -314,7 +378,7 @@
 
                                 </Grid.RowDefinitions>
 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family"/>
+                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
                                 <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
 			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			                        ItemTemplate="{DynamicResource FontTemplate}"
@@ -348,7 +412,7 @@
                                         <Binding Source="{StaticResource myFonts}" />
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size"/>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
                                 <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
                             </Grid>
                             <Grid Margin="5,5,0,0">
@@ -370,7 +434,7 @@
                             </Grid>
                             </StackPanel>
                         </GroupBox>
-                        <GroupBox Header="Dax Formatter"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Dax Formatter">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -400,9 +464,9 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Advanced">
-                <ScrollViewer x:Name="AdvancedScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal">
-                        <GroupBox Header="Publish Functions" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                <ScrollViewer x:Name="AdvancedScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
+                    <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
+                        <GroupBox Header="Publish Functions">
                             <StackPanel>
                                 <Button Margin="5" Padding="3" Name="PublishDaxFunctions">Publish Functions</Button>
                                 <TextBlock Margin="10,0,0,10" Foreground="{StaticResource MutedTextBrush}" Visibility="{Binding CanPublishDaxFunctions, Converter={StaticResource BoolToNotVisibleConverter}}">Publish Functions is currently running...</TextBlock>
@@ -410,22 +474,33 @@
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Preview Features" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        <GroupBox Header="Preview Features">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
 
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="1" Content="Show Export Metrics button"/>
 
-                                <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Margin="2,7,2,0" />
+
+                                <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Content="Show Export Metrics button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export metrics about your data model to a .vpax file which can be imported into Vertipaq Analyzer v2</TextBlock>
+
+                                <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Luanch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
+
+                                <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowAggregationRewritesInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Aggregation Rewrites in All Queries Traces" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will show aggregation hits/misses in All Queries traces</TextBlock>
 
                             </Grid>
                         </GroupBox>

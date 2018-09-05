@@ -109,14 +109,13 @@
         			IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
         			OverridesDefaultStyle="True"
         			Padding="1.5,0"/>
-
             <ScrollViewer x:Name="ExpanderContentScrollView" DockPanel.Dock="Bottom"
         			HorizontalScrollBarVisibility="Hidden"
         			VerticalScrollBarVisibility="Hidden"
         			HorizontalContentAlignment="Stretch"
         			VerticalContentAlignment="Bottom"
         			Opacity="0"
-                              >
+                    >
                 <ScrollViewer.Tag>
                     <sys:Double>0.0</sys:Double>
                 </ScrollViewer.Tag>
@@ -131,34 +130,40 @@
         </DockPanel>
         <ControlTemplate.Triggers>
             <Trigger Property="IsExpanded" Value="True">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
+                <Trigger.EnterActions >
+                    <BeginStoryboard HandoffBehavior="Compose">
+                        <Storyboard AutoReverse="False" Name="ExpanderOpen">
                             <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-                                                 Storyboard.TargetProperty="Tag"
-                                                 To="1"
-                                                 Duration="0:0:0.4"/>
+                                            Storyboard.TargetProperty="Tag"
+                                            From="0.0"
+                                            To="1.0"
+                                            Duration="0:0:0.4"/>
 
                             <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="1" Duration="0:0:0.3" />
+											Storyboard.TargetProperty="(UIElement.Opacity)"
+                                            From="0.0"
+											To="1.0" 
+                                            Duration="0:0:0.3" />
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
                 <Trigger.ExitActions>
                     <BeginStoryboard>
-                        <Storyboard AutoReverse="False">
+                        <Storyboard AutoReverse="False"  Name="ExpanderClose">
                             <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-                                                 Storyboard.TargetProperty="Tag"
-                                                 To="0"
-                                                 Duration="0:0:0.4"/>
+                                            Storyboard.TargetProperty="Tag"
+                                            From="1.0"
+                                            To="0.0"
+                                            Duration="0:0:0.4"/>
                             <DoubleAnimation Storyboard.TargetName="ExpanderContentScrollView"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="0" Duration="0:0:0.3" />
+											Storyboard.TargetProperty="(UIElement.Opacity)"
+                                            From="1.0"
+											To="0.0" Duration="0:0:0.3" />
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>
             </Trigger>
+
         </ControlTemplate.Triggers>
     </ControlTemplate>
 

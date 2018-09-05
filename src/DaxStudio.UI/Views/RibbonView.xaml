@@ -152,12 +152,13 @@
                                     <!-- style comes from ribbon control -->
                                     <!-- Style="{DynamicResource ButtonBackstageStyle}" -->
                                     <Fluent:Button 
-                                           BorderBrush="DimGray"  
-                                           BorderThickness="1" 
-                                           LargeIcon="{StaticResource BrowseIconLarger}"
-                                           Header="Browse"
-                                           SizeDefinition="Large"
-                                           Height="100" Width="100" Foreground="Black">
+                                        Style="{DynamicResource ButtonBackstageStyle}"
+                                        BorderBrush="DimGray"  
+                                        BorderThickness="1" 
+                                        LargeIcon="{StaticResource BrowseIconLarger}"
+                                        Header="Browse"
+                                        SizeDefinition="Large"
+                                        Height="100" Width="100" Foreground="Black">
                                            
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="Click">
@@ -752,7 +753,7 @@
         </Fluent:RibbonTabItem>
 
             <!-- Advanced Ribbon Tab-->
-        <Fluent:RibbonTabItem Header="Advanced" >
+        <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="" Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"

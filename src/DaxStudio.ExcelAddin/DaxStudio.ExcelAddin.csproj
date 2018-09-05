@@ -394,6 +394,9 @@
       <DependentUpon>app.config</DependentUpon>
       <SubType>Designer</SubType>
     </None>
+    <None Include="DaxStudio.dll.xl2010.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </None>
