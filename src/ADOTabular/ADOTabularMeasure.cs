@@ -31,6 +31,7 @@ namespace ADOTabular
 
         public string Contents { get; private set; }
 
+        public string DisplayFolder { get; private set; }
         public virtual string DaxName {
             get
             {

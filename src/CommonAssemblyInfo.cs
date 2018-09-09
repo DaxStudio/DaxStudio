@@ -9,7 +9,7 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © DAX Studio 2016")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion(    "2.8.0.106")]
-[assembly: AssemblyFileVersion("2.8.0.106")]
+[assembly: AssemblyVersion(    "2.8.0.107")]
+[assembly: AssemblyFileVersion("2.8.0.107")]
 
 

@@ -6,6 +6,7 @@ using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace ADOTabular
 {
@@ -95,7 +96,7 @@ namespace ADOTabular
             {
                 var eEntitySet = rdr.NameTable.Add("EntitySet");
                 var eEntityType = rdr.NameTable.Add("EntityType");
-
+                var eDisplayFolder = rdr.NameTable.Add("DisplayFolder");
                 //var eKpi = rdr.NameTable.Add("Kpi");
 
                 while (rdr.Read())
@@ -111,6 +112,7 @@ namespace ADOTabular
                     {
                         AddColumnsToTable(rdr, tabs, eEntityType);
                     }
+
                 }
                 foreach (var t in tabs)
                 {
@@ -253,6 +255,12 @@ namespace ADOTabular
 
                 }
 
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "DisplayFolder")
+                {
+                    Debug.WriteLine("FoundFolder");
+                    ProcessDiplayFolder(rdr, tables.GetById(tableId));
+                }
 
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "Kpi")
@@ -316,7 +324,7 @@ namespace ADOTabular
                                 nullable = bool.Parse(rdr.Value);
                                 break;
                                 // Precision Scale 
-
+                            //TODO - Add RowCount
                         }
                     }
 
@@ -380,6 +388,69 @@ namespace ADOTabular
 
         }
 
+        private void ProcessDiplayFolder(XmlReader rdr, ADOTabularTable aDOTabularTable)
+        {
+            var folderName = "";
+            string folderCap = null;
+            string objRef = "";
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                    && rdr.LocalName == "DisplayFolder"))
+            {
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "DisplayFolder")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        switch (rdr.LocalName)
+                        {
+                          
+                            case "Name":
+                                folderName = rdr.Value;
+                                break;
+                            case "Caption":
+                                folderCap = rdr.Value;
+                                break;
+                        }
+                    }
+                    rdr.Read();
+                }
+
+                while (rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement)
+                {
+                    rdr.Read();
+                }
+                    
+                if ((rdr.NodeType == XmlNodeType.Element)
+                    && (rdr.LocalName == "PropertyRef"))
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        switch (rdr.LocalName)
+                        {
+                            case "Name":
+                                objRef = rdr.Value;
+                                break;
+                        }
+                    }
+
+                    var tabularObj = aDOTabularTable.Columns.GetByPropertyRef(objRef);
+                    tabularObj.DisplayFolder = folderCap;
+                    objRef = "";
+                }
+
+                if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolder") break;
+                rdr.Read();
+
+                //while (true)
+                //{
+                //if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Level") break;
+                //    if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolder") break;
+                //    rdr.Read();
+                //}
+            }
+
+        }
 
         private KpiDetails ProcessKpi(XmlReader rdr, ADOTabularTable table)
         {
