@@ -277,10 +277,10 @@
                                                     cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureAllTables($dataContext)]">
                                                 </MenuItem>
                                                 <MenuItem Header="Define All Measures"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresAllTables($dataContext)]">
+                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresOneTable($dataContext)]">
                                                 </MenuItem>
                                                 <MenuItem Header="Define All Measures (All tables)"
-                                                    cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresOneTable($dataContext)]">
+                                                    cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresAllTables($dataContext)]">
                                                 </MenuItem>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
