@@ -14,6 +14,24 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestParseLineWithOpenColumnAndLeadingSpace()
+        {
+            var daxLine = DaxLineParser.ParseLine(" table[column", 12, 0);
+
+            Assert.AreEqual(LineState.Column, daxLine.LineState);
+            Assert.AreEqual("table", daxLine.TableName);
+        }
+
+        [TestMethod]
+        public void TestParseLineWithOpenColumnAndLeadingTab()
+        {
+            var daxLine = DaxLineParser.ParseLine("\ttable[column", 12, 0);
+            
+            Assert.AreEqual(LineState.Column,daxLine.LineState);
+            Assert.AreEqual("table", daxLine.TableName);
+        }
+
+        [TestMethod]
         public void TestParseLineWithOpenColumnAndPreceedingString()
         {
             var testText = "\"table[column\" 'table";
