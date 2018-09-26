@@ -247,7 +247,6 @@ namespace DaxStudio.UI.Utils
             }
             try
             {
-                //char[] separators = (' ', '\t');
                 Func<char, bool> isSeparator = c => { return char.IsWhiteSpace(c); };
             
                 if (line.Length == 0) return " "; // return a space if we are at the start of a line
@@ -257,7 +256,6 @@ namespace DaxStudio.UI.Utils
 
                 if (line.EndsWith("\'"))
                 {
-                    //separator = '\'';
                     isQuotedName = true;
                     isSeparator = c => c == '\'';
                     line = line.TrimEnd('\'');

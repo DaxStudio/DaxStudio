@@ -256,7 +256,7 @@ namespace DaxStudio.Tests
 
         }
 
-        [TestMethod]
+        [TestMethod][Ignore]
         public void TestInvalidCSDLKPIs()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString + ";Initial Catalog=AW Internet Sales Tabular Model 2014", AdomdType.AnalysisServices);

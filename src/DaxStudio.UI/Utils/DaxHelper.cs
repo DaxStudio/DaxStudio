@@ -13,9 +13,13 @@ namespace DaxStudio.UI.Utils
     {
         // detects a parameter
         const string paramRegex = @"(?:@)(?<name>[^\[\]\s,=]*\b+(?![^\[]*\]))";
-        const string startRegex = "@";//(?<=@)";
-        const string endRegex = "(?=[\\s|,|\\)|$])";
+        const string commentRegex = @"\/\*(\*(?!\/)|[^*])*\*\/|(//.*)|(--.*)";
+        private static Regex rexComments = new Regex(commentRegex, RegexOptions.Compiled | RegexOptions.Multiline);
+        private static Regex rexParams = new Regex(paramRegex, RegexOptions.Compiled);
 
+        const string startRegex = "@";//(?<=@)";
+        const string endRegex = @"(?=[\s|,|\)|$])";
+        
         public static void PreProcessQuery(QueryInfo queryInfo, string query, IEventAggregator eventAggregator)
         {
 	        var lines = query.Split('\n');
@@ -25,9 +29,13 @@ namespace DaxStudio.UI.Utils
 	        foreach (var line in lines)
 	        {
 		        if (line.Trim().StartsWith("<Parameters")) inParams = true;
-		        
-		        if (inParams) sbParams.Append(line);
-		        else sbQuery.Append(line);
+
+                if (inParams)
+                    sbParams.Append(line);
+                else {
+                    sbQuery.Append(line);
+                    sbQuery.Append("\n");
+                }
 
                 if (line.Trim().EndsWith("</Parameters>")) inParams = false;
 
@@ -106,8 +114,9 @@ namespace DaxStudio.UI.Utils
 
         public static void PopulateParameters(string qry,  Dictionary<string,QueryParameter> paramDict)
         {
-            var rexParams = new Regex(paramRegex, RegexOptions.Compiled);
-            var matches = rexParams.Matches(qry);
+            // strip out comments before looking for parameters
+            var cleanQry = rexComments.Replace(qry, "");
+            var matches = rexParams.Matches(cleanQry);
             foreach(Match m in matches)
             {
                 if (!paramDict.ContainsKey(m.Groups["name"].Value)) paramDict.Add(m.Groups["name"].Value, new QueryParameter(m.Groups["name"].Value));

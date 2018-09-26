@@ -27,13 +27,13 @@ namespace DaxStudio.Tests
             var profile = DatabaseProfiler.Create(db);
 
             Assert.AreEqual(db.Name, profile.Name);
-            Assert.AreEqual(17, profile.Tables.Count);
+            Assert.AreEqual(7, profile.Tables.Count);
 
             JsonSerializer serializer = new JsonSerializer();
             //serializer.Converters.Add(new JavaScriptDateTimeConverter());
             serializer.NullValueHandling = NullValueHandling.Ignore;
 
-            using (StreamWriter sw = new StreamWriter(@"d:\temp\profile.json"))
+            using (StreamWriter sw = new StreamWriter(@"c:\temp\profile.json"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 serializer.Serialize(writer, profile);

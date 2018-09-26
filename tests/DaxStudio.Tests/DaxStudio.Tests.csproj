@@ -131,6 +131,7 @@
     <Compile Include="ConnectionStringParserTests.cs" />
     <Compile Include="DatabaseProfileTests.cs" />
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
+    <Compile Include="DaxHelperTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Mocks\MockEditor.cs" />
     <Compile Include="Mocks\MockEventAggregator.cs" />

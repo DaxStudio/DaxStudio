@@ -336,8 +336,8 @@ namespace DAXEditor
 
         private Regex rxUncommentSlashes = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
         private Regex rxUncommentDashes = new Regex(string.Format("^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
-        private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
-
+        private Regex rxComment = new Regex("^(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
+        //private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
         private void SelectFullLines()
         {
             int selStart = Document.GetLineByOffset(SelectionStart).Offset;

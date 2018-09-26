@@ -10,12 +10,14 @@ using ICSharpCode.AvalonEdit.Editing;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Navigation;
 
 namespace DaxStudio.UI.Utils
 {
@@ -266,9 +268,21 @@ namespace DaxStudio.UI.Utils
             tb.Inlines.Add(f.Description);
             //tb.Inlines.Add("\n");
             //tb.Inlines.Add(new Italic(new Run(f.DaxName)));
+            var docLink = new Hyperlink();
+            docLink.Inlines.Add($"https://dax.guide/{f.Caption}");
+            docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}");
+            docLink.RequestNavigate += InsightHyperLinkNavigate;
+            tb.Inlines.Add("\n");
+            tb.Inlines.Add(docLink);
             Grid.SetColumn(tb, 0);
             grd.Children.Add(tb);
             return grd;
+        }
+
+        private void InsightHyperLinkNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
         }
 
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
