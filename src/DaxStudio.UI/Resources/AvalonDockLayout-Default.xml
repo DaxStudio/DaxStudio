@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LayoutRoot>
+  <RootPanel Orientation="Horizontal">
+    <LayoutAnchorablePaneGroup Orientation="Horizontal" DockWidth="200" DocMinWidth="150">
+      <LayoutAnchorablePane Name="DockLeft">
+        <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Metadata" IsSelected="True" ContentId="DaxStudio.UI.ViewModels.MetadataPaneViewModel" CanClose="False" />
+        <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Functions" ContentId="DaxStudio.UI.ViewModels.FunctionPaneViewModel" CanClose="False" />
+        <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="DMV" ContentId="DaxStudio.UI.ViewModels.DmvPaneViewModel" CanClose="False" />
+      </LayoutAnchorablePane>
+    </LayoutAnchorablePaneGroup>
+    <LayoutPanel Orientation="Vertical">
+      <LayoutDocumentPane>
+        <LayoutDocument IsSelected="True" IsLastFocusedDocument="True" ContentId="Document" CanClose="False" CanFloat="False" LastActivationTimeStamp="09/27/2018 08:42:47" />
+      </LayoutDocumentPane>
+      <LayoutAnchorablePaneGroup Orientation="Vertical" DockHeight="260" DockMinHeight="170">
+        <LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
+          <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Output" IsSelected="True" ContentId="DaxStudio.UI.ViewModels.OutputPaneViewModel" CanClose="False" />
+          <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Results" ContentId="DaxStudio.UI.ViewModels.QueryResultsPaneViewModel" CanClose="False" />
+          <LayoutAnchorable CanHide="False" AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Query History" ContentId="DaxStudio.UI.ViewModels.QueryHistoryPaneViewModel" CanClose="False" />
+        </LayoutAnchorablePane>
+      </LayoutAnchorablePaneGroup>
+    </LayoutPanel>
+  </RootPanel>
+  <TopSide />
+  <RightSide />
+  <LeftSide />
+  <BottomSide />
+  <FloatingWindows />
+  <Hidden />
+</LayoutRoot>

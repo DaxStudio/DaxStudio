@@ -236,7 +236,12 @@
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
                                    Margin="0,-1,0,1"
                                    AnchorablesSource="{Binding ToolWindows}"
-                                   Grid.Row="0">
+                                   Grid.Row="0"
+                                   beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True">
+            <i:Interaction.Behaviors>
+                <beh:AvalonDockLayoutSerializerBehaviour />
+            </i:Interaction.Behaviors>
+            
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
@@ -465,8 +470,8 @@
 
                     <avalondock:LayoutPanel Orientation="Vertical">
 
-                        <avalondock:LayoutDocumentPane DockHeight="Auto"  >
-                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
+                        <avalondock:LayoutDocumentPane DockHeight="Auto" >
+                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="Document">
 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -534,9 +539,9 @@
 
                         <!-- Bottom Output panes -->
 
-                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="170" DockHeight="260">
+                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="70" DockHeight="260">
 
-                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
+                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="70">
                                 
                             </avalondock:LayoutAnchorablePane>
                         </avalondock:LayoutAnchorablePaneGroup>

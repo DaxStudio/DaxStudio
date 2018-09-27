@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Xceed.Wpf.AvalonDock.Layout;
-using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Utils
@@ -15,6 +14,8 @@ namespace DaxStudio.UI.Utils
                 
                 var lap = layout.Descendents();
                 var pane = lap.OfType<LayoutAnchorablePane>().FirstOrDefault(d => d.Name == myViewModel.DefaultDockingPane);
+                // make sure that the ContentId property is populated so that the saving/loading of layouts works
+                if(anchorableToShow.ContentId == null) anchorableToShow.ContentId = anchorableToShow.Content.GetType().ToString();
                 if (pane != null)
                 {
                     pane.Children.Add(anchorableToShow);
@@ -32,7 +33,7 @@ namespace DaxStudio.UI.Utils
 
         public bool BeforeInsertDocument(LayoutRoot layout, LayoutDocument anchorableToShow, ILayoutContainer destinationContainer)
         {
-            //TODO - can I stop anchorables being docked?
+            // We only allow 1 document in the layout when using this layout strategy
             return false;
         }
 

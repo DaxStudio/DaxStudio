@@ -767,5 +767,20 @@ namespace DaxStudio.UI.ViewModels
                 return true;
             }
         }
+
+        public void SaveLayout()
+        {
+            _eventAggregator.BeginPublishOnUIThread(new DockManagerSaveLayout());
+        }
+
+        public void LoadLayout()
+        {
+            _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(false));
+        }
+
+        public void ResetLayout()
+        {
+            _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(true));
+        }
     }
 }

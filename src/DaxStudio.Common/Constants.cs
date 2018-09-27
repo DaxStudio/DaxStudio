@@ -13,6 +13,8 @@ namespace DaxStudio.Common
         public const string StandaloneLogFileName = "DaxStudio-{Date}.log";
         public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveMasterIndex.json";
         public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
+        public const string AvalonDockLayoutFile = @"%APPDATA%\DaxStudio\WindowLayouts\Custom.xml";
+        public const string AvalonDockDefaultLayoutFile = @"DaxStudio.UI.Resources.AvalonDockLayout-Default.xml";
 
         public const System.Windows.Input.Key LoggingHotKey1 = System.Windows.Input.Key.LeftShift;
         public const System.Windows.Input.Key LoggingHotKey2 = System.Windows.Input.Key.RightShift;
@@ -27,6 +29,7 @@ namespace DaxStudio.Common
         public const string StatusBarTimerFormat = "mm\\:ss\\.f";
 
         public const int AutoSaveIntervalMs = 10000; // autosave every 30 seconds
+        
         //public const int TraceStartTimeoutSeconds = 30;
     }
 }

@@ -824,6 +824,31 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Window Layout">
+                    <Fluent:Button Name="SaveLayout"
+                               Header="Save Layout"
+                               cal:Message.Attach="[Event Click] = [Action SaveLayout()]"
+                                   Icon="{StaticResource LayoutSaveIcon}"
+                                   LargeIcon="{StaticResource LayoutSaveIcon}"
+                                   Margin="4,0"
+                                   SizeDefinition="Middle,Small,Small"></Fluent:Button>
+
+                <Fluent:Button Name="LoadLayout"
+                               Header="Load Layout"
+                               cal:Message.Attach="[Event Click] = [Action LoadLayout()]"
+                                   Icon="{StaticResource LayoutLoadIcon}"
+                                   LargeIcon="{StaticResource LayoutLoadIcon}"
+                                   Margin="4,0"
+                                   SizeDefinition="Middle,Small,Small"></Fluent:Button>
+
+                <Fluent:Button Name="ResetLayout"
+                               Header="Reset Layout"
+                               cal:Message.Attach="[Event Click] = [Action ResetLayout()]"
+                                   Icon="{StaticResource LayoutResetIcon}"
+                                   LargeIcon="{StaticResource LayoutResetIcon}"
+                                   Margin="4,0"
+                                   SizeDefinition="Middle,Small,Small"></Fluent:Button>
+            </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
             
             

@@ -197,25 +197,20 @@
       <HintPath>..\..\packages\AvalonEdit.5.0.4\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=15.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.0.2\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.AnalysisServices, Version=15.5.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.5.0\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.0.2\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.5.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.5.0\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=15.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.0.2\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=15.5.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.5.0\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.0.2\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.5.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.5.0\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=15.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.0.2\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=15.5.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.5.0\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -257,17 +252,14 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Aero.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Metro.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.MetroAccent, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.MetroAccent.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.MetroAccent.dll</HintPath>
@@ -277,9 +269,8 @@
       <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Office2007.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Office2007.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.VS2010.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.Windows10, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Windows10.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Windows10.dll</HintPath>
@@ -289,9 +280,8 @@
       <HintPath>..\..\packages\Xceed.Wpf.Controls.5.7.15466.10150\lib\net40\Xceed.Wpf.Controls.v5.7.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid, Version=2.9.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.2.9\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.DataGrid, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.Themes, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Xceed.Wpf.Themes.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.dll</HintPath>
@@ -309,9 +299,8 @@
       <HintPath>..\..\packages\Xceed.Wpf.Themes.Windows10.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.Windows10.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Toolkit.3.1.16356.12170\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -330,6 +319,7 @@
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
+    <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
@@ -381,6 +371,8 @@
     <Compile Include="Events\AutoSaveEvent.cs" />
     <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
     <Compile Include="Events\CopyConnectionEvent.cs" />
+    <Compile Include="Events\DockManagerLoadLayout.cs" />
+    <Compile Include="Events\DockManagerSaveLayout.cs" />
     <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
     <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
@@ -390,6 +382,7 @@
     <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
+    <Compile Include="Extensions\DockingManagerExtensions.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />
@@ -1213,6 +1206,36 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\AllServerQueries\AggPartial.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\AvalonDockLayout-Default.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-load-64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-reset-64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-save-64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-load-17.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-reset-17.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-save-17.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-load-16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-reset-16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-layout-save-16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

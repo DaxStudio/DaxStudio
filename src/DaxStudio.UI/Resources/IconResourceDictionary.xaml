@@ -122,6 +122,13 @@
     <BitmapImage x:Key="LaunchExcelIconLarger"  UriSource="..\images\icon-excel.png"></BitmapImage>
     <BitmapImage x:Key="QuestionIcon"  UriSource="..\images\icon-question@16px.png"></BitmapImage>
     <BitmapImage x:Key="QuestionIconLarger"  UriSource="..\images\icon-question@96ppi.png"></BitmapImage>
+    <BitmapImage x:Key="LayoutSaveIcon"  UriSource="..\images\icon-layout-save-16.png"></BitmapImage>
+    <!--<BitmapImage x:Key="LayoutSaveIconLarger"  UriSource="..\images\icon-layout-save-64.png"></BitmapImage>-->
+    <BitmapImage x:Key="LayoutLoadIcon"  UriSource="..\images\icon-layout-load-16.png"></BitmapImage>
+    <!--<BitmapImage x:Key="LayoutLoadIconLarger"  UriSource="..\images\icon-layout-load-64.png"></BitmapImage>-->
+    <BitmapImage x:Key="LayoutResetIcon"  UriSource="..\images\icon-layout-reset-16.png"></BitmapImage>
+    <!--<BitmapImage x:Key="LayoutResetIconLarger"  UriSource="..\images\icon-layout-reset-64.png"></BitmapImage>-->
+    
     
     <!-- trace control icons -->
     <BitmapImage x:Key="TraceStart" UriSource="..\images\TraceControls\play.png"></BitmapImage>

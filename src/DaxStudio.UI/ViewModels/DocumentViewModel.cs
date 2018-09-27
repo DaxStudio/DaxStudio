@@ -43,6 +43,7 @@ using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
 using CsvHelper;
 using System.ComponentModel;
+using Xceed.Wpf.AvalonDock;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -72,7 +73,9 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
-        , IHandle<UpdateConnectionEvent> 
+        , IHandle<UpdateConnectionEvent>
+        , IHandle<DockManagerLoadLayout>
+        , IHandle<DockManagerSaveLayout>
         , IDropTarget
         , IQueryRunner
         , IHaveShutdownTask
@@ -484,7 +487,13 @@ namespace DaxStudio.UI.ViewModels
         private DAXEditor.DAXEditor GetEditor()
         {
             DocumentView v = (DocumentView)GetView();
-            return v != null ? v.daxEditor : null;
+            return v?.daxEditor;
+        }
+
+        private DockingManager GetDockManager()
+        {
+            DocumentView v = (DocumentView)GetView();
+            return v?.Document;
         }
 
         public TextDocument Document { get; set; }
@@ -2824,6 +2833,42 @@ namespace DaxStudio.UI.ViewModels
         {
             ToolWindows.Add(message.TraceWatcher);
         }
+
+        public void Handle(DockManagerLoadLayout message)
+        {
+            try
+            {
+                var dm = this.GetDockManager();
+                if (message.RestoreDefault)
+                {
+                    dm.RestoreDefaultLayout();
+                    OutputMessage("Default Window Layout Restored");
+                }
+                else
+                {
+                    dm.LoadLayout();
+                    OutputMessage("Window Layout Loaded");
+                }
+            }
+            catch (Exception ex)
+            {
+                OutputError($"Error Loading Window Layout: {ex.Message}");
+            }
+        }
+
+        public void Handle(DockManagerSaveLayout message)
+        {
+            try { 
+                var dm = this.GetDockManager();
+                dm.SaveLayout();
+                OutputMessage("Window Layout Saved.");
+            }
+            catch (Exception ex)
+            {
+                OutputError($"Error Saving Window Layout: {ex.Message}");
+            }
+        }
+
 
         #region ISaveable 
         public FileIcons Icon { get { 
