@@ -76,6 +76,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateConnectionEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
+        , IHandle<UpdateGlobalOptions>
         , IDropTarget
         , IQueryRunner
         , IHaveShutdownTask
@@ -192,6 +193,10 @@ namespace DaxStudio.UI.ViewModels
         {
             base.OnViewLoaded(view);
             _editor = GetEditor();
+
+            // TODO - if theme is dark increase brightness of syntax highlights
+            //_editor.ChangeColorBrightness(1.25);
+            _editor.SetSyntaxHighlightColorTheme(_options.Theme);
 
             IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator);
             UpdateSettings();
@@ -2760,42 +2765,46 @@ namespace DaxStudio.UI.ViewModels
         public void UpdateSettings()
         {
             var editor = GetEditor();
-            if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
+            if (_editor != null)
             {
-                editor.ShowLineNumbers = _options.EditorShowLineNumbers;
+                if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
+                {
+                    editor.ShowLineNumbers = _options.EditorShowLineNumbers;
+                }
+                if (editor.FontFamily.Source != _options.EditorFontFamily)
+                {
+                    editor.FontFamily = new System.Windows.Media.FontFamily(_options.EditorFontFamily);
+                }
+                if (editor.FontSize != _options.EditorFontSize)
+                {
+                    editor.FontSize = _options.EditorFontSize;
+                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
+                    this.SizeUnitLabel.StringValue = "100";
+                }
+                /*
+                 * MARCO 2018-07-17 - How to set the font family and size of the result grid?
+                var result = QueryResultsPane;
+                if (result.FontFamily.Source != _options.ResultFontFamily)
+                {
+                    result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
+                }
+                if (result.FontSize != _options.ResultFontSize)
+                {
+                    result.FontSize = _options.ResultFontSize;
+                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                    this.SizeUnitLabel.StringValue = "100";
+                }
+                */
+                if (_options.EditorEnableIntellisense)
+                {
+                    _editor.EnableIntellisense(IntellisenseProvider);
+                }
+                else
+                {
+                    _editor.DisableIntellisense();
+                }
             }
-            if (editor.FontFamily.Source != _options.EditorFontFamily)
-            {
-                editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
-            }
-            if (editor.FontSize != _options.EditorFontSize)
-            {
-                editor.FontSize = _options.EditorFontSize;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
-                this.SizeUnitLabel.StringValue = "100";
-            }
-            /*
-             * MARCO 2018-07-17 - How to set the font family and size of the result grid?
-            var result = QueryResultsPane;
-            if (result.FontFamily.Source != _options.ResultFontFamily)
-            {
-                result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
-            }
-            if (result.FontSize != _options.ResultFontSize)
-            {
-                result.FontSize = _options.ResultFontSize;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
-                this.SizeUnitLabel.StringValue = "100";
-            }
-            */
-            if (_options.EditorEnableIntellisense)
-            {
-                _editor.EnableIntellisense(IntellisenseProvider);
-            }
-            else
-            {
-                _editor.DisableIntellisense();
-            }
+
         }
 
         public QueryHistoryPaneViewModel QueryHistoryPane { get; set; }
@@ -3069,6 +3078,24 @@ namespace DaxStudio.UI.ViewModels
         {
             _sourceDocument = message.SourceDocument;
         }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            UpdateTheme();
+        }
+
+        public void UpdateTheme()
+        {
+            NotifyOfPropertyChange(() => AvalonDockTheme);
+            _editor?.SetSyntaxHighlightColorTheme(_options.Theme);
+        }
         #endregion
+
+        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
+
+                if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
+                else return null; // new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+            }
+        }
     }
 }

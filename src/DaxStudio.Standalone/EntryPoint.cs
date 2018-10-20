@@ -10,6 +10,7 @@ using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.Standalone
 {
@@ -54,7 +55,7 @@ namespace DaxStudio.Standalone
                     .ReadFrom.AppSettings()
                     .MinimumLevel.ControlledBy(levelSwitch);
 
-                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder), 
+                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
                                             Constants.StandaloneLogFileName);
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
@@ -63,6 +64,17 @@ namespace DaxStudio.Standalone
 
                 // need to create application first
                 var app = new Application();
+                //var app2 = IoC.Get<Application>();
+
+                // add the custom DAX Studio accent color theme
+                app.AddDaxStudioAccentColor();
+
+                
+                // load selected theme
+                var theme = RegistryHelper.GetValue<string>("Theme", "Light");
+                if (theme == "Dark") app.LoadDarkTheme();
+                else app.LoadLightTheme();
+                
 
                 // add unhandled exception handler
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -79,9 +91,8 @@ namespace DaxStudio.Standalone
                                     || System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey2));
 
                 app.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
-                
+
                 var logCmdLineSwitch = app.Args().LoggingEnabled;
-                
 
                 //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
                 if (isLoggingKeyDown || logCmdLineSwitch)
@@ -121,7 +132,7 @@ namespace DaxStudio.Standalone
                 MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
 #else
                 // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal startup crash" );
+                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
 #endif
 
             }
@@ -190,5 +201,7 @@ namespace DaxStudio.Standalone
             p.Parse(args);
             
         }
+
+        
     }
 }

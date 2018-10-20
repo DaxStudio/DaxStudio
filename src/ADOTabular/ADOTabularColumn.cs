@@ -28,6 +28,7 @@ namespace ADOTabular
                 IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
                 Description = dr["DESCRIPTION"].ToString();
             }
+            Role = $"{Table.InternalReference}_{InternalReference}";
         }
 
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
@@ -41,6 +42,7 @@ namespace ADOTabular
             IsVisible = isVisible;
             ColumnType = columnType;
             Contents = contents;
+            Role = $"{Table.InternalReference}_{InternalReference}";
         }
 
         public string InternalReference { get; private set; }
@@ -180,5 +182,8 @@ namespace ADOTabular
             }
             return _tmp.Distinct().Take(sampleSize).ToList();
         }
+
+        // used for relationship links
+        public string Role { get; internal set; }
     }
 }

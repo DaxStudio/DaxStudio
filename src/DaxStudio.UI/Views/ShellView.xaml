@@ -14,10 +14,10 @@
         xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
-                     
+                    
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
-        
+        BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.AccentBaseColorBrush}"
         MinHeight="460"
         MinWidth="460"                    
         Height="720"
@@ -30,19 +30,38 @@
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+
+                <!-- Monotone Theme -->
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Colors.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Brushes.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.ExtendedWPFToolkit.xaml" />-->
+
+
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/Fluent;Component/Themes/Metro/White.xaml" />-->
 
-                <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Office2013/Generic.xaml"/>
+                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Office2013/Generic.xaml"/>-->
+
+                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Generic.xaml" />-->
+
+                <!-- accent resource -->
+                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Accents/Blue.xaml" />-->
+
+                <!-- theme resource -->
+                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Colors/BaseDark.xaml" />-->
+
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/FluentRibbon.DaxStudio.xaml" />-->
 
                 <!--<ResourceDictionary Source="/DaxStudio;Component/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/DaxStudio;Component/Themes/ColorsWhite.xaml" />-->
                 <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 
-                <ResourceDictionary Source="/DAXEditor;Component/Themes/Generic.xaml" />
+                <ResourceDictionary x:Name="Icons" Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+
             </ResourceDictionary.MergedDictionaries>
+            
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
             <SolidColorBrush x:Key="BusyBrush" Color="#30000000" />
@@ -305,4 +324,9 @@
         -->
     </Border>
     </Grid>
+    <!-- TODO - show pulsing taskbar window while query is running -->
+    <!--<Window.TaskbarItemInfo>
+        <TaskbarItemInfo Description="DAX Studio" 
+                      ProgressState="Indeterminate"/>
+    </Window.TaskbarItemInfo>-->
 </Fluent:RibbonWindow>

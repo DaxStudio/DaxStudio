@@ -12,6 +12,7 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -22,14 +23,15 @@ namespace DaxStudio.UI.ViewModels
         IHandle<NewVersionEvent>,
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
-        IHandle<StopAutoSaveTimerEvent>
+        IHandle<StopAutoSaveTimerEvent>,
+        IHandle<ChangeThemeEvent>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
         private NotifyIcon notifyIcon;
         private Window _window;
-        private Application _app;
+        private readonly Application _app;
         private Timer _autoSaveTimer;
 
         //private ILogger log;
@@ -51,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
             _app = Application.Current;
 
             // TODO - get master auto save indexes and only get crashed index files...
+
 
             // check for auto-saved files and offer to recover them
             var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
@@ -155,7 +158,7 @@ namespace DaxStudio.UI.ViewModels
         
         protected override void OnViewLoaded(object view)
         {
-            base.OnViewReady(view);
+            base.OnViewLoaded(view);
             // load the saved window positions
             _window = view as Window;
             _window.Closing += windowClosing;
@@ -164,6 +167,8 @@ namespace DaxStudio.UI.ViewModels
             _window.SetPlacement(RegistryHelper.GetWindowPosition());
             notifyIcon = new NotifyIcon(_window);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
+
+            //Application.Current.LoadRibbonTheme();
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -319,7 +324,9 @@ namespace DaxStudio.UI.ViewModels
         {
             System.Diagnostics.Debug.WriteLine("HotKey" + param.ToString());
         }
+        #endregion
 
+        #region Event Aggregator methods
         public void Handle(StartAutoSaveTimerEvent message)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StartAutoSaveTimer>", "AutoSave Timer Starting");
@@ -330,6 +337,22 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StopAutoSaveTimer>", "AutoSave Timer Stopping");
             _autoSaveTimer.Enabled = false;
+        }
+
+        public void Handle(ChangeThemeEvent message)
+        {
+            if (message.Theme == "Dark") SetDarkTheme();
+            else SetLightTheme();
+        }
+
+        private void SetLightTheme()
+        {
+            _app.LoadLightTheme();
+        }
+
+        private void SetDarkTheme()
+        {
+            _app.LoadDarkTheme();
         }
 
         #endregion

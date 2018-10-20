@@ -218,6 +218,40 @@ namespace DaxStudio.Tests
 
         }
 
+        [TestMethod]
+        public void TestCSDLRelationships()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\RelationshipCsdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(6, tabs.Count, "Table count is correct");
+            Assert.AreEqual(1, tabs["Customer"].Relationships.Count, "Customer Table has incorrect relationship count");
+            Assert.AreEqual(0, tabs["Accounts"].Relationships.Count, "Accounts Table has incorrect relationship count");
+            Assert.AreEqual(1, tabs["Customer Geography"].Relationships.Count, "Customer Geography Table has incorrect relationship count");
+            Assert.AreEqual("Both", tabs["Customer Geography"].Relationships[0].CrossFilterDirection, "Customer Geography Table has a Both crossfilter relationship");
+            Assert.AreEqual(1, tabs["Geography Population"].Relationships.Count, "Geography Table has incorrect relationship count");
+            Assert.AreEqual(2, tabs["Customer Accounts"].Relationships.Count, "Customer Accounts Table has incorrect relationship count");
+            Assert.AreEqual("Both", tabs["Customer Accounts"].Relationships[0].CrossFilterDirection, "Customer Accounts Table has a Both crossfilter on relationship 0");
+            Assert.AreEqual("", tabs["Customer Accounts"].Relationships[1].CrossFilterDirection, "Customer Accounts Table does not have a Both crossfilter on relationship 1");
+
+            var tabCust = tabs["Customer"];
+            var relCustToCustGeog = tabCust.Relationships[0];
+
+            var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
+
+            Assert.AreEqual("", relCustToCustGeog.CrossFilterDirection);
+            Assert.AreEqual("Customer_Geography_ID2", relCustToCustGeog.FromColumn, "Incorrect from column");
+            Assert.AreEqual("*", relCustToCustGeog.FromColumnMultiplicity);
+            Assert.AreEqual("Customer_Geography_ID", relCustToCustGeog.ToColumn,"Incorrect to column");
+            Assert.AreEqual("0..1", relCustToCustGeog.ToColumnMultiplicity );
+
+        }
+
 
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
         [TestMethod]

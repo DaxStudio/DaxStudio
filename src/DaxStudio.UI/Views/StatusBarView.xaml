@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
+             xmlns:Fluent="urn:fluent-ribbon"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="400">
     <UserControl.Resources>
@@ -74,8 +75,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid >
-        <StatusBar >
-            <StatusBar.ItemsPanel >
+        <Fluent:StatusBar >
+            <Fluent:StatusBar.ItemsPanel >
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -96,18 +97,18 @@
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
-            </StatusBar.ItemsPanel>
-            <StatusBarItem Grid.Column="0">
+            </Fluent:StatusBar.ItemsPanel>
+            <Fluent:StatusBarItem Grid.Column="0">
                 <Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="1"/>
-            <StatusBarItem Grid.Column="2">
+            <Fluent:StatusBarItem Grid.Column="2">
                 
                 <TextBlock x:Name="Message1" Text="{Binding ActiveDocument.StatusBarMessage}" ></TextBlock>
                 
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="3"/>
-            <StatusBarItem Grid.Column="4">
+            <Fluent:StatusBarItem Grid.Column="4">
                 <StackPanel Orientation="Horizontal">
                     <!--<Image Source="{StaticResource StatusPos}"></Image>-->
                     <TextBlock  x:Name="PositionText">1, 1</TextBlock>
@@ -115,9 +116,9 @@
                 <StatusBarItem.ToolTip>
                     <TextBlock>Current position in Editor</TextBlock>
                 </StatusBarItem.ToolTip>
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="5"/>
-            <StatusBarItem Grid.Column="6" >
+            <Fluent:StatusBarItem Grid.Column="6" >
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{StaticResource StatusServer}"></Image>
                     <TextBlock x:Name="ServerName">Server</TextBlock>
@@ -126,9 +127,9 @@
                 <StatusBarItem.ToolTip>
                     <TextBlock>Server name</TextBlock>
                 </StatusBarItem.ToolTip>
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="7"/>
-            <StatusBarItem Grid.Column="8">
+            <Fluent:StatusBarItem Grid.Column="8">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{StaticResource StatusSpid}"></Image>
                 <TextBlock x:Name="Spid">SPID</TextBlock>
@@ -136,15 +137,15 @@
                 <StatusBarItem.ToolTip>
                     <TextBlock>Connection SPID</TextBlock>
                 </StatusBarItem.ToolTip>
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="9"/>
-            <StatusBarItem Grid.Column="10">
+            <Fluent:StatusBarItem Grid.Column="10">
             <TextBlock x:Name="Rows">rows</TextBlock>
-            </StatusBarItem>
+            </Fluent:StatusBarItem>
             <Separator Grid.Column="11"/>
-            <StatusBarItem Grid.Column="12">
+            <Fluent:StatusBarItem Grid.Column="12">
                 <TextBlock x:Name="TimerText">0:00:00.00</TextBlock>
-            </StatusBarItem>
-        </StatusBar>
+            </Fluent:StatusBarItem>
+        </Fluent:StatusBar>
     </Grid>
 </UserControl>

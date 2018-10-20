@@ -1,34 +1,47 @@
-﻿<UserControl
-    x:Class="DaxStudio.UI.Views.DocumentView" 
+﻿<UserControl 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock" 
-    mc:Ignorable="d" d:DesignWidth="294.813" d:DesignHeight="215.84" 
+    xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
+    xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:dax="clr-namespace:DAXEditor;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+    xmlns:theme="clr-namespace:DaxStudio.UI.Theme"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
-    xmlns:conv="clr-namespace:DaxStudio.UI.Converters">
+    xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+    xmlns:UnitComboLib="clr-namespace:UnitComboLib;assembly=UnitComboLib"
+    x:Class="DaxStudio.UI.Views.DocumentView" 
+    mc:Ignorable="d" 
+    d:DesignWidth="500" 
+    d:DesignHeight="400"
+    d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
+    >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Views/DaxStudioTemplates.xaml" />-->
-
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Colors.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Brushes.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Dark.DaxStudio.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.DaxEditor.xaml" />-->
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
+                <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
@@ -194,7 +207,7 @@
                         </Style>
                     </Setter.Value>
                 </Setter>
-                
+
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -202,7 +215,7 @@
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
-                
+
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -210,10 +223,10 @@
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
-                
+
             </Style>
 
-            <Style x:Key="ButtonImage" TargetType="Image">
+            <Style x:Key="ButtonImage" TargetType="{x:Type Image}">
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Opacity" Value="0.5" />
@@ -230,18 +243,24 @@
 
     <Grid >
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <avalondock:DockingManager x:Name="Document" 
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
+                                   Background="Transparent"
                                    Margin="0,-1,0,1"
                                    AnchorablesSource="{Binding ToolWindows}"
                                    Grid.Row="0"
-                                   beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True">
+                                   beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True"
+                                   Theme="{Binding AvalonDockTheme}">
             <i:Interaction.Behaviors>
                 <beh:AvalonDockLayoutSerializerBehaviour />
             </i:Interaction.Behaviors>
-            
+
+            <!--<avalondock:DockingManager.Theme>
+                <theme:MonotoneTheme/>
+            </avalondock:DockingManager.Theme>-->
+
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
@@ -250,22 +269,19 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter},Path=Content.IsTraceRunning
-                                    , FallbackValue=Collapsed}"
+                                   Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}" />
 
 
                         <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter},Path=Content.IsPaused
-                                    , FallbackValue=Collapsed}"
+                                   Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                             />
                         <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
-                                   Visibility="{Binding Converter={StaticResource BoolToNotCollapsedConverter},Path=Content.IsChecked
-                                   , FallbackValue=Collapsed}"
+                                   Visibility="{Binding Content.IsChecked, Converter={StaticResource BoolToNotCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                             />
-                        <TextBlock Text="{Binding Path=Content.Title}"/>
+                        <TextBlock Text="{Binding Content.Title}"/>
                     </StackPanel>
                 </DataTemplate>
             </avalondock:DockingManager.AnchorableHeaderTemplate>
@@ -279,8 +295,8 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Text="{Binding Path=Content.Title}"/>
+
+                        <TextBlock Text="{Binding Content.Title}"/>
                     </Grid>
                 </DataTemplate>
             </avalondock:DockingManager.AnchorableTitleTemplate>
@@ -294,11 +310,11 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="{Binding Path=Content.Title}"/>
+                                <TextBlock Text="{Binding Content.Title}"/>
                             </Grid>
                         </DataTemplate>
                     </selectors:TraceWindowTemplateSelector.DefaultTemplate>
-                    
+
                     <selectors:TraceWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <Grid>
@@ -309,7 +325,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!--<TextBlock Text="{Binding Path=Content.Title}" HorizontalAlignment="Center" Grid.Column="1"/>-->
-                                
+
                                 <!-- dynamically inject the following buttons only for tracewatchers -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,15,0">
                                     <Button x:Name="Start" BorderThickness="0" Padding="2" 
@@ -318,12 +334,10 @@
                                             <Fluent:ScreenTip 
                                                 Title="Start"
                                                 Text="Starts a Trace that has been paused or stopped"
-                                                DisableReason="{Binding Path=DisableReason}">
-                                                
-                                            </Fluent:ScreenTip>
+                                                DisableReason="{Binding DisableReason}"/>
                                         </Button.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceStart}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceStart}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
                                     <Button x:Name="Pause" BorderThickness="0" Padding="2" 
@@ -336,7 +350,7 @@
                                         <Border Background="White" BorderThickness="0" Padding="2">
                                             <Image Source="{StaticResource TracePause}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
-                                        
+
                                     </Button>
                                     <Button x:Name="Stop" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}">
@@ -346,10 +360,10 @@
                                                 Text="Stops a running trace" />
                                         </Button.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceStop}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceStop}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
-                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"/>
                                     <!-- clear -->
                                     <Button x:Name="ClearAll" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}">
@@ -359,23 +373,23 @@
                                                 Text="Clears all the results from the trace"/>
                                         </Button.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceClearAll}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceClearAll}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
                                     <!-- copy all -->
                                     <Button x:Name="CopyAll" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}"
-                                            Visibility="{Binding Path=IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                            Visibility="{Binding IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
                                                 Title="Copy All"
                                                 Text="Copies all the current trace results to the editor window"/>
                                         </Button.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceCopyAll}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceCopyAll}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
-                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"/>
                                     <!-- filter -->
                                     <ToggleButton x:Name="ShowFilters" BorderThickness="0" Padding="2" 
                                                   cal:Bind.Model="{Binding Content}" 
@@ -386,7 +400,7 @@
                                                 Text="Displays the filter controls"/>
                                         </ToggleButton.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceFilter}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </ToggleButton>
                                     <!-- Clear filters -->
@@ -400,7 +414,7 @@
                                                 Text="Clears all column filters"/>
                                         </Button.ToolTip>
                                         <Border Background="White" BorderThickness="0" Padding="2">
-                                            <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                            <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
 
@@ -410,7 +424,7 @@
                     </selectors:TraceWindowTemplateSelector.TraceTemplate>
                 </selectors:TraceWindowTemplateSelector>
             </avalondock:DockingManager.AnchorableTitleTemplateSelector>
-            
+
             <avalondock:DockingManager.LayoutItemContainerStyleSelector>
                 <local:PanesStyleSelector>
                     <local:PanesStyleSelector.ToolStyle>
@@ -425,7 +439,7 @@
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
                             <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
-                            
+
                             <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
@@ -438,7 +452,7 @@
                 </ControlTemplate>
             </avalondock:DockingManager.AnchorablePaneTemplate>
             -->
-            
+
             <!--<avalondock:DockingManager.AnchorableTitleTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}"></TextBlock>
@@ -449,7 +463,7 @@
                 <selectors:ToolWindowTemplateSelector>
                     <selectors:ToolWindowTemplateSelector.Template>
                         <DataTemplate>
-                            <ContentControl cal:View.Model="{Binding . }" IsTabStop="False" />
+                            <ContentControl cal:View.Model="{Binding .}" IsTabStop="False" />
                         </DataTemplate>
                     </selectors:ToolWindowTemplateSelector.Template>
                 </selectors:ToolWindowTemplateSelector>
@@ -461,9 +475,7 @@
                 <!-- Left side Tool Panes -->
                 <avalondock:LayoutPanel Orientation="Horizontal">
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
-                        <avalondock:LayoutAnchorablePane Name="DockLeft">
-                            
-                        </avalondock:LayoutAnchorablePane>
+                        <avalondock:LayoutAnchorablePane Name="DockLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
 
                     <!-- Main Document Pane -->
@@ -482,45 +494,46 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-
                                     <dax:DAXEditor x:Name="daxEditor" 
                                                    Margin="2,2,2,2" 
                                                    Padding="8,8,8,8"
+                                                   
                                                    Grid.Column="0" 
                                                    Grid.Row="0" 
                                                    Grid.RowSpan="2" 
-                                                   Grid.ColumnSpan="2" MinWidth="100" 
-                                                   FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                   Grid.ColumnSpan="2" MinWidth="80"
+                                                   MinHeight="60"
+                                                   FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                                   EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
-                                                   dd:DragDrop.DragHandler="{Binding Path=DataContext,RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                     DragEnter="daxEditor_DragEnter"
+                                                   
                                                    >
-                                        <!-- EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+                                        <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
+                                        EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="DragEnter">
-                                                <cal:ActionMessage MethodName="OnDragEnter">
-                                                    
-                                                </cal:ActionMessage>
+                                                <cal:ActionMessage MethodName="OnDragEnter"/>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
-                                                      cal:Message.Attach="Cut()"></MenuItem>
+                                                      cal:Message.Attach="Cut()"/>
                                                 <MenuItem x:Name="Copy" Header="Copy" Icon="{StaticResource CopyIcon}"
-                                                      cal:Message.Attach="Copy()"></MenuItem>
+                                                      cal:Message.Attach="Copy()"/>
                                                 <MenuItem x:Name="Paste" Header="Paste" Icon="{StaticResource PasteIcon}"
-                                                      cal:Message.Attach="Paste()"></MenuItem>
+                                                      cal:Message.Attach="Paste()"/>
                                                 <Separator />
                                                 <MenuItem x:Name="CommentSelection" Header="Comment" Icon="{StaticResource CommentIcon}"
-                                                      cal:Message.Attach="CommentSelection()"></MenuItem>
+                                                      cal:Message.Attach="CommentSelection()"/>
                                                 <MenuItem x:Name="UncommentSelection" Header="Uncomment" Icon="{StaticResource UncommentIcon}"
-                                                      cal:Message.Attach="UnCommentSelection()"></MenuItem>
+                                                      cal:Message.Attach="UnCommentSelection()"/>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
 
@@ -541,9 +554,7 @@
 
                         <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="70" DockHeight="260">
 
-                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="70">
-                                
-                            </avalondock:LayoutAnchorablePane>
+                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="70"/>
                         </avalondock:LayoutAnchorablePaneGroup>
                     </avalondock:LayoutPanel>
 

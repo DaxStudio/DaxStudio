@@ -150,6 +150,7 @@
     <Compile Include="BracketRenderer\IBracketSearcher.cs" />
     <Compile Include="BracketRenderer\DaxStudioBracketSearcher.cs" />
     <Compile Include="DAXEditor_TextController.cs" />
+    <Compile Include="HSLColor.cs" />
     <Compile Include="IEditor.cs" />
     <Compile Include="IIntellisenseProvider.cs" />
     <Compile Include="IntellisenseProviderStub.cs" />

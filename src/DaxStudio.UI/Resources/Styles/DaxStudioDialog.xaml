@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:DaxStudio.UI.Resources.Styles">
+
+    <Style x:Key="DaxStudioDialog" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="White" />
+    </Style>
+</ResourceDictionary>

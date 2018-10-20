@@ -7,6 +7,7 @@ using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
 using System.Diagnostics;
+using ADOTabular.Utils;
 
 namespace ADOTabular
 {
@@ -96,24 +97,37 @@ namespace ADOTabular
             {
                 var eEntitySet = rdr.NameTable.Add("EntitySet");
                 var eEntityType = rdr.NameTable.Add("EntityType");
-                var eDisplayFolder = rdr.NameTable.Add("DisplayFolder");
+                var eAssociationSet = rdr.NameTable.Add("AssociationSet");
+                //var eDisplayFolder = rdr.NameTable.Add("DisplayFolder");
                 //var eKpi = rdr.NameTable.Add("Kpi");
 
                 while (rdr.Read())
                 {
-                    if (rdr.NodeType == XmlNodeType.Element
-                        && rdr.LocalName == eEntitySet)
+                    if (rdr.NodeType == XmlNodeType.Element)
                     {
-                        var tab = BuildTableFromEntitySet(rdr, eEntitySet);
-                        tabs.Add(tab);
-                    }
-                    if (rdr.NodeType == XmlNodeType.Element
-                        && rdr.LocalName == eEntityType)
-                    {
-                        AddColumnsToTable(rdr, tabs, eEntityType);
+                        switch (rdr.LocalName)
+                        {
+
+                            case "EntitySet":
+                                var tab = BuildTableFromEntitySet(rdr, eEntitySet);
+                                tabs.Add(tab);
+                                break;
+                            case "EntityType":
+                                AddColumnsToTable(rdr, tabs, eEntityType);
+                                break;
+                            case "AssociationSet":
+                                BuildRelationshipFromAssociationSet(rdr, tabs, eAssociationSet);
+                                break;
+                            case "Association":
+                                UpdateRelationshipFromAssociation(rdr, tabs);
+                                break;
+                        }
+
                     }
 
                 }
+
+                // post processing of metadata
                 foreach (var t in tabs)
                 {
                     TagKpiComponentColumns(t);
@@ -122,6 +136,150 @@ namespace ADOTabular
 
         }
 
+        private void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)
+        {
+            string refname = string.Empty;
+            string toColumnRef = string.Empty;
+            string fromColumnRef = string.Empty;
+            string toColumnMultiplicity = string.Empty;
+            string fromColumnMultiplicity = string.Empty;
+
+            while (rdr.MoveToNextAttribute())
+            {
+                switch (rdr.LocalName)
+                {
+                    case "Name":
+                        refname = rdr.Value;
+                        break;
+                }
+            }
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == "Association"))
+            {
+                // todo read entitySet as From/To table
+                if (rdr.LocalName == "End")
+                {
+                    (fromColumnRef, fromColumnMultiplicity) = GetRelationshipColumnRef(rdr);
+                    (toColumnRef, toColumnMultiplicity) = GetRelationshipColumnRef(rdr);
+                }
+                if (rdr.NodeType == XmlNodeType.EndElement
+                    && rdr.LocalName == "Association") break;
+                
+                rdr.Read();
+            }
+
+            // Find relationship and update it
+            foreach (var tab in tabs)
+            {
+                foreach (var rel in tab.Relationships)
+                {
+                    if (rel.InternalName == refname)
+                    {
+                        rel.ToColumn = toColumnRef;
+                        rel.ToColumnMultiplicity = toColumnMultiplicity;
+                        rel.FromColumn = fromColumnRef;
+                        rel.FromColumnMultiplicity = fromColumnMultiplicity;
+                        return;
+                    }
+                }
+            }
+
+        }
+
+        private void BuildRelationshipFromAssociationSet(XmlReader rdr, ADOTabularTableCollection tabs, string eAssociationSet)
+        {
+            string refname = string.Empty;
+            string fromTableRef = "";
+            string toTableRef = "";
+            string crossFilterDir = "";
+
+            while (rdr.MoveToNextAttribute())
+            {
+                switch (rdr.LocalName)
+                {
+                    case "Name":
+                        refname = rdr.Value;
+                        break;
+                }
+            }
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == eAssociationSet))
+            {
+                // todo read entitySet as From/To table
+                if (rdr.LocalName == "End")
+                {
+                    fromTableRef = GetRelationshipTableRef(rdr);
+                    toTableRef = GetRelationshipTableRef(rdr);
+                }
+                if (rdr.LocalName == "AssociationSet" && rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
+                {
+                    //rdr.MoveToFirstAttribute();
+                    if (rdr.MoveToAttribute("CrossFilterDirection"))
+                    {
+                        crossFilterDir = rdr.Value;
+                    }
+                }
+                rdr.Read();
+            }
+
+            var fromTable = tabs.GetById(fromTableRef);
+            fromTable.Relationships.Add(new ADOTabularRelationship() {
+                FromTable = fromTableRef,
+                ToTable = toTableRef,
+                InternalName = refname,
+                CrossFilterDirection = crossFilterDir
+            });
+
+        }
+
+        private string GetRelationshipTableRef(XmlReader rdr)
+        {
+            string entitySet = "";
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == "End"))
+            {
+                while (rdr.MoveToNextAttribute())
+                {
+                    if (rdr.LocalName == "EntitySet")
+                    {
+                        entitySet = rdr.Value;
+                        rdr.Skip(); // jump to the end of the current Element
+                        rdr.MoveToContent(); // move past any whitespace to the next Element
+                        return entitySet;
+                    }
+                }
+                rdr.Read();
+            }
+            return "";
+        }
+
+        private Tuple<string,string> GetRelationshipColumnRef(XmlReader rdr)
+        {
+            string role = string.Empty;
+            string multiplicity = string.Empty;
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == "End"))
+            {
+                if (rdr.MoveToAttribute("Role"))
+                {
+                    role = rdr.Value;
+                }
+
+                if (rdr.MoveToAttribute("Multiplicity"))
+                {
+                    multiplicity = rdr.Value;
+                }
+
+                rdr.Skip();
+                rdr.MoveToContent();
+                return Tuple.Create(role, multiplicity);
+            }
+            return Tuple.Create( "","");
+        }
 
 
         private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet)
@@ -352,6 +510,7 @@ namespace ADOTabular
                             col.DistinctValues = distinctValueCount;
                             col.FormatString = formatString;
                             col.StringValueMaxLength = stringValueMaxLength;
+                            tables.Model.AddRole(col);
                             tab.Columns.Add(col);
                             _conn.Columns.Add(col.OutputColumnName, col);
                         }

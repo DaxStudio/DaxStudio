@@ -28,6 +28,7 @@ namespace ADOTabular
             DaxName = GetDaxName();
             Description = description;
             IsVisible = isVisible;
+            Relationships = new List<ADOTabularRelationship>();
         }
 
         private static readonly string[] specialNames = { "DATE" };
@@ -86,5 +87,7 @@ namespace ADOTabular
         {
             get { return IsVisible ? MetadataImages.Table : MetadataImages.HiddenTable; }
         }
+
+        public IList<ADOTabularRelationship> Relationships { get; private set; } 
     }
 }

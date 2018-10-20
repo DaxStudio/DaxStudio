@@ -2,12 +2,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:DAXEditor"
+    xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
     xmlns:editing="clr-namespace:ICSharpCode.AvalonEdit.Editing;assembly=ICSharpCode.AvalonEdit"
     xmlns:rendering="clr-namespace:ICSharpCode.AvalonEdit.Rendering;assembly=ICSharpCode.AvalonEdit"
     xmlns:AEComplete="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:unit="clr-namespace:UnitComboLib;assembly=UnitComboLib"
     >
-    <Style TargetType="{x:Type local:DAXEditor}">
+    <Style TargetType="{x:Type local:DAXEditor}" BasedOn="{StaticResource {x:Type ae:TextEditor }}">
+        <!--<Style TargetType="{x:Type ae:TextEditor}">-->
         <!--
         <Setter Property="Template">
             <Setter.Value>
@@ -22,8 +24,8 @@
         </Setter>
         -->
         
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+            <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />-->
+            <!--<Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />-->
             <Setter Property="FlowDirection" Value="LeftToRight"/>
             <!-- AvalonEdit does not support RTL, so ensure we use LTR by default -->
         <Setter Property="Template">

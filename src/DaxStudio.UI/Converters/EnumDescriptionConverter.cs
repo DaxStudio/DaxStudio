@@ -37,6 +37,8 @@ namespace DaxStudio.UI.Converters
 
             object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
+                if (value == null) return Binding.DoNothing;
+
                 Enum myEnum = (Enum)value;
                 string description = GetEnumDescription(myEnum);
                 return description;

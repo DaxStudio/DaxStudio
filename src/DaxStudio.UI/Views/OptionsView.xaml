@@ -124,7 +124,7 @@
 			Grid.Row="0"
 			Grid.Column="0"/>
         <!-- Editor -->
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="1" Background="Transparent">
             <TabItem Header="Standard">
                 <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
                     <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >

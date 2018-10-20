@@ -66,9 +66,15 @@ namespace DAXEditor
         private bool syntaxErrorDisplayed;
         private IHighlighter documentHighlighter;
 
+        static DAXEditor()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(DAXEditor), new FrameworkPropertyMetadata(typeof(DAXEditor)));
+        }
+
         public DAXEditor() 
         {
-            
+            //DefaultStyleKeyProperty.OverrideMetadata(typeof(DAXEditor), new FrameworkPropertyMetadata(typeof(DAXEditor)));
+
             //SearchPanel.Install(this.TextArea);
             var brush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#C8FFA55F")); //orange // grey FFE6E6E6
             HighlightBackgroundBrush = brush;
@@ -130,6 +136,51 @@ namespace DAXEditor
             UpdateSyntaxRule("Kword", keywords);
         }
 
+        public void ChangeColorBrightness(double factor)
+        {
+            foreach (var syntaxHighlight in SyntaxHighlighting.NamedHighlightingColors)
+            {
+                var foreground = syntaxHighlight.Foreground.GetColor(null);
+                if (foreground == null) return;
+                HSLColor hsl = new HSLColor((System.Windows.Media.Color)foreground);
+                hsl.Luminosity = hsl.Luminosity * factor;
+                syntaxHighlight.Foreground = new SimpleHighlightingBrush((Color)hsl);
+            }
+
+            //var funcCol = SyntaxHighlighting.NamedHighlightingColors.FirstOrDefault(c => c.Name == "Function");
+            //var hex = "Blue";
+            //System.Windows.Media.Color _color = (System.Windows.Media.Color)ColorConverter.ConvertFromString(hex);
+            //HSLColor hsl = new HSLColor(_color);
+            //hsl.Luminosity = hsl.Luminosity * factor;
+            //funcCol.Foreground = new SimpleHighlightingBrush((Color)hsl);
+        }
+
+        public void SetSyntaxHighlightColorTheme(string theme)
+        {
+            var prefix = theme + ".";
+            foreach (var syntaxHighlight in SyntaxHighlighting.NamedHighlightingColors)
+            {
+                if (syntaxHighlight.Name.StartsWith(prefix))
+                {
+                    var suffix = syntaxHighlight.Name.Replace(prefix, "");
+                    var baseColor = SyntaxHighlighting.NamedHighlightingColors.FirstOrDefault(color => color.Name == suffix);
+                    if (baseColor != null)
+                    {
+                        baseColor.Foreground = syntaxHighlight.Foreground;
+                        
+                    }
+                }
+            }
+
+            //var funcCol = SyntaxHighlighting.NamedHighlightingColors.FirstOrDefault(c => c.Name == "Function");
+            //var hex = "Blue";
+            //System.Windows.Media.Color _color = (System.Windows.Media.Color)ColorConverter.ConvertFromString(hex);
+            //HSLColor hsl = new HSLColor(_color);
+            //hsl.Luminosity = hsl.Luminosity * factor;
+            //funcCol.Foreground = new SimpleHighlightingBrush((Color)hsl);
+
+
+        }
 
         private void DaxEditor_DocumentChanged(object sender, EventArgs e)
         {

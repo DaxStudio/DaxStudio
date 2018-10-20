@@ -25,7 +25,7 @@ namespace DaxStudio.UI
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
 		CompositionContainer _container;
-	    private Assembly _hostAssembly;
+	    private readonly Assembly _hostAssembly;
         
 	    public AppBootstrapper(Assembly hostAssembly, bool useApplication) : base(useApplication)
 	    {
@@ -76,7 +76,10 @@ namespace DaxStudio.UI
                 ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
                 ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.IntegerUpDown>(Xceed.Wpf.Toolkit.IntegerUpDown.ValueProperty, "Value", "ValueChanged");
                 ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
-                
+
+                // Add Fluent Ribbon resovler
+                BindingScope.AddChildResolver<Fluent.Ribbon>(FluentRibbonChildResolver);
+
 
                 // Fixes the default datetime format in the results listview
                 // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
@@ -243,5 +246,35 @@ namespace DaxStudio.UI
             };
         }
 
-	}
+
+        static IEnumerable<System.Windows.DependencyObject> FluentRibbonChildResolver(Fluent.Ribbon ribbon)
+        {
+            /*
+            foreach (var ti in ribbon.Tabs)
+            {
+                foreach (var group in ti.Groups)
+                {
+                    foreach (var obj in BindingScope.GetNamedElements(group))
+                        yield return obj;
+                }
+            }
+            */
+            
+            var backstage = ribbon.Menu as Fluent.Backstage;
+            var backstageTabs = backstage.Content as Fluent.BackstageTabControl;
+            BindingScope.GetNamedElements(backstageTabs);
+
+            foreach (var backstageTab in backstageTabs.Items)
+            {
+                ///foreach (var obj in BindingScope.GetNamedElements(backstageTab))
+                if (backstageTab is ContentControl)
+                    foreach (var obj in BindingScope.GetNamedElements((ContentControl)backstageTab))
+                        yield return obj;
+            }
+            
+            
+        }
+        
+
+    }
 }

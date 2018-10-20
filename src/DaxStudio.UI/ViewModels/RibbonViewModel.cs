@@ -15,6 +15,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
 using System.ComponentModel;
+using Fluent;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -38,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IWindowManager _windowManager;
         private bool _isDocumentActivating = false;
         private bool _isConnecting = false;
-        private string _sqlProfilerCommand = "";
+        private readonly string _sqlProfilerCommand = "";
 
         private const string urlDaxStudioWiki = "http://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -52,14 +53,18 @@ namespace DaxStudio.UI.ViewModels
             _host = host;
             _windowManager = windowManager;
             Options = options;
+            _theme = Options.Theme;
             UpdateGlobalOptions();
             CanCut = true;
             CanCopy = true;
             CanPaste = true;
             _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
             RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
+            //AddCustomRibbonTheme();
             InitRunStyles();
         }
+
+
 
         private void InitRunStyles()
         {
@@ -82,13 +87,13 @@ namespace DaxStudio.UI.ViewModels
             get { return _host.IsExcel?Visibility.Visible : Visibility.Collapsed; }
         }
 
-        public Visibility ServerTimingsIsChecked
+        public bool ServerTimingsIsChecked
         {
             get 
             {
                 // TODO - Check if ServerTiming Trace is checked - Update on check change
                 //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
-                return Visibility.Visible;
+                return true; // Visibility.Visible;
             }
         }
 
@@ -781,6 +786,27 @@ namespace DaxStudio.UI.ViewModels
         public void ResetLayout()
         {
             _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(true));
+        }
+
+        private string _theme = "Light"; // default to light theme
+        public string Theme
+        {
+            get { return _theme; }
+            set { if (value != _theme)
+                {
+                    _theme = value;
+                    Options.Theme = _theme;
+                    //SetRibbonTheme(_theme);
+                    _eventAggregator.PublishOnUIThread(new ChangeThemeEvent(_theme));
+                    NotifyOfPropertyChange(() => Theme);
+                }
+            }
+        }
+
+        private void SetRibbonTheme(string theme)
+        {
+            Application.Current.ChangeRibbonTheme(theme);
+
         }
     }
 }

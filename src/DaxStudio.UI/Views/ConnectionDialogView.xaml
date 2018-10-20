@@ -51,15 +51,17 @@
                 </Style.Triggers>
             </Style>
 
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
-        <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        <Border Style="{StaticResource DaxStudioDialog}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
 
             <Grid  Height="Auto">
                 <Grid.ColumnDefinitions>

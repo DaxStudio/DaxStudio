@@ -6,15 +6,16 @@
              xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
+             xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
-             d:DesignHeight="137" d:DesignWidth="654">
+             d:DesignWidth="980">
     <UserControl.Resources>
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -36,11 +37,9 @@
         </conv:ResourceLookupConverter>
 
         <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
-        <!--<SolidColorBrush x:Key="DaxStudioBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>
-        <SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF24B010"></SolidColorBrush>-->
         
         <DataTemplate x:Key="ResultsTargetTemplate">
-            <Border Tag="Excel"
+            <Border 
                         BorderThickness="4"
                         BorderBrush="Transparent">
                 <StackPanel>
@@ -174,9 +173,9 @@
                                 <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
                                 <ListView x:Name="RecentFiles" 
                                           DataContext="{Binding}" 
-                                          ItemsSource="{Binding Path=Ribbon.RecentFiles}" 
+                                          ItemsSource="{Binding Path=RecentFiles}" 
                                           MinWidth="600"
-                                          BorderBrush="Transparent" >
+                                          BorderBrush="Transparent">
                                     <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="MouseLeftButtonUp" >
@@ -228,7 +227,8 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-                    <!--<Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
+                    <!--
+                    <Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
                                 <cal:ActionMessage MethodName="PublishDaxFunctions">
@@ -246,10 +246,10 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
 
-                    </Fluent:Button>-->
-
+                    </Fluent:Button>
+-->
                     <Fluent:BackstageTabItem Header="Options"  >
-                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Ribbon.Options}" />
+                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}" />
                     </Fluent:BackstageTabItem>
                     
                     <Fluent:Button Name="btnExit" Header="Exit" Foreground="White">
@@ -300,6 +300,7 @@
             </Fluent:Ribbon.QuickAccessItems>
  --> 
         <!-- Home Tabs-->
+        
         <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
                               Connection,Query,Connection,Connection,
                               Traces,Traces,Traces,
@@ -312,10 +313,6 @@
                               "
                               >
             <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
-                <!-- 
-                Icon="{StaticResource PlayIcon}"
-                               LargeIcon="{StaticResource PlayIconLarger}"
-                -->
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
@@ -331,6 +328,7 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:SplitButton.ToolTip>
                     <Fluent:Gallery
+                        x:Name="RunStyles"
                         ItemWidth="80"
                         ItemHeight="80"
                         MaxItemsInRow="1"
@@ -369,42 +367,53 @@
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+        
                 <!-- Output Targets -->
-                <Fluent:DropDownButton Name="Output"
+
+                <Fluent:DropDownButton x:Name="OutputTargets"
                                            Header="Output"
                                            Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
-                                           LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
+                                           LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
+                                           SizeDefinition="Large,Large,Small"
                                            IsEnabled="True"
-                                           VerticalAlignment="Top"  Margin="4,0">
+                                           VerticalAlignment="Top"  Margin="4,0"
+                                       >
+
+                    <!--Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"-->
 
                     <Fluent:Gallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
                         GroupBy="Group"
-                        x:Name="OutputGallery"
+                        x:Name="OutputGallery2"
+                                               
                         MinItemsInRow="1"
                         MaxItemsInRow="4"
                         Orientation="Horizontal"
                         ItemWidth="80"
                         ItemHeight="80"
-                        ItemsSource="{Binding ResultsTargets}"
+                        ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}">
 
                         <Fluent:Gallery.Filters>
                             <Fluent:GalleryGroupFilter Title="All"
-                                                           Groups="Standard,Excel,Undefined"
-                                                           x:Name="galleryFilterAll3" />
+                                                       Groups="Standard,Excel,Undefined"
+                                                       x:Name="galleryFilterAll3" />
                             <Fluent:GalleryGroupFilter Title="Standard"
-                                                           Groups="Standard" />
+                                                       Groups="Standard"
+                                                       x:Name="galleryFilterStandard"/>
                             <Fluent:GalleryGroupFilter Title="Excel"
-                                                           Groups="Excel" />
+                                                       Groups="Excel"
+                                                       x:Name="galleryFilterExcel"/>
                         </Fluent:Gallery.Filters>
 
                     </Fluent:Gallery>
+
                     <Fluent:DropDownButton.ToolTip>
                         <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
                     </Fluent:DropDownButton.ToolTip>
                 </Fluent:DropDownButton>
+
             </Fluent:RibbonGroupBox>
             
             
@@ -613,14 +622,12 @@
                         <Fluent:ScreenTip Title="Find (Ctrl-F)" Text="Find text within the current query" Width ="190"/>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-                <!-- cal:Message.Attach="[Event Click] = [Action Find()]" -->
                 <Fluent:Button Header="Replace" 
                                Command="Replace"
                                Icon="{StaticResource ReplaceIconSmall}"
                                SizeDefinition="Middle,Small,Small"
                                Fluent:KeyTip.Keys="H"
                                FocusManager.IsFocusScope="True">
-                <!-- cal:Message.Attach="[Event Click] = [Action Replace()]" -->
                 <Fluent:Button.ToolTip>
                     <Fluent:ScreenTip Title="Replace (Ctrl-H)" Text="Replace text within the current query" Width ="190"/>
                 </Fluent:Button.ToolTip>
@@ -634,7 +641,7 @@
                                    >
                 
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked}"
+            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked, Mode=OneWay}"
                                    Icon="{StaticResource TimerIcon}">
                 <Fluent:ToggleButton x:Name="TimingsScan" IsChecked="{Binding ServerTimingDetails.ShowScan, Mode=TwoWay}" 
                                 IsEnabled="{Binding ServerTimingsChecked}"
@@ -748,11 +755,13 @@
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-            </Fluent:RibbonGroupBox>
+
+                </Fluent:RibbonGroupBox>
                  
         </Fluent:RibbonTabItem>
 
             <!-- Advanced Ribbon Tab-->
+       
         <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="" Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ExportAnalysisData"
@@ -807,6 +816,7 @@
 
 
         <!-- DEBUG Ribbon -->
+
         <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="Testing">
                 <Fluent:Button Name="ExportData"
@@ -848,9 +858,17 @@
                                    LargeIcon="{StaticResource LayoutResetIcon}"
                                    Margin="4,0"
                                    SizeDefinition="Middle,Small,Small"></Fluent:Button>
+                <Fluent:ComboBox Header="Theme" 
+                                 SelectedValue="{Binding Theme}" 
+                                 SelectedValuePath="Text" 
+                                 DisplayMemberPath="Text"
+                                 IsEditable="False">
+                    <TextBlock Text="Light" />
+                    <TextBlock Text="Dark" />
+                </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
-            
+          
             
         <!-- Help Tab -->
         <Fluent:RibbonTabItem Header="Help">

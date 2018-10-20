@@ -82,6 +82,7 @@ namespace DaxStudio.UI.ViewModels
             ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
             ShowExternalTools = RegistryHelper.GetValue<bool>("ShowExternalTools", false);
             ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
+            Theme = RegistryHelper.GetValue<string>("Theme", "Light");
         }
 
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
@@ -501,6 +502,21 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<bool>("ShowAggregationRewritesInAllQueries", value);
                 NotifyOfPropertyChange(() => ShowAggregationRewritesInAllQueries);
+            }
+        }
+
+        private string _theme = "Light";
+        public string Theme
+        {
+            get { return _theme; }
+            set
+            {
+                if (_theme == value) return;
+                _theme = value;
+                NotifyOfPropertyChange(() => Theme);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<string>("Theme", value);
+
             }
         }
 

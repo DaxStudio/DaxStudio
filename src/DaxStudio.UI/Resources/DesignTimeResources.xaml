@@ -1,0 +1,6 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Fluent;Component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

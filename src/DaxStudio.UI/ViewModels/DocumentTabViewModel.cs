@@ -14,6 +14,7 @@ using DaxStudio.UI.Extensions;
 using System.Windows;
 using System.Linq;
 using System.Threading;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -43,15 +44,17 @@ namespace DaxStudio.UI.ViewModels
         private int _documentCount = 1;
         private DocumentViewModel _activeDocument;
         private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
+        private readonly IGlobalOptions _options;
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
         [ImportingConstructor]
-        public DocumentTabViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory )
+        public DocumentTabViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory , IGlobalOptions options)
         {
             _documentFactory = documentFactory;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
+            _options = options;
             _eventAggregator.Subscribe(this);
         }
 
@@ -72,7 +75,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        
+        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
+                if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
+                else return null; // new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+            }
+        }
+
+
         //public void NewQueryDocument()
         //{
         //    NewQueryDocument(string.Empty, string.Empty);
@@ -237,10 +246,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
+            NotifyOfPropertyChange(() => AvalonDockTheme);
             foreach (var itm in this.Items)
             {
                 var doc = itm as DocumentViewModel;
                 doc.UpdateSettings();
+                doc.UpdateTheme();
             }
         }
 

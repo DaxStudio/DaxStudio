@@ -135,7 +135,6 @@
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Mocks\MockEditor.cs" />
     <Compile Include="Mocks\MockEventAggregator.cs" />
-    <Compile Include="Mocks\MockGlobalOptions.cs" />
     <Compile Include="Mocks\MockDaxStudioHost.cs" />
     <Compile Include="Mocks\MockInsightProvider.cs" />
     <Compile Include="Mocks\MockWindowManager.cs" />

@@ -1,13 +1,36 @@
 ﻿<SyntaxDefinition name="DAX" extensions=".dax" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <!-- default colors use the Light set -->
 	<Color name="Comment"    foreground="Green" />
 	<Color name="String"     foreground="Red"        fontStyle="normal"/>
   <Color name="Identifier" foreground="Black" />
   <Color name="Operator"   foreground="Magenta"/>
-	<Color name="Regex"      foreground="#FFFF6600" />
   <Color name="Parameter"  foreground="#FFE00587"  fontStyle="normal" />
   <Color name="Function"   foreground="Blue" /> <!-- fontWeight="bold" />-->
   <Color name="Kword"      foreground="Teal" />  <!--fontWeight="bold"/>-->
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
+  <Color name="Numbers"    foreground="MidnightBlue" />
+
+  <!-- Light theme colors-->
+  <Color name="Light.Comment"    foreground="Green" />
+  <Color name="Light.String"     foreground="Red"        fontStyle="normal"/>
+  <Color name="Light.Identifier" foreground="Black" />
+  <Color name="Light.Operator"   foreground="Magenta"/>
+  <Color name="Light.Parameter"  foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Light.Function"   foreground="Blue" />
+  <Color name="Light.Kword"      foreground="Teal" />
+  <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
+  <Color name="Light.Numbers"    foreground="MidnightBlue" />
+
+  <!-- dark theme colors-->
+  <Color name="Dark.Comment"    foreground="#007700" />
+  <Color name="Dark.String"     foreground="#FF5959"        fontStyle="normal"/>
+  <Color name="Dark.Identifier" foreground="#cccccc" />
+  <Color name="Dark.Operator"   foreground="#FF1AFF"/>
+  <Color name="Dark.Parameter"  foreground="#FC32AB"  fontStyle="normal" />
+  <Color name="Dark.Function"   foreground="#7373FF" />
+  <Color name="Dark.Kword"      foreground="#009595" />
+  <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
+  <Color name="Dark.Numbers"    foreground="#ccccE7" />
   
 	<RuleSet ignoreCase="true">
 		<Span color="Comment" multiline="false">
@@ -16,9 +39,6 @@
     <Span color="Comment" multiline="false">
       <Begin>--</Begin>
     </Span>
-    <Span foreground="#FF999999">
-			<Begin>//</Begin>
-		</Span>
 		<Span color="Comment" ruleSet="comments set" multiline="true">
 			<Begin>/\*</Begin>
 			<End>\*/</End>
@@ -289,9 +309,9 @@
       -->
     </Keywords>
     
-    <Rule foreground="MidnightBlue">[\d\w_]+(?=(\s*\())</Rule>
+    <Rule color="Numbers">[\d\w_]+(?=(\s*\())</Rule>
     
-		<Rule foreground="DarkBlue">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
+		<Rule color="Numbers">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
 	</RuleSet>
   
 	<RuleSet name="comments set">

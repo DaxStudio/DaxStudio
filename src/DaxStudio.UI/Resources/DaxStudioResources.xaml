@@ -3,7 +3,7 @@
                     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
                     xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
     
-    <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
+    <!--<Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>-->
     <Color x:Key="WhiteColor}">#FFCCCCCC</Color>
     <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
     <Color x:Key="WarningBarBackgroundColor">#FFFBFF92</Color>
