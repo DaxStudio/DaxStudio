@@ -116,28 +116,37 @@ namespace DaxStudio.QueryTrace
         private object connectionLockObj = new object();
         private bool _filterForCurrentSession = true;
         private readonly string _powerBIFileName = string.Empty;
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
         {
             Log.Verbose("{class} {method} {event} connstr: {connnectionString} sessionId: {sessionId}", "QueryTraceEngine", "<Constructor>", "Start", connectionString, sessionId);
             _globalOptions = globalOptions;
             
             Status = QueryTraceStatus.Stopped;
-            ConfigureTrace(connectionString, connectionType, sessionId, applicationName, filterForCurrentSession);
+            ConfigureTrace(connectionString, connectionType, sessionId, applicationName,databaseName, filterForCurrentSession);
             Events = events;
             _filterForCurrentSession = filterForCurrentSession;
             _powerBIFileName = powerBIFileName;
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, bool filterForCurrentSession)
+        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName,bool filterForCurrentSession)
         {
             Log.Verbose("{class} {method} {event} ConnStr: {connectionString} SessionId: {sessionId}", "QueryTraceEngine", "ConfigureTrace", "Start",connectionString, sessionId);
-            _connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
-            _connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
-            _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
-            _connectionType = connectionType;
             _sessionId = sessionId;
+            _connectionType = connectionType;
             _applicationName = applicationName;
+            _databaseName = databaseName;
+
+            var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            connStrBuilder.Remove("MDX Compatibility");
+            connStrBuilder.Remove("Cell Error Mode");
+            connStrBuilder["SessionId"] = _sessionId;
+            if (_databaseName.Length > 0) connStrBuilder["Initial Catalog"] = _databaseName;
+            _connectionString = connStrBuilder.ToString();
+            //_connectionString = string.Format("{0};SessionId={1}", connectionString, sessionId);
+            //_connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
+            //_connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
+
             Log.Verbose("{class} {method} {event} ", "QueryTraceEngine", "ConfigureTrace", "End");
         }
         private void SetupTrace(Trace trace, List<DaxStudioTraceEventClass> events)
@@ -203,6 +212,7 @@ namespace DaxStudio.QueryTrace
                 if (Status != QueryTraceStatus.Started)  Status = QueryTraceStatus.Starting;
                 Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "Start", "Connecting to: " + _connectionString);
                 if (_connection != null) _connection.Dispose();
+                ConfigureTrace(_connectionString, _connectionType, _sessionId, _applicationName, _databaseName, _filterForCurrentSession);
                 _connection = new ADOTabular.ADOTabularConnection(_connectionString, _connectionType);
                 try
                 {
@@ -349,6 +359,7 @@ namespace DaxStudio.QueryTrace
 
         private bool _traceStarted;
         private string _applicationName;
+        private string _databaseName;
         private string _activityId;
 
         // private variables
@@ -451,6 +462,11 @@ namespace DaxStudio.QueryTrace
             TraceError = (EventHandler<string>)Delegate.RemoveAll(TraceError, TraceError);
         }
 
+        public void Update(string databaseName)
+        {
+            _databaseName = databaseName;
+            Update();
+        }
         public void Update()
         {
             Stop(true);

@@ -118,5 +118,11 @@ namespace DaxStudio.QueryTrace
         {
             queryTraceHubProxy.Invoke("Dispose");
         }
+
+        public void Update(string databaseName)
+        {
+            // we don't use the databaseName in the Remote query trace engine  (PowerPivot)
+            Update();
+        }
     }
 }

@@ -372,6 +372,12 @@ namespace DaxStudio.QueryTrace
             return dsEvent;
         }
 
+        public void Update(string databaseName)
+        {
+            // Note: Excel Query Trace does not use the database name parameter
+            Update();
+        }
+
         public void Update()
         {
             Stop(false);

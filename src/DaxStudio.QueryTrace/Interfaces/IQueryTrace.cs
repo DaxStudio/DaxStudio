@@ -23,6 +23,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         Task StartAsync(int startTimeoutSec);
         void Stop();
         void Update();
+        void Update(string databaseName);
 
         //event TraceEventHandler TraceEvent;
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;

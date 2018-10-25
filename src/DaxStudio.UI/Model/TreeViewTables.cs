@@ -169,6 +169,15 @@ namespace DaxStudio.UI.Model
         }
     }
 
+    public static class TreeViewColumnFactory
+    {
+        public static FilterableTreeViewItem Create(ADOTabularColumn col) {
+            //TODO create folder hierarchy if DisplayFolder is not empty string
+            // else return raw column
+            return null;
+        }
+    }
+
     public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
     {
     /*
