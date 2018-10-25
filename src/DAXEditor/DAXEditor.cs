@@ -97,7 +97,16 @@ namespace DAXEditor
             IntellisenseProvider = new IntellisenseProviderStub();
 
             this.DocumentChanged += DaxEditor_DocumentChanged;
+            DataObject.AddPastingHandler(this, OnDataObjectPasting);
             
+        }
+
+        public EventHandler<DataObjectPastingEventArgs> OnPasting;
+
+        // Raise Custom OnPasting event
+        private void OnDataObjectPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            OnPasting?.Invoke(sender, e);
         }
 
         internal void UpdateSyntaxRule(string colourName,  IEnumerable<string> wordList)

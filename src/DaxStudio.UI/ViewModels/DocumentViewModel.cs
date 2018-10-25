@@ -194,6 +194,8 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
+            
+
             IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator);
             UpdateSettings();
             if (_editor != null)
@@ -204,6 +206,8 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
                 _editor.PreviewDragEnter += OnDragEnter;
+
+                _editor.OnPasting += OnPasting;
                 
             }
             switch (this.State)
@@ -232,6 +236,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void OnPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
+            // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error
+            string content = e.DataObject.GetData("UnicodeText",true) as string;
+            _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+            e.Handled = true;
+            e.CancelCommand();
+        }
 
         private void OnDrop(object sender, DragEventArgs e)
         {
