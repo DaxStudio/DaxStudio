@@ -65,6 +65,12 @@ namespace DaxStudio.UI.ViewModels
                 case DaxStudioTraceEventClass.AlternateSourceRewriteQuery:
                     // the rewrite event does not have a query or storage engine timings
                     break;
+                case DaxStudioTraceEventClass.DirectQueryBegin:
+                case DaxStudioTraceEventClass.DirectQueryEnd:
+                    // Don't process DirectQuery text
+                    Query = ev.TextData;
+                    QueryRichText = Query;
+                    break;
                 default:
                     // TODO: we should implement as optional the removal of aliases and lineage
                     Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
