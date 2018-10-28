@@ -201,7 +201,7 @@ namespace DaxStudio.UI.ViewModels
             
 #if PREVIEW
             //HACK: Temporary hack to test Power BI XMLA Endpoint
-            IsAdminConnection = true
+            IsAdminConnection = true;
 #else
             IsAdminConnection = connection.IsAdminConnection;
 #endif

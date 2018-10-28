@@ -406,7 +406,7 @@ namespace DaxStudio.UI.ViewModels
                     if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters())  continue;
 
                     // if the server version does not support Aggregate Table Events do not add them
-                    if (e == DaxStudioTraceEventClass.AlternateSourceRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
+                    if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
 
                     // Add the even to the collection if we don't already have it
                     if (!events.Contains(e) )

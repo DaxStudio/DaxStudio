@@ -62,7 +62,7 @@ namespace DaxStudio.UI.ViewModels
                 //case DaxStudioTraceEventClass.DirectQueryEnd:
                 //    Query = ev.TextData;
                 //    break;
-                case DaxStudioTraceEventClass.AlternateSourceRewriteQuery:
+                case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                     // the rewrite event does not have a query or storage engine timings
                     break;
                 case DaxStudioTraceEventClass.DirectQueryBegin:
@@ -246,7 +246,7 @@ namespace DaxStudio.UI.ViewModels
                 { DaxStudioTraceEventClass.QuerySubcube
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
-                , DaxStudioTraceEventClass.AlternateSourceRewriteQuery
+                , DaxStudioTraceEventClass.AggregateTableRewriteQuery
                 , DaxStudioTraceEventClass.DirectQueryEnd
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
@@ -283,7 +283,7 @@ namespace DaxStudio.UI.ViewModels
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
                     }
 
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AlternateSourceRewriteQuery)
+                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
                     {
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;
