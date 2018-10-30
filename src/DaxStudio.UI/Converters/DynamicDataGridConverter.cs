@@ -3,6 +3,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -13,6 +14,13 @@ namespace DaxStudio.UI.Converters
     //
     public class DynamicDataGridConverter : IValueConverter
     {
+        static Regex bindingPathRegex;
+        static DynamicDataGridConverter()
+        {
+            // store the static compiled regex so we don't have to instantiate it each time we bind a column
+            bindingPathRegex = new Regex(@"[\^,\]\[\.]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var columns = new ObservableCollection<DataGridColumn>();
@@ -102,9 +110,11 @@ namespace DaxStudio.UI.Converters
             return Binding.DoNothing;
         }
 
+        // escapes special characters from the WPF binding path (eg. ^.][ )
         private string FixBindingPath(string columnName)
         {
-            return "[" + columnName.Replace("]","^]").Replace(".","^.").Replace("[","^[").Replace("^","^^") + "]";
+            var bindingPath = bindingPathRegex.Replace(columnName, "^$0");
+            return "[" + bindingPath + "]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

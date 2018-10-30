@@ -258,8 +258,7 @@ namespace DaxStudio.QueryTrace
                     // lock to prevent multiple threads attempting to open the connection
                     lock (connectionLockObj)
                     {
-                        if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-
+                     
                         var policy = Policy
                             .Handle<Exception>()
                             .WaitAndRetry(
@@ -273,8 +272,9 @@ namespace DaxStudio.QueryTrace
                             );
 
                         policy.Execute(() => {
+                            if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
                             _connection.Ping(); 
-                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTImerElapsed", "Pinging Connection");
+                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
                         });
                     }
                     
