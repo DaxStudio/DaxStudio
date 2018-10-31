@@ -2,7 +2,6 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
@@ -26,17 +25,18 @@ namespace DaxStudio.UI.Model
             _eventAggregator = eventAggregator;
             _options = options;
         }
-        public string Name {get { return "Grid"; }
-        }
-        public string Group {get { return "Standard"; }
-        }
 
-         
-        public int DisplayOrder
-        {
-            get { return 10; }
-        }
+        #region Standard Properties
+        public string Name => "Grid";
+        public string Group => "Standard";
+        public int DisplayOrder => 10;
+        public bool IsDefault => true;
+        public bool IsEnabled => true;
+        public string Message => string.Empty;
+        public OutputTargets Icon => OutputTargets.Grid;
+        #endregion
 
+        // This is the core method that handles the output of the results
         public Task OutputResultsAsync(IQueryRunner runner)
         {
             // Read the AutoFormat option from the options singleton
@@ -96,26 +96,6 @@ namespace DaxStudio.UI.Model
                 });
         }
 
-        public bool IsDefault
-        {
-            get { return true; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-
-
-        public string Message
-        {
-            get { return string.Empty;}
-        }
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.Grid; }
-        }
     }
-
 
 }

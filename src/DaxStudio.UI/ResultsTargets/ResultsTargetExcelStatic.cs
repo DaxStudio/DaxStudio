@@ -2,8 +2,6 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Events;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 
@@ -20,10 +18,16 @@ namespace DaxStudio.UI.Model
         {
             _host = host;
         }
-        public string Name {get { return "Static"; }
-        }
-        public string Group {get { return "Excel"; }
-        }
+
+        #region Standard Properties
+        public string Name => "Static";
+        public string Group => "Excel";
+        public bool IsDefault => false;
+        public bool IsEnabled => _host.IsExcel;
+        public int DisplayOrder => 110;
+        public string Message => "Static Results will be sent to Excel";
+        public OutputTargets Icon => OutputTargets.Static;
+        #endregion
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
@@ -64,34 +68,7 @@ namespace DaxStudio.UI.Model
         }
 
 
-        public bool IsDefault
-        {
-            get { return false; }
-        }
 
-        public bool IsEnabled
-        {
-            get { return _host.IsExcel; }
-        }
-        public int DisplayOrder
-        {
-            get { return 110; }
-        }
-
-
-        public string Message
-        {
-            get {
-            return "Static Results will be sent to Excel";
-            }
-        }
-        public OutputTargets Icon
-        {
-            get
-            {
-                return OutputTargets.Static;
-            }
-        }
     }
 
 

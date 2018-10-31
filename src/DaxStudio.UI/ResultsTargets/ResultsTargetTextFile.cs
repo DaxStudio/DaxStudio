@@ -1,18 +1,12 @@
-﻿using ADOTabular.AdomdClientWrappers;
-using DaxStudio.Interfaces;
+﻿using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Model;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace DaxStudio.UI.Model
 {
@@ -20,39 +14,13 @@ namespace DaxStudio.UI.Model
     public class ResultsTargetTextFile : IResultsTarget
     {
         #region Standard Properties
-        public string Name
-        {
-            get { return "File"; }
-        }
-        public string Group
-        {
-            get { return "Standard"; }
-        }
-        public bool IsDefault
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-
-        public int DisplayOrder
-        {
-            get { return 300; }
-        }
-
-
-        public string Message
-        {
-            get { return "Results will be sent to a Text File"; }
-        }
-
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.File; }
-        }
+        public string Name => "File";
+        public string Group => "Standard";
+        public bool IsDefault => false;
+        public bool IsEnabled => true;
+        public int DisplayOrder => 300;
+        public string Message => "Results will be sent to a Text File";
+        public OutputTargets Icon => OutputTargets.File;
         #endregion
 
         public Task OutputResultsAsync(IQueryRunner runner)
