@@ -77,7 +77,7 @@ namespace DaxStudio.UI.ViewModels
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
             DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
-
+            ScaleResultsFontWithEditor = RegistryHelper.GetValue<bool>("ScaleResultsFontWithEditor", true);
             // Preview Feature Toggles
             ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
             ShowExternalTools = RegistryHelper.GetValue<bool>("ShowExternalTools", false);
@@ -495,6 +495,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showAggregationRewritesInAllQueries = false;
+        private bool _scaleResultsFontWithEditor = true;
+
         public bool ShowAggregationRewritesInAllQueries { get => _showAggregationRewritesInAllQueries;
             set
             {
@@ -515,6 +517,15 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ResultAutoFormat);
             }
         }
+
+        public bool ScaleResultsFontWithEditor { get => _scaleResultsFontWithEditor;
+            set {
+                _scaleResultsFontWithEditor = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ScaleResultsFontWithEditor", value);
+                NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
+            } }
+
         #endregion
 
         public void ExportDaxFunctions()

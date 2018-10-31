@@ -379,8 +379,11 @@ namespace DaxStudio.UI.ViewModels
         
         public void Handle(SizeUnitsUpdatedEvent message)
         {
-            SizeUnits.Value = message.Units.Value;
-            NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
+            if (_options.ScaleResultsFontWithEditor)
+            {
+                SizeUnits.Value = message.Units.Value;
+                NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
+            }
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode

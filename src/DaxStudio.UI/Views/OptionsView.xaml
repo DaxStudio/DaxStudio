@@ -10,7 +10,7 @@
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="900">
+             d:DesignHeight="800" d:DesignWidth="900">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
@@ -424,12 +424,17 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
-                            <Label Grid.Row="0" Grid.Column="1" Content="Exclude Headers when copying data" Margin="0,0,40.5,0"/>
-                                <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font With Editor" Margin="0,0,40.5,0"/>
+                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
+                                    <Label Grid.Row="2" Grid.Column="1" Content="Exclude Headers when copying data" Margin="0,0,40.5,0"/>
+                                <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
 
                             </Grid>
                             </StackPanel>

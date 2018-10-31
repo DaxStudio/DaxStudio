@@ -34,6 +34,8 @@ namespace DaxStudio.Interfaces
         bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
         bool ShowAggregationRewritesInAllQueries { get; set; }
+        
         bool ResultAutoFormat { get; set; }
+        bool ScaleResultsFontWithEditor { get; set; }
     }
 }
