@@ -10,7 +10,7 @@
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="900">
+             d:DesignHeight="908" d:DesignWidth="900">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
@@ -77,7 +77,7 @@
                               Width="Auto" 
                               LastChildFill="True">
 
-                            <Microsoft_Windows_Themes:BulletChrome 
+                                <Microsoft_Windows_Themes:BulletChrome 
                                 DockPanel.Dock="Right" 
                                 Margin="7,0,0,0"
                                 Background="{TemplateBinding Background}" 
@@ -90,7 +90,7 @@
                                 Width="Auto" 
                                 Height="Auto"/>
 
-                            <ContentPresenter 
+                                <ContentPresenter 
                                 Content="{TemplateBinding Content}" 
                                 RecognizesAccessKey="True" 
                                 Height="Auto" 
@@ -112,7 +112,8 @@
     </UserControl.Resources>
     <Grid Margin="35,25,5,5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="261*"/>
+            <ColumnDefinition Width="169*"/>
 
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -122,9 +123,9 @@
         </Grid.RowDefinitions>
         <Label Content="Options" Foreground="{StaticResource DaxStudioBrush}" FontSize="56" FontWeight="Light" 
 			Grid.Row="0"
-			Grid.Column="0"/>
+			Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0.5"/>
         <!-- Editor -->
-        <TabControl Grid.Row="1">
+        <TabControl Grid.ColumnSpan="2" Margin="0,84,0,0" Grid.RowSpan="2">
             <TabItem Header="Standard">
                 <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
                     <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
@@ -140,7 +141,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
                                 <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
 			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
@@ -203,7 +204,7 @@
                                 <Label Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Right" Content="Use System Proxy:"/>
                                 <!-- Style="{StaticResource checkboxLeftSideText}" -->
                                 <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center" >
-         
+
                                 </CheckBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right" />
                                 <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
@@ -253,15 +254,15 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="QueryEndEventTimeout" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
-                                
+
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="DaxFormatterRequestTimeout" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
-                                
+
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
                                 <xctk:IntegerUpDown x:Name="TraceStartupTimeout" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
@@ -296,7 +297,7 @@
                         <GroupBox Header="Trace"  >
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
-                                    
+
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
@@ -304,7 +305,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <StackPanel Orientation="Horizontal" Grid.Column="1">
                                     <CheckBox  Grid.Column="0" x:Name="TraceDirectQuery" Content="DirectQuery Trace"/>
                                     <Image Source="{StaticResource QuestionIcon}" Width="16" HorizontalAlignment="Right" ToolTipService.HasDropShadow="True" Margin="5,0,0,0" >
@@ -319,7 +320,7 @@
                                                 </TextBlock>
                                             </Grid>
                                         </Image.ToolTip>
-                                        
+
                                     </Image>
                                 </StackPanel>
                                 <!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>-->
@@ -361,82 +362,86 @@
                         </GroupBox>
                         <GroupBox Header="Results">
                             <StackPanel Orientation="Vertical">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
+                                <Grid Margin="5,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
 
-                                    <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
 
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
 
-                                </Grid.RowDefinitions>
+                                    </Grid.RowDefinitions>
 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
-                                <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
+                                    <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
+                                    <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
 			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			                        ItemTemplate="{DynamicResource FontTemplate}"
                                     SelectedItem="{Binding Path=ResultFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
                                     IsSynchronizedWithCurrentItem="True"
                                     VerticalContentAlignment="Center"      >
-                                    <ComboBox.Resources>
+                                        <ComboBox.Resources>
 
-                                        <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
-                                            <CollectionViewSource.SortDescriptions>
-                                                <ComponentModel:SortDescription PropertyName="Source" />
-                                            </CollectionViewSource.SortDescriptions>
-                                        </CollectionViewSource>
+                                            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                                                <CollectionViewSource.SortDescriptions>
+                                                    <ComponentModel:SortDescription PropertyName="Source" />
+                                                </CollectionViewSource.SortDescriptions>
+                                            </CollectionViewSource>
 
-                                        <Style x:Key="FontStyle">
-                                            <Setter Property="Control.FontFamily" Value="{Binding Source}" />
-                                            <Setter Property="Control.FontSize" Value="14" />
-                                        </Style>
+                                            <Style x:Key="FontStyle">
+                                                <Setter Property="Control.FontFamily" Value="{Binding Source}" />
+                                                <Setter Property="Control.FontSize" Value="14" />
+                                            </Style>
 
-                                        <DataTemplate x:Key="FontTemplate">
-                                            <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
-                                                <TextBlock Style="{StaticResource FontStyle}"
+                                            <DataTemplate x:Key="FontTemplate">
+                                                <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
+                                                    <TextBlock Style="{StaticResource FontStyle}"
                                            Text="{Binding Source}"
                                            ToolTip="{Binding Source}" />
-                                            </StackPanel>
-                                        </DataTemplate>
+                                                </StackPanel>
+                                            </DataTemplate>
 
-                                    </ComboBox.Resources>
+                                        </ComboBox.Resources>
 
-                                    <ComboBox.ItemsSource>
-                                        <Binding Source="{StaticResource myFonts}" />
-                                    </ComboBox.ItemsSource>
-                                </ComboBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
-                            </Grid>
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
+                                        <ComboBox.ItemsSource>
+                                            <Binding Source="{StaticResource myFonts}" />
+                                        </ComboBox.ItemsSource>
+                                    </ComboBox>
+                                    <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
+                                    <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+                                </Grid>
+                                <Grid Margin="5,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
 
-                                    <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
 
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
 
-                                </Grid.RowDefinitions>
-                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font With Editor" Margin="0,0,40.5,0"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font with Editor" Margin="0,0,40.5,0"/>
                                     <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
                                     <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
-                                    <Label Grid.Row="2" Grid.Column="1" Content="Exclude Headers when copying data" Margin="0,0,40.5,0"/>
-                                <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <Label Grid.Row="2" Grid.Column="1" Content="Exclude Headers when Copying Data" Margin="0,0,40.5,0"/>
+                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,7,2,0" Content="Automatic Format Results" Grid.ColumnSpan="2"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
 
-                            </Grid>
+                                </Grid>
                             </StackPanel>
                         </GroupBox>
                         <GroupBox Header="Dax Formatter">
@@ -492,15 +497,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
 
 
                                 <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Content="Show Export Metrics button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                
+
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export metrics about your data model to a .vpax file which can be imported into Vertipaq Analyzer v2</TextBlock>
 
                                 <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
@@ -508,9 +511,6 @@
 
                                 <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowAggregationRewritesInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Aggregation Rewrites in All Queries Traces" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will show aggregation hits/misses in All Queries traces</TextBlock>
-
-                                <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,7,2,0" Content="Automatic Format Results" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature automatically format numbers in the results of a query if a format string is not available for a measure with the same name of the column in the result</TextBlock>
 
                             </Grid>
                         </GroupBox>
