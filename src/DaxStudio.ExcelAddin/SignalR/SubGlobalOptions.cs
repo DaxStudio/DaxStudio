@@ -68,5 +68,6 @@ namespace DaxStudio.SignalR
         public bool ShowExportAllData { get ; set ; }
         public bool ShowAggregationRewritesInAllQueries { get; set ; }
         public bool ResultAutoFormat { get; set; }
+        public bool ScaleResultsFontWithEditor { get; set; }
     }
 }
