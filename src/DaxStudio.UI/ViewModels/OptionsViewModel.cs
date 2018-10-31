@@ -54,7 +54,6 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator = eventAggregator;
             
-
             EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", DefaultEditorFontFamily);
             EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", DefaultEditorFontSize);
             ResultFontFamily = RegistryHelper.GetValue<string>("ResultFontFamily", DefaultResultsFontFamily);

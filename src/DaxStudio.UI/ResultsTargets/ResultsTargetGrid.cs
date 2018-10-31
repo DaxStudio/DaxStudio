@@ -17,12 +17,14 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetGrid: IResultsTarget 
     {
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IGlobalOptions _options;
 
         [ImportingConstructor]
-        public ResultsTargetGrid(IEventAggregator eventAggregator)
+        public ResultsTargetGrid(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
+            _options = options;
         }
         public string Name {get { return "Grid"; }
         }
@@ -37,9 +39,8 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            // Marco 2018-07-17 The ResultAutoFormat is a not documented setting at the moment
-            // TODO: Implement configuration and expose the option
-            bool autoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false );
+            // Read the AutoFormat option from the options singleton
+            bool autoFormat = _options.ResultAutoFormat;
             return Task.Run(() =>
                 {
                     long durationMs = 0;
@@ -94,9 +95,6 @@ namespace DaxStudio.UI.Model
                     }
                 });
         }
-
-
-
 
         public bool IsDefault
         {
