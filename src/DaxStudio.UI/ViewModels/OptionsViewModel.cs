@@ -82,6 +82,7 @@ namespace DaxStudio.UI.ViewModels
             ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
             ShowExternalTools = RegistryHelper.GetValue<bool>("ShowExternalTools", false);
             ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
+            ResultAutoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false);
         }
 
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
@@ -504,6 +505,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _ResultAutoFormat = false;
+        public bool ResultAutoFormat {
+            get => _ResultAutoFormat;
+            set {
+                _ResultAutoFormat = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ResultAutoFormat", value);
+                NotifyOfPropertyChange(() => ResultAutoFormat);
+            }
+        }
         #endregion
 
         public void ExportDaxFunctions()

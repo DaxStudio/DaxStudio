@@ -652,7 +652,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return ShowExportMetrics | ShowExternalTools | ShowExportAllData;
+                return ShowExportMetrics | ShowExternalTools | ShowExportAllData | ResultAutoFormat;
             }
         }
 
@@ -692,6 +692,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _ResultAutoFormat;
+        public bool ResultAutoFormat {
+            get { return _ResultAutoFormat; }
+            private set {
+                _ResultAutoFormat = value;
+                NotifyOfPropertyChange(() => ResultAutoFormat);
+                NotifyOfPropertyChange(() => ShowAdvancedTab);
+            }
+        }
+
         public void ExportAnalysisData()
         {
             _activeDocument.ExportAnalysisData();
@@ -724,7 +734,7 @@ namespace DaxStudio.UI.ViewModels
             ShowExportMetrics = Options.ShowExportMetrics;
             ShowExternalTools = Options.ShowExternalTools;
             ShowExportAllData = Options.ShowExportAllData;
-
+            ResultAutoFormat = Options.ResultAutoFormat;
         }
 
         public void LaunchSqlProfiler()
