@@ -368,6 +368,7 @@
     <Compile Include="Enums\DialogResult.cs" />
     <Compile Include="Enums\OpenDialogResult.cs" />
     <Compile Include="Enums\QueryEndSubClass.cs" />
+    <Compile Include="Events\AllDocumentsClosedEvent.cs" />
     <Compile Include="Events\AutoSaveEvent.cs" />
     <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
     <Compile Include="Events\CopyConnectionEvent.cs" />

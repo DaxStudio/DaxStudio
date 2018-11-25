@@ -31,6 +31,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<AllDocumentsClosedEvent>
 //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -228,6 +229,10 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.ClearDatabaseCacheAsync().FireAndForget();
         }
 
+        public bool CanSave => ActiveDocument != null;
+
+        public bool CanSaveAs => ActiveDocument != null;
+
         public void Save()
         {
             ActiveDocument.Save();
@@ -403,6 +408,8 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if(_activeDocument != null) _activeDocument.PropertyChanged -= ActiveDocumentPropertyChanged;
                 _activeDocument = value;
+                NotifyOfPropertyChange(() => CanSave);
+                NotifyOfPropertyChange(() => CanSaveAs);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -791,6 +798,11 @@ namespace DaxStudio.UI.ViewModels
         public void ResetLayout()
         {
             _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(true));
+        }
+
+        public void Handle(AllDocumentsClosedEvent message)
+        {
+            this.ActiveDocument = null;
         }
     }
 }

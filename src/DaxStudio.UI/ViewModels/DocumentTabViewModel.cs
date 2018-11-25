@@ -223,6 +223,8 @@ namespace DaxStudio.UI.ViewModels
             args.Cancel = true; // cancel the default tab close action as we want to call 
 
             doc.TryClose();     // TryClose and give the document a chance to block the close
+
+            if (this.Items.Count == 0) _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
         }
 
         public void Activate(object document)
