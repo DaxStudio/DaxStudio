@@ -15,6 +15,10 @@
 	<Dest2017DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2017.config</Dest2017DllConfigFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
+  </PropertyGroup>
+  
   <Target Name="Clean">
     <Message Text="Cleaning DaxStudio.Standalone" />
     <MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />
@@ -108,23 +112,23 @@
   
   <Target Name="SignAssemblies" DependsOnTargets="Build">
     <Message Text="Attempting to sign Assemblies" Importance="high" />
-	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' 
+	<Exec Command='$(SignToolExe) sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' 
 	IgnoreExitCode="true"/>
-	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.dll' 
+	<Exec Command='$(SignToolExe) sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.dll' 
 	IgnoreExitCode="true"/>
   </Target>
   
   <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
-  <Target Name="InstallerWthSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignAssemblies">
+  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignAssemblies">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
 
   
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-	<Exec Command='"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\daxstudio_$(OutVersion)b_setup.exe' 
+	<Exec Command='$(SignToolExe) sign /n "Darren Gosbell" /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\daxstudio_$(OutVersion)_setup.exe' 
 	IgnoreExitCode="true"/>
   </Target>
 </Project>
