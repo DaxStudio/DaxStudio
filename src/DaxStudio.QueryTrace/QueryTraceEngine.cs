@@ -154,7 +154,7 @@ namespace DaxStudio.QueryTrace
         }
         private void SetupTrace(Trace trace, List<DaxStudioTraceEventClass> events)
         {
-            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "SetupTrace", "entering");
+            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "SetupTrace", "entering"); 
             trace.Events.Clear();
             // Add CommandBegin so we can catch the heartbeat events
             trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
@@ -315,7 +315,7 @@ namespace DaxStudio.QueryTrace
         {
             try
             {
-                Execute.OnUIThread(() => {
+                //Execute.OnUIThread(() => {  // TODO - why did I put this on the UI thread???
                     // lock to prevent multiple threads attempting to open the connection
                     lock (connectionLockObj)
                     {
@@ -339,7 +339,7 @@ namespace DaxStudio.QueryTrace
                         });
                     }
                     
-                });
+                //});
                 
             }
             catch (Exception ex)

@@ -401,7 +401,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private DocumentViewModel _activeDocument;
-
+         
         public DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
@@ -569,9 +569,9 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument.FindReplaceDialog.FindText();
         }
 
-        public bool ServerTimingsChecked { get { return ActiveDocument.ServerTimingsChecked; } }
+        public bool ServerTimingsChecked { get { return ActiveDocument?.ServerTimingsChecked??false; } }
 
-        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument.ServerTimingDetails; } }
+        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument?.ServerTimingDetails; } }
 
         public void Handle(TraceWatcherToggleEvent message)
         {

@@ -23,7 +23,6 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Threading;
-using UnitComboLib.Unit;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using System.Linq;
@@ -41,14 +40,13 @@ using System.Net.Http.Headers;
 using System.IO.Compression;
 using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
-using CsvHelper;
 using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
 
 namespace DaxStudio.UI.ViewModels
 {
 
-    
+
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof (Screen))]
@@ -2352,7 +2350,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection { get { return Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName"); } }
+        public bool IsAdminConnection => Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName") || Connection.IsPowerBIXmla;
         public bool IsPowerPivot {get; private set; }
 
         private bool _canCopy = true;

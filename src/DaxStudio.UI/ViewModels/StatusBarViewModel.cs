@@ -93,6 +93,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
+                    
                     ServerName = "";
                     Spid = "";
                 }

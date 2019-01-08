@@ -93,7 +93,7 @@
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.7.0.2\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Excel.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\Microsoft.Excel.AdomdClient.dll</HintPath>
+      <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Aliases>ExcelAdomdClientReference</Aliases>
       <Private>False</Private>

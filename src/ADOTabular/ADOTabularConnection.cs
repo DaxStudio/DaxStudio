@@ -89,24 +89,33 @@ namespace ADOTabular
                     }
                     var dd = Databases.GetDatabaseDictionary(this.SPID);
 
-                    if (_currentDatabase == null && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
+                    if (string.IsNullOrWhiteSpace(_currentDatabase) && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
 
                     if (!dd.ContainsKey(_currentDatabase))
                     {
                         dd = Databases.GetDatabaseDictionary(this.SPID, true);
                     }
                     //var db = dd[_adomdConn.Database];
-                    if (_currentDatabase == "" || dd.Count == 0)
+                    if (_currentDatabase == "" && dd.Count == 0)
                     {
                         // return an empty database object if there is no current database or no databases on the server
                         return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "","");
                     }
+                    // The Power BI XMLA endpoint does not set a default database, so we have a collection of database, but no current database
+                    // in this case we just set the current database to the first in the list
+                    if (_currentDatabase == "" && dd.Count > 0)
+                    {
+                        var details = dd.First().Value;
+                        _db = new ADOTabularDatabase(this, details.Name, details.Id, details.LastUpdate, details.CompatibilityLevel, details.Roles);
+                        ChangeDatabase(details.Name);
+
+                    }
+
                     // todo - somehow users are getting here, but the current database is not in the dictionary
                     var db = dd[_currentDatabase];
                     if (_db == null || db.Name != _db.Name)
                     {
                         _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
-                        //_db = new ADOTabularDatabase(this, _adomdConn.Database, db.Id, db.LastUpdate);
                     }
                     return _db;
                 }
@@ -164,6 +173,10 @@ namespace ADOTabular
             //}
             if (ConnectionChanged != null)
                 ConnectionChanged(this, new EventArgs());
+
+            _spid = 0; // reset the spid to 0 so that it will get re-evaluated
+                       // the PowerBI xmla endpoint sets the permissions to call DISCOVER_SESSIONS on a per data set basis
+                       // depending on whether the user has admin access to the given data set
 
         }
 
@@ -332,6 +345,7 @@ namespace ADOTabular
             var cmd = _adomdConn.CreateCommand();
             cmd.CommandText = command;
             cmd.CommandType = CommandType.Text;
+            
             cmd.ExecuteNonQuery();
         }
 
@@ -664,7 +678,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString());
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }
@@ -796,6 +810,8 @@ namespace ADOTabular
                 return int.Parse(m.Groups[1].Value);
             }
         }
+
+        public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
 
         private void UpdateServerProperties()
         {

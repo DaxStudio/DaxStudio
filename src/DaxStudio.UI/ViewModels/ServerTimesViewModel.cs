@@ -234,6 +234,15 @@ namespace DaxStudio.UI.ViewModels
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
+        #region Tooltip properties
+        public string TotalTooltip => "The total server side duration of the query";
+        public string FETooltip => "Formula Engine (FE) Duration";
+        public string SETooltip => "Storage Engine (SE) Duration";
+        public string SECpuTooltip => "Storage Engine CPU Duration";
+        public string SEQueriesTooltip => "The number of queries sent to the Storage Engine while processing this query";
+        public string SECacheTooltip => "The number of queries sent to the Storage Engine that were answered from the SE Cache";
+        #endregion
+
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
             //return new List<TraceEventClass> 
