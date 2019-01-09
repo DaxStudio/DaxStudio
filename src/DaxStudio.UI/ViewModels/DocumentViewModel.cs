@@ -23,7 +23,6 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Threading;
-using UnitComboLib.Unit;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using System.Linq;
@@ -41,14 +40,13 @@ using System.Net.Http.Headers;
 using System.IO.Compression;
 using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
-using CsvHelper;
 using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
 
 namespace DaxStudio.UI.ViewModels
 {
 
-    
+
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof (Screen))]
@@ -70,6 +68,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<RunQueryEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
+        , IHandle<SelectedModelChangedEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
@@ -208,6 +207,8 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
                 _editor.PreviewDragEnter += OnDragEnter;
+
+                _editor.OnPasting += OnPasting;
                 
             }
             switch (this.State)
@@ -236,6 +237,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void OnPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
+            // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error
+            string content = e.DataObject.GetData("UnicodeText",true) as string;
+            if (_editor.SelectionLength > 0) _editor.SelectedText = content.Replace('\u00A0', ' ');
+            else _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+            e.Handled = true;
+            e.CancelCommand();
+        }
 
         private void OnDrop(object sender, DragEventArgs e)
         {
@@ -396,7 +407,7 @@ namespace DaxStudio.UI.ViewModels
                     if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters())  continue;
 
                     // if the server version does not support Aggregate Table Events do not add them
-                    if (e == DaxStudioTraceEventClass.AlternateSourceRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
+                    if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
 
                     // Add the even to the collection if we don't already have it
                     if (!events.Contains(e) )
@@ -631,6 +642,12 @@ namespace DaxStudio.UI.ViewModels
             _ribbon.SelectedTarget = _selectedTarget;
             var loc = Document.GetLocation(0);
             //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
+
+            // exit here if we are not in a state to run a query
+            // means something is using the connection like
+            // either a query is running or a trace is starting
+            if (!CanRunQuery) return;
+
             try
             {
                 if (HasDatabaseSchemaChanged())
@@ -867,6 +884,17 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _queryRunning = value;
                 NotifyOfPropertyChange(() => IsQueryRunning);
+                NotifyOfPropertyChange(() => CanRunQuery);
+            }
+        }
+
+        public bool IsTraceChanging
+        {
+            get { return _traceChanging; }
+            set
+            {
+                _traceChanging = value;
+                NotifyOfPropertyChange(() => IsTraceChanging);
                 NotifyOfPropertyChange(() => CanRunQuery);
             }
         }
@@ -1366,7 +1394,7 @@ namespace DaxStudio.UI.ViewModels
         public bool CanRunQuery
         {
             // todo - do we need to track query traces changing?
-            get { return !IsQueryRunning && IsConnected; }
+            get { return !IsQueryRunning && !IsTraceChanging && IsConnected; }
         }
 
         #region Output Messages
@@ -1676,6 +1704,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void DisableTrace(ITraceWatcher watcher)
         {
+            IsTraceChanging = true;
             var otherTracesRunning = false;
            
             foreach (var tw in TraceWatchers)
@@ -1696,48 +1725,57 @@ namespace DaxStudio.UI.ViewModels
             OutputMessage("Trace Stopped");
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
             TraceWatchers.EnableAll();
+            IsTraceChanging = false;
         }
 
         private void EnableTrace(ITraceWatcher watcher)
         {
-            if (!ToolWindows.Contains(watcher))
-                ToolWindows.Add(watcher);
-
-            // synch the ribbon buttons and the server timings pane
-            if (watcher is ServerTimesViewModel && watcher.IsChecked)
+            try
             {
-                ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
-            }
+                IsTraceChanging = true;
+                if (!ToolWindows.Contains(watcher))
+                    ToolWindows.Add(watcher);
 
-            if (Tracer == null) CreateTracer();
-            else UpdateTraceEvents();
-
-            // spin up trace if one is not already running
-            if (Tracer.Status != QueryTraceStatus.Started
-                && Tracer.Status != QueryTraceStatus.Starting)
-            {
-                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
-                OutputMessage("Waiting for Trace to start");
-
-                var t = Tracer;
-                t.StartAsync(_options.TraceStartupTimeout).ContinueWith((p) =>
+                // synch the ribbon buttons and the server timings pane
+                if (watcher is ServerTimesViewModel && watcher.IsChecked)
                 {
-                    if (p.Exception != null)
+                    ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+                }
+
+                if (Tracer == null) CreateTracer();
+                else UpdateTraceEvents();
+
+                // spin up trace if one is not already running
+                if (Tracer.Status != QueryTraceStatus.Started
+                    && Tracer.Status != QueryTraceStatus.Starting)
+                {
+                    _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                    OutputMessage("Waiting for Trace to start");
+
+                    var t = Tracer;
+                    t.StartAsync(_options.TraceStartupTimeout).ContinueWith((p) =>
                     {
-                        p.Exception.Handle((x) =>
+                        if (p.Exception != null)
                         {
-                            Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
-                            OutputError("Error Starting Trace: " + x.Message);
-                            return false;
-                        });
-                    };
-                }, TaskScheduler.Default);
+                            p.Exception.Handle((x) =>
+                            {
+                                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
+                                OutputError("Error Starting Trace: " + x.Message);
+                                return false;
+                            });
+                        };
+                    }, TaskScheduler.Default);
+                }
+                // Disable other tracewatchers with different filter for current session values
+                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                foreach (var tw in TraceWatchers)
+                {
+                    tw.CheckEnabled(this, activeTrace);
+                }
             }
-            // Disable other tracewatchers with different filter for current session values
-            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-            foreach (var tw in TraceWatchers)
+            finally
             {
-                tw.CheckEnabled(this, activeTrace);
+                IsTraceChanging = false;
             }
         }
 
@@ -2315,7 +2353,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection { get { return Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName"); } }
+        public bool IsAdminConnection => Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName") || Connection.IsPowerBIXmla;
         public bool IsPowerPivot {get; private set; }
 
         private bool _canCopy = true;
@@ -2892,6 +2930,8 @@ namespace DaxStudio.UI.ViewModels
         }
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
         private bool _shouldSave = true;
+        private bool _traceChanging;
+
         public bool ShouldSave
         {
             get { return _shouldSave; }
@@ -3088,6 +3128,24 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(() => AvalonDockTheme);
             _editor?.SetSyntaxHighlightColorTheme(_options.Theme);
+        }
+        public void Handle(SelectedModelChangedEvent message)
+        {
+            // if there is not a running trace exit here
+            if (_tracer == null) return;
+            if (_tracer.Status != QueryTraceStatus.Started ) return;
+
+            // reconnect any running traces to pick up the initial catalog property
+            try
+            {
+                IsTraceChanging = true;
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Reconfiguring trace for database: {message.Document.SelectedDatabase}"));
+                _tracer.Update(message.Document.SelectedDatabase);
+            }
+            finally
+            {
+                IsTraceChanging = false;
+            }
         }
         #endregion
 

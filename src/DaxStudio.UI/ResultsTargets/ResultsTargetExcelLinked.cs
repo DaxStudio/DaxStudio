@@ -2,10 +2,7 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Events;
 using System.Diagnostics;
-using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
@@ -21,11 +18,17 @@ namespace DaxStudio.UI.ResultsTargets
         {
             _host = host;
         }
-        public string Name {get { return "Linked"; }
-        }
-        public string Group {get { return "Excel"; }
-        }
-        
+
+        #region Standard Properties
+        public string Name => "Linked";
+        public string Group => "Excel";
+        public bool IsDefault => false;
+        public bool IsEnabled => _host.IsExcel;
+        public int DisplayOrder => 100;
+        public string Message => "Query will be sent to Excel for execution";
+        public OutputTargets Icon => OutputTargets.Linked;
+        #endregion
+
         public Task OutputResultsAsync(IQueryRunner runner)
         {
             return Task.Run(() =>
@@ -63,31 +66,6 @@ namespace DaxStudio.UI.ResultsTargets
                 });
         }
 
-        public bool IsDefault
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return _host.IsExcel; }
-        }
-
-        public int DisplayOrder
-        {
-            get { return 100; }
-        }
-
-
-        public string Message
-        {
-            get { return "Query will be sent to Excel for execution"; }
-        }
-
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.Linked; }
-        }
     }
 
 

@@ -369,8 +369,8 @@ namespace DaxStudio.UI.ViewModels
         public DatabaseReference SelectedDatabase
         {
             get {
-                    if (_selectedDatabase == null && Connection != null && Connection.State == ConnectionState.Open)
-                        SelectedDatabase = DatabasesView.Where(db => db.Name == Connection.Database.Name).FirstOrDefault();
+                    //if (_selectedDatabase == null && Connection != null && Connection.State == ConnectionState.Open)
+                    //    SelectedDatabase = DatabasesView.Where(db => db.Name == Connection.Database.Name).FirstOrDefault();
                     return _selectedDatabase; }
             set
             {

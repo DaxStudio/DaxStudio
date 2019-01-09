@@ -322,9 +322,9 @@ namespace DaxStudio.Checker
                 {
                     Debug.WriteLine($"Processing Excel Addin Subkey {i}");
                     var subkey = addinKey.OpenSubKey(subKeys[i]);
-
-                    addinName = subkey.GetValue("FriendlyName")?.ToString();
-                    if (addinName != null && addinName.IndexOf("Power Pivot") > 0)
+                    
+                    addinName = subkey?.GetValue("FriendlyName","").ToString();
+                    if (addinName.IndexOf("Power Pivot") > 0)
                     {
                         Output.AppendRange("      PASS > ").Color("Green").Bold();
                         Output.AppendLine($" Found Excel Addin: {addinName}");

@@ -25,6 +25,7 @@ namespace ADOTabular
         {
             var ret = new SortedDictionary<string, ADOTabularModel>();
             var resColl = new AdomdRestrictionCollection { { "CUBE_SOURCE", 1 } };
+            
             var dtModels = _conn.GetSchemaDataSet("MDSCHEMA_CUBES", resColl).Tables[0];
             foreach (DataRow dr in dtModels.Rows)
             {

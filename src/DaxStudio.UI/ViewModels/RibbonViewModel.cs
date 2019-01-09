@@ -32,6 +32,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<AllDocumentsClosedEvent>
 //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -233,6 +234,10 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.ClearDatabaseCacheAsync().FireAndForget();
         }
 
+        public bool CanSave => ActiveDocument != null;
+
+        public bool CanSaveAs => ActiveDocument != null;
+
         public void Save()
         {
             ActiveDocument.Save();
@@ -401,13 +406,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private DocumentViewModel _activeDocument;
-
+         
         public DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
             set {
                 if(_activeDocument != null) _activeDocument.PropertyChanged -= ActiveDocumentPropertyChanged;
                 _activeDocument = value;
+                NotifyOfPropertyChange(() => CanSave);
+                NotifyOfPropertyChange(() => CanSaveAs);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -567,9 +574,9 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument.FindReplaceDialog.FindText();
         }
 
-        public bool ServerTimingsChecked { get { return ActiveDocument.ServerTimingsChecked; } }
+        public bool ServerTimingsChecked { get { return ActiveDocument?.ServerTimingsChecked??false; } }
 
-        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument.ServerTimingDetails; } }
+        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument?.ServerTimingDetails; } }
 
         public void Handle(TraceWatcherToggleEvent message)
         {
@@ -657,7 +664,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return ShowExportMetrics | ShowExternalTools | ShowExportAllData;
+                return ShowExportMetrics | ShowExternalTools | ShowExportAllData | ResultAutoFormat;
             }
         }
 
@@ -697,6 +704,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _ResultAutoFormat;
+        public bool ResultAutoFormat {
+            get { return _ResultAutoFormat; }
+            private set {
+                _ResultAutoFormat = value;
+                NotifyOfPropertyChange(() => ResultAutoFormat);
+                NotifyOfPropertyChange(() => ShowAdvancedTab);
+            }
+        }
+
         public void ExportAnalysisData()
         {
             _activeDocument.ExportAnalysisData();
@@ -729,7 +746,7 @@ namespace DaxStudio.UI.ViewModels
             ShowExportMetrics = Options.ShowExportMetrics;
             ShowExternalTools = Options.ShowExternalTools;
             ShowExportAllData = Options.ShowExportAllData;
-
+            ResultAutoFormat = Options.ResultAutoFormat;
         }
 
         public void LaunchSqlProfiler()
@@ -806,7 +823,10 @@ namespace DaxStudio.UI.ViewModels
         private void SetRibbonTheme(string theme)
         {
             Application.Current.ChangeRibbonTheme(theme);
-
+        }
+        public void Handle(AllDocumentsClosedEvent message)
+        {
+            this.ActiveDocument = null;
         }
     }
 }

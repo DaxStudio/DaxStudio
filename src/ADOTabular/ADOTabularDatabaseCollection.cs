@@ -11,7 +11,7 @@ namespace ADOTabular
 {
     public class DatabaseDetails
     {
-        public DatabaseDetails(string name, string id, string lastUpdate, string compatLevel)
+        public DatabaseDetails(string name, string id, string lastUpdate, string compatLevel, string roles)
         {
             Name = name;
             Id = id;
@@ -19,14 +19,16 @@ namespace ADOTabular
             DateTime.TryParse(lastUpdate, out lastUpdatedDate);
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
+            Roles = roles;
         }
 
-        public DatabaseDetails(string name, string lastUpdate, string compatLevel) : this(name, string.Empty, lastUpdate, compatLevel) { }
+        public DatabaseDetails(string name, string lastUpdate, string compatLevel, string roles) : this(name, string.Empty, lastUpdate, compatLevel, roles) { }
         
         public string Name {get;private set;}
         public string Id {get;private set;}
         public DateTime LastUpdate {get; set;}
-        public string CompatibilityLevel { get; set; }
+        public string CompatibilityLevel { get; internal set; }
+        public string Roles { get; internal set; }
     }
     public class ADOTabularDatabaseCollection:IEnumerable<string>
     {
@@ -43,10 +45,11 @@ namespace ADOTabular
             if (_dsDatabases == null)
             {
                 _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
-            }
-            _dsDatabases.Tables[0].PrimaryKey = new DataColumn[] {
-                _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
+                _dsDatabases.Tables[0].PrimaryKey = new DataColumn[] {
+                    _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
                 };
+            }
+
             return _dsDatabases.Tables[0];
         }
 
@@ -69,6 +72,7 @@ namespace ADOTabular
                 foreach (var db in tmpDatabaseDict.Values)
                 {
                     db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
+                    db.Roles = tmpDatabaseDmvDict[db.Name].Roles;
                 }
             }
             else
@@ -118,7 +122,8 @@ namespace ADOTabular
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
-                    row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():""                ));
+                    row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
+                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""));
             }
             return databaseDictionary;
         }

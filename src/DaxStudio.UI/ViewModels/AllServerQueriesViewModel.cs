@@ -53,7 +53,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QueryEnd,
-                  DaxStudioTraceEventClass.AlternateSourceRewriteQuery
+                  DaxStudioTraceEventClass.AggregateTableRewriteQuery
             };
         }
 
@@ -88,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
                             }
                             QueryEvents.Insert(0, newEvent);
                             break;
-                        case DaxStudioTraceEventClass.AlternateSourceRewriteQuery:
+                        case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events
                             var rewriteSummary = new AggregateRewriteSummary(traceEvent.RequestID, traceEvent.TextData);
                             if (_rewriteEventCache.ContainsKey(traceEvent.RequestID)) {

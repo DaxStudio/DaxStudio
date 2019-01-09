@@ -2,7 +2,6 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
@@ -17,29 +16,31 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetGrid: IResultsTarget 
     {
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IGlobalOptions _options;
 
         [ImportingConstructor]
-        public ResultsTargetGrid(IEventAggregator eventAggregator)
+        public ResultsTargetGrid(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
-        }
-        public string Name {get { return "Grid"; }
-        }
-        public string Group {get { return "Standard"; }
+            _options = options;
         }
 
-         
-        public int DisplayOrder
-        {
-            get { return 10; }
-        }
+        #region Standard Properties
+        public string Name => "Grid";
+        public string Group => "Standard";
+        public int DisplayOrder => 10;
+        public bool IsDefault => true;
+        public bool IsEnabled => true;
+        public string Message => string.Empty;
+        public OutputTargets Icon => OutputTargets.Grid;
+        #endregion
 
+        // This is the core method that handles the output of the results
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            // Marco 2018-07-17 The ResultAutoFormat is a not documented setting at the moment
-            // TODO: Implement configuration and expose the option
-            bool autoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false );
+            // Read the AutoFormat option from the options singleton
+            bool autoFormat = _options.ResultAutoFormat;
             return Task.Run(() =>
                 {
                     long durationMs = 0;
@@ -95,29 +96,6 @@ namespace DaxStudio.UI.Model
                 });
         }
 
-
-
-
-        public bool IsDefault
-        {
-            get { return true; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-
-
-        public string Message
-        {
-            get { return string.Empty;}
-        }
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.Grid; }
-        }
     }
-
 
 }

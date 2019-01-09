@@ -62,8 +62,14 @@ namespace DaxStudio.UI.ViewModels
                 //case DaxStudioTraceEventClass.DirectQueryEnd:
                 //    Query = ev.TextData;
                 //    break;
-                case DaxStudioTraceEventClass.AlternateSourceRewriteQuery:
+                case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                     // the rewrite event does not have a query or storage engine timings
+                    break;
+                case DaxStudioTraceEventClass.DirectQueryBegin:
+                case DaxStudioTraceEventClass.DirectQueryEnd:
+                    // Don't process DirectQuery text
+                    Query = ev.TextData;
+                    QueryRichText = Query;
                     break;
                 default:
                     // TODO: we should implement as optional the removal of aliases and lineage
@@ -228,6 +234,15 @@ namespace DaxStudio.UI.ViewModels
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
+        #region Tooltip properties
+        public string TotalTooltip => "The total server side duration of the query";
+        public string FETooltip => "Formula Engine (FE) Duration";
+        public string SETooltip => "Storage Engine (SE) Duration";
+        public string SECpuTooltip => "Storage Engine CPU Duration";
+        public string SEQueriesTooltip => "The number of queries sent to the Storage Engine while processing this query";
+        public string SECacheTooltip => "The number of queries sent to the Storage Engine that were answered from the SE Cache";
+        #endregion
+
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
             //return new List<TraceEventClass> 
@@ -240,7 +255,7 @@ namespace DaxStudio.UI.ViewModels
                 { DaxStudioTraceEventClass.QuerySubcube
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
-                , DaxStudioTraceEventClass.AlternateSourceRewriteQuery
+                , DaxStudioTraceEventClass.AggregateTableRewriteQuery
                 , DaxStudioTraceEventClass.DirectQueryEnd
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
@@ -277,7 +292,7 @@ namespace DaxStudio.UI.ViewModels
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
                     }
 
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AlternateSourceRewriteQuery)
+                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
                     {
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;

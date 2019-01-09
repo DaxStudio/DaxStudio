@@ -320,9 +320,7 @@ namespace DaxStudio.Checker
                 string addinName = "";
                 for (int i = 0; i < subKeys.Length;i++)
                 {
-                    Debug.WriteLine($"Processing Excel Addin Subkey {i}");
                     var subkey = addinKey.OpenSubKey(subKeys[i]);
-
                     addinName = subkey.GetValue("FriendlyName")?.ToString();
                     if (addinName != null && addinName.IndexOf("Power Pivot") > 0)
                     {
@@ -375,7 +373,7 @@ namespace DaxStudio.Checker
                     Output.AppendIndentedLine($"  {subkeyName}");
                     foreach (var valName in subkey.GetValueNames())
                     {
-                        Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName,"")}");
+                        Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
                     }
                 }
             }

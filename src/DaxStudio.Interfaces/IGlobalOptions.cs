@@ -35,5 +35,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool ShowAggregationRewritesInAllQueries { get; set; }
         string Theme { get; set; }
+        bool ResultAutoFormat { get; set; }
+        bool ScaleResultsFontWithEditor { get; set; }
     }
 }

@@ -151,35 +151,39 @@
                     </Grid.ColumnDefinitions>
                     
                     <!-- Total Duration -->
-                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding TotalDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding TotalDuration, StringFormat='#,0 ms'}" 
+                       ToolTip="{Binding TotalTooltip}"/>
 
                     <!-- SE CPU Duration -->
-                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"  ToolTip="{Binding SECpuTooltip}"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding SECpuTooltip}"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
                     
                     <!-- FE Controls -->
-                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" ToolTip="{Binding FETooltip}">
                         <Rectangle Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
                         <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding FETooltip}" />
                     
                     <TextBlock Grid.Row="5" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="#3571AD" />
                     
                     <!-- SE Controls -->
-                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" ToolTip="{Binding SETooltip}">
                         <Rectangle Width="10" Height="10" Fill="{StaticResource DaxStudioBrush}" Margin="0,4,5,0"/>
                         <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding SETooltip}" />
                     <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
                     
@@ -204,14 +208,16 @@
                     </StackPanel>
                     
                     <!-- SE Queries -->
-                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}" />
                     <TextBlock Grid.Row="8" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
+                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"
+                       ToolTip="{Binding SEQueriesTooltip}" />
                     
                     <!-- SE Cache -->
-                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SECacheTooltip}"/>
                     <TextBlock Grid.Row="8" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}" />
+                       Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}"
+                       ToolTip="{Binding SECacheTooltip}" />
                     <TextBlock Grid.Row="9" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
                    Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
 <!--
