@@ -20,6 +20,8 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+    basePath: '$(Build.SourcesDirectory)'
+
 
 - task: VSBuild@1
   inputs:
