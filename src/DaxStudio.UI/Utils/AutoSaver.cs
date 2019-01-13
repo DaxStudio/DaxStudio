@@ -17,8 +17,17 @@ namespace DaxStudio.UI.Utils
 
         static AutoSaver()
         {
+            CreateAutoSaveFolder();
             _masterAutoSaveIndex = new Dictionary<int, AutoSaveIndex>();
         }
+
+        private static void CreateAutoSaveFolder()
+        {
+            Directory.CreateDirectory(AutoSaveFolder);
+        }
+
+        static string AutoSaveFolder => Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder); 
+        
 
         public async static Task Save(DocumentTabViewModel tabs)
         {
@@ -80,7 +89,7 @@ namespace DaxStudio.UI.Utils
             // delete autosaveindex
             File.Delete(AutoSaveMasterIndexFile);
             // delete autosave files
-            System.IO.DirectoryInfo di = new DirectoryInfo(Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder));
+            System.IO.DirectoryInfo di = new DirectoryInfo(AutoSaveFolder);
             foreach (FileInfo file in di.GetFiles())
             {
                 file.Delete();
