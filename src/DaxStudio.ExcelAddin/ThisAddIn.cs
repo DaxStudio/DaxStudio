@@ -66,6 +66,9 @@ namespace DaxStudio.ExcelAddin
             if (_ribbon == null)
             {
                 _ribbon = new DaxStudioRibbon();
+#if DEBUG
+                _ribbon.group1.Label = "Debug";
+#endif
                 _ribbon.btnDax.Tag = _debugLogEnabled;
                 _ribbon.DebugLoggingEnabled = _debugLogEnabled;
             }

@@ -23,10 +23,14 @@ namespace DaxStudio.UI.Model
         public string Name => "Static";
         public string Group => "Excel";
         public bool IsDefault => false;
-        public bool IsEnabled => _host.IsExcel;
+        public bool IsAvailable => _host.IsExcel;
         public int DisplayOrder => 110;
         public string Message => "Static Results will be sent to Excel";
         public OutputTargets Icon => OutputTargets.Static;
+
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
         #endregion
 
         public Task OutputResultsAsync(IQueryRunner runner)

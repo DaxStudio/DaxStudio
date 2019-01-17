@@ -19,10 +19,14 @@ namespace DaxStudio.UI.Model
         public string Name => "Timer";
         public string Group => "Standard";
         public bool IsDefault => false;
-        public bool IsEnabled => true;
+        public bool IsAvailable => true;
         public int DisplayOrder => 20;
         public string Message => "Query timings sent to output tab";
         public OutputTargets Icon => OutputTargets.Timer;
+
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
         #endregion
 
         private void OutputResults(IQueryRunner runner)

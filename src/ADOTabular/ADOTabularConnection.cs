@@ -678,7 +678,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString());
                         }
                     }
-                    catch (Exception ex)
+                    catch 
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }

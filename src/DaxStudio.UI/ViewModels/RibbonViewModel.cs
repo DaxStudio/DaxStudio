@@ -32,6 +32,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
         , IHandle<AllDocumentsClosedEvent>
+        , IHandle<RefreshOutputTargetsEvent>
 //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -314,7 +315,7 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<IResultsTarget> ResultsTargets { get {
             //return  AvailableResultsTargets.OrderBy<IEnumerable<IResultsTarget>,int>(AvailableResultsTargets, x => x.DisplayOrder).Where(x=> x.IsEnabled.ToList<IResultsTarget>();
             return (from t in AvailableResultsTargets
-                    where t.IsEnabled
+                    where t.IsAvailable
                     select t).OrderBy(x => x.DisplayOrder).AsEnumerable<IResultsTarget>();
         } }
 
@@ -803,6 +804,12 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(AllDocumentsClosedEvent message)
         {
             this.ActiveDocument = null;
+        }
+
+        public void Handle(RefreshOutputTargetsEvent message)
+        {
+            // TODO: re-try this code with the latest version of fluent ribbon as currently the layout overlaps when the ResultsTargets collection changes 
+            // NotifyOfPropertyChange(() => ResultsTargets);
         }
     }
 }
