@@ -17,11 +17,15 @@
 
   <PropertyGroup>
     <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
-	<MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7.1 Tools\mage.exe"</MageExe>
+	<MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
 	<ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
 	<ManifestThumbPrint>B00D154EDD92C17CA1AC87CA55D52652797A0374</ManifestThumbPrint>
   </PropertyGroup>
 
+  <ItemGroup>
+    <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
+  </ItemGroup>
+  
   <PropertyGroup>  
 	<ReleaseDirectory>.\Release</ReleaseDirectory>  
   </PropertyGroup> 
@@ -48,48 +52,20 @@
 	<MSBuild Projects=".\src\daxstudio.sln" Targets="Build" Properties="RestorePackages=false" />
   </Target>
   
-  <!-- ################  START TESTING  ############### -->
-
-  <ItemGroup>
-    <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
-  </ItemGroup>
   
-  <Target Name="BuildVsto" DependsOnTargets="Build">
+<!--  <Target Name="BuildVsto" DependsOnTargets="Build">
 	<Message Text="Building Signed version of DaxStudio.ExcelAddin" Importance="High" />
-	<!--<MSBuild Projects=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" StopOnFirstFailure="true" Targets="Publish" Properties="RestorePackages=false;SignManifests=true;ManifestKeyFile=$(ManifestKeyFile);ManifestCertificateThumbprint=$(ManifestThumbPrint)"/>-->
 	<MSBuild Projects="$(VstoProject)" StopOnFirstFailure="true" Targets="Publish" Properties="RestorePackages=false;SignManifests=true;ManifestCertificateThumbprint=$(ManifestThumbPrint)"/>
-  </Target>
+  </Target>-->
   
-  <Target Name="SignAssemblies" DependsOnTargets="Build">
-    <Message Text="Attempting to sign Assemblies" Importance="high" />
-	<Exec Command='$(SignToolExe) sign /a /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\DaxStudio.dll' 
-	IgnoreExitCode="true"/>
-  </Target>
-  
-  
-  <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
-	<Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
-	<Exec Command='$(MageExe) -update ".\release\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' IgnoreExitCode="true"/>
-  </Target>
-  
-  <Target Name="SignVsto" DependsOnTargets="SignManifest">
-	<Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
-	<Exec WorkingDirectory=".\Release"
-	Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' />
-  </Target>
-  
-  
-
-
-  <Target Name="RegenerateManifests" DependsOnTargets="SignAssemblies">
+  <!--  <Target Name="RegenerateManifests" DependsOnTargets="SignAssemblies">
     <MSBuild
       Projects="@(VstoProjects)"
       Properties="Configuration=$(Configuration)"
       Targets="VisualStudioForApplicationsBuild" />
-  </Target>
-  
-  <!-- ################  END TESTING  ############### -->
-  
+  </Target> -->
+   
+   
   <UsingTask TaskName="TransformXml"
     AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Web\Microsoft.Web.Publishing.Tasks.dll" />
   
@@ -201,11 +177,23 @@
 	IgnoreExitCode="true"/>
   </Target>
   
-  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; DeleteEmptySubFolders">
+   <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
+	<Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
+	<Exec Command='$(MageExe) -update ".\release\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' IgnoreExitCode="true"/>
+  </Target>
+  
+  <Target Name="SignVsto" DependsOnTargets="SignManifest">
+	<Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
+	<Exec WorkingDirectory=".\Release"
+	Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' />
+  </Target>
+ 
+  
+  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
   
-  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignAssemblies; DeleteEmptySubFolders">
+  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignVsto">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
 
