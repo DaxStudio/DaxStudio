@@ -21,6 +21,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
         , IHandle<ConnectionPendingEvent>
+        , IHandle<CancelConnectEvent>
         , IHandle<ActivateDocumentEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<ApplicationActivatedEvent>
@@ -321,7 +322,7 @@ namespace DaxStudio.UI.ViewModels
 
         private IResultsTarget _selectedTarget;
         private bool _queryRunning;
-        private QueryTraceStatus _traceStatus;
+        private QueryTraceStatus _traceStatus = QueryTraceStatus.Stopped;
         private StatusBarMessage _traceMessage;
         // default to first target if none currently selected
         public IResultsTarget SelectedTarget {
@@ -363,6 +364,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanConnect);
             NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
             NotifyOfPropertyChange(() => CanLaunchExcel);
+            NotifyOfPropertyChange(() => CanExportAllData);
+            NotifyOfPropertyChange(() => CanExportAnalysisData);
 
             if (!ActiveDocument.IsConnected)
             {
@@ -664,6 +667,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool ShowExportGroup => ShowExportAllData | ShowExportMetrics;
 
         private bool _showExternalTools;
         public bool ShowExternalTools
@@ -686,6 +690,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportAllData = value;
                 NotifyOfPropertyChange(() => ShowExportAllData);
+                NotifyOfPropertyChange(() => ShowExportGroup);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
@@ -696,6 +701,7 @@ namespace DaxStudio.UI.ViewModels
             private set {
                 _showExportMetrics = value;
                 NotifyOfPropertyChange(() => ShowExportMetrics);
+                NotifyOfPropertyChange(() => ShowExportGroup);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
@@ -710,12 +716,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool CanExportAnalysisData => IsActiveDocumentConnected();
+
         public void ExportAnalysisData()
         {
             _activeDocument.ExportAnalysisData();
         }
 
-        public void ExportData()
+        public bool CanExportAllData => IsActiveDocumentConnected();
+
+        public void ExportAllData()
         {
             var dialog = new ExportDataDialogViewModel(_eventAggregator);
 
@@ -751,17 +761,7 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
         }
 
-        public bool CanLaunchSqlProfiler
-        {
-            get
-            {
-                if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
-
-                return !string.IsNullOrEmpty(_sqlProfilerCommand);
-            }
-        }
+        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected();
 
         public void LaunchExcel()
         {
@@ -774,16 +774,15 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Process.Start(fileName);
         }
 
-        public bool CanLaunchExcel
-        {
-            get
-            {
-                if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+        public bool CanLaunchExcel => IsActiveDocumentConnected();
 
-                return true;
-            }
+        private bool IsActiveDocumentConnected()
+        {
+            if (ActiveDocument == null) return false;
+            if (ActiveDocument.Connection == null) return false;
+            if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+
+            return true;
         }
 
         public void SaveLayout()
@@ -810,6 +809,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // TODO: re-try this code with the latest version of fluent ribbon as currently the layout overlaps when the ResultsTargets collection changes 
             // NotifyOfPropertyChange(() => ResultsTargets);
+        }
+
+        public void Handle(CancelConnectEvent message)
+        {
+            _isConnecting = false;
         }
     }
 }

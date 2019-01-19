@@ -2249,9 +2249,12 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Handle(CancelConnectEvent message)
         {
+            // make sure any other view models know that this document is the active one
+            _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
+
             if (Connection == null) return;
             // refresh the other views with the existing connection details
-            if (Connection.State == ConnectionState.Open) _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));//,IsPowerPivotConnection));
+            if (Connection.State == ConnectionState.Open) _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));
         }
 
         public IResult GetShutdownTask()
@@ -2266,10 +2269,6 @@ namespace DaxStudio.UI.ViewModels
         private void ShutDownTraces()
         {
             ResetTracer();
-            //foreach (var tw in TraceWatchers)
-            //{
-            //    if (tw.IsChecked) { tw.IsChecked = false; }
-            //}
         }
 
         protected virtual void DoCloseCheck( Action<bool> callback)

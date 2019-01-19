@@ -754,7 +754,7 @@
 
             <!-- Advanced Ribbon Tab-->
         <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Fluent:RibbonGroupBox Header="" Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Export" Visibility="{Binding ShowExportGroup, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"
                                    cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
@@ -762,21 +762,37 @@
                                    LargeIcon="{StaticResource ExportMetricsIconLarger}"
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Small"
-                               
+                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
                                    >
                     <Fluent:Button.ToolTip>
-                    <Fluent:ScreenTip Title="Export Metrics"
+                        <Fluent:ScreenTip Title="Export Metrics"
                                    Text="Exports information and metrics about your model to allow for detailed analysis of the model design. This export only includes metadata, no actual data is included."
                                    DisableReason="{Binding ClearCacheDisableReason}"
                                    ></Fluent:ScreenTip>
-            </Fluent:Button.ToolTip>
+                    </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                
+                    <Fluent:Button Name="ExportAllData"
+                                   Header="Export Data"
+                                   cal:Message.Attach="[Event Click] = [Action ExportAllData()]"
+                                   Icon="{StaticResource ExportAllDataIconLarger}"
+                                   LargeIcon="{StaticResource ExportAllDataIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   Visibility="{Binding ShowExportAllData, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   >
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip Title="Export Data"
+                                   Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
+                                   ></Fluent:ScreenTip>
+                        </Fluent:Button.ToolTip>
+                    </Fluent:Button>
+                
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"
                                    Header="SQL Profiler"
                                    cal:Message.Attach="[Event Click] = [Action LaunchSqlProfiler()]"
-                                   
                                    LargeIcon="{StaticResource LaunchProfilerIconLarger}"
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Small"
@@ -808,22 +824,7 @@
 
         <!-- DEBUG Ribbon -->
         <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Fluent:RibbonGroupBox Header="Testing">
-                <Fluent:Button Name="ExportData"
-                                   Header="Export Data"
-                                   cal:Message.Attach="[Event Click] = [Action ExportData()]"
-                                   Icon="{StaticResource ExportMetricsIcon}"
-                                   LargeIcon="{StaticResource ExportMetricsIconLarger}"
-                                   Margin="4,0"
-                                   SizeDefinition="Large,Large,Small"
-                                   >
-                    <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Export Data"
-                                   Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
-                                   ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
-            </Fluent:RibbonGroupBox>
+            
             <Fluent:RibbonGroupBox Header="Window Layout">
                     <Fluent:Button Name="SaveLayout"
                                Header="Save Layout"
