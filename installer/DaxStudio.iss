@@ -15,7 +15,7 @@
 #define MyAppExeName "DaxStudio.exe"
 ; Calculated Constants
 #define MyAppFileVersion StringChange(MyAppVersion, ".", "_")
-#define use_dotnetfx45
+#define use_dotnetfx471
 ;#define use_sql2012sp1amo
 ;#define use_sql2012sp1adomdclient
 #define use_sql2016amo
@@ -118,7 +118,7 @@ Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Descr
 #include "scripts\products\fileversion.iss"
 #include "scripts\products\dotnetfxversion.iss"
 #include "scripts\products\excelversion.iss"
-#include "scripts\products\dotnetfx45.iss"
+#include "scripts\products\dotnetfx47.iss"
 #include "scripts\products\dotnetassembly.iss"
 
 
@@ -336,13 +336,19 @@ else
 #endif
 
 #ifdef use_dotnetfx45
-    
-    //dotnetfx45(2); // min allowed version is .netfx 4.5.2
     if ShouldInstallDependencies() then begin
       Log('Checking if .Net 4.5 is installed');
       dotnetfx45(0); // min allowed version is .netfx 4.5.0
     end;
 #endif
+
+#ifdef use_dotnetfx471 
+    if ShouldInstallDependencies() then begin
+      Log('Checking if .Net 4.7.1 is installed');
+      dotnetfx47(1); // min allowed version is .netfx 4.7.1
+    end;
+#endif
+
 
 #ifdef use_vc2010
 	vcredist2010();

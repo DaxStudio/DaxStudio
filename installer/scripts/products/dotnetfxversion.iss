@@ -1,6 +1,8 @@
+// Using .Net detection logic from: https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
+
 [Code]
 type
-	NetFXType = (NetFx10, NetFx11, NetFx20, NetFx30, NetFx35, NetFx40Client, NetFx40Full, NetFx45);
+	NetFXType = (NetFx10, NetFx11, NetFx20, NetFx30, NetFx35, NetFx40Client, NetFx40Full, NetFx45, NetFx47);
 
 const
 	netfx11plus_reg = 'Software\Microsoft\NET Framework Setup\NDP\';
@@ -31,12 +33,19 @@ begin
 			NetFx40Full:
 				RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Install', regVersion);
 			NetFx45:
-			begin
-				RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Release', regVersion);
-				// >= 4.5.0 and <= 4.5.2
-				Result := (regVersion >= 378389) //and (regVersion <= 379893);
-				Exit;
-			end;
+        begin
+          RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Release', regVersion);
+          // >= 4.5.0 and <= 4.5.2
+          Result := (regVersion >= 378389) //and (regVersion <= 379893);
+          Exit;
+        end;
+      NetFx47:
+        begin
+          RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Release', regVersion);
+          // >= 4.7.2 
+          Result := (regVersion >= 460798) //and (regVersion <= 379893);
+          Exit;
+        end;
 		end;
 		Result := (regVersion <> 0);
 	end;
@@ -46,6 +55,7 @@ function netfxspversion(version: NetFXType; lcid: string): integer;
 var
 	regVersion: cardinal;
 begin
+  Log('starting netfxspversion');
 	if (lcid <> '') then
 		lcid := '\' + lcid;
 
@@ -71,7 +81,7 @@ begin
 		NetFx40Full:
 			if (not RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Servicing', regVersion)) then
 				regVersion := -1;
-		NetFx45:
+		NetFx45:    
 			if (RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Release', regVersion)) then begin
 				if (regVersion = 379893) then
 					regVersion := 2 // 4.5.2
@@ -84,6 +94,21 @@ begin
         else
 					regVersion := -1;
 			end;
+    NetFx47:
+      if (RegQueryDWordValue(HKLM, netfx11plus_reg + 'v4\Full' + lcid, 'Release', regVersion)) then begin
+        Log('Checking for .Net 4.7 found regVersion: ' + IntToStr(regVersion));
+				if (regVersion = 460798) or (regVersion = 460805) then
+				  regVersion := 0 // 4.7.0
+				else if (regVersion = 461308) or (regVersion = 461310) then
+				  regVersion := 1 // 4.7.1
+        else if (regVersion = 461808) or (regVersion = 461814) then
+					regVersion := 2 // 4.7.2
+				else if (regVersion > 461814) then
+					regVersion := 3 // Greater than 4.7.2
+        else
+					regVersion := -1;
+			end;
 	end;
+  Log('function netfxspversion returned: ' + IntToStr(regVersion));
 	Result := regVersion;
 end;

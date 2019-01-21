@@ -35,7 +35,9 @@ namespace DaxStudio.Checker
                 checker.CheckOSInfo();
                 checker.CheckNetFramework();
                 checker.CheckLocalLibrary("AMO", "bin\\Microsoft.AnalysisServices.dll");
+                checker.CheckLibraryExact("Microsoft.AnalysisServices",true);
                 checker.CheckLocalLibrary("ADOMD.NET", "bin\\Microsoft.AnalysisServices.AdomdClient.dll");
+                checker.CheckLibraryExact("Microsoft.AnalysisServices.AdomdClient", true);
                 checker.CheckLibrary("AMO",       "Microsoft.AnalysisServices, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
                 checker.CheckLibrary("ADOMD.NET", "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
                 checker.CheckDaxStudioBindings();

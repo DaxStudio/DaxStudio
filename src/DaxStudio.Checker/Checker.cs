@@ -143,29 +143,36 @@ namespace DaxStudio.Checker
 
             for (int i = minMSLibVer; i <= maxMSLibVer + 2; i++)
             {
-                try
-                {
-                    Assembly assembly = Assembly.Load(string.Format(longNameFormat, i));
-                    if (assembly != null)
-                    {
-                        //Output.Indent();
-                        Output.AppendRange("    PASS > " ).Color("Green").Bold();
-                        Output.AppendLine(assembly.FullName);
-                        
-                        string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
-                        AdomdVersions.Add(new Version(version));
-                    }
-                }
-                catch (Exception exception)
-                {
-                    //Output.Indent();
-                    var result = i == minMSLibVer ? "    FAIL" : "    WARN";
-                    var color = i == minMSLibVer ? "Red" : "Orange";
-                    Output.AppendRange($"{result} > ").Color(color).Bold();
-                    Output.AppendLine(exception.Message);
-                }
+                CheckLibraryExact(string.Format(longNameFormat, i), i == minMSLibVer);
             }
         }
+
+        public void CheckLibraryExact(string assemblyName, bool failOnError)
+        {
+            try
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+                if (assembly != null)
+                {
+                    //Output.Indent();
+                    Output.AppendRange("    PASS > ").Color("Green").Bold();
+                    Output.AppendLine(assembly.FullName);
+                    Output.AppendLine("           " + assembly.Location);
+                    string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
+                    AdomdVersions.Add(new Version(version));
+                }
+            }
+            catch (Exception exception)
+            {
+                //Output.Indent();
+                var result = failOnError ? "    FAIL" : "    WARN";
+                var color = failOnError ? "Red" : "Orange";
+                Output.AppendRange($"{result} > ").Color(color).Bold();
+                Output.AppendLine(exception.Message);
+            }
+        }
+
+        
 
         public void CheckLocalLibrary(string shortName, string relativeFilename)
         {

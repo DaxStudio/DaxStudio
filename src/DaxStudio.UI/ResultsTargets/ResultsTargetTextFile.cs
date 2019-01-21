@@ -17,10 +17,14 @@ namespace DaxStudio.UI.Model
         public string Name => "File";
         public string Group => "Standard";
         public bool IsDefault => false;
-        public bool IsEnabled => true;
+        public bool IsAvailable => true;
         public int DisplayOrder => 300;
         public string Message => "Results will be sent to a Text File";
         public OutputTargets Icon => OutputTargets.File;
+
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
         #endregion
 
         public Task OutputResultsAsync(IQueryRunner runner)

@@ -22,6 +22,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
         , IHandle<ConnectionPendingEvent>
+        , IHandle<CancelConnectEvent>
         , IHandle<ActivateDocumentEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<ApplicationActivatedEvent>
@@ -33,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
         , IHandle<AllDocumentsClosedEvent>
+        , IHandle<RefreshOutputTargetsEvent>
 //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -105,10 +107,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewQueryWithCurrentConnection()
         {
+            if (ActiveDocument == null) return;
+
             var connectionString = "";
-            if (ActiveDocument != null)
-                if (ActiveDocument.IsConnected)
-                    connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
+            if (ActiveDocument.IsConnected)
+                connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
@@ -119,25 +122,25 @@ namespace DaxStudio.UI.ViewModels
 
         public void MergeParameters()
         {
-            ActiveDocument.MergeParameters();
+            ActiveDocument?.MergeParameters();
         }
 
         public void FormatQueryStandard()
         {
-            ActiveDocument.FormatQuery( false );
+            ActiveDocument?.FormatQuery( false );
         }
         public void FormatQueryAlternate()
         {
-            ActiveDocument.FormatQuery( true );
+            ActiveDocument?.FormatQuery( true );
         }
         public void Undo()
         {
-            ActiveDocument.Undo();
+            ActiveDocument?.Undo();
         }
 
         public void Redo()
         {
-            ActiveDocument.Redo();
+            ActiveDocument?.Redo();
         }
 
         public void UncommentSelection()
@@ -231,7 +234,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            ActiveDocument.ClearDatabaseCacheAsync().FireAndForget();
+            ActiveDocument?.ClearDatabaseCacheAsync().FireAndForget();
         }
 
         public bool CanSave => ActiveDocument != null;
@@ -240,17 +243,18 @@ namespace DaxStudio.UI.ViewModels
 
         public void Save()
         {
-            ActiveDocument.Save();
+            ActiveDocument?.Save();
         }
         public void SaveAs()
         {
-            ActiveDocument.SaveAs();
+            ActiveDocument?.SaveAs();
         }
         
 
         public void Connect()
         {
-            ActiveDocument.ChangeConnection();
+            if (ActiveDocument == null) NewQuery();
+            else ActiveDocument.ChangeConnection();
         }
 
         //private bool _canConnect;
@@ -319,13 +323,13 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<IResultsTarget> ResultsTargets { get {
             //return  AvailableResultsTargets.OrderBy<IEnumerable<IResultsTarget>,int>(AvailableResultsTargets, x => x.DisplayOrder).Where(x=> x.IsEnabled.ToList<IResultsTarget>();
             return (from t in AvailableResultsTargets
-                    where t.IsEnabled
+                    where t.IsAvailable
                     select t).OrderBy(x => x.DisplayOrder).AsEnumerable<IResultsTarget>();
         } }
 
         private IResultsTarget _selectedTarget;
         private bool _queryRunning;
-        private QueryTraceStatus _traceStatus;
+        private QueryTraceStatus _traceStatus = QueryTraceStatus.Stopped;
         private StatusBarMessage _traceMessage;
         // default to first target if none currently selected
         public IResultsTarget SelectedTarget {
@@ -367,6 +371,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanConnect);
             NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
             NotifyOfPropertyChange(() => CanLaunchExcel);
+            NotifyOfPropertyChange(() => CanExportAllData);
+            NotifyOfPropertyChange(() => CanExportAnalysisData);
 
             if (!ActiveDocument.IsConnected)
             {
@@ -540,22 +546,22 @@ namespace DaxStudio.UI.ViewModels
 
         public void Find()
         {
-            _activeDocument.Find();
+            _activeDocument?.Find();
         }
 
         public void GotoLine()
         {
-            _activeDocument.GotoLine();
+            _activeDocument?.GotoLine();
         }
 
         public void Replace()
         {
-            _activeDocument.Replace();
+            _activeDocument?.Replace();
         }
 
         public void RefreshMetadata()
         {
-            _activeDocument.RefreshMetadata();
+            ActiveDocument?.RefreshMetadata();
         }
 
         public bool CanRefreshMetadata
@@ -565,13 +571,15 @@ namespace DaxStudio.UI.ViewModels
 
         internal void FindNow()
         {
-            _activeDocument.FindReplaceDialog.SearchUp = false;
-            _activeDocument.FindReplaceDialog.FindText();
+            if (ActiveDocument == null) return;
+            ActiveDocument.FindReplaceDialog.SearchUp = false;
+            ActiveDocument.FindReplaceDialog.FindText();
         }
         internal void FindPrevNow()
         {
-            _activeDocument.FindReplaceDialog.SearchUp = true;
-            _activeDocument.FindReplaceDialog.FindText();
+            if (ActiveDocument == null) return;
+            ActiveDocument.FindReplaceDialog.SearchUp = true;
+            ActiveDocument.FindReplaceDialog.FindText();
         }
 
         public bool ServerTimingsChecked { get { return ActiveDocument?.ServerTimingsChecked??false; } }
@@ -645,7 +653,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SwapDelimiters()
         {
-            ActiveDocument.SwapDelimiters();
+            ActiveDocument?.SwapDelimiters();
         }
 
         public bool IsDebugBuild
@@ -668,6 +676,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool ShowExportGroup => ShowExportAllData | ShowExportMetrics;
 
         private bool _showExternalTools;
         public bool ShowExternalTools
@@ -690,6 +699,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportAllData = value;
                 NotifyOfPropertyChange(() => ShowExportAllData);
+                NotifyOfPropertyChange(() => ShowExportGroup);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
@@ -700,6 +710,7 @@ namespace DaxStudio.UI.ViewModels
             private set {
                 _showExportMetrics = value;
                 NotifyOfPropertyChange(() => ShowExportMetrics);
+                NotifyOfPropertyChange(() => ShowExportGroup);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
@@ -714,13 +725,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool CanExportAnalysisData => IsActiveDocumentConnected();
+
         public void ExportAnalysisData()
         {
-            _activeDocument.ExportAnalysisData();
+            ActiveDocument?.ExportAnalysisData();
         }
 
-        public void ExportData()
+        public bool CanExportAllData => IsActiveDocumentConnected();
+
+        public void ExportAllData()
         {
+            if (ActiveDocument == null) return;
+
             var dialog = new ExportDataDialogViewModel(_eventAggregator);
 
             dialog.ActiveDocument = _activeDocument;
@@ -751,24 +768,16 @@ namespace DaxStudio.UI.ViewModels
 
         public void LaunchSqlProfiler()
         {
+            if (ActiveDocument == null) return;
             var serverName = ActiveDocument.Connection.ServerName;
             System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
         }
 
-        public bool CanLaunchSqlProfiler
-        {
-            get
-            {
-                if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
-
-                return !string.IsNullOrEmpty(_sqlProfilerCommand);
-            }
-        }
+        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected();
 
         public void LaunchExcel()
         {
+            if (ActiveDocument == null) return;
             var conn = ActiveDocument.Connection;
             var datasource = conn.ServerName;
             var database = conn.Database.Name;
@@ -778,16 +787,15 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Process.Start(fileName);
         }
 
-        public bool CanLaunchExcel
-        {
-            get
-            {
-                if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+        public bool CanLaunchExcel => IsActiveDocumentConnected();
 
-                return true;
-            }
+        private bool IsActiveDocumentConnected()
+        {
+            if (ActiveDocument == null) return false;
+            if (ActiveDocument.Connection == null) return false;
+            if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+
+            return true;
         }
 
         public void SaveLayout()
@@ -827,6 +835,17 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(AllDocumentsClosedEvent message)
         {
             this.ActiveDocument = null;
+        }
+
+        public void Handle(RefreshOutputTargetsEvent message)
+        {
+            // TODO: re-try this code with the latest version of fluent ribbon as currently the layout overlaps when the ResultsTargets collection changes 
+            // NotifyOfPropertyChange(() => ResultsTargets);
+        }
+
+        public void Handle(CancelConnectEvent message)
+        {
+            _isConnecting = false;
         }
     }
 }

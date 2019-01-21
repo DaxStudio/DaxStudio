@@ -78,8 +78,9 @@ namespace DaxStudio.UI.ViewModels
             DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
             ScaleResultsFontWithEditor = RegistryHelper.GetValue<bool>("ScaleResultsFontWithEditor", true);
             // Preview Feature Toggles
-            ShowExportMetrics = RegistryHelper.GetValue<bool>("ShowExportMetrics", false);
-            ShowExternalTools = RegistryHelper.GetValue<bool>("ShowExternalTools", false);
+            ShowExportMetrics = RegistryHelper.GetValue<bool>(nameof(ShowExportMetrics), false);
+            ShowExternalTools = RegistryHelper.GetValue<bool>(nameof(ShowExternalTools), false);
+            ShowExportAllData = RegistryHelper.GetValue<bool>(nameof(ShowExportAllData), false);
             ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
             Theme = RegistryHelper.GetValue<string>("Theme", "Light");
             ResultAutoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false);

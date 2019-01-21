@@ -31,9 +31,13 @@ namespace DaxStudio.UI.Model
         public string Group => "Standard";
         public int DisplayOrder => 10;
         public bool IsDefault => true;
-        public bool IsEnabled => true;
+        public bool IsAvailable => true;
         public string Message => string.Empty;
         public OutputTargets Icon => OutputTargets.Grid;
+
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
         #endregion
 
         // This is the core method that handles the output of the results
