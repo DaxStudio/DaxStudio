@@ -15,6 +15,10 @@ using System.Drawing;
 using System.Linq;
 using System;
 using DaxStudio.UI.Views;
+using UnitComboLib.ViewModel;
+using System.Collections.ObjectModel;
+using UnitComboLib.Unit.Screen;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -29,6 +33,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelQueryEvent>
         , IHandle<QueryFinishedEvent>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<SizeUnitsUpdatedEvent>
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
@@ -43,6 +48,9 @@ namespace DaxStudio.UI.ViewModels
             //_eventAggregator.Subscribe(this);
             _host = host;
             _options = options;
+            var items = new ObservableCollection<ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
+            SizeUnits = new UnitViewModel(items, new ScreenConverter(_options.ResultFontSize), 0);
+            //UpdateSettings();
         }
 
         public QueryResultsPaneViewModel(DataTable resultsTable)
@@ -171,6 +179,25 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public double _fontSize = 20;
+        public double FontSize {
+            get { return _fontSize; }
+            set {
+                _fontSize = value;
+                NotifyOfPropertyChange(() => FontSize);
+            }
+        }
+
+        public string _fontFamily = "Arial";
+        public string FontFamily
+        {
+            get { return _fontFamily; }
+            set
+            {
+                _fontFamily = value;
+                NotifyOfPropertyChange(() => FontFamily);
+            }
+        }
 
         public void Handle(QueryResultsPaneMessageEvent message)
         {
@@ -343,10 +370,20 @@ namespace DaxStudio.UI.ViewModels
             return null;
         }
 
+        public UnitViewModel SizeUnits { get; set; }
+
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(() => ClipboardCopyMode);
-            
+            UpdateSettings();
+        }
+        
+        public void Handle(SizeUnitsUpdatedEvent message)
+        {
+            if (_options.ScaleResultsFontWithEditor)
+            {
+                SizeUnits.Value = message.Units.Value;
+                NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
+            }
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode
@@ -355,6 +392,28 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_options.ExcludeHeadersWhenCopyingResults) return DataGridClipboardCopyMode.ExcludeHeader;
                 return DataGridClipboardCopyMode.IncludeHeader;
+            }
+        }
+
+        protected override void OnViewLoaded(object view)
+        {
+            UpdateSettings();
+        }
+
+        private void UpdateSettings()
+        {
+            NotifyOfPropertyChange(() => ClipboardCopyMode);
+
+            if (FontSize != _options.ResultFontSize)
+            {
+                FontSize = _options.ResultFontSize;
+                this.SizeUnits.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                this.SizeUnits.Value = 100;
+                NotifyOfPropertyChange(() => SizeUnits);
+            }
+            if (FontFamily != _options.ResultFontFamily)
+            {
+                FontFamily = _options.ResultFontFamily;
             }
         }
     }

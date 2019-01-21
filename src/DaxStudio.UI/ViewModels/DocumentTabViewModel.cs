@@ -7,6 +7,13 @@ using Microsoft.Win32;
 using Serilog;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Enums;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using DaxStudio.UI.Model;
+using DaxStudio.UI.Extensions;
+using System.Windows;
+using System.Linq;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -23,9 +30,11 @@ namespace DaxStudio.UI.ViewModels
 
     [Export(typeof(IConductor))]
     public class DocumentTabViewModel : Conductor<IScreen>.Collection.OneActive
+        , IHandle<AutoSaveRecoveryEvent>
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
         , IHandle<OpenRecentFileEvent>
+        , IHandle<RecoverNextAutoSaveFileEvent>
         , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
     {
@@ -33,6 +42,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private int _documentCount = 1;
         private DocumentViewModel _activeDocument;
+        private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
@@ -42,20 +52,10 @@ namespace DaxStudio.UI.ViewModels
             _documentFactory = documentFactory;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
-            //NewQueryDocument(); // load a blank query window at startup
             _eventAggregator.Subscribe(this);
-
         }
 
-
-        //[Import(typeof (Func<DocumentViewModel>))] 
-        //private Func<DocumentViewModel> CreateDocument;
-
-        //private readonly Func<DocumentViewModel> createDocument;
-
-
-        //public DocumentViewModel ActiveContent { get; set; }
-
+        
         public DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }
@@ -73,33 +73,100 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-        public void NewQueryDocument()
+        //public void NewQueryDocument()
+        //{
+        //    NewQueryDocument(string.Empty, string.Empty);
+        //}
+
+        public void NewQueryDocument(string fileName)
         {
-            NewQueryDocument(string.Empty);
+            NewQueryDocument(fileName, null);
         }
 
-        public void NewQueryDocument( string fileName)
+        public void NewQueryDocument( string fileName, DocumentViewModel sourceDocument)
+        {
+            // 1 Open BlankDocument
+            if (string.IsNullOrEmpty(fileName)) OpenNewBlankDocument(sourceDocument);
+            // 2 Open Document in current window (if it's an empty document)
+            else if (!ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
+            // 3 Open Document in a new window if current window has content
+            else OpenFileInNewWindow(fileName);           
+            
+        }
+
+        private void RecoverAutoSaveFile(AutoSaveIndexEntry file)
+        {
+            
+            var newDoc = _documentFactory(_windowManager, _eventAggregator);
+            using (new StatusBarMessage(newDoc, $"Recovering \"{file.DisplayName}\""))
+            {
+                newDoc.DisplayName = file.DisplayName;
+                newDoc.IsDiskFileName = file.IsDiskFileName;
+                newDoc.FileName = file.OriginalFileName;
+                newDoc.AutoSaveId = file.AutoSaveId;
+                newDoc.State = DocumentState.RecoveryPending;
+
+                Items.Add(newDoc);
+                ActivateItem(newDoc);
+                ActiveDocument = newDoc;
+                newDoc.IsDirty = true;
+
+                file.ShouldOpen = false;
+                //_eventAggregator.PublishOnUIThreadAsync(message);
+
+                //return newDoc;
+
+                // hack - need to wait for the document to load properly
+                // otherwise the view model only appears to be semi-loaded
+                // and we get errors when the auto save timer kicks in 
+                //while (newDoc.State != DocumentState.Loaded)
+                //{
+                //    Thread.Sleep(100);
+                //    Log.Verbose("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", "Waiting for document to reach the loaded state");
+                //}
+                Log.Information("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"AutoSave Recovery complete for {file.DisplayName} ({file.AutoSaveId})");
+            }
+        }
+
+        private void OpenFileInNewWindow(string fileName)
         {
 
-            var newDoc = _documentFactory(_windowManager, _eventAggregator);         
+            var newDoc = _documentFactory(_windowManager, _eventAggregator);
             Items.Add(newDoc);
             ActivateItem(newDoc);
             ActiveDocument = newDoc;
+                       
+            newDoc.DisplayName = "Opening...";
+            newDoc.FileName = fileName;
+            newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
             
-            if (fileName != string.Empty)
-            {
-                newDoc.DisplayName = "Opening...";
-                newDoc.FileName = fileName;
-                newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
-            }
-            else
-            {
-                var newFileName = string.Format("Query{0}.dax", _documentCount);
-                _documentCount++;
-                newDoc.DisplayName = newFileName;
-                new System.Action(ChangeConnection).BeginOnUIThread();    
-            }
+        }
+
+        private void OpenFileInActiveDocument(string fileName)
+        {
+            ActiveDocument.FileName = fileName;
+            ActiveDocument.LoadFile();
+        }
+
+        private void OpenNewBlankDocument(DocumentViewModel sourceDocument)
+        {
+
+            var newDoc = _documentFactory(_windowManager, _eventAggregator);
+            
+            Items.Add(newDoc);
+            ActivateItem(newDoc);
+            ActiveDocument = newDoc;
+            newDoc.DisplayName = string.Format("Query{0}.dax", _documentCount);
+            _documentCount++;
+            
             new System.Action(CleanActiveDocument).BeginOnUIThread();
+
+            if (sourceDocument == null)
+                new System.Action(ChangeConnection).BeginOnUIThread();
+            else {
+                _eventAggregator.PublishOnUIThread(new CopyConnectionEvent(sourceDocument));
+            }
+            
         }
 
         private void CleanActiveDocument()
@@ -115,7 +182,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(NewDocumentEvent message)
         {
-            NewQueryDocument();
+            NewQueryDocument("",message.ActiveDocument);
         }
 
         public void Handle(OpenFileEvent message)
@@ -156,6 +223,8 @@ namespace DaxStudio.UI.ViewModels
             args.Cancel = true; // cancel the default tab close action as we want to call 
 
             doc.TryClose();     // TryClose and give the document a chance to block the close
+
+            if (this.Items.Count == 0) _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
         }
 
         public void Activate(object document)
@@ -174,6 +243,76 @@ namespace DaxStudio.UI.ViewModels
             {
                 var doc = itm as DocumentViewModel;
                 doc.UpdateSettings();
+            }
+        }
+
+        public void Handle(AutoSaveRecoveryEvent message)
+        {
+            _autoSaveRecoveryIndex = message.AutoSaveMasterIndex;
+
+            if (!message.RecoveryInProgress)
+            {
+                // if auto save recovery is not already in progress 
+                // prompt the user for which files should be recovered
+                var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
+
+                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover).SelectMany(entry => entry.Files);
+                autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover);
+
+                _windowManager.ShowDialogBox(autoSaveRecoveryDialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+
+                });
+
+                if (autoSaveRecoveryDialog.Result != OpenDialogResult.Cancel)
+                {
+                    message.RecoveryInProgress = true;
+
+                    var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
+
+                    if (fileToOpen != null)
+                    {
+                        // the first file will mark itself as opened then re-publish the message 
+                        // to open the next file (if there is one)
+                        RecoverAutoSaveFile(fileToOpen);
+                    }
+                }
+
+            }
+
+            // TODO - maybe move this to a RecoverNextFile message and store the files to recover in a private var
+            //        then at the end of the ViewLoaded event we can trigger this event and run code like the
+            //        section below
+
+            
+        }
+
+        public void Handle(RecoverNextAutoSaveFileEvent message)
+        {
+            
+            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
+
+            if (fileToOpen != null)
+            {
+                // the first file will mark itself as opened then re-publish the message 
+                // to open the next file (if there is one)
+                RecoverAutoSaveFile(fileToOpen);
+            }
+            else
+            {
+
+                // if no files have been opened open a new blank document
+                if (Items.Count == 0) OpenNewBlankDocument(null);
+
+                
+                // Now that any files have been recovered start the auto save timer
+                _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                
             }
         }
     }

@@ -2,7 +2,6 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
@@ -17,26 +16,35 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetGrid: IResultsTarget 
     {
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IGlobalOptions _options;
 
         [ImportingConstructor]
-        public ResultsTargetGrid(IEventAggregator eventAggregator)
+        public ResultsTargetGrid(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
-        }
-        public string Name {get { return "Grid"; }
-        }
-        public string Group {get { return "Standard"; }
+            _options = options;
         }
 
-         
-        public int DisplayOrder
-        {
-            get { return 10; }
-        }
+        #region Standard Properties
+        public string Name => "Grid";
+        public string Group => "Standard";
+        public int DisplayOrder => 10;
+        public bool IsDefault => true;
+        public bool IsAvailable => true;
+        public string Message => string.Empty;
+        public OutputTargets Icon => OutputTargets.Grid;
 
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
+        #endregion
+
+        // This is the core method that handles the output of the results
         public Task OutputResultsAsync(IQueryRunner runner)
         {
+            // Read the AutoFormat option from the options singleton
+            bool autoFormat = _options.ResultAutoFormat;
             return Task.Run(() =>
                 {
                     long durationMs = 0;
@@ -53,7 +61,7 @@ namespace DaxStudio.UI.Model
                             if (dataReader != null)
                             {
                                 Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                                runner.ResultsDataSet = dataReader.ConvertToDataSet();
+                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat);
                                 Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
 
                                 sw.Stop();
@@ -69,46 +77,29 @@ namespace DaxStudio.UI.Model
                                 runner.RowCount = rowCnt;
                                 // activate the result only when Counters are not selected...
                                 runner.ActivateResults();
+                                runner.OutputMessage("Query Batch Completed", durationMs);
                             }
+                            else
+                                runner.OutputError("Query Batch Completed with errors", durationMs);
+
                         }
+                        
                     }
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
+                        runner.OutputError("Query Batch Completed with erros", durationMs);
                     }
                     finally
                     {
-                        runner.OutputMessage("Query Batch Completed", durationMs);
+                        
                         runner.QueryCompleted();
                     }
                 });
         }
 
-
-
-
-        public bool IsDefault
-        {
-            get { return true; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-
-
-        public string Message
-        {
-            get { return string.Empty;}
-        }
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.Grid; }
-        }
     }
-
 
 }

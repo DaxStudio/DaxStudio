@@ -47,6 +47,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToggleShouldSave(ISaveable item)
         {
+            // it's possible to click on the edge of the listview
+            // and generate this event with a null item
+            // in this case we ignore the click and return immediately
+            if (item == null) return;
+
             item.ShouldSave = !item.ShouldSave;
         }
 

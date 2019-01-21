@@ -92,8 +92,8 @@ namespace DaxStudio.UI.ViewModels
         private bool HistoryFilter(object queryHistoryEvent)
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
-            return (qhe.ServerName == _currentDocument.ServerName || !IsFilteredByServer)
-                && (qhe.DatabaseName == _currentDocument.SelectedDatabase || !IsFilteredByDatabase);
+            return (string.Compare( qhe.ServerName, _currentDocument.ServerName, true)==0 || !IsFilteredByServer)
+                && (string.Compare(qhe.DatabaseName,  _currentDocument.SelectedDatabase, true) == 0 || !IsFilteredByDatabase);
         }
 
         public ICollectionView QueryHistory

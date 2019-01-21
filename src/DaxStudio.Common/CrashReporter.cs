@@ -10,16 +10,14 @@ namespace DaxStudio.UI.Utils
         
         public static void ReportCrash(Exception exception, string developerMessage)
         {
-            var reportCrash = new ReportCrash
+            var reportCrash = new ReportCrash("daxstudiocrash@gmail.com")
             {
-                CurrentCulture = new CultureInfo("en-US"),
                 AnalyzeWithDoctorDump = true,
                 DeveloperMessage = developerMessage,
-                ToEmail = "daxstudiocrash@gmail.com",
                 DoctorDumpSettings = new DoctorDumpSettings()
                 {
                     ApplicationID = applicationID,
-                    OpenReportInBrowser = false,
+                    OpenReportInBrowser = true,  // open DrDump report page
                     SendAnonymousReportSilently = true
                 }
             };

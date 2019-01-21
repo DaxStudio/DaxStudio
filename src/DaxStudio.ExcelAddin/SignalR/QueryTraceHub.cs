@@ -57,7 +57,7 @@ namespace DaxStudio
                         {
                             connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
+                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                             _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                             _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
@@ -87,7 +87,7 @@ namespace DaxStudio
                 }
             }
 
-            public void StartAsync()
+            public void StartAsync(int startTimeoutSecs)
             {
 
                 if (QueryTraceHub._xlEngine != null)
@@ -96,7 +96,7 @@ namespace DaxStudio
                     // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
                     VoidDelegate f = delegate
                     {
-                        QueryTraceHub._xlEngine.StartAsync().ContinueWith((x) =>
+                        QueryTraceHub._xlEngine.StartAsync(startTimeoutSecs).ContinueWith((x) =>
                         {
                             if (x.IsFaulted)
                             {
@@ -126,7 +126,7 @@ namespace DaxStudio
                 else if (QueryTraceHub._engine != null)
                 {
                     // server or Excel 2010 based traces
-                    QueryTraceHub._engine.StartAsync().ContinueWith((x) =>
+                    QueryTraceHub._engine.StartAsync(startTimeoutSecs).ContinueWith((x) =>
                     {
                         if (x.IsFaulted)
                         {

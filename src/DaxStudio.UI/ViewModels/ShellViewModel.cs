@@ -9,13 +9,20 @@ using DaxStudio.UI.Model;
 using Serilog;
 using System.Windows;
 using DaxStudio.Common;
+using System.Timers;
+using System.Linq;
+using System.Collections.Generic;
 
-namespace DaxStudio.UI.ViewModels {
+namespace DaxStudio.UI.ViewModels
+{
     [Export(typeof (IShell))]
     public class ShellViewModel : 
         Screen, 
         IShell,
-        IHandle<NewVersionEvent>
+        IHandle<NewVersionEvent>,
+        IHandle<AutoSaveEvent>,
+        IHandle<StartAutoSaveTimerEvent>,
+        IHandle<StopAutoSaveTimerEvent>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -23,6 +30,7 @@ namespace DaxStudio.UI.ViewModels {
         private NotifyIcon notifyIcon;
         private Window _window;
         private Application _app;
+        private Timer _autoSaveTimer;
 
         //private ILogger log;
         [ImportingConstructor]
@@ -41,14 +49,25 @@ namespace DaxStudio.UI.ViewModels {
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             _app = Application.Current;
-            if (_host.CommandLineFileName != string.Empty)
-            {
-                Tabs.NewQueryDocument(_host.CommandLineFileName);
-            }
+
+            // TODO - get master auto save indexes and only get crashed index files...
+
+            // check for auto-saved files and offer to recover them
+            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
+            if (autoSaveInfo.Values.Where(idx => idx.ShouldRecover).Count() > 0)
+                RecoverAutoSavedFiles(autoSaveInfo);
             else
             {
-                Tabs.NewQueryDocument();
+                // if a filename was passed in on the command line open it
+                if (_host.CommandLineFileName != string.Empty) Tabs.NewQueryDocument(_host.CommandLineFileName);
+
+                // if no tabs are open at this point open a blank one
+                if (Tabs.Items.Count == 0) NewDocument();
+
+                // if there are no auto-save files to recover, start the auto save timer
+                eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
             }
+
             VersionChecker = versionCheck;
 
 #if PREVIEW
@@ -58,9 +77,34 @@ namespace DaxStudio.UI.ViewModels {
 #endif
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
+
+            _autoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
+            _autoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
+            
         }
 
-        
+        private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
+        {
+            Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
+            // TODO - show recovery dialog
+            _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
+            
+        }
+
+        private async void AutoSaveTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                await AutoSaver.Save(Tabs);
+            }
+            catch (Exception ex)
+            {
+                // we just catch and log any errors, we don't want the autosave timer to be
+                // the cause of any crashes itself
+                Log.Error(ex, "{class} {method} {message}", "ShellViewModel", "AutoSaveTimerElapsed", ex.Message);
+            }
+        }
+
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
@@ -87,6 +131,8 @@ namespace DaxStudio.UI.ViewModels {
             {
                 Ribbon.OnClose();
                 notifyIcon?.Dispose();
+                _autoSaveTimer.Enabled = false;
+                AutoSaver.RemoveAll();
             }
         }
         //public override void TryClose()
@@ -128,6 +174,7 @@ namespace DaxStudio.UI.ViewModels {
             //Properties.Settings.Default.Save();
             RegistryHelper.SetWindowPosition(w.GetPlacement());
             _window.Closing -= windowClosing;
+
         }
 
         public override void CanClose(Action<bool> callback)
@@ -135,12 +182,19 @@ namespace DaxStudio.UI.ViewModels {
             Tabs.CanClose(callback);
         }
 
+        #region Event Handlers
         public void Handle(NewVersionEvent message)
         {           
             var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             notifyIcon.Notify(newVersionText, message.DownloadUrl);
         }
+
+        public void Handle(AutoSaveEvent message)
+        {
+            AutoSaver.Save(Tabs).AsResult();
+        }
+        #endregion
 
         public void ShowLoggingEnabledNotification()
         {
@@ -192,9 +246,14 @@ namespace DaxStudio.UI.ViewModels {
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(Ribbon.SelectedTarget));
         }
 
+        public void NewDocumentWithCurrentConnection()
+        {
+            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(Ribbon.SelectedTarget,Ribbon.ActiveDocument));
+        }
+
         public void OpenDocument()
         {
-            _eventAggregator.PublishOnUIThread(new OpenFileEvent());
+            _eventAggregator.PublishOnUIThread(new OpenFileEvent() );
         }
 
         public void SelectionToUpper()
@@ -227,6 +286,11 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.Redo();
         }
 
+        public void GotoLine()
+        {
+            Ribbon.GotoLine();
+        }
+
         public void Find()
         {
             Ribbon.FindNow();
@@ -237,9 +301,13 @@ namespace DaxStudio.UI.ViewModels {
             Ribbon.FindPrevNow();
         }
 
-        public void FormatQuery()
+        public void FormatQueryAlternate()
         {
-            Ribbon.FormatQuery();
+            Ribbon.FormatQueryAlternate();
+        }
+        public void FormatQueryStandard()
+        {
+            Ribbon.FormatQueryStandard();
         }
 
         public void SwapDelimiters()
@@ -252,7 +320,21 @@ namespace DaxStudio.UI.ViewModels {
             System.Diagnostics.Debug.WriteLine("HotKey" + param.ToString());
         }
 
-#endregion
+        public void Handle(StartAutoSaveTimerEvent message)
+        {
+            Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StartAutoSaveTimer>", "AutoSave Timer Starting");
+            _autoSaveTimer.Enabled = true;
+        }
+
+        public void Handle(StopAutoSaveTimerEvent message)
+        {
+            Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StopAutoSaveTimer>", "AutoSave Timer Stopping");
+            _autoSaveTimer.Enabled = false;
+        }
+
+        #endregion
+
+
     }
 
 

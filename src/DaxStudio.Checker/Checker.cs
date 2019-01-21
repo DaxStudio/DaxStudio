@@ -138,32 +138,69 @@ namespace DaxStudio.Checker
         public void CheckLibrary(string shortName, string longNameFormat)
         {
             //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"
-            Output.AppendHeaderLine($"Checking {shortName}");
+            Output.AppendHeaderLine($"Checking {shortName} (GAC)");
             Output.AppendLine("=======================");
 
             for (int i = minMSLibVer; i <= maxMSLibVer + 2; i++)
             {
-                try
-                {
-                    Assembly assembly = Assembly.Load(string.Format(longNameFormat, i));
-                    if (assembly != null)
-                    {
-                        //Output.Indent();
-                        Output.AppendRange("    PASS > " ).Color("Green").Bold();
-                        Output.AppendLine(assembly.FullName);
-                        
-                        string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
-                        AdomdVersions.Add(new Version(version));
-                    }
-                }
-                catch (Exception exception)
+                CheckLibraryExact(string.Format(longNameFormat, i), i == minMSLibVer);
+            }
+        }
+
+        public void CheckLibraryExact(string assemblyName, bool failOnError)
+        {
+            try
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+                if (assembly != null)
                 {
                     //Output.Indent();
-                    var result = i == minMSLibVer ? "    FAIL" : "    WARN";
-                    var color = i == minMSLibVer ? "Red" : "Orange";
-                    Output.AppendRange($"{result} > ").Color(color).Bold();
-                    Output.AppendLine(exception.Message);
+                    Output.AppendRange("    PASS > ").Color("Green").Bold();
+                    Output.AppendLine(assembly.FullName);
+                    Output.AppendLine("           " + assembly.Location);
+                    string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
+                    AdomdVersions.Add(new Version(version));
                 }
+            }
+            catch (Exception exception)
+            {
+                //Output.Indent();
+                var result = failOnError ? "    FAIL" : "    WARN";
+                var color = failOnError ? "Red" : "Orange";
+                Output.AppendRange($"{result} > ").Color(color).Bold();
+                Output.AppendLine(exception.Message);
+            }
+        }
+
+        
+
+        public void CheckLocalLibrary(string shortName, string relativeFilename)
+        {
+            Output.AppendHeaderLine($"Checking {shortName} (Local)");
+            Output.AppendLine("=======================");
+            var fullPath = Path.GetFullPath(relativeFilename);
+            Output.AppendRange("    Attempting to load: ");
+            Output.AppendLine(fullPath);
+            try
+            {
+                Assembly assembly = Assembly.LoadFile(fullPath);
+                if (assembly != null)
+                {
+                    //Output.Indent();
+                    Output.AppendRange("    PASS > ").Color("Green").Bold();
+                    Output.AppendLine(assembly.FullName);
+
+                    string version = this.reVer.Match(assembly.FullName).Groups["ver"].Value;
+                    AdomdVersions.Add(new Version(version));
+                }
+            }
+            catch (Exception exception)
+            {
+                //Output.Indent();
+                var result =  "    FAIL" ;
+                var color = "Red";
+                Output.AppendRange($"{result} > ").Color(color).Bold();
+                Output.AppendLine(exception.Message);
             }
         }
 
@@ -187,7 +224,11 @@ namespace DaxStudio.Checker
                     Output.AppendRange("      WARN > ").Bold().Color("Orange");
                     Output.AppendLine("Dax Studio registry 'Path' value not found.");
                     str = DEFAULT_DAX_STUDIO_PATH;
-                    Output.AppendIndentedLine($"  Attempting to use default installation path: {str}");
+
+                    string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+                    var directory = Path.GetDirectoryName(path);
+                    str = Path.Combine(directory, "daxstudio.exe");
+                    Output.AppendIndentedLine($"  Attempting to use current path: {str}");
                 }
 
             }
@@ -268,10 +309,41 @@ namespace DaxStudio.Checker
             ListDisabledExcelAddins("2016", 16);
 
             Output.AppendLine();
+            CheckForPowerPivotAddin();
+
+            Output.AppendLine();
             TestLoadingOfExcelAddin();
 
             // Check VSTO
             CheckVSTO();
+        }
+
+        private void CheckForPowerPivotAddin()
+        {
+            var addinKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Office\Excel\Addins");
+            if (addinKey != null)
+            {
+                var subKeys = addinKey.GetSubKeyNames();
+                string addinName = "";
+                for (int i = 0; i < subKeys.Length;i++)
+                {
+                    var subkey = addinKey.OpenSubKey(subKeys[i]);
+                    addinName = subkey.GetValue("FriendlyName")?.ToString();
+                    if (addinName != null && addinName.IndexOf("Power Pivot") > 0)
+                    {
+                        Output.AppendRange("      PASS > ").Color("Green").Bold();
+                        Output.AppendLine($" Found Excel Addin: {addinName}");
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(addinName))
+                {
+                    Output.AppendRange("      ERROR > ").Color("Red").Bold();
+                    Output.AppendLine(" could not locate the Excel Power Pivot add-in");
+                }
+
+            }
+
         }
 
         private void CheckVSTO()
@@ -287,21 +359,29 @@ namespace DaxStudio.Checker
             if (basekey == null)
             {
                 is64 = false;
-                basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
                 keyPath = @"SOFTWARE\Microsoft\VSTO Runtime Setup";
             }
             var arch = is64 ? "x64" : "x86";
             Output.AppendIndentedLine($"Architecture: {arch}");
             key = basekey.OpenSubKey(keyPath);
 
-//            Output.AppendRange("").Indent(20);
-            foreach (var subkeyName in key.GetSubKeyNames())
+            //            Output.AppendRange("").Indent(20);
+            if (key == null)
             {
-                var subkey = key.OpenSubKey(subkeyName);
-                Output.AppendIndentedLine($"  {subkeyName}");
-                foreach (var valName in subkey.GetValueNames())
+                Output.AppendRange("      WARN > ").Bold().Color("Orange");
+                Output.AppendLine($"Unable to open {keyPath}");
+            }
+            else
+            {
+                foreach (var subkeyName in key.GetSubKeyNames())
                 {
-                    Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
+                    var subkey = key.OpenSubKey(subkeyName);
+                    Output.AppendIndentedLine($"  {subkeyName}");
+                    foreach (var valName in subkey.GetValueNames())
+                    {
+                        Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName)}");
+                    }
                 }
             }
         }
@@ -449,13 +529,13 @@ namespace DaxStudio.Checker
             XmlNodeList list = document.SelectNodes("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly", nsmgr);
             Output.AppendIndentedLine( $"Bindings Found: {list.Count}");
 
-            XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices']", nsmgr);
-            GetBindingRedirect(document, nsmgr, node, "AMO", "13.0.0.0");
+            XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices.Core']", nsmgr);
+            GetBindingRedirect(document, nsmgr, node, "AMO");
             node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices.AdomdClient']", nsmgr);
-            GetBindingRedirect(document, nsmgr, node, "ADOMD", "13.0.0.0");
+            GetBindingRedirect(document, nsmgr, node, "ADOMD");
         }
 
-        private void GetBindingRedirect(XmlDocument document, XmlNamespaceManager nsmgr, XmlNode node, string libraryName, string libraryDefaultVersion)
+        private void GetBindingRedirect(XmlDocument document, XmlNamespaceManager nsmgr, XmlNode node, string libraryName)
         {
             if (node != null)
             {
@@ -464,7 +544,7 @@ namespace DaxStudio.Checker
             }
             else
             {
-                Output.AppendIndentedLine($"{libraryName} : {libraryDefaultVersion} <default>");
+                Output.AppendIndentedLine($"{libraryName} : <default>");
             }
         }
 

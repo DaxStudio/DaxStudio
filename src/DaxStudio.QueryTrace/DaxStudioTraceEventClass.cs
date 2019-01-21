@@ -67,5 +67,6 @@
         CalculationEvaluation = 110,
         CalculationEvaluationDetailedInformation = 111,
         DAXQueryPlan = 112,
+        AggregateTableRewriteQuery = 131 // Aggregate Table Rewrite Query
     }
 }

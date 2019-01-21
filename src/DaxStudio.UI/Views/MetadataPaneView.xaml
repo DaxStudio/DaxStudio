@@ -169,9 +169,8 @@
         </Grid.RowDefinitions>
         <!-- database Dropdown -->
         <ComboBox Grid.Row="0" x:Name="Database" 
-            SelectedItem="{Binding SelectedDatabase}"
-            SelectedValuePath="Name"
-            ItemsSource="{Binding DatabasesView}"   
+            SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
             MinWidth="160" 
             Template="{DynamicResource MetroComboBoxControlTemplate}"
             IsEditable="False"
@@ -187,6 +186,7 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
+        <!-- SelectedValuePath="Name" -->
         <!-- Model Dropdown -->
         <ComboBox Grid.Row="1" 
                   IsEditable="False"
@@ -245,9 +245,9 @@
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
                                         <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" Text="{Binding CriteriaMatched}"/>
+                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="250">
                                                             <StackPanel Orientation="Horizontal">
@@ -266,6 +266,24 @@
                                                         </StackPanel>
                                                     </TextBlock.ToolTip>    
                                                 </TextBlock>
+                                        <StackPanel.ContextMenu>
+                                            <ContextMenu 
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsTable }"
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                <MenuItem Header="Define Filter Dump Measure"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureOneTable($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define Filter Dump Measure (All tables)"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineFilterDumpMeasureAllTables($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define All Measures"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresOneTable($dataContext)]">
+                                                </MenuItem>
+                                                <MenuItem Header="Define All Measures (All tables)"
+                                                    cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresAllTables($dataContext)]">
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </StackPanel.ContextMenu>
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
 
@@ -361,8 +379,8 @@
 
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
-                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
-                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }">
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }"
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
@@ -372,9 +390,13 @@
                                                 <MenuItem Header="Define and Expand Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]">
                                                 </MenuItem>
+                                                <MenuItem Header="Define All Measures"
+                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasures($dataContext)]">
+                                                </MenuItem>                                                
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 
+                                        
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.Resources>

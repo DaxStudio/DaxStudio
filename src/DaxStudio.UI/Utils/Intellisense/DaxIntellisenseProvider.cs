@@ -10,12 +10,14 @@ using ICSharpCode.AvalonEdit.Editing;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Navigation;
 
 namespace DaxStudio.UI.Utils
 {
@@ -99,6 +101,7 @@ namespace DaxStudio.UI.Utils
                     //InsightWindow insightWindow = new InsightWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
                     
                     completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    completionWindow.PreviewKeyUp += CompletionWindow_PreviewKeyUp;
                     completionWindow.CloseAutomatically = false;
                     
                     completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
@@ -130,6 +133,7 @@ namespace DaxStudio.UI.Utils
                         case "'":
                             PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
                             break;
+
                         default:
                             switch (_daxState.LineState)
                             {
@@ -200,6 +204,7 @@ namespace DaxStudio.UI.Utils
 
                 if (e.Text[0] == '(')
                 {
+                    completionWindow?.Close();
                     var funcName = DaxLineParser.GetPreceedingWord(GetCurrentLine().TrimEnd('(').Trim()).ToLower();
                     Log.Verbose("Func: {Function}", funcName);
                     ShowInsight(funcName);
@@ -211,6 +216,11 @@ namespace DaxStudio.UI.Utils
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
                 Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
+        }
+
+        private void CompletionWindow_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.OemCloseBrackets) _editor.DisposeCompletionWindow();
         }
 
         public void ShowInsight(string funcName)
@@ -258,9 +268,21 @@ namespace DaxStudio.UI.Utils
             tb.Inlines.Add(f.Description);
             //tb.Inlines.Add("\n");
             //tb.Inlines.Add(new Italic(new Run(f.DaxName)));
+            var docLink = new Hyperlink();
+            docLink.Inlines.Add($"https://dax.guide/{f.Caption}");
+            docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}");
+            docLink.RequestNavigate += InsightHyperLinkNavigate;
+            tb.Inlines.Add("\n");
+            tb.Inlines.Add(docLink);
             Grid.SetColumn(tb, 0);
             grd.Children.Add(tb);
             return grd;
+        }
+
+        private void InsightHyperLinkNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
         }
 
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -296,7 +318,18 @@ namespace DaxStudio.UI.Utils
 
         public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref CompletionWindow completionWindow)
         {
-            
+            if (e.Text.Length > 0 && completionWindow != null)
+            {
+                if (e.Text[0] == '(')
+                {
+                    // Whenever a non-letter is typed while the completion window is open,
+                    // insert the currently selected element.
+                    completionWindow.CompletionList.RequestInsertion(e);
+                    
+                }
+            }
+            // Do not set e.Handled=true.
+            // We still want to insert the character that was typed.
         }
         #endregion
 
@@ -381,6 +414,8 @@ namespace DaxStudio.UI.Utils
             {
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "TABLE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "DEFINE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "ORDER BY", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "ASC", 200.0));
@@ -388,6 +423,10 @@ namespace DaxStudio.UI.Utils
                 tmpData.Add(new DaxCompletionData(this, "SELECT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "FROM", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "WHERE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "VAR", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "RETURN", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "START", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "AT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
@@ -479,5 +518,14 @@ namespace DaxStudio.UI.Utils
         }
 
         public bool MetadataIsCached { get { return Model != null && FunctionGroups != null && Dmvs != null; } }
+
+        public void CloseCompletionWindow()
+        {
+            if (_editor.InsightWindow != null)
+            {
+                _editor.InsightWindow?.Close();
+                _editor.DisposeCompletionWindow();
+            }
+        }
     }
 }

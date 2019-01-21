@@ -6,11 +6,16 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"    
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:cm="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             BorderBrush="DimGray" BorderThickness="1"
+             cal:View.ApplyConventions="False"
+             >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,15 +23,83 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
             <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
+            <conv:MatchingResultColourConverter x:Key="MatchingResultColourConverter"></conv:MatchingResultColourConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
+
+            
+
+            <!-- Data Templates -->
+        
+            <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
+                 <custom:BindableRichTextBox Padding="5,5,5,5"
+                 MinWidth="200"
+                 MinHeight="100"
+                 IsReadOnly="True"
+                 BorderThickness="0"
+                 DataContext="{Binding}"
+                 Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
+                    
+                        <custom:BindableRichTextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </custom:BindableRichTextBox.ContextMenu>
+                    </custom:BindableRichTextBox>
+            </DataTemplate>
+            
+            <DataTemplate  DataType="{x:Type vm:RewriteTraceEngineEvent}">
+                <StackPanel Margin="5">
+                    <TextBlock Margin="0 0 0 5" FontWeight="DemiBold" Padding="3" Background="#ffececec">Aggregate Rewrite Attempt</TextBlock>
+                
+                    <TextBlock FontWeight="Medium"  Margin="0 0 5 0">Match Result: </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="20 0 0 5 " >
+                        <TextBlock Margin="0 -1 3 0" 
+                                   FontFamily="Wingdings" 
+                                   FontSize="14pt" 
+                                   Foreground="Green"
+                                   Visibility="{Binding MatchFound, Converter={StaticResource BoolToCollapsedConverter}}">ü</TextBlock>
+                        <TextBlock Margin="0 -1 3 0" 
+                                   FontFamily="Wingdings" 
+                                   FontSize="14pt" 
+                                   Visibility="{Binding MatchFound, Converter={StaticResource BoolToNotCollapsedConverter}}"
+                                   Foreground="Red">û</TextBlock>
+                        <TextBlock  x:Name="MatchingResult" Text="{Binding MatchingResult}" Foreground="{Binding MatchingResult, Converter={StaticResource MatchingResultColourConverter}}"></TextBlock>
+                    </StackPanel>
+                    <TextBlock FontWeight="Medium">Original Table:</TextBlock>
+                    <TextBlock Margin="20 0 0 5 " x:Name="Table" Text="{Binding Table}"></TextBlock>
+                    <TextBlock FontWeight="Medium">Mapped To:</TextBlock>
+                    <TextBlock Margin="20 0 0 5 " x:Name="Mapping" Text="{Binding Mapping}"></TextBlock>
+
+                    <Expander x:Name="myExpander" Header="Details"
+					    ExpandDirection="Down" IsExpanded="False" 
+					    Margin="0,5,0,0" >
+                        <!-- TODO The template below causes a fatal app crash when the DataTemplate is changed after the expander has been expanded 
+                                  This appears to be some issue with the DoubleAnimation of the Tag in the storyboard  
+                        -->
+                        <!-- Template="{StaticResource RevealExpanderTemp}" -->
+                        <Expander.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock FontWeight="SemiBold" Margin="0,10,0,10" FontSize="13"><Run Text="Details"/></TextBlock>
+                            </DataTemplate>
+                        </Expander.HeaderTemplate>
+                        <TextBlock Text="{Binding TextData}" />
+                    </Expander>
+                </StackPanel>
+            </DataTemplate>
+
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -44,8 +117,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock Name="TraceStatusText"
+        <TextBlock x:Name="TraceStatusText"
                    Grid.ColumnSpan="5"
+                   Text="{Binding TraceStatusText}"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
@@ -77,35 +151,39 @@
                     </Grid.ColumnDefinitions>
                     
                     <!-- Total Duration -->
-                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding TotalDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding TotalDuration, StringFormat='#,0 ms'}" 
+                       ToolTip="{Binding TotalTooltip}"/>
 
                     <!-- SE CPU Duration -->
-                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"  ToolTip="{Binding SECpuTooltip}"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"  />
+                       Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding SECpuTooltip}"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
                     
                     <!-- FE Controls -->
-                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" ToolTip="{Binding FETooltip}">
                         <Rectangle Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
                         <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding FETooltip}" />
                     
                     <TextBlock Grid.Row="5" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="#3571AD" />
                     
                     <!-- SE Controls -->
-                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" ToolTip="{Binding SETooltip}">
                         <Rectangle Width="10" Height="10" Fill="{StaticResource DaxStudioBrush}" Margin="0,4,5,0"/>
                         <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}" />
+                       Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}"
+                       ToolTip="{Binding SETooltip}" />
                     <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
                     
@@ -130,14 +208,16 @@
                     </StackPanel>
                     
                     <!-- SE Queries -->
-                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}" />
                     <TextBlock Grid.Row="8" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"/>
+                       Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"
+                       ToolTip="{Binding SEQueriesTooltip}" />
                     
                     <!-- SE Cache -->
-                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SECacheTooltip}"/>
                     <TextBlock Grid.Row="8" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
-                       Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}" />
+                       Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}"
+                       ToolTip="{Binding SECacheTooltip}" />
                     <TextBlock Grid.Row="9" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
                    Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
 <!--
@@ -265,21 +345,12 @@
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
                       Margin="0"/>
         <ScrollViewer >
-            <custom:BindableRichTextBox Padding="5,5,5,5"
-                 MinWidth="200"
-                 MinHeight="100"
-                 IsReadOnly="True"
-                 BorderThickness="0"
-                 Document="{Binding ElementName=ListEvents, Path=SelectedItem.QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" 
-                 >
-                <custom:BindableRichTextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
-                        <Separator/>
-                        <MenuItem Command="SelectAll"></MenuItem>
-                    </ContextMenu>
-                </custom:BindableRichTextBox.ContextMenu>
-            </custom:BindableRichTextBox>
+            <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
+            </ContentControl>
+                <!-- Query Event Template -->
+                
+                
+            
             <ScrollViewer.Style>
                 <Style>
                     <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />

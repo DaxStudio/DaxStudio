@@ -12,6 +12,9 @@ using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using Serilog;
+using Newtonsoft.Json.Linq;
+using System.Text;
+using DaxStudio.UI.JsonConverters;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,18 +29,26 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public string Query { get;  set; }
-        public long Duration { get;  set; }
-        public long CpuTime { get;  set; }
+        public long? Duration { get;  set; }
+        public long? CpuTime { get;  set; }
         public int RowNumber { get;  set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
 
         // String that highlight important parts of the query
-        // Currently implement only the strong (~E~/~S~) for CallbackDataID function 
+        // Currently implement only the strong (~E~/~S~) for CallbackDataID and EncodeCallback function s
+        private string _queryRichText = "";
         public string QueryRichText {
+            set {
+                var sb = new StringBuilder(value);
+                sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
+                _queryRichText = sb.ToString();
+            }
+
             get {
-                return Query.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                return _queryRichText;
             }
         }
 
@@ -46,30 +57,76 @@ namespace DaxStudio.UI.ViewModels
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
-            if (Class == DaxStudioTraceEventClass.DirectQueryEnd) {
-                Query = ev.TextData;
+            switch (Class)
+            {
+                //case DaxStudioTraceEventClass.DirectQueryEnd:
+                //    Query = ev.TextData;
+                //    break;
+                case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
+                    // the rewrite event does not have a query or storage engine timings
+                    break;
+                case DaxStudioTraceEventClass.DirectQueryBegin:
+                case DaxStudioTraceEventClass.DirectQueryEnd:
+                    // Don't process DirectQuery text
+                    Query = ev.TextData;
+                    QueryRichText = Query;
+                    break;
+                default:
+                    // TODO: we should implement as optional the removal of aliases and lineage
+                    Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
+                    QueryRichText = Query;
+                    // Set flag in case any highlight is present
+                    HighlightQuery = QueryRichText.Contains("|~E~|");
+                    break;
             }
-            else {
-                // TODO: we should implement as optional the removal of aliases and lineage
-                Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
-            }
-            // Set flag in case any highlight is present
-            HighlightQuery = QueryRichText.Contains("|~E~|");
-
+            
             // Skip Duration/Cpu Time for Cache Match
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
                 Duration = ev.Duration;
-                CpuTime = ev.CpuTime;
+                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted) CpuTime = ev.CpuTime;
             }
-
-            long rows, bytes;
-            if (Query.ExtractEstimatedSize( out rows, out bytes )) {
-                EstimatedRows = rows;
-                EstimatedKBytes = 1 + bytes / 1024;
+            if (Query != null && Query?.Length > 0)
+            {
+                long rows, bytes;
+                if (Query.ExtractEstimatedSize(out rows, out bytes))
+                {
+                    EstimatedRows = rows;
+                    EstimatedKBytes = 1 + bytes / 1024;
+                }
             }
         }
         public TraceStorageEngineEvent() { }
+    }
+
+    public class RewriteTraceEngineEvent : TraceStorageEngineEvent
+    {
+
+        public RewriteTraceEngineEvent() { }
+
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber) : base(ev, rowNumber) {
+            TextData = ev.TextData;
+        }
+        
+        public string Table { get; set; }
+        public string MatchingResult { get; set; }
+        public string Mapping { get; set; }
+        private string _textData;
+        public string TextData { get { return _textData; } set {
+                _textData = value;
+                if (_textData == null) return;
+                JObject rewriteResult = JObject.Parse(_textData);
+                Table = (string)rewriteResult["table"];
+                MatchingResult = (string)rewriteResult["matchingResult"];
+                var mapping = rewriteResult["mapping"];
+                if (mapping.HasValues)
+                    Mapping = (string)rewriteResult["mapping"]["table"];
+                Query = $"<{MatchingResult}>";
+            }
+        }
+        public new string Query { get; set; } = "";
+        public bool MatchFound { get { return MatchingResult == "matchFound"; } }
+
     }
 
     public static class TraceStorageEngineExtensions {
@@ -170,11 +227,21 @@ namespace DaxStudio.UI.ViewModels
         
     {
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails) : base(eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
+            ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
+
+        #region Tooltip properties
+        public string TotalTooltip => "The total server side duration of the query";
+        public string FETooltip => "Formula Engine (FE) Duration";
+        public string SETooltip => "Storage Engine (SE) Duration";
+        public string SECpuTooltip => "Storage Engine CPU Duration";
+        public string SEQueriesTooltip => "The number of queries sent to the Storage Engine while processing this query";
+        public string SECacheTooltip => "The number of queries sent to the Storage Engine that were answered from the SE Cache";
+        #endregion
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
@@ -188,6 +255,7 @@ namespace DaxStudio.UI.ViewModels
                 { DaxStudioTraceEventClass.QuerySubcube
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
+                , DaxStudioTraceEventClass.AggregateTableRewriteQuery
                 , DaxStudioTraceEventClass.DirectQueryEnd
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
@@ -222,6 +290,14 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                    }
+
+                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
+                    {
+                        //StorageEngineDuration += traceEvent.Duration;
+                        //StorageEngineCpu += traceEvent.CpuTime;
+                        //StorageEngineQueryCount++;
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd) {
@@ -346,9 +422,19 @@ namespace DaxStudio.UI.ViewModels
                           where
                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal && ServerTimingDetails.ShowInternal)
                           ||
+                          (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan && ServerTimingDetails.ShowBatch)
+                          ||
                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && ServerTimingDetails.ShowCache)
                           ||
-                          ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal) && ServerTimingDetails.ShowScan)
+                          ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
+                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                           ) && ServerTimingDetails.ShowScan)
+                           ||
+                           (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
+                          
+
+
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
@@ -433,7 +519,14 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
-            ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data);
+
+            var eventConverter = new ServerTimingConverter();
+            var deseralizeSettings = new JsonSerializerSettings();
+            deseralizeSettings.Converters.Add(eventConverter);
+            deseralizeSettings.TypeNameAssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+            deseralizeSettings.TypeNameHandling = TypeNameHandling.Auto;
+
+            ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data, deseralizeSettings);
 
             FormulaEngineDuration = m.FormulaEngineDuration;
             StorageEngineDuration = m.StorageEngineDuration;
@@ -454,11 +547,11 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails.LayoutBottom?4:1; } }
-        public int TextGridRowSpan { get { return ServerTimingDetails.LayoutBottom? 1:3; } }
-        public int TextGridColumn { get { return ServerTimingDetails.LayoutBottom?2:4; } }
+        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ?4:1; } }
+        public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom?? false ? 1:3; } }
+        public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom??false ?2:4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails.LayoutBottom ? new GridLength(0) : new GridLength(1, GridUnitType.Star); }  }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom??false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); }  }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails { get { return _serverTimingDetails; } set {

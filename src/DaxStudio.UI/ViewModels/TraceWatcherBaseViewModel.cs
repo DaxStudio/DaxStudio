@@ -198,7 +198,13 @@ namespace DaxStudio.UI.ViewModels
                 IsChecked = false;
                 return;
             }
+            
+#if PREVIEW
+            //HACK: Temporary hack to test Power BI XMLA Endpoint
+            IsAdminConnection = true;
+#else
             IsAdminConnection = connection.IsAdminConnection;
+#endif
             //IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
             if (active != null)
                 IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
@@ -245,7 +251,7 @@ namespace DaxStudio.UI.ViewModels
         public IQueryHistoryEvent QueryHistoryEvent { get { return _queryHistoryEvent; } }
 
 
-        #region Title Bar Button methods and properties
+#region Title Bar Button methods and properties
         private bool _isPaused;
         public void Pause()
         {
@@ -293,7 +299,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showFilters = false;
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
 
-        #endregion
+#endregion
 
         public abstract bool FilterForCurrentSession { get; }
         public bool IsAdminConnection { get; private set; }

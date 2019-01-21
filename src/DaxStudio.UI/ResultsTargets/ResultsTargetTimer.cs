@@ -2,7 +2,6 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.ViewModels;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 
@@ -16,9 +15,20 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultTargetTimer :  IResultsTarget
     {
-        public string Name {get { return "Timer"; } }
-        public string Group {get { return "Standard"; } }
-        
+        #region Standard Properties
+        public string Name => "Timer";
+        public string Group => "Standard";
+        public bool IsDefault => false;
+        public bool IsAvailable => true;
+        public int DisplayOrder => 20;
+        public string Message => "Query timings sent to output tab";
+        public OutputTargets Icon => OutputTargets.Timer;
+
+        public bool IsEnabled => true;
+
+        public string DisabledReason => "";
+        #endregion
+
         private void OutputResults(IQueryRunner runner)
         {
             try
@@ -40,6 +50,10 @@ namespace DaxStudio.UI.Model
                 runner.ActivateOutput();
                 runner.OutputError(ex.Message);
             }
+            finally
+            {
+                runner.QueryCompleted();
+            }
         }
 
         public Task OutputResultsAsync(IQueryRunner runner)
@@ -47,30 +61,5 @@ namespace DaxStudio.UI.Model
             return Task.Run(() => OutputResults(runner));
         }
 
-
-        public bool IsDefault
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
-        }
-        public int DisplayOrder
-        {
-            get { return 20; }
-        }
-
-
-        public string Message
-        {
-            get { return "Query timings sent to output tab"; }
-        }
-
-        public OutputTargets Icon
-        {
-            get { return OutputTargets.Timer; }
-        }
     }
 }

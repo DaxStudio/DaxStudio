@@ -266,7 +266,9 @@
     <Keywords color="Kword">
       <Word>$SYSTEM</Word>
       <Word>ASC</Word>
+      <Word>AT</Word>
       <Word>BY</Word>
+      <Word>COLUMN</Word>
       <Word>CREATE</Word>
       <Word>DEFINE</Word>
       <Word>DESC</Word>
@@ -274,11 +276,11 @@
       <Word>FROM</Word>
       <Word>MEASURE</Word>
       <Word>ORDER</Word>
-      <Word>SELECT</Word>
       <Word>RETURN</Word>
-      <Word>VAR</Word>
-      <Word>AT</Word>
+      <Word>SELECT</Word>
       <Word>START</Word>
+      <Word>TABLE</Word>
+      <Word>VAR</Word>
 
       <!-- These are both keyword and functions...
       <Word>DAY</Word>

@@ -9,10 +9,16 @@ namespace DaxStudio.UI.Events
         {
             Connection = connection;
             DatabaseName = string.Empty;
-            if (Connection != null)
+            try
             {
-                DatabaseName = connection.State == System.Data.ConnectionState.Open ?  connection.Database.Name : string.Empty;
-                //IsPowerPivotConnection = isPowerPivotConnection;
+                if (Connection != null)
+                {
+                    DatabaseName = connection.State == System.Data.ConnectionState.Open ? connection.Database.Name : string.Empty;
+                    //IsPowerPivotConnection = isPowerPivotConnection;
+                }
+            }
+            catch {
+                // swallow any exceptions if there is a problem getting the database name
             }
         }
         

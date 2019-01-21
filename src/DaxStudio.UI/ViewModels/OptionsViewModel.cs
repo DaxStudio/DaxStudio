@@ -17,10 +17,17 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(OptionsViewModel))]
     public class OptionsViewModel:Screen, IGlobalOptions
     {
-        private string _selectedFontFamily;
+        private const string DefaultEditorFontFamily = "Lucida Console";
+        private const int DefaultEditorFontSize = 11;
+        private const string DefaultResultsFontFamily = "Segoe UI";
+        private const int DefaultResultsFontSize = 11;
+
+        private string _selectedEditorFontFamily;
+        private string _selectedResultFontFamily;
         private bool _showLineNumbers;
         private bool _enableIntellisense;
-        private double _fontSize;
+        private double _editorFontSize;
+        private double _resultFontSize;
         private bool _proxyUseSystem;
         private string _proxyAddress;
         private string _proxyUser;
@@ -35,6 +42,7 @@ namespace DaxStudio.UI.ViewModels
         private IEventAggregator _eventAggregator;
         
         private DelimiterType _defaultSeparator;
+        private DaxFormatStyle _defaultDaxFormatStyle;
         private bool _showPreReleaseNotifcations;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
@@ -46,9 +54,10 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator = eventAggregator;
             
-
-            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", "Lucida Console");
-            EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", 11);
+            EditorFontFamily = RegistryHelper.GetValue<string>("EditorFontFamily", DefaultEditorFontFamily);
+            EditorFontSize = RegistryHelper.GetValue<double>("EditorFontSize", DefaultEditorFontSize);
+            ResultFontFamily = RegistryHelper.GetValue<string>("ResultFontFamily", DefaultResultsFontFamily);
+            ResultFontSize = RegistryHelper.GetValue<double>("ResultFontSize", DefaultResultsFontSize);
             EditorShowLineNumbers = RegistryHelper.GetValue<bool>("EditorShowLineNumbers", true);
             EditorEnableIntellisense = RegistryHelper.GetValue<bool>("EditorEnableIntellisense", true);
             ProxyUseSystem = RegistryHelper.GetValue<bool>("ProxyUseSystem", true);
@@ -59,18 +68,27 @@ namespace DaxStudio.UI.ViewModels
             QueryHistoryShowTraceColumns = RegistryHelper.GetValue<bool>("QueryHistoryShowTraceColumns", true);
             QueryEndEventTimeout = RegistryHelper.GetValue<int>(nameof(QueryEndEventTimeout), 5);
             DaxFormatterRequestTimeout = RegistryHelper.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
+            TraceStartupTimeout = RegistryHelper.GetValue<int>(nameof(TraceStartupTimeout), 30);
             DefaultSeparator = (DelimiterType)RegistryHelper.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
             TraceDirectQuery = RegistryHelper.GetValue<bool>("TraceDirectQuery", false);
             ShowPreReleaseNotifcations = RegistryHelper.GetValue<bool>("ShowPreReleaseNotifcations", false);
             ShowTooltipBasicStats = RegistryHelper.GetValue<bool>("ShowTooltipBasicStats", true);
             ShowTooltipSampleData = RegistryHelper.GetValue<bool>("ShowTooltipSampleData", true);
             ExcludeHeadersWhenCopyingResults = RegistryHelper.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
+            DefaultDaxFormatStyle = (DaxFormatStyle)RegistryHelper.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
+            ScaleResultsFontWithEditor = RegistryHelper.GetValue<bool>("ScaleResultsFontWithEditor", true);
+            // Preview Feature Toggles
+            ShowExportMetrics = RegistryHelper.GetValue<bool>(nameof(ShowExportMetrics), false);
+            ShowExternalTools = RegistryHelper.GetValue<bool>(nameof(ShowExternalTools), false);
+            ShowExportAllData = RegistryHelper.GetValue<bool>(nameof(ShowExportAllData), false);
+            ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
+            ResultAutoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false);
         }
 
-        public string EditorFontFamily { get { return _selectedFontFamily; } 
+        public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
             set{
-                if (_selectedFontFamily == value) return;
-                _selectedFontFamily = value;
+                if (_selectedEditorFontFamily == value) return;
+                _selectedEditorFontFamily = value;
                 NotifyOfPropertyChange(() => EditorFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<string>("EditorFontFamily", value);
@@ -78,15 +96,51 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public double EditorFontSize { get { return _fontSize; } 
+        public double EditorFontSize { get { return _editorFontSize; } 
             set {
-                if (_fontSize == value) return;
-                _fontSize = value;
+                if (_editorFontSize == value) return;
+                _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("EditorFontSize", value);
             } 
         }
+
+        public void ResetEditorFont()
+        {
+            EditorFontFamily = DefaultEditorFontFamily;
+            EditorFontSize = DefaultEditorFontSize;
+        }
+
+        public void ResetResultsFont()
+        {
+            ResultFontFamily = DefaultResultsFontFamily;
+            ResultFontSize = DefaultResultsFontSize;
+        }
+
+        public string ResultFontFamily {
+            get { return _selectedResultFontFamily; }
+            set {
+                if (_selectedResultFontFamily == value) return;
+                _selectedResultFontFamily = value;
+                NotifyOfPropertyChange(() => ResultFontFamily);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<string>("ResultFontFamily", value);
+
+            }
+        }
+
+        public double ResultFontSize {
+            get { return _resultFontSize; }
+            set {
+                if (_resultFontSize == value) return;
+                _resultFontSize = value;
+                NotifyOfPropertyChange(() => ResultFontSize);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<double>("ResultFontSize", value);
+            }
+        }
+
         public bool EditorShowLineNumbers { get { return _showLineNumbers; }
             set
             {
@@ -289,11 +343,32 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public DaxFormatStyle DefaultDaxFormatStyle {
+            get {
+                return _defaultDaxFormatStyle;
+            }
+
+            set {
+                if (_defaultDaxFormatStyle == value) return;
+                _defaultDaxFormatStyle = value;
+                NotifyOfPropertyChange(() => DefaultDaxFormatStyle);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>(nameof(DefaultDaxFormatStyle), (int)value);
+            }
+        }
+
         public IEnumerable<DelimiterType> SeparatorTypes
         {
             get {
                 var items = Enum.GetValues(typeof(DelimiterType)).Cast<DelimiterType>()
                                 .Where(e => e != DelimiterType.Unknown);
+                return items;
+            }
+        }
+
+        public IEnumerable<DaxFormatStyle> DaxFormatStyles {
+            get {
+                var items = Enum.GetValues(typeof(DaxFormatStyle)).Cast<DaxFormatStyle>();
                 return items;
             }
         }
@@ -367,6 +442,91 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ExcludeHeadersWhenCopyingResults);
             }
         }
+
+        
+        private int _traceStartupTimeout = 30;
+        public int TraceStartupTimeout { get => _traceStartupTimeout; set {
+                _traceStartupTimeout = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>("TraceStartupTimeout", value);
+                NotifyOfPropertyChange(() => TraceStartupTimeout);
+            }
+        }
+
+        #region "Preview Toggles"
+
+        // Preview Feature Toggles
+
+        private bool _showExportMetrics = false;
+        public bool ShowExportMetrics
+        {
+            get
+            {
+                return _showExportMetrics;
+            }
+
+            set
+            {
+                _showExportMetrics = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowExportMetrics", value);
+                NotifyOfPropertyChange(() => ShowExportMetrics);
+            }
+        }
+
+        private bool _showExternalTools = false;
+        public bool ShowExternalTools { get => _showExternalTools;
+            set {
+                _showExternalTools = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowExternalTools", value);
+                NotifyOfPropertyChange(() => ShowExternalTools);
+            }
+        }
+
+        private bool _showExportAllData = false;
+        public bool ShowExportAllData { get => _showExportAllData;
+            set {
+                _showExportAllData = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowExportAllData", value);
+                NotifyOfPropertyChange(() => ShowExportAllData);
+            }
+        }
+
+        private bool _showAggregationRewritesInAllQueries = false;
+        private bool _scaleResultsFontWithEditor = true;
+
+        public bool ShowAggregationRewritesInAllQueries { get => _showAggregationRewritesInAllQueries;
+            set
+            {
+                _showAggregationRewritesInAllQueries = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ShowAggregationRewritesInAllQueries", value);
+                NotifyOfPropertyChange(() => ShowAggregationRewritesInAllQueries);
+            }
+        }
+
+        private bool _ResultAutoFormat = false;
+        public bool ResultAutoFormat {
+            get => _ResultAutoFormat;
+            set {
+                _ResultAutoFormat = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ResultAutoFormat", value);
+                NotifyOfPropertyChange(() => ResultAutoFormat);
+            }
+        }
+
+        public bool ScaleResultsFontWithEditor { get => _scaleResultsFontWithEditor;
+            set {
+                _scaleResultsFontWithEditor = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("ScaleResultsFontWithEditor", value);
+                NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
+            } }
+
+        #endregion
 
         public void ExportDaxFunctions()
         {

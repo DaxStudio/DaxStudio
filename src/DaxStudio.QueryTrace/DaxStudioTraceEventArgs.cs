@@ -1,11 +1,5 @@
-﻿
-using Microsoft.AnalysisServices;
+﻿using Microsoft.AnalysisServices;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace DaxStudio.QueryTrace
 {
@@ -45,21 +39,28 @@ namespace DaxStudio.QueryTrace
 
             }
             */
-            // not all events have CpuTime
-            try {
-                CpuTime = e.CpuTime;
-            } catch (ArgumentNullException) {
-                CpuTime = 0;
-            }
-            // not all events have a duration
-            try
+            if (e.EventClass != TraceEventClass.CommandBegin)
             {
-                Duration = e.Duration;
+                // not all events have CpuTime
+                try
+                {
+                    CpuTime = e.CpuTime;
+                }
+                catch (ArgumentNullException)
+                {
+                    CpuTime = 0;
+                }
+                // not all events have a duration
+                try
+                {
+                    Duration = e.Duration;
+                }
+                catch (ArgumentNullException)
+                {
+                    Duration = 0;
+                }
             }
-            catch (ArgumentNullException)
-            {
-                Duration = 0;
-            }
+
             if (e.NTUserName != null)
                 NTUserName = e.NTUserName;
 
@@ -78,9 +79,13 @@ namespace DaxStudio.QueryTrace
             {
                 
             }
-            //if (e.EndTime != null) 
-            //    EndTime = e.EndTime;
-            
+
+            try
+            {
+                RequestID = e[TraceColumn.RequestID];
+            }
+            catch 
+            { }
         }
 
         // This default constructor is required to allow deserializeing from JSON when tracing PowerPivot
@@ -126,5 +131,6 @@ namespace DaxStudio.QueryTrace
         public string DatabaseName { get; set; }
 
         public string DatabaseFriendlyName { get; set; }
+        public string RequestID { get; set; }
     }
 }

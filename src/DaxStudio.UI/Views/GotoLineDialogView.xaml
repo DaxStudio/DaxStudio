@@ -1,0 +1,84 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.GotoLineDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="200"
+             Width="250"
+             Height="140">
+    
+    <UserControl.Resources>
+        
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <ResourceDictionary.MergedDictionaries>
+            <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>-->
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Border>
+        <Border Background="White" Padding="15px 10px" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+            <Grid FocusManager.FocusedElement="{Binding ElementName=LineNo}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="38px"/>
+                    <RowDefinition Height="*" />
+                    
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Goto" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="24" Padding="0" />
+                <Label Grid.Row="1">Line:</Label>
+                <TextBox x:Name="LineNo" Height="22" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Margin="2px" ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=IsFocused}">
+                    <Validation.ErrorTemplate>
+                        <ControlTemplate>
+                            <StackPanel>
+                                <!-- Placeholder for the TextBox itself -->
+                                <AdornedElementPlaceholder x:Name="textBox"/>
+                                <ItemsControl ItemsSource="{Binding}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding ErrorContent}" Foreground="Red"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Validation.ErrorTemplate>
+                </TextBox>
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="2px">
+                    <TextBlock Margin="0,0,5px,0">(Lines 1 to</TextBlock>
+                    <TextBlock x:Name="MaxLines"></TextBlock>
+                    <TextBlock>)</TextBlock>
+                </StackPanel>
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Button x:Name="GotoLine" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Padding="5px 2px" Margin="2px" Content="Goto" IsDefault="True">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="False"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Path=(Validation.HasError), ElementName=LineNo}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                
+                <Button x:Name="Cancel" Grid.Row="2" Grid.Column="2" Margin="2px" IsCancel="True">Cancel</Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>

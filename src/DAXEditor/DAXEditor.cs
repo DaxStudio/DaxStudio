@@ -97,7 +97,16 @@ namespace DAXEditor
             IntellisenseProvider = new IntellisenseProviderStub();
 
             this.DocumentChanged += DaxEditor_DocumentChanged;
+            DataObject.AddPastingHandler(this, OnDataObjectPasting);
             
+        }
+
+        public EventHandler<DataObjectPastingEventArgs> OnPasting;
+
+        // Raise Custom OnPasting event
+        private void OnDataObjectPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            OnPasting?.Invoke(sender, e);
         }
 
         internal void UpdateSyntaxRule(string colourName,  IEnumerable<string> wordList)
@@ -336,8 +345,8 @@ namespace DAXEditor
 
         private Regex rxUncommentSlashes = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
         private Regex rxUncommentDashes = new Regex(string.Format("^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
-        private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
-
+        private Regex rxComment = new Regex("^(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
+        //private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
         private void SelectFullLines()
         {
             int selStart = Document.GetLineByOffset(SelectionStart).Offset;
@@ -473,7 +482,11 @@ namespace DAXEditor
         }
         public void DisposeCompletionWindow()
         {
+            if (toolTip != null)
+                toolTip.IsOpen = false;
+            completionWindow?.Close();
             completionWindow = null;
+            System.Diagnostics.Debug.WriteLine(">>> DisposeCompletionWindow");
         }
 
         public void DisableIntellisense()

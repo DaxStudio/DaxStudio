@@ -30,7 +30,7 @@ namespace DaxStudio.Tests
         // Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext) {
-            ConnectionString = @"Data Source=localhost\tab16;";
+            ConnectionString = @"Data Source=localhost\tab17;";
             //ConnectionString = @"Data Source=.\sql2014tb";
         }
         //
@@ -197,6 +197,28 @@ namespace DaxStudio.Tests
             //Assert.AreEqual(8, tabs["Sales"].Columns.Count());
         }
 
+        [TestMethod]
+        public void TestCSDLDisplayFolders()
+        {
+            ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            ADOTabularModel m = new ADOTabularModel(c, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\AdvWrksFoldersCsdl.xml");
+            var tabs = new ADOTabularTableCollection(c, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Internet Sales"];
+            var cmpyCol = cmpyTab.Columns["Internet Current Quarter Sales"];
+
+            var cmpyCol2 = cmpyTab.Columns["Internet Current Quarter Margin"];
+
+            Assert.AreEqual("Internet Sales", cmpyTab.Caption, "Table Name is correct");
+            Assert.AreEqual("QTD Folder", cmpyCol2.DisplayFolder, "Column has display folder");
+            Assert.AreEqual("QTD Folder", cmpyCol.DisplayFolder, "Column has display folder");
+
+        }
+
+
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
         [TestMethod]
         public void TestCSDLColumnTranslations()
@@ -216,6 +238,7 @@ namespace DaxStudio.Tests
             
         }
 
+
         //TODO - need to fix the tests to mock out MDSCHEMA_HIERARCHIES
         [TestMethod]
         public void TestCSDLTablesWithSpaces()
@@ -233,7 +256,7 @@ namespace DaxStudio.Tests
 
         }
 
-        [TestMethod]
+        [TestMethod][Ignore]
         public void TestInvalidCSDLKPIs()
         {
             ADOTabularConnection c = new ADOTabularConnection(ConnectionString + ";Initial Catalog=AW Internet Sales Tabular Model 2014", AdomdType.AnalysisServices);

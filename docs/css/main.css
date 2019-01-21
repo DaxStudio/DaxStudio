@@ -43,6 +43,10 @@ hr.small {
   border-radius: 3px;
 }
 
+.idx-thumb {
+  width: 250px;
+}
+
 .main-content {
   padding-top: 80px;
 }

@@ -9,10 +9,10 @@ namespace ADOTabular
 
     public  class ADOTabularColumn:IADOTabularColumn
     {
-
+        // TODO - can we delete this??
         public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
         {
-            Table = table; 
+            Table = table;
             ColumnType = colType;
             if (colType == ADOTabularColumnType.Column)
             {
@@ -51,7 +51,7 @@ namespace ADOTabular
 
         public string Caption { get; private set; }
         public string Name { get; private set; }
-
+        public string DisplayFolder { get; set; }
         public string Contents { get; private set; }
 
         public virtual string DaxName {
@@ -94,7 +94,8 @@ namespace ADOTabular
                     return null;
                 }
 
-                // Return the measure expression from the table measures dictionary (the measures are loaded and cached on the use of the Table.Measures property)
+                // Return the measure expression from the table measures dictionary 
+                // (the measures are loaded and cached on the use of the Table.Measures property)
 
                 var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 

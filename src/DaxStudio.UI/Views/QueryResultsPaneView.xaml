@@ -142,28 +142,25 @@
                 <!-- Tab Content (DataGrid) -->
                 <TabControl.ContentTemplate>
                     <DataTemplate>
-
-                        <DataGrid
-                        
+                         <DataGrid
                             x:Name="DefaultView" 
-                      Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                      ItemsSource="{Binding DefaultView}"
-                      ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                      SelectionMode="Extended"       
-                      SelectionUnit="Cell"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      VerticalGridLinesBrush="WhiteSmoke" 
-                      HorizontalGridLinesBrush="WhiteSmoke"
-                      AutoGenerateColumns="False" 
-                      cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
-                                  , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
-                      custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
-                      
-                                  >
-                            <!-- ColumnWidth="SizeToCells"
-                      MinColumnWidth="50"
-                      -->
+                            Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
+                            ItemsSource="{Binding DefaultView}"
+                            ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            SelectionMode="Extended"       
+                            SelectionUnit="Cell"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            VerticalGridLinesBrush="WhiteSmoke" 
+                            HorizontalGridLinesBrush="WhiteSmoke"
+                            AutoGenerateColumns="False"
+                            FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
+                            FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}" 
+                            cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
+                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
+                            custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
+                            >
+
                             <DataGrid.AlternatingRowBackground>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                                     <GradientStop Offset="1" Color="#f2f2f2"/>

@@ -9,6 +9,8 @@ namespace DaxStudio.Interfaces
         bool EditorShowLineNumbers { get; set; }
         double EditorFontSize { get; set; }
         string EditorFontFamily { get; set; }
+        double ResultFontSize { get; set; }
+        string ResultFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
         int QueryHistoryMaxItems { get; set; }
         bool QueryHistoryShowTraceColumns { get; set; }
@@ -18,12 +20,22 @@ namespace DaxStudio.Interfaces
         SecureString ProxySecurePassword { get; set; }
         int QueryEndEventTimeout { get; set; }
         int DaxFormatterRequestTimeout { get; set; }
+        int TraceStartupTimeout { get; set; }
         DelimiterType DefaultSeparator { get; set; }
+        DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         bool TraceDirectQuery { get; set; }
         bool ShowPreReleaseNotifcations { get; set; }
         bool ShowTooltipBasicStats { get; set; }
         bool ShowTooltipSampleData { get; set; }
         bool CanPublishDaxFunctions { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
+        // Preview Features
+        bool ShowExportMetrics { get; set; }
+        bool ShowExternalTools { get; set; }
+        bool ShowExportAllData { get; set; }
+        bool ShowAggregationRewritesInAllQueries { get; set; }
+        
+        bool ResultAutoFormat { get; set; }
+        bool ScaleResultsFontWithEditor { get; set; }
     }
 }

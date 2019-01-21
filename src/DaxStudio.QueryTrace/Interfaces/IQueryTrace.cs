@@ -20,9 +20,10 @@ namespace DaxStudio.QueryTrace.Interfaces
 
     public interface IQueryTrace
     {
-        Task StartAsync();
+        Task StartAsync(int startTimeoutSec);
         void Stop();
         void Update();
+        void Update(string databaseName);
 
         //event TraceEventHandler TraceEvent;
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;

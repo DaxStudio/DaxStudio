@@ -1,0 +1,1371 @@
+<return xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxmla="http://schemas.microsoft.com/analysisservices/2003/xmla">
+    <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified">
+      <xsd:element name="root">
+        <xsd:complexType>
+          <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="row" type="row" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+          <xsd:pattern value="[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="xmlDocument">
+        <xsd:sequence>
+          <xsd:any />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="row">
+        <xsd:sequence>
+          <xsd:element sql:field="METADATA" name="METADATA" type="xmlDocument" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+    <row>
+      <xars:METADATA xmlns="http://schemas.microsoft.com/analysisservices/2003/engine" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100="http://schemas.microsoft.com/analysisservices/2008/engine/100" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl410="http://schemas.microsoft.com/analysisservices/2012/engine/410" xmlns:ddl410_410="http://schemas.microsoft.com/analysisservices/2012/engine/410/410" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:ddl600="http://schemas.microsoft.com/analysisservices/2013/engine/600" xmlns:ddl600_600="http://schemas.microsoft.com/analysisservices/2013/engine/600/600" xmlns:xars="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+          <EntityContainer Name="Sandbox">
+            <EntitySet Name="Customer" EntityType="Sandbox.Customer">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Date" EntityType="Sandbox.Date">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Geography" EntityType="Sandbox.Geography">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Product" EntityType="Sandbox.Product">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="Product_Category" EntityType="Sandbox.Product_Category">
+              <bi:EntitySet Caption="Product Category" ReferenceName="Product Category" />
+            </EntitySet>
+            <EntitySet Name="Product_Subcategory" EntityType="Sandbox.Product_Subcategory">
+              <bi:EntitySet Caption="Product Subcategory" ReferenceName="Product Subcategory" />
+            </EntitySet>
+            <EntitySet Name="Internet_Sales" EntityType="Sandbox.Internet_Sales">
+              <bi:EntitySet Caption="Internet Sales" ReferenceName="Internet Sales" />
+            </EntitySet>
+            <AssociationSet Name="Customer_Geography_Geography_Geography_Id" Association="Sandbox.Customer_Geography_Geography_Geography_Id">
+              <End EntitySet="Customer" />
+              <End EntitySet="Geography" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id" Association="Sandbox.Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id">
+              <End EntitySet="Product" />
+              <End EntitySet="Product_Subcategory" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Product_Subcategory_Product_Category_Product_Category_Product_Category_Id" Association="Sandbox.Product_Subcategory_Product_Category_Product_Category_Product_Category_Id">
+              <End EntitySet="Product_Subcategory" />
+              <End EntitySet="Product_Category" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Customer_Customer_Customer_Id" Association="Sandbox.Internet_Sales_Customer_Customer_Customer_Id">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Customer" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Product_Product_Product_Id" Association="Sandbox.Internet_Sales_Product_Product_Product_Id">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Product" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date" Association="Sandbox.Internet_Sales_Date_Date_Date">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date2" Association="Sandbox.Internet_Sales_Date_Date_Date2">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet State="Inactive" />
+            </AssociationSet>
+            <AssociationSet Name="Internet_Sales_Date_Date_Date3" Association="Sandbox.Internet_Sales_Date_Date_Date3">
+              <End EntitySet="Internet_Sales" />
+              <End EntitySet="Date" />
+              <bi:AssociationSet State="Inactive" />
+            </AssociationSet>
+            <bi:EntityContainer Caption="Adventure Works" Culture="en-US" PreferOrdinalStringEquality="true">
+              <bi:CompareOptions IgnoreCase="true" />
+              <bi:ModelCapabilities>
+                <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+                <bi:QueryBatching>1</bi:QueryBatching>
+                <bi:Variables>1</bi:Variables>
+                <bi:InOperator>1</bi:InOperator>
+                <bi:TableConstructor>1</bi:TableConstructor>
+                <bi:DAXFunctions>
+                  <bi:SummarizeColumns>1</bi:SummarizeColumns>
+                  <bi:SubstituteWithIndex>1</bi:SubstituteWithIndex>
+                  <bi:LeftOuterJoin>1</bi:LeftOuterJoin>
+                  <bi:StringMinMax>1</bi:StringMinMax>
+                  <bi:BinaryMinMax>1</bi:BinaryMinMax>
+                  <bi:TreatAs>1</bi:TreatAs>
+                  <bi:Error>1</bi:Error>
+                  <bi:SampleAxisWithLocalMinMax>1</bi:SampleAxisWithLocalMinMax>
+                </bi:DAXFunctions>
+              </bi:ModelCapabilities>
+            </bi:EntityContainer>
+          </EntityContainer>
+          <EntityType Name="Customer">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="18484">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>18483</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Customer_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Customer Id" ReferenceName="Customer Id">
+                <bi:Statistics DistinctValueCount="18484">
+                  <bi:MinValue>11000</bi:MinValue>
+                  <bi:MaxValue>29483</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Geography_Id" Type="Int64">
+              <bi:Property Caption="Geography Id" ReferenceName="Geography Id">
+                <bi:Statistics DistinctValueCount="336">
+                  <bi:MinValue>2</bi:MinValue>
+                  <bi:MaxValue>654</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Customer_Alternate_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Customer Alternate Id" ReferenceName="Customer Alternate Id">
+                <bi:Statistics DistinctValueCount="18484" StringValueMaxLength="10">
+                  <bi:MinValue>AW00011000</bi:MinValue>
+                  <bi:MaxValue>AW00029483</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Title" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="6" StringValueMaxLength="4">
+                  <bi:MinValue>Mr.</bi:MinValue>
+                  <bi:MaxValue>Sr.</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="First_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="First Name" ReferenceName="First Name">
+                <bi:Statistics DistinctValueCount="670" StringValueMaxLength="11">
+                  <bi:MinValue>Aaron</bi:MinValue>
+                  <bi:MaxValue>Zoe</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Middle_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Middle Name" ReferenceName="Middle Name">
+                <bi:Statistics DistinctValueCount="44" StringValueMaxLength="10">
+                  <bi:MinValue>A</bi:MinValue>
+                  <bi:MaxValue>Z</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Last_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Last Name" ReferenceName="Last Name">
+                <bi:Statistics DistinctValueCount="375" StringValueMaxLength="16">
+                  <bi:MinValue>Adams</bi:MinValue>
+                  <bi:MaxValue>Zukowski</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Name_Style" Type="Boolean">
+              <bi:Property Caption="Name Style" ReferenceName="Name Style" FormatString="&quot;TRUE&quot;;&quot;TRUE&quot;;&quot;FALSE&quot;">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>false</bi:MinValue>
+                  <bi:MaxValue>false</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Birth_Date" Type="DateTime">
+              <bi:Property Caption="Birth Date" ReferenceName="Birth Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="6139">
+                  <bi:MinValue>1916-02-10T00:00:00</bi:MinValue>
+                  <bi:MaxValue>1986-06-25T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Suffix" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="3">
+                  <bi:MinValue>Jr.</bi:MinValue>
+                  <bi:MaxValue>Jr.</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Gender" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="1">
+                  <bi:MinValue>F</bi:MinValue>
+                  <bi:MaxValue>M</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Email_Address" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Email Address" ReferenceName="Email Address">
+                <bi:Statistics DistinctValueCount="18484" StringValueMaxLength="33">
+                  <bi:MinValue>aaron10@adventure-works.com</bi:MinValue>
+                  <bi:MaxValue>zoe9@adventure-works.com</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Yearly_Income" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Yearly Income" ReferenceName="Yearly Income" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="16">
+                  <bi:MinValue>10000</bi:MinValue>
+                  <bi:MaxValue>170000</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Total_Children" Type="Int64">
+              <bi:Property Caption="Total Children" ReferenceName="Total Children">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>5</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Number_of_Children_At_Home" Type="Int64">
+              <bi:Property Caption="Number of Children At Home" ReferenceName="Number of Children At Home">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>5</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Education" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="19">
+                  <bi:MinValue>Bachelors</bi:MinValue>
+                  <bi:MaxValue>Partial High School</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Occupation" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="14">
+                  <bi:MinValue>Clerical</bi:MinValue>
+                  <bi:MaxValue>Skilled Manual</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Owns_House" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Owns House" ReferenceName="Owns House">
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="1">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Number_of_Cars_Owned" Type="Int64">
+              <bi:Property Caption="Number of Cars Owned" ReferenceName="Number of Cars Owned">
+                <bi:Statistics DistinctValueCount="5">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Address_Line_1" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Address Line 1" ReferenceName="Address Line 1">
+                <bi:Statistics DistinctValueCount="12797" StringValueMaxLength="33">
+                  <bi:MinValue>00, rue Saint-Lazare</bi:MinValue>
+                  <bi:MaxValue>Zur Lindung 787</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Address_Line_2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Address Line 2" ReferenceName="Address Line 2">
+                <bi:Statistics DistinctValueCount="167" StringValueMaxLength="21">
+                  <bi:MinValue># 1</bi:MinValue>
+                  <bi:MaxValue>Verkaufsabteilung</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date_of_First_Purchase" Type="DateTime">
+              <bi:Property Caption="Date of First Purchase" ReferenceName="Date of First Purchase" FormatString="G">
+                <bi:Statistics DistinctValueCount="1124">
+                  <bi:MinValue>2010-12-29T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2014-01-28T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Commute_Distance" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Commute Distance" ReferenceName="Commute Distance">
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="10">
+                  <bi:MinValue>0-1 Miles</bi:MinValue>
+                  <bi:MaxValue>5-10 Miles</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Marital_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Marital Status" ReferenceName="Marital Status">
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="1">
+                  <bi:MinValue>M</bi:MinValue>
+                  <bi:MaxValue>S</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Phone_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Phone Number" ReferenceName="Phone Number">
+                <bi:Statistics DistinctValueCount="8890" StringValueMaxLength="19">
+                  <bi:MinValue>1 (11) 500 555-0110</bi:MinValue>
+                  <bi:MaxValue>999-555-0198</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <NavigationProperty Name="Geography_Geography_Id" Relationship="Sandbox.Customer_Geography_Geography_Geography_Id" FromRole="Customer_Geography_Id" ToRole="Geography_Geography_Id">
+              <bi:NavigationProperty ReferenceName="Geography_Geography Id" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:Statistics RowCount="18484" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Date">
+            <Key>
+              <PropertyRef Name="Date2" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="3652">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>3651</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date2" Type="DateTime" Nullable="false">
+              <bi:Property Caption="Date" ReferenceName="Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="3652">
+                  <bi:MinValue>2005-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2014-12-31T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day_Number_of_Week" Type="Int64">
+              <bi:Property Caption="Day Number of Week" ReferenceName="Day Number of Week">
+                <bi:Statistics DistinctValueCount="7">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>7</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Day Name" ReferenceName="Day Name">
+                <bi:Statistics DistinctValueCount="7" StringValueMaxLength="9">
+                  <bi:MinValue>Friday</bi:MinValue>
+                  <bi:MaxValue>Wednesday</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day_of_Month" Type="Int64">
+              <bi:Property Caption="Day of Month" ReferenceName="Day of Month">
+                <bi:Statistics DistinctValueCount="31">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>31</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day_of_Year" Type="Int64">
+              <bi:Property Caption="Day of Year" ReferenceName="Day of Year">
+                <bi:Statistics DistinctValueCount="366">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>366</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Week_Number_of_Year" Type="Int64">
+              <bi:Property Caption="Week Number of Year" ReferenceName="Week Number of Year">
+                <bi:Statistics DistinctValueCount="53">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>53</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Month Name" ReferenceName="Month Name">
+                <bi:Statistics DistinctValueCount="12" StringValueMaxLength="9">
+                  <bi:MinValue>April</bi:MinValue>
+                  <bi:MaxValue>September</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month" Type="Int64">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="12">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>12</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Calendar_Quarter" Type="Int64">
+              <bi:Property Caption="Calendar Quarter" ReferenceName="Calendar Quarter">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Calendar_Year" Type="Int64">
+              <bi:Property Caption="Calendar Year" ReferenceName="Calendar Year">
+                <bi:Statistics DistinctValueCount="10">
+                  <bi:MinValue>2005</bi:MinValue>
+                  <bi:MaxValue>2014</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Calendar_Semester" Type="Int64">
+              <bi:Property Caption="Calendar Semester" ReferenceName="Calendar Semester">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>2</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Fiscal_Quarter" Type="Int64">
+              <bi:Property Caption="Fiscal Quarter" ReferenceName="Fiscal Quarter">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Fiscal_Year" Type="Int64">
+              <bi:Property Caption="Fiscal Year" ReferenceName="Fiscal Year">
+                <bi:Statistics DistinctValueCount="10">
+                  <bi:MinValue>2005</bi:MinValue>
+                  <bi:MaxValue>2014</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Fiscal_Semester" Type="Int64">
+              <bi:Property Caption="Fiscal Semester" ReferenceName="Fiscal Semester">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>2</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month_Calendar" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Month Calendar" ReferenceName="Month Calendar">
+                <bi:Statistics DistinctValueCount="12" StringValueMaxLength="14">
+                  <bi:MinValue> 1 - January</bi:MinValue>
+                  <bi:MaxValue>12 - December</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day_of_Week" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Day of Week" ReferenceName="Day of Week">
+                <bi:Statistics DistinctValueCount="7" StringValueMaxLength="14">
+                  <bi:MinValue> 1 - Sunday</bi:MinValue>
+                  <bi:MaxValue> 7 - Saturday</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Days_Current_Quarter_to_Date" Type="Int64">
+              <bi:Measure Caption="Days Current Quarter to Date" ReferenceName="Days Current Quarter to Date">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Days_in_Current_Quarter" Type="Int64">
+              <bi:Measure Caption="Days in Current Quarter" ReferenceName="Days in Current Quarter">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <bi:EntityType Contents="Time">
+              <bi:Hierarchy Name="Calendar">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Semester">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Semester" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month_Calendar" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Month" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Hierarchy Name="Fiscal">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Semester">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Semester" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Fiscal_Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month_Calendar" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Month" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Hierarchy Name="Production_Calendar" Caption="Production Calendar" ReferenceName="Production Calendar">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Calendar_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Week">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Week_Number_of_Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day_of_Week" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="3652" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Geography">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="655">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>654</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Geography_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Geography Id" ReferenceName="Geography Id">
+                <bi:Statistics DistinctValueCount="655">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>655</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="City" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="562" StringValueMaxLength="21">
+                  <bi:MinValue>Abingdon</bi:MinValue>
+                  <bi:MaxValue>Zeeland</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="State_Province_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="State Province Code" ReferenceName="State Province Code">
+                <bi:Statistics DistinctValueCount="71" StringValueMaxLength="3">
+                  <bi:MinValue>17</bi:MinValue>
+                  <bi:MaxValue>WY</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="State_Province_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="State Province Name" ReferenceName="State Province Name">
+                <bi:Statistics DistinctValueCount="71" StringValueMaxLength="19">
+                  <bi:MinValue>Alabama</bi:MinValue>
+                  <bi:MaxValue>Yveline</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Country_Region_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Country Region Code" ReferenceName="Country Region Code">
+                <bi:Statistics DistinctValueCount="6" StringValueMaxLength="2">
+                  <bi:MinValue>AU</bi:MinValue>
+                  <bi:MaxValue>US</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Country_Region_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Country Region Name" ReferenceName="Country Region Name">
+                <bi:Statistics DistinctValueCount="6" StringValueMaxLength="14">
+                  <bi:MinValue>Australia</bi:MinValue>
+                  <bi:MaxValue>United States</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Postal_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Postal Code" ReferenceName="Postal Code">
+                <bi:Statistics DistinctValueCount="635" StringValueMaxLength="10">
+                  <bi:MinValue>01071</bi:MinValue>
+                  <bi:MaxValue>YO15</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Sales_Territory_Id" Type="Int64">
+              <bi:Property Caption="Sales Territory Id" ReferenceName="Sales Territory Id">
+                <bi:Statistics DistinctValueCount="10">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>10</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Statistics RowCount="655" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Product">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="606">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>605</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Id" ReferenceName="Product Id">
+                <bi:Statistics DistinctValueCount="606">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>606</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Alternate_Id" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Alternate Id" ReferenceName="Product Alternate Id">
+                <bi:Statistics DistinctValueCount="504" StringValueMaxLength="10">
+                  <bi:MinValue>AR-5381</bi:MinValue>
+                  <bi:MaxValue>WB-H098</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Subcategory_Id" Type="Int64">
+              <bi:Property Caption="Product Subcategory Id" ReferenceName="Product Subcategory Id">
+                <bi:Statistics DistinctValueCount="38">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>37</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Weight_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Weight Unit Code" ReferenceName="Weight Unit Code">
+                <bi:Statistics DistinctValueCount="3" StringValueMaxLength="2">
+                  <bi:MinValue>G</bi:MinValue>
+                  <bi:MaxValue>LB</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Size_Unit_Code" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Size Unit Code" ReferenceName="Size Unit Code">
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="2">
+                  <bi:MinValue>CM</bi:MinValue>
+                  <bi:MaxValue>CM</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Name" ReferenceName="Product Name">
+                <bi:Statistics DistinctValueCount="504" StringValueMaxLength="32">
+                  <bi:MinValue>Adjustable Race</bi:MinValue>
+                  <bi:MaxValue>Women's Tights, S</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Standard Cost" ReferenceName="Standard Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="135">
+                  <bi:MinValue>0.8565</bi:MinValue>
+                  <bi:MaxValue>2171.2942</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Is_Finished_Product" Type="Boolean">
+              <bi:Property Caption="Is Finished Product" ReferenceName="Is Finished Product" FormatString="&quot;TRUE&quot;;&quot;TRUE&quot;;&quot;FALSE&quot;">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>false</bi:MinValue>
+                  <bi:MaxValue>true</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Color" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="10" StringValueMaxLength="12">
+                  <bi:MinValue>Black</bi:MinValue>
+                  <bi:MaxValue>Yellow</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Safety_Stock_Level" Type="Int64">
+              <bi:Property Caption="Safety Stock Level" ReferenceName="Safety Stock Level">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>4</bi:MinValue>
+                  <bi:MaxValue>1000</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Reorder_Point" Type="Int64">
+              <bi:Property Caption="Reorder Point" ReferenceName="Reorder Point">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>3</bi:MinValue>
+                  <bi:MaxValue>750</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="List_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="List Price" ReferenceName="List Price" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="121">
+                  <bi:MinValue>2.29</bi:MinValue>
+                  <bi:MaxValue>3578.27</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Size" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="19" StringValueMaxLength="2">
+                  <bi:MinValue>38</bi:MinValue>
+                  <bi:MaxValue>XL</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Size_Range" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Size Range" ReferenceName="Size Range">
+                <bi:Statistics DistinctValueCount="11" StringValueMaxLength="8">
+                  <bi:MinValue>38-40 CM</bi:MinValue>
+                  <bi:MaxValue>XL</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Weight" Type="Double">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="128">
+                  <bi:MinValue>2.12</bi:MinValue>
+                  <bi:MaxValue>1.05E3</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Days_To_Manufacture" Type="Int64">
+              <bi:Property Caption="Days To Manufacture" ReferenceName="Days To Manufacture">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Line" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Line" ReferenceName="Product Line">
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="1">
+                  <bi:MinValue>M</bi:MinValue>
+                  <bi:MaxValue>T</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Dealer_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Dealer Price" ReferenceName="Dealer Price" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="121">
+                  <bi:MinValue>1.374</bi:MinValue>
+                  <bi:MaxValue>2146.962</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Class" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="4" StringValueMaxLength="1">
+                  <bi:MinValue>H</bi:MinValue>
+                  <bi:MaxValue>M</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Style" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="4" StringValueMaxLength="1">
+                  <bi:MinValue>M</bi:MinValue>
+                  <bi:MaxValue>W</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Model_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Model Name" ReferenceName="Model Name">
+                <bi:Statistics DistinctValueCount="120" StringValueMaxLength="27">
+                  <bi:MinValue>All-Purpose Bike Stand</bi:MinValue>
+                  <bi:MaxValue>Women's Tights</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Description" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property>
+                <bi:Statistics DistinctValueCount="115" StringValueMaxLength="221">
+                  <bi:MinValue>A light yet stiff aluminum bar for long distance riding.</bi:MinValue>
+                  <bi:MaxValue>Wraps to fit front and rear tires, carrier and 2 keys included.</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Start_Date" Type="DateTime">
+              <bi:Property Caption="Product Start Date" ReferenceName="Product Start Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>2003-07-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2013-07-01T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_End_Date" Type="DateTime">
+              <bi:Property Caption="Product End Date" ReferenceName="Product End Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="3">
+                  <bi:MinValue>2007-12-28T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2008-12-27T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Status" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Status" ReferenceName="Product Status">
+                <bi:Statistics DistinctValueCount="2" StringValueMaxLength="7">
+                  <bi:MinValue>Current</bi:MinValue>
+                  <bi:MaxValue>Current</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Subcategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Subcategory Name" ReferenceName="Product Subcategory Name">
+                <bi:Statistics DistinctValueCount="38" StringValueMaxLength="17">
+                  <bi:MinValue>Bib-Shorts</bi:MinValue>
+                  <bi:MaxValue>Wheels</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Category Name" ReferenceName="Product Category Name">
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="11">
+                  <bi:MinValue>Accessories</bi:MinValue>
+                  <bi:MaxValue>Components</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <NavigationProperty Name="Product_Subcategory_Product_Subcategory_Id" Relationship="Sandbox.Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id" FromRole="Product_Product_Subcategory_Id" ToRole="Product_Subcategory_Product_Subcategory_Id">
+              <bi:NavigationProperty ReferenceName="Product Subcategory_Product Subcategory Id" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Category">
+                <bi:Level Name="Category2" Caption="Category" ReferenceName="Category">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Category_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Subcategory">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Subcategory_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Model">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Model_Name" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Product_" Caption="Product " ReferenceName="Product ">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Product_Name" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="606" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Product_Category">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="5">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>3</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Category_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Category Id" ReferenceName="Product Category Id">
+                <bi:Statistics DistinctValueCount="5">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Category_Alternate_Id" Type="Int64">
+              <bi:Property Caption="Product Category Alternate Id" ReferenceName="Product Category Alternate Id">
+                <bi:Statistics DistinctValueCount="5">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Category_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Category Name" ReferenceName="Product Category Name">
+                <bi:Statistics DistinctValueCount="5" StringValueMaxLength="11">
+                  <bi:MinValue>Accessories</bi:MinValue>
+                  <bi:MaxValue>Components</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Statistics RowCount="5" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Product_Subcategory">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="38">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>36</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Subcategory_Id" Type="Int64" Nullable="false">
+              <bi:Property Caption="Product Subcategory Id" ReferenceName="Product Subcategory Id">
+                <bi:Statistics DistinctValueCount="38">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>37</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Subcategory_Alternate_Id" Type="Int64">
+              <bi:Property Caption="Product Subcategory Alternate Id" ReferenceName="Product Subcategory Alternate Id">
+                <bi:Statistics DistinctValueCount="38">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>37</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Subcategory_Name" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Product Subcategory Name" ReferenceName="Product Subcategory Name">
+                <bi:Statistics DistinctValueCount="38" StringValueMaxLength="17">
+                  <bi:MinValue>Bib-Shorts</bi:MinValue>
+                  <bi:MaxValue>Wheels</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Category_Id" Type="Int64">
+              <bi:Property Caption="Product Category Id" ReferenceName="Product Category Id">
+                <bi:Statistics DistinctValueCount="5">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <NavigationProperty Name="Product_Category_Product_Category_Id" Relationship="Sandbox.Product_Subcategory_Product_Category_Product_Category_Product_Category_Id" FromRole="Product_Subcategory_Product_Category_Id" ToRole="Product_Category_Product_Category_Id">
+              <bi:NavigationProperty ReferenceName="Product Category_Product Category Id" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:Statistics RowCount="38" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Internet_Sales">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="60398">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>60397</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Id" Type="Int64">
+              <bi:Property Caption="Product Id" ReferenceName="Product Id">
+                <bi:Statistics DistinctValueCount="158">
+                  <bi:MinValue>214</bi:MinValue>
+                  <bi:MaxValue>606</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Customer_Id" Type="Int64">
+              <bi:Property Caption="Customer Id" ReferenceName="Customer Id">
+                <bi:Statistics DistinctValueCount="18484">
+                  <bi:MinValue>11000</bi:MinValue>
+                  <bi:MaxValue>29483</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Promotion_Id" Type="Int64">
+              <bi:Property Caption="Promotion Id" ReferenceName="Promotion Id">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>14</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Currency_Id" Type="Int64">
+              <bi:Property Caption="Currency Id" ReferenceName="Currency Id">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>6</bi:MinValue>
+                  <bi:MaxValue>100</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Sales_Territory_Id" Type="Int64">
+              <bi:Property Caption="Sales Territory Id" ReferenceName="Sales Territory Id">
+                <bi:Statistics DistinctValueCount="10">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>10</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Sales_Order_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Sales Order Number" ReferenceName="Sales Order Number">
+                <bi:Statistics DistinctValueCount="27659" StringValueMaxLength="7">
+                  <bi:MinValue>SO43697</bi:MinValue>
+                  <bi:MaxValue>SO75123</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Sales_Order_Line_Number" Type="Int64">
+              <bi:Property Caption="Sales Order Line Number" ReferenceName="Sales Order Line Number">
+                <bi:Statistics DistinctValueCount="8">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>8</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Revision_Number" Type="Int64">
+              <bi:Property Caption="Revision Number" ReferenceName="Revision Number">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Order_Quantity" Type="Int64">
+              <bi:Property Caption="Order Quantity" ReferenceName="Order Quantity">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Unit_Price" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Unit Price" ReferenceName="Unit Price" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="42">
+                  <bi:MinValue>2.29</bi:MinValue>
+                  <bi:MaxValue>3578.27</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Extended_Amount" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Extended Amount" ReferenceName="Extended Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="42">
+                  <bi:MinValue>2.29</bi:MinValue>
+                  <bi:MaxValue>3578.27</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Unit_Price_Discount_Pct" Type="Double">
+              <bi:Property Caption="Unit Price Discount Pct" ReferenceName="Unit Price Discount Pct">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>0</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Discount_Amount" Type="Double">
+              <bi:Property Caption="Discount Amount" ReferenceName="Discount Amount">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>0</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Product_Standard_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Product Standard Cost" ReferenceName="Product Standard Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="45">
+                  <bi:MinValue>0.8565</bi:MinValue>
+                  <bi:MaxValue>2171.2942</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Total Product Cost" ReferenceName="Total Product Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="45">
+                  <bi:MinValue>0.8565</bi:MinValue>
+                  <bi:MaxValue>2171.2942</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Sales_Amount" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Sales Amount" ReferenceName="Sales Amount" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="42">
+                  <bi:MinValue>2.29</bi:MinValue>
+                  <bi:MaxValue>3578.27</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Tax_Amt" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property Caption="Tax Amt" ReferenceName="Tax Amt" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="42">
+                  <bi:MinValue>0.1832</bi:MinValue>
+                  <bi:MaxValue>286.2616</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Freight" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="42">
+                  <bi:MinValue>0.0573</bi:MinValue>
+                  <bi:MaxValue>89.4568</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Carrier_Tracking_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Carrier Tracking Number" ReferenceName="Carrier Tracking Number">
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="0" />
+              </bi:Property>
+            </Property>
+            <Property Name="Customer_PO_Number" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Customer PO Number" ReferenceName="Customer PO Number">
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="0" />
+              </bi:Property>
+            </Property>
+            <Property Name="Order_Date" Type="DateTime">
+              <bi:Property Caption="Order Date" ReferenceName="Order Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="1124">
+                  <bi:MinValue>2010-12-29T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2014-01-28T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Due_Date" Type="DateTime">
+              <bi:Property Caption="Due Date" ReferenceName="Due Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="1124">
+                  <bi:MinValue>2011-01-10T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2014-02-09T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Ship_Date" Type="DateTime">
+              <bi:Property Caption="Ship Date" ReferenceName="Ship Date" FormatString="G">
+                <bi:Statistics DistinctValueCount="1124">
+                  <bi:MinValue>2011-01-05T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2014-02-04T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Property FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:Statistics DistinctValueCount="45">
+                  <bi:MinValue>1.4335</bi:MinValue>
+                  <bi:MaxValue>1487.8356</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Internet_Distinct_Count_Sales_Order" Type="Int64">
+              <bi:Measure Caption="Internet Distinct Count Sales Order" ReferenceName="Internet Distinct Count Sales Order">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Order_Lines_Count" Type="Int64">
+              <bi:Measure Caption="Internet Order Lines Count" ReferenceName="Internet Order Lines Count">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Units" Type="Int64">
+              <bi:Measure Caption="Internet Total Units" ReferenceName="Internet Total Units">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Discount_Amount" Type="Double">
+              <bi:Measure Caption="Internet Total Discount Amount" ReferenceName="Internet Total Discount Amount">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Product_Cost" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Product Cost" ReferenceName="Internet Total Product Cost" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Sales" ReferenceName="Internet Total Sales" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Margin" ReferenceName="Internet Total Margin" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Tax_Amt" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Tax Amt" ReferenceName="Internet Total Tax Amt" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Total_Freight" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Total Freight" ReferenceName="Internet Total Freight" FormatString="\$#,0.00;(\$#,0.00);\$#,0.00">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Margin" ReferenceName="Internet Previous Quarter Margin">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Current_Quarter_Margin" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Current Quarter Margin" ReferenceName="Internet Current Quarter Margin">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Margin_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Margin Proportion to QTD" ReferenceName="Internet Previous Quarter Margin Proportion to QTD">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Sales" ReferenceName="Internet Previous Quarter Sales">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Current_Quarter_Sales" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Current Quarter Sales" ReferenceName="Internet Current Quarter Sales">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Previous_Quarter_Sales_Proportion_to_QTD" Type="Decimal" Precision="19" Scale="4">
+              <bi:Measure Caption="Internet Previous Quarter Sales Proportion to QTD" ReferenceName="Internet Previous Quarter Sales Proportion to QTD">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Current_Quarter_Sales_Performance" Type="Double">
+              <bi:Measure Caption="Internet Current Quarter Sales Performance" ReferenceName="Internet Current Quarter Sales Performance">
+                <bi:Kpi StatusGraphic="Shapes">
+                  <bi:KpiGoal>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Goal" />
+                  </bi:KpiGoal>
+                  <bi:KpiStatus>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Sales_Performance_Status" />
+                  </bi:KpiStatus>
+                </bi:Kpi>
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="v_Internet_Current_Quarter_Sales_Performance_Goal" Type="Double">
+              <bi:Measure Caption="_Internet Current Quarter Sales Performance Goal" Hidden="true" ReferenceName="_Internet Current Quarter Sales Performance Goal">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="v_Internet_Current_Quarter_Sales_Performance_Status" Type="Int64">
+              <bi:Measure Caption="_Internet Current Quarter Sales Performance Status" Hidden="true" ReferenceName="_Internet Current Quarter Sales Performance Status">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="Internet_Current_Quarter_Margin_Performance" Type="Double">
+              <bi:Measure Caption="Internet Current Quarter Margin Performance" ReferenceName="Internet Current Quarter Margin Performance">
+                <bi:Kpi StatusGraphic="Shapes">
+                  <bi:KpiGoal>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Margin_Performance_Goal" />
+                  </bi:KpiGoal>
+                  <bi:KpiStatus>
+                    <bi:PropertyRef Name="v_Internet_Current_Quarter_Margin_Performance_Status" />
+                  </bi:KpiStatus>
+                </bi:Kpi>
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="v_Internet_Current_Quarter_Margin_Performance_Goal" Type="Double">
+              <bi:Measure Caption="_Internet Current Quarter Margin Performance Goal" Hidden="true" ReferenceName="_Internet Current Quarter Margin Performance Goal">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <Property Name="v_Internet_Current_Quarter_Margin_Performance_Status" Type="Int64">
+              <bi:Measure Caption="_Internet Current Quarter Margin Performance Status" Hidden="true" ReferenceName="_Internet Current Quarter Margin Performance Status">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <NavigationProperty Name="Customer_Customer_Id" Relationship="Sandbox.Internet_Sales_Customer_Customer_Customer_Id" FromRole="Internet_Sales_Customer_Id" ToRole="Customer_Customer_Id">
+              <bi:NavigationProperty ReferenceName="Customer_Customer Id" />
+            </NavigationProperty>
+            <NavigationProperty Name="Product_Product_Id" Relationship="Sandbox.Internet_Sales_Product_Product_Product_Id" FromRole="Internet_Sales_Product_Id" ToRole="Product_Product_Id">
+              <bi:NavigationProperty ReferenceName="Product_Product Id" />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date" Relationship="Sandbox.Internet_Sales_Date_Date_Date" FromRole="Internet_Sales_Order_Date" ToRole="Date_Date">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date2" Relationship="Sandbox.Internet_Sales_Date_Date_Date2" FromRole="Internet_Sales_Due_Date" ToRole="Date_Date2">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <NavigationProperty Name="Date_Date3" Relationship="Sandbox.Internet_Sales_Date_Date_Date3" FromRole="Internet_Sales_Ship_Date" ToRole="Date_Date3">
+              <bi:NavigationProperty />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:DisplayFolders>
+                <bi:DisplayFolder Name="QTD_Folder" Caption="QTD Folder">
+                  <bi:PropertyRef Name="Internet_Previous_Quarter_Margin" />
+                  <bi:PropertyRef Name="Internet_Current_Quarter_Margin" />
+                  <bi:PropertyRef Name="Internet_Previous_Quarter_Margin_Proportion_to_QTD" />
+                  <bi:PropertyRef Name="Internet_Previous_Quarter_Sales" />
+                  <bi:PropertyRef Name="Internet_Current_Quarter_Sales" />
+                  <bi:PropertyRef Name="Internet_Previous_Quarter_Sales_Proportion_to_QTD" />
+                  <bi:PropertyRef Name="Internet_Current_Quarter_Sales_Performance" />
+                  <bi:PropertyRef Name="Internet_Current_Quarter_Margin_Performance" />
+                </bi:DisplayFolder>
+              </bi:DisplayFolders>
+              <bi:Statistics RowCount="60398" />
+            </bi:EntityType>
+          </EntityType>
+          <Association Name="Customer_Geography_Geography_Geography_Id">
+            <End Role="Customer_Geography_Id" Type="Sandbox.Customer" Multiplicity="*" />
+            <End Role="Geography_Geography_Id" Type="Sandbox.Geography" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Product_Product_Subcategory_Product_Subcategory_Product_Subcategory_Id">
+            <End Role="Product_Product_Subcategory_Id" Type="Sandbox.Product" Multiplicity="*" />
+            <End Role="Product_Subcategory_Product_Subcategory_Id" Type="Sandbox.Product_Subcategory" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Product_Subcategory_Product_Category_Product_Category_Product_Category_Id">
+            <End Role="Product_Subcategory_Product_Category_Id" Type="Sandbox.Product_Subcategory" Multiplicity="*" />
+            <End Role="Product_Category_Product_Category_Id" Type="Sandbox.Product_Category" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Customer_Customer_Customer_Id">
+            <End Role="Internet_Sales_Customer_Id" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Customer_Customer_Id" Type="Sandbox.Customer" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Product_Product_Product_Id">
+            <End Role="Internet_Sales_Product_Id" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Product_Product_Id" Type="Sandbox.Product" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date">
+            <End Role="Internet_Sales_Order_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date2">
+            <End Role="Internet_Sales_Due_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date2" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Internet_Sales_Date_Date_Date3">
+            <End Role="Internet_Sales_Ship_Date" Type="Sandbox.Internet_Sales" Multiplicity="*" />
+            <End Role="Date_Date3" Type="Sandbox.Date" Multiplicity="0..1" />
+          </Association>
+        </Schema>
+      </xars:METADATA>
+    </row>
+  </root>
+</return>

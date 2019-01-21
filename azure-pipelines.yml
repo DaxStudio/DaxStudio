@@ -1,0 +1,65 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+
+pool:
+  vmImage: 'VS2017-Win2016'
+
+variables:
+  solution: '**/*.sln'
+  buildDefinition: '**/*.msproj'
+  buildTarget: 'Installer'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@0
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+    restoreDirectory: '$(Build.SourcesDirectory)\\packages'
+
+
+# - task: VSBuild@1
+#  inputs:
+#    solution: '$(solution)'
+#    platform: '$(buildPlatform)'
+#    configuration: '$(buildConfiguration)'
+- script: 'choco install innosetup -y'
+
+- task: MSBuild@1
+  inputs:
+    solution: '$(buildDefinition)' 
+    #msbuildLocationMethod: 'version' # Optional. Options: version, location
+    #msbuildVersion: 'latest' # Optional. Options: latest, 15.0, 14.0, 12.0, 4.0
+    msbuildArchitecture: '$(buildPlatform)' # Optional. Options: x86, x64
+    #msbuildLocation: # Optional
+    #platform: # Optional
+    configuration: '$(buildConfiguration)' # Optional
+    msbuildArguments: '/target:$(buildTarget)' # Optional
+    #clean: false # Optional
+    #maximumCpuCount: false # Optional
+    #restoreNugetPackages: false # Optional
+    #logProjectEvents: false # Optional
+    #createLogFile: false # Optional
+
+# Need to refactor tests/code so they can work without a local SSAS instance
+# - task: VSTest@2
+#  inputs:
+#    platform: '$(buildPlatform)'
+#    configuration: '$(buildConfiguration)'
+
+- task: CopyFiles@2
+  inputs:
+    contents: package\*
+    targetFolder: $(Build.ArtifactStagingDirectory)
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: DaxStudioSetup

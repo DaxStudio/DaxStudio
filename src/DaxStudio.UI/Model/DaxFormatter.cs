@@ -20,6 +20,8 @@ namespace DaxStudio.UI.Model
     {
         public static string SHA256(string input)
         {
+            if (input == null) return "";
+
             var hasher = new SHA256Managed();
             var sb = new StringBuilder();
 
@@ -55,6 +57,7 @@ namespace DaxStudio.UI.Model
     public class DaxFormatterRequest
     {
         public string Dax { get; set; }
+        public int? MaxLineLenght { get; set; }
         public char ListSeparator { get; set; }
         public char DecimalSeparator { get; set; }
         public string CallerApp { get; set; }
@@ -178,17 +181,17 @@ namespace DaxStudio.UI.Model
 
 
 
-        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator, bool formatAlternateStyle )
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, serverDbInfo, globalOptions, eventAggregator);
+            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, serverDbInfo, globalOptions, eventAggregator, formatAlternateStyle);
             var res2 = new DaxFormatterResult();
             JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
             return res2;
         }
         
-        private static async Task<string> CallDaxFormatterAsync(string uri, string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        private static async Task<string> CallDaxFormatterAsync(string uri, string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator, bool formatAlternateStyle )
         {
             Log.Verbose("{class} {method} {uri} {query}","DaxFormatter","CallDaxFormatterAsync:Begin",uri,query );
             try
@@ -205,6 +208,13 @@ namespace DaxStudio.UI.Model
                 req.ServerVersion = serverDbInfo.ServerVersion;
                 req.DatabaseName = Crypto.SHA256( serverDbInfo.DatabaseName );
                 req.DatabaseCompatibilityLevel = serverDbInfo.DatabaseCompatibilityLevel;
+                if ( (globalOptions.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine && !formatAlternateStyle)
+                    ||
+                     (globalOptions.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine && formatAlternateStyle)
+                    )
+                {
+                    req.MaxLineLenght = 1;
+                }
 
                 var data = JsonConvert.SerializeObject(req);
 

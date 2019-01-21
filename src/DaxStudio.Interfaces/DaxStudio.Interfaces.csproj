@@ -85,12 +85,14 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Enums\DaxFormatStyle.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="IDaxStudioProxy.cs" />
     <Compile Include="IDaxStudioHost.cs" />
     <Compile Include="IGlobalOptions.cs" />
+    <Compile Include="IOpenable.cs" />
     <Compile Include="IQueryRunner.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
     <Compile Include="ISaveable.cs" />
@@ -106,6 +108,9 @@
       <Name>ADOTabular</Name>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

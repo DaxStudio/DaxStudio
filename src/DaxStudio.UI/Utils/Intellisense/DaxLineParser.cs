@@ -240,13 +240,14 @@ namespace DaxStudio.UI.Utils
         {
             
             string tableName = "";
+            var isQuotedName = false;
             if (line.EndsWith("["))
             {
                 line = line.TrimEnd('[');
             }
             try
             {
-                var separator = ' ';
+                Func<char, bool> isSeparator = c => { return char.IsWhiteSpace(c); };
             
                 if (line.Length == 0) return " "; // return a space if we are at the start of a line
 
@@ -255,13 +256,14 @@ namespace DaxStudio.UI.Utils
 
                 if (line.EndsWith("\'"))
                 {
-                    separator = '\'';
+                    isQuotedName = true;
+                    isSeparator = c => c == '\'';
                     line = line.TrimEnd('\'');
                 }
                 for (var i = line.Length - 1; i >= 0; i--)
                 {
-                    if (line[i] == separator) break;
-                    if (separator == ' ' && Punctuation.Contains(line[i])) break;
+                    if (isSeparator(line[i] )) break;
+                    if (!isQuotedName && Punctuation.Contains(line[i])) break;
                     tableName = line[i] + tableName;
                 }
             }

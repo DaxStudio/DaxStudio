@@ -74,16 +74,26 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.AnalysisServices, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\140\SDK\Assemblies\Microsoft.AnalysisServices.DLL</HintPath>
+    <Reference Include="Microsoft.AnalysisServices, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\Microsoft.NET\ADOMD.NET\140\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.AdomdClient.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=15.12.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.12.1\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Excel.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\Microsoft.Excel.AdomdClient.dll</HintPath>
+      <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Aliases>ExcelAdomdClientReference</Aliases>
       <Private>False</Private>
@@ -165,7 +175,12 @@
     <Compile Include="IMetaDataVisitor.cs" />
     <Compile Include="MetaDataVisitorADOMD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ConnectionStringParser.cs" />
     <Compile Include="VersionComparisonExtension.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -175,4 +190,19 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="solveAliasProblem">
+    <ConvertToAbsolutePath Paths="..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll">
+      <Output TaskParameter="AbsolutePaths" PropertyName="FullPathOriginal" />
+    </ConvertToAbsolutePath>
+    <ItemGroup>
+      <ReferencePath Remove="$(FullPathOriginal)" />
+      <ReferencePath Include="$(FullPathOriginal)">
+        <Aliases>ExcelAdomdClientReference</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
+  </PropertyGroup>
+
 </Project>

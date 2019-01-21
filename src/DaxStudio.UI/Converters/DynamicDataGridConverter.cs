@@ -1,7 +1,9 @@
-﻿using System;
+﻿using DaxStudio.Common;
+using System;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -12,6 +14,13 @@ namespace DaxStudio.UI.Converters
     //
     public class DynamicDataGridConverter : IValueConverter
     {
+        static Regex bindingPathRegex;
+        static DynamicDataGridConverter()
+        {
+            // store the static compiled regex so we don't have to instantiate it each time we bind a column
+            bindingPathRegex = new Regex(@"[\^,\]\[\.]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var columns = new ObservableCollection<DataGridColumn>();
@@ -71,9 +80,11 @@ namespace DaxStudio.UI.Converters
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
 
                         // Bind FormatString if it exists
-                        if (item.ExtendedProperties["FormatString"] != null)
-                            colBinding.StringFormat = item.ExtendedProperties["FormatString"].ToString();
-                        
+                        if (item.ExtendedProperties[Constants.FORMAT_STRING] != null)
+                            colBinding.StringFormat = item.ExtendedProperties[Constants.FORMAT_STRING].ToString();
+                        // set culture if it exists
+                        if (item.ExtendedProperties[Constants.LOCALE_ID] != null)
+                            colBinding.ConverterCulture = new CultureInfo((int)item.ExtendedProperties[Constants.LOCALE_ID]);
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                         if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
@@ -99,9 +110,11 @@ namespace DaxStudio.UI.Converters
             return Binding.DoNothing;
         }
 
+        // escapes special characters from the WPF binding path (eg. ^.][ )
         private string FixBindingPath(string columnName)
         {
-            return "[" + columnName.Replace("]","^]").Replace(".","^.").Replace("[","^[") + "]";
+            var bindingPath = bindingPathRegex.Replace(columnName, "^$0");
+            return "[" + bindingPath + "]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

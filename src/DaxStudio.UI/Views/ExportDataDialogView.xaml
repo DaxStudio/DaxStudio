@@ -1,0 +1,74 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.ExportDataDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:viewModel="clr-namespace:DaxStudio.UI.ViewModels"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             MinWidth="400"
+             MinHeight="350">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
+            
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4,2"/>
+                <Setter Property="Padding" Value="8,2"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Vertical">
+                
+                    <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
+                    <Label Content="Export Data" Foreground="{StaticResource DaxStudioBrush}" 
+                           Margin="0,0,0,10" Padding="0"
+                           FontWeight="Light" FontSize="44" ></Label>
+                    <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+                
+                <TextBlock Margin="0,0,0,5">Destination:</TextBlock>
+                <RadioButton GroupName="Destination" Content="CSV" IsChecked="{Binding IsCSVExport}"/>
+                <RadioButton GroupName="Destination" Content="SQL Server" IsChecked="{Binding IsSQLExport}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Vertical" Visibility="{Binding IsCSVExport, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Padding="10,10,0,5">Output Path:</TextBlock>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox  Text="{Binding OutputPath}"></TextBox>
+                    <Button Grid.Column="1" x:Name="BrowseFolders">...</Button>
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Vertical" Visibility="{Binding IsSQLExport, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Padding="10,10,0,5">Connection String:</TextBlock>
+                <TextBox Text="{Binding ConnectionString}"></TextBox>
+                <TextBlock Padding="10,10,0,5">Schema Name:</TextBlock>
+                <TextBox Text="{Binding SchemaName}"></TextBox>
+                <CheckBox IsChecked="{Binding TruncateTables}">Truncate Tables</CheckBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
+                <Button x:Name="Export">Export</Button>
+                <Button x:Name="Cancel" IsCancel="True">Cancel</Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

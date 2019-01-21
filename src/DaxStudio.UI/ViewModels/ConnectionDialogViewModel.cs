@@ -14,6 +14,7 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -205,6 +206,12 @@ namespace DaxStudio.UI.ViewModels
                                 break;
                             case "application name":
                                 ApplicationName = p.Value;
+                                break;
+                            case "locale identifier":
+                                Locale = LocaleOptions.GetByLcid(int.Parse( p.Value));
+                                break;
+                            case "show hidden cubes":
+                                // do nothing
                                 break;
                             default:
                                 AdditionalOptions += string.Format("{0}={1};", p.Key, p.Value);
@@ -423,7 +430,7 @@ namespace DaxStudio.UI.ViewModels
         */
         private string BuildPowerPivotConnection()
         {    
-            return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot"), string.Format("Location={0};Extended Properties=\"Location={0}\";Workstation ID={0}",WorkbookName)).ConnectionString;
+            return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot"), string.Format("Location=\"{0}\";Extended Properties='Location=\"{1}\"';Workstation ID=\"{0}\"",WorkbookName, WorkbookName.Replace("'","''"))).ConnectionString;
             
         }
 

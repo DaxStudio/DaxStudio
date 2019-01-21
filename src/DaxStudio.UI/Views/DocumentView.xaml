@@ -236,7 +236,12 @@
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
                                    Margin="0,-1,0,1"
                                    AnchorablesSource="{Binding ToolWindows}"
-                                   Grid.Row="0">
+                                   Grid.Row="0"
+                                   beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True">
+            <i:Interaction.Behaviors>
+                <beh:AvalonDockLayoutSerializerBehaviour />
+            </i:Interaction.Behaviors>
+            
             <avalondock:DockingManager.LayoutUpdateStrategy>
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
@@ -293,6 +298,7 @@
                             </Grid>
                         </DataTemplate>
                     </selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                    
                     <selectors:TraceWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <Grid>
@@ -306,7 +312,8 @@
                                 
                                 <!-- dynamically inject the following buttons only for tracewatchers -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,15,0">
-                                    <Button x:Name="Start" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}" >
+                                    <Button x:Name="Start" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}" >
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip 
                                                 Title="Start"
@@ -319,7 +326,8 @@
                                             <Image Source="{StaticResource TraceStart}" Style="{StaticResource ButtonImage}"></Image>
                                         </Border>
                                     </Button>
-                                    <Button x:Name="Pause" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="Pause" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip 
                                                 Title="Pause"
@@ -330,7 +338,8 @@
                                         </Border>
                                         
                                     </Button>
-                                    <Button x:Name="Stop" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="Stop" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
                                                 Title="Stop"
@@ -342,7 +351,8 @@
                                     </Button>
                                     <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
                                     <!-- clear -->
-                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}">
+                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
                                                 Title="Clear All"
@@ -353,7 +363,8 @@
                                         </Border>
                                     </Button>
                                     <!-- copy all -->
-                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" cal:Bind.Model="{Binding Content}"
+                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}"
                                             Visibility="{Binding Path=IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
                                         <Button.ToolTip>
                                             <Fluent:ScreenTip
@@ -379,6 +390,7 @@
                                         </Border>
                                     </ToggleButton>
                                     <!-- Clear filters -->
+
                                     <Button x:Name="ClearFilters" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}" 
                                             Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
@@ -391,6 +403,7 @@
                                             <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"></Image>
                                         </Border>
                                     </Button>
+
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
@@ -457,8 +470,8 @@
 
                     <avalondock:LayoutPanel Orientation="Vertical">
 
-                        <avalondock:LayoutDocumentPane DockHeight="Auto"  >
-                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False">
+                        <avalondock:LayoutDocumentPane DockHeight="Auto" >
+                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="Document">
 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -470,18 +483,31 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <dax:DAXEditor Margin="2,2,2,2" x:Name="daxEditor" Padding="8,8,8,8"
-                                                   Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2" MinWidth="100" 
+                                    <dax:DAXEditor x:Name="daxEditor" 
+                                                   Margin="2,2,2,2" 
+                                                   Padding="8,8,8,8"
+                                                   Grid.Column="0" 
+                                                   Grid.Row="0" 
+                                                   Grid.RowSpan="2" 
+                                                   Grid.ColumnSpan="2" MinWidth="100" 
                                                    FontSize="{Binding Path=SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                   
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
+                                                   dd:DragDrop.DragHandler="{Binding Path=DataContext,RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
-                                                   
+                                                    DragEnter="daxEditor_DragEnter"
                                                    >
-
+                                        <!-- EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="DragEnter">
+                                                <cal:ActionMessage MethodName="OnDragEnter">
+                                                    
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
@@ -513,9 +539,9 @@
 
                         <!-- Bottom Output panes -->
 
-                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="170" DockHeight="260">
+                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="70" DockHeight="260">
 
-                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="170">
+                            <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="70">
                                 
                             </avalondock:LayoutAnchorablePane>
                         </avalondock:LayoutAnchorablePaneGroup>

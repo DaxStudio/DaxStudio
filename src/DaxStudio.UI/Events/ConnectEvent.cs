@@ -22,5 +22,7 @@ namespace DaxStudio.UI.Events
         public string ConnectionType { get; set; }
         public string PowerBIFileName { get; set; }
         public string ServerType { get; internal set; }
+
+        public string DatabaseName { get; set; }
     }
 }

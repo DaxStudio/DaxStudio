@@ -3,10 +3,6 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -44,7 +40,7 @@ _insightProvider = insightProvider;
         
         public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularColumn column, DaxLineState state)
         {
-            _text = string.Format("[{0}]", column.Caption); //column.DaxName;
+            _text = string.Format("[{0}]", column.Name); //We need to use Name as Caption may be translated;
             _content = column.Caption;
             _description = string.IsNullOrEmpty(column.Description)?null:column.Description;
             _image = GetMetadataImage(column.MetadataImage);

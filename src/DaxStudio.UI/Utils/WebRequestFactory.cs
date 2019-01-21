@@ -24,7 +24,7 @@ namespace DaxStudio.UI.Utils
         private static object _proxyLock = new object();
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
-        public const string DaxTextFormatUri = "http://www.daxformatter.com/api/daxformatter/DaxTextFormat";
+        public const string DaxTextFormatUri = "https://www.daxformatter.com/api/daxformatter/DaxTextFormat";
 
 #if DEBUG
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
@@ -71,7 +71,8 @@ namespace DaxStudio.UI.Utils
                 //todo - how to check that this works with different proxies...??
                 try
                 {
-                    Proxy = GetProxy(DaxTextFormatUri);
+                    if (Proxy == null)
+                        Proxy = GetProxy(DaxTextFormatUri);
                 }
                 catch (System.Net.WebException)
                 {
@@ -181,12 +182,16 @@ namespace DaxStudio.UI.Utils
         public void Handle(UpdateGlobalOptions message)
         {
             // reset proxy
-            _proxy = null;
+            ResetProxy();
         }
 
         internal static void ResetProxy()
         {
-            _proxy = null;
+            lock (_proxyLock)
+            {
+                _proxy = null;
+                _proxySet = false;
+            }
         }
 
         public IWebProxy Proxy

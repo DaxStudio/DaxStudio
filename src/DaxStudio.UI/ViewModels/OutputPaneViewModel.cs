@@ -37,9 +37,11 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Warning, message));
         }
 
-        public void AddError(string message)
+        public void AddError(string message, double durationMs)
         {
-            _messages.Add(new OutputMessage( MessageType.Error,message));
+            var msg = new OutputMessage(MessageType.Error, message,durationMs);
+            
+            _messages.Add(msg);
         }
 
         public void AddError(string message,int row, int column)

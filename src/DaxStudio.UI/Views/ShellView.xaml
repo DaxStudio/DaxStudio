@@ -147,6 +147,13 @@
 
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding   Key="N" Modifiers="Control+Shift"/>
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="NewDocumentWithCurrentConnection"/>
+        </triggers:InputBindingTrigger>
+        
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding   Key="O" Modifiers="Control"/>
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="OpenDocument"/>
@@ -239,9 +246,23 @@
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="F6" />
             </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="FormatQuery"/>
+            <cal:ActionMessage MethodName="FormatQueryStandard"/>
         </triggers:InputBindingTrigger>
         
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding Modifiers="Ctrl" Key="F6" />
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="FormatQueryAlternate"/>
+        </triggers:InputBindingTrigger>
+        
+        <triggers:InputBindingTrigger>
+            <triggers:InputBindingTrigger.InputBinding>
+                <KeyBinding  Modifiers="Ctrl" Key="G" />
+            </triggers:InputBindingTrigger.InputBinding>
+            <cal:ActionMessage MethodName="GotoLine"/>
+        </triggers:InputBindingTrigger>
+
     </i:Interaction.Triggers>
     <Grid>
         <Grid x:Name="LayoutRoot"

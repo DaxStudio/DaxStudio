@@ -180,6 +180,7 @@ namespace DaxStudio.UI.Behaviours
                 else
                 {
                     double width = allowedSpace * (Percentage / totalPercentage);
+                    if (width < 0) width = 1;
                     _element.Width = width;
                 }
             }
@@ -271,6 +272,8 @@ namespace DaxStudio.UI.Behaviours
                         allowedSpace = allowedSpace - _margin;
                         double totalPercentage = GridViewColumnResizeBehaviors(gv).Sum(x => x.Percentage);
                         if (totalWidth <= 0)
+                            return;
+                        if (totalPercentage < 0)
                             return;
                         foreach (GridViewColumnResizeBehavior behavior in GridViewColumnResizeBehaviors(gv))
                         {

@@ -3,6 +3,7 @@
 namespace DAXEditor
 {
     using System.Windows;
+    using System.Windows.Input;
     using System.Windows.Media;
 
     /// <summary>
@@ -271,6 +272,24 @@ namespace DAXEditor
             base.OnTextChanged(e);
             SetValue(EditorSelectedTextProperty, SelectedText);
         }
-        
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            this.DisposeCompletionWindow();
+        }
+
+        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        {
+            base.OnLostKeyboardFocus(e);
+            DisposeCompletionWindow();
+            System.Diagnostics.Debug.WriteLine("OnLostKeyboardFocus");
+        }
+
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+            System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
+        }
     }
 }

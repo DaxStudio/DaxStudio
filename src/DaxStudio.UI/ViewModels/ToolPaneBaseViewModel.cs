@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var modelMeasure in modelMeasures) {
                     //string daxMeasureName = "[" + modelMeasure.Name + "]";
                     //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
-                    Regex daxMeasureRegex = new Regex(@"[^\w']\[" + modelMeasure.Name + "]");
+                    Regex daxMeasureRegex = new Regex(@"[^\w']?\[" + modelMeasure.Name + "]");
                     
                     string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
         
@@ -112,13 +112,19 @@ namespace DaxStudio.UI.ViewModels
             return resultExpression;
         }
 
-        
-
-        private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
+        private List<ADOTabularMeasure> GetAllMeasures (string filterTable = null)
+        {
+            bool allTables = (string.IsNullOrEmpty(filterTable));
             var model = Connection.Database.Models.BaseModel;
             var modelMeasures = (from t in model.Tables
                                  from m in t.Measures
+                                 where (allTables || t.Caption == filterTable)
                                  select m).ToList();
+            return modelMeasures;
+        }
+
+        private List<ADOTabularMeasure> FindDependentMeasures( string measureName ) {
+            var modelMeasures = GetAllMeasures();
 
             var dependentMeasures = new List<ADOTabularMeasure>();
             dependentMeasures.Add(modelMeasures.First(m => m.Name == measureName ));
@@ -177,6 +183,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void DefineAllMeasures(TreeViewTable item, string filterTable)
+        {
+            if (item == null) {
+                return;
+            }
+            try {
+                var measures = GetAllMeasures(filterTable);
+               
+                foreach (var measure in measures) {
+                    EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                }
+            }
+            catch (System.Exception ex) {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasureTree", ex.Message, ex.StackTrace);
+            }
+        }
+
         public void DefineExpandMeasure(TreeViewColumn item) {
             DefineMeasure(item, true);
         }
@@ -185,6 +208,57 @@ namespace DaxStudio.UI.ViewModels
         //RRomano: Needed to set the TreeViewColumn as Public, if I do $dataContext.Column always sends NULL to DefineMeasure (Caliburn issue?)
         public void DefineMeasure(TreeViewColumn item) {
             DefineMeasure(item, false);
+        }
+        public void DefineAllMeasuresAllTables(TreeViewTable item)
+        {
+            DefineAllMeasures(item, null);
+        }
+        public void DefineAllMeasuresOneTable(TreeViewTable item)
+        {
+            DefineAllMeasures(item, item.Caption);
+        }
+
+        public void DefineFilterDumpMeasureAllTables(TreeViewTable item) {
+            DefineFilterDumpMeasure(item, true);
+        }
+        public void DefineFilterDumpMeasureOneTable(TreeViewTable item) {
+            DefineFilterDumpMeasure(item, false);
+        }
+
+        public void DefineFilterDumpMeasure(TreeViewTable item, bool allTables) {
+            if (item == null) {
+                return;
+            }
+            string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption ) );
+            try {
+                var model = Connection.Database.Models.BaseModel;
+                var distinctColumns = (from t in model.Tables
+                                       from c in t.Columns
+                                       where c.ColumnType == ADOTabularColumnType.Column
+                                           && (allTables || t.Caption == item.Caption)
+                                       select c).Distinct().ToList();
+                string measureExpression = "\r\nVAR MaxFilters = 3\r\nRETURN\r\n";
+                bool firstMeasure = true;
+                foreach ( var c in distinctColumns) {
+                    if (!firstMeasure) measureExpression += "\r\n & ";
+                    measureExpression += string.Format(@"IF ( 
+    ISFILTERED ( {0}[{1}] ), 
+    VAR ___f = FILTERS ( {0}[{1}] ) 
+    VAR ___r = COUNTROWS ( ___f ) 
+    VAR ___t = TOPN ( MaxFilters, ___f, {0}[{1}] )
+    VAR ___d = CONCATENATEX ( ___t, {0}[{1}], "", "" )
+    VAR ___x = ""{0}[{1}] = "" & ___d & IF(___r > MaxFilters, "", ... ["" & ___r & "" items selected]"") & "" "" 
+    RETURN ___x & UNICHAR(13) & UNICHAR(10)
+)", c.Table.DaxName, c.Name);
+                    firstMeasure = false;
+                }
+
+                EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
+            }
+            catch (System.Exception ex) {
+                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineFilterDumpMeasure", ex.Message, ex.StackTrace);
+
+            }
         }
 
         public void DefineMeasure(TreeViewColumn item, bool expandMeasure)

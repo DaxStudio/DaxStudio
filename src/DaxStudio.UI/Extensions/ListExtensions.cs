@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -40,6 +41,16 @@ namespace DaxStudio.UI.Extensions
                 dataTable.Rows.Add(values);
             }
             return dataTable;
+        }
+
+        public static LocaleIdentifier GetByLcid(this SortedList<string,LocaleIdentifier> locales, int localeId)
+        {
+
+            var loc = locales.FirstOrDefault(l => l.Value.LCID == localeId);
+            if (loc.Value == null) {
+                return locales["<Default>"];
+            }
+            return loc.Value;
         }
 
     }

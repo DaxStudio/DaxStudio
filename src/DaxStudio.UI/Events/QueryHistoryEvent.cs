@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Events
         , string fileName)
         {
             QueryText = queryText.Trim();
-            QueryTextLines = QueryText.Split('\n').Count();
+            QueryTextLines = queryText.Split('\n').Count();
             StartTime = startTime;
             ClientDurationMs = clientDurationMs;
             ServerDurationMs = serverDurationMs;

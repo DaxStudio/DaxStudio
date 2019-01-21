@@ -13,9 +13,12 @@ namespace DaxStudio.Tests.Mocks
     {
         public int DaxFormatterRequestTimeout  { get; set; }
         public DelimiterType DefaultSeparator { get; set; }
+        public DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         public bool EditorEnableIntellisense { get; set; }
         public string EditorFontFamily { get; set; }
         public double EditorFontSize { get; set; }
+        public string ResultFontFamily { get; set; }
+        public double ResultFontSize { get; set; }
         public bool EditorShowLineNumbers { get; set; }
         public string ProxyAddress {get; set;}
         public SecureString ProxySecurePassword { get; set; }
@@ -31,5 +34,13 @@ namespace DaxStudio.Tests.Mocks
         public bool CanPublishDaxFunctions { get; set; }
 
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
+
+        public bool ShowExportMetrics { get;set; }
+        public int TraceStartupTimeout { get; set; }
+        public bool ShowExternalTools { get; set; }
+        public bool ShowExportAllData { get; set; }
+        public bool ResultAutoFormat { get; set; }
+        public bool ShowAggregationRewritesInAllQueries { get; set; }
+        public bool ScaleResultsFontWithEditor { get;set; }
     }
 }

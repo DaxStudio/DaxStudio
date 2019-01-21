@@ -47,11 +47,11 @@ namespace DaxStudio.UI.Model
             _eventAggregator = eventAggregator;
             
             _globalOptions = globalOptions;
-            if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
-            {
-                worker.DoWork += new DoWorkEventHandler(worker_DoWork);
-                worker.RunWorkerAsync();
-            }
+            //if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
+            //{
+            //    worker.DoWork += new DoWorkEventHandler(worker_DoWork);
+            //    worker.RunWorkerAsync();
+            //}
         }
 
         public bool Enabled

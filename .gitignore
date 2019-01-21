@@ -21,6 +21,9 @@ build/
 [Pp]ackage/
 .vs/
 
+.vs/
+.vscode/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -192,3 +195,4 @@ pip-log.txt
 .mr.developer.cfg
 release.2.5.2.zip
 github.env
+/src/.vs/DaxStudio/v15/Server/sqlite3

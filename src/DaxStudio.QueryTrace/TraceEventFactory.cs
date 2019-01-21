@@ -15,6 +15,7 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(TraceColumn.Spid);
             trc.Columns.Add(TraceColumn.SessionID);
             trc.Columns.Add(TraceColumn.ActivityID);
+            trc.Columns.Add(TraceColumn.RequestID);
             if (eventClass == TraceEventClass.QueryEnd)
             {
                 trc.Columns.Add(TraceColumn.DatabaseName);

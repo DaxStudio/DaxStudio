@@ -49,6 +49,29 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}">
+                <!--<Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Aggregation Hits: " />
+                                <TextBlock Text="Aggregation Misses: " Grid.Row="1"/>
+                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1"/>
+                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="1"/>
+                            </Grid>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>-->
+            </Style>
+            
             <DataTemplate x:Key="QueryTextCell">
                 <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
                     <DataGridCell Margin="0" Padding="0" 
@@ -64,8 +87,11 @@
                     </DataGridCell>
                 <!--</ScrollViewer>-->
             </DataTemplate>
-            
-            
+
+            <Style x:Key="ImageCell"  TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                <Setter Property="Padding" Value="2,0,2,0"/>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -88,27 +114,26 @@
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
-                        
-                       ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		                       TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		                       ResourceId=DataGridHeaderFilterControlStyle}}"
+                    ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
+		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		            ResourceId=DataGridHeaderFilterControlStyle}}"
                        
-                  SelectedItem="{Binding SelectedQuery}" 
-                  HorizontalAlignment="Stretch" 
-                  AutoGenerateColumns="False"
-                  behaviours:GridViewColumnResize.Enabled="True" 
-                  VerticalAlignment="Stretch" 
-                  Background="White" 
-                  Width="Auto"
-                  SelectionMode="Extended"
-                  SelectionUnit="FullRow"
-                  HeadersVisibility="Column"
-                  ClipboardCopyMode="ExcludeHeader"
-                  ScrollViewer.CanContentScroll="False"
-                  FrozenColumnCount="1"
-                  GridLinesVisibility="None" 
-                  BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
-                  >
+                    SelectedItem="{Binding SelectedQuery}" 
+                    HorizontalAlignment="Stretch" 
+                    AutoGenerateColumns="False"
+                    behaviours:GridViewColumnResize.Enabled="True" 
+                    VerticalAlignment="Stretch" 
+                    Background="White" 
+                    Width="Auto"
+                    SelectionMode="Extended"
+                    SelectionUnit="FullRow"
+                    HeadersVisibility="Column"
+                    ClipboardCopyMode="ExcludeHeader"
+                    ScrollViewer.CanContentScroll="False"
+                    FrozenColumnCount="1"
+                    GridLinesVisibility="None" 
+                    BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
+                    >
 
             <DataGrid.Resources>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -124,6 +149,7 @@
                   Value="SemiBold" />
                 </Style>
             </DataGrid.ColumnHeaderStyle>-->
+            
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
@@ -150,6 +176,43 @@
             </DataGrid.RowStyle>
             <DataGrid.Columns>
                 <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
+                <!--  -->
+                <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15" Visibility="{Binding Path=DataContext.ShowAggregationRewrites, Converter={StaticResource BoolToVisibilityConverter}, Source={x:Reference bindingProxy}}">
+                    
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image Source="{Binding AggregationStatus, Converter={StaticResource AggregateRewriteIcons}}" />
+                                <Rectangle Fill="Transparent">
+                                    <Rectangle.ToolTip>
+                                        <ToolTip Style="{StaticResource AggregateRewriteTooltip}" DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="Aggregation Rewrite: " />
+                                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"/>
+                                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"/>
+                                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"/>
+                                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"/>
+                                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"/>
+                                            </Grid>
+
+                                        </ToolTip>
+
+                                    </Rectangle.ToolTip>
+                                </Rectangle>
+
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn 
                     Header="StartTime" 
                     IsReadOnly="True" 
@@ -233,7 +296,7 @@
 -->
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
-
+        <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 

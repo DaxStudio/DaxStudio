@@ -139,7 +139,7 @@ namespace DaxStudio.UI.Model
         }
     }
 
-    class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
+    public class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
     {
         private readonly ADOTabularTable _table;
         
@@ -166,6 +166,15 @@ namespace DaxStudio.UI.Model
         public int ColumnCount
         {
             get { return _table.Columns.Count; }
+        }
+    }
+
+    public static class TreeViewColumnFactory
+    {
+        public static FilterableTreeViewItem Create(ADOTabularColumn col) {
+            //TODO create folder hierarchy if DisplayFolder is not empty string
+            // else return raw column
+            return null;
         }
     }
 
@@ -305,6 +314,13 @@ namespace DaxStudio.UI.Model
             {
                 return this.MetadataImage == MetadataImages.Measure 
                     || this.MetadataImage == MetadataImages.HiddenMeasure;
+            }
+        }
+
+        public bool IsTable {
+            get {
+                return this.MetadataImage == MetadataImages.Table
+                    || this.MetadataImage == MetadataImages.HiddenTable;
             }
         }
 
