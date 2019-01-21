@@ -102,10 +102,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewQueryWithCurrentConnection()
         {
+            if (ActiveDocument == null) return;
+
             var connectionString = "";
-            if (ActiveDocument != null)
-                if (ActiveDocument.IsConnected)
-                    connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
+            if (ActiveDocument.IsConnected)
+                connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
@@ -116,25 +117,25 @@ namespace DaxStudio.UI.ViewModels
 
         public void MergeParameters()
         {
-            ActiveDocument.MergeParameters();
+            ActiveDocument?.MergeParameters();
         }
 
         public void FormatQueryStandard()
         {
-            ActiveDocument.FormatQuery( false );
+            ActiveDocument?.FormatQuery( false );
         }
         public void FormatQueryAlternate()
         {
-            ActiveDocument.FormatQuery( true );
+            ActiveDocument?.FormatQuery( true );
         }
         public void Undo()
         {
-            ActiveDocument.Undo();
+            ActiveDocument?.Undo();
         }
 
         public void Redo()
         {
-            ActiveDocument.Redo();
+            ActiveDocument?.Redo();
         }
 
         public void UncommentSelection()
@@ -228,7 +229,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearCache()
         {
-            ActiveDocument.ClearDatabaseCacheAsync().FireAndForget();
+            ActiveDocument?.ClearDatabaseCacheAsync().FireAndForget();
         }
 
         public bool CanSave => ActiveDocument != null;
@@ -237,17 +238,18 @@ namespace DaxStudio.UI.ViewModels
 
         public void Save()
         {
-            ActiveDocument.Save();
+            ActiveDocument?.Save();
         }
         public void SaveAs()
         {
-            ActiveDocument.SaveAs();
+            ActiveDocument?.SaveAs();
         }
         
 
         public void Connect()
         {
-            ActiveDocument.ChangeConnection();
+            if (ActiveDocument == null) NewQuery();
+            else ActiveDocument.ChangeConnection();
         }
 
         //private bool _canConnect;
@@ -539,22 +541,22 @@ namespace DaxStudio.UI.ViewModels
 
         public void Find()
         {
-            _activeDocument.Find();
+            _activeDocument?.Find();
         }
 
         public void GotoLine()
         {
-            _activeDocument.GotoLine();
+            _activeDocument?.GotoLine();
         }
 
         public void Replace()
         {
-            _activeDocument.Replace();
+            _activeDocument?.Replace();
         }
 
         public void RefreshMetadata()
         {
-            _activeDocument.RefreshMetadata();
+            ActiveDocument?.RefreshMetadata();
         }
 
         public bool CanRefreshMetadata
@@ -564,13 +566,15 @@ namespace DaxStudio.UI.ViewModels
 
         internal void FindNow()
         {
-            _activeDocument.FindReplaceDialog.SearchUp = false;
-            _activeDocument.FindReplaceDialog.FindText();
+            if (ActiveDocument == null) return;
+            ActiveDocument.FindReplaceDialog.SearchUp = false;
+            ActiveDocument.FindReplaceDialog.FindText();
         }
         internal void FindPrevNow()
         {
-            _activeDocument.FindReplaceDialog.SearchUp = true;
-            _activeDocument.FindReplaceDialog.FindText();
+            if (ActiveDocument == null) return;
+            ActiveDocument.FindReplaceDialog.SearchUp = true;
+            ActiveDocument.FindReplaceDialog.FindText();
         }
 
         public bool ServerTimingsChecked { get { return ActiveDocument?.ServerTimingsChecked??false; } }
@@ -644,7 +648,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SwapDelimiters()
         {
-            ActiveDocument.SwapDelimiters();
+            ActiveDocument?.SwapDelimiters();
         }
 
         public bool IsDebugBuild
@@ -720,13 +724,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void ExportAnalysisData()
         {
-            _activeDocument.ExportAnalysisData();
+            ActiveDocument?.ExportAnalysisData();
         }
 
         public bool CanExportAllData => IsActiveDocumentConnected();
 
         public void ExportAllData()
         {
+            if (ActiveDocument == null) return;
+
             var dialog = new ExportDataDialogViewModel(_eventAggregator);
 
             dialog.ActiveDocument = _activeDocument;
@@ -757,6 +763,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LaunchSqlProfiler()
         {
+            if (ActiveDocument == null) return;
             var serverName = ActiveDocument.Connection.ServerName;
             System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
         }
@@ -765,6 +772,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LaunchExcel()
         {
+            if (ActiveDocument == null) return;
             var conn = ActiveDocument.Connection;
             var datasource = conn.ServerName;
             var database = conn.Database.Name;
