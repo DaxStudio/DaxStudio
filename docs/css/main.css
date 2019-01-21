@@ -47,10 +47,6 @@ hr.small {
   width: 250px;
 }
 
-ul, ol {
-  overflow:hidden;
-}
-
 .main-content {
   padding-top: 80px;
 }

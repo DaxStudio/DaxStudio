@@ -1,5 +1,5 @@
 ---
-title: Statusbar
+title: Status Bar
 ---
 The statusbar in DAX Studio contains a number of useful bits of information
 

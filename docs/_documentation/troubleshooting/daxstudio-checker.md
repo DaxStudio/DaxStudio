@@ -2,6 +2,8 @@
 title: DAX Studio Checker
 ---
 
+> _**Note:** The output from DaxStudio.Checker is mainly useful in situations where DAX Studio is failing to start (which appear to be getting increasingly rare). The dev team will generally request the output from DaxStudio.Checker if they feel it is required._
+
 In the folder where DAX Studio is installed (usually ```c:\program files\DaxStudio```) you will find a program called ```DaxStudio.Checker.exe```. 
 
 ![](daxstudio-checker-location.png)

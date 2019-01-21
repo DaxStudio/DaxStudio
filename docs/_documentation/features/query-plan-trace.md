@@ -2,7 +2,7 @@
 title: Query Plan Tracing
 ---
 
-_Note: Tracing requires server admin rights, if you do not have these the trace buttons will be disabled_
+> _Note: Tracing requires server admin rights, if you do not have these the trace buttons will be disabled_
 
 Dax Studio supports capturing the query plan trace events from a SSAS Tabular server and displaying them.
 
