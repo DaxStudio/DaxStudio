@@ -29,18 +29,59 @@ smimg: "/img/daxstudio-logo-144.png"
 <!-- hero image --> 
 <img src="/img/home_hero_image.png" alt="Feature Collage"/>
 
-<div>
-DAX Studio is a client tool for executing DAX queries against various data sources including:
+<div class="row">
+  <div class="pull-left col-2 idx-thumb">
+    <img class="img" src="img/connection-dialog.png" />
+  </div>
+  <div class="col-lg-8">
+    <a href="/documentation/features/connection-dialog/"><h4>Supports Multiple Data Sources</h4></a>
+    <div>DAX Studio is a client tool for executing DAX queries against various data sources including:</div>
+    <ul>
+      <li>PowerPivot in Excel</li>
+      <li>Power BI Desktop / SSDT Integrated Workspaces</li>
+      <li>Analysis Services Tabular</li>
+      <li>Azure Analysis Services</li>
+    </ul>
+    <span>DAX Studio will scan the local machine for any running instances of Power BI Desktop or SSDT Integrated Workspaces</span>
+  </div>
 </div>
-<ul>
-  <li>PowerPivot in Excel</li>
-  <li>Power BI Desktop</li>
-  <li>Analysis Services Tabular</li>
-  <li>Azure Analysis Services</li>
-</ul>
-<div>
-  Find out more about using DAX Studio by having a look through the <a href="/documentation">Documentation</a>.
-</div
+
+<div class="row">
+  <div class="img pull-right col-2 idx-thumb">
+    <img src="img/dax-formatter.gif" />
+  </div>
+  <div class="col-lg-8">
+    <a href="/documentation/features/daxformatter-support/"><h4>Integrated DaxFormatter Support</h4></a>
+    <div>DAX Studio has integrated support for DaxFomatter.com allowing you to consistently format your DAX directly in the editor</div>
+  </div>
+</div>
+  
+<div class="row">
+    <div class="img pull-left col-2 idx-thumb">
+      <img src="img/server-timings.png" />
+    </div>
+    <div class="col-lg-8">
+      <a href="/documentation/features/server-timings-trace/"><h4>Server Timings</h4></a>
+      <div>DAX Studio can collect detailed query execution statistics to help when doing performance tuning</div>
+    </div>
+</div>
+  
+<div class="row">
+    <div class="img pull-right col-2 idx-thumb">
+      <img src="img/swap-delimiters.gif" />
+    </div>
+    <div class="col-lg-8">
+      <a href="/documentation/features/swap-delimiters/"><h4>Swap Delimiters</h4></a>
+      <div>DAX Studio can help you to easily swap the delimiter style for DAX expressions</div>
+    </div>
+</div>
+
+<div style="margin-top:40px">
+  <p>Find out more about using DAX Studio by having a look through the full <a href="/documentation/features">Feature List</a>.
+  </p>
+  
+  <p>For information about getting started with DAX Studio you can read through the <a href="https://exceleratorbi.com.au/getting-started-dax-studio/">getting started guide</a> from ExceleratorBI</p>
+</div>
 
 {% if posts.size > 0 %}
 <!-- Recent Announcements -->

@@ -3,9 +3,10 @@ title: Connection Dialog
 ---
 
 The connection dialog in DAX Studio provides the ability to connect to:
-* PowerPivot
-* Power BI Desktop
+* PowerPivot _(only available when starting DAX Studio from the Addins ribbon in Excel)_
+* Power BI Desktop / SSDT Integrated Workspaces
 * SQL Server Analysis Services servers (running Tabular or Multi-Dimensional)
+* Azure Analysis Services
 The dialog box only presents connection options that are currently valid.
 
 ## Connect to PowerPivot
@@ -22,4 +23,5 @@ DAX Studio can connect to any server running in Tabular or PowerPivot mode and c
 
 ## Advanced Options
 If you ever need to configure additional connection properties some of the more recent ones are listed under the Advanced Options section, any that are not can be added in the "Additional Options" section
+
 ![](ConnectAdvanced.png)

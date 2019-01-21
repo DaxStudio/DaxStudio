@@ -43,6 +43,14 @@ hr.small {
   border-radius: 3px;
 }
 
+.idx-thumb {
+  width: 250px;
+}
+
+ul, ol {
+  overflow:hidden;
+}
+
 .main-content {
   padding-top: 80px;
 }
