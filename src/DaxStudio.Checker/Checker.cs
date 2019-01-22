@@ -266,7 +266,8 @@ namespace DaxStudio.Checker
         {
             Output.AppendHeaderLine("Checking Excel Add-in");
             Output.AppendLine("=======================");
-            // TODO
+            
+            // Get Excel Version
             var xlVer = GetCurrentExcelVersion();
             Output.AppendIndentedLine($"Detected Excel Version: {xlVer} - {(ExcelVersions)xlVer}");
 

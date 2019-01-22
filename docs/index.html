@@ -4,6 +4,7 @@ title: DAX Studio
 subtitle: The ultimate tool for working with DAX queries
 use-site-title: true
 smimg: "/img/daxstudio-logo-144.png"
+js-footer: "/js/index-footer.js"
 ---
 
 {% assign download = site.github.latest_release %}
@@ -19,7 +20,11 @@ smimg: "/img/daxstudio-logo-144.png"
     </a>
     {% assign download_count = download.assets[0].download_count %}
     {% assign download_size = download.assets[0].size %}
-    <div class="download-info"><i class="fa fa-download" title="downloads"></i>Size: {% include filesize.html number=download_size %} | <i class="fa fa-calendar" title="release date"></i> {% if download.assets[0].created_at != nil %}{{ download.assets[0].created_at | date_to_string }} {% else %}N/A{% endif %} </div>
+    <div class="download-info">
+      <i class="fa fa-download" title="downloads"></i><span>Size: {% include filesize.html number=download_size %} | </span>
+      <i class="fa fa-calendar" title="release date"></i><span>{% if download.assets[0].created_at != nil %}{{ download.assets[0].created_at | date_to_string }} {% else %}N/A{% endif %} </span>
+      <span id="download_cnt"></span> 
+    </div>
 {% else %}
     <div>Sorry, but we are not able to get the latest release information from github at this time</div>
 {% endif %}
@@ -131,4 +136,4 @@ smimg: "/img/daxstudio-logo-144.png"
 </div>
 
 {% endif %}
-<!-- 2.7.4. -->
+<!-- 2.8.0. -->

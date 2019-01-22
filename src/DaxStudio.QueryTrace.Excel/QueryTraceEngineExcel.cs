@@ -211,7 +211,7 @@ namespace DaxStudio.QueryTrace
 	                _startingTimer = new Timer();
                 //HACK - wait 1.5 seconds to allow trace to start 
                 //       using the ping method thows a connection was lost error when starting a second trace
-                _startingTimer.Interval = 300;  //TODO - make time interval shorter?
+                _startingTimer.Interval = 300;  
 	            _startingTimer.Elapsed += OnTimerElapsed;
 	            _startingTimer.Enabled = true;
 	            _startingTimer.Start();

@@ -840,7 +840,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(RefreshOutputTargetsEvent message)
         {
             // TODO: re-try this code with the latest version of fluent ribbon as currently the layout overlaps when the ResultsTargets collection changes 
-            // NotifyOfPropertyChange(() => ResultsTargets);
+            NotifyOfPropertyChange(() => ResultsTargets);
         }
 
         public void Handle(CancelConnectEvent message)

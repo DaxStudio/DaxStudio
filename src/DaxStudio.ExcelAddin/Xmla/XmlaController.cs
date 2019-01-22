@@ -187,11 +187,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                     result = Request.CreateResponse(HttpStatusCode.OK); //new HttpResponseMessage(HttpStatusCode.OK);
                     result.Headers.TransferEncodingChunked = true;
 
-                    //result.Content = new StringContent(fullEnvelopeResponseFromServer);
-                    // TODO - can we stream the response instead of buffering the whole thing in a string variable??
-                    //var ms = new MemoryStream();
-                    //using (var ms = new MemoryStream())
-                    //{
+
+                    // we stream the response instead of buffering the whole thing in a string variable
                     result.Content = new PushStreamContent((stream, content, context) =>
                     {
                         try
@@ -272,8 +269,7 @@ namespace DaxStudio.ExcelAddin.Xmla
         {
             long elementCnt = 0;
             XmlWriter writer = new XmlTextWriter(stream, null);
-            //using (XmlWriter writer = new XmlTextWriter(stream, null))
-            //{
+
             while (reader.Read())
             {
                 WriteShallowNode(reader, writer);
@@ -288,7 +284,6 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
             writer.Flush();
 
-            //}
         }
 
         static void WriteShallowNode(XmlReader reader, XmlWriter writer)

@@ -52,11 +52,10 @@ namespace DaxStudio.UI.ViewModels
             _host = host;
             _app = Application.Current;
 
-            // TODO - get master auto save indexes and only get crashed index files...
-
+            // get master auto save indexes and only get crashed index files...
+            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
 
             // check for auto-saved files and offer to recover them
-            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
             if (autoSaveInfo.Values.Where(idx => idx.ShouldRecover).Count() > 0)
                 RecoverAutoSavedFiles(autoSaveInfo);
             else
@@ -89,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
         private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
-            // TODO - show recovery dialog
+            // show recovery dialog
             _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
             
         }

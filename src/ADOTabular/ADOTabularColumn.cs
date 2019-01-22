@@ -10,26 +10,26 @@ namespace ADOTabular
     public  class ADOTabularColumn:IADOTabularColumn
     {
         // TODO - can we delete this??
-        public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
-        {
-            Table = table;
-            ColumnType = colType;
-            if (colType == ADOTabularColumnType.Column)
-            {
-                Caption = dr["HIERARCHY_CAPTION"].ToString();
-                Name = dr["HIERARCHY_NAME"].ToString();
-                IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
-                Description = dr["DESCRIPTION"].ToString();
-            }
-            else
-            {
-                Caption = dr["MEASURE_CAPTION"].ToString();
-                Name = dr["MEASURE_NAME"].ToString();
-                IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
-                Description = dr["DESCRIPTION"].ToString();
-            }
-            Role = $"{Table.InternalReference}_{InternalReference}";
-        }
+        //public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
+        //{
+        //    Table = table;
+        //    ColumnType = colType;
+        //    if (colType == ADOTabularColumnType.Column)
+        //    {
+        //        Caption = dr["HIERARCHY_CAPTION"].ToString();
+        //        Name = dr["HIERARCHY_NAME"].ToString();
+        //        IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
+        //        Description = dr["DESCRIPTION"].ToString();
+        //    }
+        //    else
+        //    {
+        //        Caption = dr["MEASURE_CAPTION"].ToString();
+        //        Name = dr["MEASURE_NAME"].ToString();
+        //        IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
+        //        Description = dr["DESCRIPTION"].ToString();
+        //    }
+        //    Role = $"{Table.InternalReference}_{InternalReference}";
+        //}
 
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
                                 bool isVisible, ADOTabularColumnType columnType, string contents)

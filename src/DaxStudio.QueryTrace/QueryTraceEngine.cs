@@ -253,63 +253,6 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        //Task task;
-        //private void PingUntilTraceStarts()
-        //{
-        //    _pingTraceCancellationToken = new System.Threading.CancellationTokenSource();
-        //    // cancels the ping loop after the specified number of timeout seconds from global options
-        //    _pingTraceCancellationToken.CancelAfter(new TimeSpan(0, 0, _globalOptions.TraceStartupTimeout));
-        //    task = Task.Run(async () =>  // <- marked async
-        //    {
-        //        while (true)
-        //        {
-        //            PingTrace(_pingTraceCancellationToken);
-        //            await Task.Delay(10000, _pingTraceCancellationToken.Token); // <- await with cancellation
-        //        }
-        //    }, _pingTraceCancellationToken.Token);
-
-        //}
-
-        //private void PingTrace(System.Threading.CancellationTokenSource token)
-        //{
-        //    try
-        //    {
-        //        var policy = Policy
-        //                        .Handle<Exception>()
-        //                        .WaitAndRetry(
-        //                            3,
-        //                            retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) * 100),
-        //                            (exception, timeSpan, context) =>
-        //                            {
-        //                                Log.Error(exception, "{class} {method}", "QueryTraceEngine", "PingTrace");
-        //                                System.Diagnostics.Debug.WriteLine("Error pinging trace connection: " + exception.Message);
-        //                            // TODO - should we raise event aggregator 
-        //                        }
-        //                        );
-
-        //        policy.Execute(() =>
-        //        {
-        //            if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-        //            _connection.Ping();
-        //            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "PingTrace", "Pinging Connection");
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Execute.OnUIThread(() => RaiseError(ex));
-        //        //TODO stop trace and send message to reset UI
-        //    }
-        //    finally
-        //    {
-        //        // if past timeout then exit and display error
-        //        if ((DateTime.UtcNow - utcPingStart).Seconds > this.TraceStartTimeoutSecs)
-        //        {
-        //            _startingTimer.Stop();
-        //            DisposeTrace();
-        //            Execute.OnUIThread(() => RaiseError("Timeout exceeded attempting to start Trace"));
-        //        }
-        //    }
-        //}
 
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {

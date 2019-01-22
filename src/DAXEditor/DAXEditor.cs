@@ -245,7 +245,7 @@ namespace DAXEditor
                 }
             }
          
-            //TODO - hardcoded for v1 - should be moved to a settings dialog
+            // default settings - can be overridden in the settings dialog
             this.FontFamily = new System.Windows.Media.FontFamily("Lucida Console");
             this.DefaultFontSize = 11.0;
             this.FontSize = DefaultFontSize;

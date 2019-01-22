@@ -1,13 +1,36 @@
-Building Dax Studio
-===================
+## Building Dax Studio
 
-Before attempting to build DAX Studio, you will need to run the powershell 
-script, `setup-build-env.ps1`, located in the root of the repository.
+All of the dependencies for DAX Studio are available as nuget packages, 
+so doing a nuget restore should be enough to build this solution in Visual Studio 2017
 
-This script attempts to find a few of binary dependencies and copies them to a
-local 'lib' folder.  These dependencies are:
+When preparing to make changes in order to submit a pull request you should create a feature
+branch off the `develop` branch. The develop branch contains the current development build of the code
+including any new features. The master branch only contains the code for the last stable release. 
+(we merge from develop to master when doing a public release)
 
-    Microsoft.AnalysisServices.AdomdClient.dll
-    Microsoft.Excel.AdomdClient.dll
-    Microsoft.Excel.Amo.dll
+## Editing the documentation locally
 
+DAX Studio uses github-pages for daxstudio.org. If you have Windows 10 you can install a development
+environment for the documentation site using WSL (Windows Subsystem for Linux)
+
+Once you've added the WSL feature and installed an Ubuntu distro you need to open a BASH shell
+and run the following commands:
+
+```
+sudo apt update
+sudo apt upgrade
+sudo apt install make gcc
+sudo apt install build-essentials
+sudo apt install ruby ruby-all-dev
+sudo apt install zlib1g-dev
+sudo gem install jekyll
+sudo gem install bundler
+sudo gem install github-pages 
+```
+
+Once you have the above dependencies installed, 
+the following commands will run the DAX Studio site locally:
+```
+cd /mnt/c/<folder with DaxStudio git repo>/docs
+Bundler exec jekyll serve -w
+```

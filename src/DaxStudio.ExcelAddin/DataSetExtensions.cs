@@ -36,7 +36,9 @@ namespace DaxStudio.ExcelAddin
             // Copy the values to the object array
             for (int col = 0; col < dt.Columns.Count; col++)
             {
-                if ( dt.Columns[col].DataType.Name == "Byte[]" ) // TODO: there must be a better way to do this than to compare to a type name as a string
+                // I don't like comparing a type name to a string, but I have not found a better way of doing this
+                // (taken from https://stackoverflow.com/questions/2114823/how-do-i-check-if-an-object-contains-a-byte-array)
+                if ( dt.Columns[col].DataType.Name == "Byte[]" ) 
                     continue; // ignore this column 
 
                 for (int row = 0; row < dt.Rows.Count; row++)
