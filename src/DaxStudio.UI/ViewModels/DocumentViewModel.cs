@@ -2031,7 +2031,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Task.Run(() =>
                 {
-                    Execute.OnUIThread(() => { LoadFile(); });
+                    Execute.OnUIThread(() => { LoadFile(FileName); });
                 }).ContinueWith((previousOutput) =>
                 {
                     // todo - should we be checking for exceptions in this continuation
@@ -2061,8 +2061,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-        public void LoadFile()
+        public void LoadFile(string fileName)
         {
+            FileName = fileName;
             _isLoadingFile = true;
             _displayName = Path.GetFileName(FileName);
             IsDiskFileName = true;
@@ -2098,7 +2099,7 @@ namespace DaxStudio.UI.ViewModels
         {
             FileName = message.FileName;
             IsDiskFileName = true;
-            LoadFile();
+            LoadFile(message.FileName);
         }
 
         public void Handle(CancelQueryEvent message)

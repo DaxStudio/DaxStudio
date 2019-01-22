@@ -132,7 +132,10 @@ function init() {
         {
             // TODO - should we write to MyDocuments or ApplicationData ??
             var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.Create);
-            return Path.Combine(myDocs, "My Data Sources", "DaxStudio.odc");
+            var dsPath = Path.Combine(myDocs, "My Data Sources", "DaxStudio.odc");
+            // ensure that the folder exists
+            Directory.CreateDirectory(dsPath);
+            return dsPath;
         }
     }
 }
