@@ -190,17 +190,21 @@
  
   
   <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
-    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\DaxStudio.iss' />
+	<Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\DaxStudioPerUser.iss' />
   </Target>
   
   <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignVsto">
     <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
+	<Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudioPerUser.iss' />
   </Target>
 
   
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\daxstudio_$(OutVersion)_setup.exe' 
+	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' 
+	IgnoreExitCode="true"/>
+	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudioPerUser_$(OutVersion)_setup.exe' 
 	IgnoreExitCode="true"/>
   </Target>
 </Project>
