@@ -31,4 +31,10 @@
   {% endfor %}
 {% endif %}
 
+{% if page.js-footer %}
+  {% for js in page.js-footer %}
+	<script src="{{ js | prepend: site.baseurl | replace: '//', '/' }}"></script>
+  {% endfor %}
+{% endif %}
+
 {% include google_analytics.html %}
