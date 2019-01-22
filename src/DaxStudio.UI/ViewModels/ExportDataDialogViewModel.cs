@@ -73,20 +73,33 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
-            if (IsCSVExport)
+            try
             {
-                ActiveDocument.IsQueryRunning = true;
-                Task.Run(() =>
+                if (IsCSVExport)
                 {
-                    ExportDataToFolder(this.OutputPath);
-                });
+                    ActiveDocument.IsQueryRunning = true;
+                    Task.Run(() =>
+                    {
+                        ExportDataToFolder(this.OutputPath);
+                    });
+                }
+                else if (IsSQLExport)
+                {
+                    Task.Run(() =>
+                    {
+                        ExportDataToSQLServer(this.ConnectionString, this.SchemaName, this.TruncateTables);
+                    });
+                }
             }
-            else if (IsSQLExport)
+            catch (Exception ex)
             {
-                ExportDataToSQLServer(this.ConnectionString, this.SchemaName, this.TruncateTables);
-            }           
-
-            TryClose(true);
+                Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+            }
+            finally
+            {
+                TryClose(true);
+            }
         }       
 
         public void Cancel()
@@ -202,6 +215,10 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
+        private string sqlTableName = string.Empty;
+        private int currentTableIdx = 0;
+        private int totalTableCnt = 0;
+
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.ActiveDocument.MetadataPane;
@@ -216,14 +233,17 @@ namespace DaxStudio.UI.ViewModels
             using (var conn = new SqlConnection(connStr))
             {
                 conn.Open();
-
+                currentTableIdx = 0;
+                totalTableCnt = metadataPane.SelectedModel.Tables.Count;
                 foreach (var table in metadataPane.SelectedModel.Tables)
                 {
+                    currentTableIdx++;
                     var daxQuery = $"EVALUATE('{table.Name}')";
 
+                    using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
                     using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
                     {
-                        var sqlTableName = $"[{schemaName}].[{table.Name}]";
+                        sqlTableName = $"[{schemaName}].[{table.Name}]";
 
                         EnsureSQLTableExists(conn, sqlTableName, reader);
 
@@ -243,16 +263,24 @@ namespace DaxStudio.UI.ViewModels
                                 sqlBulkCopy.DestinationTableName = sqlTableName;
                                 sqlBulkCopy.BatchSize = 1000;
                                 sqlBulkCopy.NotifyAfter = 1000;
-
+                                sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
+                                sqlBulkCopy.EnableStreaming = true;
                                 sqlBulkCopy.WriteToServer(reader);
+                                
                             }
 
                             transaction.Commit();
                         }
 
                     }
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {table.Name} to {sqlTableName}"));
                 }
             }
+        }
+
+        private void SqlBulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
+        {
+            new StatusBarMessage(ActiveDocument, $"Exporting Table {currentTableIdx} of {totalTableCnt} : {sqlTableName} ({e.RowsCopied:N0} rows)");
         }
 
         private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader)
