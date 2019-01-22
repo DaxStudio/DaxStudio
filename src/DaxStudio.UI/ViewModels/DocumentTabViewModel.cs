@@ -64,7 +64,10 @@ namespace DaxStudio.UI.ViewModels
                 if (_activeDocument == value) 
                     return;  // this item is already active
                 if (this.Items.Count == 0)
+                {
+                    _activeDocument = null;
                     return;  // no items in collection usually means we are shutting down
+                }
                 Log.Debug("{Class} {Event} {Connection} {Document}", "DocumentTabViewModel", "ActiveDocument:Set", value.DisplayName);
                 _activeDocument = value;
                 this.ActivateItem(_activeDocument);
@@ -88,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
             // 1 Open BlankDocument
             if (string.IsNullOrEmpty(fileName)) OpenNewBlankDocument(sourceDocument);
             // 2 Open Document in current window (if it's an empty document)
-            else if (!ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
+            else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
             // 3 Open Document in a new window if current window has content
             else OpenFileInNewWindow(fileName);           
             
@@ -130,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OpenFileInNewWindow(string fileName)
         {
-
+            Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", "Opening " + fileName);
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
             Items.Add(newDoc);
             ActivateItem(newDoc);
@@ -144,8 +147,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void OpenFileInActiveDocument(string fileName)
         {
+            Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "OpenFileInActiveDocumentWindow", "Opening " + fileName);
             ActiveDocument.FileName = fileName;
-            ActiveDocument.LoadFile();
+            ActiveDocument.LoadFile(fileName);
         }
 
         private void OpenNewBlankDocument(DocumentViewModel sourceDocument)
@@ -216,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void TabClosing(object sender, DocumentClosingEventArgs args)
         {
-            
+
             var doc = args.Document.Content as IScreen;
             if (doc == null) return;
 
@@ -224,7 +228,12 @@ namespace DaxStudio.UI.ViewModels
 
             doc.TryClose();     // TryClose and give the document a chance to block the close
 
-            if (this.Items.Count == 0) _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+            if (this.Items.Count == 0)
+            {
+                Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
+                ActiveDocument = null;
+                _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+            }
         }
 
         public void Activate(object document)
