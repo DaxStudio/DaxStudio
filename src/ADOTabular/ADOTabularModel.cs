@@ -6,9 +6,9 @@ namespace ADOTabular
 {
     public class ADOTabularModel
     {
-        private readonly ADOTabularConnection _adoTabConn;
+        private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularTableCollection _tableColl;
-        public ADOTabularModel(ADOTabularConnection adoTabConn, DataRow dr)
+        public ADOTabularModel(IADOTabularConnection adoTabConn, DataRow dr)
         {
             _adoTabConn = adoTabConn;
             Name = dr["CUBE_NAME"].ToString();
@@ -19,7 +19,7 @@ namespace ADOTabular
             Relationships = new List<ADOTabularRelationship>();
         }
 
-        public ADOTabularModel(ADOTabularConnection adoTabConn, string name, string caption, string description, string baseModelName)
+        public ADOTabularModel(IADOTabularConnection adoTabConn, string name, string caption, string description, string baseModelName)
         {
             _adoTabConn = adoTabConn;
             Name = name;

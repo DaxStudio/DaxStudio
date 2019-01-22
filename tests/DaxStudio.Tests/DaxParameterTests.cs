@@ -142,7 +142,7 @@ SUMMARIZE (
             var qi = new QueryInfo(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator());
             //var finalQry = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
-            var actualQry = qi.ProcessedQuery;//.Replace("\n", "");
+            var actualQry = qi.ProcessedQuery.Replace("\n", "");
             StringAssertion.ShouldEqualWithDiff(expectedQry.Replace("\n",""), actualQry, DiffStyle.Full);
         }
 
@@ -151,7 +151,8 @@ SUMMARIZE (
         {
             var qi = new QueryInfo(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
             //var finalQry = DaxHelper.PreProcessQuery(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
-            Assert.AreEqual(expectedQry.Replace("\n", ""), qi.ProcessedQuery);
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qi.ProcessedQuery, DiffStyle.Full);
+            //Assert.AreEqual(expectedQry.Replace("\n", ""), qi.ProcessedQuery);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[0], (int)finalQry.ToCharArray()[0]);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[5], (int)finalQry.ToCharArray()[5]);
             //Assert.AreEqual((int)expectedQry.ToCharArray()[8], (int)finalQry.ToCharArray()[8]);

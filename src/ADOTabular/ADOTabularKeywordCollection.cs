@@ -7,12 +7,12 @@ namespace ADOTabular
 {
     public class ADOTabularKeywordCollection: IEnumerable<string>
     {
-        private ADOTabularConnection _connection;
+        private IADOTabularConnection _connection;
         private List<string> _keywords = new List<string>();
-        public ADOTabularKeywordCollection(ADOTabularConnection aDOTabularConnection)
+        public ADOTabularKeywordCollection(IADOTabularConnection adoTabularConnection)
         {
             // TODO: Complete member initialization
-            this._connection = aDOTabularConnection;
+            _connection = adoTabularConnection;
             _connection.Visitor.Visit(this);
         }
 

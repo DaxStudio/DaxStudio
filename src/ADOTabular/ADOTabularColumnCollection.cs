@@ -19,11 +19,10 @@ namespace ADOTabular
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>
     {
-        private readonly ADOTabularTable _table;
-        private readonly ADOTabularConnection _adoTabConn;
-        public ADOTabularColumnCollection(ADOTabularConnection adoTabConn, ADOTabularTable table)
+        private readonly IADOTabularConnection _adoTabConn;
+        public ADOTabularColumnCollection(IADOTabularConnection adoTabConn, ADOTabularTable table)
         {
-            _table = table;
+            Table = table;
             _adoTabConn = adoTabConn;
             if (_cols == null)
             {
@@ -31,9 +30,7 @@ namespace ADOTabular
             }
         }
 
-        public ADOTabularTable Table {
-            get { return _table; }
-        }
+        public ADOTabularTable Table { get; }
 
         public void Add(ADOTabularColumn column)
         {

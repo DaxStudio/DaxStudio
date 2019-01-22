@@ -8,7 +8,7 @@ namespace ADOTabular
         private ADOTabularModelCollection _modelColl;
         private DateTime? _lastUpdate = null;
 
-        public ADOTabularDatabase(ADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel, string roles)
+        public ADOTabularDatabase(IADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel, string roles)
         {
             Connection = adoTabConn;
             Name = databaseName;
@@ -54,7 +54,7 @@ namespace ADOTabular
             get { return _modelColl ?? (_modelColl = new ADOTabularModelCollection(Connection, this)); }
         }
 
-        public ADOTabularConnection Connection { get; }
+        public IADOTabularConnection Connection { get; }
 
         public string CompatibilityLevel { get; }
 

@@ -13,10 +13,10 @@ namespace ADOTabular
 {
     public class MetaDataVisitorCSDL : IMetaDataVisitor
     {
-        private readonly ADOTabularConnection _conn;
+        private readonly IADOTabularConnection _conn;
         private Dictionary<string, Dictionary<string, string>> _hierStructure;
 
-        public MetaDataVisitorCSDL(ADOTabularConnection conn)
+        public MetaDataVisitorCSDL(IADOTabularConnection conn)
         {
             _conn = conn;
         }

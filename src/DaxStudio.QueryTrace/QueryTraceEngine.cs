@@ -17,7 +17,6 @@ namespace DaxStudio.QueryTrace
 {
     public class QueryTraceEngine : IQueryTrace
     {
-        private System.Threading.CancellationTokenSource _pingTraceCancellationToken;
 
         #region public IQueryTrace interface
         public Task StartAsync(int startTimeoutSec)

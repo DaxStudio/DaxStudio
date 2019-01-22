@@ -1,26 +1,26 @@
 ﻿using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Dax Studio")]
-[assembly: AssemblyDescription("DaxStudio standalone application")]
-
+[assembly: AssemblyTitle("DaxStudio")]
+[assembly: AssemblyDescription("An Excel Add-in for working with DAX against Microsoft PowerPivot or Analysis Services Tabular models")]
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("")]
-//[assembly: AssemblyProduct("")]
-//[assembly: AssemblyCopyright("")]
+//[assembly: AssemblyProduct("DaxStudio")]
+//[assembly: AssemblyCopyright("Copyright ©  2012")]
 //[assembly: AssemblyTrademark("")]
 //[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
 // COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+//[assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("86ca6152-f56c-4a49-9631-dedfba813d31")]
+[assembly: Guid("a1e4ac2b-a6ab-48e4-8405-9e8ccfececb0")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -29,5 +29,10 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-//[assembly: AssemblyVersion("2.0.0.0")]
-//[assembly: AssemblyFileVersion("2.0.0.0")]
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+
+//[assembly: AssemblyVersion("1.4.0.0")]
+//[assembly: AssemblyFileVersion("1.4.0.0")]
+[assembly: NeutralResourcesLanguage("en-US", UltimateResourceFallbackLocation.MainAssembly)]

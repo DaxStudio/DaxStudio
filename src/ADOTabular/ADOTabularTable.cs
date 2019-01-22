@@ -6,7 +6,7 @@ namespace ADOTabular
 {
     public class ADOTabularTable :IADOTabularObject
     {
-        private readonly ADOTabularConnection _adoTabConn;
+        private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularColumnCollection _columnColl;
         private ADOTabularMeasureCollection _measuresColl;        
 
@@ -19,7 +19,7 @@ namespace ADOTabular
             _model = model;
         }
         */
-        public ADOTabularTable(ADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible)
+        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible)
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;

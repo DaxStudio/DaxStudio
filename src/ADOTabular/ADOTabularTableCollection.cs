@@ -7,12 +7,12 @@ namespace ADOTabular
     public class ADOTabularTableCollection:IEnumerable<ADOTabularTable>
     {
         
-        private readonly ADOTabularConnection _adoTabConn;
+        private readonly IADOTabularConnection _adoTabConn;
         private readonly ADOTabularModel  _model;
         private SortedDictionary<string, ADOTabularTable> _tables;
         private object mutex = new object();
 
-        public ADOTabularTableCollection(ADOTabularConnection adoTabConn, ADOTabularModel model)
+        public ADOTabularTableCollection(IADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
             _model = model;

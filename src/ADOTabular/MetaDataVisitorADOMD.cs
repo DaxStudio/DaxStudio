@@ -114,7 +114,7 @@ namespace ADOTabular
             return ret;
         }
 
-        internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, ADOTabularConnection conn)
+        internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
         {
             var ret = new SortedDictionary<string, ADOTabularMeasure>();
 

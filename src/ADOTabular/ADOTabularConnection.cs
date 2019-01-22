@@ -27,7 +27,7 @@ namespace ADOTabular
         ,Csdl
     }
 
-    public class ADOTabularConnection : IDisposable
+    public class ADOTabularConnection : IDisposable, IADOTabularConnection
     {
         private AdomdCommand _runningCommand;
 

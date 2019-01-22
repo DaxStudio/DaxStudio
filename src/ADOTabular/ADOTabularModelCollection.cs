@@ -9,9 +9,9 @@ namespace ADOTabular
 {
     public class ADOTabularModelCollection:IEnumerable<ADOTabularModel>
     {
-        private readonly ADOTabularConnection _adoTabConn;
+        private readonly IADOTabularConnection _adoTabConn;
         private readonly ADOTabularDatabase  _database;
-        public ADOTabularModelCollection(ADOTabularConnection adoTabConn, ADOTabularDatabase database)
+        public ADOTabularModelCollection(IADOTabularConnection adoTabConn, ADOTabularDatabase database)
         {
             _adoTabConn = adoTabConn;
             _database = database;

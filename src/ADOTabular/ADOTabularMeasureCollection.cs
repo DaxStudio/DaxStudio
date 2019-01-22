@@ -9,8 +9,8 @@ namespace ADOTabular
     public class ADOTabularMeasureCollection: IEnumerable<ADOTabularMeasure>
     {
         private readonly ADOTabularTable _table;
-        private readonly ADOTabularConnection _adoTabConn;
-        public ADOTabularMeasureCollection(ADOTabularConnection adoTabConn, ADOTabularTable table)
+        private readonly IADOTabularConnection _adoTabConn;
+        public ADOTabularMeasureCollection(IADOTabularConnection adoTabConn, ADOTabularTable table)
         {
             _table = table;
             _adoTabConn = adoTabConn;

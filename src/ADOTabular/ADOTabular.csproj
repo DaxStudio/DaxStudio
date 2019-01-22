@@ -168,6 +168,7 @@
     <Compile Include="DatabaseProfile\UserHierarchyCollection.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="IADOTabularColumn.cs" />
+    <Compile Include="IADOTabularConnection.cs" />
     <Compile Include="IADOTabularObject.cs" />
     <Compile Include="MetadataInfo\DaxFunction.cs" />
     <Compile Include="MetadataInfo\DaxMetadata.cs" />
@@ -206,5 +207,4 @@
   <PropertyGroup>
     <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
   </PropertyGroup>
-
 </Project>
