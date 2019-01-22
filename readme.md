@@ -8,6 +8,8 @@ branch off the `develop` branch. The develop branch contains the current develop
 including any new features. The master branch only contains the code for the last stable release. 
 (we merge from develop to master when doing a public release)
 
+For details about [debugging](debugging)
+
 ## Editing the documentation locally
 
 DAX Studio uses github-pages for daxstudio.org. If you have Windows 10 you can install a development

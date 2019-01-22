@@ -372,7 +372,10 @@
   -->
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>CommonAssemblyInfo.cs</Link>
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="AmoWrapper\AmoServer.cs" />
     <Compile Include="DataSetExtensions.cs" />
