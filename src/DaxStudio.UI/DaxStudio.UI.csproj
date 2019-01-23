@@ -260,20 +260,8 @@
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.3.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.3.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.MetroAccent, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.MetroAccent.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.MetroAccent.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Office2007, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Office2007.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Office2007.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.3.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.3.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Windows10, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.AvalonDock.Themes.Windows10.3.1.16356.12170\lib\net40\Xceed.Wpf.AvalonDock.Themes.Windows10.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Xceed.Wpf.Controls.v5.7, Version=5.7.15466.10150, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Xceed.Wpf.Controls.5.7.15466.10150\lib\net40\Xceed.Wpf.Controls.v5.7.dll</HintPath>
