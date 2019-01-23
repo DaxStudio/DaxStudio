@@ -114,6 +114,16 @@ namespace DaxStudio.Standalone
 
                 app.Run();
             }
+            catch (ArgumentOutOfRangeException argEx)
+            {
+                var st = new System.Diagnostics.StackTrace(argEx);
+                var sf = st.GetFrame(0);
+                if (sf.GetMethod().Name == "GetLineByOffset")
+                {
+                    if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
+                }
+            }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
@@ -121,7 +131,7 @@ namespace DaxStudio.Standalone
                 MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
 #else
                 // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal startup crash" );
+                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash" );
 #endif
 
             }
@@ -134,10 +144,9 @@ namespace DaxStudio.Standalone
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            var comException = e.Exception as System.Runtime.InteropServices.COMException;
 
-            
-            if (comException != null )
+
+            if (e.Exception is System.Runtime.InteropServices.COMException comException)
             {
                 switch (comException.ErrorCode)
                 {
@@ -145,23 +154,24 @@ namespace DaxStudio.Standalone
                         e.Handled = true;
                         if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
                         log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
-                        break;
+                        return;
                     case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf datagrid can't access clipboard 
                         e.Handled = true;
                         if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unhandled COM Exception - Clipboard operation failed, please try again"));
                         log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
-                        break;
+                        return;
                     default:
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                         break;
                 }
-                
+
             }
             else
             {
                 Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                // use CrashReporter.Net to send bug to DrDump
+                //CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
             }
-            
         }
 
         private static void ReadCommandLineArgs(this Application app)

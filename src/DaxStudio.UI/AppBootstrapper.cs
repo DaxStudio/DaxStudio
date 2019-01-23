@@ -21,6 +21,7 @@ namespace DaxStudio.UI
     using System.Windows.Input;
     using DaxStudio.UI.Triggers;
     using DaxStudio.UI.Utils;
+    using DaxStudio.UI.Events;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -41,6 +42,21 @@ namespace DaxStudio.UI
 
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
+            if (e.Exception is ArgumentOutOfRangeException)
+            {
+                var st = new System.Diagnostics.StackTrace(e.Exception);
+                var sf = st.GetFrame(0);
+                if (sf.GetMethod().Name == "GetLineByOffset")
+                {
+                    var _eventAggregator = _container.GetExportedValue<IEventAggregator>();
+                    if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    Log.Warning(e.Exception, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+
             base.OnUnhandledException(sender, e);
             Debug.WriteLine(e.Exception);
             Log.Error("{Class} {Method} {Exception}", "AppBootstrapper", "OnUnhandledException", e.Exception);
