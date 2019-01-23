@@ -337,13 +337,13 @@ namespace DaxStudio.UI.ViewModels
             set { _selectedTarget = value;
                 Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value.Name);
                 if (_selectedTarget is IActivateResults)
-                    _activeDocument.ActivateResults();
+                    ActiveDocument?.ActivateResults();
                 NotifyOfPropertyChange(()=>SelectedTarget);
                 if (!_isDocumentActivating)
                 {
                     _eventAggregator.BeginPublishOnUIThread(new QueryResultsPaneMessageEvent(_selectedTarget));
                 }
-                if (_selectedTarget is IActivateResults) { ActiveDocument.ActivateResults(); }
+                if (_selectedTarget is IActivateResults) { ActiveDocument?.ActivateResults(); }
                 
             }
         }
@@ -778,13 +778,21 @@ namespace DaxStudio.UI.ViewModels
         public void LaunchExcel()
         {
             if (ActiveDocument == null) return;
-            var conn = ActiveDocument.Connection;
-            var datasource = conn.ServerName;
-            var database = conn.Database.Name;
-            var cube = ActiveDocument.MetadataPane.SelectedModelName;
-            OdcHelper.CreateOdcFile(datasource,database,cube);
-            var fileName = OdcHelper.OdcFilePath();
-            System.Diagnostics.Process.Start(fileName);
+            try
+            {
+                var conn = ActiveDocument.Connection;
+                var datasource = conn.ServerName;
+                var database = conn.Database.Name;
+                var cube = ActiveDocument.MetadataPane.SelectedModelName;
+                OdcHelper.CreateOdcFile(datasource, database, cube);
+                var fileName = OdcHelper.OdcFilePath();
+                System.Diagnostics.Process.Start(fileName);
+            } catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchExcel", ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
+
+            }
         }
 
         public bool CanLaunchExcel => IsActiveDocumentConnected();

@@ -40,7 +40,7 @@ DefaultGroupName={#MyAppName}
 UseSetupLdr=Yes
 
 
-LicenseFile=eula.rtf
+LicenseFile=..\license.rtf
 ;OutputBaseFilename=DaxStudio_{#MyAppFileVersion}_setup
 OutputBaseFilename=DaxStudioPerUser_{#myAppMajor}_{#myAppMinor}_{#myAppRevision}_setup
 OutputDir=..\package
