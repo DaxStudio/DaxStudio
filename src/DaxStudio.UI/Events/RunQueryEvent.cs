@@ -14,12 +14,14 @@ namespace DaxStudio.UI.Events
             ResultsTarget = target;
             ClearCache = false;
         }
-        public RunQueryEvent(IResultsTarget target, bool clearCache)
+        public RunQueryEvent(IResultsTarget target, bool clearCache, bool injectEvaluate)
         {
             ResultsTarget = target;
             ClearCache = clearCache;
+            InjectEvaluate = injectEvaluate;
         }
         public IResultsTarget ResultsTarget { get; set; }
-        public bool ClearCache { get; set; }
+        public bool ClearCache { get;  }
+        public bool InjectEvaluate { get;  }
     }
 }

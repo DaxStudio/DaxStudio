@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:Fluent="urn:fluent-ribbon"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="400">
@@ -15,6 +16,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <BitmapImage x:Key="StatusCopy" UriSource="..\images\icon-copy-light.png"></BitmapImage>
             <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
             <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
             <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>
@@ -74,8 +76,9 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
+    
     <Grid >
-        <Fluent:StatusBar >
+        <Fluent:StatusBar>
             <Fluent:StatusBar.ItemsPanel >
                 <ItemsPanelTemplate>
                     <Grid>
@@ -98,17 +101,17 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </Fluent:StatusBar.ItemsPanel>
-            <Fluent:StatusBarItem Grid.Column="0">
+            <Fluent:StatusBarItem Grid.Column="0" Title="Spinner">
                 <Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />
             </Fluent:StatusBarItem>
             <Separator Grid.Column="1"/>
-            <Fluent:StatusBarItem Grid.Column="2">
+            <Fluent:StatusBarItem Grid.Column="2" Title="Status Message">
                 
                 <TextBlock x:Name="Message1" Text="{Binding ActiveDocument.StatusBarMessage}" ></TextBlock>
                 
             </Fluent:StatusBarItem>
             <Separator Grid.Column="3"/>
-            <Fluent:StatusBarItem Grid.Column="4">
+            <Fluent:StatusBarItem Grid.Column="4" Title="Editor Position">
                 <StackPanel Orientation="Horizontal">
                     <!--<Image Source="{StaticResource StatusPos}"></Image>-->
                     <TextBlock  x:Name="PositionText">1, 1</TextBlock>
@@ -118,32 +121,51 @@
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="5"/>
-            <Fluent:StatusBarItem Grid.Column="6" >
+            <Fluent:StatusBarItem Grid.Column="6" Title="Server Details">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{StaticResource StatusServer}"></Image>
-                    <TextBlock x:Name="ServerName">Server</TextBlock>
-                    <TextBlock x:Name="ServerVersion" Margin="5,0,0,0"></TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource StatusServer}"></Image>
+                        <!-- TODO: we could look at text trimming the server name now that we have the copy button 
+                                   but we would probably want to trim the start of the name as it's the end bit that will
+                                   contain key information like org/workspace...
+                        -->
+                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" MaxWidth="150">powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]</TextBlock>
+                        
+                        <StackPanel.ToolTip>
+                            <TextBlock>Server name</TextBlock>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
+
+                    <Fluent:Button
+                                   x:Name="CopyServerNameToClipboard" 
+                                   HorizontalContentAlignment="Left" 
+                                   Foreground="White"
+                                   Icon="{StaticResource StatusCopy}"
+                                   Size="Small" Margin="5,0,1,0">
+                        <Fluent:Button.ToolTip>Copy Server Name to Clipboard</Fluent:Button.ToolTip>
+                    </Fluent:Button>
+                    
+                    <TextBlock x:Name="ServerVersion" Margin="5,0,0,0" VerticalAlignment="Center"></TextBlock>
                 </StackPanel>
-                <StatusBarItem.ToolTip>
-                    <TextBlock>Server name</TextBlock>
-                </StatusBarItem.ToolTip>
+
             </Fluent:StatusBarItem>
+            
             <Separator Grid.Column="7"/>
-            <Fluent:StatusBarItem Grid.Column="8">
+            <Fluent:StatusBarItem Grid.Column="8" Title="SPID">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{StaticResource StatusSpid}"></Image>
-                <TextBlock x:Name="Spid">SPID</TextBlock>
+                <TextBlock x:Name="Spid" VerticalAlignment="Center">SPID</TextBlock>
                 </StackPanel>
                 <StatusBarItem.ToolTip>
                     <TextBlock>Connection SPID</TextBlock>
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="9"/>
-            <Fluent:StatusBarItem Grid.Column="10">
+            <Fluent:StatusBarItem Grid.Column="10" Title="Rowcount">
             <TextBlock x:Name="Rows">rows</TextBlock>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="11"/>
-            <Fluent:StatusBarItem Grid.Column="12">
+            <Fluent:StatusBarItem Grid.Column="12" Title="Timer" >
                 <TextBlock x:Name="TimerText">0:00:00.00</TextBlock>
             </Fluent:StatusBarItem>
         </Fluent:StatusBar>

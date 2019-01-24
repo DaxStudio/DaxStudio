@@ -1306,6 +1306,13 @@
     <Resource Include="Theme\AvalonDockImages\VTabGroup.png" />
     <Resource Include="Images\icon-export-data%4096ppi.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-copy-light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-run-function%4096ppi.png" />
+    <Resource Include="Images\icon-run-function.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

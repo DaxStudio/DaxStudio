@@ -907,10 +907,10 @@ namespace DaxStudio.UI.ViewModels
 
         public QueryInfo QueryInfo { get; set; }
 
-        private DialogResult PreProcessQuery()
+        private DialogResult PreProcessQuery(bool injectEvaluate)
         {
             // merge in any parameters
-            QueryInfo = new QueryInfo(EditorText, _eventAggregator);
+            QueryInfo = new QueryInfo(EditorText, injectEvaluate, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
             if (QueryInfo.NeedsParameterValues)
             {
@@ -970,7 +970,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, _eventAggregator);
+            var queryProcessor = new QueryInfo(txt, false, _eventAggregator);
             txt = queryProcessor.ProcessedQuery;
             if (editor.Dispatcher.CheckAccess())
             {
@@ -1327,15 +1327,15 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-            if (PreProcessQuery() == DialogResult.Cancel)
+            if (PreProcessQuery(message.InjectEvaluate) == DialogResult.Cancel)
             {
                 IsQueryRunning = false;
             }
             else
             {
                 _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
-
-                currentQueryDetails = CreateQueryHistoryEvent(true);
+                
+                currentQueryDetails = CreateQueryHistoryEvent(QueryText);
 
                 message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
                 {
@@ -1357,13 +1357,13 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private IQueryHistoryEvent CreateQueryHistoryEvent(bool includeQueryText)
+        private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
         {
             QueryHistoryEvent qhe = null;
             try
             {
                 
-                var queryText = includeQueryText ? this.QueryText : "";
+                //var queryText = includeQueryText ? this.QueryText : "";
                 qhe = new QueryHistoryEvent(queryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
                 qhe.Status = QueryStatus.Running;
             }
@@ -2234,7 +2234,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var sw = Stopwatch.StartNew();
-                currentQueryDetails = CreateQueryHistoryEvent(false);
+                currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
                 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));

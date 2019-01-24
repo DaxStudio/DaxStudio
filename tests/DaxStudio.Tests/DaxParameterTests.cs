@@ -131,7 +131,7 @@ SUMMARIZE (
         [TestMethod]
         public void TestQueryParamParsing()
         {
-            var qi = new QueryInfo(testParam, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testParam, false, new Mocks.MockEventAggregator());
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(14, qi.Parameters.Count);
         }
@@ -139,7 +139,7 @@ SUMMARIZE (
         [TestMethod]
         public void TestQueryParamReplacement()
         {
-            var qi = new QueryInfo(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery + "\n" + testParam, false, new Mocks.MockEventAggregator());
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator());
             //var finalQry = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var actualQry = qi.ProcessedQuery.Replace("\n", "");
@@ -149,7 +149,7 @@ SUMMARIZE (
         [TestMethod]
         public void TestPreProcessQuery()
         {
-            var qi = new QueryInfo(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery + "\n" + testParam,false, new Mocks.MockEventAggregator());
             //var finalQry = DaxHelper.PreProcessQuery(testQuery + "\n" + testParam, new Mocks.MockEventAggregator());
             StringAssertion.ShouldEqualWithDiff(expectedQry, qi.ProcessedQuery, DiffStyle.Full);
             //Assert.AreEqual(expectedQry.Replace("\n", ""), qi.ProcessedQuery);
@@ -173,7 +173,7 @@ SUMMARIZE (
             var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
             //var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
-            var qi = new QueryInfo(testQuery + "\n" + testAmbiguousParam, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery + "\n" + testAmbiguousParam, false, new Mocks.MockEventAggregator());
             Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", qi.ProcessedQuery);
         }
 
@@ -190,7 +190,7 @@ SUMMARIZE (
           <Value>Value2</Value>
         </Parameter></Parameters>";
             var testQuery = "[value1]:@Test [value2]:@Test1 [value2]:(@test1) [value1]:@test, @test";
-            var qi = new QueryInfo(testQuery + "\n" + testAmbiguousParam, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery + "\n" + testAmbiguousParam,false, new Mocks.MockEventAggregator());
 
             //var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);

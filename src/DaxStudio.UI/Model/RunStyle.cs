@@ -9,21 +9,24 @@ namespace DaxStudio.UI.Model
     public enum RunStyleIcons
     {
         RunOnly,
-        ClearThenRun
+        ClearThenRun,
+        RunFunction
     }
     public class RunStyle
     {
-        public RunStyle(string name, RunStyleIcons icon, bool clearCache, string tooltip)
+        public RunStyle(string name, RunStyleIcons icon, bool clearCache, bool injectEvaluate, string tooltip)
         {
             Name = name;
             Icon = icon;
             ClearCache = clearCache;
             Tooltip = tooltip;
+            InjectEvaluate = injectEvaluate;
         }
-        public string Name { get; private set; }
-        public RunStyleIcons Icon { get; private set; }
-        public string Tooltip { get; private set; }
-        public bool ClearCache { get; private set; }
+        public string Name { get; }
+        public RunStyleIcons Icon { get;  }
+        public string Tooltip { get;  }
+        public bool ClearCache { get;  }
+        public bool InjectEvaluate { get; }
 
     }
 }

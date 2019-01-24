@@ -13,26 +13,32 @@ namespace DaxStudio.UI.Model
     {
         private string rawQuery;
         private Dictionary<string,QueryParameter> _parameters;
-        public QueryInfo(string queryText, IEventAggregator eventAggregator)
+        public QueryInfo(string queryText, bool injectEvaluate, IEventAggregator eventAggregator)
         {
             NeedsParameterValues = true;
+            InjectEvaluate = injectEvaluate;
             rawQuery = queryText;
             _parameters = new Dictionary<string, QueryParameter>(StringComparer.OrdinalIgnoreCase );
             DaxHelper.PreProcessQuery(this, rawQuery, eventAggregator);
         }
         public string ProcessedQuery { get {
-                if (HasParameters)
-                {
-                    return DaxHelper.replaceParamsInQuery(QueryText, Parameters);
+                var baseQuery = InjectEvaluate ? "EVALUATE " : "";
+                if (HasParameters) {
+                    baseQuery += DaxHelper.replaceParamsInQuery(QueryText, Parameters);
+                } else {
+                    baseQuery += rawQuery;
                 }
-                return rawQuery;
+                
+                return baseQuery;
             }
         }
-        public string RawText { get { return RawText; } }
+
         public string QueryText { get; set; }
         public bool HasParameters { get { return Parameters.Count > 0; } }
         //public string ProcessedQuery { get; set; }
         public bool NeedsParameterValues { get; set; }
+        public bool InjectEvaluate { get; }
+
         public Dictionary<string,QueryParameter> Parameters { get { return _parameters; } }
     }
 }

@@ -6,12 +6,10 @@ using System.Data;
 using DaxStudio.UI.Extensions;
 using ADOTabular.AdomdClientWrappers;
 using System.IO;
-using Microsoft.Win32;
 using System;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Serilog;
 //using System.Windows.Forms;
 
@@ -19,20 +17,23 @@ namespace DaxStudio.UI.ViewModels
 {
 
     [Export]
-    public class ExportDataDialogViewModel : Screen
+    public class ExportDataDialogViewModel : Screen, IDisposable, IHandle<CancelQueryEvent>
     {
 
         IEventAggregator _eventAggregator;
         [ImportingConstructor]
-        public ExportDataDialogViewModel(IEventAggregator eventAggregator )
+        public ExportDataDialogViewModel(IEventAggregator eventAggregator, DocumentViewModel document )
         {
             _eventAggregator = eventAggregator;
-            this.IsCSVExport = true;
-            this.TruncateTables = true;
+            _eventAggregator.Subscribe(this);
+            ActiveDocument = document;
+            IsCSVExport = true;
+            TruncateTables = true;
+            CancelRequested = false;
         }
 
-        // TODO: Any best way to instantiate this object with dependency injection?        
-        public DocumentViewModel ActiveDocument { get; set; }
+    
+        public DocumentViewModel ActiveDocument { get;  }
 
         private bool _isCSVExport = false;
         public bool IsCSVExport
@@ -70,17 +71,19 @@ namespace DaxStudio.UI.ViewModels
         public string SchemaName { get; set; }
 
         public bool TruncateTables { get; set; }
+        public bool CancelRequested { get; private set; }
 
         public void Export()
         {
             try
             {
+                ActiveDocument.IsQueryRunning = true;
                 if (IsCSVExport)
                 {
-                    ActiveDocument.IsQueryRunning = true;
                     Task.Run(() =>
                     {
                         ExportDataToFolder(this.OutputPath);
+                        ActiveDocument.IsQueryRunning = false;
                     });
                 }
                 else if (IsSQLExport)
@@ -88,6 +91,7 @@ namespace DaxStudio.UI.ViewModels
                     Task.Run(() =>
                     {
                         ExportDataToSQLServer(this.ConnectionString, this.SchemaName, this.TruncateTables);
+                        ActiveDocument.IsQueryRunning = false;
                     });
                 }
             }
@@ -98,6 +102,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
+                
                 TryClose(true);
             }
         }       
@@ -154,14 +159,17 @@ namespace DaxStudio.UI.ViewModels
                         var tableCnt = 0;
                         var totalTables = metadataPane.SelectedModel.Tables.Count;
 
+                        
                         using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
                         using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
                         using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
                         using (var reader = ActiveDocument.Connection.ExecuteReader(daxQuery))
                         {
+                            textWriter.AutoFlush = false;
+
                             rows = 0;
                             tableCnt++;
-
+                            
                             // Write Header
                             foreach (var colName in reader.CleanColumnNames())
                             {
@@ -181,14 +189,20 @@ namespace DaxStudio.UI.ViewModels
                                 }
 
                                 rows++;
-                                if (rows % 5000 == 0) {
+                                if (rows % 5000 == 0)
+                                {
                                     new StatusBarMessage(ActiveDocument, $"Exporting Table {tableCnt} of {totalTables} : {table.Name} ({rows:N0} rows)");
                                     ActiveDocument.RefreshElapsedTime();
+
+                                    // if cancel has been requested do not write any more records
+                                    if (CancelRequested) break;
                                 }
-                                csvWriter.NextRecord();
+                               csvWriter.NextRecord();
                             }
                         }
-                        
+                        // if cancel has been requested do not write any more files
+                        if (CancelRequested) break;
+
                         ActiveDocument.RefreshElapsedTime();
                         _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
                     }
@@ -229,7 +243,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 return;
             }
-
+            ActiveDocument.QueryStopWatch.Start();
             using (var conn = new SqlConnection(connStr))
             {
                 conn.Open();
@@ -261,8 +275,8 @@ namespace DaxStudio.UI.ViewModels
                             using (var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                             {
                                 sqlBulkCopy.DestinationTableName = sqlTableName;
-                                sqlBulkCopy.BatchSize = 1000;
-                                sqlBulkCopy.NotifyAfter = 1000;
+                                sqlBulkCopy.BatchSize = 5000;
+                                sqlBulkCopy.NotifyAfter = 5000;
                                 sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
                                 sqlBulkCopy.EnableStreaming = true;
                                 sqlBulkCopy.WriteToServer(reader);
@@ -273,14 +287,23 @@ namespace DaxStudio.UI.ViewModels
                         }
 
                     }
+
+                    // jump out of table loop if we have been cancelled
+                    if (CancelRequested) break; 
+
                     _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {table.Name} to {sqlTableName}"));
                 }
             }
+            ActiveDocument.QueryStopWatch.Stop();
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {metadataPane.SelectedModel.Tables.Count} tables exported", ActiveDocument.QueryStopWatch.ElapsedMilliseconds));
+            ActiveDocument.QueryStopWatch.Reset();
         }
 
         private void SqlBulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
         {
+            if (CancelRequested) e.Abort = true;
             new StatusBarMessage(ActiveDocument, $"Exporting Table {currentTableIdx} of {totalTableCnt} : {sqlTableName} ({e.RowsCopied:N0} rows)");
+            ActiveDocument.RefreshElapsedTime();
         }
 
         private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader)
@@ -452,6 +475,16 @@ namespace DaxStudio.UI.ViewModels
                         return "nvarchar(MAX)";
                     }
             }
+        }
+
+        public void Handle(CancelQueryEvent message)
+        {
+            CancelRequested = true;
+        }
+
+        public void Dispose()
+        {
+            _eventAggregator.Unsubscribe(this);
         }
     }
 }

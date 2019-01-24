@@ -5,6 +5,7 @@ using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -19,7 +20,8 @@ namespace DaxStudio.UI.ViewModels
         [ImportingConstructor]
         public StatusBarViewModel(IEventAggregator eventAggregator)
         {
-            eventAggregator.Subscribe(this);
+            _eventAggregator = eventAggregator;
+            _eventAggregator.Subscribe(this);
         }
 
         public bool Working { get; set; }
@@ -39,7 +41,8 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _serverName = value;
-                NotifyOfPropertyChange(()=>ServerName); 
+                NotifyOfPropertyChange(()=>ServerName);
+                NotifyOfPropertyChange(() => CanCopyServerNameToClipboard);
             } }
 
         private string _serverVersion = "";
@@ -58,7 +61,7 @@ namespace DaxStudio.UI.ViewModels
         
         public string Spid 
         { 
-            get { return _spid == ""?"-":_spid; } 
+            get { return (_spid == "" || _spid== "0" )?"-":_spid; } 
             set { _spid = value;
                   NotifyOfPropertyChange(()=>Spid);
                 }
@@ -101,6 +104,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private int _rowCount = -1;
+        private IEventAggregator _eventAggregator;
+
         public int RowCount
         {
             get { return _rowCount; }
@@ -151,10 +156,10 @@ namespace DaxStudio.UI.ViewModels
                     Message = ActiveDocument.StatusBarMessage;
                     break;
                 case "Spid":
-                    NotifyOfPropertyChange(() => Spid);
+                    Spid = ActiveDocument.Spid.ToString();
                     break;
                 case "ServerName":
-                    NotifyOfPropertyChange(() => ServerName);
+                    ServerName = ActiveDocument.ServerName;
                     break;
                 case "ServerVersion":
                     NotifyOfPropertyChange(() => ServerVersion);
@@ -164,8 +169,22 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 case "RowCount":
                     RowCount = ActiveDocument.RowCount;
-                    //NotifyOfPropertyChange(()=>Rows);
                     break;
+            }
+        }
+
+        public bool CanCopyServerNameToClipboard { get => !string.IsNullOrWhiteSpace(_serverName);}
+        public void CopyServerNameToClipboard()
+        {
+            try
+            {
+                System.Windows.Clipboard.SetText(ServerName);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied \"{ServerName}\" to clipboard"));
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "StatusBarViewModel", "CopyServerNameToClipboard", "Error copying server name to clipboard: " + ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying server name to clipboard, please try again"));
             }
         }
 
