@@ -52,7 +52,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (Screen))]
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
-        
+        , IDaxDocument
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
@@ -711,10 +711,10 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        internal ADOTabularConnection Connection
+        public ADOTabularConnection Connection
         {
             get { return _connection; }
-            set
+            internal set
             {
                 if (_connection == value)
                     return;

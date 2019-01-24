@@ -1,11 +1,8 @@
 ﻿using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace DAXEditor {
+namespace DAXEditor
+{
     public interface IEditor
     {
         string Text {get;}

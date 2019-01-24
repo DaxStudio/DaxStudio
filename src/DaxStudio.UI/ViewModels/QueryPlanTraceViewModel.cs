@@ -4,15 +4,12 @@ using System.Linq;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using Microsoft.AnalysisServices;
 using System.Text.RegularExpressions;
 using System.IO;
 using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
-using System;
-using System.Windows;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels

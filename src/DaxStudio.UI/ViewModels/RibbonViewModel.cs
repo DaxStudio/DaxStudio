@@ -34,7 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<AllDocumentsClosedEvent>
         , IHandle<RefreshOutputTargetsEvent>
-//        , IViewAware
+    //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
@@ -48,7 +48,7 @@ namespace DaxStudio.UI.ViewModels
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
 
         [ImportingConstructor]
-        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager , OptionsViewModel options)
+        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -74,20 +74,20 @@ namespace DaxStudio.UI.ViewModels
 
         public List<RunStyle> RunStyles { get; set; }
         private RunStyle _selectedRunStyle;
-        public RunStyle SelectedRunStyle { 
-            get { return _selectedRunStyle; } 
-            set { _selectedRunStyle = value; 
-                NotifyOfPropertyChange(()=> SelectedRunStyle);
+        public RunStyle SelectedRunStyle {
+            get { return _selectedRunStyle; }
+            set { _selectedRunStyle = value;
+                NotifyOfPropertyChange(() => SelectedRunStyle);
             } }
-        public OptionsViewModel Options { get; private set; }
+        public IGlobalOptions Options { get; private set; }
         public Visibility OutputGroupIsVisible
         {
-            get { return _host.IsExcel?Visibility.Visible : Visibility.Collapsed; }
+            get { return _host.IsExcel ? Visibility.Visible : Visibility.Collapsed; }
         }
 
         public Visibility ServerTimingsIsChecked
         {
-            get 
+            get
             {
                 // TODO - Check if ServerTiming Trace is checked - Update on check change
                 //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
@@ -110,6 +110,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
+        public bool CanCommentSelection { get => ActiveDocument != null; }
         public void CommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(true));
@@ -120,6 +121,8 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.MergeParameters();
         }
 
+        public bool CanFormatQueryStandard { get => ActiveDocument != null; }
+
         public void FormatQueryStandard()
         {
             ActiveDocument?.FormatQuery( false );
@@ -128,16 +131,19 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument?.FormatQuery( true );
         }
+
+        public bool CanUndo { get => ActiveDocument != null; }
         public void Undo()
         {
             ActiveDocument?.Undo();
         }
 
+        public bool CanRedo { get => ActiveDocument != null; }
         public void Redo()
         {
             ActiveDocument?.Redo();
         }
-
+        public bool CanUncommentSelection { get => ActiveDocument != null; }
         public void UncommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
@@ -195,7 +201,9 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return !_queryRunning && (ActiveDocument != null && ActiveDocument.IsConnected) && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+                return !_queryRunning 
+                    && (ActiveDocument != null && ActiveDocument.IsConnected) 
+                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
 
@@ -256,12 +264,9 @@ namespace DaxStudio.UI.ViewModels
         public bool CanConnect
         {
             get {
-                return !_queryRunning && !_isConnecting && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+                return !_queryRunning && !_isConnecting && ActiveDocument != null 
+                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
-            /*set { 
-                _canConnect = value;
-                NotifyOfPropertyChange(()=> CanConnect);
-            }*/
         }
 
         public ShellViewModel Shell { get; set; }
@@ -352,22 +357,14 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument = message.Document;
             var doc = ActiveDocument;
             SelectedTarget = ActiveDocument.SelectedTarget;
-        
+
             _queryRunning = ActiveDocument.IsQueryRunning;
             if (ActiveDocument.Tracer == null)
                 _traceStatus = QueryTraceStatus.Stopped;
             else
                 _traceStatus = ActiveDocument.Tracer.Status;
 
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanCancelQuery);
-            NotifyOfPropertyChange(() => CanClearCache);
-            NotifyOfPropertyChange(() => CanRefreshMetadata);
-            NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
-            NotifyOfPropertyChange(() => CanLaunchExcel);
-            NotifyOfPropertyChange(() => CanExportAllData);
-            NotifyOfPropertyChange(() => CanExportAnalysisData);
+            RefreshRibbonButtonEnabledStatus();
 
             if (!ActiveDocument.IsConnected)
             {
@@ -397,6 +394,25 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ServerTimingDetails);
         }
 
+        private void RefreshRibbonButtonEnabledStatus()
+        {
+            NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanCancelQuery);
+            NotifyOfPropertyChange(() => CanClearCache);
+            NotifyOfPropertyChange(() => CanRefreshMetadata);
+            NotifyOfPropertyChange(() => CanFormatQueryStandard);
+            NotifyOfPropertyChange(() => CanCommentSelection);
+            NotifyOfPropertyChange(() => CanUncommentSelection);
+            NotifyOfPropertyChange(() => CanUndo);
+            NotifyOfPropertyChange(() => CanRedo);
+            NotifyOfPropertyChange(() => CanConnect);
+            NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
+            NotifyOfPropertyChange(() => CanLaunchExcel);
+            NotifyOfPropertyChange(() => CanExportAllData);
+            NotifyOfPropertyChange(() => CanExportAnalysisData);
+            UpdateTraceWatchers();
+        }
+
         private void UpdateTraceWatchers()
         {
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
@@ -416,6 +432,9 @@ namespace DaxStudio.UI.ViewModels
                 _activeDocument = value;
                 NotifyOfPropertyChange(() => CanSave);
                 NotifyOfPropertyChange(() => CanSaveAs);
+                NotifyOfPropertyChange(() => CanRunQuery);
+                NotifyOfPropertyChange(() => CanRefreshMetadata);
+                NotifyOfPropertyChange(() => CanConnect);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -819,6 +838,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(AllDocumentsClosedEvent message)
         {
             this.ActiveDocument = null;
+            RefreshRibbonButtonEnabledStatus();
         }
 
         public void Handle(RefreshOutputTargetsEvent message)
