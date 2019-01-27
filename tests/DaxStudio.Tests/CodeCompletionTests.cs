@@ -74,7 +74,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual("CALCULATE FILTER(VALUES([MyColumn])", doc.Text);
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestCodeCompletionWithUnderscoresInName()
         {
             var testLine = "EVALUATE DIM_D";

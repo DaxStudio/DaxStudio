@@ -133,6 +133,7 @@
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
+    <Compile Include="Helpers\StringHelpers.cs" />
     <Compile Include="Mocks\MockEditor.cs" />
     <Compile Include="Mocks\MockEventAggregator.cs" />
     <Compile Include="Mocks\MockGlobalOptions.cs" />

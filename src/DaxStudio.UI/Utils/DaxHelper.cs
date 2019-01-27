@@ -12,7 +12,8 @@ namespace DaxStudio.UI.Utils
     public static class DaxHelper
     {
         // detects a parameter
-        const string paramRegex = @"(?:@)(?<name>[^\[\]\s,=]*\b+(?![^\[]*\]))";
+        //const string paramRegex = @"(?:@)(?<name>[^\[\]\s,=]*\b+(?![^\[]*\]))";
+        const string paramRegex = @"\[[^\]]*\](?# ignore column names)|'[^']*'(?# ignore tables names)|""[^""]*""(?# ignore strings)|(?:@)(?<name>[^\[\]\s,=]*\b+(?![^\[]*\]))";
         const string commentRegex = @"\/\*(\*(?!\/)|[^*])*\*\/|(//.*)|(--.*)";
         private static Regex rexComments = new Regex(commentRegex, RegexOptions.Compiled | RegexOptions.Multiline);
         private static Regex rexParams = new Regex(paramRegex, RegexOptions.Compiled);
@@ -119,6 +120,10 @@ namespace DaxStudio.UI.Utils
             var matches = rexParams.Matches(cleanQry);
             foreach(Match m in matches)
             {
+                // if we have no "name" group this means the @ is between quotes in a string
+                // so go to the next match
+                if (string.IsNullOrEmpty(m.Groups["name"].Value)) continue; 
+
                 if (!paramDict.ContainsKey(m.Groups["name"].Value)) paramDict.Add(m.Groups["name"].Value, new QueryParameter(m.Groups["name"].Value));
             }
 
