@@ -1925,6 +1925,11 @@ namespace DaxStudio.UI.ViewModels
                     OutputMessage(string.Format("Uploaded DAX metadata v.{0}: {1}", ssasVersion, uploadingMessage), publishStopWatch.ElapsedMilliseconds);
                 }
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions",ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Publishing DAX Functions: " + ex.Message));
+            }
             finally {
                 // Remove temporary filename
                 if (File.Exists(metadataFilename)) {

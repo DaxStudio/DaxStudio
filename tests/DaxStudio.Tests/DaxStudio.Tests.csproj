@@ -149,6 +149,7 @@
     <Compile Include="DaxLineParserTests.cs" />
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
+    <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />
   </ItemGroup>
   <ItemGroup>
