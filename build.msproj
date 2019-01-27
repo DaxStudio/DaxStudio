@@ -52,6 +52,11 @@
 	<MSBuild Projects=".\src\daxstudio.sln" Targets="Build" Properties="RestorePackages=false" />
   </Target>
   
+  <Target Name="BuildTests" DependsOnTargets="Clean">
+    <Message Text="Building DaxStudio.Tests" />
+    <!--<MSBuild Projects=".\src\daxstudio.standalone\daxstudio.standalone.csproj" Targets="Build" />-->
+	<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />
+  </Target>
   
 <!--  <Target Name="BuildVsto" DependsOnTargets="Build">
 	<Message Text="Building Signed version of DaxStudio.ExcelAddin" Importance="High" />
