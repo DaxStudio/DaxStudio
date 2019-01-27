@@ -26,6 +26,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly string _connectionString;
         private readonly DocumentViewModel _activeDocument;
         private readonly Regex _ppvtRegex;
+        private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
+
         public ConnectionDialogViewModel(string connectionString
             , IDaxStudioHost host
             , IEventAggregator eventAggregator
@@ -76,22 +78,34 @@ namespace DaxStudio.UI.ViewModels
 
         private void RefreshPowerBIInstances()
         {
-            
-            PowerBIHelper.Refresh();
-            PowerBIDesignerDetected = PowerBIHelper.Instances.Count > 0;
-            if (PowerBIHelper.Instances.Count > 0)
-            {
-                if (SelectedPowerBIInstance == null) SelectedPowerBIInstance = PowerBIHelper.Instances[0];
-            } else
-            {
-                if (PowerBIModeSelected) ServerModeSelected = true;
-                SelectedPowerBIInstance = null;
-            }
-            // update bound properties
-            NotifyOfPropertyChange(() => PowerBIDesignerDetected);
-            NotifyOfPropertyChange(() => PowerBIDesignerInstances);
-            NotifyOfPropertyChange(() => SelectedPowerBIInstance);
-            
+
+            _powerBIInstances = new List<PowerBIInstance>() { _pbiLoadingInstance };
+            SelectedPowerBIInstance = _pbiLoadingInstance;
+
+            Task.Run(() =>{
+
+                // display the "loading..." message
+                _powerBIInstances.Clear();
+                _powerBIInstances.Add(_pbiLoadingInstance);
+                NotifyOfPropertyChange(() => PowerBIDesignerInstances);
+                NotifyOfPropertyChange(() => PowerBIInstanceDetected);
+
+                // look for local workspace instances
+                _powerBIInstances = PowerBIHelper.GetLocalInstances();
+
+                if (PowerBIInstanceDetected)
+                {
+                    if (SelectedPowerBIInstance == null) SelectedPowerBIInstance = _powerBIInstances[0];
+                } else
+                {
+                    if (PowerBIModeSelected) ServerModeSelected = true;
+                    SelectedPowerBIInstance = null;
+                }
+                // update bound properties
+                NotifyOfPropertyChange(() => PowerBIInstanceDetected);
+                NotifyOfPropertyChange(() => PowerBIDesignerInstances);
+                NotifyOfPropertyChange(() => SelectedPowerBIInstance);
+            });
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }
@@ -512,12 +526,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool PowerBIDesignerDetected { get; private set; }
+        // readonly property
+        // do we have more than one detected instance of a local workspace
+        // or we have 1 instance that is not the "Loading..." instance 
+        public bool PowerBIInstanceDetected => _powerBIInstances.Count > 1 
+                                              || (_powerBIInstances.Count == 1 && _powerBIInstances[0] != _pbiLoadingInstance);
 
-        public List<PowerBIInstance> PowerBIDesignerInstances { get { return PowerBIHelper.Instances; } }
+        public List<PowerBIInstance> PowerBIDesignerInstances { get { return _powerBIInstances; } }
         public bool PowerBIModeSelected { get; set; }
 
-        public PowerBIInstance SelectedPowerBIInstance { get; set; }
+        private PowerBIInstance _selectedPowerBIInstance;
+        public PowerBIInstance SelectedPowerBIInstance {
+            get { return _selectedPowerBIInstance; }
+            set {
+                _selectedPowerBIInstance = value;
+                NotifyOfPropertyChange(() => SelectedPowerBIInstance);
+            }
+        }
 
         public string ConnectionType { get {
             if (ServerModeSelected) return "SSAS";
@@ -555,6 +580,7 @@ namespace DaxStudio.UI.ViewModels
 
         private SortedList<string, LocaleIdentifier> _locales;
         private bool _hasPowerPivotModel;
+        private List<PowerBIInstance> _powerBIInstances = new List<PowerBIInstance> { _pbiLoadingInstance };
 
         public SortedList<string, LocaleIdentifier> LocaleOptions
         {
