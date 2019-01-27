@@ -7,6 +7,7 @@ using Serilog;
 using ICSharpCode.AvalonEdit.Document;
 using System.Text.RegularExpressions;
 using DaxStudio.UI.Utils;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Utils
 {
@@ -125,7 +126,7 @@ namespace DaxStudio.UI.Utils
                 {
                     case '\"':
                         if (daxState.LineState == LineState.String)
-                            daxState.SetState(LineState.Other,i);
+                            daxState.SetState(LineState.Other, i);
                         else
                             daxState.SetState(LineState.String, i);
                         break;
@@ -138,7 +139,7 @@ namespace DaxStudio.UI.Utils
                             {
                                 daxState.SetState(LineState.Column, i);
                                 sbColumnName.Clear();
-                                if (i > 1 && line[i-1] != '\'')
+                                if (i > 1 && line[i - 1] != '\'')
                                 {
                                     sbTableName.Clear();
                                     sbTableName.Append(GetPreceedingTableName(line.Substring(0, i)));
@@ -162,7 +163,7 @@ namespace DaxStudio.UI.Utils
                                 daxState.SetState(LineState.Other, i);
                                 break;
                         }
-                        
+
                         break;
                     case '\'':
                         if (daxState.LineState != LineState.String && daxState.LineState != LineState.Table)
@@ -173,7 +174,7 @@ namespace DaxStudio.UI.Utils
                             break;
                         }
                         if (daxState.LineState == LineState.Table)
-                            daxState.SetState( LineState.TableClosed,i);
+                            daxState.SetState(LineState.TableClosed, i);
                         break;
                     case '(':
                     case '=':
@@ -190,15 +191,14 @@ namespace DaxStudio.UI.Utils
                     case ';':
                     case ' ':
                     case '\t':
-                        if (daxState.LineState != LineState.String 
+                        if (daxState.LineState != LineState.String
                             && daxState.LineState != LineState.Table
                             && daxState.LineState != LineState.Column
                             && daxState.LineState != LineState.Measure
                             )
-                        
-                        //if (daxState.LineState == LineState.Dmv)
                         {
-                            daxState.SetState(char.IsLetterOrDigit(line[i]) ? LineState.LetterOrDigit : LineState.Other, i);
+
+                            daxState.SetState(line[i].IsDaxLetterOrDigit() ? LineState.LetterOrDigit : LineState.Other, i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
                         if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
@@ -221,7 +221,7 @@ namespace DaxStudio.UI.Utils
                             && daxState.LineState != LineState.Dmv
                             && daxState.LineState != LineState.Measure)
                         {
-                            daxState.SetState( char.IsLetterOrDigit(line[i])?LineState.LetterOrDigit:LineState.Other ,i);
+                            daxState.SetState( line[i].IsDaxLetterOrDigit()?LineState.LetterOrDigit:LineState.Other ,i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
                         if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);

@@ -92,6 +92,7 @@
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IConnection.cs" />
+    <Compile Include="IDaxDocument.cs" />
     <Compile Include="IDaxStudioProxy.cs" />
     <Compile Include="IDaxStudioHost.cs" />
     <Compile Include="IGlobalOptions.cs" />

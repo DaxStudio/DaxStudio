@@ -1,11 +1,8 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Linq;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
-using DaxStudio;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using DaxStudio.UI.Extensions;
 using Moq;
 using DaxStudio.Tests.Utils;

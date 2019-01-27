@@ -133,6 +133,7 @@
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
+    <Compile Include="Helpers\StringHelpers.cs" />
     <Compile Include="Mocks\MockEditor.cs" />
     <Compile Include="Mocks\MockEventAggregator.cs" />
     <Compile Include="Mocks\MockDaxStudioHost.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
+    <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />
   </ItemGroup>
   <ItemGroup>

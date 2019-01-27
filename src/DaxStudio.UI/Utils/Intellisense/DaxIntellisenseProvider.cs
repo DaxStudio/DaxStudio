@@ -1,6 +1,7 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
 using DAXEditor;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils.Intellisense;
 using DaxStudio.UI.ViewModels;
@@ -47,7 +48,7 @@ namespace DaxStudio.UI.Utils
         private bool HasThrownException;
         private IEventAggregator _eventAggregator;
 
-        public DaxIntellisenseProvider (DocumentViewModel activeDocument, IEditor editor, IEventAggregator eventAggregator)
+        public DaxIntellisenseProvider (IDaxDocument activeDocument, IEditor editor, IEventAggregator eventAggregator)
         {
             Document = activeDocument;
             _editor = editor;
@@ -333,7 +334,7 @@ namespace DaxStudio.UI.Utils
         }
         #endregion
 
-        public DocumentViewModel Document { get; private set; }
+        public IDaxDocument Document { get; private set; }
         public ADOTabularDynamicManagementViewCollection Dmvs { get; private set; }
         public ADOTabularFunctionGroupCollection FunctionGroups { get; private set; }
 

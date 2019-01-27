@@ -59,6 +59,12 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestFindTableNameFunctionWithUnderscores()
+        {
+            Assert.AreEqual("Dim_D", DaxLineParser.GetPreceedingTableName("filter(Dim_D"));
+        }
+
+        [TestMethod]
         public void TestFindTableNameFunctionNoSpaceAndOperator()
         {
             Assert.AreEqual("table2", DaxLineParser.GetPreceedingTableName("filter(table, table1[col1]=table2"));
@@ -121,6 +127,19 @@ namespace DaxStudio.Tests
             Assert.AreEqual(38, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(dax.Length-1, daxState.EndOffset, "EndOffset");
             Assert.AreEqual("my table", daxState.TableName);
+        }
+
+        [TestMethod]
+        public void GetCompletionSegmentTestWithUnderscoreTableName()
+        {
+            var dax = "filter(Dim_D";
+            //                                         ^ 32
+            var daxState = DaxLineParser.ParseLine(dax, dax.Length - 1, 0);
+            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState);
+            Assert.AreEqual(dax.Length - 1, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(dax.Length - "Dim_D".Length, daxState.StartOffset, "StartOffset");
+            
+            //Assert.AreEqual("my table", daxState.TableName);
         }
 
         [TestMethod]

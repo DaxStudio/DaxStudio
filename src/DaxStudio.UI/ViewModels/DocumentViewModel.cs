@@ -52,7 +52,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (Screen))]
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
-        
+        , IDaxDocument
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
@@ -714,10 +714,10 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        internal ADOTabularConnection Connection
+        public ADOTabularConnection Connection
         {
             get { return _connection; }
-            set
+            internal set
             {
                 if (_connection == value)
                     return;
@@ -1927,6 +1927,11 @@ namespace DaxStudio.UI.ViewModels
                     publishStopWatch.Stop();
                     OutputMessage(string.Format("Uploaded DAX metadata v.{0}: {1}", ssasVersion, uploadingMessage), publishStopWatch.ElapsedMilliseconds);
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions",ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Publishing DAX Functions: " + ex.Message));
             }
             finally {
                 // Remove temporary filename
