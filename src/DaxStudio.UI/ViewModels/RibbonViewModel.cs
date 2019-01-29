@@ -783,11 +783,19 @@ namespace DaxStudio.UI.ViewModels
         public void LaunchSqlProfiler()
         {
             if (ActiveDocument == null) return;
-            var serverName = ActiveDocument.Connection.ServerName;
-            System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
+            try
+            {
+                var serverName = ActiveDocument.Connection.ServerName;
+                System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchSqlProfiler", "Error launching SQL Profiler");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
+            }
         }
 
-        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected();
+        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected() && !string.IsNullOrEmpty(_sqlProfilerCommand);
 
         public void LaunchExcel()
         {

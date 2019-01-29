@@ -1770,6 +1770,11 @@ namespace DaxStudio.UI.ViewModels
                     tw.CheckEnabled(this, activeTrace);
                 }
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "EnableTrace", "Error while enabling trace");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error enabling Trace: " + ex.Message));
+            }
             finally
             {
                 IsTraceChanging = false;
