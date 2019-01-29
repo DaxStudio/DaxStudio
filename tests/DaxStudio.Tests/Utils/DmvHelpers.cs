@@ -47,4 +47,9 @@ namespace DaxStudio.Tests.Utils
         public string DESCRIPTION { get; set; }
         public string BASE_CUBE_NAME { get; set; }
     }
+
+    public class CSDL_METADATA
+    {
+        public string Metadata { get; set; }
+    }
 }

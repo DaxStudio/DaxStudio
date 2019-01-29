@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Linq;
 using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
@@ -7,6 +8,7 @@ using DaxStudio.UI.Extensions;
 using Moq;
 using DaxStudio.Tests.Utils;
 using Measure = DaxStudio.Tests.Utils.Measure;
+using System.Collections.Generic;
 
 namespace DaxStudio.Tests
 {

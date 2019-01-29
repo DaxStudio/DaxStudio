@@ -5,6 +5,8 @@ using System.Text;
 using DaxStudio.UI.Model;
 using DaxStudio.Tests.Assertions;
 using DaxStudio.Tests.Helpers;
+using Caliburn.Micro;
+using Moq;
 
 namespace DaxStudio.Tests
 {
@@ -129,6 +131,14 @@ SUMMARIZE (
         , pathcontains(""1|0"", 'Orders'[Interactions7DaysFlag]) --0|1--
         , pathcontains(""Advocate|Detractor|No Survey Response|Passive"", 'NPS Result'[NPS Result]) --Advocate--
 )";
+
+        IEventAggregator mockEventAggregator;
+        [TestInitialize]
+        public void InitializeTest()
+        {
+            mockEventAggregator = new Mock<IEventAggregator>().Object;
+        }
+
         [TestMethod]
         public void TestQueryParamParsing()
         {
@@ -143,7 +153,7 @@ SUMMARIZE (
             var testQuery = @"FILTER(
 table,
 table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
-            var qi = new QueryInfo(testQuery, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery, false, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(1, qi.Parameters.Count);
         }
@@ -154,7 +164,7 @@ table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
             var testQuery = @"FILTER(
 table,
 't@ble'[email] = ""abcdefg@gmail.com"" || table[email] = @param)";
-            var qi = new QueryInfo(testQuery, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery, false, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(1, qi.Parameters.Count);
         }
@@ -165,7 +175,7 @@ table,
             var testQuery = @"FILTER(
 table,
 table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
-            var qi = new QueryInfo(testQuery, new Mocks.MockEventAggregator());
+            var qi = new QueryInfo(testQuery, false, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(1, qi.Parameters.Count);
         }
