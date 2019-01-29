@@ -4,20 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:ado="clr-namespace:ADOTabular;assembly=ADOTabular"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
              xmlns:model="clr-namespace:DaxStudio.UI.Model"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
-             xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"             
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-             xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
@@ -363,7 +358,6 @@
                                                               Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToNotVisibleConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
-                                                                        <!-- -->
                                                                         <TextBlock Style="{StaticResource SampleDataListItem}" Text="{Binding Path=. }" />
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
@@ -380,7 +374,8 @@
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
                                                 Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }"
-                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, 
+                                                RelativeSource={RelativeSource Self}}">
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
@@ -390,9 +385,6 @@
                                                 <MenuItem Header="Define and Expand Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]">
                                                 </MenuItem>
-                                                <MenuItem Header="Define All Measures"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasures($dataContext)]">
-                                                </MenuItem>                                                
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 

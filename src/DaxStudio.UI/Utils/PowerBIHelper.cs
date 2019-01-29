@@ -47,11 +47,6 @@ namespace DaxStudio.UI.Utils
 
     public class PowerBIHelper
     {
-
-        
-        private static bool _portSet = false;
-        private static bool _isRefreshing = false;
-        private static bool _isloaded = false;
     
         public static List<PowerBIInstance> GetLocalInstances()
         {
@@ -99,7 +94,6 @@ namespace DaxStudio.UI.Utils
                     if (tcpRow != null)
                     {
                         _port = tcpRow.LocalEndPoint.Port;
-                        _portSet = true;
                         _instances.Add(new PowerBIInstance(parentTitle, _port, _icon));
                         Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
                     }
