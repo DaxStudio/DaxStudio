@@ -517,9 +517,15 @@
                                         <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
                                         EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
                                         <i:Interaction.Triggers>
+                                            
                                             <i:EventTrigger EventName="DragEnter">
                                                 <cal:ActionMessage MethodName="OnDragEnter"/>
                                             </i:EventTrigger>
+                                            
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <cal:ActionMessage MethodName="PreviewMouseLeftButtonUp"></cal:ActionMessage>
+                                            </i:EventTrigger>
+
                                         </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>

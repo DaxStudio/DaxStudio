@@ -221,7 +221,16 @@ namespace DaxStudio.UI.Utils
 
         private void CompletionWindow_PreviewKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.OemCloseBrackets) _editor.DisposeCompletionWindow();
+            // close the completion window on the following keys
+            switch (e.Key)
+            {
+                case Key.Left:
+                case Key.Right:
+                case Key.OemCloseBrackets:
+                    _editor.DisposeCompletionWindow();
+                    break;
+            }
+            
         }
 
         public void ShowInsight(string funcName)
@@ -246,8 +255,14 @@ namespace DaxStudio.UI.Utils
                     //_editor.InsightWindow.MaxWidth = 200;
                     
                     _editor.InsightWindow.Content = BuildInsightContent(f,400);
-                    
-                    _editor.InsightWindow.Show();
+                    try
+                    {
+                        _editor.InsightWindow.Show();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
+                    }
                 }
                 catch (Exception ex)
                 {

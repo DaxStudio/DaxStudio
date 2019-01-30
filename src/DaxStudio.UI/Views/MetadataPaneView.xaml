@@ -358,7 +358,6 @@
                                                               Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToNotVisibleConverter}}">
                                                             <ItemsControl.ItemTemplate>
                                                                 <DataTemplate>
-                                                                        <!-- -->
                                                                         <TextBlock Style="{StaticResource SampleDataListItem}" Text="{Binding Path=. }" />
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>
@@ -375,7 +374,8 @@
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
                                                 Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure }"
-                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, 
+                                                RelativeSource={RelativeSource Self}}">
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]">
                                                 </MenuItem>
@@ -385,9 +385,6 @@
                                                 <MenuItem Header="Define and Expand Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]">
                                                 </MenuItem>
-                                                <MenuItem Header="Define All Measures"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineAllMeasures($dataContext)]">
-                                                </MenuItem>                                                
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 
