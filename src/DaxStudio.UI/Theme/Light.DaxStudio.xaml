@@ -213,5 +213,5 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.MouseOver.Background" SolidColorBrush.Color="#E81123" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.Pressed.Background" SolidColorBrush.Color="#A92C38" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
 
-
+    <SolidColorBrush x:Key="DialogBackground" Color="White"/>
 </ResourceDictionary>

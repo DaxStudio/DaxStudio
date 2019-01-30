@@ -13,33 +13,32 @@
         Width="500">
     <UserControl.Resources>
         <ResourceDictionary>
-        <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
-        <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
-            
-        <!-- Converters -->    
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        
-        <conv:WorkbookNameConverter x:Key="WorkbookNameConverter" />
-        <conv:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter" />
-            
-        <!-- Bitmaps -->
-        <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
-        <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-info@96ppi.png" />
-        <BitmapImage x:Key="question" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-question@96ppi.png" />
+            <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
+            <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
 
-        <BitmapImage x:Key="Excel" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excel@24px.png" />
-        <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
-        <BitmapImage x:Key="Database" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-database@24px.png" />
+            <!-- Converters -->
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:WorkbookNameConverter x:Key="WorkbookNameConverter" />
+            <conv:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter" />
 
-        <conv:ResourceLookupConverter x:Key="EmbeddedSsasIcons">
-            <ResourceDictionary>
+            <!-- Bitmaps -->
+            <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
+            <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-info@96ppi.png" />
+            <BitmapImage x:Key="question" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-question@96ppi.png" />
+
+            <BitmapImage x:Key="Excel" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excel@24px.png" />
+            <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
+            <BitmapImage x:Key="Database" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-database@24px.png" />
+
+            <conv:ResourceLookupConverter x:Key="EmbeddedSsasIcons">
+                <ResourceDictionary>
                     <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
                     <BitmapImage x:Key="PowerBIReportServer" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-PBIReportServer@24px.png" />
                     <BitmapImage x:Key="Devenv" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-devenv@24px.png" />
                     <BitmapImage x:Key="Loading" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-wait@24px.png" />
                 </ResourceDictionary>
-        </conv:ResourceLookupConverter>
-        
+            </conv:ResourceLookupConverter>
+
             <Style TargetType="{x:Type TextBlock}" x:Key="disabledText" >
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
                 <Style.Triggers>
@@ -51,6 +50,8 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            
+
 
 
             <ResourceDictionary.MergedDictionaries>
@@ -62,7 +63,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
-        <Border Style="{StaticResource DaxStudioDialog}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        <Border Style="{StaticResource DaxStudioDialog}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0" Background="{DynamicResource DialogBackground}">
 
             <Grid  Height="Auto">
                 <Grid.ColumnDefinitions>
@@ -123,22 +124,23 @@
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
                                 <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
-                                <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" 
+                                    <RadioButton Height="16" HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" 
                                              VerticalAlignment="Top" 
                                              IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" 
                                              Grid.Column="0" GroupName="ConnectionType" 
                                              IsEnabled="{Binding PowerBIInstanceDetected}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <!--<Image  Source="{StaticResource PowerBI}" Margin="0,0,5,0"/>-->
+                                        <StackPanel Orientation="Horizontal">
+                                            <!--<Image  Source="{StaticResource PowerBI}" Margin="0,0,5,0"/>-->
                                             <TextBlock IsEnabled="{Binding PowerBIDesignerDetected}" Style="{StaticResource disabledText}"><Run Text="PBI"/><Run Text=" / SSDT Model"/></TextBlock>
-                                        
-                                    </StackPanel>
-                                </RadioButton>
-                                <Image Source="{StaticResource question}" Margin="5,1,0,0" Height="16" 
+
+                                        </StackPanel>
+                                    </RadioButton>
+                                    <Image Source="{StaticResource question}" Margin="5,1,0,0" Height="16" 
                                        Visibility="{Binding PowerBIInstanceDetected, Converter={StaticResource BoolToNotHiddenConverter}}">
-                                            <Image.ToolTip>
-                                                <TextBlock MaxWidth="200" TextWrapping="Wrap">No running Power BI Desktop or SSDT Integrated Workspaces found.</TextBlock></Image.ToolTip>
-                                        </Image>
+                                        <Image.ToolTip>
+                                            <TextBlock MaxWidth="200" TextWrapping="Wrap">No running Power BI Desktop or SSDT Integrated Workspaces found.</TextBlock>
+                                        </Image.ToolTip>
+                                    </Image>
                                 </StackPanel>
                                 <ComboBox Height="23" Margin="0,5,5,5" x:Name="cboPowerBI" 
                                           VerticalAlignment="Top"  IsEditable="False"  Grid.Column="1"
@@ -268,7 +270,7 @@
 
                         <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
                         <ScrollViewer Grid.Row="5" Grid.Column="1" Height="85" Width="298" >
-                        <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
+                            <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         </ScrollViewer>
                     </Grid>

@@ -19,7 +19,7 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]">
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]" Background="Transparent">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
