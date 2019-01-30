@@ -502,11 +502,15 @@
                                                    >
                                         <!-- EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
                                         <i:Interaction.Triggers>
+                                            
                                             <i:EventTrigger EventName="DragEnter">
-                                                <cal:ActionMessage MethodName="OnDragEnter">
-                                                    
-                                                </cal:ActionMessage>
+                                                <cal:ActionMessage MethodName="OnDragEnter"></cal:ActionMessage>
                                             </i:EventTrigger>
+                                            
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <cal:ActionMessage MethodName="PreviewMouseLeftButtonUp"></cal:ActionMessage>
+                                            </i:EventTrigger>
+
                                         </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>

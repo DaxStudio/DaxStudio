@@ -8,7 +8,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-             MinWidth="400"
+             Width="400"
              MinHeight="350">
     <UserControl.Resources>
         <ResourceDictionary>

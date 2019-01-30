@@ -42,6 +42,7 @@ using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
 using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
+using CsvHelper;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2440,42 +2441,33 @@ namespace DaxStudio.UI.ViewModels
 
         public void GotoLine()
         {
-            //_eventAggregator.PublishOnUIThread(new ConnectionPendingEvent(this));
+
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "GotoLine", "start");
             
-            Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
+            try
             {
-                // todo - should we be checking for exceptions in this continuation
-                try
-                {
-              
-                    Execute.OnUIThread(() =>
-                    {
-                        var gotoLineDialog = new GotoLineDialogViewModel(this._editor);
+                // create a gotoLineDialog view model                     
+                var gotoLineDialog = new GotoLineDialogViewModel(this._editor);
 
-                        _windowManager.ShowDialogBox(gotoLineDialog, settings: new Dictionary<string, object>
-                                        {
-                                            {"Top", 40},
-                                            { "WindowStyle", WindowStyle.None},
-                                            { "ShowInTaskbar", false},
-                                            { "ResizeMode", ResizeMode.NoResize},
-                                            { "Background", System.Windows.Media.Brushes.Transparent},
-                                            { "AllowsTransparency",true}
-                                        });
-                    });
-
-                }
-                catch (Exception ex)
-                {
-                    // if the task throws an exception the "real" exception is usually in the innerException
-                    var innerMsg = ex.Message;
-                    if (ex.InnerException != null) innerMsg = ex.InnerException.Message;
-                    Log.Error("{class} {method} {message}", "DocumentViewModel", "GotoLine", innerMsg);
-                    OutputError(innerMsg);
-                }
-                
-            }, TaskScheduler.Default);
-
+                // show the dialog
+                _windowManager.ShowDialogBox(gotoLineDialog, settings: new Dictionary<string, object>
+                                {
+                                    {"Top", 40},
+                                    { "WindowStyle", WindowStyle.None},
+                                    { "ShowInTaskbar", false},
+                                    { "ResizeMode", ResizeMode.NoResize},
+                                    { "Background", System.Windows.Media.Brushes.Transparent},
+                                    { "AllowsTransparency",true}
+                                });
+            }
+            catch (Exception ex)
+            {
+                // if the task throws an exception the "real" exception is usually in the innerException
+                var innerMsg = ex.Message;
+                if (ex.InnerException != null) innerMsg = ex.InnerException.Message;
+                Log.Error("{class} {method} {message}", "DocumentViewModel", "GotoLine", innerMsg);
+                OutputError(innerMsg);
+            }
         }
 
         public void Find()
@@ -2919,6 +2911,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void PreviewMouseLeftButtonUp()
+        {
+            // if it's open close the completion window when 
+            // the left mouse button is clicked
+            _editor.DisposeCompletionWindow();
+        }
 
         #region ISaveable 
         public FileIcons Icon { get { 
@@ -3036,36 +3034,38 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 // create zipped .vpax2 file with individual csv files
-                
-                //using (Package package = Package.Open(path + "2", FileMode.Create))
-                //{
-                //    foreach (DataTable dt in info.Tables)
-                //    {
-                //        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.csv", UriKind.Relative));
-                //        using (StreamWriter sw = new StreamWriter(package.CreatePart(uri2, "application/text", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
-                //        using (CsvWriter csv = new CsvWriter(sw))
-                //        {
-                //            // Write columns
-                //            foreach (DataColumn column in dt.Columns)
-                //            {
-                //                csv.WriteField(column.ColumnName);
-                //            }
-                //            csv.NextRecord();
 
-                //            // Write row values
-                //            foreach (DataRow row in dt.Rows)
-                //            {
-                //                for (var i = 0; i < dt.Columns.Count; i++)
-                //                {
-                //                    csv.WriteField(row[i]);
-                //                }
-                //                csv.NextRecord();
-                //            }
-                            
-                //        }
-                //    }
-                //    package.Close();
-                //}
+
+                using (Package package = Package.Open(path + "2", FileMode.Create))
+                {
+                    foreach (DataTable dt in info.Tables)
+                    {
+                        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.csv", UriKind.Relative));
+                        using (StreamWriter sw = new StreamWriter(package.CreatePart(uri2, "application/text", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
+                        using (CsvWriter csv = new CsvWriter(sw))
+                        {
+
+                            // Write columns
+                            foreach (DataColumn column in dt.Columns)
+                            {
+                                csv.WriteField(column.ColumnName);
+                            }
+                            csv.NextRecord();
+
+                            // Write row values
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                for (var i = 0; i < dt.Columns.Count; i++)
+                                {
+                                    csv.WriteField(row[i]);
+                                }
+                                csv.NextRecord();
+                            }
+
+                        }
+                    }
+                    package.Close();
+                }
 
             }  
 
