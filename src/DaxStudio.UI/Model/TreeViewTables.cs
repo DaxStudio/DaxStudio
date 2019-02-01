@@ -308,6 +308,26 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        public bool IsColumnOrMeasure
+        {
+            get
+            {
+                return this.MetadataImage == MetadataImages.Column
+                    || this.MetadataImage == MetadataImages.HiddenColumn
+                    || this.MetadataImage == MetadataImages.Measure
+                    || this.MetadataImage == MetadataImages.HiddenMeasure;
+            }
+        }
+
+        public bool IsColumn
+        {
+            get
+            {
+                return this.MetadataImage == MetadataImages.Column
+                    || this.MetadataImage == MetadataImages.HiddenColumn;
+            }
+        }
+
         public bool IsMeasure
         {
             get
