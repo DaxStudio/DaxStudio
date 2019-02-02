@@ -1465,10 +1465,12 @@ namespace DaxStudio.UI.ViewModels
             editor.Focus();
         }
 
-        private void InsertTextAtSelection(string text)
+        private void InsertTextAtSelection(string text, bool selectInsertedText)
         {
             
             var editor = GetEditor();
+            var startOffset = editor.CaretOffset;
+
             if (editor.SelectionLength == 0)
             {
                 editor.Document.Insert(editor.SelectionStart, text);
@@ -1476,9 +1478,16 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 editor.SelectedText = text;
+                startOffset = editor.SelectionStart;
             }
+
             editor.Focus();
-              
+
+            if (selectInsertedText)
+            {
+                editor.Select(startOffset, text.Length);
+            }
+            
         }
 
         /*
@@ -1591,7 +1600,8 @@ namespace DaxStudio.UI.ViewModels
                     else
                         OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
             }
-            InsertTextAtSelection(message.TextToSend);
+            InsertTextAtSelection(message.TextToSend, message.RunQuery);
+            //todo run the query
         }
 
         public void Handle(DefineMeasureOnEditor message)
@@ -1669,7 +1679,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 measureDeclaration = string.Format("DEFINE {1}{0}{1}", measureDeclaration, System.Environment.NewLine);
 
-                InsertTextAtSelection(measureDeclaration);
+                InsertTextAtSelection(measureDeclaration,false);
             }                        
         }
 

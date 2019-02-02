@@ -10,11 +10,11 @@ namespace ADOTabular
     public  class ADOTabularColumn:IADOTabularColumn
     {
         // TODO - can we delete this??
-        public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularColumnType colType)
+        public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularObjectType colType)
         {
             Table = table;
-            ColumnType = colType;
-            if (colType == ADOTabularColumnType.Column)
+            ObjectType = colType;
+            if (colType == ADOTabularObjectType.Column)
             {
                 Caption = dr["HIERARCHY_CAPTION"].ToString();
                 Name = dr["HIERARCHY_NAME"].ToString();
@@ -31,7 +31,7 @@ namespace ADOTabular
         }
 
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
-                                bool isVisible, ADOTabularColumnType columnType, string contents)
+                                bool isVisible, ADOTabularObjectType columnType, string contents)
         {
             Table = table;
             InternalReference = internalReference;
@@ -39,13 +39,13 @@ namespace ADOTabular
             Caption = caption ?? internalReference ?? name;
             Description = description;
             IsVisible = isVisible;
-            ColumnType = columnType;
+            ObjectType = columnType;
             Contents = contents;
         }
 
         public string InternalReference { get; private set; }
 
-        public ADOTabularColumnType ColumnType { get; internal set; }
+        public ADOTabularObjectType ObjectType { get; internal set; }
 
         public ADOTabularTable Table { get; private set; }
 
@@ -58,7 +58,7 @@ namespace ADOTabular
             get
             {
                 // for measures we exclude the table name
-                return ColumnType == ADOTabularColumnType.Column  
+                return ObjectType == ADOTabularObjectType.Column  
                     ? string.Format("{0}[{1}]", Table.DaxName, Name)
                     : string.Format("[{0}]",Name);
             }
@@ -107,20 +107,20 @@ namespace ADOTabular
         {
             get
             {
-                switch (ColumnType)
+                switch (ObjectType)
                 {
-                    case ADOTabularColumnType.Column:
+                    case ADOTabularObjectType.Column:
                         return IsVisible ? MetadataImages.Column : MetadataImages.HiddenColumn;
-                    case ADOTabularColumnType.Hierarchy:
+                    case ADOTabularObjectType.Hierarchy:
                         return MetadataImages.Hierarchy;
-                    case ADOTabularColumnType.KPI:
+                    case ADOTabularObjectType.KPI:
                         return MetadataImages.Kpi;
-                    case ADOTabularColumnType.Level:
+                    case ADOTabularObjectType.Level:
                         return MetadataImages.Column;
-                    case ADOTabularColumnType.KPIGoal:
-                    case ADOTabularColumnType.KPIStatus:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
                         return MetadataImages.Measure;
-                    case ADOTabularColumnType.UnnaturalHierarchy:
+                    case ADOTabularObjectType.UnnaturalHierarchy:
                         return MetadataImages.UnnaturalHierarchy;
                     default:
                         return IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;

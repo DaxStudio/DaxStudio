@@ -150,7 +150,12 @@ namespace DaxStudio.UI.Model
         }
 
         public MetadataImages MetadataImage { get { return _table.MetadataImage; } }
-        public string Caption { get { return _table.Caption; } }
+
+        // the Caption is affected by translations, it is visible in resultsets, but is not used in queries
+        public string Caption => _table.Caption; 
+        // the Name property is the untranslated object name used in queries and DAX expressions
+        public string Name => _table.Name;
+        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
         public string Description { get { return _table.Description; } }
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public override bool IsCriteriaMatched(string criteria)
@@ -158,7 +163,9 @@ namespace DaxStudio.UI.Model
             return String.IsNullOrEmpty(criteria) ||  Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0 ;
         }
 
-        
+        // this the fully qualified (and possibly quoted)
+        // so for a column it would be something like 'table name'[column name]
+        // but for a table it would be 'table name'
         string IADOTabularObject.DaxName
         {
             get { return _table.DaxName; }
@@ -283,10 +290,12 @@ namespace DaxStudio.UI.Model
             MetadataImage = MetadataImages.Hierarchy;
         }
         public MetadataImages MetadataImage { get; set; }
-        public string Caption { get { return _tabularObject.Caption; } }
+        public string Caption => _tabularObject.Caption; 
+        public string Name => _tabularObject.Name;
+        public ADOTabularObjectType ObjectType => _tabularObject.ObjectType;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
-        string IADOTabularObject.DaxName { get { return _tabularObject.DaxName; } }
+        string IADOTabularObject.DaxName => _tabularObject.DaxName;
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }

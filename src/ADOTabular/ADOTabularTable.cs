@@ -86,5 +86,6 @@ namespace ADOTabular
         {
             get { return IsVisible ? MetadataImages.Table : MetadataImages.HiddenTable; }
         }
+        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
     }
 }

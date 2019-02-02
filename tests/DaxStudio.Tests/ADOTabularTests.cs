@@ -144,8 +144,8 @@ namespace DaxStudio.Tests
             visitor.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.AreEqual(110, tabs.Count);
-            Assert.AreEqual(190, tabs["Orders"].Columns.Where(c => c.ColumnType == ADOTabularColumnType.Column).Count());
-            Assert.AreEqual(347, tabs["Orders"].Columns.Where(c => c.ColumnType == ADOTabularColumnType.Measure).Count());
+            Assert.AreEqual(190, tabs["Orders"].Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column).Count());
+            Assert.AreEqual(347, tabs["Orders"].Columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure).Count());
         }
 
         [TestMethod]
@@ -283,8 +283,8 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(15, tabs.Count);
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
-            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
-            var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).First());
+            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
+            var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
             Assert.AreEqual(3, h.Levels.Count);
             Assert.AreEqual("Group", h.Levels[0].LevelName);
             Assert.AreEqual("Country", h.Levels[1].LevelName);
@@ -304,7 +304,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(15, tabs.Count);
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
-            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ColumnType == ADOTabularColumnType.Hierarchy).Count());
+            Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var k = tabs["Sales Territory"].Columns["Total Current Quarter Sales Performance"] as ADOTabularKpi;
             Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);
             Assert.AreEqual("_Total Current Quarter Sales Performance Goal", k.Goal.Caption);

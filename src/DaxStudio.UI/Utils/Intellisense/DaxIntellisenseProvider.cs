@@ -394,8 +394,8 @@ namespace DaxStudio.UI.Utils
                     {
                         foreach (var col in tab.Columns)
                         {
-                            if ((col.ColumnType == ADOTabularColumnType.Column && metadataType.HasFlag(IntellisenseMetadataTypes.Columns))
-                                || col.ColumnType == ADOTabularColumnType.Measure && metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
+                            if ((col.ObjectType == ADOTabularObjectType.Column && metadataType.HasFlag(IntellisenseMetadataTypes.Columns))
+                                || col.ObjectType == ADOTabularObjectType.Measure && metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
                             {
 
                                 tmpData.Add(new DaxCompletionData(this, col, _daxState));

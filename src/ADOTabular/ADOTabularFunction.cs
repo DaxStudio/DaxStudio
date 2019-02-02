@@ -25,26 +25,18 @@ namespace ADOTabular
             _paramColl = param;
         }
 
-        public string Caption
-        {
-            get { return _caption; }
-        }
+        public string Caption => _caption;
 
-        public string Description
-        {
-            get { return _desc; }
-        }
+        // functions are not translated so there is no difference between the Name and Caption
+        public string Name => _caption; 
 
-        public string Group
-        {
-            get { return _group; }
-        }
+        public string Description =>  _desc; 
 
-        public ADOTabularParameterCollection Parameters
-        {
-            get { return _paramColl; }
-        }
+        public string Group => _group; 
 
+        public ADOTabularParameterCollection Parameters => _paramColl;
+
+        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Function;
         public string DaxName
         {
             get { return string.Format("{0}({1})", Caption, Parameters);  }
