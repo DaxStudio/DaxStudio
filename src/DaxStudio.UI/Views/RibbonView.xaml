@@ -172,6 +172,7 @@
                             <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1" Grid.Row="1">
                                 <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
                                 <ListView x:Name="RecentFiles" 
+                                          Background="Transparent"
                                           DataContext="{Binding}" 
                                           ItemsSource="{Binding Path=RecentFiles}" 
                                           MinWidth="600"

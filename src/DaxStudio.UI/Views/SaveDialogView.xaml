@@ -37,7 +37,7 @@
    
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    <Border Background="{DynamicResource DialogBackground}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
         
     <Grid>
         <Grid.RowDefinitions>
@@ -61,6 +61,7 @@
                 <TextBlock>Select All</TextBlock>
             </StackPanel>
             <ListView x:Name="DocumentList" Grid.Row="2"
+                      Background="{DynamicResource DialogBackground}"
                       ItemsSource="{Binding Documents}" 
                       Margin="10,0"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldSave($this.SelectedItem)]">

@@ -27,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly DocumentViewModel _activeDocument;
         private readonly Regex _ppvtRegex;
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
+        private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<none found>", -1, EmbeddedSSASIcon.Loading);
 
         public ConnectionDialogViewModel(string connectionString
             , IDaxStudioHost host
@@ -92,6 +93,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // look for local workspace instances
                 _powerBIInstances = PowerBIHelper.GetLocalInstances();
+
 
                 if (PowerBIInstanceDetected)
                 {

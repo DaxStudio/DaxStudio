@@ -40,6 +40,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
                 config.Formatters.Clear();
                 config.Formatters.Add(new JsonMediaTypeFormatter());
+                config.Formatters.Add(new XmlMediaTypeFormatter());
                 config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
                 
                 appBuilder.UseWebApi(config);

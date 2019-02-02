@@ -85,11 +85,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        //public void NewQueryDocument()
-        //{
-        //    NewQueryDocument(string.Empty, string.Empty);
-        //}
-
         public void NewQueryDocument(string fileName)
         {
             NewQueryDocument(fileName, null);
@@ -124,18 +119,7 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.IsDirty = true;
 
                 file.ShouldOpen = false;
-                //_eventAggregator.PublishOnUIThreadAsync(message);
 
-                //return newDoc;
-
-                // hack - need to wait for the document to load properly
-                // otherwise the view model only appears to be semi-loaded
-                // and we get errors when the auto save timer kicks in 
-                //while (newDoc.State != DocumentState.Loaded)
-                //{
-                //    Thread.Sleep(100);
-                //    Log.Verbose("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", "Waiting for document to reach the loaded state");
-                //}
                 Log.Information("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"AutoSave Recovery complete for {file.DisplayName} ({file.AutoSaveId})");
             }
         }
@@ -174,8 +158,10 @@ namespace DaxStudio.UI.ViewModels
             
             new System.Action(CleanActiveDocument).BeginOnUIThread();
 
-            if (sourceDocument == null)
-                new System.Action(ChangeConnection).BeginOnUIThread();
+            if (sourceDocument == null 
+                || sourceDocument.Connection == null 
+                || sourceDocument.Connection.State != System.Data.ConnectionState.Open)
+                    new System.Action(ChangeConnection).BeginOnUIThread();
             else {
                 _eventAggregator.PublishOnUIThread(new CopyConnectionEvent(sourceDocument));
             }

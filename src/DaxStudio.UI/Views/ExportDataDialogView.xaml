@@ -25,7 +25,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    <Border Background="{DynamicResource DialogBackground}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
 
         <Grid Margin="10">
             <Grid.RowDefinitions>
