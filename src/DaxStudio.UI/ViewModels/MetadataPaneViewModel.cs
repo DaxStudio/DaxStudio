@@ -812,7 +812,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (System.Exception ex)
             {
-                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineObjectsThatReferenceMeasure", ex.Message, ex.StackTrace);
+                Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceMeasure", ex.Message, ex.StackTrace);
             }
         }
 
@@ -838,12 +838,11 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (System.Exception ex)
             {
-                Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineObjectsThatReferenceTable", ex.Message, ex.StackTrace);
+                Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceTable", ex.Message, ex.StackTrace);
             }
         }
 
         #endregion
-
 
     }
 
