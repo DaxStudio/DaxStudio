@@ -15,6 +15,7 @@ $(document).ready(function() {
         $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt.toLocaleString() + "</span>");
         var today = new Date();
         hoursSinceDownloadRefresh = Math.round(Math.abs(today - release.refreshDate)/36e5);
+        console.log("hours since last download cnt refresh: " + hoursSinceDownloadRefresh);
     } 
     
     // we only refresh the download count if it's older than 1 hour to try
