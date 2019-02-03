@@ -14,7 +14,8 @@ $(document).ready(function() {
         //console.log('returning download cnt from cache');
         $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt.toLocaleString() + "</span>");
         var today = new Date();
-        hoursSinceDownloadRefresh = Math.round(Math.abs(today - release.refreshDate)/36e5);
+        var lastRefresh = new Date(release.refreshDate);
+        hoursSinceDownloadRefresh = Math.round(Math.abs(today - lastRefresh)/36e5);
         console.log("hours since last download cnt refresh: " + hoursSinceDownloadRefresh);
     } 
     
