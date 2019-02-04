@@ -789,7 +789,8 @@
                     </Fluent:Button>
                 
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="External Tools">
+            <Fluent:RibbonGroupBox Header="External Tools" Visibility="{Binding ShowExternalTools, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   >
                 <Fluent:Button Name="LaunchSqlProfiler"
                                    Header="SQL Profiler"
                                    cal:Message.Attach="[Event Click] = [Action LaunchSqlProfiler()]"
