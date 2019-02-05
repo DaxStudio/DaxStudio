@@ -19,7 +19,7 @@ namespace ADOTabular
     {
         private KpiDetails _kpi;
         public ADOTabularKpi( ADOTabularTable table,string internalName, string name, string caption,  string description,
-                                bool isVisible, ADOTabularColumnType columnType, string contents, KpiDetails kpi)
+                                bool isVisible, ADOTabularObjectType columnType, string contents, KpiDetails kpi)
         :base(table, internalName,name, caption,description,isVisible,columnType,contents)
         {
             _kpi = kpi;

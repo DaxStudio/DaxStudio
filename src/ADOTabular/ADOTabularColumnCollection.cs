@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 
-//using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
-    public enum ADOTabularColumnType
+    public enum ADOTabularObjectType
     {
         Column,
         Measure,
@@ -14,7 +13,11 @@ namespace ADOTabular
         KPIGoal,
         Hierarchy,
         Level,
-        UnnaturalHierarchy
+        UnnaturalHierarchy, 
+        Table,
+        DMV,
+        Function,
+        Unknown
     }
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>
@@ -93,8 +96,8 @@ namespace ADOTabular
                 // rownumber cannot be referenced in queries so we exclude it from the collection
                 if (adoTabularColumn.Contents == "RowNumber") continue;
                 // the KPI components are available through the parent KPI object
-                if (adoTabularColumn.ColumnType == ADOTabularColumnType.KPIGoal) continue;
-                if (adoTabularColumn.ColumnType == ADOTabularColumnType.KPIStatus) continue;
+                if (adoTabularColumn.ObjectType == ADOTabularObjectType.KPIGoal) continue;
+                if (adoTabularColumn.ObjectType == ADOTabularObjectType.KPIStatus) continue;
 
                 yield return adoTabularColumn;
             }

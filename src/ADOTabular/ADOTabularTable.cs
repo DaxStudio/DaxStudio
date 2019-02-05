@@ -89,5 +89,6 @@ namespace ADOTabular
         }
 
         public IList<ADOTabularRelationship> Relationships { get; private set; } 
+        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
     }
 }

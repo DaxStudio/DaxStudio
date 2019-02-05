@@ -9,3 +9,6 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright � DAX Studio 2016")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
+
+

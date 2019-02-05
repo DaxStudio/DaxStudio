@@ -33,7 +33,7 @@ namespace DaxStudio.UI.Utils
             {
                 foreach (var col in tbl.Columns)
                 {
-                    if (col.ColumnType == ADOTabularColumnType.Column && col.MeasureExpression.Length > 0)
+                    if (col.ObjectType == ADOTabularObjectType.Column && col.MeasureExpression.Length > 0)
                     {
                         var row = result.NewRow();
                         row["Table"] = tbl.Caption;

@@ -23,10 +23,24 @@ namespace ADOTabular
         public ADOTabularColumn Column;
         public KpiComponentType ComponentType { get; set; }
 
-        public string Caption { get { return ComponentType.ToString(); } }
-        public string DaxName { get { return Column.DaxName; } }
+        public string Caption => ComponentType.ToString(); 
+        public string Name => Column.Name;
+        public string DaxName { get { return Column.DaxName;} }
 
         public string DataTypeName { get { return Column.DataTypeName; } }
-
+        public ADOTabularObjectType ObjectType {
+            get {
+                switch (ComponentType)
+                {
+                    case KpiComponentType.Goal:
+                        return ADOTabularObjectType.KPIGoal;
+                    case KpiComponentType.Status:
+                        return ADOTabularObjectType.KPIStatus;
+                    case KpiComponentType.Value:
+                        return ADOTabularObjectType.KPI;
+                }
+                return ADOTabularObjectType.Unknown;
+            }
+        }
     }
 }

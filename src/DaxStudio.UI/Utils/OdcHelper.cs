@@ -133,8 +133,13 @@ function init() {
             // TODO - should we write to MyDocuments or ApplicationData ??
             var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.Create);
             var dsPath = Path.Combine(myDocs, "My Data Sources", "DaxStudio.odc");
+            
+            // The following line is only here to fix up an issue caused by a preview release of this feature 
+            // which was creating a DaxStudio.odc subfolder which then block creation of this as a file
+            if (Directory.Exists(dsPath)) Directory.Delete(dsPath);
+            
             // ensure that the folder exists
-            Directory.CreateDirectory(dsPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(dsPath));
             return dsPath;
         }
     }

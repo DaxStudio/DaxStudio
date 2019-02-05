@@ -479,7 +479,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (column.Column.GetType() != typeof(ADOTabularColumn)) return;
             ADOTabularColumn col = (ADOTabularColumn)column.Column;
-            if (col.ColumnType != ADOTabularColumnType.Column) return;
+            if (col.ObjectType != ADOTabularObjectType.Column) return;
             // TODO - make an option for the sample size
             if (_globalOptions.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
             if (_globalOptions.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
@@ -505,7 +505,7 @@ namespace DaxStudio.UI.ViewModels
                                  select m).ToList();
             var distinctColumns = (from t in model.Tables
                                    from c in t.Columns
-                                   where c.ColumnType == ADOTabularColumnType.Column
+                                   where c.ObjectType == ADOTabularObjectType.Column
                                    select c.Name).Distinct().ToList();
 
             var finalMeasure = modelMeasures.First(m => m.Name == measureName);
@@ -693,7 +693,7 @@ namespace DaxStudio.UI.ViewModels
                 var model = Connection.Database.Models.BaseModel;
                 var distinctColumns = (from t in model.Tables
                                        from c in t.Columns
-                                       where c.ColumnType == ADOTabularColumnType.Column
+                                       where c.ObjectType == ADOTabularObjectType.Column
                                            && (allTables || t.Caption == item.Caption)
                                        select c).Distinct().ToList();
                 string measureExpression = "\r\nVAR MaxFilters = 3\r\nRETURN\r\n";

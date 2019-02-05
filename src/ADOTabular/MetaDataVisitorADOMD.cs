@@ -73,7 +73,7 @@ namespace ADOTabular
                         , dr["HIERARCHY_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString())
-                        ,ADOTabularColumnType.Column
+                        ,ADOTabularObjectType.Column
                         ,"")
                         );
             }
@@ -98,7 +98,7 @@ namespace ADOTabular
                         , dr["MEASURE_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
-                        ,ADOTabularColumnType.Measure
+                        ,ADOTabularObjectType.Measure
                         ,"")
                         );
             }

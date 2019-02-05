@@ -14,7 +14,9 @@ $(document).ready(function() {
         //console.log('returning download cnt from cache');
         $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt.toLocaleString() + "</span>");
         var today = new Date();
-        hoursSinceDownloadRefresh = Math.round(Math.abs(today - release.refreshDate)/36e5);
+        var lastRefresh = new Date(release.refreshDate);
+        hoursSinceDownloadRefresh = Math.round(Math.abs(today - lastRefresh)/36e5);
+        //console.log("hours since last download cnt refresh: " + hoursSinceDownloadRefresh);
     } 
     
     // we only refresh the download count if it's older than 1 hour to try
@@ -34,7 +36,7 @@ $(document).ready(function() {
             }
             
             //console.log('downloads: ' + data.assets[0].download_count);
-            $('#download_cnt').html('<span>downloads: </span><span class="badge badge-info">' + data.assets[0].download_count.toLocaleString() + "</span>");
+            $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + data.assets[0].download_count.toLocaleString() + "</span>");
         });
     }
   });

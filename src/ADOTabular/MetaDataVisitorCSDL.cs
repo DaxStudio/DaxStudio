@@ -336,15 +336,15 @@ namespace ADOTabular
 
             foreach (var c in tab.Columns)
             {
-                if (c.ColumnType == ADOTabularColumnType.KPI)
+                if (c.ObjectType == ADOTabularObjectType.KPI)
                 {
                     var k = (ADOTabularKpi)c;
                     if (k.Goal == null && k.Status == null)
                         invalidKpis.Add(c);
                     if (k.Goal != null)
-                        k.Goal.ColumnType = ADOTabularColumnType.KPIGoal;
+                        k.Goal.ObjectType = ADOTabularObjectType.KPIGoal;
                     if (k.Status != null)
-                        k.Status.ColumnType = ADOTabularColumnType.KPIStatus;
+                        k.Status.ObjectType = ADOTabularObjectType.KPIStatus;
                 }
             }
             foreach (var invalidKpi in invalidKpis)
@@ -389,7 +389,7 @@ namespace ADOTabular
 
             KpiDetails kpi = new KpiDetails();
 
-            var colType = ADOTabularColumnType.Column;
+            var colType = ADOTabularObjectType.Column;
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntityType))
             {
@@ -437,7 +437,7 @@ namespace ADOTabular
                 {
 
                     if (rdr.LocalName == eMeasure)
-                        colType = ADOTabularColumnType.Measure;
+                        colType = ADOTabularObjectType.Measure;
 
                     if (rdr.LocalName == eSummary)
                         description = rdr.ReadElementContentAsString();
@@ -517,7 +517,7 @@ namespace ADOTabular
                         }
                         else
                         {
-                            colType = ADOTabularColumnType.KPI;
+                            colType = ADOTabularObjectType.KPI;
                             var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi);
                             kpiCol.DataType = Type.GetType(string.Format("System.{0}", dataType));
                             tab.Columns.Add(kpiCol);
@@ -539,7 +539,7 @@ namespace ADOTabular
                     formatString = "";
                     defaultAggregateFunction = "";
                     nullable = true;
-                    colType = ADOTabularColumnType.Column;
+                    colType = ADOTabularObjectType.Column;
                 }
                 rdr.Read();
             }
@@ -706,7 +706,7 @@ namespace ADOTabular
                         }
                     }
                     string structure = GetHierarchStructure(table, hierName, hierCap);
-                    hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierHidden, ADOTabularColumnType.Hierarchy, "", structure);
+                    hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierHidden, ADOTabularObjectType.Hierarchy, "", structure);
                     table.Columns.Add(hier);
                     rdr.Read();
                 }
