@@ -292,6 +292,7 @@
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
                                                    >
                                             <TextBlock.ToolTip>
+                                                <ToolTip Background="{DynamicResource BaseBrush}">
                                                 <Grid>
                                                     <StackPanel Orientation="Vertical" Margin="5">
                                                         <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
@@ -368,7 +369,7 @@
                                                         </Grid>
                                                     </StackPanel>
                                                 </Grid>
-
+                                                </ToolTip>
                                             </TextBlock.ToolTip>                                
                                             </TextBlock>
 

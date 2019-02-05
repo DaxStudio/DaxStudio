@@ -11,5 +11,3 @@ layout: page
    Size: {% include filesize.html number=download_size %} \| Date: {% if release.assets[0].created_at  %}{{ release.assets[0].created_at | date_to_string }} {% else %} N/A {% endif %}
    {% endif %}
 {% endfor %}
-
-> Prior versions can be found on the old codeplex site at [http://daxstudio.codeplex.com](http://daxstudio.codeplex.com)

@@ -10,19 +10,19 @@
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #FF0072C6
     </Color>
-        <Color x:Key="Fluent.Ribbon.Colors.AccentColor80" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Fluent.Ribbon.Colors.AccentColor80" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #CC0072C6
     </Color>
-        <Color x:Key="Fluent.Ribbon.Colors.AccentColor60" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Fluent.Ribbon.Colors.AccentColor60" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #990072C6
     </Color>
-        <Color x:Key="Fluent.Ribbon.Colors.AccentColor40" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Fluent.Ribbon.Colors.AccentColor40" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #660072C6
     </Color>
-        <Color x:Key="Fluent.Ribbon.Colors.AccentColor20" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Fluent.Ribbon.Colors.AccentColor20" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #330072C6
     </Color>
-        <Color x:Key="Fluent.Ribbon.Colors.HighlightColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="Fluent.Ribbon.Colors.HighlightColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         #FF0085E5
     </Color>
     <Color x:Key="Fluent.Ribbon.Colors.IdealForegroundColor" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -214,4 +214,5 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.Pressed.Background" SolidColorBrush.Color="#A92C38" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
 
     <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource WhiteColor}"/>
+    <SolidColorBrush x:Key="BaseBrush" Color="{StaticResource WhiteColor}"/>
 </ResourceDictionary>

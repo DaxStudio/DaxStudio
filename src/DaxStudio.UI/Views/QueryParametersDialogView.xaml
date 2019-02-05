@@ -34,7 +34,7 @@
    
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    <Border Background="{DynamicResource DialogBackground}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
         
     <Grid>
         <Grid.RowDefinitions>
@@ -61,7 +61,7 @@
                        Margin="10px 0" BorderBrush="DarkGray"
                        HeadersVisibility="Column"
                        GridLinesVisibility="None"
-                       Background="White" 
+                       Background="Transparent" 
                        TabIndex="0">
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="Parameter"  IsReadOnly="True" KeyboardNavigation.IsTabStop="False" >
