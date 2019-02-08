@@ -52,6 +52,7 @@ namespace ADOTabular
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery vistorType)
         {
+            
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
             _adomdConn = new AdomdConnection(ConnectionString, connectionType);

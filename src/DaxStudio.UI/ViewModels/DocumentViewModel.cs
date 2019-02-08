@@ -3022,44 +3022,51 @@ namespace DaxStudio.UI.ViewModels
 
         public void ExportAnalysisData(string path, string extension)
         {
+            // Generate the data required for Vertipaq Analyzer
             var info = ModelAnalyzer.Create(_connection);
-            if (extension == ".vpa")
-            {
-                // create gz compressed file
-                //var gzfile = Path.Combine(Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
-                var gzfile = path;
-                using (FileStream fs = new FileStream(gzfile, FileMode.Create))
-                using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
-                using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
-                {
-                    ms.Position = 0;
-                    ms.CopyTo(zipStream);
-                }
-            }
-            else
-            {
+
+            //if (extension == ".vpa")
+            //{
+            //    // create gz compressed file
+            //    //var gzfile = Path.Combine(Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
+            //    var gzfile = path;
+            //    using (FileStream fs = new FileStream(gzfile, FileMode.Create))
+            //    using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
+            //    using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
+            //    {
+            //        ms.Position = 0;
+            //        ms.CopyTo(zipStream);
+            //    }
+            //}
+            //else
+            //{
                 // create zipped .vpax file
-                Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
-                using (Package package = Package.Open(path, FileMode.Create))
-                {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
-                    {
-                        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                        tw.Close();
-                    }
-                    package.Close();
-                }
+                //Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
+                //using (Package package = Package.Open(path, FileMode.Create))
+                //{
+                //    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
+                //    {
+                //        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                //        tw.Close();
+                //    }
+                //    package.Close();
+                //}
 
                 // create zipped .vpax2 file with individual csv files
 
+                // setup CSVHelper to create tab delimited files
+                CsvHelper.Configuration.Configuration config = new CsvHelper.Configuration.Configuration
+                {
+                    Delimiter = "\t"
+                };
 
-                using (Package package = Package.Open(path + "2", FileMode.Create))
+                using (Package package = Package.Open(path, FileMode.Create))
                 {
                     foreach (DataTable dt in info.Tables)
                     {
-                        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.csv", UriKind.Relative));
+                        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.txt", UriKind.Relative));
                         using (StreamWriter sw = new StreamWriter(package.CreatePart(uri2, "application/text", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
-                        using (CsvWriter csv = new CsvWriter(sw))
+                        using (CsvWriter csv = new CsvWriter(sw,config))
                         {
 
                             // Write columns
@@ -3084,7 +3091,7 @@ namespace DaxStudio.UI.ViewModels
                     package.Close();
                 }
 
-            }  
+            //}  
 
             // write uncompressed json data
             //using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))

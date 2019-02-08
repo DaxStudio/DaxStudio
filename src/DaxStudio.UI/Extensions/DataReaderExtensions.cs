@@ -3,9 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Extensions
 {
@@ -139,7 +137,6 @@ namespace DaxStudio.UI.Extensions
                         DataColumn column = new DataColumn(columnName, (Type)(row["DataType"]));
                         column.Unique = (bool)row[Constants.IS_UNIQUE];
                         column.AllowDBNull = (bool)row[Constants.ALLOW_DBNULL];
-                        //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
                         daxCol = null;
                         reader.Connection.Columns.TryGetValue(columnName, out daxCol);
                         if (daxCol != null) {
@@ -150,6 +147,7 @@ namespace DaxStudio.UI.Extensions
                             string formatString;
                             switch (column.DataType.Name)
                             {
+                                case "Decimal":
                                 case "Double":
                                     if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
                                         formatString = "0.00%";
@@ -160,14 +158,6 @@ namespace DaxStudio.UI.Extensions
                                     break;
                                 case "Int64":
                                     formatString = "#,0";
-                                    break;
-                                case "Decimal":
-                                    if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
-                                        formatString = "0.00%";
-                                    }
-                                    else {
-                                        formatString = "#,0.00";
-                                    }
                                     break;
                                 default:
                                     formatString = null;

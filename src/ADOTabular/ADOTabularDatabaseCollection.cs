@@ -188,7 +188,7 @@ namespace ADOTabular
                                 if (rdr.NodeType == XmlNodeType.EndElement
                                     && rdr.LocalName == eDatabase)
                                 {
-                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel));
+                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel,""));
                                     
                                 }
 

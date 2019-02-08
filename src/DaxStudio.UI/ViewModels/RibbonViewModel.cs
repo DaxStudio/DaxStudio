@@ -522,7 +522,8 @@ namespace DaxStudio.UI.ViewModels
         
         public void Handle(TraceChangingEvent message)
         {
-            _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
+            if (ActiveDocument != null)
+                _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
