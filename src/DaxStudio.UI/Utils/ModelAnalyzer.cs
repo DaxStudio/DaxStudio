@@ -227,7 +227,7 @@ ORDER BY [DIMENSION_NAME] + '_' + [TABLE_ID] ASC
                      MinCompatibilityLevel = 1100,
                      Query = @"
 SELECT DISTINCT 
-    null as [TableID],
+    '' as [TableID],
     [MEASUREGROUP_NAME] as [Table], 
     [MEASURE_NAME] as [Measure], 
     TRIM ( [Expression] ) as [Expression], 
@@ -288,6 +288,7 @@ ORDER BY [TABLE] + '_' + [OBJECT] ASC
                      Query = @"
 SELECT    
     [TableID],    
+    null as [Table],
     [ID] AS [ColumnID],    
     [ExplicitName],
     [InferredName],
@@ -478,6 +479,7 @@ ORDER BY [TableID] ASC
             }
 
             // replace some of the lookups between tables
+            PostProcessColumnMetadata(result);
             PostProcessMeasureExpressions(result);
             PostProcessColumCardinality(result);
             PostProcessTables(result);
@@ -489,27 +491,32 @@ ORDER BY [TableID] ASC
             return result;
         }
 
+        private static void PostProcessColumnMetadata(DataSet result)
+        {
+            UpdateTableName(result, "ColumnsMetadata.1200");
+        }
+
         private static void PostProcessMeasureExpressions(DataSet result)
         {
-            var measureExpressions1100 = result.Tables["MeasureExpressions.1100"];
-            var measureExpressions1200 = result.Tables["MeasureExpressions.1200"];
+            var measureExpressions1100 = result.Tables["MeasuresExpressions.1100"];
+            var measureExpressions1200 = result.Tables["MeasuresExpressions.1200"];
             // todo - union measureExpressions 1100 & 1200 and update name if null
-            if (measureExpressions1100 == null)
+            if (measureExpressions1200 != null && measureExpressions1200.Rows.Count > 0)
             {
-                UpdateTableName(result, measureExpressions1200);
                 measureExpressions1200.TableName = "MeasureExpressions";
+                UpdateTableName(result, "MeasureExpressions");
             } else
             {
                 measureExpressions1100.TableName = "MeasureExpressions";
             }
 
-
         }
 
-        private static void UpdateTableName(DataSet result, DataTable measureExpressions1200)
+        private static void UpdateTableName(DataSet result, string tableName)
         {
-            var tables = result.Tables["TablesMetadata"];
-            foreach (DataRow row in measureExpressions1200.Rows)
+            var tables = result.Tables["TablesMetadata.1200"];
+            var tableToUpdate = result.Tables[tableName];
+            foreach (DataRow row in tableToUpdate.Rows)
             {
                 row["Table"] = tables.Select("TableID = " + row["TableID"].ToString())[0]["Table"];
             }
