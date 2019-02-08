@@ -187,26 +187,25 @@ namespace DaxStudio.UI.Model
 
     public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
     {
-    /*
-    Hierarchy
-      Caption
-      Description
-    Level -> Column
-      Caption
-      DataTypeName
-      Description
-    Column
-      Caption
-      DataTypeName
-      Description
-      MetadataImage
-    KPIComponent -> Measure (Column)
-      Caption
-      DataTypeName
-      Description
+        /*
+        Hierarchy
+          Caption
+          Description
+        Level -> Column
+          Caption
+          DataTypeName
+          Description
+        Column
+          Caption
+          DataTypeName
+          Description
+          MetadataImage
+        KPIComponent -> Measure (Column)
+          Caption
+          DataTypeName
+          Description
+        */
 
-    */
-        private IADOTabularObject _tabularObject;
         private IADOTabularColumn _column;
         private List<string> _sampleData;
         private bool _updatingBasicStats = false;
@@ -215,11 +214,12 @@ namespace DaxStudio.UI.Model
         private string _maxValue = string.Empty;
         private long _distinctValues = 0;
 
+        #region Constructors
         public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator):base(getChildren, options,eventAggregator)
         {
             _eventAggregator = eventAggregator;
             _sampleData = new List<string>();
-            _tabularObject = column;
+            Column = column;
             _column = column;
             Options = options;
             Description = column.Description;
@@ -230,6 +230,41 @@ namespace DaxStudio.UI.Model
             MaxValue = column.MaxValue;
             DistinctValues = column.DistinctValues;
         }
+        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator):base(null,null,eventAggregator)
+        {
+            Options = options;
+            Column = kpiComponent;
+            DataTypeName = kpiComponent.DataTypeName;
+            
+            MetadataImage = MetadataImages.Measure;
+        }
+        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator)
+            : base(null, options,eventAggregator)
+        {
+            Options = options;
+            Column = kpi;
+            DataTypeName = kpi.DataTypeName;
+            MetadataImage = MetadataImages.Kpi;
+        }
+        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator):base(null, options,eventAggregator)
+        {
+            Options = options;
+            Column = level;
+            Description = level.Column.Description;
+            DataTypeName = level.Column.DataTypeName;
+
+            MetadataImage = MetadataImages.Column;            
+        }
+
+        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator)
+            : base(null,options,eventAggregator)
+        {
+            Options = options;
+            Column = hier;
+            MetadataImage = MetadataImages.Hierarchy;
+        }
+
+        #endregion
 
         public bool HasBasicStats { get { return MaxValue != MinValue && DistinctValues != 1; } }
         public bool HasSampleData { get { return _sampleData != null && _sampleData.Count > 0; } }
@@ -255,47 +290,14 @@ namespace DaxStudio.UI.Model
                 if (!Options.ShowTooltipBasicStats) return false;
                 return _column != null && typeof(ADOTabularColumn) == _column.GetType(); }
         }
-        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator):base(null,null,eventAggregator)
-        {
-            Options = options;
-            _tabularObject = kpiComponent;
-            DataTypeName = kpiComponent.DataTypeName;
-            
-            MetadataImage = MetadataImages.Measure;
-        }
 
-        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator)
-            : base(null, options,eventAggregator)
-        {
-            Options = options;
-            _tabularObject = kpi;
-            DataTypeName = kpi.DataTypeName;
-            MetadataImage = MetadataImages.Kpi;
-        }
-        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator):base(null, options,eventAggregator)
-        {
-            Options = options;
-            _tabularObject = level;
-            Description = level.Column.Description;
-            DataTypeName = level.Column.DataTypeName;
-
-            MetadataImage = MetadataImages.Column;            
-        }
-
-        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator)
-            : base(null,options,eventAggregator)
-        {
-            Options = options;
-            _tabularObject = hier;
-            MetadataImage = MetadataImages.Hierarchy;
-        }
         public MetadataImages MetadataImage { get; set; }
-        public string Caption => _tabularObject.Caption; 
-        public string Name => _tabularObject.Name;
-        public ADOTabularObjectType ObjectType => _tabularObject.ObjectType;
+        public string Caption => Column.Caption; 
+        public string Name => Column.Name;
+        public ADOTabularObjectType ObjectType => Column.ObjectType;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
-        string IADOTabularObject.DaxName => _tabularObject.DaxName;
+        string IADOTabularObject.DaxName => Column.DaxName;
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }
@@ -317,29 +319,15 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public bool IsMeasure
-        {
-            get
-            {
-                return this.MetadataImage == MetadataImages.Measure 
-                    || this.MetadataImage == MetadataImages.HiddenMeasure;
-            }
-        }
+        public bool IsMeasure => MetadataImage == MetadataImages.Measure 
+                              || MetadataImage == MetadataImages.HiddenMeasure;
+         
 
-        public bool IsTable {
-            get {
-                return this.MetadataImage == MetadataImages.Table
-                    || this.MetadataImage == MetadataImages.HiddenTable;
-            }
-        }
+        public bool IsTable => MetadataImage == MetadataImages.Table
+                            || MetadataImage == MetadataImages.HiddenTable;
+         
 
-        public IADOTabularObject Column
-        {
-            get
-            {
-                return this._tabularObject;
-            }
-        }
+        public IADOTabularObject Column { get; }
 
         public override bool IsCriteriaMatched(string criteria)
         {

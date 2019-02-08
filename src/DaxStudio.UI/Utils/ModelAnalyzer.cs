@@ -227,6 +227,7 @@ ORDER BY [DIMENSION_NAME] + '_' + [TABLE_ID] ASC
                      MinCompatibilityLevel = 1100,
                      Query = @"
 SELECT DISTINCT 
+    null as [TableID],
     [MEASUREGROUP_NAME] as [Table], 
     [MEASURE_NAME] as [Measure], 
     TRIM ( [Expression] ) as [Expression], 
@@ -250,6 +251,7 @@ ORDER BY [MEASUREGROUP_NAME] + '_' + [MEASURE_NAME] ASC
                      Query = @"
 SELECT
     [TableID],
+    null as [Table],
     [Name] AS [Measure],
     TRIM ( [Expression] ) as [Expression], 
     [Description],
@@ -476,12 +478,41 @@ ORDER BY [TableID] ASC
             }
 
             // replace some of the lookups between tables
+            PostProcessMeasureExpressions(result);
             PostProcessColumCardinality(result);
             PostProcessTables(result);
             PostProcessUnusedColumns(db, result);
             AddRelationshipsTable(db, result);
 
+            
+
             return result;
+        }
+
+        private static void PostProcessMeasureExpressions(DataSet result)
+        {
+            var measureExpressions1100 = result.Tables["MeasureExpressions.1100"];
+            var measureExpressions1200 = result.Tables["MeasureExpressions.1200"];
+            // todo - union measureExpressions 1100 & 1200 and update name if null
+            if (measureExpressions1100 == null)
+            {
+                UpdateTableName(result, measureExpressions1200);
+                measureExpressions1200.TableName = "MeasureExpressions";
+            } else
+            {
+                measureExpressions1100.TableName = "MeasureExpressions";
+            }
+
+
+        }
+
+        private static void UpdateTableName(DataSet result, DataTable measureExpressions1200)
+        {
+            var tables = result.Tables["TablesMetadata"];
+            foreach (DataRow row in measureExpressions1200.Rows)
+            {
+                row["Table"] = tables.Select("TableID = " + row["TableID"].ToString())[0]["Table"];
+            }
         }
 
         private static void PostProcessUnusedColumns(Microsoft.AnalysisServices.Database db, DataSet result)

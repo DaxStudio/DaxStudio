@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Model
         public StatusBarMessage(DocumentViewModel document, string message)
         {
             _document = document;
-            _document.SetStatusBarMessage(message);           
+            _document?.SetStatusBarMessage(message);           
         }
 
         public void Dispose()
