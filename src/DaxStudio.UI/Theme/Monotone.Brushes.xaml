@@ -129,6 +129,7 @@
         </LinearGradientBrush.GradientStops>
     </LinearGradientBrush>
     <SolidColorBrush Color="{DynamicResource SelectedColor}" x:Key="SelectedBrush" />
+    <!--<SolidColorBrush Color="{DynamicResource DaxStudioBlue}" x:Key="SelectedBrush" />-->
     <SolidColorBrush Color="{DynamicResource DarkerSelectedColor}" x:Key="DarkerSelectedBrush" />
     <SolidColorBrush x:Key="SelectedTabColorBrush" Color="{DynamicResource Base5Color}" />
     <SolidColorBrush x:Key="HoverTabColorBrush" Color="{DynamicResource Base6Color}" />

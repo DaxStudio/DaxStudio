@@ -11,6 +11,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using System.IO;
+using System.Linq;
 
 namespace DaxStudio.Tests
 {
@@ -169,6 +170,18 @@ namespace DaxStudio.Tests
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator);
             Assert.AreEqual(7, tt.Count, "Correct Table Count");
+            TreeViewTable tvwItem;
+            foreach (TreeViewTable tbl in tt) {
+                if (tbl.Name == "Internet Sales")
+                {
+                    tvwItem = tbl;
+                    var folder = ((TreeViewColumn)tvwItem.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "QTD Folder"));
+                    Assert.IsNotNull(folder, "Folder Object not found");
+                    Assert.AreEqual(folder.Name,"QTD Folder");
+                    break;
+                }
+            }
+            
 
         }
 

@@ -4,7 +4,6 @@ using DAXEditor;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils.Intellisense;
-using DaxStudio.UI.ViewModels;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
@@ -17,7 +16,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Navigation;
 
 namespace DaxStudio.UI.Utils
@@ -47,13 +45,15 @@ namespace DaxStudio.UI.Utils
         private bool SpacePressed;
         private bool HasThrownException;
         private IEventAggregator _eventAggregator;
+        private IGlobalOptions _options;
 
-        public DaxIntellisenseProvider (IDaxDocument activeDocument, IEditor editor, IEventAggregator eventAggregator)
+        public DaxIntellisenseProvider (IDaxDocument activeDocument, IEditor editor, IEventAggregator eventAggregator, IGlobalOptions options)
         {
             Document = activeDocument;
             _editor = editor;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
+            _options = options;
         }
 
         #region Properties
@@ -102,9 +102,12 @@ namespace DaxStudio.UI.Utils
                     //InsightWindow insightWindow = new InsightWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
                     
                     completionWindow = new CompletionWindow(sender as ICSharpCode.AvalonEdit.Editing.TextArea);
+                    completionWindow.ResizeMode = ResizeMode.NoResize;
+                    completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
                     completionWindow.PreviewKeyUp += CompletionWindow_PreviewKeyUp;
                     completionWindow.CloseAutomatically = false;
                     
+                    completionWindow.WindowStyle = WindowStyle.None;
                     completionWindow.CompletionList.BorderThickness = new System.Windows.Thickness(1);
 
                     if (char.IsLetterOrDigit(e.Text[0]))
@@ -218,6 +221,7 @@ namespace DaxStudio.UI.Utils
                 Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
         }
+
 
         private void CompletionWindow_PreviewKeyUp(object sender, KeyEventArgs e)
         {

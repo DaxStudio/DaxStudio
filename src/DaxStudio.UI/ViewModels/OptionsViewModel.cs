@@ -84,6 +84,8 @@ namespace DaxStudio.UI.ViewModels
             ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
             Theme = RegistryHelper.GetValue<string>("Theme", "Light");
             ResultAutoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false);
+            CodeCompletionWindowWidthIncrease = RegistryHelper.GetValue<int>("CodeCompletionWindowWidthIncrease", 100);
+            KeepMetadataSearchOpen = RegistryHelper.GetValue<bool>("KeepMetadataSearchOpen", false);
         }
 
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
@@ -524,6 +526,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _ResultAutoFormat = false;
+        private int _codeCompletionWindowWidthIncrease;
+        private bool _keepMetadataSearchOpen;
+
         public bool ResultAutoFormat {
             get => _ResultAutoFormat;
             set {
@@ -541,6 +546,26 @@ namespace DaxStudio.UI.ViewModels
                 RegistryHelper.SetValueAsync<bool>("ScaleResultsFontWithEditor", value);
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
+
+        public int CodeCompletionWindowWidthIncrease { get => _codeCompletionWindowWidthIncrease;
+            set {
+                if (value < 100) value = 100; // value should not be less than 100% of the default size
+                if (value > 300) value = 300; // value cannot be greater than 300% of the default size
+                _codeCompletionWindowWidthIncrease = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<int>("CodeCompletionWindowWidthIncrease", value);
+                NotifyOfPropertyChange(() => CodeCompletionWindowWidthIncrease);
+            }
+        }
+
+        public bool KeepMetadataSearchOpen { get => _keepMetadataSearchOpen;
+            set {
+                _keepMetadataSearchOpen = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                RegistryHelper.SetValueAsync<bool>("KeepMetadataSearchOpen", value);
+                NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
+            }
+        }
 
         #endregion
 

@@ -139,6 +139,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -181,8 +183,18 @@
                                 <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
                                 <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
+                                
                                 <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="4" Grid.Column="0" Content="Keep Metadata Search Open:" HorizontalAlignment="Right"/>
+                                <CheckBox Grid.Row="4" Grid.Column="1" x:Name="KeepMetadataSearchOpen" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
+                                    <xctk:IntegerUpDown x:Name="CodeCompletionWindowWidthIncrease" Minimum="100" Maximum="300" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                    <Label  Content="% (100 - 300)"/>
+                                </StackPanel>
                             </Grid>
                         </GroupBox>
 
@@ -453,7 +465,7 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
 
                                 </Grid.RowDefinitions>
                                 <Label  Content="Default Format Style:"/>

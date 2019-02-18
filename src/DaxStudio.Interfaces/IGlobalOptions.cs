@@ -37,5 +37,7 @@ namespace DaxStudio.Interfaces
         string Theme { get; set; }
         bool ResultAutoFormat { get; set; }
         bool ScaleResultsFontWithEditor { get; set; }
+        int CodeCompletionWindowWidthIncrease { get; set; }
+        bool KeepMetadataSearchOpen { get; set; }
     }
 }

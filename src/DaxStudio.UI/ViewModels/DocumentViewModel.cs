@@ -198,7 +198,7 @@ namespace DaxStudio.UI.ViewModels
             //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(_options.Theme);
 
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator);
+            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator, _options);
             UpdateSettings();
             if (_editor != null)
             {
@@ -1976,7 +1976,15 @@ namespace DaxStudio.UI.ViewModels
             // Process save file dialog box results 
             if (result == true) {
                 // Save document 
-                ExportDaxFunctions(dlg.FileName);
+                try
+                {
+                    ExportDaxFunctions(dlg.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "ExportDaxFunctions", ex.Message);
+                    OutputError($"Error Exporting Functions: {ex.Message}");
+                }
             }
         }
         public void ExportDaxFunctions(string path) {
@@ -2093,15 +2101,27 @@ namespace DaxStudio.UI.ViewModels
             IsDiskFileName = true;
             if (File.Exists(FileName))
             {
-                using (TextReader tr = new StreamReader(FileName, true))
+                try
                 {
-                    // put contents in edit window
-                    GetEditor().Text = tr.ReadToEnd();
-                    tr.Close();
+                    using (TextReader tr = new StreamReader(FileName, true))
+                    {
+                        // put contents in edit window
+                        GetEditor().Text = tr.ReadToEnd();
+                        tr.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // todo - need to test what happens if we enter this catch block
+                    //        
+                    _isLoadingFile = false;
+                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
+                    OutputError($"Error opening file: {ex.Message}");
                 }
             }
             else
             {
+                Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
                 OutputError(string.Format("The file '{0}' was not found",FileName));
             }
 

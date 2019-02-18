@@ -29,7 +29,19 @@ namespace DaxStudio.UI.Model
             var lst = new List<FilterableTreeViewItem>();
             foreach (var c in table.Columns)
             {
-                lst.Add( new TreeViewColumn(c, c.TreeViewColumnChildren, options, eventAggregator));
+                var col = new TreeViewColumn(c, c.TreeViewColumnChildren, options, eventAggregator);
+                // todo - check if list already contains this object
+                //        which could be the case if we are adding a folder...
+                var lstItem = lst.FirstOrDefault(x => x.Name == col.Name);
+                if (lstItem != null && lstItem.ObjectType == lstItem.ObjectType)
+                {
+                    // todo add this col as a child of lstItem
+                    throw new NotSupportedException();
+                }
+                else
+                {
+                    lst.Add(col);
+                }
             }
             return lst;
         }
@@ -59,7 +71,7 @@ namespace DaxStudio.UI.Model
     }
 
     public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
-    public class FilterableTreeViewItem : PropertyChangedBase
+    public abstract class FilterableTreeViewItem : PropertyChangedBase
     {
         protected GetChildrenDelegate _getChildren;
         protected IGlobalOptions _options;
@@ -92,6 +104,10 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(()=> IsMatch);
             }
         }
+
+        public abstract string Name { get; }
+        public abstract ADOTabularObjectType ObjectType { get; }
+
 
         public virtual bool IsCriteriaMatched(string criteria)
         {return false;}
@@ -154,8 +170,8 @@ namespace DaxStudio.UI.Model
         // the Caption is affected by translations, it is visible in resultsets, but is not used in queries
         public string Caption => _table.Caption; 
         // the Name property is the untranslated object name used in queries and DAX expressions
-        public string Name => _table.Name;
-        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
+        public override string Name => _table.Name;
+        public override ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
         public string Description { get { return _table.Description; } }
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public override bool IsCriteriaMatched(string criteria)
@@ -293,8 +309,8 @@ namespace DaxStudio.UI.Model
 
         public MetadataImages MetadataImage { get; set; }
         public string Caption => Column.Caption; 
-        public string Name => Column.Name;
-        public ADOTabularObjectType ObjectType => Column.ObjectType;
+        public override string Name => Column.Name;
+        public override ADOTabularObjectType ObjectType => Column.ObjectType;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
         string IADOTabularObject.DaxName => Column.DaxName;

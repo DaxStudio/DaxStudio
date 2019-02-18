@@ -288,6 +288,7 @@ namespace DaxStudio.UI.Model
         {
             if (_serverVersion != null) return;
             var ver = this.ServerVersion;
+            CheckVersion();
         }
 
 

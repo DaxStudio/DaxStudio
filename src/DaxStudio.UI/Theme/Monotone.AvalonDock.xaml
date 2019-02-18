@@ -142,12 +142,14 @@
                                 <Path Data="M 2,2 L10,2 L10,4 L2,4 Z M2,6 L10,6 L6,10" Fill="{DynamicResource TextBrush}" />
                             </avalonDockControls:DropDownButton>
                         </Grid>
+                        <!--Background="{TemplateBinding Background}"-->
                         <Border x:Name="ContentPanel" 
                                 VerticalAlignment="Stretch" 
                                 HorizontalAlignment="Stretch"  
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" 
-                                Background="{TemplateBinding Background}" 
+                                Background="{DynamicResource BaseBrush}"
+                                
                                 Grid.Column="0"
                                 KeyboardNavigation.DirectionalNavigation="Contained"
                                 Grid.Row="1" 
@@ -155,12 +157,12 @@
                                 KeyboardNavigation.TabNavigation="Cycle"
                                 CornerRadius="{DynamicResource TabTopCornerRadius}"
                                 Padding="{DynamicResource DefaultBorderThickness}">
-                            <Border Background="{DynamicResource BaseBrush}">
+                            <!--<Border Background="{DynamicResource BaseBrush}">-->
                             <ContentPresenter x:Name="PART_SelectedContentHost" 
                                               ContentSource="SelectedContent" 
                                               Margin="0,2,0,2"
                                               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                            </Border>
+                            <!--</Border>-->
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>

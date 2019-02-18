@@ -70,5 +70,7 @@ namespace DaxStudio.SignalR
         public string Theme { get; set; }
         public bool ResultAutoFormat { get; set; }
         public bool ScaleResultsFontWithEditor { get; set; }
+        public int CodeCompletionWindowWidthIncrease { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool KeepMetadataSearchOpen { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

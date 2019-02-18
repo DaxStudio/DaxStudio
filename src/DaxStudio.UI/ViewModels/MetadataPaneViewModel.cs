@@ -21,12 +21,14 @@ namespace DaxStudio.UI.ViewModels
 {
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
-    public class MetadataPaneViewModel : ToolPaneBaseViewModel
+    public class MetadataPaneViewModel : 
+        ToolPaneBaseViewModel
+        , IHandle<UpdateGlobalOptions>
         , IDragSource
     {
         private string _modelName;
         private readonly DocumentViewModel _activeDocument;
-        private readonly IGlobalOptions _globalOptions;
+        private readonly IGlobalOptions _options;
         //private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
@@ -35,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument = document;
             _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             //    _eventAggregator = eventAggregator;
-            _globalOptions = globalOptions;
+            _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             eventAggregator.Subscribe(this);
         }
@@ -213,7 +215,7 @@ namespace DaxStudio.UI.ViewModels
                     try
                     {
                         IsBusy = true;
-                        _treeViewTables = SelectedModel.TreeViewTables(_globalOptions, EventAggregator);
+                        _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator);
                     }
                     catch (Exception ex)
                     {
@@ -299,7 +301,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool ExpandSearch { get { return IsMouseOverSearch || IsKeyboardFocusWithinSearch; } }
+        public bool ExpandSearch => IsMouseOverSearch 
+                                 || IsKeyboardFocusWithinSearch 
+                                 || _options.KeepMetadataSearchOpen; 
 
         public bool HasCriteria
         {
@@ -481,8 +485,8 @@ namespace DaxStudio.UI.ViewModels
             ADOTabularColumn col = (ADOTabularColumn)column.Column;
             if (col.ObjectType != ADOTabularObjectType.Column) return;
             // TODO - make an option for the sample size
-            if (_globalOptions.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
-            if (_globalOptions.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
+            if (_options.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
+            if (_options.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
         }
 
         internal void ChangeDatabase(string databaseName)
@@ -787,6 +791,11 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasure", ex.Message, ex.StackTrace);
 
             }
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            NotifyOfPropertyChange(() => ExpandSearch);
         }
 
         #endregion
