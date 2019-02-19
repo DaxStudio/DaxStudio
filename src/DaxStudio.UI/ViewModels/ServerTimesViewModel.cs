@@ -119,8 +119,11 @@ namespace DaxStudio.UI.ViewModels
                 Table = (string)rewriteResult["table"];
                 MatchingResult = (string)rewriteResult["matchingResult"];
                 var mapping = rewriteResult["mapping"];
-                if (mapping.HasValues)
-                    Mapping = (string)rewriteResult["mapping"]["table"];
+                if (mapping != null) {
+                    if (mapping.HasValues) {
+                        Mapping = (string)rewriteResult["mapping"]["table"];
+                    }
+                }
                 Query = $"<{MatchingResult}>";
             }
         }
