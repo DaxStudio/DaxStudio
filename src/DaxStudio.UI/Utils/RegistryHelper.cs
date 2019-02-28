@@ -115,7 +115,7 @@ namespace DaxStudio.UI
                 {
                     int i = 1;
                     // set current item as item 1
-                    if (currentItem.ToString().Length > 0)
+                    if (currentItem?.ToString().Length > 0)
                     {
                         regListMRU.SetValue(string.Format("{0}{1}", listName, i), currentItem);
                         i++;
