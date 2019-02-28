@@ -67,7 +67,7 @@ namespace DaxStudio.Common
         }
 
         
-        private static string GetWindowTitle(int procId)
+        public static string GetWindowTitle(int procId)
         {
             foreach (var handle in EnumerateProcessWindowHandles(procId))
             {
