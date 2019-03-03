@@ -73,32 +73,35 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
-            try
+            Task.Run(() =>
             {
-                if (IsCSVExport)
+                ActiveDocument.IsQueryRunning = true;
+                try
                 {
-                    ActiveDocument.IsQueryRunning = true;
-                    Task.Run(() =>
+                    if (IsCSVExport)
                     {
                         ExportDataToFolder(this.OutputPath);
-                    });
-                }
-                else if (IsSQLExport)
-                {
-                    Task.Run(() =>
+                    }
+                    else if (IsSQLExport)
                     {
                         ExportDataToSQLServer(this.ConnectionString, this.SchemaName, this.TruncateTables);
-                    });
+                    }
                 }
-            }
-            catch (Exception ex)
+                finally
+                {
+                    ActiveDocument.IsQueryRunning = false;
+                }
+            })
+            .ContinueWith(handleFaults, TaskContinuationOptions.OnlyOnFaulted);
+
+            TryClose(true);
+
+            void handleFaults(Task t)
             {
+                var ex = t.Exception.GetBaseException();
+
                 Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
-            }
-            finally
-            {
-                TryClose(true);
             }
         }       
 
@@ -140,79 +143,72 @@ namespace DaxStudio.UI.ViewModels
             {
                 Directory.CreateDirectory(outputPath);
             }
-            ActiveDocument.IsQueryRunning = true;
+
             ActiveDocument.QueryStopWatch.Start();
-            try
+
+            foreach (var table in metadataPane.SelectedModel.Tables)
             {
-                foreach (var table in metadataPane.SelectedModel.Tables)
+                try
                 {
-                    try
-                    {
-                        var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Name}.csv");
-                        var daxQuery = $"EVALUATE {table.DaxName}";
-                        var rows = 0;
-                        var tableCnt = 0;
-                        var totalTables = metadataPane.SelectedModel.Tables.Count;
+                    var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Name}.csv");
+                    var daxQuery = $"EVALUATE {table.DaxName}";
+                    var rows = 0;
+                    var tableCnt = 0;
+                    var totalTables = metadataPane.SelectedModel.Tables.Count;
 
-                        using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
-                        using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
-                        using (var reader = ActiveDocument.Connection.ExecuteReader(daxQuery))
+                    using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
+                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                    using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
+                    using (var reader = ActiveDocument.Connection.ExecuteReader(daxQuery))
+                    {
+                        rows = 0;
+                        tableCnt++;
+
+                        // Write Header
+                        foreach (var colName in reader.CleanColumnNames())
                         {
-                            rows = 0;
-                            tableCnt++;
-
-                            // Write Header
-                            foreach (var colName in reader.CleanColumnNames())
-                            {
-                                csvWriter.WriteField(colName);
-                            }
-
-                            csvWriter.NextRecord();
-
-                            // Write data
-                            while (reader.Read())
-                            {
-                                for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
-                                {
-                                    var fieldValue = reader[fieldOrdinal];
-
-                                    csvWriter.WriteField(fieldValue);
-                                }
-
-                                rows++;
-                                if (rows % 5000 == 0) {
-                                    new StatusBarMessage(ActiveDocument, $"Exporting Table {tableCnt} of {totalTables} : {table.Name} ({rows:N0} rows)");
-                                    ActiveDocument.RefreshElapsedTime();
-                                }
-                                csvWriter.NextRecord();
-                            }
+                            csvWriter.WriteField(colName);
                         }
+
+                        csvWriter.NextRecord();
+
+                        // Write data
+                        while (reader.Read())
+                        {
+                            for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+                            {
+                                var fieldValue = reader[fieldOrdinal];
+
+                                csvWriter.WriteField(fieldValue);
+                            }
+
+                            rows++;
+                            if (rows % 5000 == 0) {
+                                new StatusBarMessage(ActiveDocument, $"Exporting Table {tableCnt} of {totalTables} : {table.Name} ({rows:N0} rows)");
+                                ActiveDocument.RefreshElapsedTime();
+                            }
+                            csvWriter.NextRecord();
+                        }
+                    }
                         
-                        ActiveDocument.RefreshElapsedTime();
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
-                    }
-                    catch (Exception ex)
-                    {
-                        exceptionFound = true;
-                        Log.Error(ex,"{class} {method} {message}", "ExportDataDialogViewModel","ExportDataToFolder","Error while exporting model to CSV");
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting '{table.Name}':  {ex.Message}"));
-                        break; // exit from the loop if we have caught an exception 
-                    }
+                    ActiveDocument.RefreshElapsedTime();
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
                 }
-                // export complete
-                if (!exceptionFound)
+                catch (Exception ex)
                 {
-                    ActiveDocument.QueryStopWatch.Stop();
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {metadataPane.SelectedModel.Tables.Count} tables exported",ActiveDocument.QueryStopWatch.ElapsedMilliseconds));
-                    ActiveDocument.QueryStopWatch.Reset();
+                    exceptionFound = true;
+                    Log.Error(ex,"{class} {method} {message}", "ExportDataDialogViewModel","ExportDataToFolder","Error while exporting model to CSV");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting '{table.Name}':  {ex.Message}"));
+                    break; // exit from the loop if we have caught an exception 
                 }
             }
-            finally
+            // export complete
+            if (!exceptionFound)
             {
-                ActiveDocument.IsQueryRunning = false;
-            }    
-            
+                ActiveDocument.QueryStopWatch.Stop();
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {metadataPane.SelectedModel.Tables.Count} tables exported",ActiveDocument.QueryStopWatch.ElapsedMilliseconds));
+                ActiveDocument.QueryStopWatch.Reset();
+            }
         }
 
         private string sqlTableName = string.Empty;

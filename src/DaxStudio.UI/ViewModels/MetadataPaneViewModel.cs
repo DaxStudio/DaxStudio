@@ -177,6 +177,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 ModelList = ml;
             }
+
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => Connection);
             NotifyOfPropertyChange(() => CanSelectDatabase);
@@ -354,7 +355,11 @@ namespace DaxStudio.UI.ViewModels
             }
 
             NotifyOfPropertyChange(() => DatabasesView);
-            if (SelectedDatabase == null) SelectedDatabase = DatabasesView.FirstOrDefault();
+            if (SelectedDatabase == null)
+                if (Connection?.Database != null )
+                    SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == Connection.Database.Name);
+                else
+                    SelectedDatabase = DatabasesView.FirstOrDefault();
         }
 
         private DatabaseReference _selectedDatabase;
@@ -368,7 +373,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name ) //!Connection.Database.Equals(_selectedDatabase))
                     {
-                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value);
+                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
                         Connection.ChangeDatabase(value.Name);
 
                     }

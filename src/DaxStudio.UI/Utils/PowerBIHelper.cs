@@ -5,7 +5,6 @@ using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Security.Principal;
 using DaxStudio.Common;
-using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
@@ -83,7 +82,8 @@ namespace DaxStudio.UI.Utils
                 if (parentTitle.Length == 0)
                 {
                     // for minimized windows we need to use some Win32 api calls to get the title
-                    parentTitle = WindowTitle.GetWindowTitleTimeout( parent.Id, 300);
+                    //parentTitle = WindowTitle.GetWindowTitleTimeout( parent.Id, 300);
+                    parentTitle = WindowTitle.GetWindowTitle(parent.Id);
                 }
 
                 // try and get the tcp port from the Win32 TcpTable API
@@ -118,22 +118,7 @@ namespace DaxStudio.UI.Utils
             WindowsPrincipal principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
-
-        /*
-        public static List<PowerBIInstance> Instances
-        {
-            get
-            {
-                if (_isloaded) return _instances;
-
-                Refresh(); // start async refresh
-                return new List<PowerBIInstance>() { new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading) };
-
-            }
-        }
-
-        */
-
+        
 
     }
 }

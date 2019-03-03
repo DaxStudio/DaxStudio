@@ -86,8 +86,14 @@ namespace DaxStudio.Standalone
                 //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
                 if (isLoggingKeyDown || logCmdLineSwitch)
                 {
+#if DEBUG
+                    levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
+                    Log.Debug("Verbose Logging Enabled");
+
+#else
                     levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
                     Log.Debug("Debug Logging Enabled");
+#endif
                 }
 
                 //RegistryHelper.IsFileLoggingEnabled();
@@ -127,7 +133,7 @@ namespace DaxStudio.Standalone
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-#if DEBUG 
+#if DEBUG
                 MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
 #else
                 // use CrashReporter.Net to send bug to DrDump
