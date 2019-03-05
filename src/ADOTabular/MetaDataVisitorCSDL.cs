@@ -957,7 +957,10 @@ namespace ADOTabular
             }
             else {
                 product.Type = "SSAS Tabular";
-                if (ssasVersion.StartsWith("14.")) {
+                if (ssasVersion.StartsWith("15.")) {
+                    product.Name = "SSAS 2019";
+                }
+                else if (ssasVersion.StartsWith("14.")) {
                     product.Name = "SSAS 2017";
                 }
                 else if (ssasVersion.StartsWith("13.")) {
