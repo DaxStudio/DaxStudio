@@ -491,9 +491,9 @@ namespace DaxStudio.UI.ViewModels
             
             if (col.ObjectType != ADOTabularObjectType.Column) return;
             // TODO - make an option for the sample size
-            if (_globalOptions == null) return;
-            if (_globalOptions.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
-            if (_globalOptions.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
+            if (_options == null) return;
+            if (_options.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
+            if (_options.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
         }
 
         internal void ChangeDatabase(string databaseName)
