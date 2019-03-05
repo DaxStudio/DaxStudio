@@ -1315,6 +1315,9 @@
     <Resource Include="Images\icon-run-function.png" />
     <Resource Include="Images\icon-wait%4024px.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Metadata\Folder.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

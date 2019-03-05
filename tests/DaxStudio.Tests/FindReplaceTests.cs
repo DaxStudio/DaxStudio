@@ -51,6 +51,8 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindWildcard()
         {
+            // TODO - this test fails intermittently, need to see if we can figure out why...
+
             vm = new FindReplaceDialogViewModel();
             vm.Editor = ed;
             vm.UseWildcards = true;

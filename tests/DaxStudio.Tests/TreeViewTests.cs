@@ -170,20 +170,23 @@ namespace DaxStudio.Tests
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator);
             Assert.AreEqual(7, tt.Count, "Correct Table Count");
-            TreeViewTable tvwItem;
-            foreach (TreeViewTable tbl in tt) {
-                if (tbl.Name == "Internet Sales")
-                {
-                    tvwItem = tbl;
-                    var folder = ((TreeViewColumn)tvwItem.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "QTD Folder"));
-                    Assert.IsNotNull(folder, "Folder Object not found");
-                    Assert.AreEqual(folder.Name,"QTD Folder");
-                    break;
-                }
-            }
+
+
+            var tbl = tt.FirstOrDefault(x => x.Name == "Internet Sales");
+
+            Assert.IsNotNull(tbl, "Could not find 'Internet Sales' table");
+ 
+            var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "QTD Folder"));
+            Assert.IsNotNull(folder, "Folder Object not found");
+            Assert.AreEqual(folder.Name,"QTD Folder");
+
+            TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Internet Current Quarter Margin") as TreeViewColumn;
+            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
+            Assert.AreEqual(MetadataImages.Measure, col.MetadataImage);
             
 
         }
+
 
     }
 }

@@ -52,7 +52,6 @@ namespace ADOTabular
 
         public string Caption { get; private set; }
         public string Name { get; private set; }
-        public string DisplayFolder { get; set; }
         public string Contents { get; private set; }
 
         public virtual string DaxName {
@@ -73,6 +72,8 @@ namespace ADOTabular
         public string Description { get; set; }
 
         public bool IsVisible { get; private set; }
+
+        public bool IsInDisplayFolder { get; set; }
  
         public Type DataType { get; set; }
 

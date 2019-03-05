@@ -26,10 +26,10 @@ namespace ADOTabular
         {
             get { return String.Format("select * from $SYSTEM.{0}", _caption); }
         }
-
         public MetadataImages MetadataImage
         {
             get { return MetadataImages.DmvTable; }
         }
+        public bool IsVisible => true;
     }
 }

@@ -30,20 +30,15 @@ namespace ADOTabular
         // functions are not translated so there is no difference between the Name and Caption
         public string Name => _caption; 
 
-        public string Description =>  _desc; 
+        public string Description =>  _desc;
 
         public string Group => _group; 
 
         public ADOTabularParameterCollection Parameters => _paramColl;
 
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Function;
-        public string DaxName
-        {
-            get { return string.Format("{0}({1})", Caption, Parameters);  }
-        }
-        public MetadataImages MetadataImage
-        {
-            get { return MetadataImages.Function; }
-        }
+        public string DaxName => string.Format("{0}({1})", Caption, Parameters);
+        public MetadataImages MetadataImage => MetadataImages.Function;
+        public bool IsVisible => true;
     }
 }

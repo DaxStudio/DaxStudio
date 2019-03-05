@@ -49,6 +49,12 @@ namespace DaxStudio.Common
         static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam,
             StringBuilder lParam);
 
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern long GetWindowText(IntPtr hwnd, StringBuilder lpString, long cch);
+
         const int WM_GETTEXT = 0x000D;
         const int WM_GETTEXTLENGTH = 0x000E;
 
@@ -74,8 +80,9 @@ namespace DaxStudio.Common
                 StringBuilder message = new StringBuilder(1000);
                 if (IsWindowVisible(handle))
                 {
-                    SendMessage(handle, WM_GETTEXT, message.Capacity, message);
-                    if (message.Length > 0) return message.ToString();
+                    //SendMessage(handle, WM_GETTEXT, message.Capacity, message);
+                    //if (message.Length > 0) return message.ToString();
+                    return GetCaptionOfWindow(handle);
                 }
 
             }
@@ -115,6 +122,30 @@ namespace DaxStudio.Common
             }
 
             return sb.ToString();
+        }
+
+        private static string GetCaptionOfWindow(IntPtr hwnd)
+        {
+            string caption = "";
+            StringBuilder windowText = null;
+            try
+            {
+                int max_length = GetWindowTextLength(hwnd);
+                windowText = new StringBuilder("", max_length + 5);
+                GetWindowText(hwnd, windowText, max_length + 2);
+
+                if (!String.IsNullOrEmpty(windowText.ToString()) && !String.IsNullOrWhiteSpace(windowText.ToString()))
+                    caption = windowText.ToString();
+            }
+            catch (Exception ex)
+            {
+                caption = ex.Message;
+            }
+            finally
+            {
+                windowText = null;
+            }
+            return caption;
         }
 
     }

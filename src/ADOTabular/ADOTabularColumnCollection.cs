@@ -7,6 +7,7 @@ namespace ADOTabular
     public enum ADOTabularObjectType
     {
         Column,
+        Folder,
         Measure,
         KPI,
         KPIStatus,

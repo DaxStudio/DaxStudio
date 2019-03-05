@@ -26,7 +26,6 @@ namespace ADOTabular
         public string Caption => ComponentType.ToString(); 
         public string Name => Column.Name;
         public string DaxName { get { return Column.DaxName;} }
-
         public string DataTypeName { get { return Column.DataTypeName; } }
         public ADOTabularObjectType ObjectType {
             get {
@@ -42,5 +41,6 @@ namespace ADOTabular
                 return ADOTabularObjectType.Unknown;
             }
         }
+        public bool IsVisible => true;
     }
 }

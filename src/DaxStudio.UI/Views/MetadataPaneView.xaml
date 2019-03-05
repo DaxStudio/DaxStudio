@@ -87,6 +87,7 @@
                     <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
                     <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>
                     <BitmapImage x:Key="UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
+                    <BitmapImage x:Key="Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 

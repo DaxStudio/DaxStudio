@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ADOTabular
 {
-    public class ADOTabularTable :IADOTabularObject
+    public class ADOTabularTable :IADOTabularObject, IADOTabularFolderReference
     {
         private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularColumnCollection _columnColl;
@@ -29,6 +29,7 @@ namespace ADOTabular
             Description = description;
             IsVisible = isVisible;
             Relationships = new List<ADOTabularRelationship>();
+            FolderItems = new List<IADOTabularObjectReference>();
         }
 
         private static readonly string[] specialNames = { "DATE" };
@@ -69,6 +70,8 @@ namespace ADOTabular
 
         public string Description { get; private set; }
 
+        public List<IADOTabularObjectReference> FolderItems { get; }
+
         public bool IsVisible { get; private set; }
 
         public ADOTabularColumnCollection Columns
@@ -90,5 +93,7 @@ namespace ADOTabular
 
         public IList<ADOTabularRelationship> Relationships { get; private set; } 
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
+
+        public FolderReferenceType ReferenceType => throw new System.NotImplementedException();
     }
 }

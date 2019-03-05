@@ -418,7 +418,8 @@ namespace ADOTabular
                     && rdr.LocalName == "DisplayFolder")
                 {
                     Debug.WriteLine("FoundFolder");
-                    ProcessDiplayFolder(rdr, tables.GetById(tableId));
+                    var tbl = tables.GetById(tableId);
+                    ProcessDisplayFolder(rdr,tbl,tbl);
                 }
 
                 if (rdr.NodeType == XmlNodeType.Element
@@ -548,15 +549,18 @@ namespace ADOTabular
 
         }
 
-        private void ProcessDiplayFolder(XmlReader rdr, ADOTabularTable aDOTabularTable)
+        private void ProcessDisplayFolder(XmlReader rdr, ADOTabularTable table, IADOTabularFolderReference parent)
         {
-            var folderName = "";
-            string folderCap = null;
+            var folderReference = "";
+            string folderCaption = null;
             string objRef = "";
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
                     && rdr.LocalName == "DisplayFolder"))
             {
+
+               
+
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "DisplayFolder")
                 {
@@ -566,19 +570,23 @@ namespace ADOTabular
                         {
                           
                             case "Name":
-                                folderName = rdr.Value;
+                                folderReference = rdr.Value;
                                 break;
                             case "Caption":
-                                folderCap = rdr.Value;
+                                folderCaption = rdr.Value;
                                 break;
                         }
                     }
-                    rdr.Read();
-                }
+                    // create folder and add to parent's folders
+                    IADOTabularFolderReference folder = new ADOTabularDisplayFolder(folderCaption, folderReference);
+                    parent.FolderItems.Add(folder);
 
-                while (rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement)
-                {
+                    rdr.ReadToNextElement();
+
+                    // recurse down to child items
+                    ProcessDisplayFolder(rdr, table, folder);
                     rdr.Read();
+                    //rdr.ReadToNextElement(); // read the end element
                 }
                     
                 if ((rdr.NodeType == XmlNodeType.Element)
@@ -594,20 +602,29 @@ namespace ADOTabular
                         }
                     }
 
-                    var tabularObj = aDOTabularTable.Columns.GetByPropertyRef(objRef);
-                    tabularObj.DisplayFolder = folderCap;
+                    // create reference object
+                    IADOTabularObjectReference reference = new ADOTabularObjectReference("", objRef);
+                    parent.FolderItems.Add(reference);
+                    var column = table.Columns.GetByPropertyRef(objRef);
+                    if (column != null) { column.IsInDisplayFolder = true; }
                     objRef = "";
+
+                    rdr.Read();
                 }
 
-                if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolder") break;
-                rdr.Read();
+                if ((rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement) && (rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders"))
+                {
+                    rdr.ReadToNextElement();
+                }
 
-                //while (true)
-                //{
-                //if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Level") break;
-                //    if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolder") break;
-                //    rdr.Read();
-                //}
+                if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolders")
+                {
+                    rdr.Read();
+                    break;
+                }
+
+                //rdr.Read();
+
             }
 
         }

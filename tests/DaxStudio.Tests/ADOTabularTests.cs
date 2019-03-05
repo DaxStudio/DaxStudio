@@ -312,8 +312,88 @@ namespace DaxStudio.Tests
             var cmpyCol2 = cmpyTab.Columns["Internet Current Quarter Margin"];
 
             Assert.AreEqual("Internet Sales", cmpyTab.Caption, "Table Name is correct");
-            Assert.AreEqual("QTD Folder", cmpyCol2.DisplayFolder, "Column has display folder");
-            Assert.AreEqual("QTD Folder", cmpyCol.DisplayFolder, "Column has display folder");
+            Assert.AreEqual("QTD Folder", cmpyTab.FolderItems[0].Name);
+            Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
+
+        }
+
+        [TestMethod]
+        public void TestCSDLNestedDisplayFolders()
+        {
+
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\NestedFoldersCsdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Table1"];
+            var cmpyCol = cmpyTab.Columns["Value"];
+
+            /* test folder structure should be:
+             
+             Folder 1
+               |- Measure_2
+               +- Folder 2
+                  +- Folder 3
+                     +- Measure
+
+             */
+
+            Assert.AreEqual("Table1", cmpyTab.Caption, "Table Name is correct");
+            Assert.AreEqual(1, cmpyTab.FolderItems.Count);
+
+            var folder1 = ((IADOTabularFolderReference)cmpyTab.FolderItems[0]);
+            Assert.AreEqual("Folder 1", folder1.Name);
+
+            Assert.AreEqual(2, folder1.FolderItems.Count);
+            Assert.AreEqual("Measure_2", folder1.FolderItems[0].InternalReference);
+            var folder2 = ((IADOTabularFolderReference)folder1.FolderItems[1]);
+            Assert.AreEqual("Folder 2", folder2.Name);
+
+            var folder3 = ((IADOTabularFolderReference)folder2.FolderItems[0]);
+            Assert.AreEqual("Folder 3", folder3.Name);
+            Assert.AreEqual("Measure", folder3.FolderItems[0].InternalReference);
+
+        }
+
+        [TestMethod]
+        public void TestCSDLNestedMultipleDisplayFolders()
+        {
+
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\NestedMultipleFoldersCsdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Table1"];
+            
+
+            /* test folder structure should be:
+             
+             Folder 1
+               |- Measure
+             Folder 2
+               +- Folder 3
+                  +- Measure
+
+             */
+
+            Assert.AreEqual("Table1", cmpyTab.Caption, "Table Name is correct");
+            Assert.AreEqual(2, cmpyTab.FolderItems.Count);
+
+            var folder1 = ((IADOTabularFolderReference)cmpyTab.FolderItems[0]);
+            Assert.AreEqual("Folder 1", folder1.Name);
+
+            Assert.AreEqual(1, folder1.FolderItems.Count);
+            Assert.AreEqual("Measure", folder1.FolderItems[0].InternalReference);
+            var folder2 = ((IADOTabularFolderReference)cmpyTab.FolderItems[1]);
+            Assert.AreEqual("Folder 2", folder2.Name);
+
+            var folder3 = ((IADOTabularFolderReference)folder2.FolderItems[0]);
+            Assert.AreEqual("Folder 3", folder3.Name);
+            Assert.AreEqual("Measure", folder3.FolderItems[0].InternalReference);
 
         }
 
