@@ -486,7 +486,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (column == null) return;
 
-            if (column?.Column.GetType() != typeof(ADOTabularColumn)) return;
+            if (column?.Column?.GetType() != typeof(ADOTabularColumn)) return;
             ADOTabularColumn col = (ADOTabularColumn)column?.Column;
             
             if (col.ObjectType != ADOTabularObjectType.Column) return;
