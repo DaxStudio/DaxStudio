@@ -239,11 +239,22 @@ namespace DaxStudio.UI.ViewModels
         {
             // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
             // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error
-            string content = e.DataObject.GetData("UnicodeText",true) as string;
-            if (_editor.SelectionLength > 0) _editor.SelectedText = content.Replace('\u00A0', ' ');
-            else _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
-            e.Handled = true;
-            e.CancelCommand();
+            try
+            {
+                string content = e.DataObject.GetData("UnicodeText", true) as string;
+                if (_editor.SelectionLength > 0) _editor.SelectedText = content.Replace('\u00A0', ' ');
+                else _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error while Pasting: {message}", ex.Message);
+                OutputError($"Error while Pasting: {ex.Message}");
+            }
+            finally
+            {
+                e.CancelCommand();
+            }
         }
 
         private void OnDrop(object sender, DragEventArgs e)
