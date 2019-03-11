@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Utils
                 { Name = name.Substring(0, dashPos); }  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
                 else
                 {
-                    Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", "Unable to find ' - ' in Power BI title", dashPos);
+                    Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", $"Unable to find ' - ' in Power BI title '{name}'", dashPos);
                     Name = name; 
                 }
             }

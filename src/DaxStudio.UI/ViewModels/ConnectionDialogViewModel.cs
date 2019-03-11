@@ -107,7 +107,11 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);
                 NotifyOfPropertyChange(() => PowerBIDesignerInstances);
                 NotifyOfPropertyChange(() => SelectedPowerBIInstance);
-            });
+            }).ContinueWith(t => {
+                // we should only come here if we got an exception
+                Log.Error(t.Exception, "Error getting PowerBI/SSDT instances: {message}", t.Exception.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         public bool HostIsExcel { get { return Host.IsExcel; } }

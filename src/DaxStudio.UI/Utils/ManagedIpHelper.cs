@@ -171,9 +171,12 @@ namespace DaxStudio.UI.Utils
                         for (int i = 0; i < table.length; ++i)
                         {
                             TcpRow row = new TcpRow((IpHelper.TcpRow)Marshal.PtrToStructure(rowPtr, typeof(IpHelper.TcpRow)));
-                            // HACK: only add first row
-                            if (!tcpRows.Keys.Contains(row.ProcessId))
-                                tcpRows.Add(row.ProcessId, row);
+                            // HACK: only add first row that is in a Listening state
+                            if (row.State == TcpState.Listen)
+                            {
+                                if (!tcpRows.Keys.Contains(row.ProcessId))
+                                    tcpRows.Add(row.ProcessId, row);
+                            }
                             rowPtr = (IntPtr)((long)rowPtr + Marshal.SizeOf(typeof(IpHelper.TcpRow)));
                         }
                     }
