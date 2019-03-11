@@ -264,7 +264,9 @@ namespace DaxStudio.UI.ViewModels
         public bool CanConnect
         {
             get {
-                return !_queryRunning && !_isConnecting && ActiveDocument != null 
+                return ActiveDocument != null 
+                    && !_queryRunning 
+                    && !_isConnecting 
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
