@@ -103,14 +103,15 @@ namespace DaxStudio.UI.ViewModels
         private IQueryHistoryEvent currentQueryDetails;
         private Guid _autoSaveId =  Guid.NewGuid();
         private DocumentViewModel _sourceDocument;
-
+        private ISettingProvider SettingProvider { get; }
         [ImportingConstructor]
-        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options)
+        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options, ISettingProvider settingProvider)
         {
             _host = host;
             _eventAggregator = eventAggregator;
             _windowManager = windowManager;
             _ribbon = ribbon;
+            SettingProvider = settingProvider;
             ServerTimingDetails = serverTimingDetails;
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
@@ -839,7 +840,7 @@ namespace DaxStudio.UI.ViewModels
 
                     Execute.OnUIThread(() =>
                     {
-                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this);
+                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this, SettingProvider);
 
                         _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
                                         {

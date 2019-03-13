@@ -15,6 +15,7 @@ using Serilog;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using DaxStudio.UI.Extensions;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -27,12 +28,15 @@ namespace DaxStudio.UI.ViewModels
         private readonly DocumentViewModel _activeDocument;
         private readonly Regex _ppvtRegex;
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
+        private ISettingProvider SettingProvider;
+
 
         public ConnectionDialogViewModel(string connectionString
             , IDaxStudioHost host
             , IEventAggregator eventAggregator
             , bool hasPowerPivotModel
-            , DocumentViewModel document ) 
+            , DocumentViewModel document
+            , ISettingProvider settingProvider) 
         {
             try
             {
@@ -40,6 +44,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(this);
                 _connectionString = connectionString;
                 _activeDocument = document;
+                SettingProvider = settingProvider;
                 _ppvtRegex = new Regex(@"http://localhost:\d{4}/xmla", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 PowerPivotEnabled = true;
                 Host = host;
@@ -348,7 +353,7 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<string> RecentServers
         {
-            get {var list = RegistryHelper.GetServerMRUListFromRegistry();
+            get {var list = SettingProvider.GetServerMRUList();
                 return list;
             }
         }
@@ -467,7 +472,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (ServerModeSelected)
                 {
-                    RegistryHelper.SaveServerMRUListToRegistry(DataSource, RecentServers);
+                    SettingProvider.SaveServerMRUList(DataSource, RecentServers);
                     serverType = "SSAS";
                 }
                 if (PowerPivotModeSelected) { serverType = "PowerPivot"; }

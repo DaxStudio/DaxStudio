@@ -12,6 +12,7 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,12 +35,20 @@ namespace DaxStudio.UI.ViewModels
 
         //private ILogger log;
         [ImportingConstructor]
-        public ShellViewModel(IWindowManager windowManager, IEventAggregator eventAggregator ,RibbonViewModel ribbonViewModel, StatusBarViewModel statusBar, IConductor conductor, IDaxStudioHost host, IVersionCheck versionCheck)
+        public ShellViewModel(IWindowManager windowManager
+                            , IEventAggregator eventAggregator 
+                            , RibbonViewModel ribbonViewModel
+                            , StatusBarViewModel statusBar
+                            , IConductor conductor
+                            , IDaxStudioHost host
+                            , IVersionCheck versionCheck
+                            , ISettingProvider settingProvider)
         {
 
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
+            SettingProvider = settingProvider;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -119,6 +128,8 @@ namespace DaxStudio.UI.ViewModels
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
         public StatusBarViewModel StatusBar { get; set; }
+        public ISettingProvider SettingProvider { get; }
+
         public void ContentRendered()
         { }
 
@@ -161,7 +172,7 @@ namespace DaxStudio.UI.ViewModels
             _window.Closing += windowClosing;
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
-            _window.SetPlacement(RegistryHelper.GetWindowPosition());
+            _window.SetPlacement(SettingProvider.GetWindowPosition());
             notifyIcon = new NotifyIcon(_window);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
         }
@@ -172,7 +183,7 @@ namespace DaxStudio.UI.ViewModels
             var w = sender as Window;
             //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();
             //Properties.Settings.Default.Save();
-            RegistryHelper.SetWindowPosition(w.GetPlacement());
+            SettingProvider.SetWindowPosition(w.GetPlacement());
             _window.Closing -= windowClosing;
 
         }

@@ -46,21 +46,23 @@ namespace DaxStudio.UI.ViewModels
         private const string urlDaxStudioWiki = "http://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
-
+        private ISettingProvider SettingProvider;
         [ImportingConstructor]
-        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options)
+        public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             _host = host;
             _windowManager = windowManager;
+            SettingProvider = settingProvider;
             Options = options;
+
             UpdateGlobalOptions();
             CanCut = true;
             CanCopy = true;
             CanPaste = true;
             _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
-            RecentFiles = RegistryHelper.GetFileMRUListFromRegistry();
+            RecentFiles = SettingProvider.GetFileMRUList();
             InitRunStyles();
         }
 
@@ -615,7 +617,7 @@ namespace DaxStudio.UI.ViewModels
 
         internal void OnClose()
         {
-            RegistryHelper.SaveFileMRUListToRegistry(this.RecentFiles);
+            SettingProvider.SaveFileMRUList(this.RecentFiles);
         }
 
         private void AddToRecentFiles(string fileName)
@@ -665,7 +667,7 @@ namespace DaxStudio.UI.ViewModels
             // insert it at the top of the list
             RecentFiles.Insert(0, file);
 
-            RegistryHelper.SaveFileMRUListToRegistry(this.RecentFiles);
+            SettingProvider.SaveFileMRUList(this.RecentFiles);
         }
 
         public void SwapDelimiters()
