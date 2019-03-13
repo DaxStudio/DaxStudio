@@ -96,11 +96,14 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public double EditorFontSize { get { return _editorFontSize; } 
+        public double EditorFontSizePt => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
+
+        public double EditorFontSize { private get { return _editorFontSize; } 
             set {
                 if (_editorFontSize == value) return;
                 _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
+                NotifyOfPropertyChange(() => EditorFontSizePt);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("EditorFontSize", value);
             } 
@@ -130,12 +133,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public double ResultFontSizePt => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
         public double ResultFontSize {
             get { return _resultFontSize; }
             set {
                 if (_resultFontSize == value) return;
                 _resultFontSize = value;
-                NotifyOfPropertyChange(() => ResultFontSize);
+                NotifyOfPropertyChange(() => ResultFontSizePt);
+                NotifyOfPropertyChange(() => ResultFontSizePt);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 RegistryHelper.SetValueAsync<double>("ResultFontSize", value);
             }

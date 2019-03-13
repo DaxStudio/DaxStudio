@@ -23,8 +23,7 @@ namespace DaxStudio.UI.ViewModels
     class AllServerQueriesViewModel
         : TraceWatcherBaseViewModel, 
         ISaveState, 
-        IViewAware, 
-        IHandle<UpdateGlobalOptions>
+        IViewAware 
         
     {
         private Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
@@ -34,7 +33,6 @@ namespace DaxStudio.UI.ViewModels
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             _globalOptions = globalOptions;
-            UpdateGlobalOptions();
             QueryTypes = new ObservableCollection<string>();
             QueryTypes.Add("DAX");
             QueryTypes.Add("Dmx");
@@ -42,10 +40,6 @@ namespace DaxStudio.UI.ViewModels
             QueryTypes.Add("Sql");
         }
 
-        private void UpdateGlobalOptions()
-        {
-            ShowAggregationRewrites = _globalOptions.ShowAggregationRewritesInAllQueries;
-        }
 
         public ObservableCollection<string> QueryTypes { get; set; }
 
@@ -125,7 +119,6 @@ namespace DaxStudio.UI.ViewModels
         private readonly BindableCollection<QueryEvent> _queryEvents;
         
         public new bool CanHide { get { return true; } }
-        //public event EventHandler<ViewAttachedEventArgs> ViewAttached;
 
         public IObservableCollection<QueryEvent> QueryEvents 
         {
@@ -250,19 +243,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
-        {
-            UpdateGlobalOptions();
-        }
-
-        private bool _showAggregationRewrites;
-        public bool ShowAggregationRewrites { get => _showAggregationRewrites;
-            set
-            {
-                _showAggregationRewrites = value;
-                NotifyOfPropertyChange(() => ShowAggregationRewrites);
-            }
-        }
 
         #endregion
 

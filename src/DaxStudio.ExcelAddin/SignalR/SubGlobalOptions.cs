@@ -17,11 +17,11 @@ namespace DaxStudio.SignalR
 
         public string EditorFontFamily { get; set; }
 
-        public double EditorFontSize { get; set; }
+        public double EditorFontSizePt { get; set; }
 
         public string ResultFontFamily { get; set; }
 
-        public double ResultFontSize { get; set; }
+        public double ResultFontSizePt { get; set; }
 
         public bool EditorShowLineNumbers { get; set; }
 
