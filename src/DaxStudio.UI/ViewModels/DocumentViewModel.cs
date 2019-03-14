@@ -238,13 +238,21 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-            // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
-            // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error
+            
             try
             {
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
-                if (_editor.SelectionLength > 0) _editor.SelectedText = content.Replace('\u00A0', ' ');
-                else _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+                if (_editor.SelectionLength > 0)
+                {
+                    // if we have a selection - delete the currently selected text
+                    _editor.SelectedText = "";
+                    _editor.SelectionLength = 0;
+                }
+                // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
+                // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error    
+                _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+
+                // tell the paste event that it has been handled
                 e.Handled = true;
             }
             catch (Exception ex)
