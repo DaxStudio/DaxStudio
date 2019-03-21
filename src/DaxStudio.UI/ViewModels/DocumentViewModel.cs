@@ -125,7 +125,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( ScreenUnitsHelper.GenerateScreenUnitList());
             
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePt), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePx), 0);
             SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
             
             // Initialize default Tool Windows
@@ -2840,10 +2840,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
             }
-            if (editor.FontSize != _options.EditorFontSizePt)
+            if (editor.FontSize != _options.EditorFontSizePx)
             {
-                editor.FontSize = _options.EditorFontSizePt;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePt);
+                editor.FontSize = _options.EditorFontSizePx;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
                 this.SizeUnitLabel.StringValue = "100";
             }
             /*

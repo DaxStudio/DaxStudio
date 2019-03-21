@@ -16,9 +16,9 @@ namespace DaxStudio.Tests.Mocks
         public DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         public bool EditorEnableIntellisense { get; set; }
         public string EditorFontFamily { get; set; }
-        public double EditorFontSizePt { get; set; }
+        public double EditorFontSizePx { get; set; }
         public string ResultFontFamily { get; set; }
-        public double ResultFontSizePt { get; set; }
+        public double ResultFontSizePx { get; set; }
         public bool EditorShowLineNumbers { get; set; }
         public string ProxyAddress {get; set;}
         public SecureString ProxySecurePassword { get; set; }
