@@ -177,7 +177,7 @@
             <DataGrid.Columns>
                 <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
                 <!--  -->
-                <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15" Visibility="{Binding Path=DataContext.ShowAggregationRewrites, Converter={StaticResource BoolToVisibilityConverter}, Source={x:Reference bindingProxy}}">
+                <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15" >
                     
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

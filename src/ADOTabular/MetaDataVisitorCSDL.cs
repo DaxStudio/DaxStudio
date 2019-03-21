@@ -314,6 +314,10 @@ namespace ADOTabular
                             break;
                     }
                 }
+                if (rdr.LocalName == "Summary")
+                {
+                    description = (string)rdr.ReadElementContentAs(typeof(string),null);
+                }
                 rdr.Read();
             }
 

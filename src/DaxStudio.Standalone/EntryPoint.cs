@@ -57,6 +57,14 @@ namespace DaxStudio.Standalone
 
                 var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
                                             Constants.StandaloneLogFileName);
+
+                // if we have a local settings.json file we are running in "portable" mode
+                if (JsonSettingProvider.SettingsFileExists())
+                {
+                    logPath = Path.Combine(JsonSettingProvider.LogPath, Constants.StandaloneLogFileName);
+                }
+
+
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 

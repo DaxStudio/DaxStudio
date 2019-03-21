@@ -7,9 +7,9 @@ namespace DaxStudio.Interfaces
     public interface IGlobalOptions
     {
         bool EditorShowLineNumbers { get; set; }
-        double EditorFontSize { get; set; }
+        double EditorFontSizePt { get; }
         string EditorFontFamily { get; set; }
-        double ResultFontSize { get; set; }
+        double ResultFontSizePt { get; }
         string ResultFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
         int QueryHistoryMaxItems { get; set; }
@@ -33,8 +33,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportMetrics { get; set; }
         bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
-        bool ShowAggregationRewritesInAllQueries { get; set; }
-        string Theme { get; set; }
+        
         bool ResultAutoFormat { get; set; }
         bool ScaleResultsFontWithEditor { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }

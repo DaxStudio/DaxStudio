@@ -510,12 +510,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-
                                 </Grid.RowDefinitions>
-
 
                                 <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Content="Show Export Metrics button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export metrics about your data model to a .vpax file which can be imported into Vertipaq Analyzer v2</TextBlock>
@@ -526,9 +522,7 @@
                                 <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Launch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
 
-                                <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowAggregationRewritesInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Aggregation Rewrites in All Queries Traces" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will show aggregation hits/misses in All Queries traces</TextBlock>
-
+                                
                             </Grid>
                         </GroupBox>
                     </WrapPanel>

@@ -3,6 +3,7 @@ namespace DaxStudio.UI.Model
     using Caliburn.Micro;
     using DaxStudio.Interfaces;
     using DaxStudio.UI.Events;
+    using DaxStudio.UI.Interfaces;
     using DaxStudio.UI.Utils;
     using Extensions;
     using Newtonsoft.Json.Linq;
@@ -36,6 +37,7 @@ namespace DaxStudio.UI.Model
         private string _productionDownloadUrl;
         private string _prereleaseDownloadUrl;
         private string _serverVersionType;
+        private ISettingProvider RegistryHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
@@ -47,6 +49,8 @@ namespace DaxStudio.UI.Model
             _eventAggregator = eventAggregator;
             
             _globalOptions = globalOptions;
+
+            RegistryHelper = new RegistrySettingProvider();
             //if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             //{
             //    worker.DoWork += new DoWorkEventHandler(worker_DoWork);
