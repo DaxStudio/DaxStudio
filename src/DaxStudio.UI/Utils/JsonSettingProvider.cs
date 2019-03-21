@@ -3,27 +3,32 @@ using DaxStudio.UI.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
+    [PartCreationPolicy(CreationPolicy.Shared)]
     public class JsonSettingProvider : ISettingProvider
     {
         private static string settingsFile;
+        private static string appPath;
 
         static JsonSettingProvider()
         {
-            string folderPath = AppDomain.CurrentDomain.BaseDirectory;
-            settingsFile = Path.Combine(folderPath, "settings.json");
+            appPath = AppDomain.CurrentDomain.BaseDirectory;
+            settingsFile = Path.Combine(appPath, "settings.json");
         }
 
+        #region Static Members
         public static bool SettingsFileExists()
         {
             return File.Exists(settingsFile);
         }
+
+        public static string LogPath => Path.Combine(appPath, "logs");
+        #endregion
 
         public string GetDismissedVersion()
         {

@@ -22,6 +22,7 @@ namespace DaxStudio.UI
     using DaxStudio.UI.Triggers;
     using DaxStudio.UI.Utils;
     using DaxStudio.UI.Events;
+    using DaxStudio.UI.Interfaces;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -106,6 +107,11 @@ namespace DaxStudio.UI
 	            //_container = new CompositionContainer(catalog,true);
                 _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
+
+                if (JsonSettingProvider.SettingsFileExists())
+                    batch.AddExportedValue<ISettingProvider>(new JsonSettingProvider());
+                else
+                    batch.AddExportedValue<ISettingProvider>(new RegistrySettingProvider());
 
 	            batch.AddExportedValue<IWindowManager>(new WindowManager());
 	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());

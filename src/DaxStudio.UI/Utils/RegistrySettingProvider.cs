@@ -11,7 +11,7 @@ using System.ComponentModel.Composition;
 namespace DaxStudio.UI
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
-    [Export(typeof(ISettingProvider))]
+    //[Export(typeof(ISettingProvider))]
     public class RegistrySettingProvider:ISettingProvider
     {
     

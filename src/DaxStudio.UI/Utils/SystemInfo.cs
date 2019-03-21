@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Serilog;
 using System.Management;
 using System.Threading;
+using System.Reflection;
 
 namespace DaxStudio.UI.Utils
 {
@@ -15,7 +16,9 @@ namespace DaxStudio.UI.Utils
         {
             if (!Serilog.Log.IsEnabled(Serilog.Events.LogEventLevel.Information)) return;
             var osInfo = GetOSInfo();
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
             var curCulture = Thread.CurrentThread.CurrentCulture;
+            Log.Information("DAX STUDIO VERSION: {version}", version);
             Log.Information("System Info: {setting} = {value}", "OSCaption",osInfo.Name  );
             Log.Information("System Info: {setting} = {value}", "OSVersion", osInfo.Version.ToString());
             Log.Information("System Info: {setting} = {value}", "OSArchitecture", osInfo.Architecture);
