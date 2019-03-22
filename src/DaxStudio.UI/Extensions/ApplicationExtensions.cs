@@ -123,11 +123,11 @@ namespace DaxStudio.UI.Extensions
 
         }
 
-        public static void LoadRibbonTheme(this Application app)
-        {
-            var theme = RegistryHelper.GetValue<string>("Theme", "Light");
-            ChangeRibbonTheme(app, theme);
-        }
+        //public static void LoadRibbonTheme(this Application app)
+        //{
+        //    var theme = SettingProvider.GetValue<string>("Theme", "Light");
+        //    ChangeRibbonTheme(app, theme);
+        //}
 
         public static void ChangeRibbonTheme(this Application app, string theme)
         {

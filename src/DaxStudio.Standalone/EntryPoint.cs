@@ -77,9 +77,13 @@ namespace DaxStudio.Standalone
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
 
-                
+
                 // load selected theme
-                var theme = RegistryHelper.GetValue<string>("Theme", "Light");
+
+
+                // TODO: Theme - read from settings
+
+                var theme = "Light"; // settingProvider.GetValue<string>("Theme", "Light");
                 if (theme == "Dark") app.LoadDarkTheme();
                 else app.LoadLightTheme();
                 

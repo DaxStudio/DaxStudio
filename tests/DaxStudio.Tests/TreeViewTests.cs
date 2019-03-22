@@ -12,6 +12,7 @@ using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using System.IO;
 using System.Linq;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Tests
 {
@@ -168,7 +169,8 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
-            var tt = m.TreeViewTables(mockOptions, mockEventAggregator);
+            var mockMetadata = new Mock<IMetadataPane>().Object;
+            var tt = m.TreeViewTables(mockOptions, mockEventAggregator,mockMetadata);
             Assert.AreEqual(7, tt.Count, "Correct Table Count");
 
 

@@ -8,24 +8,25 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using ADOTabular.Utils;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
 
     public static class ADOTabularModelExtensions
     {
-        
-        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator )
+
+        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
         {
             var lst = new List<FilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
-                lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator));
+                lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator, metadataPane));
             }
             return lst;   
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, ADOTabularTable table2, IGlobalOptions options, IEventAggregator eventAggregator)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, ADOTabularTable table2, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             var lst = new SortedList<string, FilterableTreeViewItem>();
             foreach (var c in table.Columns)
@@ -33,7 +34,7 @@ namespace DaxStudio.UI.Model
 
                 if (!c.IsInDisplayFolder)
                 {
-                    var col = new TreeViewColumn(c, c.TreeViewColumnChildren, options, eventAggregator);
+                    var col = new TreeViewColumn(c, c.TreeViewColumnChildren, options, eventAggregator, metadataPane);
                     
                     var lstItem = lst.FirstOrDefault(x => x.Value.Name == col.Name).Value;
                     if (lstItem != null && lstItem.ObjectType == lstItem.ObjectType)
@@ -50,14 +51,14 @@ namespace DaxStudio.UI.Model
 
             foreach( IADOTabularObjectReference f in table.FolderItems)
             {
-                var folder = new TreeViewColumn(f, f.TreeViewFolderChildren, table, options, eventAggregator);
+                var folder = new TreeViewColumn(f, f.TreeViewFolderChildren, table, options, eventAggregator, metadataPane);
 
                 lst.Add(folder.Caption, folder);
             }
             return lst.Values;
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column, ADOTabularTable table, IGlobalOptions options,IEventAggregator eventAggregator)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewColumnChildren(this ADOTabularColumn column, ADOTabularTable table, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             var lst = new List<FilterableTreeViewItem>();
             var hier = column as ADOTabularHierarchy;
@@ -65,7 +66,7 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var lvl in hier.Levels)
                 {
-                    lst.Add( new TreeViewColumn(lvl,options,eventAggregator));
+                    lst.Add( new TreeViewColumn(lvl,options,eventAggregator, metadataPane));
                 }
             }
             var kpi = column as ADOTabularKpi;
@@ -73,13 +74,13 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var comp in kpi.Components)
                 {
-                    lst.Add( new TreeViewColumn(comp,options,eventAggregator));
+                    lst.Add( new TreeViewColumn(comp,options,eventAggregator,metadataPane));
                 }
             }
             return lst;
         }
 
-        public static IEnumerable<FilterableTreeViewItem> TreeViewFolderChildren(this IADOTabularObjectReference objRef, ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator)
+        public static IEnumerable<FilterableTreeViewItem> TreeViewFolderChildren(this IADOTabularObjectReference objRef, ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             var lst = new List<FilterableTreeViewItem>();
 
@@ -91,13 +92,13 @@ namespace DaxStudio.UI.Model
                 {
                     GetChildrenDelegate getChildren = null;
                     if (folderItem is IADOTabularFolderReference) getChildren = ((IADOTabularObjectReference)folderItem).TreeViewFolderChildren;
-                    lst.Add(new TreeViewColumn(folderItem, getChildren, table, options, eventAggregator));
+                    lst.Add(new TreeViewColumn(folderItem, getChildren, table, options, eventAggregator, metadataPane));
                 }
             }
             else
             {
                 var col = table.Columns.GetByPropertyRef(objRef.InternalReference);
-                lst.Add(new TreeViewColumn(col, null, options, eventAggregator));
+                lst.Add(new TreeViewColumn(col, null, options, eventAggregator,metadataPane));
             }
             
 
@@ -108,7 +109,7 @@ namespace DaxStudio.UI.Model
     }
 
     //public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
-    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator);
+    public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane);
     
     public abstract class FilterableTreeViewItem : PropertyChangedBase
     {
@@ -117,12 +118,13 @@ namespace DaxStudio.UI.Model
         protected IEventAggregator _eventAggregator;
         protected ADOTabularTable _table;
 
-        public FilterableTreeViewItem(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator)
+        public FilterableTreeViewItem(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             _eventAggregator = eventAggregator;
             _options = options;
             _table = table;
             _getChildren = getChildren;
+            MetadataPane = MetadataPane;
         }
 
         private IEnumerable<FilterableTreeViewItem> _children;
@@ -130,7 +132,7 @@ namespace DaxStudio.UI.Model
             get
             {
                 if (_children == null && _getChildren != null)
-                { _children = _getChildren.Invoke(_table, _options, _eventAggregator); }
+                { _children = _getChildren.Invoke(_table, _options, _eventAggregator,MetadataPane); }
                 return _children;
             }
         }
@@ -164,6 +166,8 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(()=> IsExpanded);
             }
         }
+
+        public IMetadataPane MetadataPane { get; }
 
         public IGlobalOptions Options
         {
@@ -200,10 +204,8 @@ namespace DaxStudio.UI.Model
     public class TreeViewTable : FilterableTreeViewItem, IADOTabularObject
     {
         //private readonly ADOTabularTable _table;
-        
-        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator):base(table, getChildren,options,eventAggregator)
+        public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane ):base(table, getChildren,options,eventAggregator, metadataPane)
         {
-        
             _table = table;
         }
 
@@ -277,7 +279,7 @@ namespace DaxStudio.UI.Model
         private long _distinctValues = 0;
 
         #region Constructors
-        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator):base(column.Table, getChildren, options,eventAggregator)
+        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane):base(column.Table, getChildren, options,eventAggregator,metadataPane)
         {
             _eventAggregator = eventAggregator;
             _sampleData = new List<string>();
@@ -305,7 +307,7 @@ namespace DaxStudio.UI.Model
             
         //}
 
-        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator):base(null, null,null,eventAggregator)
+        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane):base(null, null,null,eventAggregator, metadataPane)
         {
             Options = options;
             Column = kpiComponent;
@@ -313,15 +315,15 @@ namespace DaxStudio.UI.Model
             
             MetadataImage = MetadataImages.Measure;
         }
-        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator)
-            : base(null, null, options,eventAggregator)
+        public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
+            : base(null, null, options,eventAggregator, metadataPane)
         {
             Options = options;
             Column = kpi;
             DataTypeName = kpi.DataTypeName;
             MetadataImage = MetadataImages.Kpi;
         }
-        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator):base(null, null, options,eventAggregator)
+        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane):base(null, null, options,eventAggregator,metadataPane)
         {
             Options = options;
             Column = level;
@@ -331,16 +333,16 @@ namespace DaxStudio.UI.Model
             MetadataImage = MetadataImages.Column;            
         }
 
-        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator)
-            : base(null, null,options,eventAggregator)
+        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane)
+            : base(null, null,options,eventAggregator,metadataPane)
         {
             Options = options;
             Column = hier;
             MetadataImage = MetadataImages.Hierarchy;
         }
 
-        public TreeViewColumn(IADOTabularObjectReference reference, GetChildrenDelegate getChildren, ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator)
-            : base(table, getChildren, options, eventAggregator)
+        public TreeViewColumn(IADOTabularObjectReference reference, GetChildrenDelegate getChildren, ADOTabularTable table, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
+            : base(table, getChildren, options, eventAggregator, metadataPane)
         {
             Options = options;
             IADOTabularFolderReference folder = reference as IADOTabularFolderReference;

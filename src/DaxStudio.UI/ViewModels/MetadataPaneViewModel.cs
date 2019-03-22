@@ -16,6 +16,7 @@ using DaxStudio.Interfaces;
 using System.Data;
 using System.Windows;
 using System.Text.RegularExpressions;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,6 +26,7 @@ namespace DaxStudio.UI.ViewModels
         ToolPaneBaseViewModel
         , IHandle<UpdateGlobalOptions>
         , IDragSource
+        , IMetadataPane
     {
         private string _modelName;
         private readonly DocumentViewModel _activeDocument;
@@ -40,6 +42,7 @@ namespace DaxStudio.UI.ViewModels
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             eventAggregator.Subscribe(this);
+            ShowHiddenObjects = true; // TODO - read from options.
         }
 
         private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -216,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
                     try
                     {
                         IsBusy = true;
-                        _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator);
+                        _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
                     }
                     catch (Exception ex)
                     {
@@ -482,6 +485,8 @@ namespace DaxStudio.UI.ViewModels
         public string BusyMessage { get { return "Loading"; } }
         #endregion
 
+        public bool ShowHiddenObjects { get; set; }
+        
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
             if (column == null) return;

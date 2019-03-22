@@ -126,7 +126,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( ScreenUnitsHelper.GenerateScreenUnitList());
             
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePt), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePx), 0);
             SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
             
             // Initialize default Tool Windows
@@ -667,20 +667,21 @@ namespace DaxStudio.UI.ViewModels
             // exit here if we are not in a state to run a query
             // means something is using the connection like
             // either a query is running or a trace is starting
-            if (!CanRunQuery) return;
-
-            try
-            {
-                if (HasDatabaseSchemaChanged())
+            if (CanRunQuery)
+            { 
+                try
                 {
-                    RefreshMetadata();
-                    OutputMessage("Model schema change detected - Metadata refreshed");
+                    if (HasDatabaseSchemaChanged())
+                    {
+                        RefreshMetadata();
+                        OutputMessage("Model schema change detected - Metadata refreshed");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
-                OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+                catch (Exception ex)
+                {
+                    Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
+                    OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+                }
             }
 
             try
@@ -2865,10 +2866,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     editor.FontFamily = new System.Windows.Media.FontFamily(_options.EditorFontFamily);
                 }
-                if (editor.FontSize != _options.EditorFontSize)
+                if (editor.FontSize != _options.EditorFontSizePx)
                 {
-                    editor.FontSize = _options.EditorFontSize;
-                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
+                    editor.FontSize = _options.EditorFontSizePx;
+                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
                     this.SizeUnitLabel.StringValue = "100";
                 }
                 /*

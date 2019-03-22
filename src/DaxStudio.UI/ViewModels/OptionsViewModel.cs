@@ -80,14 +80,13 @@ namespace DaxStudio.UI.ViewModels
             DefaultDaxFormatStyle = (DaxFormatStyle)SettingProvider.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
             ScaleResultsFontWithEditor = SettingProvider.GetValue<bool>("ScaleResultsFontWithEditor", true);
             // Preview Feature Toggles
-            ShowExportMetrics = RegistryHelper.GetValue<bool>(nameof(ShowExportMetrics), false);
-            ShowExternalTools = RegistryHelper.GetValue<bool>(nameof(ShowExternalTools), false);
-            ShowExportAllData = RegistryHelper.GetValue<bool>(nameof(ShowExportAllData), false);
-            ShowAggregationRewritesInAllQueries = RegistryHelper.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
-            Theme = RegistryHelper.GetValue<string>("Theme", "Light");
-            ResultAutoFormat = RegistryHelper.GetValue<bool>("ResultAutoFormat", false);
-            CodeCompletionWindowWidthIncrease = RegistryHelper.GetValue<int>("CodeCompletionWindowWidthIncrease", 100);
-            KeepMetadataSearchOpen = RegistryHelper.GetValue<bool>("KeepMetadataSearchOpen", false);
+            ShowExportMetrics = SettingProvider.GetValue<bool>(nameof(ShowExportMetrics), false);
+            ShowExternalTools = SettingProvider.GetValue<bool>(nameof(ShowExternalTools), false);
+            ShowExportAllData = SettingProvider.GetValue<bool>(nameof(ShowExportAllData), false);
+            Theme = SettingProvider.GetValue<string>("Theme", "Light");
+            ResultAutoFormat = SettingProvider.GetValue<bool>("ResultAutoFormat", false);
+            CodeCompletionWindowWidthIncrease = SettingProvider.GetValue<int>("CodeCompletionWindowWidthIncrease", 100);
+            KeepMetadataSearchOpen = SettingProvider.GetValue<bool>("KeepMetadataSearchOpen", false);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -103,14 +102,14 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public double EditorFontSizePt => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
+        public double EditorFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
 
         public double EditorFontSize { private get { return _editorFontSize; } 
             set {
                 if (_editorFontSize == value) return;
                 _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
-                NotifyOfPropertyChange(() => EditorFontSizePt);
+                NotifyOfPropertyChange(() => EditorFontSizePx);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValueAsync<double>("EditorFontSize", value);
             } 
@@ -140,14 +139,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public double ResultFontSizePt => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
+        public double ResultFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
         public double ResultFontSize {
             get { return _resultFontSize; }
             set {
                 if (_resultFontSize == value) return;
                 _resultFontSize = value;
-                NotifyOfPropertyChange(() => ResultFontSizePt);
-                NotifyOfPropertyChange(() => ResultFontSizePt);
+                NotifyOfPropertyChange(() => ResultFontSizePx);
+                NotifyOfPropertyChange(() => ResultFontSizePx);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValueAsync<double>("ResultFontSize", value);
             }
@@ -506,18 +505,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showAggregationRewritesInAllQueries = false;
         private bool _scaleResultsFontWithEditor = true;
-
-        public bool ShowAggregationRewritesInAllQueries { get => _showAggregationRewritesInAllQueries;
-            set
-            {
-                _showAggregationRewritesInAllQueries = value;
-                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowAggregationRewritesInAllQueries", value);
-                NotifyOfPropertyChange(() => ShowAggregationRewritesInAllQueries);
-            }
-        }
 
         private string _theme = "Light";
         public string Theme
@@ -529,7 +517,7 @@ namespace DaxStudio.UI.ViewModels
                 _theme = value;
                 NotifyOfPropertyChange(() => Theme);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                RegistryHelper.SetValueAsync<string>("Theme", value);
+                SettingProvider.SetValueAsync<string>("Theme", value);
 
             }
         }
@@ -562,7 +550,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value > 300) value = 300; // value cannot be greater than 300% of the default size
                 _codeCompletionWindowWidthIncrease = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                RegistryHelper.SetValueAsync<int>("CodeCompletionWindowWidthIncrease", value);
+                SettingProvider.SetValueAsync<int>("CodeCompletionWindowWidthIncrease", value);
                 NotifyOfPropertyChange(() => CodeCompletionWindowWidthIncrease);
             }
         }
@@ -571,7 +559,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _keepMetadataSearchOpen = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                RegistryHelper.SetValueAsync<bool>("KeepMetadataSearchOpen", value);
+                SettingProvider.SetValueAsync<bool>("KeepMetadataSearchOpen", value);
                 NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
             }
         }
