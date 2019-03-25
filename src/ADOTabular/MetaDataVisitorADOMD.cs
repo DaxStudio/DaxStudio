@@ -47,7 +47,9 @@ namespace ADOTabular
                         ,dr["DIMENSION_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()
                         ,bool.Parse(dr["DIMENSION_IS_VISIBLE"].ToString())
-                    )
+                        , false // Private
+                        , false // ShowAsVariationsOnly
+                        )
                 );
             }
             

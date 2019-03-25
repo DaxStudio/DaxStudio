@@ -290,6 +290,9 @@ namespace ADOTabular
             string refname = null;
             bool isVisible = true;
             string name = null;
+            bool _private = false;
+            bool showAsVariationsOnly = false;
+
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntitySet))
             {
@@ -312,6 +315,12 @@ namespace ADOTabular
                         case "Name":
                             refname = rdr.Value;
                             break;
+                        case "Private":
+                            _private = bool.Parse(rdr.Value);
+                            break;
+                        case "ShowAsVariationsOnly":
+                            showAsVariationsOnly = bool.Parse(rdr.Value);
+                            break;
                     }
                 }
                 if (rdr.LocalName == "Summary")
@@ -329,7 +338,7 @@ namespace ADOTabular
             //                - if this is missing the Name property is used
             // Caption        - this is what the end user sees (may be translated)
             //                - if this is missing the Name property is used
-            var tab = new ADOTabularTable(_conn, refname, name, caption, description, isVisible);
+            var tab = new ADOTabularTable(_conn, refname, name, caption, description, isVisible, _private, showAsVariationsOnly);
 
             return tab;
         }

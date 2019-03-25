@@ -19,7 +19,7 @@ namespace ADOTabular
             _model = model;
         }
         */
-        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible)
+        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible, bool _private, bool showAsVariationsOnly )
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;
@@ -30,6 +30,8 @@ namespace ADOTabular
             IsVisible = isVisible;
             Relationships = new List<ADOTabularRelationship>();
             FolderItems = new List<IADOTabularObjectReference>();
+            Private = _private;
+            ShowAsVariationsOnly = ShowAsVariationsOnly;
         }
 
         private static readonly string[] specialNames = { "DATE" };
@@ -95,5 +97,8 @@ namespace ADOTabular
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
 
         public FolderReferenceType ReferenceType => throw new System.NotImplementedException();
+
+        public bool Private { get; }
+        public bool ShowAsVariationsOnly { get; }
     }
 }

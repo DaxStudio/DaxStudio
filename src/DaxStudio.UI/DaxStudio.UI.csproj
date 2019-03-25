@@ -384,6 +384,7 @@
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Interfaces\IMetadataPane.cs" />
     <Compile Include="Interfaces\ISettingProvider.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
