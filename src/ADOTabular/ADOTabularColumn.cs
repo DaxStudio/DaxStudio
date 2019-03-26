@@ -10,25 +10,25 @@ namespace ADOTabular
     public  class ADOTabularColumn:IADOTabularColumn
     {
         // TODO - can we delete this??
-        public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularObjectType colType)
-        {
-            Table = table;
-            ObjectType = colType;
-            if (colType == ADOTabularObjectType.Column)
-            {
-                Caption = dr["HIERARCHY_CAPTION"].ToString();
-                Name = dr["HIERARCHY_NAME"].ToString();
-                IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
-                Description = dr["DESCRIPTION"].ToString();
-            }
-            else
-            {
-                Caption = dr["MEASURE_CAPTION"].ToString();
-                Name = dr["MEASURE_NAME"].ToString();
-                IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
-                Description = dr["DESCRIPTION"].ToString();
-            }
-        }
+        //public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularObjectType colType)
+        //{
+        //    Table = table;
+        //    ObjectType = colType;
+        //    if (colType == ADOTabularObjectType.Column)
+        //    {
+        //        Caption = dr["HIERARCHY_CAPTION"].ToString();
+        //        Name = dr["HIERARCHY_NAME"].ToString();
+        //        IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
+        //        Description = dr["DESCRIPTION"].ToString();
+        //    }
+        //    else
+        //    {
+        //        Caption = dr["MEASURE_CAPTION"].ToString();
+        //        Name = dr["MEASURE_NAME"].ToString();
+        //        IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
+        //        Description = dr["DESCRIPTION"].ToString();
+        //    }
+        //}
 
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
                                 bool isVisible, ADOTabularObjectType columnType, string contents)
@@ -42,6 +42,7 @@ namespace ADOTabular
             ObjectType = columnType;
             Contents = contents;
             Role = $"{Table.InternalReference}_{InternalReference}";
+            Variations = new List<ADOTabularVariation>();
         }
 
         public string InternalReference { get; private set; }
@@ -185,5 +186,6 @@ namespace ADOTabular
 
         // used for relationship links
         public string Role { get; internal set; }
+        public List<ADOTabularVariation> Variations { get; internal set; }
     }
 }

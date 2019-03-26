@@ -399,6 +399,7 @@ namespace ADOTabular
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
+            List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
 
             KpiDetails kpi = new KpiDetails();
 
@@ -503,6 +504,10 @@ namespace ADOTabular
 
                 }
 
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "Variations") {
+                    _variations = ProcessVariations(rdr);
+                }
 
 
                 if (rdr.NodeType == XmlNodeType.EndElement
@@ -525,6 +530,7 @@ namespace ADOTabular
                             col.DistinctValues = distinctValueCount;
                             col.FormatString = formatString;
                             col.StringValueMaxLength = stringValueMaxLength;
+                            col.Variations.AddRange(_variations);
                             tables.Model.AddRole(col);
                             tab.Columns.Add(col);
                             _conn.Columns.Add(col.OutputColumnName, col);
@@ -554,12 +560,74 @@ namespace ADOTabular
                     defaultAggregateFunction = "";
                     nullable = true;
                     colType = ADOTabularObjectType.Column;
+                    _variations = new List<ADOTabularVariation>();
                 }
                 rdr.Read();
             }
 
             //TODO - link up back reference to backing measures for KPIs
 
+        }
+
+        private List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
+        {
+            string _name = string.Empty;
+            bool _default = false;
+            string navigationPropertyRef = string.Empty;
+            string defaultHierarchyRef = string.Empty;
+
+            List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
+            while (!(rdr.NodeType == XmlNodeType.EndElement 
+                && rdr.LocalName == "Variations")) {
+
+                if (rdr.NodeType == XmlNodeType.Element 
+                    && rdr.LocalName == "Variation")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        switch (rdr.LocalName)
+                        {
+                            case "Name":
+                                _name = rdr.Value;
+                                break;
+                            case "Default":
+                                _default = bool.Parse( rdr.Value);
+                                break;
+                        }
+                    }
+
+                }
+
+                if(rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "NavigationPropertyRef")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        if (rdr.LocalName == "Name") navigationPropertyRef = rdr.Value;
+                    }        
+                }
+
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "DefaultHierarchyRef")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        if (rdr.LocalName == "Name") defaultHierarchyRef = rdr.Value;
+                    }
+                }
+
+
+                if (rdr.NodeType == XmlNodeType.EndElement
+                    && rdr.LocalName == "Variation")
+                {
+                    _variations.Add(new ADOTabularVariation() { NavigationPropertyRef = navigationPropertyRef, DefaultHierarchyRef = defaultHierarchyRef, IsDefault = _default });
+                    _default = false;
+                    navigationPropertyRef = string.Empty;
+                    defaultHierarchyRef = string.Empty;
+                }
+                rdr.Read();
+            }
+            return _variations;
         }
 
         private void ProcessDisplayFolder(XmlReader rdr, ADOTabularTable table, IADOTabularFolderReference parent)

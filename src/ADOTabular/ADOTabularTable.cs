@@ -31,7 +31,7 @@ namespace ADOTabular
             Relationships = new List<ADOTabularRelationship>();
             FolderItems = new List<IADOTabularObjectReference>();
             Private = _private;
-            ShowAsVariationsOnly = ShowAsVariationsOnly;
+            ShowAsVariationsOnly = showAsVariationsOnly;
         }
 
         private static readonly string[] specialNames = { "DATE" };

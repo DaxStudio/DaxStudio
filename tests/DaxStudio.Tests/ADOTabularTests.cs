@@ -267,6 +267,25 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestPowerBIVariationsVisitor()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\powerbi-csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var promoTable = tabs["Promotion"];
+            Assert.IsNotNull(promoTable);
+            Assert.AreEqual(0, promoTable.Columns["PromotionName"].Variations.Count);
+            Assert.AreEqual(1, promoTable.Columns["StartDate"].Variations.Count);
+
+        }
+
+        [TestMethod]
         public void TestADOTabularGetDatabaseID()
         {
             //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);

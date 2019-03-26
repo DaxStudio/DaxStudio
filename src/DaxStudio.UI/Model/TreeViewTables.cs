@@ -21,6 +21,9 @@ namespace DaxStudio.UI.Model
             var lst = new List<FilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
+                if (t.Private) continue; // skip Private tables
+                if (t.ShowAsVariationsOnly) continue; // skip Variation tables
+
                 lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator, metadataPane));
             }
             return lst;   
