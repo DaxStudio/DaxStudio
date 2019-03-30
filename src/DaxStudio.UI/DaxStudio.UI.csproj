@@ -392,6 +392,7 @@
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Interfaces\ISettingProvider.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
@@ -488,6 +489,7 @@
     <Compile Include="Utils\FixedSizeQueue.cs" />
     <Compile Include="Extensions\IntegerExtensions.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
+    <Compile Include="Utils\JsonSettingProvider.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
@@ -553,7 +555,7 @@
     <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
     <Compile Include="Utils\DebugLogger.cs" />
     <Compile Include="IShell.cs" />
-    <Compile Include="Utils\RegistryHelper.cs" />
+    <Compile Include="Utils\RegistrySettingProvider.cs" />
     <Compile Include="RichTextBoxWatermarked.xaml.cs">
       <DependentUpon>RichTextBoxWatermarked.xaml</DependentUpon>
     </Compile>

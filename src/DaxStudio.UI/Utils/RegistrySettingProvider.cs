@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-//using System.Windows.Forms;
 using Microsoft.Win32;
-//using ComboBox = System.Windows.Forms.ComboBox;
 using System;
 using DaxStudio.UI.Model;
 using System.Threading.Tasks;
 using System.Linq;
+using DaxStudio.UI.Interfaces;
+using System.ComponentModel.Composition;
 
 namespace DaxStudio.UI
 {
-    public static class RegistryHelper
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    //[Export(typeof(ISettingProvider))]
+    public class RegistrySettingProvider:ISettingProvider
     {
     
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
@@ -20,17 +22,17 @@ namespace DaxStudio.UI
         private const string DefaultPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
         private const int MAX_MRU_SIZE = 25;
 
-        public static ObservableCollection<string> GetServerMRUListFromRegistry()
+        public ObservableCollection<string> GetServerMRUList()
         {
             return GetMRUListFromRegistry("Server");
         }
 
-        public static void SaveServerMRUListToRegistry(string currentServer, ObservableCollection<string> servers)
+        public void SaveServerMRUList(string currentServer, ObservableCollection<string> servers)
         {
             SaveListToRegistry("Server", currentServer, servers);
         }
 
-        public static ObservableCollection<DaxFile> GetFileMRUListFromRegistry()
+        public ObservableCollection<DaxFile> GetFileMRUList()
         {
             var lst = new ObservableCollection<DaxFile>();
             foreach (var itm in  GetMRUListFromRegistry("File"))
@@ -40,38 +42,38 @@ namespace DaxStudio.UI
             return lst;
         }
 
-        public static void SaveFileMRUListToRegistry( IEnumerable<object> files)
+        public void SaveFileMRUList( IEnumerable<object> files)
         {
             SaveListToRegistry("File","", files);
         }
 
-        public static T GetValue<T>(string subKey, T defaultValue )
+        public T GetValue<T>(string subKey, T defaultValue )
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
             if (regDaxStudio == null) return defaultValue;
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
         }
 
-        public static bool IsFileLoggingEnabled()
+        public bool IsFileLoggingEnabled()
         {
             if (!KeyExists("IsFileLoggingEnabled")) return false;
             return GetValue<bool>("IsFileLoggingEnabled");
         }
 
-        public static bool KeyExists(string subKey)
+        private bool KeyExists(string subKey)
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
             return (regDaxStudio.GetSubKeyNames().ToList().Contains(subKey));
         }
 
 
-        public static T GetValue<T>(string subKey)
+        private T GetValue<T>(string subKey)
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
             return (T)regDaxStudio.GetValue(subKey);
         }
 
-        public static Task SetValueAsync<T>(string subKey, T value)
+        public Task SetValueAsync<T>(string subKey, T value)
         {
             return Task.Run(()=>{
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
@@ -80,7 +82,7 @@ namespace DaxStudio.UI
             });
         }
 
-        internal static ObservableCollection<string> GetMRUListFromRegistry(string listName)
+        internal ObservableCollection<string> GetMRUListFromRegistry(string listName)
         {
             var list = new ObservableCollection<string>();
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
@@ -100,7 +102,7 @@ namespace DaxStudio.UI
 
 
 
-        internal static void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
+        internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
             var listKey = string.Format("{0}MRU", listName);
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
@@ -134,7 +136,7 @@ namespace DaxStudio.UI
         }
 
 
-        public static void SetLastVersionCheck(DateTime value)
+        public void SetLastVersionCheck(DateTime value)
         {
             string path = registryRootKey;
             RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
@@ -146,7 +148,7 @@ namespace DaxStudio.UI
             }
         }
 
-        public static DateTime GetLastVersionCheck()
+        public DateTime GetLastVersionCheck()
         {
             DateTime dtReturnVal = DateTime.MinValue;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
@@ -162,7 +164,7 @@ namespace DaxStudio.UI
         }
 
 
-        public static void SetWindowPosition(string value)
+        public void SetWindowPosition(string value)
         {
             string path = registryRootKey;
             RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
@@ -173,7 +175,7 @@ namespace DaxStudio.UI
             }
         }
 
-        public static string GetWindowPosition()
+        public string GetWindowPosition()
         {
             DateTime dtReturnVal = DateTime.MinValue;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
@@ -189,7 +191,7 @@ namespace DaxStudio.UI
         }
 
 
-        public static string GetDismissedVersion()
+        public string GetDismissedVersion()
         {
             string sReturnVal = string.Empty;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
@@ -202,7 +204,7 @@ namespace DaxStudio.UI
             return string.IsNullOrEmpty(sReturnVal)?"0.0.0.0":sReturnVal;
         }
 
-        public static void SetDismissedVersion(string value)
+        public void SetDismissedVersion(string value)
         {
             string path = registryRootKey;
             RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);

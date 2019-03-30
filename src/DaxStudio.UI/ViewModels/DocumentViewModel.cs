@@ -103,14 +103,15 @@ namespace DaxStudio.UI.ViewModels
         private IQueryHistoryEvent currentQueryDetails;
         private Guid _autoSaveId =  Guid.NewGuid();
         private DocumentViewModel _sourceDocument;
-
+        private ISettingProvider SettingProvider { get; }
         [ImportingConstructor]
-        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options)
+        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options, ISettingProvider settingProvider)
         {
             _host = host;
             _eventAggregator = eventAggregator;
             _windowManager = windowManager;
             _ribbon = ribbon;
+            SettingProvider = settingProvider;
             ServerTimingDetails = serverTimingDetails;
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
@@ -124,7 +125,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( ScreenUnitsHelper.GenerateScreenUnitList());
             
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSize), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePx), 0);
             SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
             
             // Initialize default Tool Windows
@@ -237,13 +238,21 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-            // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
-            // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error
+            
             try
             {
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
-                if (_editor.SelectionLength > 0) _editor.SelectedText = content.Replace('\u00A0', ' ');
-                else _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+                if (_editor.SelectionLength > 0)
+                {
+                    // if we have a selection - delete the currently selected text
+                    _editor.SelectedText = "";
+                    _editor.SelectionLength = 0;
+                }
+                // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
+                // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error    
+                _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+
+                // tell the paste event that it has been handled
                 e.Handled = true;
             }
             catch (Exception ex)
@@ -839,7 +848,7 @@ namespace DaxStudio.UI.ViewModels
 
                     Execute.OnUIThread(() =>
                     {
-                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this);
+                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this, SettingProvider);
 
                         _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
                                         {
@@ -2831,10 +2840,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
             }
-            if (editor.FontSize != _options.EditorFontSize)
+            if (editor.FontSize != _options.EditorFontSizePx)
             {
-                editor.FontSize = _options.EditorFontSize;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSize);
+                editor.FontSize = _options.EditorFontSizePx;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
                 this.SizeUnitLabel.StringValue = "100";
             }
             /*
