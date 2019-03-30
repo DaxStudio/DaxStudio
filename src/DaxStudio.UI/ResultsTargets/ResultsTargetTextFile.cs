@@ -101,10 +101,12 @@ namespace DaxStudio.UI.Model
                                             // CSV Writer config
 
                                             csvWriter.Configuration.Delimiter = sep;
-
+                                            
                                             // Datetime as ISOFormat
 
-                                            csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(typeof(DateTime), new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+                                            csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                                                typeof(DateTime), 
+                                                new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
 
                                             // write out clean column names
 
@@ -122,8 +124,11 @@ namespace DaxStudio.UI.Model
                                                 for (int iCol = 0; iCol < reader.FieldCount; iCol++)
                                                 {
                                                     var fieldValue = reader[iCol];
-
-                                                    csvWriter.WriteField(fieldValue);
+                                                    // quote all string fields
+                                                    if (reader.GetFieldType(iCol) == typeof(string))
+                                                        csvWriter.WriteField(fieldValue.ToString(), true);
+                                                    else
+                                                        csvWriter.WriteField(fieldValue);
                                                 }
 
                                                 csvWriter.NextRecord();                                              
