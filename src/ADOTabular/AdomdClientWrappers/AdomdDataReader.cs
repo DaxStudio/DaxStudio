@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Text;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -355,6 +356,35 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.ReturnDelegate<Type> f = delegate
                 {
                     return _objExcel.GetFieldType(i);
+                };
+                return f();
+            }
+        }
+
+        public bool IsDataReader(int i)
+        {
+            return GetFieldType(i).Name == "XmlaDataReader" ;
+        }
+
+        public string GetDataReaderValue(int i)
+        {
+            if (_type == AdomdType.AnalysisServices)
+            {
+                //Microsoft.AnalysisServices.AdomdClient.AdomdDataReader rdr = (Microsoft.AnalysisServices.AdomdClient.AdomdDataReader)_obj.GetValue(i);
+                //StringBuilder result = new StringBuilder();
+                //while (rdr.Read()) {
+                //    result.Append(rdr.GetString(0));
+                //}
+                //rdr.Close();
+                //return result.ToString();
+
+                return _obj.GetValue(i).ToString();
+            }
+            else
+            {
+                ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                {
+                    return _objExcel.GetValue(i).ToString();
                 };
                 return f();
             }
