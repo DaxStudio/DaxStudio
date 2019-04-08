@@ -134,7 +134,9 @@ namespace DaxStudio.UI.Extensions
                     foreach (DataRow row in dtSchema.Rows)
                     {
                         string columnName = Convert.ToString(row["ColumnName"]);
-                        DataColumn column = new DataColumn(columnName, (Type)(row["DataType"]));
+                        Type columnType = (Type)row["DataType"];
+                        if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
+                        DataColumn column = new DataColumn(columnName, columnType); // (Type)(row["DataType"]));
                         column.Unique = (bool)row[Constants.IS_UNIQUE];
                         column.AllowDBNull = (bool)row[Constants.ALLOW_DBNULL];
                         daxCol = null;
@@ -179,7 +181,10 @@ namespace DaxStudio.UI.Extensions
                     DataRow dataRow = dt.NewRow();
                     for (int i = 0; i < listCols.Count; i++)
                     {
-                        dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
+                        if (reader.IsDataReader(i))
+                            dataRow[((DataColumn)listCols[i])] = reader.GetDataReaderValue(i); 
+                        else
+                            dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
                     }
                     dt.Rows.Add(dataRow);
                 }

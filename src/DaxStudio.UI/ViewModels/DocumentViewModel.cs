@@ -1820,8 +1820,8 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tracer != null)
             {
-                Tracer.Stop();
-                Tracer.Dispose();
+                Tracer?.Stop();
+                Tracer?.Dispose();
                 _tracer = null;
             }
         }
@@ -2856,45 +2856,47 @@ namespace DaxStudio.UI.ViewModels
         public void UpdateSettings()
         {
             var editor = GetEditor();
-            if (_editor != null)
+            
+            if (editor == null) return;
+
+            if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
             {
-                if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
-                {
-                    editor.ShowLineNumbers = _options.EditorShowLineNumbers;
-                }
-                if (editor.FontFamily.Source != _options.EditorFontFamily)
-                {
-                    editor.FontFamily = new System.Windows.Media.FontFamily(_options.EditorFontFamily);
-                }
-                if (editor.FontSize != _options.EditorFontSizePx)
-                {
-                    editor.FontSize = _options.EditorFontSizePx;
-                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
-                    this.SizeUnitLabel.StringValue = "100";
-                }
-                /*
-                 * MARCO 2018-07-17 - How to set the font family and size of the result grid?
-                var result = QueryResultsPane;
-                if (result.FontFamily.Source != _options.ResultFontFamily)
-                {
-                    result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
-                }
-                if (result.FontSize != _options.ResultFontSize)
-                {
-                    result.FontSize = _options.ResultFontSize;
-                    this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
-                    this.SizeUnitLabel.StringValue = "100";
-                }
-                */
-                if (_options.EditorEnableIntellisense)
-                {
-                    _editor.EnableIntellisense(IntellisenseProvider);
-                }
-                else
-                {
-                    _editor.DisableIntellisense();
-                }
+                editor.ShowLineNumbers = _options.EditorShowLineNumbers;
             }
+            if (editor.FontFamily.Source != _options.EditorFontFamily)
+            {
+                editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
+            }
+            if (editor.FontSize != _options.EditorFontSizePx)
+            {
+                editor.FontSize = _options.EditorFontSizePx;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
+                this.SizeUnitLabel.StringValue = "100";
+            }
+            
+            /*
+                * MARCO 2018-07-17 - How to set the font family and size of the result grid?
+            var result = QueryResultsPane;
+            if (result.FontFamily.Source != _options.ResultFontFamily)
+            {
+                result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
+            }
+            if (result.FontSize != _options.ResultFontSize)
+            {
+                result.FontSize = _options.ResultFontSize;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
+                this.SizeUnitLabel.StringValue = "100";
+            }
+            */
+            if (_options.EditorEnableIntellisense)
+            {
+                editor.EnableIntellisense(IntellisenseProvider);
+            }
+            else
+            {
+                editor.DisableIntellisense();
+            }
+            
 
         }
 

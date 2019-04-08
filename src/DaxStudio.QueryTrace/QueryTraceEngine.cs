@@ -170,7 +170,7 @@ namespace DaxStudio.QueryTrace
                 var trcEvent = TraceEventFactory.Create(amoEventClass);
                 trace.Events.Add(trcEvent);
             }
-            trace.Update();
+            trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);
             Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "SetupTrace", "exiting");
         }
 
