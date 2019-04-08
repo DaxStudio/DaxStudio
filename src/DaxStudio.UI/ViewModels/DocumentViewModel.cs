@@ -1816,8 +1816,8 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tracer != null)
             {
-                Tracer.Stop();
-                Tracer.Dispose();
+                Tracer?.Stop();
+                Tracer?.Dispose();
                 _tracer = null;
             }
         }
