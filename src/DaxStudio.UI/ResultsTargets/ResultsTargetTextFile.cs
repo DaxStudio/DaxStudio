@@ -124,9 +124,13 @@ namespace DaxStudio.UI.Model
                                                 for (int iCol = 0; iCol < reader.FieldCount; iCol++)
                                                 {
                                                     var fieldValue = reader[iCol];
+                                                    
                                                     // quote all string fields
                                                     if (reader.GetFieldType(iCol) == typeof(string))
-                                                        csvWriter.WriteField(fieldValue.ToString(), true);
+                                                        if (reader.IsDBNull(iCol))
+                                                            csvWriter.WriteField("", true);
+                                                        else
+                                                            csvWriter.WriteField(fieldValue.ToString(), true);
                                                     else
                                                         csvWriter.WriteField(fieldValue);
                                                 }
