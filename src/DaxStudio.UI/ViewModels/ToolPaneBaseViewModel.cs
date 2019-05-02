@@ -100,6 +100,11 @@ namespace DaxStudio.UI.ViewModels
             Log.Error(exception, "An uncaught exception occurred during the drag-drop operation");
             return false; // indicates that the exception has not been handled here
         }
+
+        public void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
+        {
+            // Not currently used
+        }
     }
 
 }
