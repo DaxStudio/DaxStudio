@@ -139,7 +139,7 @@
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="200" />
-                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
                                        Foreground="{StaticResource DaxStudioBrush}"
@@ -170,13 +170,22 @@
                                 </Border>
                             </StackPanel>
                             
-                            <StackPanel HorizontalAlignment="Left" Margin="20,0" Grid.Column="1" Grid.Row="1">
-                                <Label FontSize="24" Foreground="DimGray" FontWeight="Light">Recent Documents</Label>
+                            <Grid HorizontalAlignment="Stretch" Margin="5,0" Grid.Column="1" Grid.Row="1" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label FontSize="24" Foreground="DimGray" FontWeight="Light" Grid.Row="0">Recent Documents</Label>
                                 <ListView x:Name="RecentFiles" 
                                           DataContext="{Binding}" 
                                           ItemsSource="{Binding Path=Ribbon.RecentFiles}" 
                                           MinWidth="600"
-                                          BorderBrush="Transparent" >
+                                          BorderBrush="Transparent" 
+                                          Grid.Row="1"
+                                          HorizontalContentAlignment="Stretch">
                                     <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="MouseLeftButtonUp" >
@@ -203,7 +212,7 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                            </StackPanel>
+                            </Grid>
                         </Grid> 
                     </Fluent:BackstageTabItem>
                     <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
