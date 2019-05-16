@@ -142,6 +142,7 @@ namespace DaxStudio.QueryTrace
             var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
             connStrBuilder.Remove("MDX Compatibility");
             connStrBuilder.Remove("Cell Error Mode");
+            connStrBuilder.Remove("Roles");
             connStrBuilder["SessionId"] = _sessionId;
             if (_databaseName.Length > 0) connStrBuilder["Initial Catalog"] = _databaseName;
             _connectionString = connStrBuilder.ToString();
