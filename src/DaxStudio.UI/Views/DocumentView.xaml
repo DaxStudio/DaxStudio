@@ -286,8 +286,8 @@
             </avalondock:DockingManager.AnchorableTitleTemplate>
 
             <avalondock:DockingManager.AnchorableTitleTemplateSelector>
-                <selectors:TraceWindowTemplateSelector>
-                    <selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                <selectors:DataGridWindowTemplateSelector>
+                    <selectors:DataGridWindowTemplateSelector.DefaultTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -297,9 +297,9 @@
                                 <TextBlock Text="{Binding Path=Content.Title}"/>
                             </Grid>
                         </DataTemplate>
-                    </selectors:TraceWindowTemplateSelector.DefaultTemplate>
+                    </selectors:DataGridWindowTemplateSelector.DefaultTemplate>
                     
-                    <selectors:TraceWindowTemplateSelector.TraceTemplate>
+                    <selectors:DataGridWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -407,8 +407,83 @@
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
-                    </selectors:TraceWindowTemplateSelector.TraceTemplate>
-                </selectors:TraceWindowTemplateSelector>
+                    </selectors:DataGridWindowTemplateSelector.TraceTemplate>
+
+                    <selectors:DataGridWindowTemplateSelector.DataGridTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!--<TextBlock Text="{Binding Path=Content.Title}" HorizontalAlignment="Center" Grid.Column="1"/>-->
+
+                                <!-- dynamically inject the following buttons only for tracewatchers -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,15,0">
+
+
+                                    <!-- clear -->
+                                    <Button x:Name="ClearAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Clear All"
+                                                Text="Clears all the results from the trace"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceClearAll}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <!-- copy all -->
+                                    <Button x:Name="CopyAll" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}"
+                                            Visibility="{Binding Path=IsCopyAllVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Copy All"
+                                                Text="Copies all the current trace results to the editor window"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceCopyAll}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"></Separator>
+                                    <!-- filter -->
+                                    <ToggleButton x:Name="ShowFilters" BorderThickness="0" Padding="2" 
+                                                  cal:Bind.Model="{Binding Content}" 
+                                                  Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <ToggleButton.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Show Filters"
+                                                Text="Displays the filter controls"/>
+                                        </ToggleButton.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </ToggleButton>
+                                    <!-- Clear filters -->
+
+                                    <Button x:Name="ClearFilters" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}" 
+                                            Visibility="{Binding IsFilterVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Clear Filters"
+                                                Text="Clears all column filters"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <Image Source="{StaticResource TraceClearFilter}" Style="{StaticResource ButtonImage}"></Image>
+                                        </Border>
+                                    </Button>
+
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </selectors:DataGridWindowTemplateSelector.DataGridTemplate>
+
+                </selectors:DataGridWindowTemplateSelector>
             </avalondock:DockingManager.AnchorableTitleTemplateSelector>
             
             <avalondock:DockingManager.LayoutItemContainerStyleSelector>
