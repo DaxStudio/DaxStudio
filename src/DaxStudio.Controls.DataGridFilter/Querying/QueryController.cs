@@ -132,7 +132,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             {
                 OnFilteringStarted(this, EventArgs.Empty);
 
-                applayFilter();
+                applyFilter();
             }
         }
 
@@ -202,7 +202,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
         private IList filteredCollection;
         HashSet<object> filteredCollectionHashSet;
 
-        void applayFilter()
+        void applyFilter()
         {
             ICollectionView view = CollectionViewSource.GetDefaultView(ItemsSource);
 
@@ -292,14 +292,14 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
         private static void invoke(Action action)
         {
-            System.Diagnostics.Trace.WriteLine("------------------ START APPLAY FILTER ------------------------------");
+            System.Diagnostics.Trace.WriteLine("------------------ START APPLY FILTER ------------------------------");
             Stopwatch sw = Stopwatch.StartNew();
 
             action.Invoke();
-
+            
             sw.Stop();
             System.Diagnostics.Trace.WriteLine("TIME: " + sw.ElapsedMilliseconds);
-            System.Diagnostics.Trace.WriteLine("------------------ STOP APPLAY FILTER ------------------------------");
+            System.Diagnostics.Trace.WriteLine("------------------ STOP APPLY FILTER ------------------------------");
         }
 
         private bool itemPassesFilter(object item)

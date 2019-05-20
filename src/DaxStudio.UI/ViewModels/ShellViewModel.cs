@@ -13,6 +13,7 @@ using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,7 +33,7 @@ namespace DaxStudio.UI.ViewModels
         private Window _window;
         private Application _app;
         private Timer _autoSaveTimer;
-
+        private InputBindings _inputBindings;
         //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager
@@ -175,6 +176,16 @@ namespace DaxStudio.UI.ViewModels
             _window.SetPlacement(SettingProvider.GetWindowPosition());
             notifyIcon = new NotifyIcon(_window);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
+
+            _inputBindings = new InputBindings(_window);
+            _inputBindings.RegisterCommands(GetInputBindingCommands());
+        }
+
+        private IEnumerable<InputBindingCommand> GetInputBindingCommands()
+        {
+
+            yield return new InputBindingCommand(this, "CommentSelection", "Ctrl+Alt C");
+            
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)

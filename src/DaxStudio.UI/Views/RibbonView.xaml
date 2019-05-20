@@ -496,11 +496,12 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
 
+                <!-- Hidden Save Button for Quicklink target -->
                 <Fluent:Button x:Name="saveButton"
                                Header="Save"
                                Fluent:KeyTip.Keys="S"
                                cal:Message.Attach="[Event Click] = [Action Save()]"
-                               Icon="{StaticResource CommentIcon}"
+                               Icon="{StaticResource SaveIcon}"
                                SizeDefinition="Middle,Small,Small"
                                Visibility="Hidden"
                                Margin="4,0">
@@ -584,6 +585,7 @@
                                            ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>
                     </Fluent:Button>
+                
                     <Fluent:Button Name="UncommentSelection"
                                Header="Uncomment"
                                cal:Message.Attach="[Event Click] = [Action UncommentSelection()]"
@@ -859,6 +861,16 @@
                                    LargeIcon="{StaticResource LayoutResetIcon}"
                                    Margin="4,0"
                                    SizeDefinition="Middle,Small,Small"></Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox>
+                <Fluent:Button Name="LoadPowerBIPerformanceData"
+                               Header="Load Performance Data"
+                               cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
+                               Icon="{StaticResource LayoutLoadIcon}"
+                               LargeIcon="{StaticResource LayoutLoadIcon}"
+                               Margin="4,0"
+                               SizeDefinition="Middle,Small,Small">
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
             

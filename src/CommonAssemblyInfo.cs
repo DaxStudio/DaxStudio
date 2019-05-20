@@ -6,10 +6,10 @@ using System.Reflection;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DaxStudio.org")]
 [assembly: AssemblyProduct("DAX Studio")]
-[assembly: AssemblyCopyright("Copyright © DAX Studio 2016")] 
+[assembly: AssemblyCopyright("Copyright Â© DAX Studio 2016")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion(    "2.8.5.120")]
-[assembly: AssemblyFileVersion("2.8.5.120")]
+[assembly: AssemblyVersion(    "2.8.5.121")]
+[assembly: AssemblyFileVersion("2.8.5.121")]
 
 

@@ -5,7 +5,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Models;
+using DaxStudio.UI.Model;
 using System.IO;
 using Newtonsoft.Json;
 using System.Text;
@@ -14,7 +14,6 @@ using System.Linq;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
-using DaxStudio.UI.Model;
 using System;
 
 namespace DaxStudio.UI.ViewModels

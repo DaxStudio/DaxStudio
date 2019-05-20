@@ -3,7 +3,7 @@ using System;
 
 
 
-namespace DaxStudio.UI.Models
+namespace DaxStudio.UI.Model
 {
     public class QueryEvent
     {

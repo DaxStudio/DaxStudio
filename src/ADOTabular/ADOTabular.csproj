@@ -84,7 +84,7 @@
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.17.1\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.17.1\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.AdomdClient.retail.amd64.15.17.1\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.15.17.1\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
