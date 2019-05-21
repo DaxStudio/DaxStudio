@@ -83,7 +83,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Fluent:Ribbon Height="Auto" CanCustomizeQuickAccessToolBar="False" CanCustomizeQuickAccessToolBarItems="False" >    
+    <Fluent:Ribbon Height="Auto" CanCustomizeQuickAccessToolBar="True" CanCustomizeQuickAccessToolBarItems="True" >    
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
@@ -273,41 +273,37 @@
                 </Fluent:BackstageTabControl>
             </Fluent:Backstage>
         </Fluent:Ribbon.Menu>
-<!--
+
         <Fluent:Ribbon.QuickAccessItems>
 
-            <Fluent:QuickAccessMenuItem Header="New" 
-                                        IsChecked="True"
-                                        Target="{Binding ElementName=NewQueryQat}"
-                                        Command="{Binding NewQuery}"
-                                        Icon="{StaticResource NewIconSmall}"
-                                        IsDefinitive="True"
-                                        >
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Click">
-                        <cal:ActionMessage MethodName="NewQuery">
+            <!--<Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=newButtonQat}" />
+            <Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=saveButtonQat}"/>-->
+<!--
+            <Fluent:QuickAccessMenuItem IsChecked="True" >
+                <Fluent:Button Header="Save" Icon="{StaticResource SaveIcon}" Name="qatSave">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="Save">
 
-                        </cal:ActionMessage>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
+                            </cal:ActionMessage>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
             </Fluent:QuickAccessMenuItem>
-            
-            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=saveButton}" 
-                                        Command="{Binding Save}"
-                                        Icon="{StaticResource SaveIcon}"
-                                        IsChecked="True"
-                                        IsDefinitive="True">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Click">
-                        <cal:ActionMessage MethodName="Save">
 
-                        </cal:ActionMessage>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
+            <Fluent:QuickAccessMenuItem IsChecked="True" >
+                <Fluent:Button Header="New" Icon="{StaticResource NewIconSmall}" Name="qatNew" >
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="NewQuery">
+                            </cal:ActionMessage>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
             </Fluent:QuickAccessMenuItem>
-          
-            </Fluent:Ribbon.QuickAccessItems>
- --> 
+-->
+        </Fluent:Ribbon.QuickAccessItems>
+  
         <!-- Home Tabs-->
         <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
                               Connection,Query,Connection,Connection,
@@ -496,24 +492,40 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
 
-                <!-- Hidden Save Button for Quicklink target -->
-                <Fluent:Button x:Name="saveButton"
+                
+            </Fluent:RibbonGroupBox>
+
+            <!-- Hidden Save Button for Quicklink target -->
+            <Fluent:RibbonGroupBox Visibility="Collapsed">
+            <Fluent:Button Name="saveButtonQat"
                                Header="Save"
                                Fluent:KeyTip.Keys="S"
                                cal:Message.Attach="[Event Click] = [Action Save()]"
                                Icon="{StaticResource SaveIcon}"
                                SizeDefinition="Middle,Small,Small"
-                               Visibility="Hidden"
+                               Margin="4,0">
+                <Fluent:Button.ToolTip>
+                    <Fluent:ScreenTip Title="Save (Ctrl+S)"
+                                          Text="Saves the current document"
+                                           ></Fluent:ScreenTip>
+                </Fluent:Button.ToolTip>
+            </Fluent:Button>
+
+                <Fluent:Button Name="newButtonQat"
+                               Header="New"
+                               Fluent:KeyTip.Keys="N"
+                               cal:Message.Attach="[Event Click] = [Action NewQuery()]"
+                               Icon="{StaticResource NewIconSmall}"
+                               SizeDefinition="Middle,Small,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Save (Ctrl+S)"
-                                          Text="Saves the current document"
+                        <Fluent:ScreenTip Title="New (Ctrl+N)"
+                                          Text="Opens a new document"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-
-
             </Fluent:RibbonGroupBox>
+
 
             <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{StaticResource ToUpperIcon}">
                 <Fluent:Button Name="FormatQuery"
@@ -637,8 +649,22 @@
                 </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-            
-            
+
+            <Fluent:RibbonGroupBox Header="Power BI" 
+                                   Name="PowerBI" 
+                                   Margin="0,0" 
+                                   Visibility="{Binding IsPreviewBuild,Converter={StaticResource BoolToVisibilityConverter}}">
+                <Fluent:Button Name="ImportPowerBIPerfData" 
+                               Header="Load Perf Data" 
+                               cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
+                               Icon="{StaticResource RefreshIcon}"
+                               LargeIcon="{StaticResource BrowseIconLarger}"
+                               Margin="4,0"
+                               SizeDefinition="Large,Large,Small"
+                               />
+            </Fluent:RibbonGroupBox>
+
+
             <Fluent:RibbonGroupBox Header="Traces" Name="Traces" ItemsSource="{Binding TraceWatchers}"
                                    Icon="{StaticResource PlanIconSmall}"
                                    ItemTemplate="{DynamicResource TraceWatcherTemplate}"
@@ -731,7 +757,7 @@
                                Header="Connect"
                                Icon="{StaticResource ConnectIcon}"
                                LargeIcon="{StaticResource ConnectIconLarger}" 
-                               Margin="4,0"
+                               Margin="0,0"
                                cal:Message.Attach="[Event Click] = [Action Connect()]" 
                                SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
@@ -749,7 +775,7 @@
                                cal:Message.Attach="[Event Click] = [Action RefreshMetadata()]"
                                Icon="{StaticResource RefreshIcon}"
                                LargeIcon="{StaticResource RefreshIconLarger}"
-                               Margin="4,0"
+                               Margin="0,0"
                                SizeDefinition="Large,Large,Small"
                                >
                     <Fluent:Button.ToolTip>
