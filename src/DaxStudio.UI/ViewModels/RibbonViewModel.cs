@@ -679,7 +679,20 @@ namespace DaxStudio.UI.ViewModels
         public bool IsDebugBuild
         {
             get {
-#if DEBUG
+#if DEBUG 
+                return true;
+#else
+                return false;
+#endif
+
+            }
+        }
+
+        public bool IsPreviewBuild
+        {
+            get
+            {
+#if PREVIEW || DEBUG
                 return true;
 #else
                 return false;
