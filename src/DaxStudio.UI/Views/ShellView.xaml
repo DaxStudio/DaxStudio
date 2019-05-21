@@ -204,14 +204,14 @@
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="UncommentSelection"/>
         </triggers:InputBindingTrigger>
-
+<!--
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="C" Modifiers="Control+Alt"/>
             </triggers:InputBindingTrigger.InputBinding>
             <cal:ActionMessage MethodName="CommentSelection"/>
         </triggers:InputBindingTrigger>
-
+-->
         <triggers:InputBindingTrigger>
             <triggers:InputBindingTrigger.InputBinding>
                 <KeyBinding  Key="Y" Modifiers="Control"/>

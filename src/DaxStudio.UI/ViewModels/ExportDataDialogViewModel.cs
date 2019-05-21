@@ -317,7 +317,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     colName = regEx.Groups[1].Value;
                 }
-
+                colName.Replace('|', '_');
                 var sqlType = ConvertDotNetToSQLType(row);
 
                 strColumns.AppendLine($",[{colName}] {sqlType} NULL");

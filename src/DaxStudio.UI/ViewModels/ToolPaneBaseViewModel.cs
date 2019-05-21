@@ -103,7 +103,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
         {
-
+            // Not currently used
         }
     }
 

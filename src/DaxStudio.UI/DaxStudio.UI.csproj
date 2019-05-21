@@ -337,6 +337,7 @@
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
+    <Compile Include="Converters\HotKeyConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MatchingResultColourConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
@@ -384,11 +385,13 @@
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Interfaces\IMetadataPane.cs" />
+    <Compile Include="Interfaces\IDataGridWindow.cs" />
     <Compile Include="Interfaces\ISettingProvider.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
@@ -467,6 +470,7 @@
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="TemplateSelectors\TraceWindowTemplateSelector.cs" />
     <Compile Include="Theme\MonotoneTheme.cs" />
+    <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
     <Compile Include="Triggers\InputBindingTrigger.cs">
       <SubType>Code</SubType>
@@ -482,6 +486,8 @@
     <Compile Include="Utils\DisabledCommand.cs" />
     <Compile Include="Utils\FixedSizeQueue.cs" />
     <Compile Include="Extensions\IntegerExtensions.cs" />
+    <Compile Include="Utils\InputBindingCommand.cs" />
+    <Compile Include="Utils\InputBindings.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
     <Compile Include="Utils\JsonSettingProvider.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
@@ -529,6 +535,7 @@
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\DesignData\DesignDocumentViewModel.cs" />
     <Compile Include="ViewModels\DesignData\DesignTimeDataFactory.cs" />
+    <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\GotoLineDialogViewModel.cs" />
     <Compile Include="ViewModels\HelpAboutViewModel.cs" />
@@ -540,6 +547,12 @@
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
+    <Compile Include="Views\AllServerQueriesView.xaml.cs">
+      <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DocumentView.xaml.cs">
+      <DependentUpon>DocumentView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GotoLineDialogView.xaml.cs">
       <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
     </Compile>
@@ -588,9 +601,6 @@
     <Compile Include="Views\DocumentTabView.xaml.cs">
       <DependentUpon>DocumentTabView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DocumentView.xaml.cs">
-      <DependentUpon>DocumentView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\HelpAboutView.xaml.cs">
       <DependentUpon>HelpAboutView.xaml</DependentUpon>
     </Compile>
@@ -599,6 +609,9 @@
     </Compile>
     <Compile Include="Views\OutputPaneView.xaml.cs">
       <DependentUpon>OutputPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PowerBIPerformanceDataView.xaml.cs">
+      <DependentUpon>PowerBIPerformanceDataView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\QueryHistoryPaneView.xaml.cs">
       <DependentUpon>QueryHistoryPaneView.xaml</DependentUpon>
@@ -623,9 +636,6 @@
     </Compile>
     <Compile Include="Views\SaveDialogView.xaml.cs">
       <DependentUpon>SaveDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\AllServerQueriesView.xaml.cs">
-      <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ServerTimesView.xaml.cs">
       <DependentUpon>ServerTimesView.xaml</DependentUpon>
@@ -712,6 +722,13 @@
     <Page Include="Theme\Monotone.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    <Page Include="Views\AllServerQueriesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
+    <Page Include="Views\DocumentView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
     <Page Include="Views\GotoLineDialogView.xaml">
       <SubType>Designer</SubType>
@@ -733,6 +750,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\PowerBIPerformanceDataView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
     <Page Include="Views\QueryHistoryPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -752,10 +773,6 @@
     <Page Include="Views\SaveDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\AllServerQueriesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\StatusBarView.xaml">
       <SubType>Designer</SubType>
@@ -786,10 +803,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\DocumentTabView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
