@@ -468,7 +468,6 @@
     <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
-    <Compile Include="TemplateSelectors\TraceWindowTemplateSelector.cs" />
     <Compile Include="Theme\MonotoneTheme.cs" />
     <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
@@ -722,6 +721,7 @@
     <Page Include="Theme\Monotone.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>

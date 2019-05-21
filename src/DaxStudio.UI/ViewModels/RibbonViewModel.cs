@@ -15,8 +15,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
 using System.ComponentModel;
-using Fluent;
-using System.Windows.Forms;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -907,7 +905,7 @@ namespace DaxStudio.UI.ViewModels
         {
 
             // Configure open file dialog box
-            var dlg = new OpenFileDialog
+            var dlg = new System.Windows.Forms.OpenFileDialog()
             {
                 Title = "Open Power BI Performance Data",
                 FileName = "PowerBIPerformanceData.json",
@@ -916,10 +914,10 @@ namespace DaxStudio.UI.ViewModels
             };
 
             // Show open file dialog box
-            DialogResult result = dlg.ShowDialog();
+            System.Windows.Forms.DialogResult result = dlg.ShowDialog();
 
             // Process open file dialog box results 
-            if (result == DialogResult.OK)
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
                 // Open document 
                 var fileName = dlg.FileName;

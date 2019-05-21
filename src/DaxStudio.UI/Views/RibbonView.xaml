@@ -279,8 +279,8 @@
 
             <!--<Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=newButtonQat}" />
             <Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=saveButtonQat}"/>-->
-<!--
-            <Fluent:QuickAccessMenuItem IsChecked="True" >
+
+            <!--<Fluent:QuickAccessMenuItem IsChecked="True" >
                 <Fluent:Button Header="Save" Icon="{StaticResource SaveIcon}" Name="qatSave">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Click">
@@ -301,8 +301,8 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Fluent:Button>
-            </Fluent:QuickAccessMenuItem>
--->
+            </Fluent:QuickAccessMenuItem>-->
+
         </Fluent:Ribbon.QuickAccessItems>
   
         <!-- Home Tabs-->
