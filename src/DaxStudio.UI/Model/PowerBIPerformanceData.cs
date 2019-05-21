@@ -14,13 +14,14 @@ namespace DaxStudio.UI.Model
         public string QueryText { get; set; }
         public long RowCount { get; set; }
         public DateTime QueryStartTime { get; set; }
-        public DateTime QueryEndTime { get; set; }
+        public DateTime? QueryEndTime { get; set; }
         public DateTime RenderStartTime { get; set; }
-        public DateTime RenderEndTime { get; set; }
+        public DateTime? RenderEndTime { get; set; }
 
         
         public double QueryDuration { get {
-                TimeSpan duration = QueryEndTime - QueryStartTime;
+                if (!QueryEndTime.HasValue) return -1;
+                TimeSpan duration = QueryEndTime.Value - QueryStartTime;
                 return duration.TotalMilliseconds;
             }
         }
@@ -28,11 +29,12 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                TimeSpan duration = RenderEndTime - RenderStartTime;
+                if (!RenderEndTime.HasValue) return -1;
+                TimeSpan duration = RenderEndTime.Value - RenderStartTime;
                 return duration.TotalMilliseconds;
             }
         }
-        public double TotalDuration => QueryDuration + RenderDuration;
+        public double TotalDuration => (QueryEndTime.HasValue && RenderEndTime.HasValue) ? QueryDuration + RenderDuration : -1;
 
     }
 }

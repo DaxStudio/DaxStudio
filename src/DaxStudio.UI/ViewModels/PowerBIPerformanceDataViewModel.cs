@@ -91,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
                         switch (o2["name"].Value<string>()) {
                             case "Query":
                                 perfLine.QueryStartTime = o2["start"].Value<DateTime>().ToLocalTime();
-                                perfLine.QueryEndTime = o2["end"].Value<DateTime>().ToLocalTime();
+                                perfLine.QueryEndTime = o2["end"]?.Value<DateTime>().ToLocalTime();
 
                                 var parentLine = perfDataDict[perfLine.ParentId];
                                 parentLine.QueryStartTime = perfLine.QueryStartTime;
