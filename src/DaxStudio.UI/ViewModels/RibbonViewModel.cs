@@ -879,16 +879,6 @@ namespace DaxStudio.UI.ViewModels
             _isConnecting = false;
         }
 
-        public bool ShowLoadPowerBIPerformanceData
-        {
-            get {
-                #if PREVIEW 
-                return true
-#else
-                return false;
-#endif
-            }
-        }
         public void LoadPowerBIPerformanceData()
         {
 
