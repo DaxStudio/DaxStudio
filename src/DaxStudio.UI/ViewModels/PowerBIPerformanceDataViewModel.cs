@@ -89,24 +89,28 @@ namespace DaxStudio.UI.ViewModels
                             ParentId = o2["parentId"]?.Value<string>()
                         };
                         switch (o2["name"].Value<string>()) {
-                            case "Query":
-                                perfLine.QueryStartTime = o2["start"].Value<DateTime>().ToLocalTime();
-                                perfLine.QueryEndTime = o2["end"]?.Value<DateTime>().ToLocalTime();
-
-                                var parentLine = perfDataDict[perfLine.ParentId];
-                                parentLine.QueryStartTime = perfLine.QueryStartTime;
-                                parentLine.QueryEndTime = perfLine.QueryEndTime;
-                                break;
+                            //case "Query":
+                                //perfLine.QueryStartTime = o2["start"].Value<DateTime>().ToLocalTime();
+                                //perfLine.QueryEndTime = o2["end"]?.Value<DateTime>().ToLocalTime();
+                                
+                                //var parentLine = perfDataDict[perfLine.ParentId];
+                                //parentLine.QueryStartTime = perfLine.QueryStartTime;
+                                //parentLine.QueryEndTime = perfLine.QueryEndTime;
+                                //break;
 
                             case "Execute DAX Query":
                                 perfLine.QueryText = o2["metrics"]["QueryText"].Value<string>();
                                 perfLine.RowCount = o2["metrics"]["RowCount"].Value<long>();
+                                perfLine.QueryStartTime = o2["start"].Value<DateTime>().ToLocalTime();
+                                perfLine.QueryEndTime = o2["end"]?.Value<DateTime>().ToLocalTime();
 
                                 var semanticQueryLine = perfDataDict[perfLine.ParentId];
                                 var queryLine = perfDataDict[semanticQueryLine.ParentId];
                                 var vizLine = perfDataDict[queryLine.ParentId];
                                 vizLine.QueryText = perfLine.QueryText;
                                 vizLine.RowCount = perfLine.RowCount;
+                                vizLine.QueryStartTime = perfLine.QueryStartTime;
+                                vizLine.QueryEndTime = perfLine.QueryEndTime;
                                 break;
 
                             //PerformanceData.Add(perfLine);
