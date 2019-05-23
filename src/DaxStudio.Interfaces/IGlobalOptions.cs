@@ -40,5 +40,10 @@ namespace DaxStudio.Interfaces
         bool KeepMetadataSearchOpen { get; set; }
 
         string Theme { get; set; }
+
+        bool AutoRefreshMetadataLocalMachine { get; set; }
+        bool AutoRefreshMetadataLocalNetwork { get; set; }
+        bool AutoRefreshMetadataCloud { get; set; }
+
     }
 }

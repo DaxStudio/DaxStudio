@@ -87,6 +87,9 @@ namespace DaxStudio.UI.ViewModels
             ResultAutoFormat = SettingProvider.GetValue<bool>("ResultAutoFormat", false);
             CodeCompletionWindowWidthIncrease = SettingProvider.GetValue<int>("CodeCompletionWindowWidthIncrease", 100);
             KeepMetadataSearchOpen = SettingProvider.GetValue<bool>("KeepMetadataSearchOpen", false);
+            AutoRefreshMetadataLocalMachine = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalMachine", true);
+            AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
+            AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -563,6 +566,9 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
             }
         }
+        public bool AutoRefreshMetadataLocalMachine { get ; set ; }
+        public bool AutoRefreshMetadataLocalNetwork { get; set; }
+        public bool AutoRefreshMetadataCloud { get; set; }
 
         #endregion
 

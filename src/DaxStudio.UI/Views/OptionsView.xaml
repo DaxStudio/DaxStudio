@@ -339,40 +339,6 @@
                                 <!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>-->
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Version Notifications">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-
-
-
-                                </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
-
-                            </Grid>
-                        </GroupBox>
-                        <GroupBox Header="Metadata Tooltips">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <CheckBox x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
-
-                            </Grid>
-                        </GroupBox>
                         <GroupBox Header="Results">
                             <StackPanel Orientation="Vertical">
                                 <Grid Margin="5,5,0,0">
@@ -457,6 +423,58 @@
                                 </Grid>
                             </StackPanel>
                         </GroupBox>
+                        <GroupBox Header="Version Notifications">
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+
+
+
+                                </Grid.RowDefinitions>
+                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
+
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Metadata Tooltips">
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
+
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Metadata Auto Refresh">
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="1" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="2" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
+
+                            </Grid>
+                        </GroupBox>
+
                         <GroupBox Header="Dax Formatter">
                             <Grid>
                                 <Grid.ColumnDefinitions>

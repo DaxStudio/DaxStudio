@@ -374,6 +374,7 @@
     <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
     <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
     <Compile Include="Extensions\ApplicationExtensions.cs" />
+    <Compile Include="Extensions\ADOTabularConnectionExtensions.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />

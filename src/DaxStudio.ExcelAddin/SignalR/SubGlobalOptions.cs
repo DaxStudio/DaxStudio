@@ -72,5 +72,8 @@ namespace DaxStudio.SignalR
         public bool ScaleResultsFontWithEditor { get; set; }
         public int CodeCompletionWindowWidthIncrease { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public bool KeepMetadataSearchOpen { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool AutoRefreshMetadataLocalMachine { get; set; }
+        public bool AutoRefreshMetadataLocalNetwork { get; set; }
+        public bool AutoRefreshMetadataCloud { get; set; }
     }
 }
