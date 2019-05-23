@@ -36,5 +36,10 @@ namespace DaxStudio.Interfaces
         
         bool ResultAutoFormat { get; set; }
         bool ScaleResultsFontWithEditor { get; set; }
+
+        bool AutoRefreshMetadataLocalMachine { get; set; }
+        bool AutoRefreshMetadataLocalNetwork { get; set; }
+        bool AutoRefreshMetadataCloud { get; set; }
+
     }
 }

@@ -85,6 +85,9 @@ namespace DaxStudio.UI.ViewModels
             ShowExportAllData = SettingProvider.GetValue<bool>(nameof(ShowExportAllData), false);
             ShowAggregationRewritesInAllQueries = SettingProvider.GetValue<bool>("ShowAggregationRewritesInAllQueries", false);
             ResultAutoFormat = SettingProvider.GetValue<bool>("ResultAutoFormat", false);
+            AutoRefreshMetadataLocalMachine = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalMachine", true);
+            AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
+            AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -534,6 +537,10 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValueAsync<bool>("ScaleResultsFontWithEditor", value);
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
+
+        public bool AutoRefreshMetadataLocalMachine { get ; set ; }
+        public bool AutoRefreshMetadataLocalNetwork { get; set; }
+        public bool AutoRefreshMetadataCloud { get; set; }
 
         #endregion
 

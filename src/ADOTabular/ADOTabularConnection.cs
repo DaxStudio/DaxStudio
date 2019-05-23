@@ -196,6 +196,9 @@ namespace ADOTabular
             }
         }
 
+        public ADOTabularConnectionType ConnectionType { get; private set; }
+
+
         public AdomdType Type
         {
             get { return _adomdConn.Type; }
@@ -247,8 +250,18 @@ namespace ADOTabular
             }
             set { _connectionString = value;
                 _connectionProps = SplitConnectionString(_connectionString);
+                ConnectionType = GetConnectionType(ServerName);
                 //_connectionProps = ConnectionStringParser.Parse(_connectionString);
             }
+        }
+
+        private ADOTabularConnectionType GetConnectionType(string serverName)
+        {
+            var lowerServerName = serverName.ToLower().Trim();
+            if (lowerServerName.StartsWith("localhost")) return ADOTabularConnectionType.LocalMachine;
+            if (lowerServerName.StartsWith("asazure:") 
+             || lowerServerName.StartsWith("powerbi:")) return ADOTabularConnectionType.Cloud;
+            return ADOTabularConnectionType.LocalNetwork;
         }
 
         private Dictionary<string, string> SplitConnectionString(string connectionString)
@@ -259,7 +272,7 @@ namespace ADOTabular
                 if (prop.Trim().Length == 0) continue;
                 var p = prop.Split('=');
 
-                props.Add(p[0], p[1]);
+                props.Add(p[0].Trim(), p[1].Trim());
             }
             return props;
         }

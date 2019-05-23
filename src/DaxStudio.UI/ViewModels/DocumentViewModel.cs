@@ -668,11 +668,13 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                
                 if (HasDatabaseSchemaChanged())
                 {
                     RefreshMetadata();
                     OutputMessage("Model schema change detected - Metadata refreshed");
                 }
+                
             }
             catch (Exception ex)
             {
@@ -2704,7 +2706,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool HasDatabaseSchemaChanged()
+        public bool ShouldAutoRefreshMetadata()
         {
             try
             {
@@ -2726,6 +2728,8 @@ namespace DaxStudio.UI.ViewModels
                 }
                 if (!IsConnected) return false;
                 if (Connection.Database == null) return false;
+                if (!Connection.ShouldAutoRefreshMetadata(_options)) return false;
+
                 return Connection.Database.HasSchemaChanged();
             }
             catch (Exception ex)

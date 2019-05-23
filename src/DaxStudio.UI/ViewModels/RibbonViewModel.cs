@@ -507,10 +507,13 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:Start", message);
             if (ActiveDocument != null)
             {
-                if (ActiveDocument.HasDatabaseSchemaChanged())
+                if (ActiveDocument.Connection.ShouldAutoRefreshMetadata( Options))
                 {
-                    ActiveDocument.RefreshMetadata();
-                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
+                    if (ActiveDocument.HasDatabaseSchemaChanged())
+                    {
+                        ActiveDocument.RefreshMetadata();
+                        ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
+                    }
                 }
                 RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
             }
@@ -909,8 +912,11 @@ namespace DaxStudio.UI.ViewModels
                     this.ActiveDocument.ToolWindows.Add(perfDataWindow);
                 }
 
+                // load the perfomance data
                 perfDataWindow.FileName = fileName;
-                
+
+                // set the performance window as the active tab
+                perfDataWindow.Activate();
             }
         }
     }

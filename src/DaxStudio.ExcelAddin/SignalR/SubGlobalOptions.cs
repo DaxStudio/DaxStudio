@@ -69,5 +69,8 @@ namespace DaxStudio.SignalR
         public bool ShowAggregationRewritesInAllQueries { get; set ; }
         public bool ResultAutoFormat { get; set; }
         public bool ScaleResultsFontWithEditor { get; set; }
+        public bool AutoRefreshMetadataLocalMachine { get; set; }
+        public bool AutoRefreshMetadataLocalNetwork { get; set; }
+        public bool AutoRefreshMetadataCloud { get; set; }
     }
 }
