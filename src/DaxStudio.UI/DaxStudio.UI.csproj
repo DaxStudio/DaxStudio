@@ -1334,6 +1334,9 @@
   <ItemGroup>
     <Resource Include="Images\Metadata\Folder.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-pbi-tachometer%402x.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

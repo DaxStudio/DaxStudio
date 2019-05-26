@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using DaxStudio.UI.Views;
 using DaxStudio.UI.Extensions;
+using Serilog;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -31,10 +30,11 @@ namespace DaxStudio.UI.ViewModels
         private static bool _useWildcards = false;
         private static bool _searchUp = false;
         private static bool _useWholeWord;
-        private IEditor editor;
+        private IEventAggregator _eventAggregator;
 
-        public FindReplaceDialogViewModel()
-        {            
+        public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
+        {
+            _eventAggregator = eventAggregator;
             //this.editor = editor;
             //_searchDirections = new List<string>();
             //_searchDirections.Add("Next");
@@ -51,7 +51,7 @@ namespace DaxStudio.UI.ViewModels
                     .Cast<SearchDirection>(); ;
             }
         }
-        public IEditor Editor { get { return editor; } set { editor = value; } }
+        public IEditor Editor { get; set; }
 
         // TODO add tab index
         public bool SearchUp
@@ -144,6 +144,8 @@ namespace DaxStudio.UI.ViewModels
         //}
 
         private bool _showReplace;
+        
+
         public bool ShowReplace
         {
             get { return _showReplace; }
@@ -163,13 +165,21 @@ namespace DaxStudio.UI.ViewModels
         
         public void FindText()
         {
-            if (editor == null || string.IsNullOrEmpty( TextToFind))
+            try
             {
-                SystemSounds.Beep.Play();
-                return;
+                if (Editor == null || string.IsNullOrEmpty(TextToFind))
+                {
+                    SystemSounds.Beep.Play();
+                    return;
+                }
+                if (!FindNextInternal())
+                    SystemSounds.Beep.Play();
             }
-            if (!FindNextInternal())
-                SystemSounds.Beep.Play();
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "FindReplaceDialogViewModel", "FindText", ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
+            }
         }
 
         public void FindNext()
@@ -192,18 +202,26 @@ namespace DaxStudio.UI.ViewModels
         
         public void ReplaceText()
         {
-            Regex regex = GetRegEx(TextToFind);
-            string input = editor.Text.Substring(editor.SelectionStart, editor.SelectionLength);
-            Match match = regex.Match(input);
-            bool replaced = false;
-            if (match.Success && match.Index == 0 && match.Length == input.Length)
+            try
             {
-                editor.DocumentReplace(editor.SelectionStart, editor.SelectionLength, TextToReplace);
-                replaced = true;
-            }
+                Regex regex = GetRegEx(TextToFind);
+                string input = Editor.Text.Substring(Editor.SelectionStart, Editor.SelectionLength);
+                Match match = regex.Match(input);
+                bool replaced = false;
+                if (match.Success && match.Index == 0 && match.Length == input.Length)
+                {
+                    Editor.DocumentReplace(Editor.SelectionStart, Editor.SelectionLength, TextToReplace);
+                    replaced = true;
+                }
 
-            if (!FindNextInternal() && !replaced)
-                SystemSounds.Beep.Play();
+                if (!FindNextInternal() && !replaced)
+                    SystemSounds.Beep.Play();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex,"{class} {method} {message}","FindReplaceDialogViewModel","ReplaceText",ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
+            }
         }
 
         public void ReplaceAllText()
@@ -211,14 +229,14 @@ namespace DaxStudio.UI.ViewModels
             
             Regex regex = GetRegEx(TextToFind, true);
             int offset = 0;
-            editor.BeginChange();
+            Editor.BeginChange();
             // TODO  if selectionlength > 0 replace only in selection
-            foreach (Match match in regex.Matches(editor.Text))
+            foreach (Match match in regex.Matches(Editor.Text))
             {
-                editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
+                Editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
                 offset += TextToReplace.Length - match.Length;
             }
-            editor.EndChange();
+            Editor.EndChange();
             
         }
 
@@ -228,22 +246,22 @@ namespace DaxStudio.UI.ViewModels
 
             Regex regex = GetRegEx(TextToFind);
             int start = regex.Options.HasFlag(RegexOptions.RightToLeft) ? 
-            editor.SelectionStart : editor.SelectionStart + editor.SelectionLength;
-            Match match = regex.Match(editor.Text, start);
+            Editor.SelectionStart : Editor.SelectionStart + Editor.SelectionLength;
+            Match match = regex.Match(Editor.Text, start);
 
             if (!match.Success)  // start again from beginning or end
             {
                 if (regex.Options.HasFlag(RegexOptions.RightToLeft))
-                    match = regex.Match(editor.Text, editor.Text.Length);
+                    match = regex.Match(Editor.Text, Editor.Text.Length);
                 else
-                    match = regex.Match(editor.Text, 0);
+                    match = regex.Match(Editor.Text, 0);
             }
 
             if (match.Success)
             {
-                editor.Select(match.Index, match.Length);
-                TextLocation loc = editor.DocumentGetLocation(match.Index);
-                editor.ScrollTo(loc.Line, loc.Column);
+                Editor.Select(match.Index, match.Length);
+                TextLocation loc = Editor.DocumentGetLocation(match.Index);
+                Editor.ScrollTo(loc.Line, loc.Column);
             }
 
             return match.Success;

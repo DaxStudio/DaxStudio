@@ -509,13 +509,12 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:Start", message);
             if (ActiveDocument != null)
             {
-                if (ActiveDocument.Connection.ShouldAutoRefreshMetadata( Options))
+                if (ActiveDocument.ShouldAutoRefreshMetadata())
                 {
-                    if (ActiveDocument.HasDatabaseSchemaChanged())
-                    {
-                        ActiveDocument.RefreshMetadata();
-                        ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
-                    }
+                    
+                    ActiveDocument.RefreshMetadata();
+                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
+                    
                 }
                 RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
             }

@@ -116,7 +116,7 @@
     <!--<BitmapImage x:Key="LayoutLoadIconLarger"  UriSource="..\images\icon-layout-load-64.png"></BitmapImage>-->
     <BitmapImage x:Key="LayoutResetIcon"  UriSource="..\images\icon-layout-reset-16.png"></BitmapImage>
     <!--<BitmapImage x:Key="LayoutResetIconLarger"  UriSource="..\images\icon-layout-reset-64.png"></BitmapImage>-->
-    
+    <BitmapImage x:Key="LoadPBIPerfDataIcon"  UriSource="..\images\icon-pbi-tachometer@2x.png"></BitmapImage>
     
     <!-- trace control icons -->
     <BitmapImage x:Key="TraceStart" UriSource="..\images\TraceControls\play.png"></BitmapImage>

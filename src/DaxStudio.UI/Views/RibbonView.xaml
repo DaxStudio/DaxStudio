@@ -666,7 +666,7 @@
                                Header="Load Perf Data" 
                                cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
                                Icon="{StaticResource RefreshIcon}"
-                               LargeIcon="{StaticResource BrowseIconLarger}"
+                               LargeIcon="{StaticResource LoadPBIPerfDataIcon}"
                                Margin="4,0"
                                SizeDefinition="Large,Large,Small"
                                />

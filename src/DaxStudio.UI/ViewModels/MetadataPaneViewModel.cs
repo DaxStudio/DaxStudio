@@ -348,17 +348,17 @@ namespace DaxStudio.UI.ViewModels
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
-            for (int i = _databasesView.Count - 1; i >= 0; i--)
+            for (int i = DatabasesView.Count - 1; i >= 0; i--)
             {
-                var found = newList.Where(db => db.Name == _databasesView[i].Name).Any();
-                if (!found) _databasesView.RemoveAt(i);
+                var found = newList.Where(db => db.Name == DatabasesView[i].Name).Any();
+                if (!found) DatabasesView.RemoveAt(i);
             }
 
             // add new databases
             foreach (DatabaseReference dbRef in newList)
             {
-                var found = _databasesView.Where(db => db.Name == dbRef.Name).FirstOrDefault();
-                if (found == null) _databasesView.Add(dbRef);
+                var found = DatabasesView.Where(db => db.Name == dbRef.Name).FirstOrDefault();
+                if (found == null) DatabasesView.Add(dbRef);
             }
 
             NotifyOfPropertyChange(() => DatabasesView);
@@ -443,7 +443,7 @@ namespace DaxStudio.UI.ViewModels
                         this.Databases.Add(itm);
                     });
                 }
-                _databasesView.Refresh();
+                DatabasesView.Refresh();
             
             }
             catch (Exception ex)
@@ -460,16 +460,7 @@ namespace DaxStudio.UI.ViewModels
             { ss.Add(dbname); }
             return ss;
         }
-
-    
-        private IObservableCollection<DatabaseReference> _databasesView = new BindableCollection<DatabaseReference>();
-        public IObservableCollection<DatabaseReference> DatabasesView
-        {
-            get
-            {
-                return _databasesView;
-            }
-        }
+        public IObservableCollection<DatabaseReference> DatabasesView { get; } = new BindableCollection<DatabaseReference>();
 
         #region Busy Overlay
         private bool _isBusy = false;

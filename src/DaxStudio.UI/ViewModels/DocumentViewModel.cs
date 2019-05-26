@@ -143,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
             //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
             
             Document = new TextDocument();
-            FindReplaceDialog = new FindReplaceDialogViewModel();
+            FindReplaceDialog = new FindReplaceDialogViewModel(_eventAggregator);
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
@@ -671,7 +671,7 @@ namespace DaxStudio.UI.ViewModels
             { 
                 try
                 {
-                    if (HasDatabaseSchemaChanged())
+                    if (ShouldAutoRefreshMetadata())
                     {
                         RefreshMetadata();
                         OutputMessage("Model schema change detected - Metadata refreshed");
@@ -2180,10 +2180,7 @@ namespace DaxStudio.UI.ViewModels
             
             Task.Run(() =>
                 {
-                    //var cnn = message.PowerPivotModeSelected
-                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Extended Properties=\"Location={0};\";Workstation ID=\"{0}\";", message.WorkbookName))
-                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-
+                    
                     var cnn = message.PowerPivotModeSelected
                                      ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType,string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
                                      : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
@@ -2277,14 +2274,18 @@ namespace DaxStudio.UI.ViewModels
                     {
                         MetadataPane.ChangeDatabase(message.DatabaseName);
                     }
+                    else
+                    {
+                        // Check that the selected database is set to the current database for the connection
+                        // this prevents issues when changing the connection on an existing window where
+                        // the database did not match the table list in the metadata pane
+                        if (MetadataPane.SelectedDatabase.Caption != Connection.Database.Name)
+                        {
+                            MetadataPane.ChangeDatabase(Connection.Database.Name);
+                        }
+                    }
 
-                    //if (!string.IsNullOrEmpty(message.DatabaseName)) {
-                    //    var selectedDB = Databases.Where(db => db == message.DatabaseName).FirstOrDefault();
-                    //    if (!string.IsNullOrEmpty(selectedDB))
-                    //    Dispatcher.CurrentDispatcher.Invoke(() => { 
-                    //        SelectedDatabase = selectedDB;
-                    //    });
-                    //}
+                    
                 }
             }
         }
