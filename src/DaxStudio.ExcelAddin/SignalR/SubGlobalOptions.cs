@@ -75,5 +75,6 @@ namespace DaxStudio.SignalR
         public bool AutoRefreshMetadataLocalMachine { get; set; }
         public bool AutoRefreshMetadataLocalNetwork { get; set; }
         public bool AutoRefreshMetadataCloud { get; set; }
+        public bool ShowHiddenMetadata { get; set; }
     }
 }
