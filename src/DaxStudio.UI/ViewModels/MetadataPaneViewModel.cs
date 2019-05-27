@@ -813,7 +813,60 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
+        public void DefineObjectsThatReferenceMeasure(TreeViewColumn item)
+        {
+            try
+            {
+                if (item != null)
+                {
+                    var txt = item.Name;
+                    var thisItem =
+                        "SELECT " + Environment.NewLine +
+                        " [OBJECT_TYPE] AS [Object Type], " + Environment.NewLine +
+                        " [TABLE] AS [Object's Table], " + Environment.NewLine +
+                        " [OBJECT] AS [Object], " + Environment.NewLine +
+                        " [REFERENCED_TABLE] AS [Referenced Table], " + Environment.NewLine +
+                        " [REFERENCED_OBJECT] AS [Referenced Object], " + Environment.NewLine +
+                        " [REFERENCED_OBJECT_TYPE] AS [Referenced Object Type] " + Environment.NewLine +
+                        "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
+                        "WHERE [REFERENCED_OBJECT] = '" + txt + "'" + Environment.NewLine +
+                        "ORDER BY [OBJECT_TYPE]";
+                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceMeasure", ex.Message, ex.StackTrace);
+            }
+        }
 
+        public void DefineObjectsThatReferenceTable(TreeViewTable item)
+        {
+            try
+            {
+                if (item != null)
+                {
+                    var txt = item.Name;
+                    var thisItem =
+                        "SELECT " + Environment.NewLine +
+                        " [OBJECT_TYPE] AS [Object Type], " + Environment.NewLine +
+                        " [TABLE] AS [Object's Table], " + Environment.NewLine +
+                        " [OBJECT] AS [Object], " + Environment.NewLine +
+                        " [REFERENCED_OBJECT] AS [Referenced Object], " + Environment.NewLine +
+                        " [REFERENCED_OBJECT_TYPE] AS [Referenced Object Type] " + Environment.NewLine +
+                        "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
+                        "WHERE [REFERENCED_TABLE] = '" + txt + "'" + Environment.NewLine +
+                        "ORDER BY [OBJECT_TYPE]";
+                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceTable", ex.Message, ex.StackTrace);
+            }
+        }
+
+        #endregion
 
     }
 

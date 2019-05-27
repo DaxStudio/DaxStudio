@@ -431,7 +431,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
+
         public override bool IsVisible => _column?.IsVisible ?? true;
+
+        public bool IsColumnOrMeasure => IsColumn || IsMeasure;
+
+        public bool IsColumn =>  this.MetadataImage == MetadataImages.Column
+                              || this.MetadataImage == MetadataImages.HiddenColumn;
+ 
 
         public bool IsMeasure => MetadataImage == MetadataImages.Measure 
                               || MetadataImage == MetadataImages.HiddenMeasure;
