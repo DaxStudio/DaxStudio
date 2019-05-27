@@ -23,6 +23,7 @@ namespace DaxStudio.UI.Model
             {
                 if (t.Private) continue; // skip Private tables
                 if (t.ShowAsVariationsOnly) continue; // skip Variation tables
+                if (!metadataPane.ShowHiddenObjects && !t.IsVisible) continue; // skip hidden tables
 
                 lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator, metadataPane));
             }
@@ -34,6 +35,8 @@ namespace DaxStudio.UI.Model
             var lst = new SortedList<string, FilterableTreeViewItem>();
             foreach (var c in table.Columns)
             {
+
+                if (!metadataPane.ShowHiddenObjects && !c.IsVisible) continue; // skip hidden columns
 
                 if (!c.IsInDisplayFolder)
                 {
@@ -127,7 +130,7 @@ namespace DaxStudio.UI.Model
             _options = options;
             _table = table;
             _getChildren = getChildren;
-            MetadataPane = MetadataPane;
+            MetadataPane = metadataPane;
         }
 
         private IEnumerable<FilterableTreeViewItem> _children;
@@ -155,6 +158,7 @@ namespace DaxStudio.UI.Model
         public abstract string Name { get; }
         public abstract ADOTabularObjectType ObjectType { get; }
 
+        public abstract bool IsVisible { get;  }
 
         public virtual bool IsCriteriaMatched(string criteria)
         {return false;}
@@ -185,8 +189,15 @@ namespace DaxStudio.UI.Model
                 IsMatch = true;
                 foreach (var ancestor in ancestors)
                 {
-                    ancestor.IsMatch = true;
-                    ancestor.IsExpanded = !String.IsNullOrEmpty(criteria);
+                    //if (!MetadataPane.ShowHiddenObjects && !ancestor.IsVisible)
+                    //{
+                    //    ancestor.IsMatch = false;
+                    //}
+                    //else
+                    //{
+                        ancestor.IsMatch = true;
+                        ancestor.IsExpanded = !String.IsNullOrEmpty(criteria);
+                    //}
                 }
             }
             else
@@ -220,11 +231,12 @@ namespace DaxStudio.UI.Model
         public override string Name => _table.Name;
         public override ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
         public string Description { get { return _table.Description; } }
-        public bool IsVisible => _table.IsVisible;
+        public override bool IsVisible => _table.IsVisible;
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public override bool IsCriteriaMatched(string criteria)
         {
+        //    if (!this.MetadataPane.ShowHiddenObjects && !this.IsVisible) return false;
             return String.IsNullOrEmpty(criteria) ||  Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0 ;
         }
 
@@ -419,7 +431,7 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public bool IsVisible => _column?.IsVisible ?? true;
+        public override bool IsVisible => _column?.IsVisible ?? true;
 
         public bool IsMeasure => MetadataImage == MetadataImages.Measure 
                               || MetadataImage == MetadataImages.HiddenMeasure;
@@ -433,6 +445,7 @@ namespace DaxStudio.UI.Model
 
         public override bool IsCriteriaMatched(string criteria)
         {
+            if (!this.MetadataPane.ShowHiddenObjects && !this.IsVisible) return false;
             return String.IsNullOrEmpty(criteria) || Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 

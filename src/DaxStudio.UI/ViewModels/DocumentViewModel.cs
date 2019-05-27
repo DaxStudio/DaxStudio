@@ -3197,6 +3197,7 @@ namespace DaxStudio.UI.ViewModels
             UpdateTheme();
         }
 
+
         public void UpdateTheme()
         {
             NotifyOfPropertyChange(() => AvalonDockTheme);

@@ -42,7 +42,7 @@ namespace DaxStudio.UI.ViewModels
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             eventAggregator.Subscribe(this);
-            ShowHiddenObjects = true; // TODO - read from options.
+            ShowHiddenObjects = _options.ShowHiddenMetadata;
         }
 
         private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -476,7 +476,17 @@ namespace DaxStudio.UI.ViewModels
         public string BusyMessage { get { return "Loading"; } }
         #endregion
 
-        public bool ShowHiddenObjects { get; set; }
+        private bool _showHiddenObjects = true;
+        public bool ShowHiddenObjects { get => _showHiddenObjects;
+            set {
+                var changed = (_showHiddenObjects != value);
+                _showHiddenObjects = value;
+                if (changed)
+                {
+                    RefreshMetadata();
+                }
+            }
+        }
         
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
@@ -799,6 +809,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(() => ExpandSearch);
+            this.ShowHiddenObjects = _options.ShowHiddenMetadata;
         }
 
         #endregion

@@ -68,7 +68,7 @@ namespace DaxStudio.UI.ViewModels
             ProxyPassword = SettingProvider.GetValue<string>("ProxyPassword", "").Decrypt();
             QueryHistoryMaxItems = SettingProvider.GetValue<int>("QueryHistoryMaxItems", 200);
             QueryHistoryShowTraceColumns = SettingProvider.GetValue<bool>("QueryHistoryShowTraceColumns", true);
-            QueryEndEventTimeout = SettingProvider.GetValue<int>(nameof(QueryEndEventTimeout), 5);
+            QueryEndEventTimeout = SettingProvider.GetValue<int>(nameof(QueryEndEventTimeout), 15);
             DaxFormatterRequestTimeout = SettingProvider.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
             TraceStartupTimeout = SettingProvider.GetValue<int>(nameof(TraceStartupTimeout), 30);
             DefaultSeparator = (DelimiterType)SettingProvider.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
@@ -90,6 +90,7 @@ namespace DaxStudio.UI.ViewModels
             AutoRefreshMetadataLocalMachine = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalMachine", true);
             AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
             AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
+            ShowHiddenMetadata = SettingProvider.GetValue<bool>("ShowHiddenMetadata", true);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -566,9 +567,45 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
             }
         }
-        public bool AutoRefreshMetadataLocalMachine { get ; set ; }
-        public bool AutoRefreshMetadataLocalNetwork { get; set; }
-        public bool AutoRefreshMetadataCloud { get; set; }
+
+        private bool _autoRefreshMetadataLocalMachine = true;
+        public bool AutoRefreshMetadataLocalMachine { get => _autoRefreshMetadataLocalMachine;
+            set {
+                _autoRefreshMetadataLocalMachine = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalMachine", value);
+                NotifyOfPropertyChange(() => AutoRefreshMetadataLocalMachine);
+            }
+        }
+
+        private bool _autoRefreshMetadataLocalNetwork = true;
+        public bool AutoRefreshMetadataLocalNetwork { get => _autoRefreshMetadataLocalNetwork;
+            set {
+                _autoRefreshMetadataLocalNetwork = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalNetwork", value);
+                NotifyOfPropertyChange(() => AutoRefreshMetadataLocalNetwork);
+            }
+        }
+
+        private bool _autoRefreshMetadataCloud = true;
+        public bool AutoRefreshMetadataCloud { get => _autoRefreshMetadataCloud;
+            set {
+                _autoRefreshMetadataCloud = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataCloud", value);
+                NotifyOfPropertyChange(() => AutoRefreshMetadataCloud);
+            }
+        }
+
+        private bool _showHiddenMetadata = true;
+        public bool ShowHiddenMetadata { get => _showHiddenMetadata;
+                set {
+                _showHiddenMetadata = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>("ShowHiddenMetadata", value);
+                NotifyOfPropertyChange(() => ShowHiddenMetadata);
+            } }
 
         #endregion
 

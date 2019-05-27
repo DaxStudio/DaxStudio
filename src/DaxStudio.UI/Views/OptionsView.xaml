@@ -328,7 +328,7 @@
                                                     <RowDefinition Height="Auto"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <TextBlock  Margin="6" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="14">DirectQuery Trace</TextBlock>
+                                                <TextBlock  Margin="6" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="14">Legacy DirectQuery Trace</TextBlock>
                                                 <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="6">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible
                                                 </TextBlock>
                                             </Grid>
@@ -442,22 +442,7 @@
 
                             </Grid>
                         </GroupBox>
-                        <GroupBox Header="Metadata Tooltips">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <CheckBox x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="1" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
-
-                            </Grid>
-                        </GroupBox>
-                        <GroupBox Header="Metadata Auto Refresh">
+                        <GroupBox Header="Metadata Pane">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -466,11 +451,25 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="1" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="2" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
+                                <TextBlock>Tooltips</TextBlock>
+                                <CheckBox Grid.Row="1" x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="2" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
+
+                                <TextBlock Grid.Row="3" Margin="0 10 0 0">Automatic Metadata Refresh</TextBlock>
+                                <CheckBox Grid.Row="4" x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="5" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="6" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
+
+                                <TextBlock Grid.Row="7" Margin="0 10 0 0">Hidden Objects</TextBlock>
+                                <CheckBox Grid.Row="8" x:Name="ShowHiddenMetadata" Content="Show Hidden Columns, Tables and Measures" VerticalAlignment="Top" Margin="2,7,2,0" />
 
                             </Grid>
                         </GroupBox>

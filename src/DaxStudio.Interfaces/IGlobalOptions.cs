@@ -45,5 +45,6 @@ namespace DaxStudio.Interfaces
         bool AutoRefreshMetadataLocalNetwork { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
 
+        bool ShowHiddenMetadata { get; set; }
     }
 }
