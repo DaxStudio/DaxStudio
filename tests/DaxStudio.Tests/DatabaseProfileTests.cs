@@ -17,7 +17,7 @@ namespace DaxStudio.Tests
             ConnectionString = @"Data Source=localhost\tab17;Initial Catalog=Adventure Works";
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("DatabaseProfiler")]
         public void TestAdventureWorksProfile()
         {
             
@@ -43,7 +43,7 @@ namespace DaxStudio.Tests
             cnn.Close();
         }
 
-        [TestMethod, Ignore]
+        [TestMethod, TestCategory("DatabaseProfiler"), Ignore]
         public void TestVertipaqAnalyzerProfile()
         {
             //var cnnStr = ConnectionString;
