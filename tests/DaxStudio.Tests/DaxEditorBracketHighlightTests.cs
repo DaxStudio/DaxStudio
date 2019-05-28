@@ -53,9 +53,9 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestSkippingStrings()
         {
-            var qry = @"Evaluate Filter(
-table1
-,table1[col1] = "":)"" || ')' )";
+            var qry = "Evaluate Filter(" + Environment.NewLine
+                    + "table1" + Environment.NewLine
+                    + ",table1[col1] = \":)\" || ')' )";
             var mockDoc = new DocumentMock(qry);
             var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 17);
@@ -93,13 +93,13 @@ table1
         [TestMethod]
         public void TestMultiLineQuery()
         {
-            var qry = @"
-EVALUATE
-    CALCULATETABLE(
-    'Product Subcategory',
-    'Product Category'[Product Category Name] = @Category 
-    ))
-";
+            var qry = Environment.NewLine
+                    + "EVALUATE" + Environment.NewLine
+                    + "    CALCULATETABLE(" + Environment.NewLine
+                    + "    'Product Subcategory'," + Environment.NewLine
+                    + "    'Product Category'[Product Category Name] = @Category " + Environment.NewLine
+                    + "    ))" + Environment.NewLine;
+
             var mockDoc = new DocumentMock(qry);
             var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 1);
