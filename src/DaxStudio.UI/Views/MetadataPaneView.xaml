@@ -279,8 +279,8 @@
                                                 <MenuItem Header="Define All Measures (All tables)"
                                                     cal:Message.Attach="[Event Click] = [Action DefineAllMeasuresAllTables($dataContext)]">
                                                 </MenuItem>
-                                                <MenuItem Header="Define Objects That Reference Table"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineObjectsThatReferenceTable($dataContext)]">
+                                                <MenuItem Header="Show Objects That Reference Table"
+                                                        cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceTable($dataContext)]">
                                                 </MenuItem>
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
@@ -393,12 +393,12 @@
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]"
                                                           Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
-                                                <MenuItem Header="Define Objects That Reference Measure"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineObjectsThatReferenceMeasure($dataContext)]"
+                                                <MenuItem Header="Show Objects That Reference Measure"
+                                                        cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceColumnOrMeasure($dataContext)]"
                                                           Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
-                                                <MenuItem Header="Define Objects That Reference Column"
-                                                        cal:Message.Attach="[Event Click] = [Action DefineObjectsThatReferenceMeasure($dataContext)]"
+                                                <MenuItem Header="Show Objects That Reference Column"
+                                                        cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceColumnOrMeasure($dataContext)]"
                                                           Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsColumn}">
                                                 </MenuItem>
                                             </ContextMenu>

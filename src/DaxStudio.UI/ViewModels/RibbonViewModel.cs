@@ -71,10 +71,11 @@ namespace DaxStudio.UI.ViewModels
         private void InitRunStyles()
         {
             RunStyles = new List<RunStyle>();
-            SelectedRunStyle = new RunStyle("Run Query", RunStyleIcons.RunOnly, false,false, "Executes the query and sends the results to the selected output");
+            SelectedRunStyle = new RunStyle("Run Query", RunStyleIcons.RunOnly, false,false,false, "Executes the query and sends the results to the selected output");
             RunStyles.Add(SelectedRunStyle);
-            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
-            RunStyles.Add(new RunStyle("Run function", RunStyleIcons.RunFunction, true, true, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
         }
 
         public List<RunStyle> RunStyles { get; set; }
@@ -83,6 +84,7 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedRunStyle; }
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
+                //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }
         public Visibility OutputGroupIsVisible
@@ -96,7 +98,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // TODO - Check if ServerTiming Trace is checked - Update on check change
                 //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
-                return true; // Visibility.Visible;
+                return true; 
             }
         }
 
@@ -172,7 +174,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle.ClearCache, SelectedRunStyle.InjectEvaluate) );
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
 
         }
 

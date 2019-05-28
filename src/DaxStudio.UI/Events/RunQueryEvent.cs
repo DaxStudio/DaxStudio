@@ -1,4 +1,5 @@
 ﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Events
 {
@@ -7,16 +8,15 @@ namespace DaxStudio.UI.Events
         public RunQueryEvent(IResultsTarget target)
         {
             ResultsTarget = target;
-            ClearCache = false;
+            RunStyle = new RunStyle("Run", RunStyleIcons.RunOnly, false,false,false, "");
         }
-        public RunQueryEvent(IResultsTarget target, bool clearCache, bool injectEvaluate)
+        public RunQueryEvent(IResultsTarget target, RunStyle runStyle)
         {
             ResultsTarget = target;
-            ClearCache = clearCache;
-            InjectEvaluate = injectEvaluate;
+            RunStyle = runStyle;
         }
         public IResultsTarget ResultsTarget { get; set; }
-        public bool ClearCache { get;  }
-        public bool InjectEvaluate { get;  }
+
+        public RunStyle RunStyle { get; }
     }
 }

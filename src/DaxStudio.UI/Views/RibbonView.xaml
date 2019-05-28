@@ -907,16 +907,7 @@
                     <TextBlock Text="Dark" />
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox>
-                <Fluent:Button Name="LoadPowerBIPerformanceData"
-                               Header="Load Performance Data"
-                               cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
-                               Icon="{StaticResource LayoutLoadIcon}"
-                               LargeIcon="{StaticResource LayoutLoadIcon}"
-                               Margin="4,0"
-                               SizeDefinition="Middle,Small,Small">
-                </Fluent:Button>
-            </Fluent:RibbonGroupBox>
+            
         </Fluent:RibbonTabItem>    
           
             

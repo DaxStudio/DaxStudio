@@ -813,7 +813,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
-        public void DefineObjectsThatReferenceMeasure(TreeViewColumn item)
+
+        #region Discover Referencing Objects methods
+        public void ShowObjectsThatReferenceColumnOrMeasure(TreeViewColumn item)
         {
             try
             {
@@ -831,7 +833,7 @@ namespace DaxStudio.UI.ViewModels
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
                         "WHERE [REFERENCED_OBJECT] = '" + txt + "'" + Environment.NewLine +
                         "ORDER BY [OBJECT_TYPE]";
-                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem));
+                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
             catch (System.Exception ex)
@@ -840,7 +842,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void DefineObjectsThatReferenceTable(TreeViewTable item)
+        public void ShowObjectsThatReferenceTable(TreeViewTable item)
         {
             try
             {
@@ -857,7 +859,7 @@ namespace DaxStudio.UI.ViewModels
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
                         "WHERE [REFERENCED_TABLE] = '" + txt + "'" + Environment.NewLine +
                         "ORDER BY [OBJECT_TYPE]";
-                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem));
+                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
             catch (System.Exception ex)

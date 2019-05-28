@@ -17,7 +17,7 @@ namespace DaxStudio.Tests
         {
             string qry = "EVALUTE FILTER(table, column = @param";
             var mockEventAgg = new Mocks.MockEventAggregator();
-            var queryInfo = new QueryInfo(qry, false, mockEventAgg);
+            var queryInfo = new QueryInfo(qry, false, false, mockEventAgg);
             
             Assert.AreEqual(1, queryInfo.Parameters.Count);
             Assert.AreEqual("param", queryInfo.Parameters["param"].Name);
@@ -30,7 +30,7 @@ namespace DaxStudio.Tests
                 "-- FILTER(table, column = @param1)\n"+
                  "FILTER(table, column = @param2)";
             var mockEventAgg = new Mocks.MockEventAggregator();
-            var queryInfo = new QueryInfo(qry, false, mockEventAgg);
+            var queryInfo = new QueryInfo(qry, false, false, mockEventAgg);
 
             Assert.AreEqual(1, queryInfo.Parameters.Count);
             Assert.AreEqual("param2", queryInfo.Parameters["param2"].Name);
@@ -46,7 +46,7 @@ namespace DaxStudio.Tests
                 "-- FILTER(table, column = @param2)\n" +
                  "FILTER(table, column = @param3)";
             var mockEventAgg = new Mocks.MockEventAggregator();
-            var queryInfo = new QueryInfo(qry, false, mockEventAgg);
+            var queryInfo = new QueryInfo(qry, false,false, mockEventAgg);
 
             Assert.AreEqual(1, queryInfo.Parameters.Count);
             Assert.AreEqual("param3", queryInfo.Parameters["param3"].Name);

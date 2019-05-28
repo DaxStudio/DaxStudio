@@ -42,6 +42,7 @@
             <BitmapImage x:Key="RunOnly"  UriSource="..\images\icon-run.png"></BitmapImage>
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-run.png"></BitmapImage>
             <BitmapImage x:Key="RunFunction"  UriSource="..\images\icon-run-function.png"></BitmapImage>
+            <BitmapImage x:Key="RunScalar"  UriSource="..\images\icon-run-scalar.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
 
@@ -50,6 +51,7 @@
             <BitmapImage x:Key="RunOnly"  UriSource="..\images\icon-run@96ppi.png"></BitmapImage>
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-clear-then-run@96ppi.png"></BitmapImage>
             <BitmapImage x:Key="RunFunction"  UriSource="..\images\icon-run-function@96ppi.png"></BitmapImage>
+            <BitmapImage x:Key="RunScalar"  UriSource="..\images\icon-run-scalar@96ppi.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
     

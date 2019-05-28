@@ -929,10 +929,10 @@ namespace DaxStudio.UI.ViewModels
 
         public QueryInfo QueryInfo { get; set; }
 
-        private DialogResult PreProcessQuery(bool injectEvaluate)
+        private DialogResult PreProcessQuery(bool injectEvaluate, bool injectRowFunction)
         {
             // merge in any parameters
-            QueryInfo = new QueryInfo(EditorText, injectEvaluate, _eventAggregator);
+            QueryInfo = new QueryInfo(EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
             if (QueryInfo.NeedsParameterValues)
             {
@@ -992,7 +992,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = this.GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, false, _eventAggregator);
+            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator);
             txt = queryProcessor.ProcessedQuery;
             if (editor.Dispatcher.CheckAccess())
             {
@@ -1328,7 +1328,7 @@ namespace DaxStudio.UI.ViewModels
             IsQueryRunning = true;
             
             NotifyOfPropertyChange(()=>CanRunQuery);
-            if (message.ClearCache) await ClearDatabaseCacheAsync();
+            if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
             RunQueryInternal(message);
             
         }
@@ -1349,7 +1349,7 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-            if (PreProcessQuery(message.InjectEvaluate) == DialogResult.Cancel)
+            if (PreProcessQuery(message.RunStyle.InjectEvaluate,message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
             {
                 IsQueryRunning = false;
             }
@@ -1625,7 +1625,16 @@ namespace DaxStudio.UI.ViewModels
                         OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
             }
             InsertTextAtSelection(message.TextToSend, message.RunQuery);
-            //todo run the query
+
+            if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
+            
+            //run the query
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget));
+            
+            // un-select text
+            _editor.SelectionLength = 0;
+            _editor.SelectionStart = _editor.Text.Length;
+            
         }
 
         public void Handle(DefineMeasureOnEditor message)
