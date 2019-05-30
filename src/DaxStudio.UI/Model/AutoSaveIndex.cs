@@ -29,6 +29,9 @@ namespace DaxStudio.UI.Model
 
         public void Add(DocumentViewModel document)
         {
+            var existingEntry = Files.Find(f => f.AutoSaveId == document.AutoSaveId);
+            if (existingEntry != null) return; 
+
             Files.Add(new AutoSaveIndexEntry()
             {
                 AutoSaveId = document.AutoSaveId,

@@ -15,6 +15,7 @@ using System.Windows;
 using System.Linq;
 using System.Threading;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -288,6 +289,13 @@ namespace DaxStudio.UI.ViewModels
                         RecoverAutoSaveFile(fileToOpen);
                     }
                 }
+                else
+                {
+                    // if recovery has been cancelled open a new blank document
+                    NewQueryDocument("");
+                    // and remove unwanted recovery files
+                    AutoSaver.CleanUpRecoveredFiles();
+                }
 
             }
 
@@ -315,7 +323,8 @@ namespace DaxStudio.UI.ViewModels
                 // if no files have been opened open a new blank document
                 if (Items.Count == 0) OpenNewBlankDocument(null);
 
-                
+                AutoSaver.CleanUpRecoveredFiles();
+
                 // Now that any files have been recovered start the auto save timer
                 _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
                 

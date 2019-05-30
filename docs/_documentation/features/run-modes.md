@@ -1,20 +1,18 @@
 ---
-title: Output Modes
+title: Run Modes
 ---
 
-![output modes](output modes_output_targets.png)
+![run modes](run modes_options.png)
 
-### Grid
-This is the default mode. Results are displayed in a grid within the Dax Studio Results tab.
+### Run
+This is the default mode. It will execute the selected query and sent the results to the selected [output](output-modes)
 
-### Timer
-In this mode the query is run, but the results are discarded. This is mainly useful for performance tuning where you want to measure the speed of two queries, but are not interested in viewing the results
+### Clear Cache and Run
+In this mode before the query is run a clear cache command is sent to make sure that the query runs on a cold cache. This is most often used when performance tuning and saves having to remember to manually click the Clear Cache button before running a query
 
-### File
+### Run Function
 Results can be sent directly to a tab separated (.txt) file or to a comma separated (.csv) file
 
-### Linked (Excel only)
+### Run Scalar
 When the results are output using the Linked mode a table is created in the active Excel workbook which has the connection to the tabular data source and the DAX query embedded in it. What this means is that users without Dax Studio could refresh the data in this table.
 
-### Static (Excel only)
-This output option simply executes the DAX query and copies the results into the specified sheet in the active Excel worksheet. This is just a static copy of the data which cannot be refreshed. (unlike the Linked output option)

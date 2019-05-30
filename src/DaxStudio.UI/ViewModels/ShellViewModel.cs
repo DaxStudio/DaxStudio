@@ -14,7 +14,6 @@ using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -374,6 +373,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _app.LoadDarkTheme();
         }
+
 
         #endregion
 

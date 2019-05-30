@@ -1,6 +1,6 @@
 ## Build Status
-master: [![Master Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p?svg=true)]
-develop: [![Develop Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p/branch/develop?svg=true)]
+master: ![Master Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p?svg=true)
+develop: ![Develop Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p/branch/develop?svg=true)
 
 ## Building Dax Studio
 

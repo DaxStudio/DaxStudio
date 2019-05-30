@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
@@ -19,6 +20,8 @@ namespace DaxStudio.UI.Utils
         {
             CreateAutoSaveFolder();
             _masterAutoSaveIndex = new Dictionary<int, AutoSaveIndex>();
+            //LoadAutoSaveMasterIndex();
+            GetCurrentAutoSaveIndex();
         }
 
         private static void CreateAutoSaveFolder()
@@ -28,6 +31,19 @@ namespace DaxStudio.UI.Utils
 
         static string AutoSaveFolder => Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder); 
         
+        static int CurrentProcessId => Process.GetCurrentProcess().Id;
+
+        private static AutoSaveIndex GetCurrentAutoSaveIndex()
+        {
+            AutoSaveIndex index;
+            _masterAutoSaveIndex.TryGetValue(CurrentProcessId, out index);
+            if (index == null)
+            {
+                index = new AutoSaveIndex();
+                _masterAutoSaveIndex.Add(CurrentProcessId, index);
+            }
+            return index;
+        }
 
         public async static Task Save(DocumentTabViewModel tabs)
         {
@@ -36,15 +52,8 @@ namespace DaxStudio.UI.Utils
                 // exit here if no tabs are open
                 if (tabs.Items.Count == 0) return;
 
-                var currentProcessId = Process.GetCurrentProcess().Id;
 
-                AutoSaveIndex index;
-                _masterAutoSaveIndex.TryGetValue(currentProcessId, out index);
-                if (index == null)
-                {
-                    index = new AutoSaveIndex();
-                    _masterAutoSaveIndex.Add(currentProcessId, index);
-                }
+                var index = GetCurrentAutoSaveIndex();
 
                 foreach (DocumentViewModel tab in tabs.Items)
                 {
@@ -66,10 +75,16 @@ namespace DaxStudio.UI.Utils
 
 
 
-        private static void SaveMasterIndex()
-        {
-            // TODO - saves current process details to master index
-        }
+        //private static void SaveMasterIndex()
+        //{
+        //    // TODO - saves current process details to master index
+        //    JsonSerializer serializer = new JsonSerializer();
+        //    using (StreamWriter sw = new StreamWriter(AutoSaveMasterIndexFile))
+        //    using (JsonWriter writer = new JsonTextWriter(sw))
+        //    {
+        //        serializer.Serialize(writer, _masterAutoSaveIndex);
+        //    }
+        //}
 
 
         // this gets called from a timer, so it's already running off the UI thread, so this IO should not be blocking
@@ -86,13 +101,49 @@ namespace DaxStudio.UI.Utils
         // called on a clean shutdown, removes all autosave files
         internal static void RemoveAll()
         {
+            
             // delete autosaveindex
-            File.Delete(AutoSaveMasterIndexFile);
+            File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex()));
+
             // delete autosave files
+            // TODO - should I only delete the files for this instance of DAX Studio??
+            //        at the moment this removes all auto save files from all instances
+            //        so if one instance crashes and another is still open closing the open one
+            //        will wipe out any files from the crashed instance... 
             System.IO.DirectoryInfo di = new DirectoryInfo(AutoSaveFolder);
             foreach (FileInfo file in di.GetFiles())
             {
                 file.Delete();
+            }
+
+            // remove entry from master auto save index
+            _masterAutoSaveIndex.Remove(CurrentProcessId);
+        }
+
+        // theis method deletes any indexes/files that have been recovered
+        public static void CleanUpRecoveredFiles()
+        {
+            try
+            {
+                Log.Debug("{class} {method} {message}", "AutoSaver", "CleanUpRecoveredFiles", "Removing autosave files that are no longer needed");
+
+                var filesToDelete = _masterAutoSaveIndex.Values.Where(i => i.ShouldRecover).SelectMany(entry => entry.Files);
+                var indexesToDelete = _masterAutoSaveIndex.Values.Where(i => i.ShouldRecover);
+
+                foreach (var f in filesToDelete)
+                {
+                    File.Delete(Path.Combine(AutoSaveFolder, $"{f.AutoSaveId}.dax"));
+                }
+
+                foreach (var i in indexesToDelete)
+                {
+                    File.Delete(Path.Combine(AutoSaveFolder, $"index-{i.IndexId}.json"));
+                    _masterAutoSaveIndex.Remove(i.ProcessId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex,"{class} {method} {message}", "AutoSaver", "CleanUpRecoveredFiles", "Error Removing autosave files that are no longer needed");
             }
         }
 
@@ -112,48 +163,72 @@ namespace DaxStudio.UI.Utils
 
         internal static Dictionary<int,AutoSaveIndex> LoadAutoSaveMasterIndex()
         {
-            JsonSerializer serializer = new JsonSerializer();
-
-            // if the auto save index does not exist return an empty index
-            if (!File.Exists(AutoSaveMasterIndexFile)) return _masterAutoSaveIndex;
             try
             {
-                using (StreamReader sr = new StreamReader(AutoSaveMasterIndexFile))
-                using (JsonReader reader = new JsonTextReader(sr))
+                // get all index-*.json files
+                var indexFiles = Directory.GetFiles(AutoSaveFolder, "*.json");
+                foreach (var f in indexFiles)
                 {
-                    _masterAutoSaveIndex = serializer.Deserialize<Dictionary<int,AutoSaveIndex>>(reader);
-                    UpdateMasterIndexForRunningInstances();
-                    return _masterAutoSaveIndex;
+                    var idx = LoadAutoSaveIndex(f);
+                    _masterAutoSaveIndex.Add(idx.ProcessId, idx);
                 }
+                UpdateMasterIndexForRunningInstances();
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "AutoSaver", "GetAutoSaveIndex", $"Error loading auto save index: {ex.Message}");
                 return _masterAutoSaveIndex;
             }
+            return _masterAutoSaveIndex;
         }
 
         private static void UpdateMasterIndexForRunningInstances()
         {
-            var currentProcessFileName = Process.GetCurrentProcess().StartInfo.FileName;
+            //var currentProcessFileName = Process.GetCurrentProcess().StartInfo.FileName;
+            var currentProcessName = Process.GetCurrentProcess().ProcessName;
 
-            foreach( int procId in _masterAutoSaveIndex.Keys)
+            foreach (int procId in _masterAutoSaveIndex.Keys)
             {
+                var indexToRecover = _masterAutoSaveIndex[procId];
                 try
                 {
                     var process = Process.GetProcessById(procId);
                     // if this process id belongs to another exe the previous 
                     // DAX Studio process must have crashed and needs to be recovered
-                    if (process.StartInfo.FileName != currentProcessFileName)
+                    if (process.ProcessName != currentProcessName)
+                    {
                         _masterAutoSaveIndex[procId].ShouldRecover = true;
+                    }
                 }
-                catch (ArgumentException )
+                catch (ArgumentException)
                 {
                     // if this process id does not exist the previous 
                     // DAX Studio process must have crashed and needs to be recovered
                     _masterAutoSaveIndex[procId].ShouldRecover = true;
                 }
-                
+
+            }
+        }
+
+        private static AutoSaveIndex LoadAutoSaveIndex(string indexFile)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+
+            AutoSaveIndex idx = new AutoSaveIndex();
+            // if the auto save index does not exist return an empty index            
+            try
+            {
+                using (StreamReader sr = new StreamReader(indexFile))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    idx = serializer.Deserialize<AutoSaveIndex>(reader);
+                    return idx;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "AutoSaver", "LoadAutoSaveIndex", $"Error loading auto save index '{indexFile}' : {ex.Message}");
+                return idx;
             }
         }
 
