@@ -167,6 +167,8 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _serverModeSelected = value;
                     NotifyOfPropertyChange(() => ServerModeSelected);
+                    NotifyOfPropertyChange(nameof(IsRolesEnabled));
+                    NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
                 }
             }
         }
@@ -179,6 +181,8 @@ namespace DaxStudio.UI.ViewModels
                 if (value != _powerPivotModeSelected)
                 {
                     _powerPivotModeSelected = value;
+                    NotifyOfPropertyChange(nameof(IsRolesEnabled));
+                    NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
                 }
             }
         }
@@ -289,7 +293,10 @@ namespace DaxStudio.UI.ViewModels
             }
             set { _roles = value; }
         }
+
+        public bool IsRolesEnabled { get { return true; } }
         public string EffectiveUserName { get; set; }
+        public bool IsEffectiveUserNameEnabled { get { return true; } }
         public string ApplicationName { get; set; }
 
         private string _directQueryMode;
@@ -544,7 +551,12 @@ namespace DaxStudio.UI.ViewModels
                                               || (_powerBIInstances.Count == 1 && _powerBIInstances[0] != _pbiLoadingInstance);
 
         public List<PowerBIInstance> PowerBIDesignerInstances { get { return _powerBIInstances; } }
-        public bool PowerBIModeSelected { get; set; }
+        public bool PowerBIModeSelected { get => _powerBIModeSelected; set {
+                _powerBIModeSelected = value;
+                NotifyOfPropertyChange(nameof(IsRolesEnabled));
+                NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+            }
+        }
 
         private PowerBIInstance _selectedPowerBIInstance;
         public PowerBIInstance SelectedPowerBIInstance {
@@ -592,6 +604,7 @@ namespace DaxStudio.UI.ViewModels
         private SortedList<string, LocaleIdentifier> _locales;
         private bool _hasPowerPivotModel;
         private List<PowerBIInstance> _powerBIInstances = new List<PowerBIInstance> { _pbiLoadingInstance };
+        private bool _powerBIModeSelected;
 
         public SortedList<string, LocaleIdentifier> LocaleOptions
         {
