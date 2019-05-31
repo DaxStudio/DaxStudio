@@ -121,6 +121,8 @@ namespace DaxStudio.UI.ViewModels
 
                 file.ShouldOpen = false;
 
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
+
                 Log.Information("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"AutoSave Recovery complete for {file.DisplayName} ({file.AutoSaveId})");
             }
         }
@@ -263,7 +265,16 @@ namespace DaxStudio.UI.ViewModels
                 // prompt the user for which files should be recovered
                 var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
 
-                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover).SelectMany(entry => entry.Files);
+                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files);
+
+                if (filesToRecover.Count() == 0)
+                {
+                    // if there are no files to recover then clean up 
+                    // the recovery folder and exit here
+                    AutoSaver.CleanUpRecoveredFiles();
+                    return; 
+                }
+
                 autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover);
 
                 _windowManager.ShowDialogBox(autoSaveRecoveryDialog, settings: new Dictionary<string, object>

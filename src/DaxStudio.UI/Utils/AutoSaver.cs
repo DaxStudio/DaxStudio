@@ -14,6 +14,7 @@ namespace DaxStudio.UI.Utils
 {
     public static class AutoSaver
     {
+        private const int INDEX_VERSION = 1;
         private static Dictionary<int, AutoSaveIndex> _masterAutoSaveIndex;
 
         static AutoSaver()
@@ -39,7 +40,7 @@ namespace DaxStudio.UI.Utils
             _masterAutoSaveIndex.TryGetValue(CurrentProcessId, out index);
             if (index == null)
             {
-                index = new AutoSaveIndex();
+                index = AutoSaveIndex.Create();
                 _masterAutoSaveIndex.Add(CurrentProcessId, index);
             }
             return index;
@@ -135,10 +136,11 @@ namespace DaxStudio.UI.Utils
                     File.Delete(Path.Combine(AutoSaveFolder, $"{f.AutoSaveId}.dax"));
                 }
 
-                foreach (var i in indexesToDelete)
+                for (int i = indexesToDelete.Count() -1; i >= 0; i-- )
                 {
-                    File.Delete(Path.Combine(AutoSaveFolder, $"index-{i.IndexId}.json"));
-                    _masterAutoSaveIndex.Remove(i.ProcessId);
+                    var idx = indexesToDelete.ElementAt(i);
+                    File.Delete(Path.Combine(AutoSaveFolder, $"index-{idx.IndexId}.json"));
+                    _masterAutoSaveIndex.Remove(idx.ProcessId);
                 }
             }
             catch (Exception ex)
@@ -214,7 +216,8 @@ namespace DaxStudio.UI.Utils
         {
             JsonSerializer serializer = new JsonSerializer();
 
-            AutoSaveIndex idx = new AutoSaveIndex();
+            AutoSaveIndex idx;// = AutoSaveIndex.Create();
+            
             // if the auto save index does not exist return an empty index            
             try
             {
@@ -228,7 +231,7 @@ namespace DaxStudio.UI.Utils
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "AutoSaver", "LoadAutoSaveIndex", $"Error loading auto save index '{indexFile}' : {ex.Message}");
-                return idx;
+                return null;
             }
         }
 

@@ -90,6 +90,7 @@
             <ListView x:Name="DocumentList" Grid.Row="2"
                       ItemsSource="{Binding Files}" 
                       Margin="10,0"
+                      MaxHeight="400"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">

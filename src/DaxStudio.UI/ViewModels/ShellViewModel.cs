@@ -60,24 +60,29 @@ namespace DaxStudio.UI.ViewModels
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             _app = Application.Current;
+            var recoveringFiles = false;
 
             // get master auto save indexes and only get crashed index files...
             var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
-
+            var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
             // check for auto-saved files and offer to recover them
-            if (autoSaveInfo.Values.Where(idx => idx.ShouldRecover).Count() > 0)
-                RecoverAutoSavedFiles(autoSaveInfo);
-            else
+            if (filesToRecover.Count() > 0)
             {
-                // if a filename was passed in on the command line open it
-                if (_host.CommandLineFileName != string.Empty) Tabs.NewQueryDocument(_host.CommandLineFileName);
-
-                // if no tabs are open at this point open a blank one
-                if (Tabs.Items.Count == 0) NewDocument();
-
+                recoveringFiles = true;
+                RecoverAutoSavedFiles(autoSaveInfo);
+            }
+            else
+            {   
                 // if there are no auto-save files to recover, start the auto save timer
                 eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
             }
+
+            // if a filename was passed in on the command line open it
+            if (_host.CommandLineFileName != string.Empty) Tabs.NewQueryDocument(_host.CommandLineFileName);
+
+            // if no tabs are open at this point and we are not recovering autosave file then, open a blank document
+            if (Tabs.Items.Count == 0 && !recoveringFiles) NewDocument();
+
 
             VersionChecker = versionCheck;
 

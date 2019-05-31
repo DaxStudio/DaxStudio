@@ -20,6 +20,7 @@ namespace DaxStudio.UI.Model
 
         //private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
+        private const int CHECK_EVERY_HOURS = 24;
         
         private BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
@@ -51,11 +52,11 @@ namespace DaxStudio.UI.Model
             _globalOptions = globalOptions;
 
             RegistryHelper = new RegistrySettingProvider();
-            //if (Enabled) // && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
-            //{
-            //    worker.DoWork += new DoWorkEventHandler(worker_DoWork);
-            //    worker.RunWorkerAsync();
-            //}
+            if (Enabled && LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow)
+            {
+                worker.DoWork += new DoWorkEventHandler(BackgroundGetGitHubVersion);
+                worker.RunWorkerAsync();
+            }
         }
 
         public bool Enabled
@@ -66,10 +67,29 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundGetGitHubVersion(object sender, DoWorkEventArgs e)
         {
             System.Threading.Thread.Sleep(CHECK_SECONDS_AFTER_STARTUP.SecondsToMilliseconds()); //give DaxStudio a little time to get started up so we don't impede work people are doing with this version check
-            LastVersionCheck = DateTime.Now;
+            LastVersionCheck = DateTime.UtcNow;
+
+            VersionStatus = "Checking for updates...";
+            NotifyOfPropertyChange(() => VersionStatus);
+            try
+            {
+                if (_webRequestFactory == null)
+                {
+                    _webRequestFactory = WebRequestFactory.CreateAsync(_globalOptions, _eventAggregator).Result;
+                }
+
+                PopulateServerVersionFromGithub(_webRequestFactory);
+                SetVersionStatus();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {error}", "VersionCheck", "worker_DoWork", ex.Message);
+                _eventAggregator.PublishOnUIThread(new ErrorEventArgs(ex));
+            }
+
             CheckVersion();
         }
 
@@ -139,26 +159,9 @@ namespace DaxStudio.UI.Model
                 {
                     return this._serverVersion;
                 }
-
-                VersionStatus = "Checking for updates...";
-                NotifyOfPropertyChange(() => VersionStatus);
-                try
-                {
-                    if (_webRequestFactory == null) {
-                        _webRequestFactory = WebRequestFactory.CreateAsync(_globalOptions, _eventAggregator).Result;
-                    }
-        
-                    PopulateServerVersionFromGithub(_webRequestFactory);
-                    SetVersionStatus();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("{class} {method} {error}", "VersionCheck", "ServerVersion.get", ex.Message);
-                    _eventAggregator.PublishOnUIThread(new ErrorEventArgs(ex));
-                }
                 
 
-                return this._serverVersion;
+                return new Version(0,0,0,0);
             }
         }
 
@@ -176,37 +179,6 @@ namespace DaxStudio.UI.Model
             NotifyOfPropertyChange(() => VersionStatus);
         }
 
-        //private void PopulateServerVersionFromCodeplex()
-        //{
-        //    System.Net.WebClient http = new System.Net.WebClient();
-        //    //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
-        //    http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
-        //    MemoryStream ms;
-        //    try
-        //    {
-        //        ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_CODEPLEX_VERSION_URL)));
-        //    }
-        //    catch (System.Net.WebException wex)
-        //    {
-        //        if (wex.Status == System.Net.WebExceptionStatus.ProtocolError)
-        //        {
-        //            // assume proxy auth error and re-try with current user credentials
-        //            http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-        //            ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_CODEPLEX_VERSION_URL)));
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //    XmlReader reader = XmlReader.Create(ms);
-        //    XmlDocument doc = new XmlDocument();
-        //    doc.Load(reader);
-        //    this._serverVersion = Version.Parse(doc.DocumentElement.SelectSingleNode("Version").InnerText);
-        //    ms.Close();
-        //    reader.Close();
-
-        //}
 
         // This code runs async in a background worker
         private void PopulateServerVersionFromGithub(WebRequestFactory wrf)

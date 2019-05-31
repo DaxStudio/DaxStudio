@@ -560,6 +560,10 @@ begin
       UnInstallOldVersion();
     end;
   end;
+  if (CurStep=ssPostInstall) then begin
+    Log('Clearing AutoSave Folder'); 
+    DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
+  end;
 end;
 
 const 
