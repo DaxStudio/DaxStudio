@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Model;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Events
@@ -58,6 +54,8 @@ namespace DaxStudio.UI.Events
         public QueryStatus Status { get; set; }
         [JsonIgnore]
         public double QueryTextLines { get; private set; }
+
+        [JsonIgnore]
         public double QueryTextHeight {
             get { 
                 if (QueryTextLines > 3) {
