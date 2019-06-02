@@ -70,11 +70,12 @@ namespace DaxStudio.SignalR
         public string Theme { get; set; }
         public bool ResultAutoFormat { get; set; }
         public bool ScaleResultsFontWithEditor { get; set; }
-        public int CodeCompletionWindowWidthIncrease { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public bool KeepMetadataSearchOpen { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int CodeCompletionWindowWidthIncrease { get;set; }
+        public bool KeepMetadataSearchOpen { get;set; }
         public bool AutoRefreshMetadataLocalMachine { get; set; }
         public bool AutoRefreshMetadataLocalNetwork { get; set; }
         public bool AutoRefreshMetadataCloud { get; set; }
         public bool ShowHiddenMetadata { get; set; }
+        public bool SetClearCacheAsDefaultRunStyle { get; set; }
     }
 }
