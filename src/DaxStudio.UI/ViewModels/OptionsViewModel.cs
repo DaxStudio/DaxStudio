@@ -91,6 +91,7 @@ namespace DaxStudio.UI.ViewModels
             AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
             AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
             ShowHiddenMetadata = SettingProvider.GetValue<bool>("ShowHiddenMetadata", true);
+            SetClearCacheAsDefaultRunStyle = SettingProvider.GetValue<bool>("SetClearCacheAsDefaultRunStyle", false);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -606,6 +607,17 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValueAsync<bool>("ShowHiddenMetadata", value);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } }
+
+        private bool _setClearCacheAndRunAsDefaultRunStyle = false;
+        public bool SetClearCacheAsDefaultRunStyle { get => _setClearCacheAndRunAsDefaultRunStyle;
+            set
+            {
+                _setClearCacheAndRunAsDefaultRunStyle = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(SetClearCacheAsDefaultRunStyle), value);
+                NotifyOfPropertyChange(() => SetClearCacheAsDefaultRunStyle);
+            }
+        }
 
         #endregion
 

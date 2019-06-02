@@ -46,5 +46,6 @@ namespace DaxStudio.Interfaces
         bool AutoRefreshMetadataCloud { get; set; }
 
         bool ShowHiddenMetadata { get; set; }
+        bool SetClearCacheAsDefaultRunStyle { get; set; }
     }
 }

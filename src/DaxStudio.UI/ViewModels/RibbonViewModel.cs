@@ -70,12 +70,18 @@ namespace DaxStudio.UI.ViewModels
 
         private void InitRunStyles()
         {
+            // populate run styles
             RunStyles = new List<RunStyle>();
-            SelectedRunStyle = new RunStyle("Run Query", RunStyleIcons.RunOnly, false,false,false, "Executes the query and sends the results to the selected output");
-            RunStyles.Add(SelectedRunStyle);
+            RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
+
+            // set default run style
+            var defaultRunStyle = RunStyleIcons.RunOnly;
+            if (Options.SetClearCacheAsDefaultRunStyle) defaultRunStyle = RunStyleIcons.ClearThenRun;
+
+            SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
 
         public List<RunStyle> RunStyles { get; set; }
