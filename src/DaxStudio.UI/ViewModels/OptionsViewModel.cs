@@ -619,6 +619,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
         #endregion
 
         public void ExportDaxFunctions()

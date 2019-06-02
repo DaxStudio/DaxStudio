@@ -282,6 +282,10 @@
                                                 <MenuItem Header="Show Objects That Reference Table"
                                                         cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceTable($dataContext)]">
                                                 </MenuItem>
+                                                <Separator/>
+                                                <MenuItem Header="{Binding Path=MetadataPane.ShowHiddenObjectsLabel}"
+                                                          cal:Message.Attach="[Event Click] = [Action ToggleHiddenObjects()]" />
+                                                
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
                                     </StackPanel>
@@ -447,6 +451,13 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Image.Style>
+                                        <Image.ContextMenu>
+                                            <!-- Header="{Binding Path=MetadataPane.PinSearchOpenLabel}" -->
+                                            <ContextMenu>
+                                                <MenuItem Header="Pin/UnPin Search" 
+                                                          cal:Message.Attach="[Event Click] = [Action TogglePinSearchOpen()]" />
+                                            </ContextMenu>
+                                        </Image.ContextMenu>
                                     </Image>
                                     <TextBox Grid.Column="1"
                                                     x:Name="CurrentCriteria"

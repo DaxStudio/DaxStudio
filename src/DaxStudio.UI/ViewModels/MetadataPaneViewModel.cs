@@ -43,6 +43,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ActiveDocument);
             eventAggregator.Subscribe(this);
             ShowHiddenObjects = _options.ShowHiddenMetadata;
+            PinSearchOpen = _options.KeepMetadataSearchOpen;
         }
 
         private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -58,6 +59,28 @@ namespace DaxStudio.UI.ViewModels
                 if (selectedDB != null) SelectedDatabase = selectedDB;
                 // TODO - should we log a warning here?
             }
+        }
+
+        private bool _pinSearchOpen = false;
+        public bool PinSearchOpen
+        {
+            get => _pinSearchOpen;
+            set
+            {
+                _pinSearchOpen = value;
+                NotifyOfPropertyChange(()=>IsMouseOverSearch);
+                NotifyOfPropertyChange(() => PinSearchOpenLabel);
+                NotifyOfPropertyChange(() => ExpandSearch);
+            }
+        }
+        public void TogglePinSearchOpen()
+        {
+            PinSearchOpen = !PinSearchOpen;
+        }
+
+        public string PinSearchOpenLabel
+        {
+            get { return PinSearchOpen ? "Unpin Search" : "Pin Search"; }
         }
 
         public DocumentViewModel ActiveDocument { get { return _activeDocument; } }
@@ -307,7 +330,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ExpandSearch => IsMouseOverSearch 
                                  || IsKeyboardFocusWithinSearch 
-                                 || _options.KeepMetadataSearchOpen; 
+                                 || _pinSearchOpen; 
 
         public bool HasCriteria
         {
@@ -483,10 +506,25 @@ namespace DaxStudio.UI.ViewModels
                 _showHiddenObjects = value;
                 if (changed)
                 {
+                    NotifyOfPropertyChange(ShowHiddenObjectsLabel);
                     RefreshMetadata();
                 }
             }
         }
+
+        public void ToggleHiddenObjects()
+        {
+            ShowHiddenObjects = !ShowHiddenObjects;
+        }
+
+        public string ShowHiddenObjectsLabel
+        {
+            get
+            {
+                return ShowHiddenObjects ? "Hide Hidden Objects" : "Show Hidden Objects";
+            }
+        }
+
         
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
