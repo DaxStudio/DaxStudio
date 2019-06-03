@@ -661,7 +661,7 @@
             <Fluent:RibbonGroupBox Header="Power BI" 
                                    Name="PowerBI" 
                                    Margin="0,0" 
-                                   Visibility="{Binding IsPreviewBuild,Converter={StaticResource BoolToVisibilityConverter}}">
+                                   >
                 <Fluent:Button Name="ImportPowerBIPerfData" 
                                Header="Load Perf Data" 
                                cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
