@@ -148,6 +148,7 @@
     <Compile Include="DaxLineParserTests.cs" />
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
+    <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />

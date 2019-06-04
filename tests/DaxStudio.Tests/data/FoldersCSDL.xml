@@ -1,0 +1,491 @@
+<return xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxmla="http://schemas.microsoft.com/analysisservices/2003/xmla">
+    <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified">
+      <xsd:element name="root">
+        <xsd:complexType>
+          <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="row" type="row" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+          <xsd:pattern value="[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="xmlDocument">
+        <xsd:sequence>
+          <xsd:any />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="row">
+        <xsd:sequence>
+          <xsd:element sql:field="METADATA" name="METADATA" type="xmlDocument" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+    <row>
+      <xars:METADATA xmlns="http://schemas.microsoft.com/analysisservices/2003/engine" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100="http://schemas.microsoft.com/analysisservices/2008/engine/100" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl410="http://schemas.microsoft.com/analysisservices/2012/engine/410" xmlns:ddl410_410="http://schemas.microsoft.com/analysisservices/2012/engine/410/410" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:ddl600="http://schemas.microsoft.com/analysisservices/2013/engine/600" xmlns:ddl600_600="http://schemas.microsoft.com/analysisservices/2013/engine/600/600" xmlns:ddl700="http://schemas.microsoft.com/analysisservices/2018/engine/700" xmlns:ddl700_700="http://schemas.microsoft.com/analysisservices/2018/engine/700/700" xmlns:xars="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+          <EntityContainer Name="Sandbox">
+            <EntitySet Name="DateTableTemplate_b955fcba_e361_49d8_9a7c_6d9e982781ba" EntityType="Sandbox.DateTableTemplate_b955fcba_e361_49d8_9a7c_6d9e982781ba">
+              <bi:EntitySet Caption="DateTableTemplate_b955fcba-e361-49d8-9a7c-6d9e982781ba" ReferenceName="DateTableTemplate_b955fcba-e361-49d8-9a7c-6d9e982781ba" Private="true" />
+            </EntitySet>
+            <EntitySet Name="Sales" EntityType="Sandbox.Sales">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1" EntityType="Sandbox.LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1">
+              <bi:EntitySet Caption="LocalDateTable_f1260b77-d5b3-4742-9724-9d718353c8b1" ReferenceName="LocalDateTable_f1260b77-d5b3-4742-9724-9d718353c8b1" ShowAsVariationsOnly="true" />
+            </EntitySet>
+            <EntitySet Name="Calendar" EntityType="Sandbox.Calendar">
+              <bi:EntitySet />
+            </EntitySet>
+            <EntitySet Name="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40" EntityType="Sandbox.LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40">
+              <bi:EntitySet Caption="LocalDateTable_73035d6c-ee3b-4e60-96d6-ff1c08b35a40" ReferenceName="LocalDateTable_73035d6c-ee3b-4e60-96d6-ff1c08b35a40" ShowAsVariationsOnly="true" />
+            </EntitySet>
+            <AssociationSet Name="Sales_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date" Association="Sandbox.Sales_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date">
+              <End EntitySet="Sales" />
+              <End EntitySet="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <AssociationSet Name="Calendar_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date" Association="Sandbox.Calendar_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date">
+              <End EntitySet="Calendar" />
+              <End EntitySet="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40" />
+              <bi:AssociationSet />
+            </AssociationSet>
+            <bi:EntityContainer Caption="e76ad2a3-9b27-4dd9-8e04-896b9764f1be" Culture="en-US" PreferOrdinalStringEquality="true">
+              <bi:CompareOptions IgnoreCase="true" />
+              <bi:ModelCapabilities>
+                <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+                <bi:QueryBatching>1</bi:QueryBatching>
+                <bi:Variables>1</bi:Variables>
+                <bi:InOperator>1</bi:InOperator>
+                <bi:TableConstructor>1</bi:TableConstructor>
+                <bi:ExecutionMetrics>1</bi:ExecutionMetrics>
+                <bi:VirtualColumns>1</bi:VirtualColumns>
+                <bi:DAXFunctions>
+                  <bi:SummarizeColumns>1</bi:SummarizeColumns>
+                  <bi:SubstituteWithIndex>1</bi:SubstituteWithIndex>
+                  <bi:LeftOuterJoin>1</bi:LeftOuterJoin>
+                  <bi:StringMinMax>1</bi:StringMinMax>
+                  <bi:BinaryMinMax>1</bi:BinaryMinMax>
+                  <bi:TreatAs>1</bi:TreatAs>
+                  <bi:Error>1</bi:Error>
+                  <bi:SampleAxisWithLocalMinMax>1</bi:SampleAxisWithLocalMinMax>
+                  <bi:SampleCartesianPointsByCover>1</bi:SampleCartesianPointsByCover>
+                  <bi:OptimizedNotInOperator>1</bi:OptimizedNotInOperator>
+                  <bi:NonVisual>1</bi:NonVisual>
+                </bi:DAXFunctions>
+              </bi:ModelCapabilities>
+            </bi:EntityContainer>
+          </EntityContainer>
+          <EntityType Name="DateTableTemplate_b955fcba_e361_49d8_9a7c_6d9e982781ba">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>0</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime">
+              <bi:Property Hidden="true" Contents="PaddedDateTableDates" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2015-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2015-01-01T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Year" Type="Int64">
+              <bi:Property Hidden="true" Contents="Years" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2015</bi:MinValue>
+                  <bi:MaxValue>2015</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="MonthNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="MonthOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Months" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="MonthNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="7">
+                  <bi:MinValue>January</bi:MinValue>
+                  <bi:MaxValue>January</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="QuarterNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="QuarterOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Quarter" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Quarters" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="QuarterNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="5">
+                  <bi:MinValue>Qtr 1</bi:MinValue>
+                  <bi:MaxValue>Qtr 1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day" Type="Int64">
+              <bi:Property Hidden="true" Contents="DayOfMonth" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Date_Hierarchy" Caption="Date Hierarchy" ReferenceName="Date Hierarchy">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="1" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Sales">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime">
+              <bi:Property Hidden="true" FormatString="dddd\, %d MMMM yyyy" DefaultAggregateFunction="None">
+                <bi:Variations>
+                  <bi:Variation Name="Variation" Default="true">
+                    <bi:NavigationPropertyRef Name="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date" />
+                    <bi:DefaultHierarchyRef Name="Date_Hierarchy" />
+                  </bi:Variation>
+                </bi:Variations>
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>2019-03-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2019-04-03T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Amount" Type="Int64">
+              <bi:Property FormatString="0" DefaultAggregateFunction="Sum">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>11</bi:MinValue>
+                  <bi:MaxValue>12</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Cost" Type="Int64">
+              <bi:Property FormatString="0" DefaultAggregateFunction="Sum">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>7</bi:MinValue>
+                  <bi:MaxValue>8</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Price" Type="Int64">
+              <bi:Property FormatString="0" DefaultAggregateFunction="Sum">
+                <bi:Statistics DistinctValueCount="2">
+                  <bi:MinValue>4</bi:MinValue>
+                  <bi:MaxValue>5</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <NavigationProperty Name="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date" Relationship="Sandbox.Sales_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date" FromRole="Sales_Date" ToRole="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date">
+              <bi:NavigationProperty ReferenceName="LocalDateTable_f1260b77-d5b3-4742-9724-9d718353c8b1_Date" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:DisplayFolders>
+                <bi:DisplayFolder Name="Amounts">
+                  <bi:PropertyRef Name="Amount" />
+                  <bi:PropertyRef Name="Cost" />
+                  <bi:PropertyRef Name="Price" />
+                </bi:DisplayFolder>
+              </bi:DisplayFolders>
+              <bi:Statistics RowCount="2" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>364</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime" Nullable="false">
+              <bi:Property Hidden="true" Contents="PaddedDateTableDates" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>2019-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2019-12-31T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Year" Type="Int64">
+              <bi:Property Hidden="true" Contents="Years" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2019</bi:MinValue>
+                  <bi:MaxValue>2019</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="MonthNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="MonthOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="12">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>12</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Months" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="MonthNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="12" StringValueMaxLength="9">
+                  <bi:MinValue>January</bi:MinValue>
+                  <bi:MaxValue>December</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="QuarterNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="QuarterOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Quarter" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Quarters" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="QuarterNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="4" StringValueMaxLength="5">
+                  <bi:MinValue>Qtr 1</bi:MinValue>
+                  <bi:MaxValue>Qtr 4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day" Type="Int64">
+              <bi:Property Hidden="true" Contents="DayOfMonth" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="31">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>31</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Date_Hierarchy" Caption="Date Hierarchy" ReferenceName="Date Hierarchy">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="365" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Calendar">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>364</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime">
+              <bi:Property FormatString="G" DefaultAggregateFunction="None">
+                <bi:Variations>
+                  <bi:Variation Name="Variation" Default="true">
+                    <bi:NavigationPropertyRef Name="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date" />
+                    <bi:DefaultHierarchyRef Name="Date_Hierarchy" />
+                  </bi:Variation>
+                </bi:Variations>
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>2019-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2019-12-31T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <NavigationProperty Name="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date" Relationship="Sandbox.Calendar_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date" FromRole="Calendar_Date" ToRole="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date">
+              <bi:NavigationProperty ReferenceName="LocalDateTable_73035d6c-ee3b-4e60-96d6-ff1c08b35a40_Date" />
+            </NavigationProperty>
+            <bi:EntityType>
+              <bi:Statistics RowCount="365" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>364</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime" Nullable="false">
+              <bi:Property Hidden="true" Contents="PaddedDateTableDates" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="365">
+                  <bi:MinValue>2019-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2019-12-31T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Year" Type="Int64">
+              <bi:Property Hidden="true" Contents="Years" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2019</bi:MinValue>
+                  <bi:MaxValue>2019</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="MonthNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="MonthOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="12">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>12</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Months" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="MonthNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="12" StringValueMaxLength="9">
+                  <bi:MinValue>January</bi:MinValue>
+                  <bi:MaxValue>December</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="QuarterNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="QuarterOfYear" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Quarter" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Quarters" DefaultAggregateFunction="None">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="QuarterNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="4" StringValueMaxLength="5">
+                  <bi:MinValue>Qtr 1</bi:MinValue>
+                  <bi:MaxValue>Qtr 4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day" Type="Int64">
+              <bi:Property Hidden="true" Contents="DayOfMonth" DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="31">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>31</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Date_Hierarchy" Caption="Date Hierarchy" ReferenceName="Date Hierarchy">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="365" />
+            </bi:EntityType>
+          </EntityType>
+          <Association Name="Sales_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date">
+            <End Role="Sales_Date" Type="Sandbox.Sales" Multiplicity="*" />
+            <End Role="LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1_Date" Type="Sandbox.LocalDateTable_f1260b77_d5b3_4742_9724_9d718353c8b1" Multiplicity="0..1" />
+          </Association>
+          <Association Name="Calendar_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date">
+            <End Role="Calendar_Date" Type="Sandbox.Calendar" Multiplicity="*" />
+            <End Role="LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40_Date" Type="Sandbox.LocalDateTable_73035d6c_ee3b_4e60_96d6_ff1c08b35a40" Multiplicity="0..1" />
+          </Association>
+        </Schema>
+      </xars:METADATA>
+    </row>
+  </root>
+</return>

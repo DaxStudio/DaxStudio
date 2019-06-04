@@ -5,7 +5,7 @@ namespace ADOTabular
     public class ADOTabularDisplayFolder : IADOTabularFolderReference
     {
         public ADOTabularDisplayFolder(string name, string internalReference) {
-            Name = name;
+            Name = name??internalReference;
             InternalReference = internalReference;
             ReferenceType = FolderReferenceType.Folder;
             FolderItems = new List<IADOTabularObjectReference>();
