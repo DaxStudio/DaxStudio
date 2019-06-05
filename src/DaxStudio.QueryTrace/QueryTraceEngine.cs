@@ -426,7 +426,7 @@ namespace DaxStudio.QueryTrace
                         // Save activityId and skip event handling
                         _activityId = e[TraceColumn.ActivityID];
                         Log.Verbose("Started ActivityId: {EventClass} - {ActivityId}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
-                        return;
+                        //return;
                     }
                     
                     OnTraceEvent(e);

@@ -41,6 +41,12 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.ApplicationName);
             }
             
+            if (eventClass == TraceEventClass.QueryBegin)
+            {
+                trc.Columns.Add(TraceColumn.RequestParameters);
+                trc.Columns.Add(TraceColumn.RequestProperties);
+            }
+
             switch (eventClass)
             {
                 case TraceEventClass.CommandEnd:

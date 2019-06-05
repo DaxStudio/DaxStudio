@@ -61,6 +61,12 @@ namespace DaxStudio.QueryTrace
                 }
             }
 
+            if (e.EventClass == TraceEventClass.QueryBegin)
+            {
+                RequestParameters = e.RequestParameters;
+                RequestProperties = e.RequestProperties;
+            }
+
             if (e.NTUserName != null)
                 NTUserName = e.NTUserName;
 
@@ -132,5 +138,7 @@ namespace DaxStudio.QueryTrace
 
         public string DatabaseFriendlyName { get; set; }
         public string RequestID { get; set; }
+        public string RequestProperties { get; set; }
+        public string RequestParameters { get; set; }
     }
 }
