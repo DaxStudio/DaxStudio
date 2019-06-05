@@ -2310,7 +2310,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                await ExecuteQueryAsync("EVALUATE ROW(\"BLANK\",0)").ContinueWith((ascendant) =>
+                await ExecuteQueryAsync(Constants.RefreshSessionQuery).ContinueWith((ascendant) =>
                 {
                     // todo - should we be checking for exceptions in this continuation
                     sw.Stop();

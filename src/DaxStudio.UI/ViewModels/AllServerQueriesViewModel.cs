@@ -16,6 +16,7 @@ using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
 using DaxStudio.UI.Extensions;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -77,6 +78,10 @@ namespace DaxStudio.UI.ViewModels
 
                     switch (traceEvent.EventClass) {
                         case DaxStudioTraceEventClass.QueryEnd:
+
+                            // if this is the blank query after a "clear cache and run" then skip it
+                            if (newEvent.Query == Constants.RefreshSessionQuery) continue;
+
                             // look for any cached rewrite events
                             if (_rewriteEventCache.ContainsKey(traceEvent.RequestID))
                             {
@@ -94,7 +99,7 @@ namespace DaxStudio.UI.ViewModels
                             {
 
                                 // Add the parameters XML after the query text
-                                if (beginEvent.RequestParameters.Length > 0)
+                                if (beginEvent.RequestParameters != null)
                                     newEvent.Query += Environment.NewLine + 
                                                       Environment.NewLine + 
                                                       beginEvent.RequestParameters + 
