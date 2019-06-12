@@ -247,7 +247,7 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var table in metadataPane.SelectedModel.Tables)
                 {
                     currentTableIdx++;
-                    var daxQuery = $"EVALUATE('{table.Name}')";
+                    var daxQuery = $"EVALUATE '{table.Name}'";
 
                     using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
                     using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
