@@ -931,6 +931,7 @@ namespace DaxStudio.UI.ViewModels
 
         private DialogResult PreProcessQuery(bool injectEvaluate, bool injectRowFunction)
         {
+            
             // merge in any parameters
             QueryInfo = new QueryInfo(EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
@@ -1335,48 +1336,57 @@ namespace DaxStudio.UI.ViewModels
 
         private void RunQueryInternal(RunQueryEvent message)
         {
-            var msg = NewStatusBarMessage("Running Query...");
-
-            // somehow people are getting into this method while the connection is not open
-            // even though the CanRun state should be false so this is a double check
-            if (Connection.State != ConnectionState.Open)
+            using (var msg = NewStatusBarMessage("Running Query..."))
             {
-                Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
-                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
-                return;
-            }
-
-
-
-            if (PreProcessQuery(message.RunStyle.InjectEvaluate,message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
-            {
-                IsQueryRunning = false;
-            }
-            else
-            {
-                _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
-                
-                currentQueryDetails = CreateQueryHistoryEvent(QueryText);
-
-                message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+                // somehow people are getting into this method while the connection is not open
+                // even though the CanRun state should be false so this is a double check
+                if (Connection.State != ConnectionState.Open)
                 {
-                // todo - should we be checking for exceptions in this continuation
-                IsQueryRunning = false;
-                    NotifyOfPropertyChange(() => CanRunQuery);
+                    Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
+                    _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
+                    return;
+                }
 
-                // if the server times trace watcher is not active then just record client timings
-                if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
+
+                try { 
+
+                    if (PreProcessQuery(message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
                     {
-                        currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-                        currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
-                        _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
+                        IsQueryRunning = false;
                     }
+                    else
+                    {
+                        _eventAggregator.PublishOnUIThread(new QueryStartedEvent());
 
-                    _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
-                    msg.Dispose();
-                }, TaskScheduler.Default);
-            } 
+                        currentQueryDetails = CreateQueryHistoryEvent(QueryText);
+
+                        message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+                        {
+                            // todo - should we be checking for exceptions in this continuation
+                            IsQueryRunning = false;
+                            NotifyOfPropertyChange(() => CanRunQuery);
+
+                            // if the server times trace watcher is not active then just record client timings
+                            if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
+                            {
+                                currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+                                currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
+                                _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
+                            }
+
+                            _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
+                            msg.Dispose();
+                        }, TaskScheduler.Default);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "RunQueryInternal", ex.Message);
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
+
+                }
+            }
         }
 
         private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
