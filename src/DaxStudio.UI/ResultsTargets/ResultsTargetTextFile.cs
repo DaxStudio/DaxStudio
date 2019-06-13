@@ -72,6 +72,10 @@ namespace DaxStudio.UI.Model
                                 enc = Encoding.Unicode;
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
+                            case 4:
+                                // TODO - custom export format
+                                
+                                break;
                         }
 
                         var daxQuery = runner.QueryText;

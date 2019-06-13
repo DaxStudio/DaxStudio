@@ -100,7 +100,6 @@ namespace DaxStudio.UI.ViewModels
         private RibbonViewModel _ribbon;
         private Regex _rexQueryError;
         private Guid _uniqueId;
-        private IGlobalOptions _options;
         private IQueryHistoryEvent currentQueryDetails;
         private Guid _autoSaveId =  Guid.NewGuid();
         private DocumentViewModel _sourceDocument;
@@ -116,7 +115,7 @@ namespace DaxStudio.UI.ViewModels
             ServerTimingDetails = serverTimingDetails;
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
-            _options = options;
+            Options = options;
             Init(_ribbon);
         }
 
@@ -126,12 +125,12 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;        
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>( ScreenUnitsHelper.GenerateScreenUnitList());
             
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(_options.EditorFontSizePx), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
             SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
             
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
-            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this, _options);
+            MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this, Options);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
@@ -139,7 +138,7 @@ namespace DaxStudio.UI.ViewModels
 
             var globalHistory = IoC.Get<GlobalQueryHistory>();
             //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
-            QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this, _options);
+            QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this, Options);
             //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
             
             Document = new TextDocument();
@@ -148,7 +147,7 @@ namespace DaxStudio.UI.ViewModels
             _selectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
-            var t = DaxFormatterProxy.PrimeConnectionAsync(_options, _eventAggregator);
+            var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
 
         }
 
@@ -197,9 +196,9 @@ namespace DaxStudio.UI.ViewModels
 
             // TODO - if theme is dark increase brightness of syntax highlights
             //_editor.ChangeColorBrightness(1.25);
-            _editor.SetSyntaxHighlightColorTheme(_options.Theme);
+            _editor.SetSyntaxHighlightColorTheme(Options.Theme);
 
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator, _options);
+            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator, Options);
             UpdateSettings();
             if (_editor != null)
             {
@@ -356,12 +355,12 @@ namespace DaxStudio.UI.ViewModels
                     if (_connection.IsPowerPivot)
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, _options, ShouldFilterForCurrentSession(TraceWatchers));
+                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, Options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     else
                     {
                         Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), _options, ShouldFilterForCurrentSession(TraceWatchers));
+                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), Options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
@@ -425,7 +424,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // Don't add DirectQueryEvent if the server does not support direct query session filters 
                     // and the options has not been enabled in the options screen
-                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !_options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters())  continue;
+                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !Options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters())  continue;
 
                     // if the server version does not support Aggregate Table Events do not add them
                     if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
@@ -979,7 +978,7 @@ namespace DaxStudio.UI.ViewModels
 
                 
                 // swap delimiters if not using default style
-                if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
+                if (Options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma)
                 {
                     qry = SwapDelimiters(qry);
                 }
@@ -1191,7 +1190,7 @@ namespace DaxStudio.UI.ViewModels
                         tw.IsBusy = true;
                     }
                 }
-                if (_options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma) {
+                if (Options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma) {
                     var dsm = new DelimiterStateMachine(DaxStudio.Interfaces.Enums.DelimiterType.Comma);
                     daxQuery = dsm.ProcessString(daxQuery);
                 } 
@@ -1804,7 +1803,7 @@ namespace DaxStudio.UI.ViewModels
                     OutputMessage("Waiting for Trace to start");
 
                     var t = Tracer;
-                    t.StartAsync(_options.TraceStartupTimeout).ContinueWith((p) =>
+                    t.StartAsync(Options.TraceStartupTimeout).ContinueWith((p) =>
                     {
                         if (p.Exception != null)
                         {
@@ -1940,7 +1939,7 @@ namespace DaxStudio.UI.ViewModels
             string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
             string metadataFilename = Path.GetTempFileName(); 
             try {
-                _options.CanPublishDaxFunctions = false;
+                Options.CanPublishDaxFunctions = false;
                 using (var client = GetHttpClient()) {
                     client.Timeout = new TimeSpan(0, 0, 60); // set 30 second timeout
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Ping version {0} to DaxVersioning ", ssasVersion));
@@ -1994,7 +1993,7 @@ namespace DaxStudio.UI.ViewModels
                 if (File.Exists(metadataFilename)) {
                     File.Delete(metadataFilename);
                 }
-                _options.CanPublishDaxFunctions = true;
+                Options.CanPublishDaxFunctions = true;
             }
         }
         public void ExportDaxFunctions() {
@@ -2654,7 +2653,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (qry.Trim().Length == 0) return; // no query text to format so exit here
 
-                DaxFormatterProxy.FormatDaxAsync(qry, info, _options, _eventAggregator, formatAlternateStyle ).ContinueWith((res) =>
+                DaxFormatterProxy.FormatDaxAsync(qry, info, Options, _eventAggregator, formatAlternateStyle ).ContinueWith((res) =>
                 {
                     // todo - should we be checking for exceptions in this continuation
                     Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "daxformatter.com call complete");
@@ -2770,7 +2769,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 if (!IsConnected) return false;
                 if (Connection.Database == null) return false;
-                if (!Connection.ShouldAutoRefreshMetadata(_options)) return false;
+                if (!Connection.ShouldAutoRefreshMetadata(Options)) return false;
 
                 return Connection.Database.HasSchemaChanged();
             }
@@ -2881,18 +2880,18 @@ namespace DaxStudio.UI.ViewModels
             
             if (editor == null) return;
 
-            if (editor.ShowLineNumbers != _options.EditorShowLineNumbers)
+            if (editor.ShowLineNumbers != Options.EditorShowLineNumbers)
             {
-                editor.ShowLineNumbers = _options.EditorShowLineNumbers;
+                editor.ShowLineNumbers = Options.EditorShowLineNumbers;
             }
-            if (editor.FontFamily.Source != _options.EditorFontFamily)
+            if (editor.FontFamily.Source != Options.EditorFontFamily)
             {
-                editor.FontFamily = new System.Windows.Media.FontFamily( _options.EditorFontFamily);
+                editor.FontFamily = new System.Windows.Media.FontFamily( Options.EditorFontFamily);
             }
-            if (editor.FontSize != _options.EditorFontSizePx)
+            if (editor.FontSize != Options.EditorFontSizePx)
             {
-                editor.FontSize = _options.EditorFontSizePx;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.EditorFontSizePx);
+                editor.FontSize = Options.EditorFontSizePx;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSizePx);
                 this.SizeUnitLabel.StringValue = "100";
             }
             
@@ -2910,7 +2909,7 @@ namespace DaxStudio.UI.ViewModels
                 this.SizeUnitLabel.StringValue = "100";
             }
             */
-            if (_options.EditorEnableIntellisense)
+            if (Options.EditorEnableIntellisense)
             {
                 editor.EnableIntellisense(IntellisenseProvider);
             }
@@ -3220,7 +3219,7 @@ namespace DaxStudio.UI.ViewModels
         public void UpdateTheme()
         {
             NotifyOfPropertyChange(() => AvalonDockTheme);
-            _editor?.SetSyntaxHighlightColorTheme(_options.Theme);
+            _editor?.SetSyntaxHighlightColorTheme(Options.Theme);
         }
         public void Handle(SelectedModelChangedEvent message)
         {
@@ -3244,9 +3243,11 @@ namespace DaxStudio.UI.ViewModels
 
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 
-                if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
+                if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 else return null; // new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
             }
         }
+
+        public IGlobalOptions Options { get; set; }
     }
 }

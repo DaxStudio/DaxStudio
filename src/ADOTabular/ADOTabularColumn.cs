@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.Common;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -141,16 +142,16 @@ namespace ADOTabular
             switch (Type.GetTypeCode(DataType))
             {
                 case TypeCode.Boolean:
-                    qry = string.Format("EVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
                     break;
                 case TypeCode.Empty:
-                    qry = string.Format("EVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
                     break;
                 case TypeCode.String:
-                    qry = string.Format("EVALUATE ROW(\"Min\", FIRSTNONBLANK({0},1),\"Max\", LASTNONBLANK({0},1), \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
+                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({0},1),\"Max\", LASTNONBLANK({0},1), \"DistinctCount\", COUNTROWS(DISTINCT({0})) )", DaxName);
                     break;
                 default:
-                    qry = string.Format("EVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", DISTINCTCOUNT({0}) )", DaxName);
+                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({0}),\"Max\", MAX({0}), \"DistinctCount\", DISTINCTCOUNT({0}) )", DaxName);
                     break;
 
             }
@@ -170,9 +171,9 @@ namespace ADOTabular
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            string qryTempalte = "EVALUATE SAMPLE({0}, ALL({1}), RAND()) ORDER BY {1}";
+            string qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({0}, ALL({1}), RAND()) ORDER BY {1}";
             if (connection.AllFunctions.Contains("TOPNSKIP"))
-                qryTempalte = "EVALUATE TOPNSKIP({0}, 0, ALL({1}), RAND()) ORDER BY {1}";
+                qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({0}, 0, ALL({1}), RAND()) ORDER BY {1}";
 
             var qry = string.Format(qryTempalte, sampleSize * 2, DaxName);
             var dt = connection.ExecuteDaxQueryDataTable(qry);

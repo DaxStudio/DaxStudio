@@ -193,6 +193,12 @@
     <Compile Include="IADOTabularFolderReference.cs" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
+      <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
+      <Name>DaxStudio.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
