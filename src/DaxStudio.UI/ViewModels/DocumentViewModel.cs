@@ -144,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
             Document = new TextDocument();
             FindReplaceDialog = new FindReplaceDialogViewModel(_eventAggregator);
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
-            _selectedTarget = ribbon.SelectedTarget;
+            SelectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
@@ -660,7 +660,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.Subscribe(tw);
             }
-            _ribbon.SelectedTarget = _selectedTarget;
+            _ribbon.SelectedTarget = SelectedTarget;
             var loc = Document.GetLocation(0);
             //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
@@ -2820,15 +2820,10 @@ namespace DaxStudio.UI.ViewModels
         {
             SelectedWorksheet = message.Worksheet;
         }
-
-        private IResultsTarget _selectedTarget;
-        public IResultsTarget SelectedTarget
-        {
-            get { return _selectedTarget; }
-        }
+        public IResultsTarget SelectedTarget { get; private set; }
         public void Handle(QueryResultsPaneMessageEvent message)
         {
-            _selectedTarget = message.Target;
+            SelectedTarget = message.Target;
         }
 
         public bool ServerTimingsChecked
@@ -2854,16 +2849,7 @@ namespace DaxStudio.UI.ViewModels
                 } 
         }
 
-        private DaxIntellisenseProvider _intellisenseProvider;
-        
-        public DaxIntellisenseProvider IntellisenseProvider
-        {
-            get { return _intellisenseProvider; }
-            set
-            {
-                _intellisenseProvider = value;
-            }
-        }
+        public DaxIntellisenseProvider IntellisenseProvider { get; set; }
 
         public object UniqueID { get { return _uniqueId; } }
 
@@ -2896,20 +2882,6 @@ namespace DaxStudio.UI.ViewModels
                 this.SizeUnitLabel.StringValue = "100";
             }
             
-            /*
-                * MARCO 2018-07-17 - How to set the font family and size of the result grid?
-            var result = QueryResultsPane;
-            if (result.FontFamily.Source != _options.ResultFontFamily)
-            {
-                result.FontFamily = new System.Windows.Media.FontFamily(_options.ResultFontFamily);
-            }
-            if (result.FontSize != _options.ResultFontSize)
-            {
-                result.FontSize = _options.ResultFontSize;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(_options.ResultFontSize);
-                this.SizeUnitLabel.StringValue = "100";
-            }
-            */
             if (Options.EditorEnableIntellisense)
             {
                 editor.EnableIntellisense(IntellisenseProvider);
@@ -3246,8 +3218,9 @@ namespace DaxStudio.UI.ViewModels
 
                 if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 //else return null; 
-                //else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-                else return new Theme.DaxStudioLightTheme();
+                else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                //else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
+                //else return new Theme.DaxStudioLightTheme();
             }
         }
 

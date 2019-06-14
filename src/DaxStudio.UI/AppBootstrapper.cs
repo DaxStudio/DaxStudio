@@ -45,7 +45,7 @@ namespace DaxStudio.UI
         {
             if (e.Exception is ArgumentOutOfRangeException)
             {
-                var st = new System.Diagnostics.StackTrace(e.Exception);
+                var st = new StackTrace(e.Exception);
                 var sf = st.GetFrame(0);
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {

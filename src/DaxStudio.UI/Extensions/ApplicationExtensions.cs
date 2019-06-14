@@ -58,24 +58,6 @@ namespace DaxStudio.UI.Extensions
             app.ChangeRibbonTheme("Light");
         }
 
-        //private static void RemoveMergedThemeDictionaries(Application app, string[] dictionariesToRemove)
-        //{
-        //    List<int> indexesToRemove = new List<int>();
-        //    for (int i = 0; i < app.Resources.MergedDictionaries.Count; i++)
-        //    {
-        //        foreach (var dict in dictionariesToRemove)
-        //        {
-        //            if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith($"/{dict}")) indexesToRemove.Add(i);
-        //        }
-        //    }
-
-        //    indexesToRemove.Reverse();
-        //    foreach (var i in indexesToRemove)
-        //    {
-        //        app.Resources.MergedDictionaries.RemoveAt(i);
-        //    }
-        //}
-
         private static void RemoveMergedThemeDictionaries(Application app, string[] dictionariesToRemove)
         {
             // walk through dictionaries backwards while removing items
