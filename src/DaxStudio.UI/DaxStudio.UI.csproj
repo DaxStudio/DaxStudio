@@ -468,6 +468,7 @@
     <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
+    <Compile Include="Theme\DaxStudioLightTheme.cs" />
     <Compile Include="Theme\MonotoneTheme.cs" />
     <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
