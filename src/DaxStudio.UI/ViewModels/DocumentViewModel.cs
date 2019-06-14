@@ -236,6 +236,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _sourceDocument = null;
             }
+
         }
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
@@ -3244,7 +3245,8 @@ namespace DaxStudio.UI.ViewModels
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 
                 if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
-                else return null; // new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                //else return null; 
+                else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
             }
         }
 
