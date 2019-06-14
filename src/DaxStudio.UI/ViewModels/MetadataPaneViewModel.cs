@@ -17,6 +17,7 @@ using System.Data;
 using System.Windows;
 using System.Text.RegularExpressions;
 using DaxStudio.UI.Interfaces;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -241,8 +242,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     try
                     {
+                        var sw = new Stopwatch();
+                        sw.Start();
                         IsBusy = true;
                         _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
+                        sw.Stop();
+                        Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Metadata Refreshed (duration: {sw.ElapsedMilliseconds}ms)");
                     }
                     catch (Exception ex)
                     {
