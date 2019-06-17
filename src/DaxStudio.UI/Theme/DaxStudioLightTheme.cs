@@ -14,14 +14,9 @@ namespace DaxStudio.UI.Theme
 
         public override Uri GetResourceUri()
         {
-            var theme = new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-            return theme.GetResourceUri();
-            /*
             return new Uri(
-                //"/DaxStudio.UI;component/Theme/Monotone.AvalonDock.xaml",
-                "/DaxStudio.UI;component/Theme/Dark.AvalonDock.xaml",
+                "/DaxStudio.UI;component/Theme/Light.AvalonDock.xaml",
                 UriKind.Relative);
-            */
         }
     }
     

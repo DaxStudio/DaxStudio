@@ -14,7 +14,6 @@ namespace DaxStudio.UI.Model
         public bool CanCloseWindow { get; set; }
         public ToolWindowBase()
         {
-            
             CanCloseWindow = true;
             CanHide = false;
             AutoHideMinHeight = 100;

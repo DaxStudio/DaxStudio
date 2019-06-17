@@ -3218,9 +3218,9 @@ namespace DaxStudio.UI.ViewModels
 
                 if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 //else return null; 
-                else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                //else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
                 //else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
-                //else return new Theme.DaxStudioLightTheme();
+                else return new Theme.DaxStudioLightTheme();
             }
         }
 
