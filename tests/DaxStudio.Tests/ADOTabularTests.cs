@@ -441,7 +441,7 @@ namespace DaxStudio.Tests
             var tabCust = tabs["Customer"];
             var relCustToCustGeog = tabCust.Relationships[0];
 
-            var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
+            //var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
 
             Assert.AreEqual("", relCustToCustGeog.CrossFilterDirection);
             Assert.AreEqual("Customer_Geography_ID2", relCustToCustGeog.FromColumn, "Incorrect from column");
