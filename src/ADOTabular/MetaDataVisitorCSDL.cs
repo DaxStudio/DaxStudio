@@ -669,6 +669,10 @@ namespace ADOTabular
                     rdr.Read();
                     //rdr.ReadToNextElement(); // read the end element
                 }
+
+                // Reset DisplayFolder local variables
+                folderCaption = null;
+                folderReference = String.Empty;
                     
                 if ((rdr.NodeType == XmlNodeType.Element)
                     && (rdr.LocalName == "PropertyRef"))

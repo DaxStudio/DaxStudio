@@ -12,8 +12,8 @@ namespace DaxStudio.UI.Utils
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class JsonSettingProvider : ISettingProvider
     {
-        private static string settingsFile;
-        private static string appPath;
+        private static readonly string settingsFile;
+        private static readonly string appPath;
 
         static JsonSettingProvider()
         {

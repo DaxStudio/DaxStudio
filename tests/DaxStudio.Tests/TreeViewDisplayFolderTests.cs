@@ -178,9 +178,9 @@ namespace DaxStudio.Tests
 
             Assert.IsNotNull(tbl, "Could not find 'Sales' table");
  
-            var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "Amounts"));
+            var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "Amount Folder"));
             Assert.IsNotNull(folder, "Folder Object not found");
-            Assert.AreEqual(folder.Name,"Amounts");
+            Assert.AreEqual(folder.Name,"Amount Folder");
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Amount") as TreeViewColumn;
             Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
@@ -189,6 +189,32 @@ namespace DaxStudio.Tests
 
         }
 
+
+        [TestMethod]
+        public void TestSecondDisplayFolderWithoutCaption()
+        {
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            var mockEventAggregator = new Mock<IEventAggregator>().Object;
+            var mockMetadata = new Mock<IMetadataPane>().Object;
+            var tt = m.TreeViewTables(mockOptions, mockEventAggregator, mockMetadata);
+            Assert.AreEqual(2, tt.Count, "Correct Table Count");
+
+
+            var tbl = tt.FirstOrDefault(x => x.Name == "Sales");
+
+            Assert.IsNotNull(tbl, "Could not find 'Sales' table");
+
+            var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "Price"));
+            Assert.IsNotNull(folder, "Folder Object not found");
+            Assert.AreEqual(folder.Name, "Price");
+
+            TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Price") as TreeViewColumn;
+            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
+            Assert.AreEqual(MetadataImages.Column, col.MetadataImage);
+
+
+        }
 
     }
 }

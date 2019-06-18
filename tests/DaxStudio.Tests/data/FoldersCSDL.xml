@@ -234,11 +234,13 @@
             </NavigationProperty>
             <bi:EntityType>
               <bi:DisplayFolders>
-                <bi:DisplayFolder Name="Amounts">
+                <bi:DisplayFolder Name="Amounts" Caption="Amount Folder">
                   <bi:PropertyRef Name="Amount" />
                   <bi:PropertyRef Name="Cost" />
-                  <bi:PropertyRef Name="Price" />
                 </bi:DisplayFolder>
+				<bi:DisplayFolder Name="Price">
+                  <bi:PropertyRef Name="Price" />
+				</bi:DisplayFolder>
               </bi:DisplayFolders>
               <bi:Statistics RowCount="2" />
             </bi:EntityType>
