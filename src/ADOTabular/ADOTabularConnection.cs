@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using ADOTabular.Utils;
 using System.Data.OleDb;
 
 namespace ADOTabular

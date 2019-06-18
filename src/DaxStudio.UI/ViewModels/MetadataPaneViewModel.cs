@@ -373,6 +373,7 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     Name = db,
                                     Caption = Connection.FileName.Length > 0 ? Connection.FileName : db
+                                    // TODO - load Database Description 
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -931,5 +932,7 @@ namespace DaxStudio.UI.ViewModels
     {
         public string Name { get; set; }
         public string Caption { get; set; }
+
+        public string Description { get; set; }
     }
 }
