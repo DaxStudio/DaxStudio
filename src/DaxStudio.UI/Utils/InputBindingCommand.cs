@@ -9,7 +9,16 @@ namespace DaxStudio.UI.Utils
 
     public class InputBindingCommand : ICommand
     {
-        public event EventHandler CanExecuteChanged;
+        
+        // This event handler is not supported as part of the custom InputBinding
+        public event EventHandler CanExecuteChanged
+        {
+
+            add { throw new NotSupportedException(); }
+
+            remove { }
+
+        }
 
         private readonly Action<object> _executeDelegate;
         private Func<object, bool> _canExecutePredicate;

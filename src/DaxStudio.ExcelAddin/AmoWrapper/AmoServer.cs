@@ -1,11 +1,6 @@
 ﻿extern alias ExcelAmo;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-//using Microsoft.AnalysisServices;
 using Serilog;
 
 namespace DaxStudio.ExcelAddin.AmoWrapper
