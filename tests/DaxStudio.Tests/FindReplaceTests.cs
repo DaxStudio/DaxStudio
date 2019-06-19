@@ -54,6 +54,8 @@ namespace DaxStudio.Tests
         public void FindWildcard()
         {
             // TODO - this test fails intermittently, need to see if we can figure out why...
+            // try waiting a little bit to see if that helps, maybe there is a race condition
+            System.Threading.Thread.Sleep(50);
 
             vm = new FindReplaceDialogViewModel(mockEventAggregator);
             vm.Editor = ed;

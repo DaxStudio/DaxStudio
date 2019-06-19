@@ -524,6 +524,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
+            Assert.AreEqual(false, h.IsVisible);
             Assert.AreEqual(3, h.Levels.Count);
             Assert.AreEqual("Group", h.Levels[0].LevelName);
             Assert.AreEqual("Country", h.Levels[1].LevelName);
