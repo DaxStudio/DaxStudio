@@ -666,12 +666,29 @@ namespace DaxStudio.UI.ViewModels
             // if a user clicks on the edge of the recent files list
             // it's possible to hit this method with no selected file
             // if this happens we need to exit here and ignore the click
-            if (file == null) return; 
+            if (file == null) return;
+
+            // Check if the file exists before attempting to open it
+            if (RecentFileNoLongerExists(file)) return;
 
             // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
             MoveFileToTopOfRecentList(file);
             _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+        }
+
+        private bool RecentFileNoLongerExists(DaxFile file)
+        {
+            if (System.IO.File.Exists(file.FullPath)) return false;
+
+            // File has been moved or deleted
+            if (MessageBoxEx.Show($"The file '{file.FullPath}'\nhas been deleted, moved or renamed.\n\nWould you like to remove it from the recent files list?", "File not found", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            {
+                RecentFiles.Remove(file);
+            }
+            Log.Warning("{class} {method} {message}", "RibbonViewModel", "RecentFileNoLongerExists", $"The following entry in the recent file list no longer exists '{file.FullPath}'");
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following entry in the recent file list no longer exists '{file.FullPath}'"));
+            return true;
         }
 
         private void MoveFileToTopOfRecentList(DaxFile file)
