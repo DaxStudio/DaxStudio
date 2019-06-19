@@ -61,7 +61,10 @@ namespace DaxStudio.UI.Model
                 var folder = new TreeViewColumn(f, f.TreeViewFolderChildren, table, options, eventAggregator, metadataPane);
                 try
                 {
-                    lst.Add(folder.Caption, folder);
+                    var sortKey = folder.Caption;
+                    // add spaces as prefix to force sorting folders first
+                    if (options.SortFoldersFirstInMetadata) sortKey = "    " + folder.Caption;
+                    lst.Add(sortKey, folder);
                 }
                 catch (Exception ex)
                 {

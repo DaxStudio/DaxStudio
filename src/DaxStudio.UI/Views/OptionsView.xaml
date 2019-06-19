@@ -461,6 +461,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -475,6 +477,8 @@
 
                                 <TextBlock Grid.Row="7" Margin="0 10 0 0">Hidden Objects</TextBlock>
                                 <CheckBox Grid.Row="8" x:Name="ShowHiddenMetadata" Content="Show Hidden Columns, Tables and Measures" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="9" Margin="0 10 0 0">Sorting</TextBlock>
+                                <CheckBox Grid.Row="10" x:Name="SortFoldersFirstInMetadata" Content="Sort Folders first in metadata pane" VerticalAlignment="Top" Margin="2,7,2,0" />
 
                             </Grid>
                         </GroupBox>

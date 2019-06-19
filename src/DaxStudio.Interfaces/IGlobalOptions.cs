@@ -47,5 +47,6 @@ namespace DaxStudio.Interfaces
 
         bool ShowHiddenMetadata { get; set; }
         bool SetClearCacheAsDefaultRunStyle { get; set; }
+        bool SortFoldersFirstInMetadata { get; set; }
     }
 }
