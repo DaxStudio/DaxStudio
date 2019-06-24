@@ -213,6 +213,9 @@
       <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NumericUpDownLib, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.NumericUpDownLib.2.3.0\lib\net4\NumericUpDownLib.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework.Aero" />
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
@@ -247,43 +250,17 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="UIAutomationProvider" />
+    <Reference Include="WatermarkControlsLib, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.WatermarkControlsLib.1.0.1\lib\net4\WatermarkControlsLib.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.3.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.AvalonDock.Themes.VS2013.3.5.3\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Controls.v5.7, Version=5.7.15466.10150, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Controls.5.7.15466.10150\lib\net40\Xceed.Wpf.Controls.v5.7.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Themes, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Themes.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Themes.Metro, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Themes.Metro.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.Metro.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Themes.Office2007, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Themes.Office2007.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.Office2007.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Themes.Windows10, Version=3.1.16356.12170, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Xceed.Wpf.Themes.Windows10.3.1.16356.12170\lib\net40\Xceed.Wpf.Themes.Windows10.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2013, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.AvalonDock.Themes.VS2013.3.5.3\lib\net4\Xceed.Wpf.AvalonDock.Themes.VS2013.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -335,6 +312,7 @@
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\HotKeyConverter.cs" />
+    <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MatchingResultColourConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
@@ -377,6 +355,7 @@
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="Extensions\DockingManagerExtensions.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\QueryBeginEventExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />
@@ -388,12 +367,15 @@
     <Compile Include="Interfaces\ISettingProvider.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
+    <Compile Include="Model\ApplicationPaths.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\GlobalOptions.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
+    <Compile Include="Model\SettingsProviderFactory.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
@@ -489,7 +471,9 @@
     <Compile Include="Utils\InputBindingCommand.cs" />
     <Compile Include="Utils\InputBindings.cs" />
     <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
-    <Compile Include="Utils\JsonSettingProvider.cs" />
+    <Compile Include="Utils\JsonSettingProviderAppData.cs" />
+    <Compile Include="Utils\JsonSettingProviderBase.cs" />
+    <Compile Include="Utils\JsonSettingProviderPortable.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
@@ -718,10 +702,6 @@
     <Page Include="Theme\Monotone.DaxEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Monotone.ExtendedWPFToolkit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Monotone.xaml">
       <Generator>MSBuild:Compile</Generator>

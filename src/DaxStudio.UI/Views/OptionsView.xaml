@@ -7,6 +7,8 @@
             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
+             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             mc:Ignorable="d" 
@@ -16,7 +18,8 @@
             <conv:FontConverter x:Key="fontConverter"/>
             <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter" />
-            <Style TargetType="{x:Type xctk:WatermarkTextBox}">
+            <conv:IntToDoubleConverter x:Key="IntToDoubleConverter" />
+            <Style TargetType="{x:Type wmc:WatermarkTextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
                         <Setter Property="Background" Value="LightGray" />
@@ -179,8 +182,8 @@
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
-                                <!--<fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" HorizontalAlignment="Left" Grid.Row="5" VerticalAlignment="Center" Margin="-12" Padding="0" />-->
+                                <!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>-->
+                                <fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-12" Padding="0" />
                                 <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
                                 
@@ -192,7 +195,7 @@
 
                                 <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
                                 <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
-                                    <xctk:IntegerUpDown x:Name="CodeCompletionWindowWidthIncrease" Minimum="100" Maximum="300" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                    <nud:NumericUpDown x:Name="CodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
                             </Grid>
@@ -219,7 +222,7 @@
 
                                 </CheckBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right" />
-                                <xctk:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
+                                <wmc:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
                                 <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
                                 <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" IsReadOnly="{Binding Path=ProxyUseSystem}"/>
                                 <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
@@ -248,7 +251,7 @@
 
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
-                                <xctk:IntegerUpDown x:Name="QueryHistoryMaxItems" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="500" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                <nud:NumericUpDown x:Name="QueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                             </Grid>
@@ -269,15 +272,15 @@
                                 </Grid.RowDefinitions>
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
-                                <xctk:IntegerUpDown x:Name="QueryEndEventTimeout" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                <nud:NumericUpDown x:Name="QueryEndEventTimeout" Value="{Binding QueryEndEventTimeout}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
-                                <xctk:IntegerUpDown x:Name="DaxFormatterRequestTimeout" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                <nud:NumericUpDown x:Name="DaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
-                                <xctk:IntegerUpDown x:Name="TraceStartupTimeout" Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="120" Margin="2" Width="80" HorizontalAlignment="Left"></xctk:IntegerUpDown>
+                                <nud:NumericUpDown x:Name="TraceStartupTimeout" Value="{Binding TraceStartupTimeout}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
@@ -398,7 +401,7 @@
                                         </ComboBox.ItemsSource>
                                     </ComboBox>
                                     <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></xctk:DoubleUpDown>
+                                    <nud:NumericUpDown Value="{Binding ResultsFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>

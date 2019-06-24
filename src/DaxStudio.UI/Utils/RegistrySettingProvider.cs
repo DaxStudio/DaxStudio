@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
 using System.ComponentModel.Composition;
+using DaxStudio.Common;
+using DaxStudio.Interfaces;
+using System.ComponentModel;
+using Newtonsoft.Json;
+using System.Security;
 
 namespace DaxStudio.UI
 {
@@ -16,11 +21,10 @@ namespace DaxStudio.UI
     {
     
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
-        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheckUTC";
-        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
-        private const string REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME = "WindowPosition";
-        private const string DefaultPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
+
         private const int MAX_MRU_SIZE = 25;
+
+        public string LogPath => Environment.ExpandEnvironmentVariables(Constants.LogFolder);
 
         public ObservableCollection<string> GetServerMRUList()
         {
@@ -54,6 +58,23 @@ namespace DaxStudio.UI
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
         }
 
+
+        private T GetValue<T>(string subKey)
+        {
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            return (T)regDaxStudio.GetValue(subKey);
+        }
+
+        public Task SetValueAsync<T>(string subKey, T value, bool isInitializing)
+        {
+            return Task.Run(() => {
+                if (isInitializing) return;
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
+                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
+                regDaxStudio.SetValue(subKey, value);
+            });
+        }
+
         public bool IsFileLoggingEnabled()
         {
             if (!KeyExists("IsFileLoggingEnabled")) return false;
@@ -66,21 +87,6 @@ namespace DaxStudio.UI
             return (regDaxStudio.GetSubKeyNames().ToList().Contains(subKey));
         }
 
-
-        private T GetValue<T>(string subKey)
-        {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            return (T)regDaxStudio.GetValue(subKey);
-        }
-
-        public Task SetValueAsync<T>(string subKey, T value)
-        {
-            return Task.Run(()=>{
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
-                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
-                regDaxStudio.SetValue(subKey, value);
-            });
-        }
 
         internal ObservableCollection<string> GetMRUListFromRegistry(string listName)
         {
@@ -135,83 +141,60 @@ namespace DaxStudio.UI
             }
         }
 
-
-        public void SetLastVersionCheck(DateTime value)
+        public void Initialize(IGlobalOptions options)
         {
-            string path = registryRootKey;
-            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
-            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-            using (settingKey)
+            
+            foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
-                var strDate = value.ToUniversalTime().ToString("s", System.Globalization.CultureInfo.InvariantCulture);
-                settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, strDate, RegistryValueKind.String);
-            }
-        }
+                //if (interfaceProps.Find(prop.Name, true)==null) continue;
 
-        public DateTime GetLastVersionCheck()
-        {
-            DateTime dtReturnVal = DateTime.MinValue;
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            if (rk != null)
-            {
-                using (rk)
+                //JsonIgnoreAttribute ignoreAttr = prop.Attributes[typeof(JsonIgnoreAttribute)] 
+                //                                                 as JsonIgnoreAttribute;
+                //if (ignoreAttr != null) continue; // go to next attribute if this prop is tagged as [JsonIgnore]
+
+                // Set default value if DefaultValueAttribute is present
+                DefaultValueAttribute attr = prop.Attributes[typeof(DefaultValueAttribute)]
+                                                                 as DefaultValueAttribute;
+
+                if (attr == null) continue;
+                // read the value from the registry or use the default value
+                Object val = this.GetValue(prop.Name, attr.Value);
+                // set the property value
+                if (prop.PropertyType == typeof(SecureString))
                 {
-                    DateTime.TryParse((string)rk.GetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, DateTime.MinValue.ToShortDateString()), out dtReturnVal);
+                    SecureString secStr = new SecureString();
+                    foreach (char c in (string)val)
+                    {
+                        secStr.AppendChar(c);
+                    }
+                    prop.SetValue(options, secStr);
+                }
+                else if (prop.PropertyType == typeof(Version))
+                {
+                    var versionVal = val==null? new Version("0.0.0.0"):Version.Parse(val.ToString());
+                    prop.SetValue(options, versionVal);
+                }
+                else if (prop.PropertyType == typeof(DateTime))
+                {
+                    var dateVal = val==null ? DateTime.Parse(attr.Value.ToString()):DateTime.Parse(val.ToString());
+                    prop.SetValue(options, dateVal);
+                }
+                else if (prop.PropertyType == typeof(double))
+                {
+                    var doubleVal = val == null ? Double.Parse(attr.Value.ToString()) : attr.Value;
+                    prop.SetValue(options, doubleVal);
+                }
+                else if (prop.PropertyType == typeof(bool))
+                {
+                    var boolVal = val == null ? bool.Parse(attr.Value.ToString()) : attr.Value;
+                    prop.SetValue(options, boolVal);
+                }
+                else
+                {
+                    prop.SetValue(options, val);
                 }
             }
-
-            return dtReturnVal.ToLocalTime();
+            
         }
-
-
-        public void SetWindowPosition(string value)
-        {
-            string path = registryRootKey;
-            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
-            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-            using (settingKey)
-            {
-                settingKey.SetValue(REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME, value, RegistryValueKind.String);
-            }
-        }
-
-        public string GetWindowPosition()
-        {
-            DateTime dtReturnVal = DateTime.MinValue;
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            string pos = String.Empty;
-            if (rk != null)
-            {
-                using (rk)
-                {
-                    pos = (string)rk.GetValue(REGISTRY_LAST_WINDOW_POSITION_SETTING_NAME, DefaultPosition);
-                }
-            }
-            return pos;
-        }
-
-
-        public string GetDismissedVersion()
-        {
-            string sReturnVal = string.Empty;
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            if (rk != null)
-            {
-                sReturnVal = (string)rk.GetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, string.Empty);
-                rk.Close();
-            }
-
-            return string.IsNullOrEmpty(sReturnVal)?"0.0.0.0":sReturnVal;
-        }
-
-        public void SetDismissedVersion(string value)
-        {
-            string path = registryRootKey;
-            RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
-            if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-            settingKey.SetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, value, RegistryValueKind.String);
-            settingKey.Close();
-        }
-
     }
 }

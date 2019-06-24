@@ -35,6 +35,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly Application _app;
         private Timer _autoSaveTimer;
         private InputBindings _inputBindings;
+
+        
         //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager
@@ -44,13 +46,14 @@ namespace DaxStudio.UI.ViewModels
                             , IConductor conductor
                             , IDaxStudioHost host
                             , IVersionCheck versionCheck
-                            , ISettingProvider settingProvider)
+                            , IGlobalOptions options
+                            )
         {
 
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
-            SettingProvider = settingProvider;
+            Options = options;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -135,6 +138,7 @@ namespace DaxStudio.UI.ViewModels
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
         public StatusBarViewModel StatusBar { get; set; }
+        public IGlobalOptions Options { get; }
         public ISettingProvider SettingProvider { get; }
 
         public void ContentRendered()
@@ -179,7 +183,7 @@ namespace DaxStudio.UI.ViewModels
             _window.Closing += windowClosing;
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
-            _window.SetPlacement(SettingProvider.GetWindowPosition());
+            _window.SetPlacement(Options.WindowPosition);
             notifyIcon = new NotifyIcon(_window);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
@@ -201,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
             var w = sender as Window;
             //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();
             //Properties.Settings.Default.Save();
-            SettingProvider.SetWindowPosition(w.GetPlacement());
+            Options.WindowPosition = w.GetPlacement();
             _window.Closing -= windowClosing;
 
         }

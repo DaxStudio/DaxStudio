@@ -11,6 +11,9 @@ using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Model;
+using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.Standalone
 {
@@ -55,15 +58,21 @@ namespace DaxStudio.Standalone
                     .ReadFrom.AppSettings()
                     .MinimumLevel.ControlledBy(levelSwitch);
 
-                var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
-                                            Constants.StandaloneLogFileName);
+                var logPath = ApplicationPaths.LogPath;
+
+                //var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
+                //                            Constants.StandaloneLogFileName);
+
 
                 // if we have a local settings.json file we are running in "portable" mode
-                if (JsonSettingProvider.SettingsFileExists())
-                {
-                    logPath = Path.Combine(JsonSettingProvider.LogPath, Constants.StandaloneLogFileName);
-                }
+                //if (JsonSettingProviderBase.SettingsFileExists())
+                //{
+                //    logPath = Path.Combine(JsonSettingProviderBase.LogPath, Constants.StandaloneLogFileName);
+                //}
 
+                // TODO if is portable write to local log folder
+                //var settings = IoC.Get<ISettingProvider>();
+                //logPath = Path.Combine(settings.LogPath, Constants.StandaloneLogFileName);
 
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
@@ -86,7 +95,8 @@ namespace DaxStudio.Standalone
                 var theme = "Light"; // settingProvider.GetValue<string>("Theme", "Light");
                 if (theme == "Dark") app.LoadDarkTheme();
                 else app.LoadLightTheme();
-                
+
+
 
                 // add unhandled exception handler
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -146,6 +156,10 @@ namespace DaxStudio.Standalone
                     typeof(Control),
                     new FrameworkPropertyMetadata(true));
 
+                var options = IoC.Get<OptionsViewModel>();
+                options.Initialize();
+
+                // Launch the User Interface
                 app.Run();
             }
             catch (ArgumentOutOfRangeException argEx)

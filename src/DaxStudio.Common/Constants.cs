@@ -8,6 +8,8 @@ namespace DaxStudio.Common
 {
     public class Constants
     {
+        
+        public const string AppDataSettingsFolder = @"%APPDATA%\DaxStudio";
         public const string LogFolder = @"%APPDATA%\DaxStudio\log\";
         public const string ExcelLogFileName = "DaxStudioExcel-{Date}.log";
         public const string StandaloneLogFileName = "DaxStudio-{Date}.log";

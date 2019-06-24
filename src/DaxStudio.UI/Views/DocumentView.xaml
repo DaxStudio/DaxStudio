@@ -234,7 +234,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-
+<!--
             <Style x:Key="AnchorablePaneControlStyle" Style.TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}">
                 <Setter Property="Foreground" Value="{Binding Model.Root.Manager.Foreground,RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background" Value="{Binding Model.Root.Manager.Background,RelativeSource={RelativeSource Self}}" />
@@ -342,12 +342,7 @@
                                             FlowDirection="{TemplateBinding FlowDirection}"
                                             Content="{Binding LayoutItem.View, RelativeSource={RelativeSource TemplatedParent}}" />
 
-                                    <!--<ContentPresenter 
-                                FlowDirection="{TemplateBinding FlowDirection}"
-                                Content="{Binding Model.Content, RelativeSource={RelativeSource TemplatedParent}}" 
-                                ContentTemplate="{Binding LayoutItemTemplate, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type avalonDock:DockingManager}, Mode=FindAncestor}}"
-                                ContentTemplateSelector="{Binding LayoutItemTemplateSelector, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type avalonDock:DockingManager}, Mode=FindAncestor}}"
-                                Grid.Row="1"/>-->
+
                                 </Grid>
                             </Border>
                             <ControlTemplate.Triggers>
@@ -367,7 +362,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-
+-->
         </ResourceDictionary>
     </UserControl.Resources>
     <i:Interaction.Behaviors>

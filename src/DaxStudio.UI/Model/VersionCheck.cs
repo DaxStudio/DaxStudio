@@ -114,11 +114,11 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return RegistryHelper.GetLastVersionCheck();
+                return _globalOptions.LastVersionCheckUTC;
             }
             set
             {
-                RegistryHelper.SetLastVersionCheck(value);
+                _globalOptions.LastVersionCheckUTC = value;
             }
         }
 
@@ -127,11 +127,11 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return Version.Parse(RegistryHelper.GetDismissedVersion());
+                return _globalOptions.DismissedVersion ;
             }
             set
             {
-                RegistryHelper.SetDismissedVersion(value.ToString());
+                _globalOptions.DismissedVersion = value;
             }
         }
 

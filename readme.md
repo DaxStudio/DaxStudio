@@ -1,6 +1,9 @@
 ## Build Status
-master: ![Master Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p?svg=true)
-develop: ![Develop Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p/branch/develop?svg=true)
+
+| Branch | Status |
+|---|---|
+| master | ![Master Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p?svg=true) |
+| develop | ![Develop Build Status](https://ci.appveyor.com/api/projects/status/sl6fd3oelckihp3p/branch/develop?svg=true) ![](https://img.shields.io/appveyor/tests/darrengosbell/daxstudio/develop.svg?style=flat-square) |
 
 ## Building Dax Studio
 

@@ -79,5 +79,8 @@ namespace DaxStudio.SignalR
         public bool SetClearCacheAsDefaultRunStyle { get; set; }
         public bool ShowAutoDateTables { get; set; }
         public bool SortFoldersFirstInMetadata { get;set; }
+        public string WindowPosition { get; set; }
+        public Version DismissedVersion { get; set; }
+        public DateTime LastVersionCheckUTC { get;set; }
     }
 }
