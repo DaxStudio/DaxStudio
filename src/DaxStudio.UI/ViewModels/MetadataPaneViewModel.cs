@@ -375,8 +375,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = Connection.FileName.Length > 0 ? Connection.FileName : db
-                                    // TODO - load Database Description 
+                                    Caption = Connection.IsPowerPivot && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = Connection.IsPowerPivot && Connection.FileName.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
