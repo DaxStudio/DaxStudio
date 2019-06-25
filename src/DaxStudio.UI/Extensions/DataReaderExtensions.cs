@@ -84,7 +84,8 @@ namespace DaxStudio.UI.Extensions
                     //OriginalCaption = col.Caption,
                     OriginalName = columnName,
                     //NewCaption = (removeCaption) ? "" : name,
-                    NewName = name.Replace(' ', '`').Replace(',', '`'),
+                    //NewName = name.Replace(' ', '`').Replace(',', '`'),
+                    NewName = name,
                 };
                 newColumnNames.Add(dc.OriginalName, dc);
                 //col.Caption = (removeCaption) ? "" : name;

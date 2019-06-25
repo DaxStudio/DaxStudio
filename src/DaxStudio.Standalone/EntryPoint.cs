@@ -106,6 +106,11 @@ namespace DaxStudio.Standalone
 
                 var logCmdLineSwitch = app.Args().LoggingEnabled;
 
+#if DEBUG
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
+                Log.Debug("Information Logging Enabled due to running in debug mode");
+#endif
+
                 //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
                 if (isLoggingKeyDown || logCmdLineSwitch)
                 {

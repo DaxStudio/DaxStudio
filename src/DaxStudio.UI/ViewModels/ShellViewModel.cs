@@ -124,7 +124,6 @@ namespace DaxStudio.UI.ViewModels
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
-            //_eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
             _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
             System.Diagnostics.Debug.WriteLine("OnApplicationActivated");
         }
@@ -190,8 +189,8 @@ namespace DaxStudio.UI.ViewModels
 
         private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
-
-            yield return new InputBindingCommand(this, "CommentSelection", "Ctrl+Alt C");
+            // TODO - we should load custom key bindings from Options
+            yield return new InputBindingCommand(this, nameof(CommentSelection), "Ctrl+Alt C");
             
         }
 

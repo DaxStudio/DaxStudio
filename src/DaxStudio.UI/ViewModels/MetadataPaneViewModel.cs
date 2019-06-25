@@ -17,6 +17,7 @@ using System.Data;
 using System.Windows;
 using System.Text.RegularExpressions;
 using DaxStudio.UI.Interfaces;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -29,20 +30,21 @@ namespace DaxStudio.UI.ViewModels
         , IMetadataPane
     {
         private string _modelName;
-        private readonly DocumentViewModel _activeDocument;
         private readonly IGlobalOptions _options;
         //private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
         public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base(connection, eventAggregator)
         {
-            _activeDocument = document;
-            _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
+            ActiveDocument = document;
+            ActiveDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             //    _eventAggregator = eventAggregator;
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
-            eventAggregator.Subscribe(this);
+            // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
+            eventAggregator.Subscribe(this);  
             ShowHiddenObjects = _options.ShowHiddenMetadata;
+            SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
         }
 
@@ -67,8 +69,11 @@ namespace DaxStudio.UI.ViewModels
             get => _pinSearchOpen;
             set
             {
+                var changed = _pinSearchOpen != _options.KeepMetadataSearchOpen;
+                if (!changed) return;
+
                 _pinSearchOpen = value;
-                NotifyOfPropertyChange(()=>IsMouseOverSearch);
+                NotifyOfPropertyChange(() => IsMouseOverSearch);
                 NotifyOfPropertyChange(() => PinSearchOpenLabel);
                 NotifyOfPropertyChange(() => ExpandSearch);
             }
@@ -83,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
             get { return PinSearchOpen ? "Unpin Search" : "Pin Search"; }
         }
 
-        public DocumentViewModel ActiveDocument { get { return _activeDocument; } }
+        public DocumentViewModel ActiveDocument { get; }
 
 
         public override void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
@@ -155,7 +160,7 @@ namespace DaxStudio.UI.ViewModels
                                 }
                                 else
                                 {
-                                    _activeDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
+                                    ActiveDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
                                         , Connection.ServerVersion));
                                 }
                             }
@@ -241,8 +246,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     try
                     {
+                        var sw = new Stopwatch();
+                        sw.Start();
                         IsBusy = true;
                         _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
+                        sw.Stop();
+                        Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Metadata Refreshed (duration: {sw.ElapsedMilliseconds}ms)");
                     }
                     catch (Exception ex)
                     {
@@ -357,7 +366,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 _databases = value;
                 MergeDatabaseView();
-                //NotifyOfPropertyChange(() => Databases);
             }
         }
 
@@ -367,7 +375,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = Connection.FileName.Length > 0 ? Connection.FileName : db
+                                    Caption = Connection.IsPowerPivot && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = Connection.IsPowerPivot && Connection.FileName.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -506,7 +515,23 @@ namespace DaxStudio.UI.ViewModels
                 _showHiddenObjects = value;
                 if (changed)
                 {
-                    NotifyOfPropertyChange(ShowHiddenObjectsLabel);
+                    NotifyOfPropertyChange(()=>ShowHiddenObjectsLabel);
+                    RefreshMetadata();
+                }
+            }
+        }
+
+        private bool _sortFoldersFirstInMetadata = true;
+        public bool SortFoldersFirstInMetadata
+        {
+            get => _sortFoldersFirstInMetadata;
+            set
+            {
+                var changed = (_sortFoldersFirstInMetadata != value);
+                _sortFoldersFirstInMetadata = value;
+                if (changed)
+                {
+                    NotifyOfPropertyChange(()=>SortFoldersFirstInMetadata);
                     RefreshMetadata();
                 }
             }
@@ -847,7 +872,9 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(() => ExpandSearch);
-            this.ShowHiddenObjects = _options.ShowHiddenMetadata;
+            ShowHiddenObjects = _options.ShowHiddenMetadata;
+            SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
+            PinSearchOpen = _options.KeepMetadataSearchOpen;
         }
 
         #endregion
@@ -926,5 +953,7 @@ namespace DaxStudio.UI.ViewModels
     {
         public string Name { get; set; }
         public string Caption { get; set; }
+
+        public string Description { get; set; }
     }
 }

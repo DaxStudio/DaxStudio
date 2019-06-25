@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
+    xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -234,6 +235,138 @@
                 </Style.Triggers>
             </Style>
 
+            <Style x:Key="AnchorablePaneControlStyle" Style.TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}">
+                <Setter Property="Foreground" Value="{Binding Model.Root.Manager.Foreground,RelativeSource={RelativeSource Self}}" />
+                <Setter Property="Background" Value="{Binding Model.Root.Manager.Background,RelativeSource={RelativeSource Self}}" />
+                <Setter Property="TabControl.TabStripPlacement" Value="Bottom" />
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type avalonDockControls:LayoutAnchorablePaneControl}">
+                            <Grid ClipToBounds="True" SnapsToDevicePixels="True" KeyboardNavigation.TabNavigation="Local">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Border Background="{StaticResource AvalonDock.Border.Background.Brush}" Grid.RowSpan="2" />
+                                <Border Name="ContentPanel" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="{TemplateBinding Control.BorderThickness}" Background="{TemplateBinding Control.Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="0" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle">
+                                    <ContentPresenter Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="{TemplateBinding Control.Padding}" UIElement.SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                                </Border>
+                                <avalonDockControls:AnchorablePaneTabPanel Name="HeaderPanel" Margin="2,0,2,2" Panel.IsItemsHost="True" Grid.Row="1" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"  />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{StaticResource AvalonDock.DisabledText.Brush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemsControl.ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="TabItem.IsSelected" Value="{Binding IsSelected,Mode=TwoWay}" />
+                            <Setter Property="UIElement.IsEnabled" Value="{Binding IsEnabled}" />
+                            <Setter Property="FrameworkElement.ToolTip" Value="{Binding ToolTip}" />
+                            <Setter Property="Control.Template">
+                                <Setter.Value>
+                                    <ControlTemplate ControlTemplate.TargetType="{x:Type TabItem}">
+                                        <Grid SnapsToDevicePixels="True">
+                                            <Border Name="Bd" BorderBrush="{TemplateBinding Control.BorderBrush}" BorderThickness="1,0,1,1" Background="{TemplateBinding Control.Background}" Padding="{TemplateBinding Control.Padding}">
+                                                <ContentPresenter Name="Content" ContentSource="Header" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" HorizontalAlignment="{Binding HorizontalContentAlignment,RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" VerticalAlignment="{Binding VerticalContentAlignment,RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                            </Border>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="Selector.IsSelected" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource AvalonDock.Control.Background.Brush}" />
+                                                <Setter Property="Panel.ZIndex" Value="1" />
+                                                <Setter Property="Margin" Value="0,-1,-1,-2" />
+                                            </Trigger>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="UIElement.IsMouseOver" Value="True" />
+                                                    <Condition Property="Selector.IsSelected" Value="False" />
+                                                </MultiTrigger.Conditions>
+                                                <Setter Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" Property="Background" />
+                                                <Setter Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Property="BorderBrush" />
+                                                <Setter Property="Panel.ZIndex" Value="0" />
+                                            </MultiTrigger>
+                                            <Trigger Property="UIElement.IsEnabled" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource AvalonDock.DisabledText.Brush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type TabControl}},Path=Items.Count,FallbackValue=1}" DataTrigger.Value="1">
+                                    <Setter Property="UIElement.Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemsControl.ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalonDockControls:LayoutAnchorableTabItem Model="{Binding}"  />
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="TabControl.ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalonDockControls:LayoutAnchorableControl Model="{Binding}" />
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="{x:Type avalonDockControls:LayoutAnchorableControl}" TargetType="{x:Type avalonDockControls:LayoutAnchorableControl}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type avalonDockControls:LayoutAnchorableControl}">
+                            <Border Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              KeyboardNavigation.TabNavigation="Cycle">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Border x:Name="Header">
+                                        <avalonDockControls:AnchorablePaneTitle Model="{Binding Model, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    </Border>
+
+                                    <ContentPresenter Grid.Row="1"
+                                            FlowDirection="{TemplateBinding FlowDirection}"
+                                            Content="{Binding LayoutItem.View, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                                    <!--<ContentPresenter 
+                                FlowDirection="{TemplateBinding FlowDirection}"
+                                Content="{Binding Model.Content, RelativeSource={RelativeSource TemplatedParent}}" 
+                                ContentTemplate="{Binding LayoutItemTemplate, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type avalonDock:DockingManager}, Mode=FindAncestor}}"
+                                ContentTemplateSelector="{Binding LayoutItemTemplateSelector, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type avalonDock:DockingManager}, Mode=FindAncestor}}"
+                                Grid.Row="1"/>-->
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=Model.IsFloating}"
+                                       Value="True" />
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=Model.Parent.IsDirectlyHostedInFloatingWindow}"
+                                       Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility"
+                                  Value="Collapsed"
+                                  TargetName="Header" />
+                                </MultiDataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -520,10 +653,14 @@
                     </local:PanesStyleSelector.ToolStyle>
                 </local:PanesStyleSelector>
             </avalondock:DockingManager.LayoutItemContainerStyleSelector>
+            
             <!--
             <avalondock:DockingManager.AnchorablePaneTemplate>
                 <ControlTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock>AnchorablePaneTemplate</TextBlock>
                     <ContentControl cal:View.Model="{Binding . }" IsTabStop="False" />
+                    </StackPanel>
                 </ControlTemplate>
             </avalondock:DockingManager.AnchorablePaneTemplate>
             -->
@@ -543,6 +680,8 @@
                     </selectors:ToolWindowTemplateSelector.Template>
                 </selectors:ToolWindowTemplateSelector>
             </avalondock:DockingManager.LayoutItemTemplateSelector>
+            
+            
 
             <!-- cal:Message.Attach="[Event DocumentClosing]=[Action DocumentClosing($this)]" -->
 
@@ -604,17 +743,43 @@
                                         </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem x:Name="Cut"  Header="Cut" Icon="{StaticResource CutIcon}"
-                                                      cal:Message.Attach="Cut()"/>
-                                                <MenuItem x:Name="Copy" Header="Copy" Icon="{StaticResource CopyIcon}"
-                                                      cal:Message.Attach="Copy()"/>
-                                                <MenuItem x:Name="Paste" Header="Paste" Icon="{StaticResource PasteIcon}"
-                                                      cal:Message.Attach="Paste()"/>
+                                                <MenuItem x:Name="Cut"  Header="Cut"
+                                                      cal:Message.Attach="Cut()">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{StaticResource CutIcon}"/>
+                                                    </MenuItem.Icon>
+
+                                                </MenuItem>
+                                                <MenuItem x:Name="Copy" Header="Copy" 
+                                                      cal:Message.Attach="Copy()">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{StaticResource CopyIcon}"/>
+                                                    </MenuItem.Icon>
+
+                                                </MenuItem>
+                                                <MenuItem x:Name="Paste" Header="Paste"
+                                                      cal:Message.Attach="Paste()">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{StaticResource PasteIcon}"/>
+                                                    </MenuItem.Icon>
+
+                                                </MenuItem>
                                                 <Separator />
-                                                <MenuItem x:Name="CommentSelection" Header="Comment" Icon="{StaticResource CommentIcon}"
-                                                      cal:Message.Attach="CommentSelection()"/>
-                                                <MenuItem x:Name="UncommentSelection" Header="Uncomment" Icon="{StaticResource UncommentIcon}"
-                                                      cal:Message.Attach="UnCommentSelection()"/>
+                                                <MenuItem x:Name="CommentSelection" Header="Comment" 
+                                                      cal:Message.Attach="CommentSelection()">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{StaticResource CommentIcon}"/>
+                                                    </MenuItem.Icon>
+                                                    
+                                                </MenuItem>
+                                                <!-- Icon="{DynamicResource UncommentIcon}" -->
+                                                <MenuItem x:Name="UncommentSelection" Header="Uncomment" 
+                                                      cal:Message.Attach="UnCommentSelection()">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{StaticResource UncommentIcon}"/>
+                                                    </MenuItem.Icon>
+                                                    
+                                                </MenuItem>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
 

@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using ADOTabular.Utils;
 using System.Data.OleDb;
 
 namespace ADOTabular
@@ -739,7 +737,12 @@ namespace ADOTabular
         private string _powerBIFileName = string.Empty;
         private string _currentCube = string.Empty;
 
-        public string FileName { get { return _powerBIFileName; } set { _powerBIFileName = value; } }
+        public string FileName { get { return _powerBIFileName; }
+            set {
+                _powerBIFileName = value;
+                ShortFileName = new FileInfo(_powerBIFileName).Name;
+            }
+        }
 
 
         void IDisposable.Dispose()
@@ -826,6 +829,7 @@ namespace ADOTabular
         }
 
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
+        public string ShortFileName { get; private set; }
 
         private void UpdateServerProperties()
         {

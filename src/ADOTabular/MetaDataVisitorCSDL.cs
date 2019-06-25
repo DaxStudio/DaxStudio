@@ -669,9 +669,15 @@ namespace ADOTabular
                     rdr.Read();
                     //rdr.ReadToNextElement(); // read the end element
                 }
+
+                // Reset DisplayFolder local variables
+                folderCaption = null;
+                folderReference = String.Empty;
                     
                 if ((rdr.NodeType == XmlNodeType.Element)
-                    && (rdr.LocalName == "PropertyRef"))
+                    && (rdr.LocalName == "PropertyRef" 
+                        || rdr.LocalName == "HierarchyRef"
+                    ))
                 {
                     while (rdr.MoveToNextAttribute())
                     {
@@ -693,9 +699,13 @@ namespace ADOTabular
                     rdr.Read();
                 }
 
-                if ((rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement) && (rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders"))
+                if ((rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders"))
+
                 {
-                    rdr.ReadToNextElement();
+                    if (rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement)
+                        rdr.ReadToNextElement();
+                    //else
+                    //    rdr.Read();
                 }
 
                 if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "DisplayFolders")
@@ -775,7 +785,7 @@ namespace ADOTabular
         {
             var hierName = "";
             string hierCap = null;
-            var hierHidden = false;
+            var hierIsVisible = true;
             ADOTabularHierarchy hier = null;
             ADOTabularLevel lvl = null;
             string lvlName = "";
@@ -793,7 +803,7 @@ namespace ADOTabular
                         switch (rdr.LocalName)
                         {
                             case "Hidden":
-                                hierHidden = bool.Parse(rdr.Value);
+                                hierIsVisible = !bool.Parse(rdr.Value);
                                 break;
                             case "Name":
                                 hierName = rdr.Value;
@@ -804,7 +814,7 @@ namespace ADOTabular
                         }
                     }
                     string structure = GetHierarchStructure(table, hierName, hierCap);
-                    hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierHidden, ADOTabularObjectType.Hierarchy, "", structure);
+                    hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierIsVisible, ADOTabularObjectType.Hierarchy, "", structure);
                     table.Columns.Add(hier);
                     rdr.Read();
                 }

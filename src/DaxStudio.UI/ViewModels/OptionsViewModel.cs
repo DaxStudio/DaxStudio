@@ -83,15 +83,16 @@ namespace DaxStudio.UI.ViewModels
             ShowExportMetrics = SettingProvider.GetValue<bool>(nameof(ShowExportMetrics), false);
             ShowExternalTools = SettingProvider.GetValue<bool>(nameof(ShowExternalTools), false);
             ShowExportAllData = SettingProvider.GetValue<bool>(nameof(ShowExportAllData), false);
-            Theme = SettingProvider.GetValue<string>("Theme", "Light");
+            Theme = SettingProvider.GetValue<string>(nameof(Theme), "Light");
             ResultAutoFormat = SettingProvider.GetValue<bool>("ResultAutoFormat", false);
-            CodeCompletionWindowWidthIncrease = SettingProvider.GetValue<int>("CodeCompletionWindowWidthIncrease", 100);
-            KeepMetadataSearchOpen = SettingProvider.GetValue<bool>("KeepMetadataSearchOpen", false);
+            CodeCompletionWindowWidthIncrease = SettingProvider.GetValue<int>(nameof(CodeCompletionWindowWidthIncrease), 100);
+            KeepMetadataSearchOpen = SettingProvider.GetValue<bool>(nameof(KeepMetadataSearchOpen), false);
             AutoRefreshMetadataLocalMachine = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalMachine", true);
             AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
             AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
             ShowHiddenMetadata = SettingProvider.GetValue<bool>("ShowHiddenMetadata", true);
             SetClearCacheAsDefaultRunStyle = SettingProvider.GetValue<bool>("SetClearCacheAsDefaultRunStyle", false);
+            SortFoldersFirstInMetadata = SettingProvider.GetValue<bool>(nameof(SortFoldersFirstInMetadata), true);
         }
 
         public ISettingProvider SettingProvider { get; }
@@ -616,6 +617,16 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValueAsync<bool>(nameof(SetClearCacheAsDefaultRunStyle), value);
                 NotifyOfPropertyChange(() => SetClearCacheAsDefaultRunStyle);
+            }
+        }
+
+        private bool _sortFoldersFirstInMetadata = false;
+        public bool SortFoldersFirstInMetadata { get => _sortFoldersFirstInMetadata;
+            set {
+                _sortFoldersFirstInMetadata = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(SortFoldersFirstInMetadata), value);
+                NotifyOfPropertyChange(() => SortFoldersFirstInMetadata);
             }
         }
 

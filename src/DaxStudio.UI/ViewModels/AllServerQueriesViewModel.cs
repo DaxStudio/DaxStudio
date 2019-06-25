@@ -15,6 +15,8 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
+using DaxStudio.UI.Extensions;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,7 +28,9 @@ namespace DaxStudio.UI.ViewModels
         
     {
         private Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
+        private Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
         private IGlobalOptions _globalOptions;
+
         [ImportingConstructor]
         public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
@@ -46,6 +50,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QueryEnd,
+                  DaxStudioTraceEventClass.QueryBegin,
                   DaxStudioTraceEventClass.AggregateTableRewriteQuery
             };
         }
@@ -66,11 +71,17 @@ namespace DaxStudio.UI.ViewModels
                         Query = traceEvent.TextData,
                         Duration = traceEvent.Duration,
                         DatabaseName = traceEvent.DatabaseFriendlyName,
-                        RequestID = traceEvent.RequestID
+                        RequestID = traceEvent.RequestID,
+                        RequestParameters = traceEvent.RequestParameters,
+                        RequestProperties = traceEvent.RequestProperties
                     };
 
                     switch (traceEvent.EventClass) {
                         case DaxStudioTraceEventClass.QueryEnd:
+
+                            // if this is the blank query after a "clear cache and run" then skip it
+                            if (newEvent.Query == Constants.RefreshSessionQuery) continue;
+
                             // look for any cached rewrite events
                             if (_rewriteEventCache.ContainsKey(traceEvent.RequestID))
                             {
@@ -79,6 +90,29 @@ namespace DaxStudio.UI.ViewModels
                                 newEvent.AggregationMissCount = summary.MissCount;
                                 _rewriteEventCache.Remove(traceEvent.RequestID);
                             }
+
+                            // TODO - update newEvent with queryBegin
+                            QueryBeginEvent beginEvent = null;
+
+                            _queryBeginCache.TryGetValue(traceEvent.RequestID, out beginEvent);
+                            if (beginEvent != null)
+                            {
+
+                                // Add the parameters XML after the query text
+                                if (beginEvent.RequestParameters != null)
+                                    newEvent.Query += Environment.NewLine + 
+                                                      Environment.NewLine + 
+                                                      beginEvent.RequestParameters + 
+                                                      Environment.NewLine;
+
+                                // overwrite the username with the effective user if it's present
+                                var effectiveUser = beginEvent.ParseEffectiveUsername();
+                                if (effectiveUser != null) newEvent.Username = effectiveUser;
+                            }
+
+
+                            _queryBeginCache.Remove(traceEvent.RequestID);
+
                             QueryEvents.Insert(0, newEvent);
                             break;
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
@@ -93,6 +127,28 @@ namespace DaxStudio.UI.ViewModels
                             else
                             {
                                 _rewriteEventCache.Add(traceEvent.RequestID, rewriteSummary);
+                            }
+
+                            break;
+
+                        case DaxStudioTraceEventClass.QueryBegin:
+                            // cache rewrite events
+                            
+                            if (_queryBeginCache.ContainsKey(traceEvent.RequestID))
+                            {
+                                // TODO - this should not happen
+                                // we should not get 2 begin events for the same request
+                            }
+                            else
+                            {
+                                var newBeginEvent = new QueryBeginEvent()
+                                {
+                                    RequestID = traceEvent.RequestID,
+                                    Query = traceEvent.TextData,
+                                    RequestProperties = traceEvent.RequestProperties,
+                                    RequestParameters = traceEvent.RequestParameters
+                                };
+                                _queryBeginCache.Add(traceEvent.RequestID, newBeginEvent);
                             }
 
                             break;

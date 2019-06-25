@@ -9,6 +9,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.Model
 {
@@ -58,8 +59,17 @@ namespace DaxStudio.UI.Model
             foreach( IADOTabularObjectReference f in table.FolderItems)
             {
                 var folder = new TreeViewColumn(f, f.TreeViewFolderChildren, table, options, eventAggregator, metadataPane);
-
-                lst.Add(folder.Caption, folder);
+                try
+                {
+                    var sortKey = folder.Caption;
+                    // add spaces as prefix to force sorting folders first
+                    if (options.SortFoldersFirstInMetadata) sortKey = "    " + folder.Caption;
+                    lst.Add(sortKey, folder);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", "TreeViewTable", "TreeViewColumns", ex.Message);
+                }
             }
             return lst.Values;
         }

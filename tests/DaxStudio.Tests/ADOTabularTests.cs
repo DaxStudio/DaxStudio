@@ -441,7 +441,7 @@ namespace DaxStudio.Tests
             var tabCust = tabs["Customer"];
             var relCustToCustGeog = tabCust.Relationships[0];
 
-            var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
+            //var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
 
             Assert.AreEqual("", relCustToCustGeog.CrossFilterDirection);
             Assert.AreEqual("Customer_Geography_ID2", relCustToCustGeog.FromColumn, "Incorrect from column");
@@ -524,6 +524,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
+            Assert.AreEqual(false, h.IsVisible);
             Assert.AreEqual(3, h.Levels.Count);
             Assert.AreEqual("Group", h.Levels[0].LevelName);
             Assert.AreEqual("Country", h.Levels[1].LevelName);

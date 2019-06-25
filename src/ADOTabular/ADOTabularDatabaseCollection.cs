@@ -124,6 +124,7 @@ namespace ADOTabular
                     row["DATE_MODIFIED"].ToString(),
                     row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
                     row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""));
+                // TODO - add support for loading Database Description
             }
             return databaseDictionary;
         }

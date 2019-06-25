@@ -32,6 +32,7 @@ namespace ADOTabular
             {
                 _cols = _adoTabConn.Visitor.Visit(this);
             }
+            _colsByRef = new SortedDictionary<string, ADOTabularColumn>();
         }
 
         public ADOTabularTable Table { get; }
@@ -39,16 +40,20 @@ namespace ADOTabular
         public void Add(ADOTabularColumn column)
         {
             _cols.Add(column.Name,column);
+            _colsByRef.Add(column.InternalReference, column);
         }
 
         public void Remove(ADOTabularColumn column)
         {
             _cols.Remove(column.Name);
+            _colsByRef.Remove(column.InternalReference);
         }
 
         public void Remove(string columnName)
         {
+            var col = _cols[columnName];
             _cols.Remove(columnName);
+            _colsByRef.Remove(col.InternalReference);
         }
 
         public bool ContainsKey(string index)
@@ -59,9 +64,11 @@ namespace ADOTabular
         public void Clear()
         {
             _cols.Clear();
+            _colsByRef.Clear();
         }
         //private readonly Dictionary<string, ADOTabularColumn> _cols;
         private readonly SortedDictionary<string, ADOTabularColumn> _cols;
+        private readonly SortedDictionary<string, ADOTabularColumn> _colsByRef;
 
         public ADOTabularColumn this[string index]
         {
@@ -81,14 +88,15 @@ namespace ADOTabular
 
         public ADOTabularColumn GetByPropertyRef(string referenceName)
         {
-            foreach (var c in _cols)
-            {
-                if (c.Value.InternalReference.Equals(referenceName, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return c.Value;
-                }
-            }
-            return null;
+            return _colsByRef[referenceName];
+            //foreach (var c in _cols)
+            //{
+            //    if (c.Value.InternalReference.Equals(referenceName, System.StringComparison.InvariantCultureIgnoreCase))
+            //    {
+            //        return c.Value;
+            //    }
+            //}
+            //return null;
         }
         public IEnumerator<ADOTabularColumn> GetEnumerator()
         {

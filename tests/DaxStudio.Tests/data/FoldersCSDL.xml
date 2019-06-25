@@ -176,6 +176,7 @@
                   </bi:Source>
                 </bi:Level>
               </bi:Hierarchy>
+			  
               <bi:Statistics RowCount="1" />
             </bi:EntityType>
           </EntityType>
@@ -234,11 +235,13 @@
             </NavigationProperty>
             <bi:EntityType>
               <bi:DisplayFolders>
-                <bi:DisplayFolder Name="Amounts">
+                <bi:DisplayFolder Name="Amounts" Caption="Amount Folder">
                   <bi:PropertyRef Name="Amount" />
                   <bi:PropertyRef Name="Cost" />
-                  <bi:PropertyRef Name="Price" />
                 </bi:DisplayFolder>
+				<bi:DisplayFolder Name="Price">
+                  <bi:PropertyRef Name="Price" />
+				</bi:DisplayFolder>
               </bi:DisplayFolders>
               <bi:Statistics RowCount="2" />
             </bi:EntityType>
@@ -340,6 +343,7 @@
                   </bi:Source>
                 </bi:Level>
               </bi:Hierarchy>
+			  
               <bi:Statistics RowCount="365" />
             </bi:EntityType>
           </EntityType>
@@ -373,6 +377,18 @@
               <bi:NavigationProperty ReferenceName="LocalDateTable_73035d6c-ee3b-4e60-96d6-ff1c08b35a40_Date" />
             </NavigationProperty>
             <bi:EntityType>
+			  <bi:Hierarchy Name="Date_Hierarchy1" Caption="Date Hierarchy" ReferenceName="Date Hierarchy">
+                <bi:Level Name="Date">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Date" />
+                  </bi:Source>
+                </bi:Level>
+			  </bi:Hierarchy>
+			  <bi:DisplayFolders>
+                <bi:DisplayFolder Name="Dates" >
+                  <bi:HierarchyRef Name="Date_Hierarchy1" />
+				</bi:DisplayFolder>
+			  </bi:DisplayFolders>
               <bi:Statistics RowCount="365" />
             </bi:EntityType>
           </EntityType>

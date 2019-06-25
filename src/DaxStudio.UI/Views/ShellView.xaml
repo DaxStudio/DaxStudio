@@ -17,7 +17,7 @@
                     
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
-        BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.AccentBaseColorBrush}"
+        BorderBrush="{DynamicResource DaxStudioBrush}"
         MinHeight="460"
         MinWidth="460"                    
         Height="720"

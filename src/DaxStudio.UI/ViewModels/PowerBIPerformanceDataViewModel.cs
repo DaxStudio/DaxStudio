@@ -198,6 +198,7 @@ namespace DaxStudio.UI.ViewModels
             if (perfData == null) return; // it the user clicked on an empty query exit here
             string queryHeader = $"// =================\n";
             queryHeader += $"// Operation       : {perfData.Sequence} \n";
+            queryHeader += $"// Visual          : {perfData.VisualName} \n";
             queryHeader += $"// Query Start     : {perfData.QueryStartTime}\n";
             queryHeader += $"// Query End       : {perfData.QueryEndTime}\n";
             queryHeader += $"// Render Start    : {perfData.RenderStartTime} \n";

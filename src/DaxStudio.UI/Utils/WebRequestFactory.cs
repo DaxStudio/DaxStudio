@@ -29,6 +29,8 @@ namespace DaxStudio.UI.Utils
 #if DEBUG
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
 #else
+        // TODO - look at switching over to daxstudio.org version as it's supported by a CDN
+        //public const string CurrentGithubVersionUrl = "https://daxstudio.org/CurrentReleaseVersion.json";
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/master/src/CurrentReleaseVersion.json";
 #endif
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.org";

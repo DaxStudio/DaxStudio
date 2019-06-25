@@ -1328,7 +1328,10 @@
                   <bi:PropertyRef Name="Internet_Current_Quarter_Sales_Performance" />
                   <bi:PropertyRef Name="Internet_Current_Quarter_Margin_Performance" />
                 </bi:DisplayFolder>
-              </bi:DisplayFolders>
+                <bi:DisplayFolder Name="QTD">
+                  <bi:PropertyRef Name="Internet_Previous_Quarter_Margin" />
+                </bi:DisplayFolder>
+				</bi:DisplayFolders>
               <bi:Statistics RowCount="60398" />
             </bi:EntityType>
           </EntityType>

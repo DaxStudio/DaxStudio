@@ -17,6 +17,8 @@ namespace DaxStudio.UI.Model
         public string RequestID { get; set; }
         public int AggregationMatchCount { get; set; }
         public int AggregationMissCount { get; set; }
+        public string RequestProperties { get; set; }
+        public string RequestParameters { get; set; }
         public string AggregationStatus { set { }
             get {
                 if (AggregationMatchCount > 0 && AggregationMissCount > 0) return "Partial";

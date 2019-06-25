@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		CommonAssemblyVersion.cs = CommonAssemblyVersion.cs
 		CurrentReleaseVersion.json = CurrentReleaseVersion.json
+		..\docs\CurrentReleaseVersion.json = ..\docs\CurrentReleaseVersion.json
 		setup-build-env.ps1 = setup-build-env.ps1
 	EndProjectSection
 EndProject
@@ -242,5 +243,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A980F882-ED32-4E77-981F-A37C0AB1410D}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
