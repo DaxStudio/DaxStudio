@@ -196,11 +196,12 @@ namespace DaxStudio.UI.ViewModels
                             csvWriter.NextRecord();
 
                         }
-                        // if cancel has been requested do not write any more files
-                        if (CancelRequested) break;
-
+                        
                         ActiveDocument.RefreshElapsedTime();
                         _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
+
+                        // if cancel has been requested do not write any more files
+                        if (CancelRequested) break;
                     }
                 }
                 catch (Exception ex)
@@ -211,8 +212,6 @@ namespace DaxStudio.UI.ViewModels
                     break; // exit from the loop if we have caught an exception 
                 }
                         
-                ActiveDocument.RefreshElapsedTime();
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.Name}.csv"));
             }
                 
             ActiveDocument.QueryStopWatch.Stop();

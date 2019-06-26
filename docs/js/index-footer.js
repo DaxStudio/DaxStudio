@@ -30,7 +30,8 @@ $(document).ready(function() {
             if (typeof(Storage) !== "undefined") {
                 localData = {
                     refreshDate: new Date(),
-                    downloadCnt: data.assets[0].download_count
+                    downloadCnt: data.assets[0].download_count,
+                    tagName: data.tag_name
                 }
                 localStorage.release = JSON.stringify(localData);
             }
