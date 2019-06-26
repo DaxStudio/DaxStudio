@@ -82,7 +82,11 @@
             </DataGrid.RowStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                    <MenuItem Command="Copy">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Command="SelectAll"></MenuItem>
                 </ContextMenu>
@@ -143,7 +147,11 @@
             </DataGrid.RowStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                    <MenuItem Command="Copy">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator/>
                     <MenuItem Command="SelectAll"></MenuItem>
                 </ContextMenu>

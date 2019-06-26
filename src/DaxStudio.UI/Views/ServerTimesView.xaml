@@ -52,7 +52,11 @@
                     
                         <custom:BindableRichTextBox.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                <MenuItem Command="Copy">
+                                <MenuItem.Icon>
+                                    <Image Source="{StaticResource CopyIcon}"/>
+                                </MenuItem.Icon>
+                                </MenuItem>
                                 <Separator/>
                                 <MenuItem Command="SelectAll"></MenuItem>
                             </ContextMenu>
@@ -253,7 +257,11 @@
                 <ContextMenu>
                     <ContextMenu.ItemsSource>
                         <CompositeCollection>
-                            <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                            <MenuItem Command="Copy" >
+                                <MenuItem.Icon>
+                                    <Image Source="{StaticResource CopyIcon}"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <Separator/>
                             <MenuItem Command="SelectAll"></MenuItem>
                             <Separator />

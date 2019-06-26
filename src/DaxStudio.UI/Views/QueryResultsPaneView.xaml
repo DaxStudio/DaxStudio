@@ -175,7 +175,11 @@
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Command="Copy" Icon="{StaticResource CopyIcon}"></MenuItem>
+                                    <MenuItem Command="Copy" >
+                                        <MenuItem.Icon>
+                                            <Image Source="{StaticResource CopyIcon}"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
