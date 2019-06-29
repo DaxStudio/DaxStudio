@@ -1216,10 +1216,14 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
-                NotifyOfPropertyChange(() => ElapsedQueryTime);
-                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
-                QueryCompleted();
 
+                // if this is an internal refresh session query don't  
+                if (!daxQuery.StartsWith(Constants.InternalQueryHeader))
+                {
+                    NotifyOfPropertyChange(() => ElapsedQueryTime);
+                    _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                    QueryCompleted();
+                }
             }
 
         }
@@ -1391,6 +1395,7 @@ namespace DaxStudio.UI.ViewModels
 
         private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
         {
+
             QueryHistoryEvent qhe = null;
             try
             {
@@ -1628,8 +1633,16 @@ namespace DaxStudio.UI.ViewModels
                 if (Databases.Contains(message.DatabaseName))
                     if (SelectedDatabase != message.DatabaseName)
                     {
-                        MetadataPane.ChangeDatabase( message.DatabaseName);
-                        OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                        try
+                        {
+                            MetadataPane.ChangeDatabase(message.DatabaseName);
+                            OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"));
+                        }
                     }
                     else
                         OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
