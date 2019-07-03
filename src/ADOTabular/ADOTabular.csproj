@@ -98,6 +98,9 @@
       <Aliases>ExcelAdomdClientReference</Aliases>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.Excel.Amo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.Amo.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -221,4 +224,5 @@
   <PropertyGroup>
     <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
   </PropertyGroup>
+  <Import Project="..\Util\ExtraCleanup.targets" />
 </Project>

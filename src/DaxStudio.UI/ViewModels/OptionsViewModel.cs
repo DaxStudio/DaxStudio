@@ -13,11 +13,14 @@ using DaxStudio.UI.Utils;
 using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace DaxStudio.UI.ViewModels
 {
+    [DataContract]
     [Export(typeof(IGlobalOptions))]
     [Export(typeof(OptionsViewModel))]
+    
     public class OptionsViewModel:Screen, IGlobalOptions
     {
         private const string DefaultEditorFontFamily = "Lucida Console";
@@ -131,6 +134,7 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public ISettingProvider SettingProvider { get; }
 
+        [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
             set{
@@ -146,6 +150,7 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public double EditorFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
 
+        [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
         public double EditorFontSize { get { return _editorFontSize; } 
             set {
@@ -170,6 +175,7 @@ namespace DaxStudio.UI.ViewModels
             ResultFontSize = DefaultResultsFontSize;
         }
 
+        [DataMember]
         [DefaultValue(DefaultResultsFontFamily)]
         public string ResultFontFamily {
             get { return _selectedResultFontFamily; }
@@ -185,6 +191,8 @@ namespace DaxStudio.UI.ViewModels
 
         [JsonIgnore]
         public double ResultFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
+
+        [DataMember]
         [DefaultValue(DefaultResultsFontSize)]
         public double ResultFontSize {
             get { return _resultFontSize; }
@@ -198,6 +206,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [DataMember]
         [DefaultValue(true)]
         public bool EditorShowLineNumbers { get { return _showLineNumbers; }
             set
@@ -210,6 +219,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [DataMember]
         [DefaultValue(true)]
         public bool EditorEnableIntellisense
         {
@@ -224,7 +234,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(false)]
+        [DataMember,DefaultValue(false)]
         public bool TraceDirectQuery {
             get { return _traceDirectQuery; }
             set {
@@ -237,7 +247,7 @@ namespace DaxStudio.UI.ViewModels
         }
         #region Http Proxy properties
 
-        [DefaultValue(true)]
+        [DataMember,DefaultValue(true)]
         public bool ProxyUseSystem
         {
             get { return _proxyUseSystem; }
@@ -259,7 +269,7 @@ namespace DaxStudio.UI.ViewModels
             get { return !_proxyUseSystem; }
         }
 
-        [DefaultValue("")]
+        [DataMember,DefaultValue("")]
         public string ProxyAddress
         {
             get { return _proxyAddress; }
@@ -274,7 +284,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue("")]
+        [DataMember, DefaultValue("")]
         public string ProxyUser
         {
             get { return _proxyUser; }
@@ -315,7 +325,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        [DefaultValue("")]
+        [DataMember, DefaultValue("")]
         public SecureString ProxySecurePassword
         {
             get { return _proxySecurePassword; }
@@ -333,7 +343,7 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        [DefaultValue(200)]
+        [DataMember, DefaultValue(200)]
         public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
             set
             {
@@ -346,7 +356,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool QueryHistoryShowTraceColumns
         {
             get { return _queryHistoryShowTraceColumns; }
@@ -361,7 +371,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        [DefaultValue(30)]
+        [DataMember, DefaultValue(30)]
         public int QueryEndEventTimeout
         {
             get
@@ -379,7 +389,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(10)]
+        [DataMember, DefaultValue(10)]
         public int DaxFormatterRequestTimeout
         {
             get
@@ -397,7 +407,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(DelimiterType.Comma)]
+        [DataMember, DefaultValue(DelimiterType.Comma)]
         public DelimiterType DefaultSeparator
         {
             get
@@ -415,7 +425,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(DaxFormatStyle.LongLine)]
+        [DataMember, DefaultValue(DaxFormatStyle.LongLine)]
         public DaxFormatStyle DefaultDaxFormatStyle {
             get {
                 return _defaultDaxFormatStyle;
@@ -448,7 +458,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool ShowPreReleaseNotifcations {
             get { return _showPreReleaseNotifcations; }
             set
@@ -461,7 +471,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ShowTooltipBasicStats
         {
             get { return _showTooltipBasicStats; }
@@ -475,7 +485,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ShowTooltipSampleData
         {
             get { return _showTooltipSampleData; }
@@ -506,7 +516,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _excludeHeadersWhenCopyingResults = false;
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ExcludeHeadersWhenCopyingResults
         {
             get
@@ -525,7 +535,7 @@ namespace DaxStudio.UI.ViewModels
 
         
         private int _traceStartupTimeout = 30;
-        [DefaultValue(30)]
+        [DataMember, DefaultValue(30)]
         public int TraceStartupTimeout { get => _traceStartupTimeout; set {
                 _traceStartupTimeout = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -539,7 +549,7 @@ namespace DaxStudio.UI.ViewModels
         // Preview Feature Toggles
 
         private bool _showExportMetrics = false;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool ShowExportMetrics
         {
             get
@@ -557,7 +567,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showExternalTools = false;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool ShowExternalTools { get => _showExternalTools;
             set {
                 _showExternalTools = value;
@@ -568,7 +578,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showExportAllData = false;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool ShowExportAllData { get => _showExportAllData;
             set {
                 _showExportAllData = value;
@@ -581,7 +591,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _scaleResultsFontWithEditor = true;
 
         private string _theme = "Light";
-        [DefaultValue("Light")]
+        [DataMember, DefaultValue("Light")]
         public string Theme
         {
             get { return _theme; }
@@ -599,7 +609,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _ResultAutoFormat = false;
         private int _codeCompletionWindowWidthIncrease;
         private bool _keepMetadataSearchOpen;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool ResultAutoFormat {
             get => _ResultAutoFormat;
             set {
@@ -610,7 +620,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ScaleResultsFontWithEditor { get => _scaleResultsFontWithEditor;
             set {
                 _scaleResultsFontWithEditor = value;
@@ -619,7 +629,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
 
-        [DefaultValue(100)]
+        [DataMember, DefaultValue(100)]
         public int CodeCompletionWindowWidthIncrease { get => _codeCompletionWindowWidthIncrease;
             set {
                 if (value < 100) value = 100; // value should not be less than 100% of the default size
@@ -631,7 +641,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool KeepMetadataSearchOpen { get => _keepMetadataSearchOpen;
             set {
                 _keepMetadataSearchOpen = value;
@@ -642,7 +652,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataLocalMachine = true;
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool AutoRefreshMetadataLocalMachine { get => _autoRefreshMetadataLocalMachine;
             set {
                 _autoRefreshMetadataLocalMachine = value;
@@ -653,7 +663,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataLocalNetwork = true;
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool AutoRefreshMetadataLocalNetwork { get => _autoRefreshMetadataLocalNetwork;
             set {
                 _autoRefreshMetadataLocalNetwork = value;
@@ -664,7 +674,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataCloud = true;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool AutoRefreshMetadataCloud { get => _autoRefreshMetadataCloud;
             set {
                 _autoRefreshMetadataCloud = value;
@@ -675,7 +685,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showHiddenMetadata = true;
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ShowHiddenMetadata { get => _showHiddenMetadata;
                 set {
                 _showHiddenMetadata = value;
@@ -685,7 +695,7 @@ namespace DaxStudio.UI.ViewModels
             } }
 
         private bool _setClearCacheAndRunAsDefaultRunStyle = false;
-        [DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool SetClearCacheAsDefaultRunStyle { get => _setClearCacheAndRunAsDefaultRunStyle;
             set
             {
@@ -697,7 +707,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _sortFoldersFirstInMetadata = false;
-        [DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool SortFoldersFirstInMetadata { get => _sortFoldersFirstInMetadata;
             set {
                 _sortFoldersFirstInMetadata = value;
@@ -709,7 +719,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         private string _windowPosition = string.Empty;
-        [DefaultValue(DefaultWindowPosition)]
+        [DataMember, DefaultValue(DefaultWindowPosition)]
         public string WindowPosition {
             get { return _windowPosition; }
             set {
@@ -721,7 +731,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private Version _dismissedVersion = new Version();
-        [DefaultValue("0.0.0.0")]
+        [DataMember, DefaultValue("0.0.0.0")]
         public Version DismissedVersion
         {
             get { return _dismissedVersion; }
@@ -735,7 +745,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private DateTime _lastVersionCheck = DateTime.MinValue;
-        [DefaultValue("1900-01-01 00:00:00Z")]
+        [DataMember, DefaultValue("1900-01-01 00:00:00Z")]
         public DateTime LastVersionCheckUTC
         {
             get { return _lastVersionCheck; }

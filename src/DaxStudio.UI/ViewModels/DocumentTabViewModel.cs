@@ -130,15 +130,22 @@ namespace DaxStudio.UI.ViewModels
         private void OpenFileInNewWindow(string fileName)
         {
             Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", "Opening " + fileName);
-            var newDoc = _documentFactory(_windowManager, _eventAggregator);
-            Items.Add(newDoc);
-            ActivateItem(newDoc);
-            ActiveDocument = newDoc;
-                       
-            newDoc.DisplayName = "Opening...";
-            newDoc.FileName = fileName;
-            newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
-            
+            try
+            {
+                var newDoc = _documentFactory(_windowManager, _eventAggregator);
+                Items.Add(newDoc);
+                ActivateItem(newDoc);
+                ActiveDocument = newDoc;
+
+                newDoc.DisplayName = "Opening...";
+                newDoc.FileName = fileName;
+                newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occurred while attempting to open '{fileName}': {ex.Message}"));
+            }
         }
 
         private void OpenFileInActiveDocument(string fileName)

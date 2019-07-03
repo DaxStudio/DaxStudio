@@ -99,8 +99,7 @@ namespace ADOTabular
                 var eEntitySet = rdr.NameTable.Add("EntitySet");
                 var eEntityType = rdr.NameTable.Add("EntityType");
                 var eAssociationSet = rdr.NameTable.Add("AssociationSet");
-                //var eDisplayFolder = rdr.NameTable.Add("DisplayFolder");
-                //var eKpi = rdr.NameTable.Add("Kpi");
+// TODO - process EntityContainer in order to read culture and maybe ModelCapabilities
 
                 while (rdr.Read())
                 {
