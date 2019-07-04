@@ -96,9 +96,18 @@ namespace DaxStudio.Common
             string title = "";
             foreach (var handle in EnumerateProcessWindowHandles(procId))
             {
-                title = GetWindowTextTimeout(handle, timeout);
+                try
+                {
+                    // if there is an issue with the window handle we just
+                    // ignore it and skip to the next one in the collection
+                    title = GetWindowTextTimeout(handle, timeout);
+                }
+                catch
+                {
+                    title = "";
+                }
                 if (title.Length > 0) return title;
-            }
+                }
             return title;
         }
 

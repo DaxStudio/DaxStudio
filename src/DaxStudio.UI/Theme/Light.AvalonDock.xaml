@@ -14,7 +14,7 @@
     <Color x:Key="AvalonDock.Border.Background.Color">#FFFFFFFF</Color>
     <Color x:Key="AvalonDock.Control.Background.Color">#FFFFFFFF</Color>
     <Color x:Key="AvalonDock.Transparent.Color">#00FFFFFF</Color>
-    <!--<Color x:Key="AvalonDock.Text.Color">#00CCCCCC</Color>-->
+    <Color x:Key="AvalonDock.Text.Color">#00CCCCCC</Color>
 
     <SolidColorBrush x:Key="AvalonDock.Transparent.Brush" Color="{StaticResource AvalonDock.Transparent.Color}"/>
     <SolidColorBrush x:Key="AvalonDock.Border.Background.Brush" Color="{StaticResource AvalonDock.Border.Background.Color}"/>
