@@ -669,7 +669,11 @@
                                LargeIcon="{StaticResource LoadPBIPerfDataIcon}"
                                Margin="4,0"
                                SizeDefinition="Large,Large,Small"
-                               />
+                               >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Load Power BI Performance Data"  Text="Import performance data that has been exported from the Power BI Performance Analyzer"></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
 
 

@@ -43,7 +43,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isConnecting = false;
         private readonly string _sqlProfilerCommand = "";
 
-        private const string urlDaxStudioWiki = "http://daxstudio.org";
+        private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
         private ISettingProvider SettingProvider;
@@ -496,7 +496,7 @@ namespace DaxStudio.UI.ViewModels
             OpenUrl(urlSsasForum, "LinkToSsasForum");
         }
 
-        internal void OpenUrl(string name, string url)
+        internal void OpenUrl(string url, string name)
         {
             try
             {
