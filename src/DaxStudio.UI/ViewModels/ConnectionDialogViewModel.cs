@@ -499,6 +499,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
                 var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
+                Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 _eventAggregator.PublishOnUIThread(connEvent);
             }
             catch (Exception ex)

@@ -515,7 +515,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Handle(ApplicationActivatedEvent message)
         {
-            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:Start", message);
+            Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
             {
                 if (ActiveDocument.ShouldAutoRefreshMetadata())
@@ -528,7 +528,7 @@ namespace DaxStudio.UI.ViewModels
                 RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
             }
            
-            Log.Debug("{Class} {Event} {@ApplicationActivatedEvent}", "RibbonViewModel", "Handle:ApplicationActivatedEvent:End", message);
+            Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
         }
 
         
