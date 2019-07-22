@@ -245,7 +245,6 @@
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -263,6 +262,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.9.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.AvalonDock.3.5.9\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
@@ -848,10 +850,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\AvalonDock\source\Components\Xceed.Wpf.AvalonDock\Xceed.Wpf.AvalonDock.csproj">
-      <Project>{db81988f-e0f2-45a0-a1fd-8c37f3d35244}</Project>
-      <Name>Xceed.Wpf.AvalonDock</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>

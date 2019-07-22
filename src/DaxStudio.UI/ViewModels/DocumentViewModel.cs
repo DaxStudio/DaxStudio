@@ -44,9 +44,10 @@ using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
 using CsvHelper;
 
+using Xceed.Wpf.AvalonDock.Layout;
+
 namespace DaxStudio.UI.ViewModels
 {
-
 
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
@@ -54,6 +55,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
+        //, Xceed.Wpf.AvalonDock.Layout.ILayoutElement
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
@@ -118,6 +120,7 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             Init(_ribbon);
         }
+
 
         public void Init(RibbonViewModel ribbon)
         {
@@ -2243,6 +2246,7 @@ namespace DaxStudio.UI.ViewModels
                         if (taskResult.IsFaulted)
                         {
                             _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {taskResult?.Exception?.InnerException?.Message}"));
+                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", taskResult?.Exception?.InnerException?.Message);
                         }
                         else
                         {
@@ -2996,6 +3000,10 @@ namespace DaxStudio.UI.ViewModels
                 return DisplayName.TrimEnd('*');
             } 
         }
+
+        public IDaxDocument LayoutElement => this;
+        public string Title => FileAndExtension;
+
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
         private bool _shouldSave = true;
         private bool _traceChanging;
@@ -3229,6 +3237,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 
+                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+
                 if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 //else return null; 
                 //else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
@@ -3238,5 +3248,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IGlobalOptions Options { get; set; }
+
+        //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
+
+        //public ILayoutRoot Root => LayoutElement.Root;
     }
 }

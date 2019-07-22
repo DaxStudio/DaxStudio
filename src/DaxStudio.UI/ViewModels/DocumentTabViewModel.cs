@@ -80,6 +80,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
+
+                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+
                 if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
                 else return new Theme.DaxStudioLightTheme();
             }
