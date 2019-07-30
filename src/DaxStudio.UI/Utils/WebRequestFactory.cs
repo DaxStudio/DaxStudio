@@ -14,6 +14,12 @@ namespace DaxStudio.UI.Utils
 
     public class WebRequestFactory: IHandle<UpdateGlobalOptions>
     {
+        static WebRequestFactory()
+        {
+            // Force the use of TLS1.2
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+        }
+
         [DllImport("wininet.dll")]
         private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
  
