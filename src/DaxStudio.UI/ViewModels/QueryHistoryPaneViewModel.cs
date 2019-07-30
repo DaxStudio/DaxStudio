@@ -13,15 +13,6 @@ using DaxStudio.Interfaces;
 namespace DaxStudio.UI.ViewModels
 {
 
-    //public class QueryHistoryPaneViewModelFactory
-    //{
-    //    [Export(typeof(Func<GlobalQueryHistory,IEventAggregator,DocumentViewModel,QueryHistoryPaneViewModel>))]
-    //    public QueryHistoryPaneViewModel Create(GlobalQueryHistory globalHistory, IEventAggregator eventAggregator, DocumentViewModel document)
-    //    {
-    //        return new QueryHistoryPaneViewModel(globalHistory, eventAggregator,document);
-    //    }
-    //}
-
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
     public class QueryHistoryPaneViewModel : ToolWindowBase

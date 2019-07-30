@@ -44,9 +44,10 @@ using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
 using CsvHelper;
 
+using Xceed.Wpf.AvalonDock.Layout;
+
 namespace DaxStudio.UI.ViewModels
 {
-
 
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
@@ -54,6 +55,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof (DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
+        //, Xceed.Wpf.AvalonDock.Layout.ILayoutElement
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
@@ -118,6 +120,7 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             Init(_ribbon);
         }
+
 
         public void Init(RibbonViewModel ribbon)
         {
@@ -241,32 +244,24 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-            
+
             try
             {
+                // this check strips out unicode non-breaking spaces and replaces them
+                // with a "normal" space. This is helpful when pasting code from other 
+                // sources like web pages or word docs which may have non-breaking
+                // which would normally cause the tabular engine to throw an error
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
-                if (_editor.SelectionLength > 0)
-                {
-                    // if we have a selection - delete the currently selected text
-                    _editor.SelectedText = "";
-                    _editor.SelectionLength = 0;
-                }
-                // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
-                // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error    
-                _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                e.DataObject = dataObject;
 
-                // tell the paste event that it has been handled
-                e.Handled = true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error while Pasting: {message}", ex.Message);
                 OutputError($"Error while Pasting: {ex.Message}");
             }
-            finally
-            {
-                e.CancelCommand();
-            }
+
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -1216,10 +1211,14 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
-                NotifyOfPropertyChange(() => ElapsedQueryTime);
-                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
-                QueryCompleted();
 
+                // if this is an internal refresh session query don't  
+                if (!daxQuery.StartsWith(Constants.InternalQueryHeader))
+                {
+                    NotifyOfPropertyChange(() => ElapsedQueryTime);
+                    _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                    QueryCompleted();
+                }
             }
 
         }
@@ -1391,6 +1390,7 @@ namespace DaxStudio.UI.ViewModels
 
         private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
         {
+
             QueryHistoryEvent qhe = null;
             try
             {
@@ -1628,8 +1628,16 @@ namespace DaxStudio.UI.ViewModels
                 if (Databases.Contains(message.DatabaseName))
                     if (SelectedDatabase != message.DatabaseName)
                     {
-                        MetadataPane.ChangeDatabase( message.DatabaseName);
-                        OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                        try
+                        {
+                            MetadataPane.ChangeDatabase(message.DatabaseName);
+                            OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"));
+                        }
                     }
                     else
                         OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
@@ -2230,6 +2238,7 @@ namespace DaxStudio.UI.ViewModels
                         if (taskResult.IsFaulted)
                         {
                             _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {taskResult?.Exception?.InnerException?.Message}"));
+                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", taskResult?.Exception?.InnerException?.Message);
                         }
                         else
                         {
@@ -2983,6 +2992,10 @@ namespace DaxStudio.UI.ViewModels
                 return DisplayName.TrimEnd('*');
             } 
         }
+
+        public IDaxDocument LayoutElement => this;
+        public string Title => FileAndExtension;
+
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
         private bool _shouldSave = true;
         private bool _traceChanging;
@@ -3216,6 +3229,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 
+                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+
                 if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 //else return null; 
                 //else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
@@ -3225,5 +3240,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IGlobalOptions Options { get; set; }
+
+        //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
+
+        //public ILayoutRoot Root => LayoutElement.Root;
     }
 }

@@ -226,13 +226,15 @@
                 <ControlTemplate>
                     <Grid >
                         <!-- Tables -->
+                        <!--  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"  -->
                         <ctrl:TreeViewEx x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                                         Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
                                         FocusManager.IsFocusScope="True"
                                         dd:DragDrop.IsDragSource="True"
                                         dd:DragDrop.IsDropTarget="False" 
-                                        dd:DragDrop.DragHandler="{Binding}"                         
-                                        cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem)]"         
+                                        dd:DragDrop.DragHandler="{Binding}"   
+                                         
+                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"         
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         Margin="0,2,0,-2">

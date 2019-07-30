@@ -53,6 +53,8 @@ namespace ADOTabular
             get { return IsPerspective? MetadataImages.Perspective : MetadataImages.Model; }
         }
 
+        public string Culture { get; private set; }
+
         internal void AddRole(ADOTabularColumn col)
         {
             var roleId = col.Role;

@@ -23,6 +23,8 @@ namespace DaxStudio.UI
     using DaxStudio.UI.Utils;
     using DaxStudio.UI.Events;
     using DaxStudio.UI.Interfaces;
+    using DaxStudio.Interfaces;
+    using DaxStudio.UI.Model;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -90,9 +92,13 @@ namespace DaxStudio.UI
                 */
 
                 ConventionManager.AddElementConvention<Fluent.Spinner>(Fluent.Spinner.ValueProperty, "Value", "ValueChanged");
-                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
-                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.IntegerUpDown>(Xceed.Wpf.Toolkit.IntegerUpDown.ValueProperty, "Value", "ValueChanged");
-                ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
+
+                // TODO - do I need to replace these conventions ??
+                //ConventionManager.AddElementConvention<NumericUpDownLib.DoubleUpDown>(NumericUpDownLib.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
+
+                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
+                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.IntegerUpDown>(Xceed.Wpf.Toolkit.IntegerUpDown.ValueProperty, "Value", "ValueChanged");
+                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
 
                 // Add Fluent Ribbon resovler
                 BindingScope.AddChildResolver<Fluent.Ribbon>(FluentRibbonChildResolver);
@@ -111,11 +117,9 @@ namespace DaxStudio.UI
                 _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
-                if (JsonSettingProvider.SettingsFileExists())
-                    batch.AddExportedValue<ISettingProvider>(new JsonSettingProvider());
-                else
-                    batch.AddExportedValue<ISettingProvider>(new RegistrySettingProvider());
 
+
+                
 	            batch.AddExportedValue<IWindowManager>(new WindowManager());
 	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());
 	            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
@@ -124,12 +128,21 @@ namespace DaxStudio.UI
 	            batch.AddExportedValue(_container);
 	            batch.AddExportedValue(catalog);
 
-	            _container.Compose(batch);
+                var settingFactory = new SettingsProviderFactory();
+                ISettingProvider settingProvider = settingFactory.GetSettingProvider();
+
+                batch.AddExportedValue<ISettingProvider>(settingProvider);
+
+                _container.Compose(batch);
 
 	            // Add AvalonDock binding convetions
 	            AvalonDockConventions.Install();
 
-                ConfigureKeyBindings();
+                //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
+
+                
+
+                ConfigureKeyBindingConvention();
 
 	            // TODO - not working
 	            //VisibilityBindingConvention.Install();
@@ -150,7 +163,12 @@ namespace DaxStudio.UI
             return GetInstance(typeof(IEventAggregator), null) as IEventAggregator;
         }
 
-		protected override object GetInstance(Type serviceType, string key)
+        public IGlobalOptions GetOptions()
+        {
+            return GetInstance(typeof(IGlobalOptions), null) as IGlobalOptions;
+        }
+
+        protected override object GetInstance(Type serviceType, string key)
 		{
 			var contract = string.IsNullOrEmpty(key) ? AttributedModelServices.GetContractName(serviceType) : key;
 			var exports = _container.GetExportedValues<object>(contract);
@@ -241,7 +259,7 @@ namespace DaxStudio.UI
         //    }
         //}
 
-        private void ConfigureKeyBindings()
+        private void ConfigureKeyBindingConvention()
         {
             var trigger = Parser.CreateTrigger;
 

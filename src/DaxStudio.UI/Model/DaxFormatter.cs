@@ -101,6 +101,12 @@ namespace DaxStudio.UI.Model
     public class DaxFormatterProxy
     {
 
+        static DaxFormatterProxy()
+        {
+            // force the use of TLS 1.2
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+        }
+
         private static string redirectUrl = null;  // cache the redirected URL
         private static string redirectHost = null;
         //public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)

@@ -11,6 +11,7 @@ using GongSolutions.Wpf.DragDrop;
 using Serilog;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -52,8 +53,12 @@ namespace DaxStudio.UI.ViewModels
         protected virtual void OnConnectionChanged()
         { }
 
-        public void MouseDoubleClick(IADOTabularObject item)
+        public void MouseDoubleClick(IADOTabularObject item, MouseButtonEventArgs e)
         {
+            // suppress the expand/collapse behaviour of the tree view if a shift key is held down
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) e.Handled = true;
+            if (e.ClickCount > 2) e.Handled = true;
+
             if (item != null)
             {
                 var txt = item.DaxName;

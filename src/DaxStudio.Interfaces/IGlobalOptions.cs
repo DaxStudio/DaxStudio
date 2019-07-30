@@ -1,4 +1,6 @@
 ﻿using DaxStudio.Interfaces.Enums;
+using System;
+using System.ComponentModel;
 using System.Security;
 
 
@@ -6,6 +8,7 @@ namespace DaxStudio.Interfaces
 {
     public interface IGlobalOptions
     {
+        [DefaultValue(true)]
         bool EditorShowLineNumbers { get; set; }
         double EditorFontSizePx { get; }
         string EditorFontFamily { get; set; }
@@ -48,5 +51,9 @@ namespace DaxStudio.Interfaces
         bool ShowHiddenMetadata { get; set; }
         bool SetClearCacheAsDefaultRunStyle { get; set; }
         bool SortFoldersFirstInMetadata { get; set; }
+        string WindowPosition { get; set; }
+
+        Version DismissedVersion { get; set; }
+        DateTime LastVersionCheckUTC { get; set; }
     }
 }

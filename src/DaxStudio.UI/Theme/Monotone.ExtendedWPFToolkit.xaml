@@ -2599,8 +2599,8 @@
 
     
     <!-- Range slider stuff -->
-    <conv:SliderThumbWidthConverter  x:Key="SliderThumbWidthConverter" />
-    <xtk:SolidColorBrushToColorConverter x:Key="SolidColorBrushToColorConverter" />
+    <!--<conv:SliderThumbWidthConverter  x:Key="SliderThumbWidthConverter" />
+    <xtk:SolidColorBrushToColorConverter x:Key="SolidColorBrushToColorConverter" />-->
     <Style x:Key="DefaultRangeStyle" TargetType="{x:Type RepeatButton}">
         <Setter Property="Template">
             <Setter.Value>
