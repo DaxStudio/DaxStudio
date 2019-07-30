@@ -244,32 +244,24 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-            
+
             try
             {
+                // this check strips out unicode non-breaking spaces and replaces them
+                // with a "normal" space. This is helpful when pasting code from other 
+                // sources like web pages or word docs which may have non-breaking
+                // which would normally cause the tabular engine to throw an error
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
-                if (_editor.SelectionLength > 0)
-                {
-                    // if we have a selection - delete the currently selected text
-                    _editor.SelectedText = "";
-                    _editor.SelectionLength = 0;
-                }
-                // strip out unicode "non-breaking" space characters \u00A0 and replace with standard spaces
-                // the SSAS engine does not understand "non-breaking" spaces and throws a syntax error    
-                _editor.Document.Insert(_editor.CaretOffset, content.Replace('\u00A0', ' '));
+                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                e.DataObject = dataObject;
 
-                // tell the paste event that it has been handled
-                e.Handled = true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error while Pasting: {message}", ex.Message);
                 OutputError($"Error while Pasting: {ex.Message}");
             }
-            finally
-            {
-                e.CancelCommand();
-            }
+
         }
 
         private void OnDrop(object sender, DragEventArgs e)
