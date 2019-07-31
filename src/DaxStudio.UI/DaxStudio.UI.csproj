@@ -670,8 +670,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Theme\Light.DaxStudio.xaml">
+      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
