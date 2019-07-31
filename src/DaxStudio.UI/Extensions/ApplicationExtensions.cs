@@ -98,8 +98,10 @@ namespace DaxStudio.UI.Extensions
             //app.Resources.MergedDictionaries.Add(dictAccent);
 
             // add custom accent and theme resource dictionaries to the ThemeManager
+
             ThemeManager.AddTheme( new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml"));
-            ThemeManager.AddTheme(new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml"));
+            //ThemeManager.AddTheme(new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml"));
+            
             // get the current theme from the application
             var theme = ThemeManager.DetectTheme(Application.Current);
 

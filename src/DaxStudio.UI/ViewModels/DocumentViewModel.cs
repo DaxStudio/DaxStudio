@@ -3231,11 +3231,11 @@ namespace DaxStudio.UI.ViewModels
 
                 return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
 
-                if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
-                //else return null; 
-                //else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-                //else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
-                else return new Theme.DaxStudioLightTheme();
+                //if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
+                ////else return null; 
+                ////else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                ////else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
+                //else return new Theme.DaxStudioLightTheme();
             }
         }
 

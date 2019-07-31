@@ -47,6 +47,7 @@
     </Reference>
     <Reference Include="Microsoft.Excel.Amo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.Amo.dll</HintPath>
+      <Aliases>ExcelAmo</Aliases>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
@@ -110,4 +111,18 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="solveAliasProblem">
+    <ConvertToAbsolutePath Paths="..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll">
+      <Output TaskParameter="AbsolutePaths" PropertyName="FullPathOriginal" />
+    </ConvertToAbsolutePath>
+    <ItemGroup>
+      <ReferencePath Remove="$(FullPathOriginal)" />
+      <ReferencePath Include="$(FullPathOriginal)">
+        <Aliases>ExcelAdomdClientReference</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
+  </PropertyGroup>
 </Project>

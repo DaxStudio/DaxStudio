@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -453,9 +453,8 @@
     <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
-    <Compile Include="Theme\DaxStudioLightTheme.cs" />
-    <Compile Include="Theme\MonotoneTheme.cs" />
     <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
+    <Compile Include="Theme\DaxStudioLightTheme.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
     <Compile Include="Triggers\InputBindingTrigger.cs">
       <SubType>Code</SubType>
@@ -670,46 +669,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Theme\Light.AvalonDock.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <EmbeddedResource Include="Theme\Light.DaxStudio.xaml">
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.AvalonDock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\DarkTheme.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.DaxStudio.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Monotone.AvalonDock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Monotone.Brushes.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Monotone.Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Monotone.DaxEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Monotone.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </EmbeddedResource>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>
@@ -1290,24 +1253,6 @@
     <Resource Include="Images\icon-layout-save-16.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Theme\AvalonDockImages\DockAnchorableBottom.png" />
-    <Resource Include="Theme\AvalonDockImages\DockAnchorableLeft.png" />
-    <Resource Include="Theme\AvalonDockImages\DockAnchorableRight.png" />
-    <Resource Include="Theme\AvalonDockImages\DockAnchorableTop.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentAsAnchorableBottom.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentAsAnchorableLeft.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentAsAnchorableRight.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentAsAnchorableTop.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentBottom.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentInside.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentLeft.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentRight.png" />
-    <Resource Include="Theme\AvalonDockImages\DockDocumentTop.png" />
-    <Resource Include="Theme\AvalonDockImages\DockPaneEmpty.png" />
-    <Resource Include="Theme\AvalonDockImages\DockPaneLargeEmpty.png" />
-    <Resource Include="Theme\AvalonDockImages\HTabGroup.png" />
-    <Resource Include="Theme\AvalonDockImages\Locked.png" />
-    <Resource Include="Theme\AvalonDockImages\VTabGroup.png" />
     <Resource Include="Images\icon-export-data%4096ppi.png" />
   </ItemGroup>
   <ItemGroup>
