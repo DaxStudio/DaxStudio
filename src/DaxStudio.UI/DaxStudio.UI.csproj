@@ -669,10 +669,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <EmbeddedResource Include="Theme\Light.DaxStudio.xaml">
+    <Page Include="Theme\Light.DaxStudio.xaml">
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>
-    </EmbeddedResource>
+    </Page>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>
