@@ -250,7 +250,7 @@
                   SelectionUnit="FullRow"
                   HeadersVisibility="Column"
                   ClipboardCopyMode="IncludeHeader"
-                  ScrollViewer.CanContentScroll="False"
+                  ScrollViewer.CanContentScroll="True"
                   FrozenColumnCount="1"
                   GridLinesVisibility="None" BorderThickness="1,0,0,0" BorderBrush="{x:Null}" >
             <DataGrid.ContextMenu>
