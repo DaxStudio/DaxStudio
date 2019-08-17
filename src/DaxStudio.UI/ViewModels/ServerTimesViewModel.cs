@@ -526,7 +526,7 @@ namespace DaxStudio.UI.ViewModels
             var eventConverter = new ServerTimingConverter();
             var deseralizeSettings = new JsonSerializerSettings();
             deseralizeSettings.Converters.Add(eventConverter);
-            deseralizeSettings.TypeNameAssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+            deseralizeSettings.TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple;
             deseralizeSettings.TypeNameHandling = TypeNameHandling.Auto;
 
             ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data, deseralizeSettings);

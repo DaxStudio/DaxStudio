@@ -1,0 +1,217 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Xceed.Wpf.AvalonDock"
+                    xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock">
+<!--
+    xmlns:local="clr-namespace:DaxStudio.UI.Resources.Styles"
+                xmlns:shell1="clr-namespace:Microsoft.Windows.Shell"
+-->
+    <Style x:Key="NewNavigatorWindow" TargetType="{x:Type avalonDockControls:NavigatorWindow}">
+        <!--<Setter Property="Background"
+                        Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />-->
+        <Setter Property="Background"
+                        Value="{DynamicResource {x:Static Colors.Green}}" />
+        <Setter Property="SizeToContent"
+                        Value="WidthAndHeight" />
+        <Setter Property="ResizeMode"
+                        Value="NoResize" />
+        <Setter Property="shell:WindowChrome.WindowChrome">
+            <Setter.Value>
+                <shell:WindowChrome ResizeBorderThickness="10"
+                                        CaptionHeight="16"
+                                        CornerRadius="3,3,3,3"
+                                        GlassFrameThickness="4" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type avalonDockControls:NavigatorWindow}">
+                    <Grid>
+                        <Border x:Name="WindowBorder"
+                                BorderThickness="3"
+                                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+                            <Grid Margin="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition MinHeight="54" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition MinHeight="42" />
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Source="{Binding SelectedDocument.LayoutElement.IconSource, Converter={StaticResource NullToDoNothingConverter}}"
+                                       Stretch="None">
+                                        </Image>
+                                        <TextBlock x:Name="selectedElementTitle"
+                                           Text="{Binding SelectedDocument.LayoutElement.Title}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Grid.Column="1"
+                                           VerticalAlignment="Center"
+                                           FontWeight="Bold"
+                                           Margin="4,0,0,0">
+                                        </TextBlock>
+                                    </Grid>
+                                    <TextBlock x:Name="selectedElementDescription"
+                                         Text="{Binding SelectedDocument.LayoutElement.Description}"
+                                         TextTrimming="CharacterEllipsis"
+                                         VerticalAlignment="Center">
+                                    </TextBlock>
+                                </Grid>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Margin="5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Active Tool Windows 2"
+                                           FontWeight="Bold"
+                                           Margin="0,3,0,4">
+                                        </TextBlock>
+                                        <ListBox x:Name="PART_AnchorableListBox"
+                                         Grid.Row="1"
+                                         ItemsSource="{Binding Anchorables}"
+                                         SelectedItem="{Binding SelectedAnchorable, Mode=TwoWay}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         MaxHeight="400"
+                                         Visibility="Collapsed"
+                                         FocusVisualStyle="{x:Null}">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Cursor"
+                                              Value="Hand" />
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                 Value="True">
+                                                            <Setter Property="Background"
+                                                  Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                                                            <Setter Property="TextElement.Foreground"
+                                                  Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="{Binding LayoutElement.IconSource, Converter={StaticResource NullToDoNothingConverter}}"
+                                               Stretch="None">
+                                                        </Image>
+                                                        <TextBlock Text="{Binding LayoutElement.Title}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Grid.Column="1"
+                                                   Margin="4,2,0,2">
+                                                        </TextBlock>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Grid>
+                                    <Grid Grid.Column="1"
+                                    Margin="5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Active Files"
+                                           FontWeight="Bold"
+                                           Margin="0,3,0,4">
+                                        </TextBlock>
+                                        <ListBox x:Name="PART_DocumentListBox"
+                                         Grid.Row="1"
+                                         ItemsSource="{Binding Documents}"
+                                         SelectedItem="{Binding SelectedDocument, Mode=TwoWay}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         MaxHeight="400"
+                                         FocusVisualStyle="{x:Null}">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Cursor"
+                                              Value="Hand" />
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                 Value="True">
+                                                            <Setter Property="Background"
+                                                  Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                                                            <Setter Property="TextElement.Foreground"
+                                                  Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="{Binding LayoutElement.IconSource, Converter={StaticResource NullToDoNothingConverter}}"
+                                               Stretch="None">
+                                                        </Image>
+                                                        <TextBlock Text="{Binding LayoutElement.Title}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Grid.Column="1"
+                                                   Margin="4,2,0,2">
+                                                        </TextBlock>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                            <ListBox.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Vertical" />
+                                                </ItemsPanelTemplate>
+                                            </ListBox.ItemsPanel>
+                                        </ListBox>
+                                    </Grid>
+                                </Grid>
+
+                                <Grid Grid.Row="2">
+                                    <TextBlock Text="{Binding SelectedDocument.LayoutElement.ToolTip}"
+                                         VerticalAlignment="Center">
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="SelectedDocument"
+                                 Value="{x:Null}">
+                            <Setter Property="Text"
+                                  Value="{Binding SelectedAnchorable.LayoutElement.Title}"
+                                  TargetName="selectedElementTitle" />
+                            <Setter Property="Text"
+                                  Value="{x:Null}"
+                                  TargetName="selectedElementDescription" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <Style TargetType="{x:Type avalonDockControls:NavigatorWindow}" BasedOn="{StaticResource NewNavigatorWindow}">
+        <Setter Property="Background"
+                        Value="{DynamicResource {x:Static Colors.Green}}" />
+    </Style>
+</ResourceDictionary>

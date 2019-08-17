@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
+             xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+             xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Xceed.Wpf.AvalonDock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
@@ -13,9 +15,16 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
-        <local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
+        <ResourceDictionary>
+            <local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
+                <!--<ResourceDictionary Source="Styles/AvalonDock.NavigatorWindow.xaml"/>-->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
     
     
@@ -23,9 +32,9 @@
         <avalondock:DockingManager 
             x:Name="Items"
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"  
-            Theme="{Binding AvalonDockTheme}"
             >
-
+            <!-- Theme="{Binding AvalonDockTheme}"-->
+            
             <avalondock:DockingManager.LayoutItemTemplateSelector>
                 <selectors:AvalonDockTemplateSelector>
                     <selectors:AvalonDockTemplateSelector.DocumentViewTemplate>
@@ -37,9 +46,10 @@
             </avalondock:DockingManager.LayoutItemTemplateSelector>
 
 
-            <!--<avalondock:DockingManager.Theme>
+
+            <avalondock:DockingManager.Theme>
                 <avalondock:GenericTheme />
-            </avalondock:DockingManager.Theme>-->
+            </avalondock:DockingManager.Theme>
 
             <!-- Note the Binding to "Content". This is how AvalonDock holds the model -->
             <!-- Header Template used for both solutions. Note that AvalonDock has default Templates itself -->
@@ -107,7 +117,20 @@
             </avalondock:DockingManager.DocumentTemplate>
             -->
 
-            
+            <avalondock:DockingManager.LayoutItemContainerStyleSelector>
+                <utils:PanesStyleSelector>
+                <utils:PanesStyleSelector.DocumentStyle>
+                 <!--Define Style of a Document View--> 
+                <Style TargetType="{x:Type avalonDockControls:LayoutItem}">
+                    <Setter Property="Title" Value="{Binding Model.DisplayName, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Setter Property="ToolTip" Value="{Binding Model.FilePath}"/>
+                    <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}"/>
+                    <Setter Property="IconSource" Value="{Binding Model.IconSource}"/>
+                    <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                </Style>
+                </utils:PanesStyleSelector.DocumentStyle>
+                </utils:PanesStyleSelector>
+            </avalondock:DockingManager.LayoutItemContainerStyleSelector>
 
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="DocumentClosing">
@@ -117,6 +140,15 @@
                     </cal:ActionMessage>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
+
+            <avalondock:DockingManager.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                
+            </avalondock:DockingManager.Resources>
             
         </avalondock:DockingManager>
     </Grid>

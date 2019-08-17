@@ -653,6 +653,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Styles\AvalonDock.NavigatorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\BusyPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1274,6 +1278,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-run-scalar%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Dax_x16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

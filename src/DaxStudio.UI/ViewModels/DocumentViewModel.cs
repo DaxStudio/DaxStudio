@@ -45,6 +45,7 @@ using Xceed.Wpf.AvalonDock;
 using CsvHelper;
 
 using Xceed.Wpf.AvalonDock.Layout;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -106,6 +107,9 @@ namespace DaxStudio.UI.ViewModels
         private Guid _autoSaveId =  Guid.NewGuid();
         private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
+        private static ImageSourceConverter ISC = new ImageSourceConverter();
+
+
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options, ISettingProvider settingProvider)
         {
@@ -118,6 +122,7 @@ namespace DaxStudio.UI.ViewModels
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
             Options = options;
+            IconSource = ISC.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
             Init(_ribbon);
         }
 
@@ -188,6 +193,9 @@ namespace DaxStudio.UI.ViewModels
         public Guid AutoSaveId { get { return _autoSaveId; } set { _autoSaveId = value; } }
 
         private DAXEditor.DAXEditor _editor;
+
+
+        #region "Event Handlers"
         /// <summary>
         /// Initialization that requires a reference to the editor control needs to happen here
         /// </summary>
@@ -316,8 +324,12 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(caret.Column, caret.Line));
         }
 
-        private bool _isDirty;
+        #endregion
 
+        #region Properties
+        public ImageSource IconSource { get; set; }
+
+        private bool _isDirty;
         public bool IsDirty
         {
             get { return _isDirty; }
@@ -341,6 +353,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #endregion
+
+
+        #region Methods
         public void CreateTracer()
         {
             try
@@ -376,6 +392,8 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
             }
         }
+
+        #endregion
 
         private bool ShouldFilterForCurrentSession(BindableCollection<ITraceWatcher> traceWatchers)
         {
@@ -824,7 +842,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public string Text { get; set; }
-        public string FileName { get; set; }
+
+        private string _fileName = String.Empty;
+        public string FileName {
+            get { return _fileName; }
+            set { _fileName = value;
+                NotifyOfPropertyChange(() => FileName);
+                NotifyOfPropertyChange(() => FileAndExtension);
+                NotifyOfPropertyChange(() => Title);
+            }
+        }
 
         public void ChangeConnection()
         {
@@ -2184,6 +2211,8 @@ namespace DaxStudio.UI.ViewModels
             get { return _displayName;  }
             set { _displayName = value;
                 NotifyOfPropertyChange(() => DisplayName);
+                NotifyOfPropertyChange(() => FileAndExtension);
+                NotifyOfPropertyChange(() => Title);
             }
         }
         

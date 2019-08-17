@@ -86,6 +86,7 @@ namespace DaxStudio.Standalone
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
 
+                app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
 
                 // load selected theme
 
@@ -255,6 +256,10 @@ namespace DaxStudio.Standalone
             
         }
 
-        
+        private static void AddResourceDictionary(this Application app, string src)
+        {
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(src, UriKind.RelativeOrAbsolute) });
+        }
+
     }
 }
