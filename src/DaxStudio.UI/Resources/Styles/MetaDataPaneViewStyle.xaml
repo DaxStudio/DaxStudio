@@ -223,7 +223,7 @@
                     <Condition Property="IsGrouping" Value="True"/>
                     <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False"/>
                 </MultiTrigger.Conditions>
-                <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
             </MultiTrigger>
             <Trigger Property="CanContentScroll" SourceName="DropDownScrollViewer" Value="False">
                 <Setter Property="Canvas.Top" TargetName="OpaqueRect" Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}"/>
