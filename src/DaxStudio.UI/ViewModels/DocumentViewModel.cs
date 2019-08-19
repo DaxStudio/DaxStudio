@@ -46,6 +46,7 @@ using CsvHelper;
 
 using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Media;
+using System.Data.OleDb;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -3050,8 +3051,37 @@ namespace DaxStudio.UI.ViewModels
         //    }
         //}
         #endregion
+        #region Export/View Analysis Data (VertiPaq Analyzer)
+        public void ViewAnalysisData()
+        {
+            if (!IsConnected)
+            {
+                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))
+            {
+                try
+                {
+                    // TODO - replace DAX Studio version in second argument (temporary 0.1)
+                    Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.ServerName, this.SelectedDatabase, "DaxStudio", "0.1");
 
-        #region Export Analysis Data
+                    var vpaView = new VertiPaqAnalyzerView();
+                    var viewModel = new Dax.ViewModel.VpaModel(model);
+                    vpaView.DataContext = viewModel;
+                    vpaView.DataContext = viewModel;
+                    vpaView.DataContext = viewModel;
+                    vpaView.Show();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                    var exMsg = ex.GetAllMessages();
+                    OutputError("Error viewing metrics: " + exMsg);
+                }
+            }
+        }
+
 
         public void ExportAnalysisData()
         {
@@ -3063,9 +3093,9 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                FileName = "DaxStudioModelMetrics_" + this.SelectedDatabase,
+                FileName = this.SelectedDatabase,
                 DefaultExt = ".vpax",
-                Filter = "Analyzer Data (vpax)|*.vpax|Analyzer Data (vpa)|*.vpa"
+                Filter = "Analyzer Data (vpax)|*.vpax"
                 //Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
             };
 
@@ -3083,11 +3113,11 @@ namespace DaxStudio.UI.ViewModels
         {
             using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))
             {
-                string extension = Path.GetExtension(path).ToLower();
-                
                 try
                 {
-                    ExportAnalysisData(path, extension);
+                    // TODO - replace DAX Studio version in second argument (temporary 0.1)
+                    OutputMessage(String.Format("Saving {0}...", path));
+                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, "DaxStudio", "0.1");
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)
@@ -3099,87 +3129,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void ExportAnalysisData(string path, string extension)
-        {
-            // Generate the data required for Vertipaq Analyzer
-            var info = ModelAnalyzer.Create(_connection);
-
-            //if (extension == ".vpa")
-            //{
-            //    // create gz compressed file
-            //    //var gzfile = Path.Combine(Path.GetDirectoryName(path), string.Format(@".\{0}.json.gz", Path.GetFileNameWithoutExtension(path)));
-            //    var gzfile = path;
-            //    using (FileStream fs = new FileStream(gzfile, FileMode.Create))
-            //    using (GZipStream zipStream = new GZipStream(fs, CompressionMode.Compress, false))
-            //    using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(info, Formatting.Indented) ?? "")))
-            //    {
-            //        ms.Position = 0;
-            //        ms.CopyTo(zipStream);
-            //    }
-            //}
-            //else
-            //{
-                // create zipped .vpax file
-                //Uri uri = PackUriHelper.CreatePartUri(new Uri("DaxStudioModelMetrics.json", UriKind.Relative));
-                //using (Package package = Package.Open(path, FileMode.Create))
-                //{
-                //    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
-                //    {
-                //        tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                //        tw.Close();
-                //    }
-                //    package.Close();
-                //}
-
-                // create zipped .vpax2 file with individual csv files
-
-                // setup CSVHelper to create tab delimited files
-                CsvHelper.Configuration.Configuration config = new CsvHelper.Configuration.Configuration
-                {
-                    Delimiter = "\t"
-                };
-
-                using (Package package = Package.Open(path, FileMode.Create))
-                {
-                    foreach (DataTable dt in info.Tables)
-                    {
-                        Uri uri2 = PackUriHelper.CreatePartUri(new Uri($"{dt.TableName}.txt", UriKind.Relative));
-                        using (StreamWriter sw = new StreamWriter(package.CreatePart(uri2, "application/text", CompressionOption.Maximum).GetStream(), DefaultFileEncoding))
-                        using (CsvWriter csv = new CsvWriter(sw,config))
-                        {
-
-                            // Write columns
-                            foreach (DataColumn column in dt.Columns)
-                            {
-                                csv.WriteField(column.ColumnName);
-                            }
-                            csv.NextRecord();
-
-                            // Write row values
-                            foreach (DataRow row in dt.Rows)
-                            {
-                                for (var i = 0; i < dt.Columns.Count; i++)
-                                {
-                                    csv.WriteField(row[i]);
-                                }
-                                csv.NextRecord();
-                            }
-
-                        }
-                    }
-                    package.Close();
-                }
-
-            //}  
-
-            // write uncompressed json data
-            //using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode))
-            //{
-            //    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-            //    tw.Close();
-            //}
-            
-        }
 
         internal void AppendText(string paramXml)
         {

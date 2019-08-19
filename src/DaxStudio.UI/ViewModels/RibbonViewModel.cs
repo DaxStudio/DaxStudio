@@ -795,6 +795,11 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ExportAnalysisData();
         }
 
+        public void ViewAnalysisData()
+        {
+            ActiveDocument?.ViewAnalysisData();
+        }
+
         public bool CanExportAllData => IsActiveDocumentConnected();
 
         public void ExportAllData()

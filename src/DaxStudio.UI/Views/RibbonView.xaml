@@ -817,13 +817,29 @@
                                    >
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Export Metrics"
-                                   Text="Exports information and metrics about your model to allow for detailed analysis of the model design. This export only includes metadata, no actual data is included."
+                                   Text="Exports information and metrics about your model to allow for detailed analysis of the model design. This export only includes metadata and size of objects, no actual data is included."
+                                   DisableReason="{Binding ClearCacheDisableReason}"
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="ViewAnalysisData"
+                                   Header="View Metrics"
+                                   cal:Message.Attach="[Event Click] = [Action ViewAnalysisData()]"
+                                   Icon="{StaticResource ViewMetricsIcon}"
+                                   LargeIcon="{StaticResource ViewMetricsIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="View Metrics"
+                                   Text="Display information and metrics about your model to allow for detailed analysis of the model design."
                                    DisableReason="{Binding ClearCacheDisableReason}"
                                    ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 
-                    <Fluent:Button Name="ExportAllData"
+                <Fluent:Button Name="ExportAllData"
                                    Header="Export Data"
                                    cal:Message.Attach="[Event Click] = [Action ExportAllData()]"
                                    Icon="{StaticResource ExportAllDataIconLarger}"

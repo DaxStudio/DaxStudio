@@ -1,0 +1,337 @@
+﻿<Window x:Class="DaxStudio.UI.Views.VertiPaqAnalyzerView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:daxviewmodel="clr-namespace:Dax.ViewModel;assembly=Dax.ViewModel"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        mc:Ignorable="d"
+        Title="VertiPaq Analyzer Preview" Height="450" Width="800">
+    <!-- Resources -->
+    <Window.Resources>
+        <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Margin" Value="3 0 3 0"/>
+        </Style>
+        <Style x:Key="NumTextBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        <Style x:Key="TextBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style x:Key="NumBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockBoldStyle}">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+    </Window.Resources>
+
+    <TabControl>
+        <TabItem Header="Tables">
+            <Border BorderBrush="Black" BorderThickness="1">
+                <!-- Content -->
+                <Grid Grid.IsSharedSizeScope="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Column headers -->
+                    <TreeViewItem Grid.Row="0" BorderThickness="1">
+                        <TreeViewItem.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" SharedSizeGroup="Name"/>
+                                    <!-- Placeholders for two columns of ToggleButton -->
+                                    <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Cardinality"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="TableSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="ColumnsTotalSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DataSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DictionarySize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="ColumnsHierarchiesSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Encoding"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="UserHierarchiesSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="RelationshipsSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="TableSizePerc"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DatabaseSizePerc"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Name" Style="{StaticResource TextBlockBoldStyle}"/>
+                                <!-- Empty TreeViewItem to measure the size of its ToggleButton into the "Toggle" group-->
+                                <TreeViewItem Grid.Column="1" Padding="0"/>
+                                <TextBlock Grid.Column="2" Text="Cardinality" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="3" Text="Table" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="4" Text="Columns" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="5" Text="Data" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="6" Text="Dictionary" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="7" Text="Col.Hier." Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="8" Text="Encoding" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="9" Text="User Hier." Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="10" Text="Relationships" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="11" Text="% Table" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="12" Text="% Model" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="13" Text="# Segs" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="14" Text="# Parts" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="15" Text="# Cols" Style="{StaticResource NumBlockBoldStyle}"/>
+                            </Grid>
+                        </TreeViewItem.Header>
+                    </TreeViewItem>
+
+                    <!-- Data rows -->
+                    <TreeView x:Name="treeviewTables" ItemsSource="{Binding Tables}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                        <TreeView.ItemTemplate>
+
+                            <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
+                            <HierarchicalDataTemplate ItemsSource="{Binding Columns}" DataType="{x:Type daxviewmodel:VpaTable}">
+                                <Grid Background="LightYellow">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100" SharedSizeGroup="Name"/>
+                                        <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Cardinality"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="TableSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="ColumnsTotalSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DataSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DictionarySize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="ColumnsHierarchiesSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Encoding"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="UserHierarchiesSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="RelationshipsSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="TableSizePerc"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DatabaseSizePerc"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding TableName}" Style="{StaticResource TextBlockStyle}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding RowsCount, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding TableSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding ColumnsTotalSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="5" Text="{Binding ColumnsDataSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="6" Text="{Binding ColumnsDictionarySize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="7" Text="{Binding ColumnsHierarchiesSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="8" Text="{Binding ColumnsEncoding}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="9" Text="{Binding UserHierarchiesSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="10" Text="{Binding RelationshipsSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="11" Text="" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="12" Text="{Binding PercentageDatabase, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="13" Text="{Binding SegmentsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="14" Text="{Binding PartitionsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="15" Text="{Binding ColumnsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                </Grid>
+
+                                <!-- Level 1 template has no children -->
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <HierarchicalDataTemplate DataType="{x:Type daxviewmodel:VpaColumn}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120" SharedSizeGroup="Name"/>
+                                                <ColumnDefinition Width="0" />
+                                                <ColumnDefinition Width="80" SharedSizeGroup="Cardinality"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="TableSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="ColumnsTotalSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="DataSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="DictionarySize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="ColumnsHierarchiesSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="Encoding"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="UserHierarchiesSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="RelationshipsSize"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="TableSizePerc"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="DatabaseSizePerc"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
+                                                <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding ColumnName}" Style="{StaticResource TextBlockStyle}"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="3" Text="{}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding TotalSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="5" Text="{Binding DataSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="6" Text="{Binding DictionarySize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="7" Text="{Binding HierarchiesSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="8" Text="{Binding Encoding}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Column="9" Text="" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="10" Text="" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="11" Text="{Binding PercentageTable, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="12" Text="{Binding PercentageDatabase, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="13" Text="{Binding SegmentsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="14" Text="{Binding PartitionsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="15" Text="1" Style="{StaticResource NumTextBlockStyle}"/>
+                                        </Grid>
+
+                                    </HierarchicalDataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </Border>
+        </TabItem>
+        <TabItem Header="Columns">
+            <Border BorderBrush="Black" BorderThickness="1">
+                <!-- Content -->
+                <Grid Grid.IsSharedSizeScope="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Column headers -->
+                    <TreeViewItem Grid.Row="0" BorderThickness="1">
+                        <TreeViewItem.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" SharedSizeGroup="TableColumn"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Rows"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Cardinality"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="ColumnsTotalSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DataSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DictionarySize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="ColumnsHierarchiesSize"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="TableSizePerc"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="DatabaseSizePerc"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Encoding"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Typename"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
+                                    <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="TableColumn" Style="{StaticResource TextBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="1" Text="Rows" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="2" Text="Cardinality" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="3" Text="Total" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="4" Text="Data" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="5" Text="Dictionary" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="6" Text="Col.Hier." Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="7" Text="% Table" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="8" Text="% Model" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="9" Text="Encoding" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="10" Text="Typename" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="11" Text="# Segs" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="12" Text="# Parts" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="13" Text="# Cols" Style="{StaticResource NumBlockBoldStyle}"/>
+                            </Grid>
+                        </TreeViewItem.Header>
+                    </TreeViewItem>
+
+                    <!-- Data rows -->
+                    <TreeView x:Name="treeviewColumns" ItemsSource="{Binding Columns}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                        <TreeView.ItemTemplate>
+                            <!-- Level 0 template has no children -->
+                            <HierarchicalDataTemplate DataType="{x:Type daxviewmodel:VpaColumn}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" SharedSizeGroup="TableColumn"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Rows"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Cardinality"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="ColumnsTotalSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DataSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DictionarySize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="ColumnsHierarchiesSize"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="TableSizePerc"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="DatabaseSizePerc"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Encoding"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Typename"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
+                                        <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding TableColumnName}" Style="{StaticResource TextBlockStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TableRowsCount, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding ColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding TotalSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding DataSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="5" Text="{Binding DictionarySize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="6" Text="{Binding HierarchiesSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="7" Text="{Binding PercentageTable, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="8" Text="{Binding PercentageDatabase, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="9" Text="{Binding ColumnsEncoding}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Left"/>
+                                    <TextBlock Grid.Column="10" Text="{Binding TypeName}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Left"/>
+                                    <TextBlock Grid.Column="11" Text="{Binding SegmentsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="12" Text="{Binding PartitionsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="13" Text="{Binding ColumnsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                </Grid>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </Border>
+        </TabItem>
+        <TabItem Header="Relationships">
+            <Border BorderBrush="Black" BorderThickness="1">
+                <!-- Content -->
+                <Grid Grid.IsSharedSizeScope="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Column headers -->
+                    <TreeViewItem Grid.Row="0" BorderThickness="1">
+                        <TreeViewItem.Header>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="300" SharedSizeGroup="Name"/>
+                                    <!-- Placeholders for two columns of ToggleButton -->
+                                    <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>
+                                    <ColumnDefinition Width="140" SharedSizeGroup="RelationshipSize"/>
+                                    <ColumnDefinition Width="140" SharedSizeGroup="MaxFromCardinality"/>
+                                    <ColumnDefinition Width="140" SharedSizeGroup="MaxToCardinality"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Name" Style="{StaticResource TextBlockBoldStyle}"/>
+                                <!-- Empty TreeViewItem to measure the size of its ToggleButton into the "Toggle" group-->
+                                <TreeViewItem Grid.Column="1" Padding="0"/>
+                                <TextBlock Grid.Column="2" Text="Relationship Size" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="3" Text="Max From Cardinality" Style="{StaticResource NumBlockBoldStyle}"/>
+                                <TextBlock Grid.Column="4" Text="Max To Cardinality" Style="{StaticResource NumBlockBoldStyle}"/>
+                            </Grid>
+                        </TreeViewItem.Header>
+                    </TreeViewItem>
+
+                    <!-- Data rows -->
+                    <TreeView x:Name="treeviewRelationhsips" ItemsSource="{Binding TablesWithFromRelationships}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                        <TreeView.ItemTemplate>
+
+                            <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
+                            <HierarchicalDataTemplate ItemsSource="{Binding RelationshipsFrom}" DataType="{x:Type daxviewmodel:VpaTable}">
+                                <Grid Background="LightYellow">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="300" SharedSizeGroup="Name"/>
+                                        <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>
+                                        <ColumnDefinition Width="140" SharedSizeGroup="RelationshipSize"/>
+                                        <ColumnDefinition Width="140" SharedSizeGroup="MaxFromCardinality"/>
+                                        <ColumnDefinition Width="140" SharedSizeGroup="MaxToCardinality"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding TableName}" Style="{StaticResource TextBlockStyle}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding RelationshipsSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding MaxFromColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding MaxToColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                </Grid>
+
+                                <!-- Level 1 template has no children -->
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <HierarchicalDataTemplate DataType="{x:Type daxviewmodel:VpaRelationship}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="320" SharedSizeGroup="Name"/>
+                                                <ColumnDefinition Width="0" />
+                                                <ColumnDefinition Width="140" SharedSizeGroup="RelationshipSize"/>
+                                                <ColumnDefinition Width="140" SharedSizeGroup="MaxFromCardinality"/>
+                                                <ColumnDefinition Width="140" SharedSizeGroup="MaxToCardinality"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding RelationshipFromToName}" Style="{StaticResource TextBlockStyle}"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding UsedSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding FromColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding ToColumnCardinality, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                        </Grid>
+
+                                    </HierarchicalDataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </Border>
+        </TabItem>
+    </TabControl>
+
+</Window>
