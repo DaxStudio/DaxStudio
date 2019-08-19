@@ -46,28 +46,28 @@ namespace DaxStudio.Tests
         [TestMethod, TestCategory("DatabaseProfiler"), Ignore]
         public void TestVertipaqAnalyzerProfile()
         {
-            //var cnnStr = ConnectionString;
-            //var cnnStr = @"Data Source=http://localhost:9000/xmla;Workstation ID=C:\Users\c950497\Downloads\RAD Model.xlsx";
-            var cnnStr = @"Data Source=localhost:9134;";
-            var cnn = new ADOTabular.ADOTabularConnection(cnnStr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
-            cnn.Open();
-            var db = cnn.Database;
-            var profile =  ModelAnalyzer.Create(cnn);
+            ////var cnnStr = ConnectionString;
+            ////var cnnStr = @"Data Source=http://localhost:9000/xmla;Workstation ID=C:\Users\c950497\Downloads\RAD Model.xlsx";
+            //var cnnStr = @"Data Source=localhost:9134;";
+            //var cnn = new ADOTabular.ADOTabularConnection(cnnStr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
+            //cnn.Open();
+            //var db = cnn.Database;
+            //var profile =  ModelAnalyzer.Create(cnn);
 
             
 
-            JsonSerializer serializer = new JsonSerializer();
-            //serializer.Converters.Add(new JavaScriptDateTimeConverter());
-            serializer.NullValueHandling = NullValueHandling.Ignore;
+            //JsonSerializer serializer = new JsonSerializer();
+            ////serializer.Converters.Add(new JavaScriptDateTimeConverter());
+            //serializer.NullValueHandling = NullValueHandling.Ignore;
 
-            using (StreamWriter sw = new StreamWriter(@"d:\temp\BUSINESS_NBN_CUBE_VertipaqAnalyzerProfile.json"))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                serializer.Serialize(writer, profile);
-                // {"ExpiryDate":new Date(1230375600000),"Price":0}
-            }
+            //using (StreamWriter sw = new StreamWriter(@"d:\temp\BUSINESS_NBN_CUBE_VertipaqAnalyzerProfile.json"))
+            //using (JsonWriter writer = new JsonTextWriter(sw))
+            //{
+            //    serializer.Serialize(writer, profile);
+            //    // {"ExpiryDate":new Date(1230375600000),"Price":0}
+            //}
 
-            cnn.Close();
+            //cnn.Close();
         }
 
     }
