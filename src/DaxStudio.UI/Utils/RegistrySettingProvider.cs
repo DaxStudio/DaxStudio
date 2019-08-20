@@ -181,12 +181,12 @@ namespace DaxStudio.UI
                 }
                 else if (prop.PropertyType == typeof(double))
                 {
-                    var doubleVal = val == null ? Double.Parse(attr.Value.ToString()) : attr.Value;
+                    var doubleVal = val == null ? Double.Parse(attr.Value.ToString()) : double.Parse(val.ToString());
                     prop.SetValue(options, doubleVal);
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var boolVal = val == null ? bool.Parse(attr.Value.ToString()) : attr.Value;
+                    var boolVal = val == null ? bool.Parse(attr.Value.ToString()) : bool.Parse(val.ToString());
                     prop.SetValue(options, boolVal);
                 }
                 else
