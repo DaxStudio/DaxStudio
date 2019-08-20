@@ -17,7 +17,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for VertiPaqAnalyzerView.xaml
     /// </summary>
-    public partial class VertiPaqAnalyzerView : Window
+    public partial class VertiPaqAnalyzerView : UserControl
     {
         public VertiPaqAnalyzerView()
         {

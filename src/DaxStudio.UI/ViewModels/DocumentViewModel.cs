@@ -149,7 +149,7 @@ namespace DaxStudio.UI.ViewModels
             //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
             QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this, Options);
             //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
-            
+
             Document = new TextDocument();
             FindReplaceDialog = new FindReplaceDialogViewModel(_eventAggregator);
             _logger = LogManager.GetLog(typeof (DocumentViewModel));
@@ -3065,13 +3065,26 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.ServerName, this.SelectedDatabase, "DaxStudio", "0.1");
-
-                    var vpaView = new VertiPaqAnalyzerView();
                     var viewModel = new Dax.ViewModel.VpaModel(model);
-                    vpaView.DataContext = viewModel;
-                    vpaView.DataContext = viewModel;
-                    vpaView.DataContext = viewModel;
-                    vpaView.Show();
+
+                    //var vpaView = new VertiPaqAnalyzerView();
+                    //vpaView.TreeviewTables.DataContext = viewModel;
+                    //vpaView.TreeviewColumns.DataContext = viewModel;
+                    //vpaView.TreeviewRelationhsips.DataContext = viewModel;
+
+                    var vpaView = new VertiPaqAnalyzerViewModel(viewModel,_eventAggregator, this, Options);
+
+                    ToolWindows.Add(vpaView);
+                    vpaView.Activate();
+
+                    // TODO: fix binding in ViewModel, this is a quick workaround
+                    // Temporary workaround for data binding
+                    // not sure how should I fix the code in the ViewModel for Calibur compatibility
+                    var view = (VertiPaqAnalyzerView)vpaView.GetView();
+                    view.TreeviewTables.DataContext = viewModel;
+                    view.TreeviewColumns.DataContext = viewModel;
+                    view.TreeviewRelationhsips.DataContext = viewModel;
+                    
                 }
                 catch (Exception ex)
                 {
