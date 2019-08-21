@@ -9,6 +9,8 @@ using System.ComponentModel;
 using Serilog;
 using System.Windows.Input;
 using DaxStudio.Interfaces;
+using Dax.ViewModel;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -43,10 +45,11 @@ namespace DaxStudio.UI.ViewModels
 
         /*
          * Binding not working with Caliburn?
-        public Dax.ViewModel.VpaModel TreeviewTables { get { return ViewModel; } }
-        public Dax.ViewModel.VpaModel TreeviewColumns { get { return ViewModel; } }
-        public Dax.ViewModel.VpaModel TreeviewRelationhsips { get { return ViewModel; } }
         */
+        public IEnumerable<VpaTable> TreeviewTables { get { return ViewModel.Tables; } }
+        public IEnumerable<VpaColumn> TreeviewColumns { get { return ViewModel.Columns; } }
+        public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
+        
 
         public override string Title {
             get { return "VertiPaq Analyzer Preview"; }

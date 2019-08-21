@@ -88,9 +88,8 @@
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
-                    ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		            ResourceId=DataGridHeaderFilterControlStyle}}"
+                    ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                ResourceId=DataGridHeaderFilterControlStyle}}"
                        
                     SelectedItem="{Binding SelectedPerfData}" 
                     HorizontalAlignment="Stretch" 

@@ -83,7 +83,7 @@
                     </TreeViewItem>
 
                     <!-- Data rows -->
-                    <TreeView x:Name="TreeviewTables" ItemsSource="{Binding Tables}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                    <TreeView x:Name="TreeviewTables"  Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
                         <TreeView.ItemTemplate>
 
                             <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
@@ -219,7 +219,7 @@
                     </TreeViewItem>
 
                     <!-- Data rows -->
-                    <TreeView x:Name="TreeviewColumns" ItemsSource="{Binding Columns}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                    <TreeView x:Name="TreeviewColumns" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
                         <TreeView.ItemTemplate>
                             <!-- Level 0 template has no children -->
                             <HierarchicalDataTemplate DataType="{x:Type daxviewmodel:VpaColumn}">
@@ -238,7 +238,7 @@
                                         <ColumnDefinition Width="80" SharedSizeGroup="Typename"/>
                                         <ColumnDefinition Width="80" SharedSizeGroup="Segments"/>
                                         <ColumnDefinition Width="80" SharedSizeGroup="Partitions"/>
-                                        <ColumnDefinition Width="80" SharedSizeGroup="Columns"/>
+                                       
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding TableColumnName}" Style="{StaticResource TextBlockStyle}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TableRowsCount, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
@@ -249,11 +249,11 @@
                                     <TextBlock Grid.Column="6" Text="{Binding HierarchiesSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
                                     <TextBlock Grid.Column="7" Text="{Binding PercentageTable, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
                                     <TextBlock Grid.Column="8" Text="{Binding PercentageDatabase, StringFormat=P}" Style="{StaticResource NumTextBlockStyle}"/>
-                                    <TextBlock Grid.Column="9" Text="{Binding ColumnsEncoding}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Left"/>
+                                    <TextBlock Grid.Column="9" Text="{Binding Encoding}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Left"/>
                                     <TextBlock Grid.Column="10" Text="{Binding TypeName}" Style="{StaticResource TextBlockStyle}" HorizontalAlignment="Left"/>
                                     <TextBlock Grid.Column="11" Text="{Binding SegmentsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
                                     <TextBlock Grid.Column="12" Text="{Binding PartitionsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
-                                    <TextBlock Grid.Column="13" Text="{Binding ColumnsNumber, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
+                                    
                                 </Grid>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
@@ -293,7 +293,7 @@
                     </TreeViewItem>
 
                     <!-- Data rows -->
-                    <TreeView x:Name="TreeviewRelationhsips" ItemsSource="{Binding TablesWithFromRelationships}" Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
+                    <TreeView x:Name="TreeviewRelationships"  Grid.Row="1" BorderBrush="Gray" BorderThickness="0 1 0 0">
                         <TreeView.ItemTemplate>
 
                             <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
