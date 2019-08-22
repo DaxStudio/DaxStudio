@@ -88,7 +88,7 @@
 
                             <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
                             <HierarchicalDataTemplate ItemsSource="{Binding Columns}" DataType="{x:Type daxviewmodel:VpaTable}">
-                                <Grid Background="LightYellow">
+                                <Grid TextBlock.FontWeight="Bold">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="100" SharedSizeGroup="Name"/>
                                         <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>
@@ -298,7 +298,7 @@
 
                             <!-- Level 0 template leaves space for 1 child "Toggle" levels -->
                             <HierarchicalDataTemplate ItemsSource="{Binding RelationshipsFrom}" DataType="{x:Type daxviewmodel:VpaTable}">
-                                <Grid Background="LightYellow">
+                                <Grid TextBlock.FontWeight="Bold">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="300" SharedSizeGroup="Name"/>
                                         <ColumnDefinition Width="20" SharedSizeGroup="Toggle"/>

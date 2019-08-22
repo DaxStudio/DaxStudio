@@ -811,6 +811,8 @@ namespace DaxStudio.UI.ViewModels
                        Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
                    }
                });
+
+                Log.Information("TODO: Refresh VertiPaq Analyzer!");
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -3070,9 +3072,15 @@ namespace DaxStudio.UI.ViewModels
                     {
                         var viewModel = new Dax.ViewModel.VpaModel(model);
 
-                        var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                        // check if PerfData Window is already open and use that
+                        var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
-                        ToolWindows.Add(vpaView);
+                        // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                        if ( vpaView == null)
+                        {
+                            vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                            ToolWindows.Add(vpaView);
+                        }
                         vpaView.Activate();
                     }
                 }
