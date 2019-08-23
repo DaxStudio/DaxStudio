@@ -448,11 +448,12 @@ namespace DaxStudio.UI.Model
 
         public bool IsColumn =>  this.MetadataImage == MetadataImages.Column
                               || this.MetadataImage == MetadataImages.HiddenColumn;
- 
 
-        public bool IsMeasure => MetadataImage == MetadataImages.Measure 
-                              || MetadataImage == MetadataImages.HiddenMeasure;
-         
+
+        public bool IsMeasure => MetadataImage == MetadataImages.Measure
+                              || MetadataImage == MetadataImages.HiddenMeasure
+                              || MetadataImage == MetadataImages.Kpi;
+
 
         public bool IsTable => MetadataImage == MetadataImages.Table
                             || MetadataImage == MetadataImages.HiddenTable;
