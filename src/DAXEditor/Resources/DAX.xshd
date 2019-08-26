@@ -289,19 +289,22 @@
       <Word>AT</Word>
       <Word>BY</Word>
       <Word>COLUMN</Word>
+      <Word>COLUMNS</Word>
       <Word>CREATE</Word>
       <Word>DEFINE</Word>
       <Word>DESC</Word>
       <Word>EVALUATE</Word>
       <Word>FROM</Word>
       <Word>MEASURE</Word>
+      <Word>ON</Word>
       <Word>ORDER</Word>
       <Word>RETURN</Word>
+      <Word>ROWS</Word>
       <Word>SELECT</Word>
       <Word>START</Word>
       <Word>TABLE</Word>
       <Word>VAR</Word>
-
+      <Word>WHERE</Word>
       <!-- These are both keyword and functions...
       <Word>DAY</Word>
       <Word>MONTH</Word>
