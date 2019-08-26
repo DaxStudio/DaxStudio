@@ -46,7 +46,9 @@ namespace DaxStudio.UI.Converters
                     
                     contentPresenter.AppendChild(txtBlock);
                     hdrTemplate.VisualTree = contentPresenter;
-                    
+
+                    var bindingPath = FixBindingPath(item.ColumnName);
+
                     var cellTemplate = new DataTemplate();
                     if (item.DataType == typeof(Byte[]))
                     {
@@ -66,8 +68,8 @@ namespace DaxStudio.UI.Converters
                         cellTooltip.SetValue(ToolTip.ContentProperty, cellImgTooltip);
 
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                        cellImgBlock.SetBinding(Image.SourceProperty, new Binding(FixBindingPath( item.ColumnName )));
-                        cellImgTooltip.SetBinding(Image.SourceProperty, new Binding(FixBindingPath( item.ColumnName )));
+                        cellImgBlock.SetBinding(Image.SourceProperty, new Binding(bindingPath));
+                        cellImgTooltip.SetBinding(Image.SourceProperty, new Binding(bindingPath));
                         cellImgBlock.SetValue(Image.WidthProperty, 50d);
                         
                         cellTemplate.VisualTree = cellImgBlock;
@@ -76,7 +78,7 @@ namespace DaxStudio.UI.Converters
                     {
                         var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                        var colBinding = new Binding(FixBindingPath(item.ColumnName));
+                        var colBinding = new Binding(bindingPath);
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
 
                         // Bind FormatString if it exists
@@ -91,14 +93,15 @@ namespace DaxStudio.UI.Converters
                         cellTemplate.VisualTree = cellTxtBlock;
                         
                     }
+                    
                     var dgc = new DataGridTemplateColumn
                     {
                         CellTemplate = cellTemplate,
-                    //    Width = Double.NaN,    
+                        //    Width = Double.NaN,    
                         HeaderTemplate = hdrTemplate,
                         Header = item.Caption,
-                        
-                        ClipboardContentBinding = new Binding(FixBindingPath(item.ColumnName))
+                        SortMemberPath = item.ColumnName,
+                        ClipboardContentBinding = new Binding(bindingPath)
                     };
 
                     columns.Add(dgc);

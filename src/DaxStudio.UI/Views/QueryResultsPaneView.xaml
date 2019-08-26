@@ -7,6 +7,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
     <UserControl.Resources>
@@ -142,8 +143,17 @@
                 <!-- Tab Content (DataGrid) -->
                 <TabControl.ContentTemplate>
                     <DataTemplate>
+                        <!-- 
+                        filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
+                            filter:DataGridExtensions.IsClearButtonVisible="False"
+                            filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
+                            ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
+		                        TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                        ResourceId=DataGridHeaderFilterControlStyle}}"
+                        -->
                          <DataGrid
                             x:Name="DefaultView" 
+                            
                             Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
                             ItemsSource="{Binding DefaultView}"
                             ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -159,6 +169,8 @@
                             cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
                                         , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
+                             CanUserSortColumns="True"
+                             
                             >
 
                             <DataGrid.AlternatingRowBackground>

@@ -229,7 +229,7 @@
             </DataGrid.ContextMenu>
         
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Start Time" SortDirection="Descending">
+                <DataGridTemplateColumn SortMemberPath="StartTime" Header="Start Time" SortDirection="Descending">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
