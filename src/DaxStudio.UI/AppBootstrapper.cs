@@ -147,7 +147,8 @@ namespace DaxStudio.UI
 	            // TODO - not working
 	            //VisibilityBindingConvention.Install();
 
-	            LogManager.GetLog = type => new DebugLogger(type);
+                // Enable Caliburn.Micro debug logging
+	            //LogManager.GetLog = type => new DebugLogger(type);
 
                 // Add Application object to MEF catalog
                 _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);

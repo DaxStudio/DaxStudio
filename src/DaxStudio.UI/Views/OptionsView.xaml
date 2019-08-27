@@ -195,7 +195,7 @@
 
                                 <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
                                 <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
-                                    <nud:NumericUpDown x:Name="CodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
                             </Grid>
@@ -251,7 +251,7 @@
 
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown x:Name="QueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                             </Grid>
@@ -272,15 +272,16 @@
                                 </Grid.RowDefinitions>
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown x:Name="QueryEndEventTimeout" Value="{Binding QueryEndEventTimeout}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown x:Name="DaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown x:Name="TraceStartupTimeout" Value="{Binding TraceStartupTimeout}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <!-- x:Name="ctrlTraceStartupTimeout" -->
+                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
@@ -401,7 +402,7 @@
                                         </ComboBox.ItemsSource>
                                     </ComboBox>
                                     <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <nud:NumericUpDown Value="{Binding ResultsFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
+                                    <nud:NumericUpDown Value="{Binding ResultsFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>
