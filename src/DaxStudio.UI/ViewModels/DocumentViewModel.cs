@@ -3130,7 +3130,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     OutputMessage(String.Format("Saving {0}...", path));
-                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, "DaxStudio", "0.1");
+                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", "0.1");
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)

@@ -588,6 +588,18 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _vpaxIncludeTom = false;
+        [DataMember, DefaultValue(false)]
+        public bool VpaxIncludeTom {
+            get => _vpaxIncludeTom;
+            set {
+                _vpaxIncludeTom = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>("VpaxIncludeTom", value, _isInitializing);
+                NotifyOfPropertyChange(() => VpaxIncludeTom);
+            }
+        }
+
         private bool _scaleResultsFontWithEditor = true;
 
         private string _theme = "Light";

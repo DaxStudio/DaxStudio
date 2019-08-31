@@ -36,7 +36,8 @@ namespace DaxStudio.Interfaces
         bool ShowExportMetrics { get; set; }
         bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
-        
+        bool VpaxIncludeTom { get; set; }
+
         bool ResultAutoFormat { get; set; }
         bool ScaleResultsFontWithEditor { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }

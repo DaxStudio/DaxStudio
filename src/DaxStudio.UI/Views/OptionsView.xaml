@@ -554,6 +554,27 @@
                                 
                             </Grid>
                         </GroupBox>
+                        <GroupBox Header="VertiPaq Analyzer">
+                            <Grid Margin="5,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" Content="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
+
+                            </Grid>
+                        </GroupBox>
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
