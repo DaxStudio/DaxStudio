@@ -37,6 +37,7 @@ namespace DaxStudio.UI.Model
         public bool ShowExportMetrics { get; set; }
         public bool ShowExternalTools { get; set; }
         public bool ShowExportAllData { get; set; }
+        public bool VpaxIncludeTom { get; set; }
         public bool ResultAutoFormat { get; set; }
         public bool ScaleResultsFontWithEditor { get; set; }
         public int CodeCompletionWindowWidthIncrease { get; set; }

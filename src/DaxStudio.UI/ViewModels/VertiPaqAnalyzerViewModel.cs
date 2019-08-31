@@ -15,11 +15,12 @@ using System.Collections.Generic;
 namespace DaxStudio.UI.ViewModels
 {
 
-    [PartCreationPolicy(CreationPolicy.NonShared)]
-    [Export]
+    //[PartCreationPolicy(CreationPolicy.NonShared)]
+    //[Export]
     public class VertiPaqAnalyzerViewModel : ToolWindowBase
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
+        , IViewAware
     {
 
         private readonly IEventAggregator _eventAggregator;
@@ -43,14 +44,11 @@ namespace DaxStudio.UI.ViewModels
             private set;
         }
 
-        /*
-         * Binding not working with Caliburn?
-        */
         public IEnumerable<VpaTable> TreeviewTables { get { return ViewModel.Tables; } }
         public IEnumerable<VpaColumn> TreeviewColumns { get { return ViewModel.Columns; } }
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
         
-
+        // TODO: we might add the database name here
         public override string Title {
             get { return "VertiPaq Analyzer Preview"; }
         }
@@ -58,6 +56,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(DocumentConnectionUpdateEvent message)
         {
             // TODO connect VPA data
+            Log.Information("VertiPaq Analyzer Handle DocumentConnectionUpdateEvent call");
         }
 
         public void MouseDoubleClick(object sender)//, MouseButtonEventArgs e)
@@ -68,6 +67,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateGlobalOptions message)
         {
             // NotifyOfPropertyChange(() => ShowTraceColumns);
+            Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
         }
     }
 }
