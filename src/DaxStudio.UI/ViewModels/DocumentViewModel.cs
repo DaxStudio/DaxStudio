@@ -811,6 +811,8 @@ namespace DaxStudio.UI.ViewModels
                        Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
                    }
                });
+
+                Log.Information("TODO: Refresh VertiPaq Analyzer!");
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -3065,26 +3067,22 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.ServerName, this.SelectedDatabase, "DaxStudio", "0.1");
-                    var viewModel = new Dax.ViewModel.VpaModel(model);
 
-                    //var vpaView = new VertiPaqAnalyzerView();
-                    //vpaView.TreeviewTables.DataContext = viewModel;
-                    //vpaView.TreeviewColumns.DataContext = viewModel;
-                    //vpaView.TreeviewRelationhsips.DataContext = viewModel;
+                    using (new StatusBarMessage(this, "Analyzing Model Metrics"))
+                    {
+                        var viewModel = new Dax.ViewModel.VpaModel(model);
 
-                    var vpaView = new VertiPaqAnalyzerViewModel(viewModel,_eventAggregator, this, Options);
+                        // check if PerfData Window is already open and use that
+                        var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
-                    ToolWindows.Add(vpaView);
-                    vpaView.Activate();
-
-                    // TODO: fix binding in ViewModel, this is a quick workaround
-                    // Temporary workaround for data binding
-                    // not sure how should I fix the code in the ViewModel for Calibur compatibility
-                    var view = (VertiPaqAnalyzerView)vpaView.GetView();
-                    view.TreeviewTables.DataContext = viewModel;
-                    view.TreeviewColumns.DataContext = viewModel;
-                    view.TreeviewRelationhsips.DataContext = viewModel;
-                    
+                        // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                        if ( vpaView == null)
+                        {
+                            vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                            ToolWindows.Add(vpaView);
+                        }
+                        vpaView.Activate();
+                    }
                 }
                 catch (Exception ex)
                 {
