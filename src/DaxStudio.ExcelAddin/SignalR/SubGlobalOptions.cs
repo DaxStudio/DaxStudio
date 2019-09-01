@@ -82,5 +82,6 @@ namespace DaxStudio.SignalR
         public string WindowPosition { get; set; }
         public Version DismissedVersion { get; set; }
         public DateTime LastVersionCheckUTC { get;set; }
+        public bool VpaxIncludeTom { get;set; }
     }
 }
