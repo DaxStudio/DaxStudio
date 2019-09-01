@@ -739,7 +739,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool ShowExportGroup => ShowExportAllData | ShowExportMetrics;
+        public bool ShowExportGroup => ShowExportAllData ;
 
         private bool _showExternalTools;
         public bool ShowExternalTools
@@ -767,13 +767,18 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+    
+        public bool ShowMetricsGroup => ShowExportMetrics;
+        
+
+
         private bool _showExportMetrics;
         public bool ShowExportMetrics {
             get { return _showExportMetrics; }
             private set {
                 _showExportMetrics = value;
                 NotifyOfPropertyChange(() => ShowExportMetrics);
-                NotifyOfPropertyChange(() => ShowExportGroup);
+                NotifyOfPropertyChange(() => ShowMetricsGroup);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }

@@ -805,7 +805,7 @@
             <!-- Advanced Ribbon Tab-->
        
         <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Fluent:RibbonGroupBox Header="Export" Visibility="{Binding ShowExportGroup, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Metrics" Visibility="{Binding ShowMetricsGroup, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"
                                    cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
@@ -838,7 +838,8 @@
                                    ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-                
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Export" Visibility="{Binding ShowExportGroup, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ExportAllData"
                                    Header="Export Data"
                                    cal:Message.Attach="[Event Click] = [Action ExportAllData()]"
