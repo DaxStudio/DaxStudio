@@ -181,6 +181,15 @@
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
+            <ComboBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseName()]">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ComboBox.ContextMenu>
         </ComboBox>
         <!-- SelectedValuePath="Name" -->
         <!-- Model Dropdown -->
