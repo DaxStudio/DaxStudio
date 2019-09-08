@@ -219,6 +219,7 @@
     <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=18.0.2.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.18.0.2\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Expression.Drawing, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Xaml.Behaviors, Version=1.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Xaml.Behaviors.Wpf.1.0.1\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
     </Reference>
@@ -259,7 +260,7 @@
     </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"/>
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -333,7 +334,9 @@
     <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
     <Compile Include="Converters\MatchingResultColourConverter.cs" />
+    <Compile Include="Converters\MaxMultiConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
+    <Compile Include="Converters\MinusConverter.cs" />
     <Compile Include="Converters\MultiplyWithMinConverter.cs" />
     <Compile Include="Converters\NegativeColourConverter.cs" />
     <Compile Include="Converters\OffsetConverter.cs" />
@@ -342,6 +345,7 @@
     <Compile Include="Converters\MultiplyConverter.cs" />
     <Compile Include="Converters\QueryMultiLineConverter.cs" />
     <Compile Include="Converters\QuerySingleLineConverter.cs" />
+    <Compile Include="Converters\RelativeWidthConverter.cs" />
     <Compile Include="Converters\ResourceLookupConverter.cs" />
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
@@ -656,6 +660,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\DaxStudioResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\ExpanderArrowStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

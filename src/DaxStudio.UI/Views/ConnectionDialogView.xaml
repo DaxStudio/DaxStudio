@@ -132,7 +132,7 @@
                                              IsEnabled="{Binding PowerBIInstanceDetected}">
                                         <StackPanel Orientation="Horizontal">
 
-                                            <TextBlock IsEnabled="{Binding PowerBIDesignerDetected}" Style="{StaticResource disabledText}" ><Run Text="PBI"/><Run Text=" / SSDT Model"/></TextBlock>
+                                            <TextBlock IsEnabled="{Binding PowerBIInstancesDetected}" Style="{StaticResource disabledText}" ><Run Text="PBI"/><Run Text=" / SSDT Model"/></TextBlock>
 
                                         </StackPanel>
                                     </RadioButton>

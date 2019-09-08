@@ -47,6 +47,7 @@ using CsvHelper;
 using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Media;
 using System.Data.OleDb;
+using Dax.ViewModel;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -86,6 +87,7 @@ namespace DaxStudio.UI.ViewModels
         , IHaveShutdownTask
         , IConnection
         , ISaveable
+
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
         // but UTF8 seems to be the most sensible default going forward
@@ -3054,6 +3056,15 @@ namespace DaxStudio.UI.ViewModels
         //}
         #endregion
         #region Export/View Analysis Data (VertiPaq Analyzer)
+
+        private bool _isVertipaqAnalyzerRunning = false;
+        public bool IsVertipaqAnalyzerRunning { get { return _isVertipaqAnalyzerRunning; }
+            private set {
+                _isVertipaqAnalyzerRunning = value;
+                NotifyOfPropertyChange(() => IsVertipaqAnalyzerRunning);
+            }
+        }
+
         public void ViewAnalysisData()
         {
             if (!IsConnected)
@@ -3061,35 +3072,58 @@ namespace DaxStudio.UI.ViewModels
                 MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))
+            try
             {
-                try
-                {
+
+                    
+                var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
+                    
+                VpaModel viewModel= null;
+
+                var task = new Task(()=> {
+                    // run Vertipaq Analyzer Async
+
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.ServerName, this.SelectedDatabase, "DaxStudio", "0.1");
 
-                    using (new StatusBarMessage(this, "Analyzing Model Metrics"))
-                    {
-                        var viewModel = new Dax.ViewModel.VpaModel(model);
+                    viewModel = new Dax.ViewModel.VpaModel(model);
+                });
+                task.Start();
+                task.ContinueWith(prevTask =>
+                {
 
+                    if (!prevTask.IsFaulted) { 
                         // check if PerfData Window is already open and use that
                         var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
                         // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                        if ( vpaView == null)
+                        if (vpaView == null)
                         {
                             vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
                             ToolWindows.Add(vpaView);
                         }
+                        else
+                        {
+                            // update view model
+                            vpaView.ViewModel = viewModel;
+                        }
                         vpaView.Activate();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
-                    var exMsg = ex.GetAllMessages();
-                    OutputError("Error viewing metrics: " + exMsg);
-                }
+                    msg2.Dispose();
+                    if (prevTask.IsFaulted) throw prevTask.Exception;
+
+                });
+                    
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                var exMsg = ex.GetAllMessages();
+                OutputError("Error viewing metrics: " + exMsg);
+            }
+            finally
+            {
+                IsVertipaqAnalyzerRunning = false;
             }
         }
 
@@ -3117,9 +3151,23 @@ namespace DaxStudio.UI.ViewModels
             if (result == true)
             {
                 // Save document 
-                ExportAnalysisData(dlg.FileName);
+                var task = new Task(() => {
+                    try {
+                        IsVertipaqAnalyzerRunning = true;
+                        ExportAnalysisData(dlg.FileName); 
+                    }
+                    finally
+                    {
+                        IsVertipaqAnalyzerRunning = false;
+                    }
+                });
+                task.Start();
+                task.ContinueWith(prevTask => {
+                    if (prevTask.IsFaulted) throw prevTask.Exception;
+                });
             }
         }
+
         public void ExportAnalysisData(string path)
         {
             using (var msg = new StatusBarMessage(this, "Exporting Model Metrics"))

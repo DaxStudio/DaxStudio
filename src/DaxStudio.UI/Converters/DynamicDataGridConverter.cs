@@ -86,7 +86,17 @@ namespace DaxStudio.UI.Converters
                             colBinding.StringFormat = item.ExtendedProperties[Constants.FORMAT_STRING].ToString();
                         // set culture if it exists
                         if (item.ExtendedProperties[Constants.LOCALE_ID] != null)
-                            colBinding.ConverterCulture = new CultureInfo((int)item.ExtendedProperties[Constants.LOCALE_ID]);
+                        {
+                            var cultureInfo = CultureInfo.InvariantCulture;
+                            try
+                            {
+                                cultureInfo = new CultureInfo((int)item.ExtendedProperties[Constants.LOCALE_ID]);
+                            }
+                            catch { 
+                                // Do Nothing, just use the initialized value for cultureInfo 
+                            }
+                            colBinding.ConverterCulture = cultureInfo;
+                        }
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                         if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );

@@ -451,6 +451,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
+                NotifyOfPropertyChange(() => IsActiveDocumentConnected);
+                NotifyOfPropertyChange(() => IsActiveDocumentVertipaqAnalyzerRunning);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -459,13 +461,27 @@ namespace DaxStudio.UI.ViewModels
         {
             switch (e.PropertyName)
             {
-                case "IsQueryRunning":
+                case nameof(ActiveDocument.IsQueryRunning):
                     _queryRunning = ActiveDocument.IsQueryRunning;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
+                    break;
+                case nameof(ActiveDocument.IsVertipaqAnalyzerRunning):
+                    NotifyOfPropertyChange(() => CanViewAnalysisData);
+                    NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    break;
+                case nameof(ActiveDocument.IsConnected):
+                    NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => CanCancelQuery);
+                    NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(() => CanRefreshMetadata);
+                    NotifyOfPropertyChange(() => CanConnect);
+                    NotifyOfPropertyChange(() => CanViewAnalysisData);
+                    NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                     break;
             }
         }
@@ -793,19 +809,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanExportAnalysisData => IsActiveDocumentConnected();
+        public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;
 
         public void ExportAnalysisData()
         {
             ActiveDocument?.ExportAnalysisData();
         }
 
+        public bool CanViewAnalysisData => IsActiveDocumentConnected;
+
         public void ViewAnalysisData()
         {
             ActiveDocument?.ViewAnalysisData();
         }
 
-        public bool CanExportAllData => IsActiveDocumentConnected();
+        public bool CanExportAllData => IsActiveDocumentConnected;
 
         public void ExportAllData()
         {
@@ -854,7 +872,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected() && !string.IsNullOrEmpty(_sqlProfilerCommand);
+        public bool CanLaunchSqlProfiler => IsActiveDocumentConnected && !string.IsNullOrEmpty(_sqlProfilerCommand);
 
         public void LaunchExcel()
         {
@@ -876,15 +894,17 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanLaunchExcel => IsActiveDocumentConnected();
+        public bool CanLaunchExcel => IsActiveDocumentConnected;
 
-        private bool IsActiveDocumentConnected()
+        private bool IsActiveDocumentConnected
         {
-            if (ActiveDocument == null) return false;
-            if (ActiveDocument.Connection == null) return false;
-            if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+            get {
+                if (ActiveDocument == null) return false;
+                if (ActiveDocument.Connection == null) return false;
+                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
 
-            return true;
+                return true;
+            }
         }
 
         public void SaveLayout()
@@ -916,6 +936,8 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
+
+        public bool IsActiveDocumentVertipaqAnalyzerRunning { get; private set; }
 
         private void SetRibbonTheme(string theme)
         {
