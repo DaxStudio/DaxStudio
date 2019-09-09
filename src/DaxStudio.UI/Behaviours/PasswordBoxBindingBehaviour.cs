@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DaxStudio.UI.Extensions;
 using System.Reflection;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -27,7 +23,7 @@ namespace DaxStudio.UI.Behaviours
 
         public static readonly DependencyProperty PasswordProperty =
             DependencyProperty.Register("SecurePassword", typeof(SecureString),
-               typeof(PasswordBoxBindingBehavior), new PropertyMetadata(null));
+               typeof(PasswordBoxBindingBehavior), new FrameworkPropertyMetadata(OnBoundPasswordChanged));
 
 
         private void OnPasswordBoxValueChanged(object sender, RoutedEventArgs e)
@@ -39,6 +35,21 @@ namespace DaxStudio.UI.Behaviours
                     .GetProperty(binding.ParentBinding.Path.Path);
                 if (property != null)
                     property.SetValue(binding.DataItem, AssociatedObject.SecurePassword, null);
+            }
+        }
+
+        /// <summary>
+        /// Reacts to password reset on viewmodel (ViewModel.Password = new SecureString())
+        /// </summary>
+        private static void OnBoundPasswordChanged(object s, DependencyPropertyChangedEventArgs e)
+        {
+            var box = ((PasswordBoxBindingBehavior)s).AssociatedObject;
+            if (box != null)
+            {
+                if (((SecureString)e.NewValue).Length == 0)
+                    box.Password = string.Empty;
+                else
+                    box.Password = ((SecureString)e.NewValue).ConvertToUnsecureString();
             }
         }
 

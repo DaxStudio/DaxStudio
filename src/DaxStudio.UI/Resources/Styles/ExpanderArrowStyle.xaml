@@ -34,7 +34,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <ed:RegularPolygon x:Name="arrow" HorizontalAlignment="Left" 
-                                                   Height="4.5" InnerRadius="1"  PointCount="3" Margin="2,7.5,0,0"
+                                                   Height="4.5" InnerRadius="1"  PointCount="3" Margin="2,7,0,0"
                                                    Stretch="Fill" Stroke="{DynamicResource Expander.Static.Arrow.Stroke}" 
                                                    VerticalAlignment="Top" Width="8" RenderTransformOrigin="0.5,0.5" StrokeThickness="1" >
                                 <ed:RegularPolygon.RenderTransform>

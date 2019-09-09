@@ -173,7 +173,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     finally
                     {
-                        EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument));
+                        EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument, SelectedModelName));
                         NotifyOfPropertyChange(() => SelectedModel);
                         RefreshTables();
 

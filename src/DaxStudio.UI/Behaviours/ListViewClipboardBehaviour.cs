@@ -1,10 +1,5 @@
-﻿using Caliburn.Micro;
-using DaxStudio.UI.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DaxStudio.UI.Events;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

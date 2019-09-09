@@ -604,6 +604,9 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SelectedWorksheet); 
             } 
         }
+
+        public string SelectedModel { get; set; }
+
         public string SelectedDatabase { get {
                 return Connection?.Database?.Name;
                 //if (_selectedDatabase == null && IsConnected)
@@ -3244,8 +3247,11 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => AvalonDockTheme);
             _editor?.SetSyntaxHighlightColorTheme(Options.Theme);
         }
+
         public void Handle(SelectedModelChangedEvent message)
         {
+            SelectedModel = message.SelectedModel;
+
             // if there is not a running trace exit here
             if (_tracer == null) return;
             if (_tracer.Status != QueryTraceStatus.Started ) return;

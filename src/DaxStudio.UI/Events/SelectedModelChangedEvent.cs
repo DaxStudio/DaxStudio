@@ -9,11 +9,13 @@ namespace DaxStudio.UI.Events
 {
     public class SelectedModelChangedEvent
     {
-        public SelectedModelChangedEvent(DocumentViewModel document)
+        public SelectedModelChangedEvent(DocumentViewModel document, string selectedModel)
         {
             Document = document;
+            SelectedModel = selectedModel;
         }
 
         public DocumentViewModel Document { get; private set; }
+        public string SelectedModel { get; }
     }
 }

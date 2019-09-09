@@ -13,22 +13,11 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Extensions;
 using System.Windows;
 using System.Linq;
-using System.Threading;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
-    /*
-    public class DocumentFactory
-{
-   [Export(typeof(Func<DocumentViewModel>))]
-   public DocumentViewModel CreateDocument()
-   {
-       return new DocumentViewModel();
-   }
-}
-    */
 
     [Export(typeof(IConductor))]
     public class DocumentTabViewModel : Conductor<IScreen>.Collection.OneActive

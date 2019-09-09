@@ -195,6 +195,9 @@
     <Reference Include="Fluent, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.7.0.0-alpha0661\lib\net462\Fluent.dll</HintPath>
     </Reference>
+    <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="GongSolutions.WPF.DragDrop, Version=2.0.0.0, Culture=neutral, PublicKeyToken=91f1945125b7a587, processorArchitecture=MSIL">
       <HintPath>..\..\packages\gong-wpf-dragdrop.2.0.5\lib\net47\GongSolutions.WPF.DragDrop.dll</HintPath>
     </Reference>
@@ -278,6 +281,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="XamlAnimatedGif, Version=1.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\XamlAnimatedGif.1.2.2\lib\net45\XamlAnimatedGif.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.11.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dirkster.AvalonDock.3.5.11\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
@@ -305,6 +311,7 @@
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
+    <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
@@ -327,6 +334,7 @@
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
+    <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
@@ -353,8 +361,11 @@
     <Compile Include="Converters\StringToXamlConverter.cs" />
     <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
     <Compile Include="Enums\DialogResult.cs" />
+    <Compile Include="Enums\ExportDataType.cs" />
+    <Compile Include="Enums\ExportStatus.cs" />
     <Compile Include="Enums\OpenDialogResult.cs" />
     <Compile Include="Enums\QueryEndSubClass.cs" />
+    <Compile Include="Enums\SqlAuthenticationType.cs" />
     <Compile Include="Events\AllDocumentsClosedEvent.cs" />
     <Compile Include="Events\AutoSaveEvent.cs" />
     <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
@@ -363,6 +374,7 @@
     <Compile Include="Events\DockManagerLoadLayout.cs" />
     <Compile Include="Events\DockManagerSaveLayout.cs" />
     <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
+    <Compile Include="Events\ExportStatusUpdateEvent.cs" />
     <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\RefreshOutputTargetsEvent.cs" />
@@ -380,6 +392,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\QueryBeginEventExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
+    <Compile Include="Extensions\SqlBulkCopyExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
@@ -532,6 +545,8 @@
     <Compile Include="Utils\PaneStyleSelector.cs" />
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
     <Compile Include="Events\ConnectionClosedEvent.cs" />
     <Compile Include="Utils\ModelAnalyzer.cs" />
@@ -540,6 +555,13 @@
     <Compile Include="Utils\WindowPlacement.cs" />
     <Compile Include="ViewModels\DesignData\DesignDocumentViewModel.cs" />
     <Compile Include="ViewModels\DesignData\DesignTimeDataFactory.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardBasePageViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnBuilderViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardCsvFolderViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTablesViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
     <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\GotoLineDialogViewModel.cs" />
@@ -558,6 +580,27 @@
     </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml.cs">
+      <DependentUpon>ExportDataWizardExportStatusView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardChooseTablesView.xaml.cs">
+      <DependentUpon>ExportDataWizardChooseTablesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardCsvFolderView.xaml.cs">
+      <DependentUpon>ExportDataWizardCsvFolderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardSqlConnBuilderView.xaml.cs">
+      <DependentUpon>ExportDataWizardSqlConnBuilderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardSqlConnStrView.xaml.cs">
+      <DependentUpon>ExportDataWizardSqlConnStrView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardChooseTypeView.xaml.cs">
+      <DependentUpon>ExportDataWizardChooseTypeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardView.xaml.cs">
+      <DependentUpon>ExportDataWizardView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GotoLineDialogView.xaml.cs">
       <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
@@ -664,6 +707,34 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles\ExpanderArrowStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardChooseTablesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardCsvFolderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardSqlConnBuilderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardSqlConnStrView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardChooseTypeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1317,6 +1388,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-view-metrics%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-csv-file.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\icon-sql-table.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

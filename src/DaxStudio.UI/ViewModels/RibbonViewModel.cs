@@ -829,7 +829,8 @@ namespace DaxStudio.UI.ViewModels
         {
             if (ActiveDocument == null) return;
 
-            using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
+            //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
+            using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
             {
 
                 _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>

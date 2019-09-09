@@ -117,7 +117,7 @@
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
 		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
-                       
+                    VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
