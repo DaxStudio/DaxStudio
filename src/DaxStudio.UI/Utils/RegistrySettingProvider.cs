@@ -189,6 +189,11 @@ namespace DaxStudio.UI
                     var boolVal = val == null ? bool.Parse(attr.Value.ToString()) : bool.Parse(val.ToString());
                     prop.SetValue(options, boolVal);
                 }
+                else if (prop.PropertyType.IsEnum)
+                {
+                    var enumVal =  Enum.Parse(prop.PropertyType, val.ToString());
+                    prop.SetValue(options, enumVal);
+                }
                 else
                 {
                     prop.SetValue(options, val);

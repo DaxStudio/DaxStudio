@@ -2,6 +2,7 @@
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -50,21 +51,13 @@ namespace DaxStudio.UI.Utils
 
         public string LogPath => Path.Combine(SettingsPath, "logs");
         #endregion
-
-        //public string GetDismissedVersion()
-        //{
-        //    throw new NotImplementedException();
-        //}
+        
 
         public ObservableCollection<DaxFile> GetFileMRUList()
         {
             throw new NotImplementedException();
         }
-
-        //public DateTime GetLastVersionCheck()
-        //{
-        //    throw new NotImplementedException();
-        //}
+        
 
         public ObservableCollection<string> GetServerMRUList()
         {
@@ -82,16 +75,17 @@ namespace DaxStudio.UI.Utils
             return Task.Run(() => {
                 if (isInitializing) return;
                 _optionsDict[subKey] = value;
-                // TODO - write json file
-
+                // write json file
+                using (StreamWriter file = File.CreateText(settingsFile))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
+                    serializer.Serialize(file, _optionsDict);
+                }
             });
             
         }
-
-        //public string GetWindowPosition()
-        //{
-        //    throw new NotImplementedException();
-        //}
+        
 
         public bool IsFileLoggingEnabled()
         {
@@ -114,21 +108,6 @@ namespace DaxStudio.UI.Utils
             Options = options;
             throw new NotImplementedException();
         }
-
-        //public void SetDismissedVersion(string value)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public void SetLastVersionCheck(DateTime value)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-
-        //public void SetWindowPosition(string value)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        
     }
 }

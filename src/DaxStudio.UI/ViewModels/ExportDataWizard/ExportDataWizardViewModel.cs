@@ -1,5 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
+using DaxStudio.Common;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -42,17 +43,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             EventAggregator.Subscribe(this);
 
-            // setup properties
             Document = document;
-            CsvFolder = "";
-            ServerName = "";
-            Database = "";
-            Schema = "dbo";
-            Username = "";
-            TruncateTables = true;
-            SecurePassword = new SecureString();
-            Tables = new ObservableCollection<SelectedTable>();
-            TransitionMap = new TransitionMap();
 
             PopulateTablesList();
 
@@ -68,7 +59,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 Tables.Add(new SelectedTable(t.DaxName, t.Caption));
             }
-
         }
 
         private void SetupWizardTransitionMap()
@@ -118,19 +108,20 @@ namespace DaxStudio.UI.ViewModels
 
         public ExportDataType ExportType { get; set; }
 
-        public string ServerName { get; set; }
-        public string Database { get; set; }
-        public string Schema { get; set; }
-        public string Username { get; set; }
-        public SecureString SecurePassword { get; set; }
-        public SqlAuthenticationType AuthenticationType { get; set; }
+        public string ServerName { get; set; } = "";
+        public string Database { get; set; } = "";
+        public string Schema { get; set; } = "dbo";
+        public string Username { get; set; } = "";
+        public SecureString SecurePassword { get; set; } = new SecureString();
+        public SqlAuthenticationType AuthenticationType { get; set; } = SqlAuthenticationType.Windows;
         public string SqlConnectionString { get; set; }
+        public string CsvDelimiter { get; set; } = ",";
+        public bool CsvQuoteStrings { get; set; } = true;
+        public string CsvFolder { get; set; } = "";
 
-        public string CsvFolder { get; set; }
-
-        public ObservableCollection<SelectedTable> Tables { get; }
-        public TransitionMap TransitionMap { get; }
-        public bool TruncateTables { get; internal set; }
+        public ObservableCollection<SelectedTable> Tables { get; } = new ObservableCollection<SelectedTable>();
+        public TransitionMap TransitionMap { get; } = new TransitionMap();
+        public bool TruncateTables { get; internal set; } = true;
 
         #endregion
 
@@ -218,6 +209,8 @@ namespace DaxStudio.UI.ViewModels
             var selectedTables = Tables.Where(t => t.IsSelected);
             var totalTables = selectedTables.Count();
             var tableCnt = 0;
+            string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
+            string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
 
             foreach (var table in  selectedTables)
             {
@@ -238,6 +231,15 @@ namespace DaxStudio.UI.ViewModels
                     {
                         rows = 0;
                         tableCnt++;
+
+                        // configure delimiter
+                        csvWriter.Configuration.Delimiter = CsvDelimiter;
+
+                        // output dates using ISO 8601 format
+                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                            typeof(DateTime),
+                            new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+
                         // Write Header
                         foreach (var colName in reader.CleanColumnNames())
                         {

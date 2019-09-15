@@ -34,6 +34,7 @@ namespace DaxStudio.Common
         public const string RefreshSessionQuery = "/* DAX Studio Internal */\nEVALUATE ROW(\"DAX Studio Session Refresh\",0)";
 
         public const string InternalQueryHeader = "/* DAX Studio Internal */";
+        public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
 
         //public const int TraceStartTimeoutSeconds = 30;
     }

@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -27,7 +28,27 @@
             </Grid>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" Grid.Row="4">
+        <Grid Grid.Row="3" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="CSV Delimiter:" Margin="0,5"/>
+            <RadioButton Content="Culture Default List Separator" GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" />
+            <RadioButton Content="Comma" GroupName="Delimiters" x:Name="UseCommaDelimiter"  Margin="0,3" Grid.Row="2" />
+            <RadioButton Content="Tab" GroupName="Delimiters" x:Name="UseTabDelimiter"  Margin="0,3" Grid.Row="3"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="4">
+                <RadioButton Content="Other" GroupName="Delimiters" x:Name="UseOtherDelimiter"  Margin="0,3" />
+                <TextBox x:Name="CsvDelimiter"  Width="30" Margin="10,0" IsEnabled="{Binding IsChecked, ElementName=UseOtherDelimiter}"></TextBox>
+            </StackPanel>
+            <CheckBox x:Name="CsvQuoteStrings" Content="Quote all string fields" Grid.Row="5" Margin="0,10"/>
+        </Grid>
+        
+        <StackPanel Orientation="Vertical" Grid.Row="5">
             <Separator Foreground="{DynamicResource DaxStudioBrush}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="Back" Margin="5,10" Padding="10,5">&lt; Back</Button>
