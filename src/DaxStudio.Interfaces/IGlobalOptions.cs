@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Security;
-
+using Newtonsoft.Json;
 
 namespace DaxStudio.Interfaces
 {
@@ -10,8 +10,10 @@ namespace DaxStudio.Interfaces
     {
         [DefaultValue(true)]
         bool EditorShowLineNumbers { get; set; }
+        [JsonIgnore]
         double EditorFontSizePx { get; }
         string EditorFontFamily { get; set; }
+        [JsonIgnore]
         double ResultFontSizePx { get; }
         string ResultFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }

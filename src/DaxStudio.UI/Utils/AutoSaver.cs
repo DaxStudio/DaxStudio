@@ -104,7 +104,7 @@ namespace DaxStudio.UI.Utils
         {
             
             // delete autosaveindex
-            File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex()));
+            SharingViolations.Wrap(()=> File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex())));
 
             // delete autosave files
             // TODO - should I only delete the files for this instance of DAX Studio??

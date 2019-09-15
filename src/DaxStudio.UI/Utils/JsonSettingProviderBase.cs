@@ -41,6 +41,21 @@ namespace DaxStudio.UI.Utils
             settingsFile = Path.Combine(SettingsPath, "settings.json");
             recentServersFile = Path.Combine(SettingsPath, "recentServers.json");
             recentFilesFile = Path.Combine(SettingsPath, "recentFiles.json");
+            ReadSettings();
+        }
+
+        private void ReadSettings()
+        {
+            // deserialize JSON directly from a file
+            using (StreamReader file = File.OpenText(settingsFile))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+                Options = (IGlobalOptions)serializer.Deserialize(file, typeof(GlobalOptions));
+            }
+
+            //var text = File.ReadAllText(settingsFile);
+            //Options = JsonConvert.DeserializeObject<Dictionary<string, object>>(text);
         }
 
         #region Static Members
@@ -55,13 +70,15 @@ namespace DaxStudio.UI.Utils
 
         public ObservableCollection<DaxFile> GetFileMRUList()
         {
-            throw new NotImplementedException();
+            // TODO - get real list
+            return new ObservableCollection<DaxFile>();
         }
         
 
         public ObservableCollection<string> GetServerMRUList()
         {
-            throw new NotImplementedException();
+            // TODO - get real list
+            return new ObservableCollection<string>();
         }
 
         public T GetValue<T>(string subKey, T defaultValue)
@@ -80,7 +97,8 @@ namespace DaxStudio.UI.Utils
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     serializer.Formatting = Formatting.Indented;
-                    serializer.Serialize(file, _optionsDict);
+                    serializer.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+                    serializer.Serialize(file, Options);
                 }
             });
             
@@ -89,24 +107,31 @@ namespace DaxStudio.UI.Utils
 
         public bool IsFileLoggingEnabled()
         {
-            throw new NotImplementedException();
+            // TODO
+            return false;
         }
 
         public void SaveFileMRUList(IEnumerable<object> files)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
         public void SaveServerMRUList(string currentServer, ObservableCollection<string> servers)
         {
+            // TODO
             throw new NotImplementedException();
         }
 
         public void Initialize(IGlobalOptions options)
         {
             // TODO - load settings from settings.json
+            var json = File.ReadAllText(settingsFile);
+            var settings = new JsonSerializerSettings();
+            settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+            JsonConvert.PopulateObject(json, options, settings);
             Options = options;
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
         
     }
