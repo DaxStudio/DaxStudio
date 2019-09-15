@@ -13,7 +13,7 @@ using System.ComponentModel;
 using Newtonsoft.Json;
 using System.Security;
 
-namespace DaxStudio.UI
+namespace DaxStudio.UI.Utils
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     //[Export(typeof(ISettingProvider))]

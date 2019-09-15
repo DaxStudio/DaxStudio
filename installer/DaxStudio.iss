@@ -177,6 +177,11 @@ Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
 ;Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
+; Make sure that local copies of the Excel files do not exist
+[InstallDelete]
+Type: files; Name: "{app}\Microsoft.Excel.Amo.dll"
+Type: files; Name: "{app}\Microsoft.Excel.AdomdClient.dll"
+
 [Code]
 //If there is a command-line parameter "skipdependencies=true", don't check for them }
 function ShouldInstallDependencies(): Boolean;

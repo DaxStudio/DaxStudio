@@ -1,7 +1,5 @@
-﻿using Caliburn.Micro;
-using DaxStudio.UI.Interfaces;
-using System;
-using System.ComponentModel.Composition;
+﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.Model
 {
@@ -10,6 +8,8 @@ namespace DaxStudio.UI.Model
         //[Export(typeof(Func<ISettingProvider>))]
         public ISettingProvider GetSettingProvider()
         {
+            //return new JsonSettingProviderAppData();
+
             // TODO if .portable file exists get JsonSettingsProviderPortable
             //      else get jsonSettingsProviderAppData
 
