@@ -1,4 +1,5 @@
-﻿using DaxStudio.Interfaces;
+﻿using DaxStudio.Common;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using System;
@@ -33,7 +34,7 @@ namespace DaxStudio.UI.Model
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 DefaultExt = ".txt",
-                Filter = "Tab separated text file|*.txt|Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv"
+                Filter = "Tab separated text file|*.txt|Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Custom Export Format (Configure in Options)|*.csv"
             };
 
             string fileName = "";
@@ -56,8 +57,9 @@ namespace DaxStudio.UI.Model
                         var sw = Stopwatch.StartNew();
 
                         string sep = "\t";
+                        bool shouldQuoteStrings = true; //default to quoting all string fields
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-                        string isoDateFormat = string.Format("yyyy-MM-dd HH:mm:ss{0}000", decimalSep);
+                        string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
                         var enc = Encoding.UTF8;
 
                         switch (dlg.FilterIndex)
@@ -74,7 +76,8 @@ namespace DaxStudio.UI.Model
                                 break;
                             case 4:
                                 // TODO - custom export format
-                                
+                                sep = runner.Options.GetCustomCsvDelimiter();
+                                shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
                                 break;
                         }
 
@@ -132,9 +135,9 @@ namespace DaxStudio.UI.Model
                                                     // quote all string fields
                                                     if (reader.GetFieldType(iCol) == typeof(string))
                                                         if (reader.IsDBNull(iCol))
-                                                            csvWriter.WriteField("", true);
+                                                            csvWriter.WriteField("", shouldQuoteStrings);
                                                         else
-                                                            csvWriter.WriteField(fieldValue.ToString(), true);
+                                                            csvWriter.WriteField(fieldValue.ToString(), shouldQuoteStrings);
                                                     else
                                                         csvWriter.WriteField(fieldValue);
                                                 }

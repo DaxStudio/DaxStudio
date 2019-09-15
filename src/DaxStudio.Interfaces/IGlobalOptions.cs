@@ -32,29 +32,31 @@ namespace DaxStudio.Interfaces
         bool ShowTooltipSampleData { get; set; }
         bool CanPublishDaxFunctions { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
+
+        bool ResultAutoFormat { get; set; }
+        bool ScaleResultsFontWithEditor { get; set; }
+        int CodeCompletionWindowWidthIncrease { get; set; }
+        bool KeepMetadataSearchOpen { get; set; }
+        bool SortFoldersFirstInMetadata { get; set; }
+        bool ShowHiddenMetadata { get; set; }
+        bool SetClearCacheAsDefaultRunStyle { get; set; }
+        string WindowPosition { get; set; }
+        bool AutoRefreshMetadataCloud { get; set; }
+        bool AutoRefreshMetadataLocalNetwork { get; set; }
+        bool AutoRefreshMetadataLocalMachine { get; set; }
+        DateTime LastVersionCheckUTC { get; set; }
+        Version DismissedVersion { get; set; }
+        string Theme { get; set; }
+        bool CustomCsvQuoteStringFields { get; set; }
+        CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
+
         // Preview Features
         bool ShowExportMetrics { get; set; }
         bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
 
-        bool ResultAutoFormat { get; set; }
-        bool ScaleResultsFontWithEditor { get; set; }
-        int CodeCompletionWindowWidthIncrease { get; set; }
-        bool KeepMetadataSearchOpen { get; set; }
-
-        string Theme { get; set; }
-
-        bool AutoRefreshMetadataLocalMachine { get; set; }
-        bool AutoRefreshMetadataLocalNetwork { get; set; }
-        bool AutoRefreshMetadataCloud { get; set; }
-
-        bool ShowHiddenMetadata { get; set; }
-        bool SetClearCacheAsDefaultRunStyle { get; set; }
-        bool SortFoldersFirstInMetadata { get; set; }
-        string WindowPosition { get; set; }
-
-        Version DismissedVersion { get; set; }
-        DateTime LastVersionCheckUTC { get; set; }
+        // Methods
+        string GetCustomCsvDelimiter();
     }
 }

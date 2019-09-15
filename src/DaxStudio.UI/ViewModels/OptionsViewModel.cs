@@ -14,6 +14,7 @@ using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -533,7 +534,43 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        
+
+        private string _csvDelimiter = ",";
+        [DataMember, DefaultValue(",")]
+        public string CustomCsvDelimiter
+        {
+            get
+            {
+                return _csvDelimiter;
+            }
+
+            set
+            {
+                _csvDelimiter = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<string>(nameof(CustomCsvDelimiter), value, _isInitializing);
+                NotifyOfPropertyChange(() => CustomCsvDelimiter);
+            }
+        }
+
+        private bool _csvQuoteStringFields = true;
+        [DataMember, DefaultValue(true)]
+        public bool CustomCsvQuoteStringFields
+        {
+            get
+            {
+                return _csvQuoteStringFields;
+            }
+
+            set
+            {
+                _csvQuoteStringFields = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(CustomCsvQuoteStringFields), value, _isInitializing);
+                NotifyOfPropertyChange(() => CustomCsvQuoteStringFields);
+            }
+        }
+
         private int _traceStartupTimeout = 30;
         [DataMember, DefaultValue(30)]
         public int TraceStartupTimeout { get => _traceStartupTimeout; set {
@@ -543,6 +580,66 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => TraceStartupTimeout);
             }
         }
+
+        private CustomCsvDelimiterType _csvCustomDelimiterType = CustomCsvDelimiterType.CultureDefault;
+        [DataMember, DefaultValue(CustomCsvDelimiterType.CultureDefault)]
+        public CustomCsvDelimiterType CustomCsvDelimiterType
+        {
+            get => _csvCustomDelimiterType;
+            set
+            {
+                _csvCustomDelimiterType = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<CustomCsvDelimiterType>(nameof(CustomCsvDelimiterType), value, _isInitializing);
+                NotifyOfPropertyChange(() => CustomCsvDelimiterType);
+                NotifyOfPropertyChange(() => UseCommaDelimiter);
+                NotifyOfPropertyChange(() => UseCultureDefaultDelimiter);
+                NotifyOfPropertyChange(() => UseTabDelimiter);
+                NotifyOfPropertyChange(() => UseOtherDelimiter);
+            }
+        }
+
+        public string GetCustomCsvDelimiter()
+        {
+            switch (CustomCsvDelimiterType)
+            {
+                case CustomCsvDelimiterType.CultureDefault: return System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+                case CustomCsvDelimiterType.Comma: return ",";
+                case CustomCsvDelimiterType.Tab: return "\t";
+                case CustomCsvDelimiterType.Other: return CustomCsvDelimiter;
+                default: return System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+
+            }
+        }
+
+        #region View Specific Properties
+        public bool UseCultureDefaultDelimiter
+        {
+            get => CustomCsvDelimiterType == CustomCsvDelimiterType.CultureDefault; 
+            set { if (value) CustomCsvDelimiterType = CustomCsvDelimiterType.CultureDefault; }
+        }
+        public bool UseCommaDelimiter
+        {
+            get => CustomCsvDelimiterType == CustomCsvDelimiterType.Comma;
+            set { if (value)  CustomCsvDelimiterType = CustomCsvDelimiterType.Comma; }
+        }
+        
+        public bool UseTabDelimiter
+        {
+            get => CustomCsvDelimiterType == CustomCsvDelimiterType.Tab;
+            set { if (value) CustomCsvDelimiterType = CustomCsvDelimiterType.Tab;}
+        }
+
+        public bool UseOtherDelimiter
+        {
+            get => CustomCsvDelimiterType == CustomCsvDelimiterType.Other;
+            set { if (value) CustomCsvDelimiterType = CustomCsvDelimiterType.Other; }
+        }
+
+        public string CultureSpecificListDelimiter
+        { get => System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator; }
+
+        #endregion
 
         #region "Preview Toggles"
 

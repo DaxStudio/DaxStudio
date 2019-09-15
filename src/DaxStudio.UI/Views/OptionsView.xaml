@@ -12,7 +12,7 @@
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             mc:Ignorable="d" 
-             d:DesignHeight="908" d:DesignWidth="900">
+             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
@@ -402,7 +402,7 @@
                                         </ComboBox.ItemsSource>
                                     </ComboBox>
                                     <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <nud:NumericUpDown Value="{Binding ResultsFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
+                                    <nud:NumericUpDown Value="{Binding ResultFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>
@@ -509,6 +509,35 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Custom Export Format">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <GroupBox Header="CSV Delimiter:" Grid.Row="0">
+                                    <StackPanel Orientation="Vertical">
+                                        <RadioButton GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" >
+                                            <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Culture Default List Separator  (" />
+                                            <TextBlock x:Name="CultureSpecificListDelimiter"/>
+                                                <TextBlock Text=")"/>
+                                            </StackPanel>
+
+                                        </RadioButton>
+                                        <RadioButton Content="Comma" GroupName="Delimiters" x:Name="UseCommaDelimiter" Grid.Row="2"  Margin="0,3"/>
+                                        <RadioButton Content="Tab" GroupName="Delimiters" x:Name="UseTabDelimiter"  Grid.Row="3" Margin="0,3"/>
+                                        <StackPanel Orientation="Horizontal" Grid.Row="4">
+                                            <RadioButton Content="Other" GroupName="Delimiters" x:Name="UseOtherDelimiter" Margin="0,3" />
+                                            <TextBox x:Name="CustomCsvDelimiter"  Width="30" Margin="10,0" IsEnabled="{Binding IsChecked, ElementName=UseOtherDelimiter}"></TextBox>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </GroupBox>
+                                <CheckBox Content="Quote String Fields" x:Name="CustomCsvQuoteStringFields" Grid.Row="1" Grid.ColumnSpan="2"/>
                             </Grid>
                         </GroupBox>
                         <!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">

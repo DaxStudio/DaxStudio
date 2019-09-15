@@ -52,5 +52,14 @@ namespace DaxStudio.UI.Model
         public string WindowPosition { get; set; }
         public Version DismissedVersion { get; set; }
         public DateTime LastVersionCheckUTC { get; set; }
+        public bool CustomCsvQuoteStringFields { get; set; }
+        public string CustomCsvDelimiter { get; set; }
+        public CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
+
+        public string GetCustomCsvDelimiter()
+        {
+            // stub implementation
+            return System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+        }
     }
 }
