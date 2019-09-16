@@ -177,20 +177,20 @@
     <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CsvHelper.12.1.2\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Model, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Model.1.0.4\lib\netstandard2.0\Dax.Model.dll</HintPath>
+    <Reference Include="Dax.Model, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Model.1.0.5\lib\netstandard2.0\Dax.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Model.Extractor, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.4\lib\net471\Dax.Model.Extractor.dll</HintPath>
+    <Reference Include="Dax.Model.Extractor, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.5\lib\net471\Dax.Model.Extractor.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewModel, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewModel.1.0.4\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
+    <Reference Include="Dax.ViewModel, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewModel.1.0.5\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewVpaExport, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.4\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
+    <Reference Include="Dax.ViewVpaExport, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.5\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Vpax, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Vpax.1.0.4\lib\net471\Dax.Vpax.dll</HintPath>
+    <Reference Include="Dax.Vpax, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Vpax.1.0.5\lib\net471\Dax.Vpax.dll</HintPath>
     </Reference>
     <Reference Include="Fluent, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.7.0.0-alpha0661\lib\net462\Fluent.dll</HintPath>

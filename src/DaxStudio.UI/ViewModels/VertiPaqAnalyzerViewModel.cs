@@ -203,6 +203,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public VpaTableViewModel Table { get; }
         public string TableColumnName => _col.TableColumnName;
+        public long TableRowsCount => _col.TableRowsCount;
         public string ColumnName => _col.ColumnName;
         public string TypeName => _col.TypeName;
         public long ColumnCardinality => _col.ColumnCardinality;
