@@ -3087,7 +3087,8 @@ namespace DaxStudio.UI.ViewModels
                     // run Vertipaq Analyzer Async
 
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
-                    Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.ServerName, this.SelectedDatabase, "DaxStudio", "0.1");
+                    Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                    Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.Connection.ServerName, this.SelectedDatabase, "DaxStudio", version.ToString());
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });
@@ -3111,9 +3112,16 @@ namespace DaxStudio.UI.ViewModels
                             vpaView.ViewModel = viewModel;
                         }
                         vpaView.Activate();
+                    } else
+                    {
+                        var ex = prevTask.Exception;
+                        Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                        var exMsg = ex.GetAllMessages();
+                        OutputError("Error viewing metrics: " + exMsg);
                     }
+
                     msg2.Dispose();
-                    if (prevTask.IsFaulted) throw prevTask.Exception;
+                    //if (prevTask.IsFaulted) throw prevTask.Exception;
 
                 });
                     
