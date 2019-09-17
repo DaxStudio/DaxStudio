@@ -30,7 +30,7 @@ namespace ADOTabular
             foreach (DataRow dr in dtModels.Rows)
             {
                 ret.Add(dr["CUBE_NAME"].ToString()
-                    , new ADOTabularModel(_conn, dr["CUBE_NAME"].ToString(), dr["CUBE_CAPTION"].ToString(), dr["DESCRIPTION"].ToString(), dr["BASE_CUBE_NAME"].ToString()));
+                    , new ADOTabularModel(_conn, models.Database, dr["CUBE_NAME"].ToString(), dr["CUBE_CAPTION"].ToString(), dr["DESCRIPTION"].ToString(), dr["BASE_CUBE_NAME"].ToString()));
             }
             return ret;
         }
@@ -96,10 +96,10 @@ namespace ADOTabular
             
             if (rdr.NameTable != null)
             {
+                var eEntityContainer = rdr.NameTable.Add("EntityContainer");
                 var eEntitySet = rdr.NameTable.Add("EntitySet");
                 var eEntityType = rdr.NameTable.Add("EntityType");
                 var eAssociationSet = rdr.NameTable.Add("AssociationSet");
-// TODO - process EntityContainer in order to read culture and maybe ModelCapabilities
 
                 while (rdr.Read())
                 {
@@ -107,7 +107,10 @@ namespace ADOTabular
                     {
                         switch (rdr.LocalName)
                         {
-
+                            case "EntityContainer":
+                                if (rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
+                                    UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
+                                break;
                             case "EntitySet":
                                 var tab = BuildTableFromEntitySet(rdr, eEntitySet);
                                 tabs.Add(tab);
@@ -134,6 +137,36 @@ namespace ADOTabular
                 }
             }
 
+        }
+
+        // Read the "Culture" attribute from <bi:EntityContainer>
+        private void UpdateDatabaseAndModelFromEntityContainer(XmlReader rdr, ADOTabularTableCollection tabs, string eEntityContainer)
+        {
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == eEntityContainer))
+            {
+                if (rdr.LocalName == eEntityContainer 
+                    && rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        switch (rdr.LocalName)
+                        {
+                            case "Culture":
+                                tabs.Model.Database.Culture = rdr.Value;
+                                break;
+                        }
+                    }
+                    // read through the rest of the nodes until we get to the end element </bi:EntityContainer>
+                    while (!(rdr.NodeType == XmlNodeType.EndElement 
+                          && rdr.LocalName == eEntityContainer))
+                    {
+                        rdr.Read();
+                    }
+                    
+                }
+                rdr.Read();
+            }
         }
 
         private void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)

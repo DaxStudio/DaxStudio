@@ -35,6 +35,10 @@
             <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
             <BitmapImage x:Key="ModelIcon" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/icon-model@16px.png" />
 
+            <Style x:Key="DatabaseComboStyle" TargetType="ComboBox">
+                <Setter Property="ToolTipService.ShowDuration" Value="60000"/>
+            </Style>
+            
             <Style x:Key="ToolTipLabel" TargetType="{x:Type TextBlock}">
                 <Setter Property="Foreground" Value="{StaticResource DataTypeBrush}" />
                 <Setter Property="Margin" Value="0,0,5,0" />
@@ -172,7 +176,32 @@
             IsEditable="False"
             IsSynchronizedWithCurrentItem="True" 
             IsEnabled="{Binding CanSelectDatabase}" 
-            Margin="0,0,0,2" ToolTip="{Binding SelectedDatabase.Description }">
+            Margin="0,0,0,2" 
+            Style="{StaticResource DatabaseComboStyle}"      >
+            <ComboBox.ToolTip>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+                        <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
+                        <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                    </StackPanel>
+                    <TextBlock Text="Compatibility: " Grid.Row="1"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
+                    <TextBlock Text="Culture: " Grid.Row="2"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="2"/>
+                    <TextBlock Text="Last Updated: " Grid.Row="3"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="3" Grid.Column="1"/>
+                </Grid>
+            </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

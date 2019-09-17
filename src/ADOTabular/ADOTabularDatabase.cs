@@ -6,14 +6,13 @@ namespace ADOTabular
     public class ADOTabularDatabase
     {
         private ADOTabularModelCollection _modelColl;
-        private DateTime? _lastUpdate = null;
 
         public ADOTabularDatabase(IADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel, string roles)
         {
             Connection = adoTabConn;
             Name = databaseName;
             Id = databaseId;
-            _lastUpdate = lastUpdate;
+            LastUpdate = lastUpdate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
         }
@@ -25,9 +24,9 @@ namespace ADOTabular
                 var ddColl = Connection.Databases.GetDatabaseDictionary(Connection.SPID, true);
                 if (ddColl.Count == 0) return false; // no databases on server
                 var dd = ddColl[Name];
-                if (dd.LastUpdate > _lastUpdate)
+                if (dd.LastUpdate > LastUpdate)
                 {
-                    _lastUpdate = dd.LastUpdate;
+                    LastUpdate = dd.LastUpdate;
                     return true;
                 }
             }
@@ -43,8 +42,9 @@ namespace ADOTabular
             return false;
         }
 
+        public string Culture { get; internal set; } = string.Empty;
         public string Id { get; }
-
+        public DateTime LastUpdate { get; private set; } = DateTime.MinValue;
         public string Name { get;
         //get { return _adoTabConn.PowerBIFileName == string.Empty? _databaseName: _adoTabConn.PowerBIFileName; }
         }

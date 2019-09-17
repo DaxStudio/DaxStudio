@@ -432,6 +432,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public ADOTabularDatabase SelectedDatabaseObject
+        {
+            get
+            {
+                return this.Connection.Database;
+            }
+        }
+
         public bool CanSelectDatabase
         {
             get

@@ -88,10 +88,12 @@ namespace DaxStudio.SignalR
         public CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
         public ObservableCollection<IDaxFile> RecentFiles { get; set; }
         public ObservableCollection<string> RecentServers { get; set; }
+        public bool EditorConvertTabsToSpaces { get; set; }
+        public int EditorIndentationSize { get; set; }
 
         public string GetCustomCsvDelimiter()
         {
-            throw new NotImplementedException();
+            return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;
         }
     }
 }

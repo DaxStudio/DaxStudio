@@ -90,6 +90,11 @@ namespace DaxStudio.Tests
         // public static void MyClassCleanup() { }
         //
 
+        private ADOTabularDatabase GetTestDB()
+        {
+            return new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+        }
+
         private bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
@@ -167,7 +172,8 @@ namespace DaxStudio.Tests
         public void TestOnlyDisplayFolders()
         {
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            ADOTabularDatabase db = GetTestDB();
+            ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
             var mockMetadata = new Mock<IMetadataPane>().Object;
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator,mockMetadata);
@@ -194,7 +200,8 @@ namespace DaxStudio.Tests
         public void TestSecondDisplayFolderWithoutCaption()
         {
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            ADOTabularDatabase db = GetTestDB();
+            ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
             var mockMetadata = new Mock<IMetadataPane>().Object;
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator, mockMetadata);
@@ -220,7 +227,8 @@ namespace DaxStudio.Tests
         public void TestSecondDisplayFolderWithHierarchy()
         {
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularModel m = new ADOTabularModel(connection, "Test", "Test", "Test Description", "");
+            ADOTabularDatabase db = GetTestDB();
+            ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             var mockEventAggregator = new Mock<IEventAggregator>().Object;
             var mockMetadata = new Mock<IMetadataPane>().Object;
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator, mockMetadata);

@@ -359,13 +359,13 @@ namespace DaxStudio.UI.ViewModels
         public bool ConvertTabsToSpaces
         {
             // TODO - bind to options
-            get => false;
+            get => Options.EditorConvertTabsToSpaces;
         }
 
         public int IndentationSize
         {
             // TODO - bind to options
-            get => 2;
+            get => Options.EditorIndentationSize;
         }
 
         #endregion
@@ -3258,6 +3258,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
+            NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
+            NotifyOfPropertyChange(nameof(IndentationSize));
             UpdateTheme();
         }
 

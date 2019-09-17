@@ -20,6 +20,7 @@ namespace ADOTabular
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
+
         }
 
         public DatabaseDetails(string name, string lastUpdate, string compatLevel, string roles) : this(name, string.Empty, lastUpdate, compatLevel, roles) { }
@@ -123,7 +124,9 @@ namespace ADOTabular
                     row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
                     row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
-                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""));
+                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""
+                    )
+                    );
                 // TODO - add support for loading Database Description
             }
             return databaseDictionary;

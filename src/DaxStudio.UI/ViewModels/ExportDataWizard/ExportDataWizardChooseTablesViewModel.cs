@@ -89,7 +89,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     case ExportStatus.Done:
                     case ExportStatus.Exporting:
-                        return $"{RowCount} rows exported";
+                        return $"{RowCount:N0} rows exported";
                     case ExportStatus.Ready:
                         return "Waiting...";
                     case ExportStatus.Error:
