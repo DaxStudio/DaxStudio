@@ -402,7 +402,9 @@
     <Compile Include="Interfaces\IMetadataPane.cs" />
     <Compile Include="Interfaces\IDataGridWindow.cs" />
     <Compile Include="Interfaces\ISettingProvider.cs" />
+    <Compile Include="JsonConverters\DaxFileConverter.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
+    <Compile Include="JsonConverters\VersionConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\ApplicationPaths.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
@@ -1406,7 +1408,6 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
-  <Import Project="..\Util\ExtraCleanup.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

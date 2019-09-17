@@ -481,6 +481,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    NotifyOfPropertyChange(() => CanExportAllData);
                     NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                     break;
             }
@@ -643,28 +644,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ObservableCollection<DaxFile> RecentFiles { get; set; }
+        public ObservableCollection<IDaxFile> RecentFiles { get; set; }
 
         internal void OnClose()
         {
-            SettingProvider.SaveFileMRUList(this.RecentFiles);
+            //SettingProvider.SaveFileMRUList(null, this.RecentFiles);
         }
 
         private void AddToRecentFiles(string fileName)
         {
-            DaxFile df = (from DaxFile f in RecentFiles
-                          where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
-                          select f).FirstOrDefault<DaxFile>();
-            if (df == null)
-            {
-                RecentFiles.Insert(0, new DaxFile(fileName));
-            }
-            else
-            {
-                // move the file to the first position in the list                
-                RecentFiles.Remove(df);
-                RecentFiles.Insert(0, df);
-            }
+            SettingProvider.SaveFileMRUList(new DaxFile(fileName,false), RecentFiles);
+
+            //DaxFile df = (from DaxFile f in RecentFiles
+            //              where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
+            //              select f).FirstOrDefault<DaxFile>();
+            //if (df == null)
+            //{
+            //    RecentFiles.Insert(0, new DaxFile(fileName));
+            //}
+            //else
+            //{
+            //    // move the file to the first position in the list     
+            //    RecentFiles.Move(RecentFiles.IndexOf(df), 0);
+            //    //RecentFiles.Remove(df);
+            //    //RecentFiles.Insert(0, df);
+            //}
+
+            //int MAX_RECENT_FILES = 25;
+            //while (RecentFiles.Count() > MAX_RECENT_FILES) { RecentFiles.RemoveAt(RecentFiles.Count() - 1); }
         }
 
         public void Handle(FileOpenedEvent message)
@@ -709,12 +716,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void MoveFileToTopOfRecentList(DaxFile file)
         {
-            // remove the file from it's current position
-            RecentFiles.Remove(file);
-            // insert it at the top of the list
-            RecentFiles.Insert(0, file);
+            //// remove the file from it's current position
+            //RecentFiles.Remove(file);
+            //// insert it at the top of the list
+            //RecentFiles.Insert(0, file);
 
-            SettingProvider.SaveFileMRUList(this.RecentFiles);
+            SettingProvider.SaveFileMRUList(file, this.RecentFiles);
         }
 
         public void SwapDelimiters()

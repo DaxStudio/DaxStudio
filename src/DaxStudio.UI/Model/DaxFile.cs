@@ -1,16 +1,21 @@
-﻿using DaxStudio.UI.Enums;
-using System;
-using System.Collections.Generic;
+﻿using DaxStudio.Interfaces;
+using DaxStudio.UI.Enums;
+using Newtonsoft.Json;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace DaxStudio.UI.Model
 {
-    public class DaxFile
+    [DataContract]
+    public class DaxFile: IDaxFile
     {
-        
+
+        [JsonConstructor]
+        public DaxFile(string fullPath, bool pinned)
+        {
+            FullPath = fullPath;
+            Pinned = pinned;
+        }
         public DaxFile(string initialValue)
         {
             var parts = initialValue.Split('|');
@@ -26,12 +31,13 @@ namespace DaxStudio.UI.Model
                     break;
             }
         }
-
-        public bool Pinned { get; private set; }
+        [DataMember]
+        public bool Pinned { get; set; }
         private string _fullPath;
+        [DataMember]
         public string FullPath {
             get { return _fullPath; }
-            private set { 
+            set { 
                 _fullPath = value;
                 FileName = Path.GetFileNameWithoutExtension(_fullPath);
                 FileAndExtension = Path.GetFileName(_fullPath);

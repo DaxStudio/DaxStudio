@@ -1,6 +1,7 @@
 ﻿using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using System;
+using System.Collections.ObjectModel;
 using System.Security;
 
 namespace DaxStudio.SignalR
@@ -41,7 +42,7 @@ namespace DaxStudio.SignalR
 
         public bool QueryHistoryShowTraceColumns { get; set; }
 
-        public bool ShowPreReleaseNotifcations { get; set; }
+        public bool ShowPreReleaseNotifications { get; set; }
 
         public bool ShowTooltipBasicStats { get; set; }
 
@@ -85,6 +86,8 @@ namespace DaxStudio.SignalR
         public bool VpaxIncludeTom { get;set; }
         public bool CustomCsvQuoteStringFields { get; set; }
         public CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
+        public ObservableCollection<IDaxFile> RecentFiles { get; set; }
+        public ObservableCollection<string> RecentServers { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

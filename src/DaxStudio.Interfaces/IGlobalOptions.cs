@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Security;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace DaxStudio.Interfaces
 {
@@ -29,7 +30,7 @@ namespace DaxStudio.Interfaces
         DelimiterType DefaultSeparator { get; set; }
         DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         bool TraceDirectQuery { get; set; }
-        bool ShowPreReleaseNotifcations { get; set; }
+        bool ShowPreReleaseNotifications { get; set; }
         bool ShowTooltipBasicStats { get; set; }
         bool ShowTooltipSampleData { get; set; }
         bool CanPublishDaxFunctions { get; set; }
@@ -51,6 +52,8 @@ namespace DaxStudio.Interfaces
         string Theme { get; set; }
         bool CustomCsvQuoteStringFields { get; set; }
         CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
+        ObservableCollection<IDaxFile> RecentFiles { get; set; } 
+        ObservableCollection<string> RecentServers { get; set; } 
 
         // Preview Features
         bool ShowExportMetrics { get; set; }

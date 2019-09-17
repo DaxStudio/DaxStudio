@@ -882,7 +882,7 @@ namespace DaxStudio.UI.ViewModels
 
                     Execute.OnUIThread(() =>
                     {
-                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this, SettingProvider);
+                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this, SettingProvider, Options);
 
                         _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
                                         {

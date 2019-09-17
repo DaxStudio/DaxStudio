@@ -219,7 +219,7 @@ namespace DaxStudio.UI.Model
                 _prereleaseVersion = Version.Parse((string)jobj["PreRelease"]["Version"]);
                 _prereleaseDownloadUrl = (string)jobj["PreRelease"]["DownloadUrl"];
 
-                if (_globalOptions.ShowPreReleaseNotifcations && _productionVersion.CompareTo(_prereleaseVersion) < 0)
+                if (_globalOptions.ShowPreReleaseNotifications && _productionVersion.CompareTo(_prereleaseVersion) < 0)
                 {
                     ServerVersionType = "Pre-Release";
                     _serverVersion = _prereleaseVersion;

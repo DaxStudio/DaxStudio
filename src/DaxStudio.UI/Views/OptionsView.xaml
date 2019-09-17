@@ -183,10 +183,10 @@
                                 </ComboBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
                                 <!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>-->
-                                <fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-12" Padding="0" />
+                                <nud:DoubleUpDown x:Name="ctlEditorFontSize" Value="{Binding EditorFontSize,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  MinValue="6" MaxValue="120" IsReadOnly="False" FormatString="0.0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" Padding="0" />
                                 <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
-                                
+
                                 <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
 
@@ -195,7 +195,7 @@
 
                                 <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
                                 <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
-                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
                             </Grid>
@@ -251,7 +251,7 @@
 
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                             </Grid>
@@ -272,16 +272,16 @@
                                 </Grid.RowDefinitions>
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
                                 <!-- x:Name="ctrlTraceStartupTimeout" -->
-                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
@@ -402,13 +402,14 @@
                                         </ComboBox.ItemsSource>
                                     </ComboBox>
                                     <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <nud:NumericUpDown Value="{Binding ResultFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
+                                    <nud:DoubleUpDown Value="{Binding ResultFontSize, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" FormatString="0.0" MinValue="6" MaxValue="120" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:DoubleUpDown>
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
 
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="74*"/>
+                                        <ColumnDefinition Width="255*"/>
 
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
@@ -420,14 +421,14 @@
                                         <RowDefinition Height="*"/>
 
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font with Editor" Margin="0,0,40.5,0"/>
+                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font with Editor" Margin="0,0,40,0" Grid.ColumnSpan="2"/>
                                     <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
-                                    <Label Grid.Row="2" Grid.Column="1" Content="Exclude Headers when Copying Data" Margin="0,0,40.5,0"/>
-                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
-                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,7,2,0" Content="Automatic Format Results" Grid.ColumnSpan="2"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40,303" Grid.ColumnSpan="2">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
+                                    <Label Grid.Row="1" Grid.Column="1" Content="Exclude Headers when Copying Data" Margin="0,32,40,277" Grid.ColumnSpan="2"/>
+                                    <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,39,2,0" Height="15" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,58,40,245" Grid.ColumnSpan="2">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,97,2,0" Content="Automatic Format Results" Grid.ColumnSpan="3"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,112,0,175" Grid.ColumnSpan="2">Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
 
                                 </Grid>
                             </StackPanel>
@@ -446,7 +447,7 @@
 
 
                                 </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
+                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifications" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
 
                             </Grid>
@@ -518,13 +519,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <GroupBox Header="CSV Delimiter:" Grid.Row="0">
                                     <StackPanel Orientation="Vertical">
                                         <RadioButton GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" >
                                             <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Culture Default List Separator  (" />
-                                            <TextBlock x:Name="CultureSpecificListDelimiter"/>
+                                                <TextBlock Text="Culture Default List Separator  (" />
+                                                <TextBlock x:Name="CultureSpecificListDelimiter"/>
                                                 <TextBlock Text=")"/>
                                             </StackPanel>
 
@@ -581,7 +582,7 @@
                                 <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Launch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
 
-                                
+
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="VertiPaq Analyzer">

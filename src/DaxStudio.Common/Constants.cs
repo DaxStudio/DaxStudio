@@ -36,6 +36,9 @@ namespace DaxStudio.Common
         public const string InternalQueryHeader = "/* DAX Studio Internal */";
         public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
 
+        public const int MAX_RECENT_FILES = 25;
+        public const int MAX_RECENT_SERVERS = 25;
+        public const int MAX_MRU_SIZE = 25;
         //public const int TraceStartTimeoutSeconds = 30;
     }
 }

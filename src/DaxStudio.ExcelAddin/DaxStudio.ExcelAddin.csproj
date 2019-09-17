@@ -553,5 +553,4 @@
   <Target Name="AfterBuild">
     <TransformXml Source="app.config" Transform="app.$(Configuration).config" Destination="$(OutputPath)\$(AssemblyName).dll.config" />
   </Target>
-  <Import Project="..\Util\ExtraCleanup.targets" />
 </Project>

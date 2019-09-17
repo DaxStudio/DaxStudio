@@ -26,7 +26,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly Regex _ppvtRegex;
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
         private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<none found>", -1, EmbeddedSSASIcon.Loading);
-        private ISettingProvider SettingProvider;
+        private ISettingProvider SettingProvider { get; }
 
 
         public ConnectionDialogViewModel(string connectionString
@@ -34,7 +34,8 @@ namespace DaxStudio.UI.ViewModels
             , IEventAggregator eventAggregator
             , bool hasPowerPivotModel
             , DocumentViewModel document
-            , ISettingProvider settingProvider) 
+            , ISettingProvider settingProvider
+            , IGlobalOptions options) 
         {
             try
             {
@@ -47,6 +48,7 @@ namespace DaxStudio.UI.ViewModels
                 PowerPivotEnabled = true;
                 Host = host;
                 ServerModeSelected = true;
+                Options = options;
 
                 RefreshPowerBIInstances();
 
@@ -78,6 +80,8 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error("{class} {method} {message} {stacktrace}", "ConnectionDialogViewModel", "ctor", ex.Message, ex.StackTrace);
             }
         }
+
+        public IGlobalOptions Options { get; }
 
         private void RefreshPowerBIInstances()
         {
@@ -359,9 +363,10 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<string> RecentServers
         {
-            get {var list = SettingProvider.GetServerMRUList();
-                return list;
-            }
+            //get {var list = SettingProvider.GetServerMRUList();
+            //    return list;
+            //}
+            get => Options.RecentServers;
         }
 
         public bool PowerPivotEnabled { get; private set; }

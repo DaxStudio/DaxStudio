@@ -225,5 +225,4 @@
   <PropertyGroup>
     <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
   </PropertyGroup>
-  <Import Project="..\Util\ExtraCleanup.targets" />
 </Project>

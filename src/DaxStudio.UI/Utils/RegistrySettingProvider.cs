@@ -12,6 +12,7 @@ using DaxStudio.Interfaces;
 using System.ComponentModel;
 using Newtonsoft.Json;
 using System.Security;
+using System.Runtime.Serialization;
 
 namespace DaxStudio.UI.Utils
 {
@@ -22,7 +23,6 @@ namespace DaxStudio.UI.Utils
     
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
 
-        private const int MAX_MRU_SIZE = 25;
 
         public string LogPath => Environment.ExpandEnvironmentVariables(Constants.LogFolder);
 
@@ -33,12 +33,33 @@ namespace DaxStudio.UI.Utils
 
         public void SaveServerMRUList(string currentServer, ObservableCollection<string> servers)
         {
+            var existingIdx = servers.IndexOf(currentServer);
+
+            // server is already first in the list
+            if (existingIdx == 0) return; // do nothing
+
+            if (existingIdx > 0)
+            {
+                // server exists, make it first in the list
+                servers.Move(existingIdx, 0);
+            }
+            else
+            {
+                // server does not exist in list, so insert it as the first item
+                servers.Insert(0, currentServer);
+                while (servers.Count() > Constants.MAX_MRU_SIZE)
+                {
+                    servers.RemoveAt(servers.Count() - 1);
+                }
+            }
+
+
             SaveListToRegistry("Server", currentServer, servers);
         }
 
-        public ObservableCollection<DaxFile> GetFileMRUList()
+        public ObservableCollection<IDaxFile> GetFileMRUList()
         {
-            var lst = new ObservableCollection<DaxFile>();
+            var lst = new ObservableCollection<IDaxFile>();
             foreach (var itm in  GetMRUListFromRegistry("File"))
             {
                 lst.Add(new DaxFile(itm));
@@ -46,9 +67,31 @@ namespace DaxStudio.UI.Utils
             return lst;
         }
 
-        public void SaveFileMRUList( IEnumerable<object> files)
+        public void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files)
         {
-            SaveListToRegistry("File","", files);
+            var existingItem = files.FirstOrDefault(f => f.FullPath.Equals(file.FullPath, StringComparison.CurrentCultureIgnoreCase));
+            // file does not exist in list so add it as the first item
+            if (existingItem == null)
+            {
+                files.Insert(0, file);
+                while (files.Count() > Constants.MAX_RECENT_FILES)
+                {
+                    files.RemoveAt(files.Count() - 1);
+                }
+                SaveListToRegistry("File", file, files);
+                return;
+            }
+
+            var exisingIndex = files.IndexOf(existingItem);
+            // file is already first in the list so do nothing
+            if (exisingIndex == 0) return;
+
+            // otherwise move the file to first in the list
+            files.Move(exisingIndex, 0);
+
+
+
+            SaveListToRegistry("File",file, files);
         }
 
         public T GetValue<T>(string subKey, T defaultValue )
@@ -122,18 +165,12 @@ namespace DaxStudio.UI.Utils
                 if (regListMRU != null)
                 {
                     int i = 1;
-                    // set current item as item 1
-                    if (currentItem?.ToString().Length > 0)
-                    {
-                        regListMRU.SetValue(string.Format("{0}{1}", listName, i), currentItem);
-                        i++;
-                    }
+
                     foreach (object listItem in itemList)
                     {
-                        if (i > MAX_MRU_SIZE) break; // don't save more than the max mru size
+                        if (i > Constants.MAX_MRU_SIZE) break; // don't save more than the max mru size
                         var str = listItem as string;
                         if (str == null) str = listItem.ToString();
-                        if (string.Equals(str, currentItem.ToString(),StringComparison.CurrentCultureIgnoreCase)) continue;
                         regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );
                         i++;
                     }
@@ -153,16 +190,23 @@ namespace DaxStudio.UI.Utils
                 //if (ignoreAttr != null) continue; // go to next attribute if this prop is tagged as [JsonIgnore]
 
                 // Set default value if DefaultValueAttribute is present
-                DefaultValueAttribute attr = prop.Attributes[typeof(DefaultValueAttribute)]
+                DefaultValueAttribute attrDefaultVal = prop.Attributes[typeof(DefaultValueAttribute)]
                                                                  as DefaultValueAttribute;
 
-                if (attr == null) continue;
+                DataMemberAttribute attrDataMember = prop.Attributes[typeof(DataMemberAttribute)]
+                                                 as DataMemberAttribute;
+
+                // if we don't have either a default value or a data member attribute 
+                // then skip this property
+                if (attrDefaultVal == null && attrDataMember == null) continue;
                 // read the value from the registry or use the default value
-                Object val = this.GetValue(prop.Name, attr.Value);
+                Object val = null;
+                if (attrDefaultVal != null) val = this.GetValue(prop.Name, attrDefaultVal.Value);
                 // set the property value
                 if (prop.PropertyType == typeof(SecureString))
                 {
                     SecureString secStr = new SecureString();
+                    if (val == null) continue;
                     foreach (char c in (string)val)
                     {
                         secStr.AppendChar(c);
@@ -176,18 +220,28 @@ namespace DaxStudio.UI.Utils
                 }
                 else if (prop.PropertyType == typeof(DateTime))
                 {
-                    var dateVal = val==null ? DateTime.Parse(attr.Value.ToString()):DateTime.Parse(val.ToString());
+                    var dateVal = val==null ? DateTime.Parse(attrDefaultVal.Value.ToString()):DateTime.Parse(val.ToString());
                     prop.SetValue(options, dateVal);
                 }
                 else if (prop.PropertyType == typeof(double))
                 {
-                    var doubleVal = val == null ? Double.Parse(attr.Value.ToString()) : double.Parse(val.ToString());
+                    var doubleVal = val == null ? Double.Parse(attrDefaultVal.Value.ToString()) : double.Parse(val.ToString());
                     prop.SetValue(options, doubleVal);
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var boolVal = val == null ? bool.Parse(attr.Value.ToString()) : bool.Parse(val.ToString());
+                    var boolVal = val == null ? bool.Parse(attrDefaultVal.Value.ToString()) : bool.Parse(val.ToString());
                     prop.SetValue(options, boolVal);
+                }
+                else if (prop.PropertyType == typeof(ObservableCollection<IDaxFile>))
+                {
+                    var files = GetFileMRUList();
+                    prop.SetValue(options, files );
+                }
+                else if (prop.PropertyType == typeof(ObservableCollection<string>))
+                {
+                    var servers = GetServerMRUList();
+                    prop.SetValue(options, servers);
                 }
                 else if (prop.PropertyType.IsEnum)
                 {
@@ -201,5 +255,7 @@ namespace DaxStudio.UI.Utils
             }
             
         }
+
+        
     }
 }
