@@ -187,7 +187,7 @@
                         </DataGridTemplateColumn>
                         
                         <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}" />
-                        <DataGridTemplateColumn x:Name="colColumns" Header="Columns" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending">
+                        <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending">
 
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -246,8 +246,8 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding TableColumnName}" Header="TableColumn" MinWidth="200" />
                         <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}" Header="Rows"  ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" />
-                        <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" Header="Rows"  ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" />
-                        <DataGridTemplateColumn  Header="Columns" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" SortDirection="Descending" MinWidth="75">
+                        <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" Header="Cardinality"  ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" />
+                        <DataGridTemplateColumn  Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" SortDirection="Descending" MinWidth="75">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid x:Name="gridDataSize" >
