@@ -848,7 +848,27 @@ namespace DaxStudio.UI.ViewModels
             } set {
                 if (value != null) _recentServers = value;
             }
-        } 
+        }
+
+        private bool _editorConvertTabsToSpaces = false;
+        [DataMember,DefaultValue(false)]
+        public bool EditorConvertTabsToSpaces { get => _editorConvertTabsToSpaces; set {
+                _editorConvertTabsToSpaces = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(EditorConvertTabsToSpaces), value, _isInitializing);
+                NotifyOfPropertyChange(() => EditorConvertTabsToSpaces);
+            }
+        }
+
+        private int _editorIndentationSize = 4;
+        [DataMember,DefaultValue(4)]
+        public int EditorIndentationSize { get => _editorIndentationSize; set {
+                _editorIndentationSize = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<int>(nameof(EditorIndentationSize), value, _isInitializing);
+                NotifyOfPropertyChange(() => EditorIndentationSize);
+            }
+        }
 
         #endregion
 

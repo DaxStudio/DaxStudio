@@ -55,6 +55,9 @@ namespace DaxStudio.Interfaces
         ObservableCollection<IDaxFile> RecentFiles { get; set; } 
         ObservableCollection<string> RecentServers { get; set; } 
 
+        bool EditorConvertTabsToSpaces { get; set; }
+        int EditorIndentationSize { get; set; }
+
         // Preview Features
         bool ShowExportMetrics { get; set; }
         bool ShowExternalTools { get; set; }

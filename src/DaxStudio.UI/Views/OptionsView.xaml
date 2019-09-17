@@ -144,6 +144,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -193,9 +195,15 @@
                                 <Label Grid.Row="4" Grid.Column="0" Content="Keep Metadata Search Open:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="4" Grid.Column="1" x:Name="KeepMetadataSearchOpen" VerticalAlignment="Center" />
 
-                                <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
-                                <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
-                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <Label Grid.Row="5" Grid.Column="0" Content="Convert Tabs to Spaces:" HorizontalAlignment="Right"/>
+                                <CheckBox Grid.Row="5" Grid.Column="1" x:Name="EditorConvertTabsToSpaces" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="6" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
+                                <nud:ShortUpDown Grid.Row="6" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="EditorIndentationSize" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="7" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
                             </Grid>

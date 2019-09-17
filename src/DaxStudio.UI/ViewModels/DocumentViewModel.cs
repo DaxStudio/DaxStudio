@@ -356,6 +356,18 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool ConvertTabsToSpaces
+        {
+            // TODO - bind to options
+            get => false;
+        }
+
+        public int IndentationSize
+        {
+            // TODO - bind to options
+            get => 2;
+        }
+
         #endregion
 
 
