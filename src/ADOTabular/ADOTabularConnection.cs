@@ -556,7 +556,14 @@ namespace ADOTabular
         private ADOTabularDynamicManagementViewCollection _dmvCollection;
         public ADOTabularDynamicManagementViewCollection DynamicManagementViews
         {
-            get { return _dmvCollection ?? (_dmvCollection = new ADOTabularDynamicManagementViewCollection(this)); }
+            get {
+                if (_dmvCollection == null)
+                {
+                    _dmvCollection = new ADOTabularDynamicManagementViewCollection(this);
+                }
+
+                return _dmvCollection ;
+            }
         }
 
         public string ServerName
