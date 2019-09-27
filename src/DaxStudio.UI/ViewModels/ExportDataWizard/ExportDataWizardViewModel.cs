@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
             var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables;
             foreach ( var t in tables)
             {
-                Tables.Add(new SelectedTable(t.DaxName, t.Caption));
+                Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
             }
         }
 
@@ -312,7 +312,8 @@ namespace DaxStudio.UI.ViewModels
                     exceptionFound = true;
                     Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "ExportDataToFolder", "Error while exporting model to CSV");
                     EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
-                    break; // exit from the loop if we have caught an exception 
+                    EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                    continue; // skip to the next table if we have caught an exception 
                 }
 
             }
@@ -322,8 +323,8 @@ namespace DaxStudio.UI.ViewModels
             if (!exceptionFound)
             {
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {tableCnt} tables exported", Document.QueryStopWatch.ElapsedMilliseconds));
-                EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
             }
+            EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
             Document.QueryStopWatch.Reset();
         }
 
@@ -411,6 +412,8 @@ namespace DaxStudio.UI.ViewModels
                         currentTable.Status = ExportStatus.Error;
                         Log.Error(ex, "{class} {method} {message}", "ExportDataWizardViewModel", "ExportDataToSQLServer", ex.Message);
                         EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
+                        EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                        continue; // skip to next table on error
                     }
                 }
             }

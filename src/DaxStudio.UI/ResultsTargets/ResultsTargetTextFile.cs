@@ -60,7 +60,7 @@ namespace DaxStudio.UI.Model
                         bool shouldQuoteStrings = true; //default to quoting all string fields
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
                         string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
-                        var enc = Encoding.UTF8;
+                        Encoding enc = new UTF8Encoding(false);
 
                         switch (dlg.FilterIndex)
                         {
@@ -71,7 +71,7 @@ namespace DaxStudio.UI.Model
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
                             case 3: //unicode csv
-                                enc = Encoding.Unicode;
+                                enc = new UnicodeEncoding();
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
                             case 4:
