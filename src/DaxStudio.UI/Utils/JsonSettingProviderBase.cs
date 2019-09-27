@@ -21,14 +21,14 @@ namespace DaxStudio.UI.Utils
         public abstract string SettingsPath { get; }
 
         private readonly string settingsFile;
-        
+
         private IGlobalOptions _options;
         private IDictionary<string, object> _optionsDict;
 
-        
+
         //[Import]
         public IGlobalOptions Options {
-            get => _options; 
+            get => _options;
             set {
                 _options = value;
                 _optionsDict = _options.AsDictionary();
@@ -60,6 +60,8 @@ namespace DaxStudio.UI.Utils
         {
             return File.Exists(settingsFile);
         }
+
+        public virtual bool IsRunningPortable => false;
 
         public string LogPath => Path.Combine(SettingsPath, "logs");
         #endregion
@@ -170,13 +172,15 @@ namespace DaxStudio.UI.Utils
         public void Initialize(IGlobalOptions options)
         {
             // load settings from settings.json
-            var json = File.ReadAllText(settingsFile);
+            var json = "{}";
+            if (SettingsFileExists()) { json = File.ReadAllText(settingsFile); }
             var settings = new JsonSerializerSettings();
             settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             settings.NullValueHandling = NullValueHandling.Ignore;
             settings.Converters.Add(new DaxFileConverter());
             JsonConvert.PopulateObject(json, options, settings);
             Options = options;
+            Options.IsRunningPortable = this.IsRunningPortable;
         }
         
     }

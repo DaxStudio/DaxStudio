@@ -60,10 +60,12 @@ namespace DaxStudio.Tests
             vm = new FindReplaceDialogViewModel(mockEventAggregator);
             vm.Editor = ed;
             vm.UseWildcards = true;
-            vm.TextToFind = "sam*";
+            vm.TextToFind = "sam* ";
+
             vm.FindText();
+
             Assert.AreEqual(13, ed.SelectionStart, "Selection Start");
-            Assert.AreEqual(11, ed.SelectionLength, "Selection Length");
+            Assert.AreEqual(7, ed.SelectionLength, "Selection Length");
         }
 
         [TestMethod]

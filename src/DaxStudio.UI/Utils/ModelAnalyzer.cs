@@ -24,12 +24,12 @@ namespace DaxStudio.UI.Utils
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion);
+            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion);
 
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Model.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
+            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
 
             // 
             // Create VertiPaq Analyzer views

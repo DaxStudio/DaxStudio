@@ -6,7 +6,7 @@ using DaxStudio.UI.Utils;
 
 namespace DaxStudio.Tests
 {
-    [TestClass]
+    [Ignore,TestClass]
     public class DatabaseProfileTests
     {
         public string ConnectionString { get; private set; }

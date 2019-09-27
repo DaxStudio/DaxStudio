@@ -22,6 +22,8 @@ namespace DaxStudio.UI.Interfaces
         string LogPath { get; }
 
         void Initialize(IGlobalOptions options);
+
+        bool IsRunningPortable { get; }
     }
 }
 

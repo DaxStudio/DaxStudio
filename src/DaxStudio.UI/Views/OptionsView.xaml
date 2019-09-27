@@ -414,13 +414,11 @@
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-
-                                        <ColumnDefinition Width="74*"/>
-                                        <ColumnDefinition Width="255*"/>
-
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -429,19 +427,19 @@
                                         <RowDefinition Height="*"/>
 
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font with Editor" Margin="0,0,40,0" Grid.ColumnSpan="2"/>
-                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40,303" Grid.ColumnSpan="2">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
-                                    <Label Grid.Row="1" Grid.Column="1" Content="Exclude Headers when Copying Data" Margin="0,32,40,277" Grid.ColumnSpan="2"/>
-                                    <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,39,2,0" Height="15" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,58,40,245" Grid.ColumnSpan="2">Setting this option will just copy the raw data from the query results pane</TextBlock>
-                                    <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,97,2,0" Content="Automatic Format Results" Grid.ColumnSpan="3"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,112,0,175" Grid.ColumnSpan="2">Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
+                                    
+                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top"  Height="15" Content="Scale Results Font with Editor" Grid.ColumnSpan="2" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
+                                    <Label Grid.Row="2" Grid.Column="1"   />
+                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" Content="Exclude Headers when Copying Data" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top"  Content="Automatic Format Results" Grid.ColumnSpan="2"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5" >Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
 
                                 </Grid>
                             </StackPanel>
                         </GroupBox>
-                        <GroupBox Header="Version Notifications">
+                        <!--<GroupBox Header="Excel Addin">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="20"/>
@@ -455,11 +453,11 @@
 
 
                                 </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifications" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
+                                <Button Grid.Column="0" x:Name="ToggleExcelAddin" VerticalAlignment="Top" Margin="2,7,2,0" Content="{Binding ToggleExcelAddinCaption}" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0" Text="{Binding ToggleExcelAddinDescription}"></TextBlock>
 
                             </Grid>
-                        </GroupBox>
+                        </GroupBox>-->
                         <GroupBox Header="Metadata Pane">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>

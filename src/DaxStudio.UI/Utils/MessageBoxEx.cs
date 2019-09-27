@@ -93,11 +93,11 @@ namespace DaxStudio.UI.Utils
                                     defResult, options);
         }
 
-        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+        internal delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        public delegate void TimerProc(IntPtr hWnd, uint uMsg, UIntPtr nIDEvent, uint dwTime);
+        internal delegate void TimerProc(IntPtr hWnd, uint uMsg, UIntPtr nIDEvent, uint dwTime);
 
-        public const int WH_CALLWNDPROCRET = 12;
+        private const int WH_CALLWNDPROCRET = 12;
 
         public enum CbtHookAction : int
         {
@@ -120,31 +120,31 @@ namespace DaxStudio.UI.Utils
         private static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         [DllImport("User32.dll")]
-        public static extern UIntPtr SetTimer(IntPtr hWnd, UIntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
+        internal static extern UIntPtr SetTimer(IntPtr hWnd, UIntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
 
         [DllImport("User32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
+        internal static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
 
         [DllImport("user32.dll")]
-        public static extern int UnhookWindowsHookEx(IntPtr idHook);
+        internal static extern int UnhookWindowsHookEx(IntPtr idHook);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
+        internal static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
-        public static extern int GetWindowTextLength(IntPtr hWnd);
+        internal static extern int GetWindowTextLength(IntPtr hWnd);
 
         [DllImport("user32.dll")]
-        public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxLength);
+        internal static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxLength);
 
         [DllImport("user32.dll")]
-        public static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
+        internal static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CWPRETSTRUCT
+        internal struct CWPRETSTRUCT
         {
             public IntPtr lResult;
             public IntPtr lParam;

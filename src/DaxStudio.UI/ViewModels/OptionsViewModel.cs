@@ -19,6 +19,9 @@ using System.Collections.ObjectModel;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.JsonConverters;
 using System.Collections.Specialized;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using System.IO;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,7 +29,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(IGlobalOptions))]
     [Export(typeof(OptionsViewModel))]
     
-    public class OptionsViewModel:Screen, IGlobalOptions
+    public class OptionsViewModel:Screen, IGlobalOptions, IDisposable
     {
         private const string DefaultEditorFontFamily = "Lucida Console";
         private const double DefaultEditorFontSize = 11.0;
@@ -881,5 +884,143 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
+
+        private bool? _isExcelAddinEnabledForAllUsers = null;
+        public bool CanToggleExcelAddin
+        {
+            get {
+                if (IsRunningPortable) return false;
+                if (_isExcelAddinEnabledForAllUsers == null) _isExcelAddinEnabledForAllUsers = IsExcelAddinEnabledForAllUsers();
+                return (bool)!_isExcelAddinEnabledForAllUsers;
+            }
+        }
+
+        private string ExcelAddinKey
+        {
+            get
+            {
+                var wowKey = "";
+                if (!Is64BitExcelFromRegisteredExe()) wowKey = @"\Wow6432Node";
+                return $@"Software{wowKey}\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
+            }
+        }
+        private bool IsExcelAddinEnabledForAllUsers()
+        {
+            // check the registry
+            var key = Registry.LocalMachine.OpenSubKey(ExcelAddinKey);
+            return key != null;
+        }
+
+        private bool IsExcelAddinEnabledForCurrentUser()
+        {
+            // check the registry
+            var key = Registry.CurrentUser.OpenSubKey(ExcelAddinKey);
+            return key != null;
+        }
+
+        public string ToggleExcelAddinCaption
+        {
+            get {
+                if (IsExcelAddinEnabledForCurrentUser())
+                    return "Disable Excel Addin";
+                else
+                    return "Enable Excel Addin";
+            }
+        }
+
+        public string ToggleExcelAddinDescription
+        {
+            get {
+                if (IsRunningPortable)
+                    return "DAX Studio is currently running in Portable mode. You need to install DAX Studio using the installer in order to activate the Excel Addin";
+
+                if (IsExcelAddinEnabledForAllUsers())
+                    return "The Excel add-in was installed using the 'All Users' option so it cannot be enabled/disable using this button. If you want to enable/disable the addin using this button you need to re-run the installer and choose the 'Current User' option for the Addin";
+                
+                return "This button will enable/disable the DAX Studio Excel addin. If Excel is already open you will need to close and re-open it for this setting to take effect.";
+            }
+        }
+
+        public bool IsRunningPortable { get; set; } = false;
+
+        public void ToggleExcelAddin()
+        {
+            // TODO
+            if (IsExcelAddinEnabledForCurrentUser())
+                DeleteExcelAddinKeys();
+            else
+                WriteExcelAddinKeys();
+
+            NotifyOfPropertyChange(nameof(CanToggleExcelAddin));
+            NotifyOfPropertyChange(nameof(ToggleExcelAddinCaption));
+        }
+
+        // Gets the path to the currently running DAXStudio.exe, but swaps back slashes for forward slashes
+        private string exePathForRegistry()
+        {
+            return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).Replace("\\","/");
+        }
+
+
+        private void WriteExcelAddinKeys()
+        {
+
+            var key = Registry.CurrentUser.CreateSubKey(ExcelAddinKey);
+            key.SetValue("LoadBehavior", 3, RegistryValueKind.DWord);
+            key.SetValue("Description", "DAX Studio Excel Add-In", RegistryValueKind.String);
+            key.SetValue("FriendlyName", "DAX Studio Excel Add-In", RegistryValueKind.String);
+            key.SetValue("Manifest", $"file:///{exePathForRegistry()}/bin/DaxStudio.vsto|vstolocal", RegistryValueKind.String);
+
+        }
+
+        private void DeleteExcelAddinKeys()
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(ExcelAddinKey, false);
+        }
+        
+
+        private bool Is64BitExcelFromRegisteredExe()
+        {
+            return false;
+            
+            // read the "ExcelBitness" value that should be written by the installer
+            //var key = Registry.CurrentUser.GetValue(@"HKEY_CURRENT_USER\Software\DaxStudio\ExcelBitness");
+            //if (key== null)
+            //var key = Registry.LocalMachine.OpenSubKey(@"Software\DaxStudio", false);
+            //if (key == null) return false;
+            //return (string)(key?.GetValue("ExcelBitness", "32Bit")??"32Bit") == "64Bit";
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (_proxySecurePassword != null)
+                    {
+                        _proxySecurePassword.Dispose();
+                        _proxySecurePassword = null;
+                    }
+                }
+
+
+                disposedValue = true;
+            }
+        }
+
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
+
+
     }
 }

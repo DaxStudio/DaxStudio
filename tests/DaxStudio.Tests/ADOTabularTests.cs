@@ -523,17 +523,17 @@ namespace DaxStudio.Tests
 
         }
 
-        [TestMethod][Ignore]
+        [Ignore,TestMethod]
         public void TestInvalidCSDLKPIs()
         {
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString + ";Initial Catalog=AW Internet Sales Tabular Model 2014", AdomdType.AnalysisServices);
-            IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
             //c.Open();
-            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
-            ADOTabularModel m = new ADOTabularModel(c,db, "Test", "Test Caption", "Test Description", "");
+            ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test Caption", "Test Description", "");
             System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\aw_internetsales_2014_csdl.xml");
-            var tabs = new ADOTabularTableCollection(c, m);
+            var tabs = new ADOTabularTableCollection(connection, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Internet Sales"];
 

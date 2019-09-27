@@ -25,6 +25,7 @@ namespace DaxStudio.UI.Utils
 
 
         public string LogPath => Environment.ExpandEnvironmentVariables(Constants.LogFolder);
+        public bool IsRunningPortable => false;
 
         public ObservableCollection<string> GetServerMRUList()
         {

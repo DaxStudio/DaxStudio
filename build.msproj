@@ -1,215 +1,209 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" 
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+<!--
   <PropertyGroup>
     <SourceExeConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.standalone\app.config</SourceExeConfigFile>
     <Dest2014ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2014.config</Dest2014ExeConfigFile>
-	<Dest2016ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2016.config</Dest2016ExeConfigFile>
-	<Dest2017ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2017.config</Dest2017ExeConfigFile>
+    <Dest2016ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2016.config</Dest2016ExeConfigFile>
+    <Dest2017ExeConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.exe.2017.config</Dest2017ExeConfigFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <SourceDllConfigFile>$(MSBuildProjectDirectory)\src\daxstudio.exceladdin\app.config</SourceDllConfigFile>
     <Dest2014DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2014.config</Dest2014DllConfigFile>
-	<Dest2016DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2016.config</Dest2016DllConfigFile>
-	<Dest2017DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2017.config</Dest2017DllConfigFile>
+    <Dest2016DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2016.config</Dest2016DllConfigFile>
+    <Dest2017DllConfigFile>$(MSBuildProjectDirectory)\release\DaxStudio.dll.2017.config</Dest2017DllConfigFile>
   </PropertyGroup>
+-->
 
   <PropertyGroup>
     <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
-	<MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
-	<ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
-	<ManifestThumbPrint>B00D154EDD92C17CA1AC87CA55D52652797A0374</ManifestThumbPrint>
+    <MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
+    <ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
+    <ManifestThumbPrint>B00D154EDD92C17CA1AC87CA55D52652797A0374</ManifestThumbPrint>
   </PropertyGroup>
 
   <ItemGroup>
     <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
   </ItemGroup>
-  
-  <PropertyGroup>  
-	<ReleaseDirectory>.\Release</ReleaseDirectory>  
-  </PropertyGroup> 
-  
+
+  <PropertyGroup>
+    <ReleaseDirectory>.\Release</ReleaseDirectory>
+  </PropertyGroup>
+
   <Target Name="Clean" DependsOnTargets="MakeReleaseFolder">
     <Message Text="Cleaning DaxStudio.Standalone" />
     <MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />
   </Target>
-  
-  
+
+
   <Target Name="DeleteReleaseFolder">
-	<Message Text="Cleaning Release folder" Importance="High"/>
+    <Message Text="Cleaning Release folder" Importance="High"/>
     <RemoveDir Directories="./Release" />
   </Target>
-	
+
   <Target Name="MakeReleaseFolder" DependsOnTargets="DeleteReleaseFolder">
     <MakeDir Directories="$(ReleaseDirectory)"/>
   </Target>
-	
-  
+
+
   <Target Name="Build" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Standalone" />
     <!--<MSBuild Projects=".\src\daxstudio.standalone\daxstudio.standalone.csproj" Targets="Build" />-->
-	<MSBuild Projects=".\src\daxstudio.sln" Targets="Build" Properties="RestorePackages=false" />
+    <MSBuild Projects=".\src\daxstudio.sln" Targets="Build" Properties="RestorePackages=false" />
   </Target>
-  
+
   <Target Name="BuildTests" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Tests" />
     <!--<MSBuild Projects=".\src\daxstudio.standalone\daxstudio.standalone.csproj" Targets="Build" />-->
-	<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />
+    <MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />
   </Target>
-  
-<!--  <Target Name="BuildVsto" DependsOnTargets="Build">
+
+  <!--  <Target Name="BuildVsto" DependsOnTargets="Build">
 	<Message Text="Building Signed version of DaxStudio.ExcelAddin" Importance="High" />
 	<MSBuild Projects="$(VstoProject)" StopOnFirstFailure="true" Targets="Publish" Properties="RestorePackages=false;SignManifests=true;ManifestCertificateThumbprint=$(ManifestThumbPrint)"/>
   </Target>-->
-  
+
   <!--  <Target Name="RegenerateManifests" DependsOnTargets="SignAssemblies">
-    <MSBuild
-      Projects="@(VstoProjects)"
-      Properties="Configuration=$(Configuration)"
-      Targets="VisualStudioForApplicationsBuild" />
+    <MSBuild Projects="@(VstoProjects)" Properties="Configuration=$(Configuration)" Targets="VisualStudioForApplicationsBuild" />
   </Target> -->
-   
-   
-  <UsingTask TaskName="TransformXml"
-    AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Web\Microsoft.Web.Publishing.Tasks.dll" />
-  
-  <Target Name="Configs2014" DependsOnTargets="Build" >
-      <Message Text="Creating configs for SQL 2014 dependencies"/>
-    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
-      <TransformXml Source="$(SourceExeConfigFile)"
-                  Transform="app.2014.config"
-                  Destination="$(Dest2014ExeConfigFile)" />
-      <TransformXml Source="$(SourceDllConfigFile)"
-                      Transform="app.2014.config"
-                      Destination="$(Dest2014DllConfigFile)" />
+
+
+  <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Web\Microsoft.Web.Publishing.Tasks.dll" />
+
+<!--
+  <Target Name="Configs2014" DependsOnTargets="Build">
+    <Message Text="Creating configs for SQL 2014 dependencies"/>
+    <TransformXml Source="$(SourceExeConfigFile)" Transform="app.2014.config" Destination="$(Dest2014ExeConfigFile)" />
+    <TransformXml Source="$(SourceDllConfigFile)" Transform="app.2014.config" Destination="$(Dest2014DllConfigFile)" />
   </Target>
 
-  <Target Name="Configs2016" DependsOnTargets="Build" >
-      <Message Text="Creating configs for SQL 2016 dependencies"/>
-    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
-      <TransformXml Source="$(SourceExeConfigFile)"
-                  Transform="app.2016.config"
-                  Destination="$(Dest2016ExeConfigFile)" />
-      <TransformXml Source="$(SourceDllConfigFile)"
-                      Transform="app.2016.config"
-                      Destination="$(Dest2016DllConfigFile)" />
+  <Target Name="Configs2016" DependsOnTargets="Build">
+    <Message Text="Creating configs for SQL 2016 dependencies"/>
+    <TransformXml Source="$(SourceExeConfigFile)" Transform="app.2016.config" Destination="$(Dest2016ExeConfigFile)" />
+    <TransformXml Source="$(SourceDllConfigFile)" Transform="app.2016.config" Destination="$(Dest2016DllConfigFile)" />
   </Target>
-  
-  <Target Name="Configs2017" DependsOnTargets="Build" >
-      <Message Text="Creating configs for SQL 2017 dependencies"/>
-    <!--<Copy SourceFiles="$(SourceConfigFile)" DestinationFiles="$(DestConfigFile)" />-->
-      <TransformXml Source="$(SourceExeConfigFile)"
-                  Transform="app.2017.config"
-                  Destination="$(Dest2017ExeConfigFile)" />
-      <TransformXml Source="$(SourceDllConfigFile)"
-                      Transform="app.2017.config"
-                      Destination="$(Dest2017DllConfigFile)" />
+
+  <Target Name="Configs2017" DependsOnTargets="Build">
+    <Message Text="Creating configs for SQL 2017 dependencies"/>
+    <TransformXml Source="$(SourceExeConfigFile)" Transform="app.2017.config" Destination="$(Dest2017ExeConfigFile)" />
+    <TransformXml Source="$(SourceDllConfigFile)" Transform="app.2017.config" Destination="$(Dest2017DllConfigFile)" />
   </Target>
-  
-  <Target Name="DeletePdb" DependsOnTargets="Build">
+-->
+
+  <Target Name="DeletePdb" AfterTargets="Build" DependsOnTargets="Build">
     <ItemGroup>
-        <FilesToDelete Include=".\Release\*.pdb"/>
-    </ItemGroup>   
-    <Delete Files="@(FilesToDelete)" />   
+      <FilesToDelete Include=".\Release\**\*.pdb"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
   </Target>
-  
-  
-  <Target Name="DeleteXml" DependsOnTargets="Build">
+
+
+  <Target Name="DeleteXml" AfterTargets="Build" DependsOnTargets="Build">
     <ItemGroup>
-        <FilesToDelete Include=".\Release\*.xml"/>
-    </ItemGroup>   
-    <Delete Files="@(FilesToDelete)" />   
+      <FilesToDelete Include=".\Release\**\*.xml"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
   </Target>
-  
+
   <PropertyGroup>
-    <MyAssemblies>.\Release\DaxStudio.dll</MyAssemblies>
+    <MyAssemblies>.\Release\bin\DaxStudio.dll</MyAssemblies>
   </PropertyGroup>
-  
-  <Target Name="MakeBinDir" DependsOnTargets="DeleteXml; DeletePdb">
+
+  <!--   <Target Name="MakeBinDir" DependsOnTargets="DeleteXml; DeletePdb;">
     <PropertyGroup>  
         <BinDirectory>.\Release\bin</BinDirectory>  
     </PropertyGroup> 
     <MakeDir Directories="$(BinDirectory)"/>
+  </Target> -->
+
+  <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb;">
+    <ItemGroup>
+      <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;" />
+    </ItemGroup>
+    <Message Text="Moving exe files" />
+    <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
   </Target>
-  
-  <Target Name="MoveDlls" DependsOnTargets="MakeBinDir">
-	<ItemGroup>
-		<FilesToMove 
-			Include=".\Release\**\*" 
-			Exclude=".\Release\DaxStudio.exe;.\Release\DaxStudio.exe.config;.\Release\DaxStudio.vsto;.\Release\DaxStudio.Checker.exe;.\Release\DaxStudio.Checker.exe.config;.\Release\DaxStudio.dll;.\Release\DaxStudio.dll.config;.\Release\DaxStudio.dll.manifest;.\Release\DaxStudio.dll.xl2010.config" />
-	</ItemGroup>
-	<Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release\bin\%(RecursiveDir)" />
-  </Target>
-  
-  <Target Name="DeleteEmptySubFolders" DependsOnTargets="MoveDlls" >
+
+  <!--   <Target Name="DeleteEmptySubFolders" DependsOnTargets="MoveExes">
 	  <ItemGroup>
 		<Folders Include="$([System.IO.Directory]::GetDirectories(&quot;$(ReleaseDirectory)&quot;))" Exclude=".\Release\bin" />
 	</ItemGroup>
 	<RemoveDir Directories="@(Folders)" />
-  </Target>
+  </Target> -->
 
   <Target Name="RetrieveIdentities">
-	<Message Text="Getting Assembly Versions" Importance="high"/>
+    <Message Text="Getting Assembly Versions" Importance="high"/>
     <PropertyGroup>
-	  <MyAssemblyInfo/>
-	</PropertyGroup>
-  
-    <GetAssemblyIdentity
-        AssemblyFiles="$(MyAssemblies)">
-      <Output
-          TaskParameter="Assemblies"
-          ItemName="MyAssemblyInfo"/>
+      <MyAssemblyInfo/>
+    </PropertyGroup>
+
+    <GetAssemblyIdentity AssemblyFiles="$(MyAssemblies)">
+      <Output TaskParameter="Assemblies" ItemName="MyAssemblyInfo"/>
     </GetAssemblyIdentity>
-<!--	<PropertyGroup>
+    <!--	<PropertyGroup>
         <Pattern>(\d+)\.(\d+)</Pattern>
         <In>%(myAssemblyInfo.Version)</In>
         <OutVersion>$([System.Text.RegularExpressions.Regex]::Match($(In), $(Pattern)))</OutVersion>
     </PropertyGroup>
 	-->
-	<PropertyGroup>
-	  <OutVersion>$([System.Version]::Parse(%(MyAssemblyInfo.Version)).ToString(3).Replace('.','_'))</OutVersion>
-	</PropertyGroup>
+    <PropertyGroup>
+      <OutVersion>$([System.Version]::Parse(%(MyAssemblyInfo.Version)).ToString(3).Replace('.','_'))</OutVersion>
+    </PropertyGroup>
     <Message Text="Files: %(MyAssemblyInfo.Version)" Importance="high"/>
-	<Message Text="Major: $(OutVersion) " Importance="high"/>
-  </Target>
-  
-  <Target Name="SignAssemblies" DependsOnTargets="Build">
-    <Message Text="Attempting to sign Assemblies" Importance="high" />
-	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' 
-	IgnoreExitCode="true"/>
-	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.dll' 
-	IgnoreExitCode="true"/>
-  </Target>
-  
-   <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
-	<Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
-	<Exec Command='$(MageExe) -update ".\release\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' IgnoreExitCode="true"/>
-  </Target>
-  
-  <Target Name="SignVsto" DependsOnTargets="SignManifest">
-	<Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
-	<Exec WorkingDirectory=".\Release"
-	Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' />
-  </Target>
- 
-  
-  <Target Name="Installer" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb">
-    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\DaxStudio.iss' />
-	<Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\DaxStudioPerUser.iss' />
-  </Target>
-  
-  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="Configs2014; Configs2016; Configs2017; DeleteXml; DeletePdb; SignVsto">
-    <Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudio.iss' />
-	<Exec  Command='"$(MSBuildProgramFiles32)\Inno Setup 5\iscc.exe" .\installer\daxstudioPerUser.iss' />
+    <Message Text="Major: $(OutVersion) " Importance="high"/>
   </Target>
 
-  
+  <Target Name="SignAssemblies" DependsOnTargets="Build">
+    <Message Text="Attempting to sign Assemblies" Importance="high" />
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/>
+  </Target>
+
+  <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
+    <Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
+    <Exec Command='$(MageExe) -update ".\release\bin\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' IgnoreExitCode="true"/>
+  </Target>
+
+  <Target Name="SignVsto" DependsOnTargets="SignManifest">
+    <Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
+    <Exec WorkingDirectory=".\Release\bin" Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' />
+  </Target>
+
+
+  <Target Name="Installer" DependsOnTargets="DeleteXml; DeletePdb;MoveExes">
+    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\DaxStudio.iss' />
+<!--    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\DaxStudioPerUser.iss' />-->
+  </Target>
+
+  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="DeleteXml; DeletePdb; SignVsto;MoveExes">
+    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\daxstudio.iss' />
+    <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\daxstudioPerUser.iss' />
+  </Target>
+
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' 
-	IgnoreExitCode="true"/>
-	<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudioPerUser_$(OutVersion)_setup.exe' 
-	IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudioPerUser_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>
   </Target>
+
+  <Target Name="CreatePortableFile">
+    <Touch Files=".\Release\.portable" AlwaysCreate="True" />
+  </Target>
+
+  <Target Name="DeleteZip" DependsOnTargets="RetrieveIdentities;Build;DeleteXml;DeletePdb">
+    <ItemGroup>
+      <FilesToDelete Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip"/>
+    </ItemGroup>
+    <Message Text="Deleting zip file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip"/>
+    <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
+  </Target>
+
+  <Target Name="ZipFolder" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes">
+    <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip" Overwrite="True" />
+  </Target>
+
+
 </Project>

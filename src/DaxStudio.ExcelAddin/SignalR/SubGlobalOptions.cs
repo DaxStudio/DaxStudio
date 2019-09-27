@@ -90,6 +90,7 @@ namespace DaxStudio.SignalR
         public ObservableCollection<string> RecentServers { get; set; }
         public bool EditorConvertTabsToSpaces { get; set; }
         public int EditorIndentationSize { get; set; }
+        public bool IsRunningPortable { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

@@ -37,16 +37,11 @@ using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.IO.Compression;
 using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
 using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
-using CsvHelper;
-
-using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Media;
-using System.Data.OleDb;
 using Dax.ViewModel;
 
 namespace DaxStudio.UI.ViewModels
@@ -2102,9 +2097,9 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             else {
-                using (TextWriter tw = new StreamWriter(path, false, Encoding.Unicode)) {
-                    tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    tw.Close();
+                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode)) {
+                    tw2.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    tw2.Close();
                 }
             }
         }
@@ -2356,7 +2351,7 @@ namespace DaxStudio.UI.ViewModels
                         // Check that the selected database is set to the current database for the connection
                         // this prevents issues when changing the connection on an existing window where
                         // the database did not match the table list in the metadata pane
-                        if (MetadataPane.SelectedDatabase.Caption != Connection.Database.Name)
+                        if (MetadataPane?.SelectedDatabase?.Caption != Connection.Database.Name)
                         {
                             MetadataPane.ChangeDatabase(Connection.Database.Name);
                         }
@@ -3100,7 +3095,7 @@ namespace DaxStudio.UI.ViewModels
 
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                    Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(this.Connection.ServerName, this.SelectedDatabase, "DaxStudio", version.ToString());
+                    Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(this.Connection.ServerName, this.SelectedDatabase, "DaxStudio", version.ToString());
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });

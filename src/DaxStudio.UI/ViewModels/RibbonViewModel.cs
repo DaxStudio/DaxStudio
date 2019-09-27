@@ -431,6 +431,8 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateTraceWatchers()
         {
+            if (TraceWatchers == null) return;
+
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {

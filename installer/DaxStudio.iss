@@ -3,7 +3,6 @@
 
 
 #define MyAppName "DAX Studio"
-;#define MyAppVersion "2.0.0.1"
 #define myAppMajor
 #define myAppMinor
 #define myAppRevision
@@ -18,33 +17,33 @@
 #define use_dotnetfx471
 ;#define use_sql2012sp1amo
 ;#define use_sql2012sp1adomdclient
-#define use_sql2016amo
-#define use_sql2016adomdclient
+;#define use_sql2016amo
+;#define use_sql2016adomdclient
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-;AppId={{2DDF2B91-978D-4B47-AF1C-15E6C07ADEAD}
 AppId={{CE2CEA93-9DD3-4724-8FE3-FCBF0A0915C1}
+
 #ifdef Preview
 AppName={#MyAppName} {#myAppMajor}.{#myAppMinor}.{#myAppRevision} ({#Preview})
 #else
 AppName={#MyAppName} {#myAppMajor}.{#myAppMinor}.{#myAppRevision}
 #endif
+
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 UseSetupLdr=Yes
 
-
 LicenseFile=..\license.rtf
-;OutputBaseFilename=DaxStudio_{#MyAppFileVersion}_setup
+
 OutputBaseFilename=DaxStudio_{#myAppMajor}_{#myAppMinor}_{#myAppRevision}_setup
 OutputDir=..\package
 Compression=lzma
@@ -58,13 +57,13 @@ SetupIconFile=DaxStudio2.ico
 WizardImageFile=WizardImageFile.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
 
-PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=dialog commandline
 ArchitecturesAllowed=x86 x64
 ArchitecturesInstallIn64BitMode=x64 
 
 DisableDirPage=auto
 DisableProgramGroupPage=auto
-
+ChangesAssociations=yes
 UninstallDisplayIcon={app}\daxstudio.exe
 
 [Messages]
@@ -86,30 +85,21 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
-Source: "..\release\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "..\release\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "..\release\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
+Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
+Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
+Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
 
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
-;Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core; Check: IsSQL2016DllsFound
-;Source: "..\release\DaxStudio.exe.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsSQL2014DllsFound
-;Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: Not IsComponentSelected('ASAzureSupport')
-;Source: "..\release\DaxStudio.exe.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsComponentSelected('ASAzureSupport')
-
 ;Excel Addin configs
-Source: "..\release\DaxStudio.dll.xl2010.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
-;Source: "..\release\DaxStudio.dll.2014.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2014DllsFound And Not IsExcel2010Installed
-;Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And Not IsExcel2010Installed
-;Source: "..\release\DaxStudio.dll.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsSQL2017DllsFound And Not IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
 
 ; TODO - ngen DaxStudio
 ;Filename: {win}\Microsoft.NET\Framework64\v4.0.30319\ngen.exe Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; Check: CheckFramework;
@@ -145,29 +135,35 @@ Name: "standalone"; Description: "DaxStudio Core"
 Name: "custom"; Description: "Custom"; Flags: iscustom
 
 [Registry]
-Root: "HKLM"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core
-;Excel x86 Addin Keys
-Root: "HKLM32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-;Excel x64 Addin keys
-Root: "HKLM64"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-;Clean up beta Excel x86 Addin Keys
-Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-;Clean up beta Excel x64 Addin keys
-Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-;put keys under the following for a per user install HCKU\SOFTWARE\Classes
+Root: "HKA"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core; Permissions: users-read
+Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "64Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "32Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is32BitExcelFromRegisteredExe
+
+;Excel x86 Addin Keys - All Users
+Root: "HKA32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\bin\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+;Excel x64 Addin keys - All Users
+Root: "HKA64"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\bin\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+
 ;add file association for .dax files
-Root: "HKCR"; Subkey: ".dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0"; Flags: uninsdeletevalue
+Root: "HKA"; Subkey: "Software\Classes\.dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0"; Flags: uninsdeletevalue
+
+;Clean up beta Excel x86 Addin Keys
+;Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+;Clean up beta Excel x64 Addin keys
+;Root: "HKLM64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+;Clean up unused registry values
+;Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: deletevalue; ValueName: "ShowPreReleaseNotifications";
 
 [CustomMessages]
 win_sp_title=Windows %1 Service Pack %2
@@ -181,8 +177,12 @@ Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabula
 [InstallDelete]
 Type: files; Name: "{app}\Microsoft.Excel.Amo.dll"
 Type: files; Name: "{app}\Microsoft.Excel.AdomdClient.dll"
+Type: filesandordirs; Name: "{app}\*"
 
 [Code]
+#include "scripts/clihelp.iss"
+
+
 //If there is a command-line parameter "skipdependencies=true", don't check for them }
 function ShouldInstallDependencies(): Boolean;
 begin
@@ -280,10 +280,59 @@ begin
   
 end;
 
+// var ExcelMode: TInputOptionWizardPage;
+// procedure GetExcelMode;
+// begin
+//    ExcelMode := CreateInputOptionPage(wpSelectComponents,
+//     'Excel Addin', 'How would you like the Excel Addin registered',
+//     'Please specify how you would like the Excel Addin registered.',
+//     True, False);
+//   ExcelMode.Add('All Users (requires Admin rights to change)');
+//   ExcelMode.Add('Current User Only (enable from the Options menu in DAX Studio)');
+//   // default to All Users
+//   ExcelMode.SelectedValueIndex := 0
+// end;
+
+// function IsExcelAllUsers: Boolean;
+// begin
+//   Result := ExcelMode.SelectedValueIndex = 0;
+// end;
+
+// function IsExcelCurrentUser: Boolean;
+// begin
+//   Result := ExcelMode.SelectedValueIndex = 1;
+// end;
         
 function GetMaxCommonSsasAssemblyVersion(): String;
 begin
     Result := maxCommonSsasAssemblyVersion;
+end;
+
+// function ShouldSkipPage(PageID: Integer): Boolean;
+// begin
+
+//   { Skip pages that shouldn't be shown }
+//   if (PageID = ExcelMode.ID) and Not IsComponentSelected('Excel') then
+//     Result := True
+//   else
+//     Result := False;
+// end;
+
+
+procedure InitializeWizard;
+var
+	i: Integer;
+begin
+	// Check for help switch passed on installer command line
+	if paramcount() > 0 then
+		for i:=1 to paramcount() do
+			if (Lowercase(Copy(ParamStr(i), 1, 2)) = '/?') OR ((Length(ParamStr(i)) = 2) AND (Lowercase(Copy(ParamStr(i), 1, 2)) = '/h')) OR (Lowercase(Copy(ParamStr(i), 1, 5)) = '/help') then
+				DisplayHelp();
+
+
+  { Create the pages }
+
+  // GetExcelMode();
 end;
 
 
@@ -308,7 +357,9 @@ begin
     ShowExceptionMessage;
   end;
 
-//  Log('Checking the maximum SSAS assembly versions');
+
+  
+  //  Log('Checking the maximum SSAS assembly versions');
 //  maxCommonSsasAssemblyVersion := GetMaxCommonSsasAssemblyVersionInternal();
 //  Log('Max SSAS assembly versions ' + maxCommonSsasAssemblyVersion);
 //  msgbox(GetMaxCommonSsasAssemblyVersion(), mbInformation,MB_OK);
@@ -372,64 +423,16 @@ else
 	vcredist2010();
 #endif
 
-// #ifdef use_sql2012sp1adomdclient
-//   if ShouldInstallDependencies() then begin
-//     Log('Checking for AdomdClient 2012 SP1');
-// 	  sql2012sp1adomdclient();
-//   end;
-// #endif
-
-// #ifdef use_sql2012sp1amo
-//   if ShouldInstallDependencies() then begin
-//     Log('Checking for AMO 2012 SP1');
-// 	  sql2012sp1amo();
-//    end;
-// #endif
-
-
-
 	Result := true;
 end;
+
 
 // procedure CurPageChanged(CurPageID: Integer);
 // begin
 // Log('Processing custom page actions for ' + IntToStr(CurPageID));
 //   if CurPageID = wpReady then begin
-//     Log('Processing custom Ready page actions');
-//     if IsComponentSelected('ASAzureSupport') then begin
-//       Log('Installing Azure Support');
-
-//         if ShouldInstallDependencies() then begin
-//        //#ifdef use_sql2017adomdclient
-//           Log('Checking for AdomdClient 2017');
-//           sql2017adomdclient();
-//       //#endif
-
-//       //#ifdef use_sql2017amo
-//           Log('Checking for AMO 2017');
-//           sql2017amo();
-//        //#endif
-//          end;
-
-//     end
-//     else
-//     //if Not IsComponentSelected('AS Azure Support') then 
-//     begin
-//       #ifdef use_sql2016adomdclient
-//         if ShouldInstallDependencies() then begin
-//           Log('Checking for AdomdClient 2016');
-//           sql2016adomdclient();
-//         end;
-//       #endif
-
-//       #ifdef use_sql2016amo
-//         if ShouldInstallDependencies() then begin
-//           Log('Checking for AMO 2016');
-//           sql2016amo();
-//          end;
-//       #endif
-//     end;
-
+//      if IsExcelCurrentUser then Log('Installing Excel add-in for CurrentUser');
+//      If IsExcelAllUsers then Log('Installing Excel add-in for AllUsers');
 //   end;
 // end;
 
@@ -477,29 +480,7 @@ begin
   Result := NOT Is64BitExcelFromRegisteredExe();
 end;
 
-/////////////////////////////////////////////////////////////////////
 
-// function IsSQL2012DllsFound(): boolean;
-// begin
-// 	Result := ((GetMaxCommonSsasAssemblyVersion() = '') Or  (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'11.0.0.0000') = 0 ));
-// end;
-
-// function IsSQL2014DllsFound(): boolean;
-// begin
-// 	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'12.0.0.0000') = 0 ) ;
-// end;
-
-// function IsSQL2016DllsFound(): boolean;
-// begin
-// 	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'13.0.0.0000') = 0 )  Or  IsComponentSelected('AsAzureSupport') = False;
-// end;
-
-// function IsSQL2017DllsFound(): boolean;
-// begin
-// 	Result := (CompareAssemblyVersion(GetMaxCommonSsasAssemblyVersion() ,'14.0.0.0000') = 0 ) Or  IsComponentSelected('AsAzureSupport') = True ;
-// end;         
-
-/////////////////////////////////////////////////////////////////////
 function GetUninstallString(): String;
 var
   sUnInstPath: String;
@@ -571,8 +552,3 @@ begin
   end;
 end;
 
-const 
-   ComponentList = 'CORE - core components| EXCEL - Excel Addin'; 
-   TaskList = 'DESKTOPICON - adds a desktop icon'; 
-   ParameterList = '/SKIPDEPENDENCIES=True/False - Skips the standard dependency checks';  
-#include "scripts/clihelp.iss"

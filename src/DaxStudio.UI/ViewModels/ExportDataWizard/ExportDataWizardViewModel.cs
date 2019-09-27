@@ -138,7 +138,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Dispose()
         {
-            EventAggregator.Unsubscribe(this);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                EventAggregator.Unsubscribe(this);
+                SecurePassword?.Dispose();
+            }
         }
         #endregion
 
@@ -224,66 +234,75 @@ namespace DaxStudio.UI.ViewModels
                     var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Caption}.csv");
                     var daxQuery = $"EVALUATE {table.DaxName}";
 
-                    using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
-                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
-                    using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
-                    using (var reader = Document.Connection.ExecuteReader(daxQuery))
-                    {
-                        rows = 0;
-                        tableCnt++;
+                    StreamWriter textWriter = null;
+                    try { 
+                        textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8);
 
-                        // configure delimiter
-                        csvWriter.Configuration.Delimiter = CsvDelimiter;
-
-                        // output dates using ISO 8601 format
-                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
-                            typeof(DateTime),
-                            new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
-
-                        // Write Header
-                        foreach (var colName in reader.CleanColumnNames())
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                        using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                        using (var reader = Document.Connection.ExecuteReader(daxQuery))
                         {
-                            csvWriter.WriteField(colName);
-                        }
+                            rows = 0;
+                            tableCnt++;
 
-                        csvWriter.NextRecord();
+                            // configure delimiter
+                            csvWriter.Configuration.Delimiter = CsvDelimiter;
 
-                        // Write data
-                        while (reader.Read())
-                        {
-                            for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+                            // output dates using ISO 8601 format
+                            csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                                typeof(DateTime),
+                                new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+
+                            // Write Header
+                            foreach (var colName in reader.CleanColumnNames())
                             {
-                                var fieldValue = reader[fieldOrdinal];
-                                csvWriter.WriteField(fieldValue);
+                                csvWriter.WriteField(colName);
                             }
 
-                            rows++;
-                            if (rows % 5000 == 0)
-                            {
-                                table.RowCount = rows;
-                                new StatusBarMessage(Document, $"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rows:N0} rows)");
-                                Document.RefreshElapsedTime();
-
-                                // if cancel has been requested do not write any more records
-                                if (CancelRequested)
-                                {
-                                    table.Status = ExportStatus.Cancelled;
-                                    break;
-                                }
-                            }
                             csvWriter.NextRecord();
 
-                        }
+                            // Write data
+                            while (reader.Read())
+                            {
+                                for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+                                {
+                                    var fieldValue = reader[fieldOrdinal];
+                                    csvWriter.WriteField(fieldValue);
+                                }
 
-                        Document.RefreshElapsedTime();
-                        table.RowCount = rows;
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.DaxName}.csv"));
+                                rows++;
+                                if (rows % 5000 == 0)
+                                {
+                                    table.RowCount = rows;
+                                    new StatusBarMessage(Document, $"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rows:N0} rows)");
+                                    Document.RefreshElapsedTime();
 
-                        // if cancel has been requested do not write any more files
-                        if (CancelRequested) {
-                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
-                            break;
+                                    // if cancel has been requested do not write any more records
+                                    if (CancelRequested)
+                                    {
+                                        table.Status = ExportStatus.Cancelled;
+                                        break;
+                                    }
+                                }
+                                csvWriter.NextRecord();
+
+                            }
+
+                            Document.RefreshElapsedTime();
+                            table.RowCount = rows;
+                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.DaxName}.csv"));
+
+                            // if cancel has been requested do not write any more files
+                            if (CancelRequested)
+                            {
+                                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                break;
+                            }
                         }
+                    }
+                    finally
+                    {
+                        textWriter?.Dispose();
                     }
                     table.Status = ExportStatus.Done;
                 }
@@ -313,6 +332,7 @@ namespace DaxStudio.UI.ViewModels
         private int totalTableCnt = 0;
         private SelectedTable currentTable = null;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;

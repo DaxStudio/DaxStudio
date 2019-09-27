@@ -20,6 +20,27 @@
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:MinusConverter x:Key="MinusConverter"/>
 
+            <BitmapImage x:Key="modelIcon" UriSource="..\Images\Metadata\model.png"/>
+
+
+            <Style x:Key="SummaryHeader" TargetType="{x:Type TextBlock}">
+                <Setter Property="Margin" Value="0 10 0 0"/>
+                <Setter Property="FontSize" Value="36"/>
+                <Setter Property="FontWeight" Value="Light"/>
+                <!--<Setter Property="Foreground" Value="{StaticResource DaxStudioBlue}" />-->
+            </Style>
+
+            <Style x:Key="SummaryLabel" TargetType="{x:Type TextBlock}">
+                <Setter Property="Margin" Value="0 5 20 0"/>
+                <Setter Property="Foreground" Value="#999999"/>
+                <Setter Property="FontSize" Value="12"/>
+            </Style>
+
+            <Style x:Key="SummaryValue" TargetType="{x:Type TextBlock}">
+                <Setter Property="Margin" Value="0 0 20 0"/>
+                <Setter Property="FontSize" Value="18"/>
+            </Style>
+
             <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
                 <Setter Property="Margin" Value="0 0 0 0"/>
                 <Setter Property="Padding" Value="0 0 3 0" />
@@ -46,7 +67,7 @@
                 <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>
                 <Setter Property="TextBlock.TextAlignment" Value="Right"/>
             </Style>
-        
+
             <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}">
                 <Setter Property="HorizontalContentAlignment" Value="Right"/>
             </Style>
@@ -64,6 +85,12 @@
     <TabControl>
         <TabItem Header="Tables">
             <Border BorderBrush="Gray" BorderThickness="1">
+                <!--
+                VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.IsContainerVirtualizable="True"
+                          
+                -->
                 <DataGrid ItemsSource="{Binding GroupedColumns, UpdateSourceTrigger=PropertyChanged}" 
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
@@ -74,7 +101,8 @@
                           CanUserSortColumns="True" 
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.IsContainerVirtualizable="True" 
+                          VirtualizingPanel.IsContainerVirtualizable="True"
+
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action SortTableColumn($eventArgs)]">
@@ -144,7 +172,7 @@
                                                             <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
                                                             <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
                                                         </StackPanel>
-                                                        
+
                                                     </Expander.Header>
 
                                                     <ItemsPresenter />
@@ -156,7 +184,7 @@
                             </GroupStyle.ContainerStyle>
                         </GroupStyle>
                     </DataGrid.GroupStyle>
-                    
+
                     <DataGrid.Columns>
                         <!--<DataGridTextColumn Binding="{Binding ColumnName}" Header="Name" x:Name="colColumn" MinWidth="200" />-->
                         <DataGridTemplateColumn Header="Name" x:Name="colColumn" MinWidth="200">
@@ -180,12 +208,12 @@
                                                 </MultiBinding>
                                             </Rectangle.Width>
                                         </Rectangle>
-                                    <TextBlock Text="{Binding ColumnCardinality, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding ColumnCardinality, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        
+
                         <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}" />
                         <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending">
 
@@ -215,7 +243,7 @@
                         <DataGridTemplateColumn Header="User Hier Size" x:Name="colUserHierarchies" CellTemplate="{StaticResource DashTemplate}"/>
 
                         <DataGridTemplateColumn Header="Rel Size" x:Name="colRelationships" CellTemplate="{StaticResource DashTemplate}"/>
-                            
+
                         <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}" Header="% Table" x:Name="colPercentageTable" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" Header="% DB" x:Name="colPercentageDB" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  Header="Segments" x:Name="colSegmentsNumber" ElementStyle="{StaticResource NumTextBlockStyle}"/>
@@ -242,7 +270,7 @@
                           VirtualizingPanel.IsContainerVirtualizable="True" 
                           CanUserAddRows="False"
                           IsReadOnly="True">
-                    
+
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding TableColumnName}" Header="TableColumn" MinWidth="200" />
                         <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}" Header="Rows"  ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" />
@@ -274,7 +302,7 @@
                         <DataGridTextColumn Binding="{Binding TypeName}" Header="Encoding" />
                         <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  Header="Segments" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" Header="Partitions" ElementStyle="{StaticResource NumTextBlockStyle}"/>
-                       
+
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -306,7 +334,7 @@
                                             <ControlTemplate TargetType="{x:Type GroupItem}">
                                                 <Expander IsExpanded="{Binding Name.IsExpanded}" Style="{StaticResource ArrowGroupExpander}">
                                                     <Expander.Header>
-                                           
+
                                                         <StackPanel Orientation="Horizontal" >
                                                             <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colRelName, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                             <TextBlock Text="{Binding Name.RelationshipSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelSize}" Style="{StaticResource NumBlockBoldStyle}"/>
@@ -356,12 +384,62 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        
+
                         <DataGridTextColumn Binding="{Binding FromColumnCardinality, StringFormat=N0}" Header="Max From Cardinality" x:Name="colRelFromCardinality" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding ToColumnCardinality, StringFormat=N0}" Header="Max To Cardinality" x:Name="colRelToCardinality" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
-                        
+
                     </DataGrid.Columns>
                 </DataGrid>
+            </Border>
+        </TabItem>
+        <TabItem Header="Summary">
+            <Border  BorderBrush="Gray" BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Header Rows -->
+                    <Image Source="{StaticResource modelIcon}" Grid.RowSpan="2" VerticalAlignment="Top"/>
+                    <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource SummaryHeader}"/>
+
+                    <!-- Row 1 -->
+                    <TextBlock Text="Total Size" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.FormattedTotalSize}" Grid.Column="1" Grid.Row="2" Style="{StaticResource SummaryValue}" FontWeight="SemiBold" ToolTip="{Binding SummaryViewModel.TotalSize, StringFormat=N0}"/>
+
+                    <TextBlock Text="Last Data Refresh" Grid.Column="2" Grid.Row="1" Style="{StaticResource SummaryLabel}" Grid.ColumnSpan="2" />
+                    <TextBlock Text="{Binding SummaryViewModel.LastDataRefresh}" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource SummaryValue}"/>
+
+                    <TextBlock Text="Analysis Date" Grid.Column="4" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.ExtractionDate}" Grid.Column="4" Grid.Row="2" Style="{StaticResource SummaryValue}" />
+                    
+                    <!-- Row 2 -->
+                    <TextBlock Text="Compatibility" Grid.Column="1" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.CompatibilityLevel}" Grid.Column="1" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+
+                    <TextBlock Text="Tables" Grid.Column="2" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.TableCount}" Grid.Column="2" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+                    <TextBlock Text="Columns" Grid.Column="3" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.ColumnCount}" Grid.Column="3" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+                    <TextBlock Text="Server" Grid.Column="4" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
+                    <TextBlock Text="{Binding SummaryViewModel.DataSource}" Grid.Column="4" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+
+
+                </Grid>
             </Border>
         </TabItem>
 

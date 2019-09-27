@@ -48,7 +48,7 @@ namespace DaxStudio.UI.Model
 
         public bool SupportsQueryTable
         {
-            get { throw new NotImplementedException(); }
+            get { return true; }
         }
 
         public bool SupportsStaticTable
@@ -111,7 +111,7 @@ namespace DaxStudio.UI.Model
                     catch (Exception ex)
                     {
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
-                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel", ex.Message));
+                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
                     }
 
                     return "<Workbook not found>";
@@ -211,7 +211,7 @@ namespace DaxStudio.UI.Model
         public int Port { get { return _port; } }
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // Do Nothing
         }
 
         public void Handle(ActivateDocumentEvent message)

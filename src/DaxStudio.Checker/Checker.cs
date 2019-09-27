@@ -135,6 +135,18 @@ namespace DaxStudio.Checker
             Output.AppendLine();
             Output.OutputCultureInfo();
         }
+
+        public void CheckScreenInfo()
+        {
+            Output.AppendHeaderLine("Checking Displays");
+            Output.AppendLine("=======================");
+            foreach( var screen in System.Windows.Forms.Screen.AllScreens)
+            {
+                Output.AppendLine($"Display: {screen.DeviceName} {(screen.Primary ? "(Primary)" : "")} ");
+                Output.AppendLine($"         X: {screen.Bounds.X} Y: {screen.Bounds.Y} Width: {screen.Bounds.Width} Height: {screen.Bounds.Height}");
+
+            }
+        }
         public void CheckLibrary(string shortName, string longNameFormat)
         {
             //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"

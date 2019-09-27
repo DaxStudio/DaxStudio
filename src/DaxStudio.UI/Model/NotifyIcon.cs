@@ -69,10 +69,28 @@ namespace DaxStudio.UI.Model
 
         public void Dispose()
         {
-            icon.TrayBalloonTipClicked -= icon_TrayBalloonTipClicked;
-            icon.TrayLeftMouseDown -= icon_TrayMouseDown;
-            icon.TrayRightMouseDown -= icon_TrayMouseDown;
-            icon.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (icon != null)
+                {
+                    icon.TrayBalloonTipClicked -= icon_TrayBalloonTipClicked;
+                    icon.TrayLeftMouseDown -= icon_TrayMouseDown;
+                    icon.TrayRightMouseDown -= icon_TrayMouseDown;
+                    icon.Dispose();
+                    icon = null;
+                }
+                if (_icon != null)
+                {
+                    _icon.Dispose();
+                    _icon = null;
+                }
+            }
         }
     }
 }

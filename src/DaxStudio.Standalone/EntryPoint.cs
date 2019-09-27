@@ -52,6 +52,12 @@ namespace DaxStudio.Standalone
         {
             try
             {
+                // need to create application first
+                var app = new Application();
+
+                // add unhandled exception handler
+                app.DispatcherUnhandledException += App_DispatcherUnhandledException;
+
                 // Setup logging
                 var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
                 var config = new LoggerConfiguration()
@@ -79,8 +85,6 @@ namespace DaxStudio.Standalone
 
                 log = config.CreateLogger();
 
-                // need to create application first
-                var app = new Application();
                 //var app2 = IoC.Get<Application>();
 
                 // add the custom DAX Studio accent color theme
@@ -99,9 +103,7 @@ namespace DaxStudio.Standalone
 
 
 
-                // add unhandled exception handler
-                app.DispatcherUnhandledException += App_DispatcherUnhandledException;
-
+                
                 // then load Caliburn Micro bootstrapper
                 AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
@@ -176,6 +178,7 @@ namespace DaxStudio.Standalone
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
+                Log.CloseAndFlush();
 #if DEBUG
                 MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
 #else

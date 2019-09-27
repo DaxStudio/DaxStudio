@@ -253,10 +253,7 @@ namespace DaxStudio.UI.Model
         // this the fully qualified (and possibly quoted)
         // so for a column it would be something like 'table name'[column name]
         // but for a table it would be 'table name'
-        string IADOTabularObject.DaxName
-        {
-            get { return _table.DaxName; }
-        }
+        public string DaxName => _table.DaxName;
         public int ColumnCount
         {
             get { return _table.Columns.Count; }
