@@ -143,6 +143,7 @@ namespace DaxStudio.QueryTrace
             connStrBuilder.Remove("MDX Compatibility");
             connStrBuilder.Remove("Cell Error Mode");
             connStrBuilder.Remove("Roles");
+            connStrBuilder.Remove("EffectiveUsername");
             connStrBuilder["SessionId"] = _sessionId;
             if (_databaseName.Length > 0) connStrBuilder["Initial Catalog"] = _databaseName;
             _connectionString = connStrBuilder.ToString();
