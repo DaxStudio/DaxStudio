@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Text="Choose which Tables to export:" Grid.Row="0" Margin="5" />
@@ -20,10 +21,14 @@
         <ListBox Margin="5" Grid.Row="2" x:Name="Tables">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected}" Tag="{Binding Name}"/>
+                    <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected}" Tag="{Binding DaxName}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <StackPanel Orientation="Horizontal" Grid.Row="3">
+            <CheckBox x:Name="IncludeHiddenTables" Content="Include Hidden Tables" Margin="5"/>
+            <CheckBox x:Name="IncludeInternalTables" Content="Include Internal Tables" Margin="5"/>
+        </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="4">
             <Separator />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

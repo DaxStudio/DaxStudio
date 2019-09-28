@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
@@ -54,7 +55,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void PopulateTablesList()
         {
-            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables;
+            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
             foreach ( var t in tables)
             {
                 Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
@@ -221,6 +222,7 @@ namespace DaxStudio.UI.ViewModels
             var tableCnt = 0;
             string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
+            var encoding = new UTF8Encoding(false);
 
             foreach (var table in  selectedTables)
             {
@@ -231,12 +233,14 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     table.Status = ExportStatus.Exporting;
-                    var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Caption}.csv");
+                    var fileName = CleanNameOfIllegalChars(table.Caption);
+                    
+                    var csvFilePath = System.IO.Path.Combine(outputPath, $"{fileName}.csv");
                     var daxQuery = $"EVALUATE {table.DaxName}";
 
                     StreamWriter textWriter = null;
                     try { 
-                        textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8);
+                        textWriter = new StreamWriter(csvFilePath, false, encoding);
 
                         using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
@@ -327,6 +331,26 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
             Document.QueryStopWatch.Reset();
         }
+
+        private object CleanNameOfIllegalChars(string caption)
+        {
+            if (_illegalFileCharsRegex == null)
+            {
+                string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                _illegalFileCharsRegex = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            }
+            string newName =  _illegalFileCharsRegex.Replace(caption, "_");
+            if (newName != caption)
+            {
+                var warning = $"Exporting table '{caption}' as '{newName}' due to characters that are illegal in a file name.";
+                Log.Warning("{class} {method} {message}", "ExportDataWizardViewModel", "CleanNameOfIllegalChars", warning);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,warning));
+            }
+            return newName;
+        }
+
+        private Regex _illegalFileCharsRegex = null;
+        
 
         private string sqlTableName = string.Empty;
         private int currentTableIdx = 0;
