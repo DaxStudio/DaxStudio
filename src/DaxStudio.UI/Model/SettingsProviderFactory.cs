@@ -24,9 +24,7 @@ namespace DaxStudio.UI.Model
 
         private bool IsRunningPortable()
         {
-            var exeFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-            var portableFile = Path.Combine(exeFolder, ".portable");
-            return File.Exists(portableFile);
+            return File.Exists(ApplicationPaths.PortableFile);
         }
     }
 }

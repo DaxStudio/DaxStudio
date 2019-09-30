@@ -190,7 +190,7 @@
   </Target>
 
   <Target Name="CreatePortableFile">
-    <Touch Files=".\Release\.portable" AlwaysCreate="True" />
+    <Touch Files=".\Release\bin\.portable" AlwaysCreate="True" />
   </Target>
 
   <Target Name="DeleteZip" DependsOnTargets="RetrieveIdentities;Build;DeleteXml;DeletePdb">
