@@ -46,6 +46,8 @@ namespace DaxStudio.UI.ViewModels
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
+        private const string urlGithubBugReport = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=bug_report.md&title=";
+        private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
@@ -501,9 +503,10 @@ namespace DaxStudio.UI.ViewModels
 
         public void LinkToDaxStudioWiki()
         {
-            OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");
-                
+            OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");        
         }
+
+
 
         public void LinkToPowerPivotForum()
         {
@@ -513,6 +516,16 @@ namespace DaxStudio.UI.ViewModels
         public void LinkToSsasForum()
         {
             OpenUrl(urlSsasForum, "LinkToSsasForum");
+        }
+
+        public void LinkToGithubBugReport()
+        {
+            OpenUrl(urlGithubBugReport, "LinkToGithubBugReport");
+        }
+
+        public void LinkToGithubFeatureRequest()
+        {
+            OpenUrl(urlGithubFeatureRequest, "LinkToGithubFeatureRequest");
         }
 
         internal void OpenUrl(string url, string name)

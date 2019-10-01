@@ -9,6 +9,7 @@
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" 
              d:DesignWidth="980">
     <UserControl.Resources>
@@ -968,6 +969,43 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Analysis Services Forum"
                                           Text="Link to the Analysis Services MSDN Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
+            <Fluent:RibbonGroupBox Header="Issues">
+                
+                <Fluent:Button Name="hlpGithubBugReport"
+                               Header="Report a Bug"
+                               cal:Message.Attach="[Event Click] = [Action LinkToGithubBugReport()]"
+                               SizeDefinition="Large,Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.LargeIcon>
+                        
+                        <fa:FontAwesome  Icon="Bug" Foreground="Blue" Width="32" Height="32" />
+                        
+                    </Fluent:Button.LargeIcon>
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="Bug" Foreground="Blue" Margin="0" Width="16" Height="16" />
+
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Report a Bug"
+                                          Text="Submit a bug report to the Github project site for DAX Studio"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpGithubFeatureRequest"
+                               Header="Submit a Feature Request "
+                               cal:Message.Attach="[Event Click] = [Action LinkToGithubFeatureRequest()]"
+                               Icon="{StaticResource ExternalLinkIcon}"
+                               SizeDefinition="Large,Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Feature Request"
+                                          Text="Submit an idea for a new feature to the Github project site for DAX Studio"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>

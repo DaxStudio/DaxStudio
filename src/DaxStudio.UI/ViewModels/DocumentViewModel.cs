@@ -1545,6 +1545,12 @@ namespace DaxStudio.UI.ViewModels
         {
             
             var editor = GetEditor();
+            if (editor == null)
+            {
+                Log.Error("{class} {method} {message}", "DocumentViewModel", "InsertTextAtSelection", "Unable to get a reference to the editor control");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again. If this issue persists please post an issue on th"));
+                return;
+            }
             var startOffset = editor.CaretOffset;
 
             if (editor.SelectionLength == 0)
