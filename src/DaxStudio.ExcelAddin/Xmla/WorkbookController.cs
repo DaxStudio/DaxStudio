@@ -19,16 +19,18 @@ namespace DaxStudio.ExcelAddin.Xmla
         [HttpGet]
         [Route("FileName")]
         public IHttpActionResult GetWorkbookFileName()
-        { 
-            
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            var addin = Globals.ThisAddIn;
-            var app = addin.Application;
-            var wb = app.ActiveWorkbook;
-            var wbName = "<No Workbook>";
-            if (wb != null) { wbName = wb.FullName; }
-            System.Diagnostics.Debug.WriteLine(string.Format("Workbook: {0}", wbName));
-            return Ok(wbName);
+        {
+
+            using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+            {
+                var addin = Globals.ThisAddIn;
+                var app = addin.Application;
+                var wb = app.ActiveWorkbook;
+                var wbName = "<No Workbook>";
+                if (wb != null) { wbName = wb.FullName; }
+                System.Diagnostics.Debug.WriteLine($"Workbook: {wbName}");
+                return Ok(wbName);
+            }
         }
         
         
@@ -40,58 +42,67 @@ namespace DaxStudio.ExcelAddin.Xmla
             try
             {
                 Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "Start");
-                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-                var addin = Globals.ThisAddIn;
-                var app = addin.Application;
-                var wb = app.ActiveWorkbook;
-                var shts = new List<string>();
-
-                shts.Add(WorksheetDaxResults);
-                shts.Add(WorksheetNew);
-                foreach (Worksheet sht in wb.Worksheets)
+                using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
                 {
-                    shts.Add(sht.Name);
+                    var addin = Globals.ThisAddIn;
+                    var app = addin.Application;
+                    var wb = app.ActiveWorkbook;
+                    var shts = new List<string>
+                    {
+                        WorksheetDaxResults,
+                        WorksheetNew
+                    };
+                    foreach (Worksheet sht in wb.Worksheets)
+                    {
+                        shts.Add(sht.Name);
+                    }
+                
+                    Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "End");
+                    return Ok(shts.ToArray());
                 }
-                Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "End");
-                return Ok(shts.ToArray());
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Error("{class} {method} {message}", "WorkbookController", "GetWorksheets", ex.Message);
                 return BadRequest(ex.Message);
             }
         }
 
-        private string WorksheetDaxResults
+        private static string WorksheetDaxResults
         {
             get { return "<Query Results Sheet>"; }
         }
 
-        private string WorksheetNew
-        {
-            get { return "<New Sheet>"; }
-        }
+        private static string WorksheetNew => "<New Sheet>";
 
         [HttpGet]
         [Route("HasDataModel")]
         public IHttpActionResult GetHasDatamodel()
         {
             Log.Debug("{class} {method} {event}", "WorkbookController", "GetHasDataModel", "Start");
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            if (xl.HasPowerPivotData())
-                return Ok(true);
-            else
-                return Ok(false);
+            using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+            {
+                if (xl.HasPowerPivotData())
+                    return Ok(true);
+                else
+                    return Ok(false);
+            }
         }
 
         [HttpPost]
         [Route("StaticQueryResult")]
-        public void PostStaticResult(StaticQueryResult results)
+        public static void PostStaticResult(StaticQueryResult results)
         {
+            if (results == null) throw new ArgumentNullException(nameof(results));
+
             Log.Debug("{class} {method} {event}", "WorkbookController", "PostStaticResult", "Start");
-            var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-            var sht = xl.GetTargetWorksheet(results.TargetSheet);
-            xl.CopyDataTableToRange(results.QueryResults, sht);
+            using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+            {
+                var sht = xl.GetTargetWorksheet(results.TargetSheet);
+                ExcelHelper.CopyDataTableToRange(results.QueryResults, sht);
+            }
             Log.Debug("{class} {method} {event}", "WorkbookController", "PostStaticResult", "End");
         }
 
@@ -102,13 +113,19 @@ namespace DaxStudio.ExcelAddin.Xmla
             try
             {
                 Log.Debug("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "Start");
-                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
-                var sht = xl.GetTargetWorksheet(results.TargetSheet);
-                xl.DaxQueryTable(sht, results.DaxQuery, results.ConnectionString);
+                using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+                {
+#pragma warning disable CA1062 // Validate arguments of public methods
+                    var sht = xl.GetTargetWorksheet(results.TargetSheet);
+#pragma warning restore CA1062 // Validate arguments of public methods
+                    xl.DaxQueryTable(sht, results.DaxQuery, results.ConnectionString);
+                }
                 Log.Debug("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "End");
                 return Ok();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "WorkbookController", "PostLinkedQueryResult", ex.Message, ex.StackTrace);
                 return BadRequest(ex.Message);

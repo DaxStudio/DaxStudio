@@ -10,15 +10,15 @@ namespace ADOTabular.AdomdClientWrappers
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
         private Object rowsetLock = new Object();
-        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
+        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
-            _conn = obj;
+            _conn = connection;
         }
-        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
+        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.Excel;
-            _connExcel = obj;
+            _connExcel = connection;
         }
         
         public AdomdConnection(string connectionString, AdomdType type)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Common
 {
-    public class Constants
+    public static class Constants
     {
         
         public const string AppDataSettingsFolder = @"%APPDATA%\DaxStudio";
@@ -23,10 +23,10 @@ namespace DaxStudio.Common
         public const string LoggingHotKeyName = "Shift";
         public const int ExcelUIStartupTimeout = 10000;
 
-        public const string FORMAT_STRING = "FormatString";
-        public const string LOCALE_ID = "LocaleId";
-        public const string IS_UNIQUE = "IsUnique";
-        public const string ALLOW_DBNULL = "AllowDBNull";
+        public const string FormatString = "FormatString";
+        public const string LocaleId = "LocaleId";
+        public const string IsUnique = "IsUnique";
+        public const string AllowDbNull = "AllowDBNull";
 
         public const string StatusBarTimerFormat = "mm\\:ss\\.f";
 
@@ -36,9 +36,9 @@ namespace DaxStudio.Common
         public const string InternalQueryHeader = "/* DAX Studio Internal */";
         public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
 
-        public const int MAX_RECENT_FILES = 25;
-        public const int MAX_RECENT_SERVERS = 25;
-        public const int MAX_MRU_SIZE = 25;
+        public const int MaxRecentFiles = 25;
+        public const int MaxRecentServers = 25;
+        public const int MaxMruSize = 25;
         //public const int TraceStartTimeoutSeconds = 30;
     }
 }

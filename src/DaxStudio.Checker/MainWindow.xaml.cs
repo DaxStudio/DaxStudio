@@ -86,7 +86,7 @@ namespace DaxStudio.Checker
 
         private void OnOpenFusionLogFolderMenuClick(object sender, RoutedEventArgs e)
         {
-            checker.OpenFusionLogFolder();
+            Checker.OpenFusionLogFolder();
         }
     }
 }

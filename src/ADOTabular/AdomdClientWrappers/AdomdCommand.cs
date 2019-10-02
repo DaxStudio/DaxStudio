@@ -4,28 +4,28 @@ using System.Data;
 
 namespace ADOTabular.AdomdClientWrappers
 {
-    public class AdomdCommand
+    public class AdomdCommand 
     {
-        private Microsoft.AnalysisServices.AdomdClient.AdomdCommand _obj;
+        private Microsoft.AnalysisServices.AdomdClient.AdomdCommand _command;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand _objExcel;
 
         public AdomdCommand() { }
-        public AdomdCommand(Microsoft.AnalysisServices.AdomdClient.AdomdCommand obj)
+        public AdomdCommand(Microsoft.AnalysisServices.AdomdClient.AdomdCommand command)
         {
-            _obj = obj;
+            _command = command;
         }
-        public AdomdCommand(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand obj)
+        public AdomdCommand(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand command)
         {
-            _objExcel = obj;
+            _objExcel = command;
         }
 
         public AdomdConnection Connection
         {
             get
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    return new AdomdConnection(_obj.Connection);
+                    return new AdomdConnection(_command.Connection);
                 }
                 else
                 {
@@ -41,9 +41,9 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 if (value.Type == AdomdType.AnalysisServices)
                 {
-                    if (_obj == null)
-                        _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
-                    _obj.Connection = (Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection;
+                    if (_command == null)
+                        _command = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
+                    _command.Connection = (Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection;
                 }
                 else
                 {
@@ -62,9 +62,9 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    return _obj.CommandText;
+                    return _command.CommandText;
                 }
                 else
                 {
@@ -78,9 +78,9 @@ namespace ADOTabular.AdomdClientWrappers
 
             set
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    _obj.CommandText = value;
+                    _command.CommandText = value;
                 }
                 else
                 {
@@ -97,9 +97,9 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    return _obj.CommandType;
+                    return _command.CommandType;
                 }
                 else
                 {
@@ -113,9 +113,9 @@ namespace ADOTabular.AdomdClientWrappers
 
             set
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    _obj.CommandType = value;
+                    _command.CommandType = value;
                 }
                 else
                 {
@@ -130,9 +130,9 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Cancel()
         {
-            if (_obj != null)
+            if (_command != null)
             {
-                _obj.Cancel();
+                _command.Cancel();
             }
             else
             {
@@ -155,14 +155,14 @@ namespace ADOTabular.AdomdClientWrappers
 
         public CellSet ExecuteCellSet()
         {
-            if (_obj != null)
+            if (_command != null)
             {
-                _obj.Parameters.Clear();
+                _command.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
+                    _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
-                return new CellSet(_obj.ExecuteCellSet());
+                return new CellSet(_command.ExecuteCellSet());
             }
             else
             {
@@ -182,14 +182,14 @@ namespace ADOTabular.AdomdClientWrappers
 
         public AdomdDataReader ExecuteReader()
         {
-            if (_obj != null)
+            if (_command != null)
             {
-                _obj.Parameters.Clear();
+                _command.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
+                    _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
-                return new AdomdDataReader(_obj.ExecuteReader( ));
+                return new AdomdDataReader(_command.ExecuteReader( ));
             }
             else
             {
@@ -209,14 +209,14 @@ namespace ADOTabular.AdomdClientWrappers
 
         public int ExecuteNonQuery()
         {
-            if (_obj != null)
+            if (_command != null)
             {
-                _obj.Parameters.Clear();
+                _command.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
+                    _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
-                return _obj.ExecuteNonQuery();
+                return _command.ExecuteNonQuery();
             }
             else
             {
@@ -235,14 +235,14 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Execute()
         {
-            if (_obj != null)
+            if (_command != null)
             {
-                _obj.Parameters.Clear();
+                _command.Parameters.Clear();
                 foreach (AdomdParameter param in _parameters)
                 {
-                    _obj.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
+                    _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
-                _obj.Execute();
+                _command.Execute();
             }
             else
             {
@@ -263,9 +263,9 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_obj != null)
+                if (_command != null)
                 {
-                    return _obj;
+                    return _command;
                 }
                 else
                 {

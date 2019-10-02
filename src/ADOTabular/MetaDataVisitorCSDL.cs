@@ -83,7 +83,7 @@ namespace ADOTabular
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
 
-            using (XmlReader rdr = new XmlTextReader(new StringReader(csdl)))
+            using (XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit })
             {
                 GenerateTablesFromXmlReader(tables, rdr);
             }
@@ -91,50 +91,54 @@ namespace ADOTabular
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
         {
+            if (tabs == null) throw new ArgumentNullException(nameof(tabs));
+            if (rdr == null) throw new ArgumentNullException(nameof(rdr));
+
             // clear out the flat cache of column names
             _conn.Columns.Clear();
-            
-            if (rdr.NameTable != null)
+
+            if (rdr.NameTable == null)
             {
-                var eEntityContainer = rdr.NameTable.Add("EntityContainer");
-                var eEntitySet = rdr.NameTable.Add("EntitySet");
-                var eEntityType = rdr.NameTable.Add("EntityType");
-                var eAssociationSet = rdr.NameTable.Add("AssociationSet");
+                return;
+            }
+            var eEntityContainer = rdr.NameTable.Add("EntityContainer");
+            var eEntitySet = rdr.NameTable.Add("EntitySet");
+            var eEntityType = rdr.NameTable.Add("EntityType");
+            var eAssociationSet = rdr.NameTable.Add("AssociationSet");
 
-                while (rdr.Read())
+            while (rdr.Read())
+            {
+                if (rdr.NodeType == XmlNodeType.Element)
                 {
-                    if (rdr.NodeType == XmlNodeType.Element)
+                    switch (rdr.LocalName)
                     {
-                        switch (rdr.LocalName)
-                        {
-                            case "EntityContainer":
-                                if (rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
-                                    UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
-                                break;
-                            case "EntitySet":
-                                var tab = BuildTableFromEntitySet(rdr, eEntitySet);
-                                tabs.Add(tab);
-                                break;
-                            case "EntityType":
-                                AddColumnsToTable(rdr, tabs, eEntityType);
-                                break;
-                            case "AssociationSet":
-                                BuildRelationshipFromAssociationSet(rdr, tabs, eAssociationSet);
-                                break;
-                            case "Association":
-                                UpdateRelationshipFromAssociation(rdr, tabs);
-                                break;
-                        }
-
+                        case "EntityContainer":
+                            if (rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
+                                UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
+                            break;
+                        case "EntitySet":
+                            var tab = BuildTableFromEntitySet(rdr, eEntitySet);
+                            tabs.Add(tab);
+                            break;
+                        case "EntityType":
+                            AddColumnsToTable(rdr, tabs, eEntityType);
+                            break;
+                        case "AssociationSet":
+                            BuildRelationshipFromAssociationSet(rdr, tabs, eAssociationSet);
+                            break;
+                        case "Association":
+                            UpdateRelationshipFromAssociation(rdr, tabs);
+                            break;
                     }
 
                 }
 
-                // post processing of metadata
-                foreach (var t in tabs)
-                {
-                    TagKpiComponentColumns(t);
-                }
+            }
+
+            // post processing of metadata
+            foreach (var t in tabs)
+            {
+                TagKpiComponentColumns(t);
             }
 
         }
@@ -431,6 +435,8 @@ namespace ADOTabular
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
+            IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
+
             List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
 
             KpiDetails kpi = new KpiDetails();
@@ -515,10 +521,10 @@ namespace ADOTabular
                                 description = rdr.Value;
                                 break;
                             case "DistinctValueCount":
-                                distinctValueCount = long.Parse(rdr.Value);
+                                distinctValueCount = long.Parse(rdr.Value, invariantCulture);
                                 break;
                             case "StringValueMaxLength":
-                                stringValueMaxLength = long.Parse(rdr.Value);
+                                stringValueMaxLength = long.Parse(rdr.Value, invariantCulture);
                                 break;
                             case "FormatString":
                                 formatString = rdr.Value;
@@ -555,7 +561,7 @@ namespace ADOTabular
                         if (kpi.IsBlank())
                         {
                             var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents);
-                            col.DataType = Type.GetType(string.Format("System.{0}", dataType));
+                            col.DataType = Type.GetType($"System.{dataType}");
                             col.Nullable = nullable;
                             col.MinValue = minValue;
                             col.MaxValue = maxValue;
@@ -571,7 +577,7 @@ namespace ADOTabular
                         {
                             colType = ADOTabularObjectType.KPI;
                             var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi);
-                            kpiCol.DataType = Type.GetType(string.Format("System.{0}", dataType));
+                            kpiCol.DataType = Type.GetType($"System.{dataType}");
                             tab.Columns.Add(kpiCol);
                             _conn.Columns.Add(kpiCol.OutputColumnName, kpiCol);
                         }
@@ -922,6 +928,7 @@ namespace ADOTabular
 
         public void Visit(ADOTabularFunctionGroupCollection functionGroups)
         {
+            if (functionGroups == null) throw new ArgumentNullException(nameof(functionGroups));
             DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS",null,false).Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
             foreach (DataRow dr in drFuncs)
             {
@@ -931,6 +938,8 @@ namespace ADOTabular
 
         public void Visit(ADOTabularKeywordCollection keywords)
         {
+            if (keywords == null) throw new ArgumentNullException(nameof(keywords));
+
             //DataRowCollection drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0].Rows;
             //DataRowCollection drFunctions = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Rows;
             var drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0];
@@ -971,7 +980,7 @@ namespace ADOTabular
                 XElement datanode = new XElement("Parameter");
                 for (int col = 0; col < mdXmlField.FieldCount; col++) {
                     string fieldName = mdXmlField.GetName(col);
-                    if (fieldName != "") {
+                    if (!string.IsNullOrEmpty(fieldName)) {
                         var fieldContent = mdXmlField[col];
                         if (fieldContent != null) {
                             datanode.Add(new XElement(mdXmlField.GetName(col), fieldContent.ToString()));
@@ -984,6 +993,8 @@ namespace ADOTabular
             return s;
         }
         public void Visit(MetadataInfo.DaxMetadata daxMetadata) {
+            if (daxMetadata == null) throw new ArgumentNullException(nameof(daxMetadata));
+
             string ssasVersion = GetSsasVersion();
             Product productInfo = GetProduct(ssasVersion);
             daxMetadata.Version = new MetadataInfo.SsasVersion {
@@ -1043,7 +1054,7 @@ namespace ADOTabular
             return ssasVersion;
         }
 
-        public struct Product {
+        private struct Product {
             public string Type;
             public string Name;
         }
@@ -1056,17 +1067,17 @@ namespace ADOTabular
             product.Name = null;
             if (_conn.Type == AdomdType.Excel) {
                 product.Type = "Excel";
-                if (ssasVersion.StartsWith("13.")) {
+                if (ssasVersion.StartsWith("13.",StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "Excel 2016";
                 }
-                else if (ssasVersion.StartsWith("11.")) {
+                else if (ssasVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "Excel 2013";
                 }
                 else {
                     product.Name = product.Type;
                 }
             }
-            else if (serverName.StartsWith("asazure://")) {
+            else if (serverName.StartsWith("asazure://", StringComparison.InvariantCultureIgnoreCase)) {
                 product.Type = "Azure AS";
                 product.Name = product.Type;
             }
@@ -1080,22 +1091,22 @@ namespace ADOTabular
             }
             else {
                 product.Type = "SSAS Tabular";
-                if (ssasVersion.StartsWith("15.")) {
+                if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2019";
                 }
-                else if (ssasVersion.StartsWith("14.")) {
+                else if (ssasVersion.StartsWith("14.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2017";
                 }
-                else if (ssasVersion.StartsWith("13.")) {
+                else if (ssasVersion.StartsWith("13.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2016";
                 }
-                else if (ssasVersion.StartsWith("12.")) {
+                else if (ssasVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2014";
                 }
-                else if (ssasVersion.StartsWith("11.")) {
+                else if (ssasVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2012";
                 }
-                else if (ssasVersion.StartsWith("10.")) {
+                else if (ssasVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "SSAS 2012";
                 }
                 else {
@@ -1107,6 +1118,7 @@ namespace ADOTabular
 
         public SortedDictionary<string, ADOTabularMeasure> Visit(ADOTabularMeasureCollection measures)
         {
+            if (measures == null) throw new ArgumentNullException(nameof(measures));
             //RRomano: Better way to reuse this method in the two visitors? 
             // Create an abstract class of a visitor so that code can be shared 
             // (csdl doesnt seem to have the DAX expression)

@@ -124,13 +124,14 @@ namespace DaxStudio.ExcelAddin.Xmla
 
         [HttpPost]
         [Route("")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Returning a HTTP error response with the error details")]
         public async Task<HttpResponseMessage> PostRawBufferManual()
         {
             string connStr = "";
             string loc = "";
             try
             {
-                string request = await Request.Content.ReadAsStringAsync();
+                string request = await Request.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 var addin = Globals.ThisAddIn;
                 var app = addin.Application;
@@ -148,8 +149,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                     loc = wsid;
                 }
 
-                connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{0}\"", loc);
-                connStr = string.Format("Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={0}", loc);
+                //connStr = $"Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{loc}\"";
+                connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={loc}";
                 // 2010 conn str
                 //connStr = string.Format("Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location={0}", loc);
                 //connStr = string.Format("Provider=MSOLAP;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Location={0};", loc);
@@ -166,90 +167,99 @@ namespace DaxStudio.ExcelAddin.Xmla
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "defaulting to Microsoft.AnalysisServices");
                 }
 
-                var svr = new AmoWrapper.AmoServer(amoType);
-                svr.Connect(connStr);
-
-                // STEP 1: send the request to server.
-                Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
-                System.IO.TextReader streamWithXmlaRequest = new StringReader(request);
-                System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
-                
-                HttpResponseMessage result;
-                try
+                using (var svr = new AmoWrapper.AmoServer(amoType))
                 {
-                    //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
-                    xmlaResponseFromServer = svr.SendXmlaRequest(streamWithXmlaRequest);
+                    svr.Connect(connStr);
 
-                    // STEP 2: read/parse the XML/A response from server.
-                    //xmlaResponseFromServer.MoveToContent();
-                    //fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
-                
-                    result = Request.CreateResponse(HttpStatusCode.OK); //new HttpResponseMessage(HttpStatusCode.OK);
-                    result.Headers.TransferEncodingChunked = true;
-
-
-                    // we stream the response instead of buffering the whole thing in a string variable
-                    result.Content = new PushStreamContent((stream, content, context) =>
+                    // STEP 1: send the request to server.
+                    Log.Verbose("{class} {method} request: {request}", "XmlaController", "PostRawBufferManual", request);
+                    using (System.IO.TextReader streamWithXmlaRequest = new StringReader(request))
                     {
+                        System.Xml.XmlReader xmlaResponseFromServer = null; // will be used to parse the XML/A response from server
+
+                        HttpResponseMessage result;
                         try
                         {
-                            StreamResponse(xmlaResponseFromServer, stream);
-                            stream.Flush();
-                            stream.Close();
-                        } 
-                        catch (Exception ex2)
-                        {
-                            Log.Fatal(ex2, "Error Streaming XMLA response");
-                        }
-                        finally
-                        {
-                            // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
-                            if (xmlaResponseFromServer != null)
+                            //xmlaResponseFromServer = svr.SendXmlaRequest( XmlaRequestType.Undefined, streamWithXmlaRequest);
+                            xmlaResponseFromServer = svr.SendXmlaRequest(streamWithXmlaRequest);
+
+                            // STEP 2: read/parse the XML/A response from server.
+                            //xmlaResponseFromServer.MoveToContent();
+                            //fullEnvelopeResponseFromServer = xmlaResponseFromServer.ReadOuterXml();
+
+                            result = Request.CreateResponse(HttpStatusCode.OK); //new HttpResponseMessage(HttpStatusCode.OK);
+                            result.Headers.TransferEncodingChunked = true;
+
+
+                            // we stream the response instead of buffering the whole thing in a string variable
+                            result.Content = new PushStreamContent((stream, content, context) =>
                             {
-                                xmlaResponseFromServer.Close();
-                            }
+                                try
+                                {
+                                    StreamResponse(xmlaResponseFromServer, stream);
+                                    stream.Flush();
+                                    stream.Close();
+                                }
+                                catch (Exception ex2)
+                                {
+                                    Log.Fatal(ex2, "Error Streaming XMLA response");
+                                    throw;
+                                }
+                                finally
+                                {
+                                // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
+                                if (xmlaResponseFromServer != null)
+                                    {
+                                        xmlaResponseFromServer.Close();
+                                    }
+                                }
+                            });
+                            result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
+
+                            //StreamResponse(xmlaResponseFromServer, ms);
+                            //ms.Flush();
+                            //}
+
                         }
-                    });
-                    result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/xml");
-
-                    //StreamResponse(xmlaResponseFromServer, ms);
-                    //ms.Flush();
-                    //}
-
+                        catch (Exception ex3)
+                        {
+                            Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex3);
+                            result = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                            {
+                                Content = new StringContent($"An unexpected error occurred (reading XMLA response): \n{ex3.Message}")
+                            };
+                        }
+                        //finally
+                        //{
+                        //    // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
+                        //    if (xmlaResponseFromServer != null)
+                        //    {
+                        //        xmlaResponseFromServer.Close();
+                        //    }
+                        //}
+                        return result;
+                    }
                 }
-                catch (Exception ex3)
-                {
-                    Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex3);
-                    result = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    result.Content = new StringContent(String.Format("An unexpected error occurred (reading XMLA response): \n{0}", ex3.Message));
-                }
-                //finally
-                //{
-                //    // STEP 3: close the System.Xml.XmlReader, to release the connection for future use.
-                //    if (xmlaResponseFromServer != null)
-                //    {
-                //        xmlaResponseFromServer.Close();
-                //    }
-                //}
-                return result;
             }
             catch (Exception ex4)
             {
                 Log.Error("ERROR Connecting: {class} {method} loc: '{loc}' conn:'{connStr}' ex: {exception}", "XmlaController", "PostRawBufferManual", loc, connStr, ex4);
-                var expResult = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                expResult.Content = new StringContent(String.Format("An unexpected error occurred: \n{0}", ex4.Message));
+                var expResult = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent($"An unexpected error occurred: \n{ex4.Message}")
+                };
                 return expResult;
             }
         
         }
 
 
-        private string ParseRequestForWorkstationID(string request)
+        private static string ParseRequestForWorkstationID(string request)
         {
             string wsid = string.Empty;
             using (var sr = new StringReader(request))
             {
-                using (var xmlRdr = new XmlTextReader(sr))
+                using (XmlTextReader xmlRdr = new XmlTextReader(sr) { DtdProcessing = DtdProcessing.Prohibit })
                 {
                     while (xmlRdr.Read())
                     {
@@ -268,33 +278,34 @@ namespace DaxStudio.ExcelAddin.Xmla
         static void StreamResponse(XmlReader reader, Stream stream)
         {
             long elementCnt = 0;
-            XmlWriter writer = new XmlTextWriter(stream, null);
-
-            while (reader.Read())
+            using (XmlWriter writer = new XmlTextWriter(stream, null))
             {
-                WriteShallowNode(reader, writer);
-                if (reader.NodeType == XmlNodeType.EndElement)
+
+                while (reader.Read())
                 {
-                    elementCnt++;
-                    if (elementCnt % 2000 == 0)
+                    WriteShallowNode(reader, writer);
+                    if (reader.NodeType == XmlNodeType.EndElement)
                     {
-                        writer.Flush();
+                        elementCnt++;
+                        if (elementCnt % 2000 == 0)
+                        {
+                            writer.Flush();
+                        }
                     }
                 }
+                writer.Flush();
             }
-            writer.Flush();
-
         }
 
         static void WriteShallowNode(XmlReader reader, XmlWriter writer)
         {
             if (reader == null)
             {
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
             }
             if (writer == null)
             {
-                throw new ArgumentNullException("writer");
+                throw new ArgumentNullException(nameof(writer));
             }
 
             switch (reader.NodeType)

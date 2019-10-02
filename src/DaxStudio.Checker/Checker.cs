@@ -12,13 +12,13 @@ using System.Xml;
 namespace DaxStudio.Checker
 {
 
-    public enum ExcelVersions
+    public enum ExcelVersion
     {
-        Excel_2010 = 13,
-        Excel_2013 = 14,
-        Excel_2016 = 15,
-        Excel_v16  = 16,  // Future Version
-        Excel_v17  = 17,
+        Excel2010 = 13,
+        Excel2013 = 14,
+        Excel2016 = 15,
+        Excelv16  = 16,  // Future Version
+        Excelv17  = 17,
     }
 
     public class Checker
@@ -103,7 +103,7 @@ namespace DaxStudio.Checker
             if (proc.ExitCode != 0) MessageBox.Show("An error occurred while trying to enable fusion logging");
         }
 
-        public void OpenFusionLogFolder()
+        public static void OpenFusionLogFolder()
         {
             var tempPath = Path.GetTempPath();
             var fusionPath = Path.Combine(tempPath, "Fusion");
@@ -281,7 +281,7 @@ namespace DaxStudio.Checker
             
             // Get Excel Version
             var xlVer = GetCurrentExcelVersion();
-            Output.AppendIndentedLine($"Detected Excel Version: {xlVer} - {(ExcelVersions)xlVer}");
+            Output.AppendIndentedLine($"Detected Excel Version: {xlVer} - {(ExcelVersion)xlVer}");
 
             var excelBitness = GetExcelDetails();
             Output.AppendLine();
