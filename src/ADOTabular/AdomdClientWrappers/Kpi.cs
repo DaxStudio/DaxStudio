@@ -7,13 +7,13 @@ namespace ADOTabular.AdomdClientWrappers
         private Microsoft.AnalysisServices.AdomdClient.Kpi _obj;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi _objExcel;
 
-        public Kpi(Microsoft.AnalysisServices.AdomdClient.Kpi obj)
+        public Kpi(Microsoft.AnalysisServices.AdomdClient.Kpi kpi)
         {
-            _obj = obj;
+            _obj = kpi;
         }
-        public Kpi(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi obj)
+        public Kpi(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi kpi)
         {
-            _objExcel = obj;
+            _objExcel = kpi;
         }
 
         public string Name

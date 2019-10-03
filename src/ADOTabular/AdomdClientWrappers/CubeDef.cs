@@ -6,16 +6,16 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class CubeDef
     {
-        private Microsoft.AnalysisServices.AdomdClient.CubeDef _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.CubeDef _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef _objExcel;
 
-        public CubeDef(Microsoft.AnalysisServices.AdomdClient.CubeDef obj)
+        public CubeDef(Microsoft.AnalysisServices.AdomdClient.CubeDef cubeDef)
         {
-            _obj = obj;
+            _obj = cubeDef;
         }
-        public CubeDef(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef obj)
+        public CubeDef(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef cubeDef)
         {
-            _objExcel = obj;
+            _objExcel = cubeDef;
         }
 
         public AdomdConnection ParentConnection
@@ -174,16 +174,16 @@ namespace ADOTabular.AdomdClientWrappers
 
     public class CubeCollection
     {
-        private Microsoft.AnalysisServices.AdomdClient.CubeCollection _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.CubeCollection _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection _objExcel;
 
-        public CubeCollection(Microsoft.AnalysisServices.AdomdClient.CubeCollection obj)
+        public CubeCollection(Microsoft.AnalysisServices.AdomdClient.CubeCollection cubeCollection)
         {
-            _obj = obj;
+            _obj = cubeCollection;
         }
-        public CubeCollection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection obj)
+        public CubeCollection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeCollection cubeCollection)
         {
-            _objExcel = obj;
+            _objExcel = cubeCollection;
         }
         
         public CubeDef Find(string index)
@@ -216,7 +216,7 @@ namespace ADOTabular.AdomdClientWrappers
                     }
                     catch (Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException)
                     {
-                        throw new AdomdConnectionException(); //just to communicate what type of exception
+                        throw;// new AdomdConnectionException(); //just to communicate what type of exception
                     }
                 }
                 else
@@ -229,7 +229,7 @@ namespace ADOTabular.AdomdClientWrappers
                         }
                         catch (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException)
                         {
-                            throw new AdomdConnectionException(); //just to communicate what type of exception
+                            throw;// new AdomdConnectionException(); //just to communicate what type of exception
                         }
                     };
                     return f();
@@ -239,6 +239,7 @@ namespace ADOTabular.AdomdClientWrappers
 
     }
 
+    [Serializable]
     public class AdomdConnectionException : Exception
     {
     }

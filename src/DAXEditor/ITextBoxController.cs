@@ -1,4 +1,4 @@
-﻿namespace DAXEditor
+﻿namespace DAXEditorControl
 {
   /// <summary>
   /// Define a deligate method that is called for processing the SelectAll event.

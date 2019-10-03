@@ -15,7 +15,7 @@ namespace DaxStudio.Tests
                     + ",table1[col1] = 10 )" + Environment.NewLine;
 
             var mockDoc = new DocumentMock(qry);
-            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var srchr = new DAXEditorControl.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 17);
             Assert.IsNull(res, "Test should not match anything");
             // test matching end br4acket
@@ -37,7 +37,7 @@ namespace DaxStudio.Tests
                     + ",table1[col1] = 10 )" + Environment.NewLine;
 
             var mockDoc = new DocumentMock(qry);
-            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var srchr = new DAXEditorControl.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 17);
             Assert.IsNull(res);
             res = srchr.SearchBracket(mockDoc, 16);
@@ -57,7 +57,7 @@ namespace DaxStudio.Tests
                     + "table1" + Environment.NewLine
                     + ",table1[col1] = \":)\" || ')' )";
             var mockDoc = new DocumentMock(qry);
-            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var srchr = new DAXEditorControl.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 17);
             Assert.IsNull(res);
             res = srchr.SearchBracket(mockDoc, 16);
@@ -80,7 +80,7 @@ namespace DaxStudio.Tests
         {
             var qry = @"(()";
             var mockDoc = new DocumentMock(qry);
-            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var srchr = new DAXEditorControl.BracketRenderer.DaxStudioBracketSearcher();
             
             var res = srchr.SearchBracket(mockDoc, 3);
             Assert.AreEqual(1, res.OpeningBracketOffset, "Test forward Matching Start Bracket");
@@ -101,7 +101,7 @@ namespace DaxStudio.Tests
                     + "    ))" + Environment.NewLine;
 
             var mockDoc = new DocumentMock(qry);
-            var srchr = new DAXEditor.BracketRenderer.DaxStudioBracketSearcher();
+            var srchr = new DAXEditorControl.BracketRenderer.DaxStudioBracketSearcher();
             var res = srchr.SearchBracket(mockDoc, 1);
             Assert.IsNull(res, "no match found at start of string");
             res = srchr.SearchBracket(mockDoc, 31);

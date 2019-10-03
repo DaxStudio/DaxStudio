@@ -1,7 +1,7 @@
 ﻿using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
-using DAXEditor;
+using DAXEditorControl;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
@@ -190,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
         
         public Guid AutoSaveId { get { return _autoSaveId; } set { _autoSaveId = value; } }
 
-        private DAXEditor.DAXEditor _editor;
+        private DAXEditorControl.DAXEditor _editor;
 
 
         #region "Event Handlers"
@@ -544,7 +544,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private DAXEditor.DAXEditor GetEditor()
+        private DAXEditorControl.DAXEditor GetEditor()
         {
             DocumentView v = (DocumentView)GetView();
             return v?.daxEditor;
@@ -1113,7 +1113,7 @@ namespace DaxStudio.UI.ViewModels
             return txt;
         }
 
-        private void SelectedTextToUpperInternal(DAXEditor.DAXEditor editor)
+        private void SelectedTextToUpperInternal(DAXEditorControl.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
             editor.SelectedText = editor.SelectedText.ToUpper();   
@@ -1132,7 +1132,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void SelectedTextToLowerInternal(DAXEditor.DAXEditor editor)
+        private void SelectedTextToLowerInternal(DAXEditorControl.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
             editor.SelectedText = editor.SelectedText.ToLower();
@@ -1177,7 +1177,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string GetQueryTextFromEditorInternal(DAXEditor.DAXEditor editor)
+        private string GetQueryTextFromEditorInternal(DAXEditorControl.DAXEditor editor)
         {
             var queryText = editor.SelectedText;
             if (editor.SelectionLength == 0)

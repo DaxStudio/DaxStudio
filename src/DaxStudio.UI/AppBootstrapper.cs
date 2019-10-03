@@ -211,11 +211,9 @@ namespace DaxStudio.UI
         private Fluent.Ribbon LookForRibbon(DependencyObject k)
         {
             Fluent.Ribbon foundRibbon = null;
-            var contentControl = k as ContentControl;
-            if (null != contentControl)
+            if (k is ContentControl contentControl)
             {
-                var child = contentControl.Content as DependencyObject;
-                if (null != child)
+                if (contentControl.Content is DependencyObject child)
                 {
                     foundRibbon = child as Fluent.Ribbon;
                     if (null != foundRibbon)
@@ -229,7 +227,7 @@ namespace DaxStudio.UI
                             return foundRibbon;
                     }
                 }
-                    //return LookForRibbon(child);
+                //return LookForRibbon(child);
             }
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(k); ++i)
             {

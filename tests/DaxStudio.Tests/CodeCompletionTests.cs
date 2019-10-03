@@ -8,7 +8,7 @@ using System.Windows.Input;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
-using DAXEditor;
+using DAXEditorControl;
 
 namespace DaxStudio.Tests
 {

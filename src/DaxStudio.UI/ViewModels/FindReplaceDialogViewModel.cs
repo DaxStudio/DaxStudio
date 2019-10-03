@@ -1,6 +1,6 @@
 ﻿using Caliburn.Micro;
 using ICSharpCode.AvalonEdit.Document;
-using DAXEditor;
+using DAXEditorControl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +30,7 @@ namespace DaxStudio.UI.ViewModels
         private static bool _useWildcards = false;
         private static bool _searchUp = false;
         private static bool _useWholeWord;
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
 
         public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
         {

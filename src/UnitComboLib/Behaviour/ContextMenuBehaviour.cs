@@ -1,13 +1,14 @@
 ﻿namespace UnitComboLib.Behaviour
 {
-  using System.Windows;
+    using System;
+    using System.Windows;
   using System.Windows.Controls;
 
   /// <summary>
   /// This class can be used to populate a context-menu
   /// when a user clicks on a <seealso cref="FrameworkElement"/>.
   /// </summary>
-  public class ContextMenuBehaviour
+  public static class ContextMenuBehaviour
   {
     #region fields
     private static readonly DependencyProperty MenuListProperty =
@@ -21,21 +22,27 @@
     /// <summary>
     /// Implements the get portion of the <seealso cref="ContextMenu"/> dependency property.
     /// </summary>
-    /// <param name="obj"></param>
+    /// <param name="contextMenu"></param>
     /// <returns></returns>
-    public static ContextMenu GetMenuList(DependencyObject obj)
+    public static ContextMenu GetMenuList(DependencyObject contextMenu)
     {
-      return (ContextMenu)obj.GetValue(MenuListProperty);
+            if (contextMenu == null) throw new ArgumentNullException(nameof(contextMenu));
+            return (ContextMenu)contextMenu.GetValue(MenuListProperty);
     }
 
     /// <summary>
     /// IMplements the set portion of the <seealso cref="ContextMenu"/> dependency property.
     /// </summary>
-    /// <param name="obj"></param>
+    /// <param name="contextMenu"></param>
     /// <param name="value"></param>
-    public static void SetMenuList(DependencyObject obj, ContextMenu value)
+    public static void SetMenuList(DependencyObject contextMenu, ContextMenu value)
     {
-      obj.SetValue(MenuListProperty, value);
+            if (contextMenu is null)
+            {
+                throw new ArgumentNullException(nameof(contextMenu));
+            }
+
+            contextMenu.SetValue(MenuListProperty, value);
     }
 
     /// <summary>

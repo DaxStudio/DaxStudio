@@ -6,10 +6,10 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdConnection:IDisposable
     {
-        private AdomdType _type;
+        private readonly AdomdType _type;
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
-        private Object rowsetLock = new Object();
+        private readonly Object rowsetLock = new Object();
         public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
@@ -188,9 +188,11 @@ namespace ADOTabular.AdomdClientWrappers
         {
             //if (_type == AdomdType.AnalysisServices)
             //{
-                var cmd = new AdomdCommand();
-                cmd.Connection = this;
-                return cmd;
+            var cmd = new AdomdCommand
+            {
+                Connection = this
+            };
+            return cmd;
             /*}
             else
             {

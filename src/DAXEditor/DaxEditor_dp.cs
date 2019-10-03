@@ -1,6 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     using System;
     using System.Windows;

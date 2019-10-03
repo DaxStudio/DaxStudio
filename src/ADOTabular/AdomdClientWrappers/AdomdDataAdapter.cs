@@ -5,7 +5,7 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdDataAdapter
     {
-        private Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter _obj;
+        private readonly Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter _obj;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter _objExcel;
 
         public AdomdDataAdapter() { }
@@ -21,16 +21,20 @@ namespace ADOTabular.AdomdClientWrappers
         {
             if (command.Connection.Type == AdomdType.AnalysisServices)
             {
-                _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter();
-                _obj.SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand) command.UnderlyingCommand;
+                _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter
+                {
+                    SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.UnderlyingCommand
+                };
             }
             else
             {
                 ExcelAdoMdConnections.VoidDelegate f = delegate
                 {
-                    _objExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter();
-                    _objExcel.SelectCommand =
-                        (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand) command.UnderlyingCommand;
+                    _objExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter
+                    {
+                        SelectCommand =
+                        (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.UnderlyingCommand
+                    };
                 };
                 f();
             }

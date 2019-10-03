@@ -1,4 +1,4 @@
-﻿namespace DAXEditor
+﻿namespace DAXEditorControl
 {
     public class TextBoxController : ITextBoxController
   {

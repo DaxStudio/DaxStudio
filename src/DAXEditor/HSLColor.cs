@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     public class HSLColor
     {
@@ -29,7 +30,7 @@ namespace DAXEditor
             set { luminosity = CheckRange(value / scale); }
         }
 
-        private double CheckRange(double value)
+        private static double CheckRange(double value)
         {
             if (value < 0.0)
                 value = 0.0;
@@ -40,18 +41,25 @@ namespace DAXEditor
 
         public override string ToString()
         {
-            return String.Format("H: {0:#0.##} S: {1:#0.##} L: {2:#0.##}", Hue, Saturation, Luminosity);
+            return $"H: {Hue:#0.##} S: {Saturation:#0.##} L: {Luminosity:#0.##}";
         }
 
         public string ToRGBString()
         {
             Color color = (Color)this;
-            return String.Format("R: {0:#0.##} G: {1:#0.##} B: {2:#0.##}", color.R, color.G, color.B);
+            return $"R: {color.R:#0.##} G: {color.G:#0.##} B: {color.B:#0.##}";
         }
 
         #region Casts to/from System.Drawing.Color
         public static implicit operator Color(HSLColor hslColor)
         {
+            return ToColor(hslColor);
+        }
+
+        public static Color ToColor(HSLColor hslColor)
+        {
+            Contract.Requires(hslColor != null);
+
             double r = 0, g = 0, b = 0;
             if (hslColor.luminosity != 0)
             {
@@ -72,6 +80,8 @@ namespace DAXEditor
 
         public static implicit operator System.Windows.Media.Color(HSLColor hslColor)
         {
+            Contract.Requires(hslColor != null);
+
             double r = 0, g = 0, b = 0;
             if (hslColor.luminosity != 0)
             {
@@ -121,6 +131,11 @@ namespace DAXEditor
         }
 
         public static implicit operator HSLColor(Color color)
+        {
+            return ToHSLColor(color);
+        }
+
+        public static HSLColor ToHSLColor(Color color)
         {
             HSLColor hslColor = new HSLColor
             {

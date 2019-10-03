@@ -273,8 +273,6 @@ namespace ADOTabular
 
         private string GetRelationshipTableRef(XmlReader rdr)
         {
-            string entitySet = "";
-
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == "End"))
             {
@@ -282,7 +280,7 @@ namespace ADOTabular
                 {
                     if (rdr.LocalName == "EntitySet")
                     {
-                        entitySet = rdr.Value;
+                        string entitySet = rdr.Value;
                         rdr.Skip(); // jump to the end of the current Element
                         rdr.MoveToContent(); // move past any whitespace to the next Element
                         return entitySet;
@@ -431,7 +429,6 @@ namespace ADOTabular
             string minValue = "";
             string maxValue = "";
             string formatString = "";
-            string defaultAggregateFunction = "";
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
@@ -480,6 +477,7 @@ namespace ADOTabular
                     kpi = ProcessKpi(rdr, tables.GetById(tableId));
                 }
 
+                string defaultAggregateFunction;
                 if (rdr.NodeType == XmlNodeType.Element
                     && (rdr.LocalName == eProperty
                     || rdr.LocalName == eMeasure
@@ -536,7 +534,7 @@ namespace ADOTabular
                                 nullable = bool.Parse(rdr.Value);
                                 break;
                                 // Precision Scale 
-                            //TODO - Add RowCount
+                                //TODO - Add RowCount
                         }
                     }
 
@@ -560,14 +558,16 @@ namespace ADOTabular
                         var tab = tables.GetById(tableId);
                         if (kpi.IsBlank())
                         {
-                            var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents);
-                            col.DataType = Type.GetType($"System.{dataType}");
-                            col.Nullable = nullable;
-                            col.MinValue = minValue;
-                            col.MaxValue = maxValue;
-                            col.DistinctValues = distinctValueCount;
-                            col.FormatString = formatString;
-                            col.StringValueMaxLength = stringValueMaxLength;
+                            var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
+                            {
+                                DataType = Type.GetType($"System.{dataType}"),
+                                Nullable = nullable,
+                                MinValue = minValue,
+                                MaxValue = maxValue,
+                                DistinctValues = distinctValueCount,
+                                FormatString = formatString,
+                                StringValueMaxLength = stringValueMaxLength
+                            };
                             col.Variations.AddRange(_variations);
                             tables.Model.AddRole(col);
                             tab.Columns.Add(col);
@@ -576,8 +576,10 @@ namespace ADOTabular
                         else
                         {
                             colType = ADOTabularObjectType.KPI;
-                            var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi);
-                            kpiCol.DataType = Type.GetType($"System.{dataType}");
+                            var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi)
+                            {
+                                DataType = Type.GetType($"System.{dataType}")
+                            };
                             tab.Columns.Add(kpiCol);
                             _conn.Columns.Add(kpiCol.OutputColumnName, kpiCol);
                         }
@@ -893,10 +895,12 @@ namespace ADOTabular
 
                     rdr.Read();
                 } //End of Level
-                    
-                lvl = new ADOTabularLevel(table.Columns.GetByPropertyRef(lvlRef));
-                lvl.LevelName = lvlName;
-                lvl.Caption = lvlCaption;
+
+                lvl = new ADOTabularLevel(table.Columns.GetByPropertyRef(lvlRef))
+                {
+                    LevelName = lvlName,
+                    Caption = lvlCaption
+                };
                 hier.Levels.Add(lvl);
                 lvlName = "";
                 lvlCaption = "";

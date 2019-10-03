@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     class WordHighlighTransformer : DocumentColorizingTransformer
     {

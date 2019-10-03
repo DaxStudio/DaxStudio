@@ -199,7 +199,7 @@
                                 <CheckBox Grid.Row="5" Grid.Column="1" x:Name="EditorConvertTabsToSpaces" VerticalAlignment="Center" />
 
                                 <Label Grid.Row="6" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
-                                <nud:ShortUpDown Grid.Row="6" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="EditorIndentationSize" VerticalAlignment="Center" />
+                                <nud:ShortUpDown Grid.Row="6" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="ctrlEditorIndentationSize" VerticalAlignment="Center" />
 
                                 <Label Grid.Row="7" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
                                 <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">

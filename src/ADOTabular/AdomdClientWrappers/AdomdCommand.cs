@@ -144,21 +144,14 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        AdomdParameterCollection _parameters = new AdomdParameterCollection();
-        public AdomdParameterCollection Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-        }
+        public AdomdParameterCollection Parameters { get; } = new AdomdParameterCollection();
 
         public CellSet ExecuteCellSet()
         {
             if (_command != null)
             {
                 _command.Parameters.Clear();
-                foreach (AdomdParameter param in _parameters)
+                foreach (AdomdParameter param in Parameters)
                 {
                     _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
@@ -169,7 +162,7 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.ReturnDelegate<CellSet> f = delegate
                 {
                     _objExcel.Parameters.Clear();
-                    foreach (AdomdParameter param in _parameters)
+                    foreach (AdomdParameter param in Parameters)
                     {
                         _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
@@ -185,7 +178,7 @@ namespace ADOTabular.AdomdClientWrappers
             if (_command != null)
             {
                 _command.Parameters.Clear();
-                foreach (AdomdParameter param in _parameters)
+                foreach (AdomdParameter param in Parameters)
                 {
                     _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
@@ -196,7 +189,7 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.ReturnDelegate<AdomdDataReader> f = delegate
                 {
                     _objExcel.Parameters.Clear();
-                    foreach (AdomdParameter param in _parameters)
+                    foreach (AdomdParameter param in Parameters)
                     {
                         _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
@@ -212,7 +205,7 @@ namespace ADOTabular.AdomdClientWrappers
             if (_command != null)
             {
                 _command.Parameters.Clear();
-                foreach (AdomdParameter param in _parameters)
+                foreach (AdomdParameter param in Parameters)
                 {
                     _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
@@ -223,7 +216,7 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
                 {
                     _objExcel.Parameters.Clear();
-                    foreach (AdomdParameter param in _parameters)
+                    foreach (AdomdParameter param in Parameters)
                     {
                         _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }
@@ -238,7 +231,7 @@ namespace ADOTabular.AdomdClientWrappers
             if (_command != null)
             {
                 _command.Parameters.Clear();
-                foreach (AdomdParameter param in _parameters)
+                foreach (AdomdParameter param in Parameters)
                 {
                     _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                 }
@@ -249,7 +242,7 @@ namespace ADOTabular.AdomdClientWrappers
                 ExcelAdoMdConnections.VoidDelegate f = delegate
                 {
                     _objExcel.Parameters.Clear();
-                    foreach (AdomdParameter param in _parameters)
+                    foreach (AdomdParameter param in Parameters)
                     {
                         _objExcel.Parameters.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
                     }

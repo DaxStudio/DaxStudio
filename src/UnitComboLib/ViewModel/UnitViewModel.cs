@@ -62,13 +62,13 @@
                          int defaultIndex = 0,
                          double defaultValue = 100)
     {
-      this.mUnitList = new ObservableCollection<ListItem>(list);
-      this.mSelectedItem = this.mUnitList[defaultIndex];
+      mUnitList = new ObservableCollection<ListItem>(list);
+      mSelectedItem = this.mUnitList[defaultIndex];
 
-      this.mUnitConverter = unitConverter;
+      mUnitConverter = unitConverter;
       
-      this.mValue = defaultValue;
-      this.mstrValue = string.Format("{0:0}", this.mValue);
+      mValue = defaultValue;
+      mstrValue = $"{mValue:0}";
     }
 
     /// <summary>
@@ -110,7 +110,7 @@
             if (value != (int)this.mUnitConverter.Convert(this.SelectedItem.Key, this.mValue, Itemkey.ScreenFontPoints))
               this.Value = (int)this.mUnitConverter.Convert(Itemkey.ScreenFontPoints, value, this.SelectedItem.Key);
           }
-          this.RaisePropertyChanged(() => ScreenPoints);
+          this.NotifyPropertyChanged(() => ScreenPoints);
         }
       }
     }
@@ -142,10 +142,10 @@
         {
           this.mSelectedItem = value;
 
-          this.RaisePropertyChanged(() => this.SelectedItem);
-          this.RaisePropertyChanged(() => this.ScreenPoints);
-          this.RaisePropertyChanged(() => this.MinValue);
-          this.RaisePropertyChanged(() => this.MaxValue);          
+          this.NotifyPropertyChanged(() => this.SelectedItem);
+          this.NotifyPropertyChanged(() => this.ScreenPoints);
+          this.NotifyPropertyChanged(() => this.MinValue);
+          this.NotifyPropertyChanged(() => this.MaxValue);          
         }
       }
     }
@@ -219,7 +219,7 @@
         if (this.mValueTip != value)
         {
           this.mValueTip = value;
-          this.RaisePropertyChanged(() => this.ValueTip);
+          this.NotifyPropertyChanged(() => this.ValueTip);
         }
       }
     }
@@ -240,7 +240,7 @@
         if (this.mstrValue != value)
         {
           this.mstrValue = value;
-          this.RaisePropertyChanged(() => this.StringValue);
+          this.NotifyPropertyChanged(() => this.StringValue);
         }
       }
     }
@@ -252,19 +252,19 @@
     {
       get
       {
-        return this.mValue;
+        return mValue;
       }
 
       set
       {
-        if (this.mValue != value)
+        if (mValue != value)
         {
-          this.mValue = value;
-          this.mstrValue = string.Format("{0:0}", this.mValue);
+          mValue = value;
+          mstrValue = $"{mValue:0}";
 
-          this.RaisePropertyChanged(() => this.Value);
-          this.RaisePropertyChanged(() => this.StringValue);
-          this.RaisePropertyChanged(() => this.ScreenPoints);
+          NotifyPropertyChanged(() => Value);
+          NotifyPropertyChanged(() => StringValue);
+          NotifyPropertyChanged(() => ScreenPoints);
         }
       }
     }
@@ -276,7 +276,7 @@
     {
       get
       {
-        return this.GetMinValue(this.SelectedItem.Key);
+        return GetMinValue(this.SelectedItem.Key);
       }
     }
 
@@ -287,7 +287,7 @@
     {
       get
       {
-        return this.GetMaxValue(this.SelectedItem.Key);
+        return GetMaxValue(this.SelectedItem.Key);
       }
     }
 
@@ -338,24 +338,24 @@
         {
           double tempValue = this.mUnitConverter.Convert(this.SelectedItem.Key, dValue, li.Key);
 
-          if (tempValue < this.GetMinValue(unitKey))
-            tempValue = this.GetMinValue(unitKey);
+          if (tempValue < GetMinValue(unitKey))
+            tempValue = GetMinValue(unitKey);
           else
-            if (tempValue > this.GetMaxValue(unitKey))
-              tempValue = this.GetMaxValue(unitKey);
+            if (tempValue > GetMaxValue(unitKey))
+              tempValue = GetMaxValue(unitKey);
 
           this.Value = tempValue;
-          this.mstrValue = string.Format("{0:0}", this.mValue);
+          this.mstrValue = $"{mValue:0}";
 
           this.SelectedItem = li;
-          this.ValueTip = this.SetUnitRangeMessage(unitKey);  // Set standard tool tip about valid range
+          this.ValueTip = SetUnitRangeMessage(unitKey);  // Set standard tool tip about valid range
         }
 
-        this.RaisePropertyChanged(() => this.Value);
-        this.RaisePropertyChanged(() => this.MinValue);
-        this.RaisePropertyChanged(() => this.MaxValue);
-        this.RaisePropertyChanged(() => this.StringValue);
-        this.RaisePropertyChanged(() => this.SelectedItem);
+        this.NotifyPropertyChanged(() => this.Value);
+        this.NotifyPropertyChanged(() => this.MinValue);
+        this.NotifyPropertyChanged(() => this.MaxValue);
+        this.NotifyPropertyChanged(() => this.StringValue);
+        this.NotifyPropertyChanged(() => this.SelectedItem);
       }
 
       return null;
@@ -374,7 +374,7 @@
                                      Itemkey unitToConvert,
                                      out string message)
     {
-      message = this.SetUnitRangeMessage(unitToConvert);
+      message = SetUnitRangeMessage(unitToConvert);
 
       switch (unitToConvert)
       {
@@ -408,11 +408,11 @@
       {
         // Implement a minimum value of 2 in any way (no matter what the unit is)
         case Itemkey.ScreenFontPoints:
-          return this.FontSizeErrorTip();
+          return FontSizeErrorTip();
 
           // Implement a minimum value of 2 in any way (no matter what the unit is)
           case Itemkey.ScreenPercent:
-          return this.PercentSizeErrorTip();
+          return PercentSizeErrorTip();
 
           default:
           throw new System.NotSupportedException(unit.ToString());
@@ -425,9 +425,10 @@
     /// <returns></returns>
     private string FontSizeErrorTip()
     {
-      return string.Format(Strings.Enter_Font_Size_InRange_Message,
-                           string.Format("{0:0}", MinFontSizeValue),
-                           string.Format("{0:0}", MaxFontSizeValue));
+      return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                           Strings.Enter_Font_Size_InRange_Message,
+                           $"{MinFontSizeValue:0}",
+                           $"{MaxFontSizeValue:0}");
     }
 
     /// <summary>
@@ -436,9 +437,10 @@
     /// <returns></returns>
     private string PercentSizeErrorTip()
     {
-      return string.Format(Strings.Enter_Percent_Size_InRange_Message,
-                            string.Format("{0:0}", MinPercentageSizeValue),
-                            string.Format("{0:0}", MaxPercentageSizeValue));
+      return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                           Strings.Enter_Percent_Size_InRange_Message,
+                           $"{MinPercentageSizeValue:0}",
+                           $"{MaxPercentageSizeValue:0}");
     }
 
     /// <summary>
@@ -449,11 +451,12 @@
     /// <returns></returns>
     private string SetToolTip(string strError)
     {
-      string standardTip = string.Format(Strings.Enter_Percent_Font_Size_InRange_Message,
-                                          string.Format("{0:0}", MinPercentageSizeValue),
-                                          string.Format("{0:0}", MaxPercentageSizeValue),
-                                          string.Format("{0:0}", MinFontSizeValue),
-                                          string.Format("{0:0}", MaxFontSizeValue));
+      string standardTip = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                         Strings.Enter_Percent_Font_Size_InRange_Message,
+                                         $"{MinPercentageSizeValue:0}",
+                                         $"{MaxPercentageSizeValue:0}",
+                                         $"{MinFontSizeValue:0}",
+                                         $"{MaxFontSizeValue:0}");
 
       if (strError == null)
       {
@@ -462,11 +465,11 @@
           switch (this.SelectedItem.Key)
           {
             case Itemkey.ScreenFontPoints:
-              this.ValueTip = this.FontSizeErrorTip();
+              this.ValueTip = FontSizeErrorTip();
               break;
 
             case Itemkey.ScreenPercent:
-              this.ValueTip = this.PercentSizeErrorTip();
+              this.ValueTip = PercentSizeErrorTip();
               break;
 
             default:
@@ -486,9 +489,9 @@
     private double GetMinValue(Itemkey key)
     {
       if (key == Itemkey.ScreenFontPoints)
-        return UnitViewModel.MinFontSizeValue;
+        return MinFontSizeValue;
 
-      return UnitViewModel.MinPercentageSizeValue;
+      return MinPercentageSizeValue;
     }
 
     private double GetMaxValue(Itemkey key)

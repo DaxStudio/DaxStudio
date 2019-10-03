@@ -38,7 +38,6 @@ namespace DaxStudio.UI.Model
         private string _productionDownloadUrl;
         private string _prereleaseDownloadUrl;
         private string _serverVersionType;
-        private ISettingProvider RegistryHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
@@ -51,7 +50,6 @@ namespace DaxStudio.UI.Model
             
             _globalOptions = globalOptions;
 
-            RegistryHelper = new RegistrySettingProvider();
             if (Enabled && LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow)
             {
                 worker.DoWork += new DoWorkEventHandler(BackgroundGetGitHubVersion);
@@ -114,6 +112,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
+                if (_globalOptions.LastVersionCheckUTC == null) _globalOptions.LastVersionCheckUTC = DateTime.UtcNow;
                 return _globalOptions.LastVersionCheckUTC;
             }
             set

@@ -4,7 +4,7 @@ using System.Windows;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     public partial class DAXEditor : TextEditor
   {
@@ -20,12 +20,12 @@ namespace DAXEditor
     #endregion ITextBoxControllerFields
 
     #region ITextBoxController_Properties
-    public static void SetTextBoxController(UIElement element, ITextBoxController value)
+    internal static void SetTextBoxController(UIElement element, ITextBoxController value)
     {
       element.SetValue(DAXEditor.TextBoxControllerProperty, value);
     }
 
-    public static ITextBoxController GetTextBoxController(UIElement element)
+    internal static ITextBoxController GetTextBoxController(UIElement element)
     {
       return (ITextBoxController)element.GetValue(DAXEditor.TextBoxControllerProperty);
     }
@@ -40,57 +40,53 @@ namespace DAXEditor
     /// <param name="e"></param>
     private static void OnTextBoxControllerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-      var fileDoc = d as DAXEditor;
-      if (fileDoc == null)
+      if (!(d is DAXEditor fileDoc))
         return;
-        ////throw new ArgumentNullException("Object of type FileDocument is not available!");
+            ////throw new ArgumentNullException("Object of type FileDocument is not available!");
 
-      var txtBox = fileDoc as DAXEditor;
+            var txtBox = fileDoc as DAXEditor;
 
-      // Remove event handler from old if OldValue is available
-      var oldController = e.OldValue as ITextBoxController;
-      if (oldController != null)
-      {
-        elements.Remove(oldController);
-        oldController.SelectAll -= SelectAll;
-        oldController.Select -= Select;
-        oldController.ScrollToLineEvent -= ScrollToLine;
-        oldController.CurrentSelectionEvent -= CurrentSelection;
-        oldController.BeginChangeEvent -= DAXEditor.BeginChange;
-        oldController.EndChangeEvent -= DAXEditor.EndChange;
-        oldController.GetSelectedTextEvent -= DAXEditor.GetSelectedText;
-      }        
+            // Remove event handler from old if OldValue is available
+            if (e.OldValue is ITextBoxController oldController)
+            {
+                elements.Remove(oldController);
+                oldController.SelectAll -= SelectAll;
+                oldController.Select -= Select;
+                oldController.ScrollToLineEvent -= ScrollToLine;
+                oldController.CurrentSelectionEvent -= CurrentSelection;
+                oldController.BeginChangeEvent -= BeginChange;
+                oldController.EndChangeEvent -= EndChange;
+                oldController.GetSelectedTextEvent -= GetSelectedText;
+            }
 
-      // Add new eventhandler for each event declared in the interface declaration
-      var newController = e.NewValue as ITextBoxController;
-      if (newController != null)
-      {
-        // Sometime the newController is already there but the event handling is not working
-        // Remove controller and event handling and install a new one instead.
-        TextEditor test;
-        if (elements.TryGetValue(newController, out test) == true)
-        {
-          elements.Remove(newController);
+            // Add new eventhandler for each event declared in the interface declaration
+            if (e.NewValue is ITextBoxController newController)
+            {
+                // Sometime the newController is already there but the event handling is not working
+                // Remove controller and event handling and install a new one instead.
+                if (elements.TryGetValue(newController, out TextEditor test) == true)
+                {
+                    elements.Remove(newController);
 
-          newController.SelectAll -= DAXEditor.SelectAll;
-          newController.Select -= DAXEditor.Select;
-          newController.ScrollToLineEvent -= DAXEditor.ScrollToLine;
-          newController.CurrentSelectionEvent -= DAXEditor.CurrentSelection;
-          newController.BeginChangeEvent -= DAXEditor.BeginChange;
-          newController.EndChangeEvent -= DAXEditor.EndChange;
-          newController.GetSelectedTextEvent -= DAXEditor.GetSelectedText;
+                    newController.SelectAll -= DAXEditor.SelectAll;
+                    newController.Select -= DAXEditor.Select;
+                    newController.ScrollToLineEvent -= DAXEditor.ScrollToLine;
+                    newController.CurrentSelectionEvent -= DAXEditor.CurrentSelection;
+                    newController.BeginChangeEvent -= DAXEditor.BeginChange;
+                    newController.EndChangeEvent -= DAXEditor.EndChange;
+                    newController.GetSelectedTextEvent -= DAXEditor.GetSelectedText;
+                }
+
+                elements.Add(newController, txtBox);
+                newController.SelectAll += SelectAll;
+                newController.Select += Select;
+                newController.ScrollToLineEvent += ScrollToLine;
+                newController.CurrentSelectionEvent += CurrentSelection;
+                newController.BeginChangeEvent += DAXEditor.BeginChange;
+                newController.EndChangeEvent += DAXEditor.EndChange;
+                newController.GetSelectedTextEvent += DAXEditor.GetSelectedText;
+            }
         }
-
-        elements.Add(newController, txtBox);
-        newController.SelectAll += SelectAll;
-        newController.Select += Select;
-        newController.ScrollToLineEvent += ScrollToLine;
-        newController.CurrentSelectionEvent += CurrentSelection;
-        newController.BeginChangeEvent += DAXEditor.BeginChange;
-        newController.EndChangeEvent += DAXEditor.EndChange;
-        newController.GetSelectedTextEvent += DAXEditor.GetSelectedText;
-      }        
-    }
 
     /// <summary>
     /// Select all text in the editor
@@ -98,11 +94,12 @@ namespace DAXEditor
     /// <param name="sender"></param>
     private static void SelectAll(ITextBoxController sender)
     {
-      TextEditor element;
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+            if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element from sender for SelecteAll method");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
-      element.Focus();
+            element.Focus();
       element.SelectAll();
     }
 
@@ -115,11 +112,12 @@ namespace DAXEditor
     /// <param name="length"></param>
     private static void Select(ITextBoxController sender, int start, int length)
     {
-      TextEditor element;
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+       if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element from sender for Select method");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
-      // element.Focus();
+            // element.Focus();
 
       element.Select(start, length);
       TextLocation loc = element.Document.GetLocation(start);
@@ -133,9 +131,10 @@ namespace DAXEditor
     /// <param name="line"></param>
     private static void ScrollToLine(ITextBoxController sender, int line)
     {
-      TextEditor element;
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+      if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element from sender for ScrollToline method");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.Focus();
       element.ScrollToLine(line);
@@ -151,10 +150,11 @@ namespace DAXEditor
     private static void CurrentSelection(ITextBoxController sender,
                                          out int start, out int length, out bool IsRectangularSelection)
     {
-      TextEditor element;
 
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+      if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get Element for sender in CurrentSelection method");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       start = element.SelectionStart;
       length = element.SelectionLength;
@@ -165,31 +165,33 @@ namespace DAXEditor
 
     private static void BeginChange(ITextBoxController sender)
     {
-      TextEditor element;
 
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+      if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element for sender in BeginChange");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.BeginChange();
     }
 
     private static void EndChange(ITextBoxController sender)
     {
-      TextEditor element;
 
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+      if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element for sender in EndChange");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.EndChange();
     }
 
+
     private static void GetSelectedText(ITextBoxController sender, out string selectedText)
     {
-      TextEditor element;
-      selectedText = string.Empty;
-
-      if (!elements.TryGetValue(sender, out element))
-        throw new ArgumentException("sender");
+      if (!elements.TryGetValue(sender, out TextEditor element))
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                throw new ArgumentException("Unable to get element for sender in GetSelectedText");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       selectedText = element.SelectedText;
     }

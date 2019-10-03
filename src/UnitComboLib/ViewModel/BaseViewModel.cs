@@ -22,7 +22,7 @@
     /// </summary>
     /// <typeparam name="TProperty"></typeparam>
     /// <param name="property"></param>
-    public void RaisePropertyChanged<TProperty>(Expression<Func<TProperty>> property)
+    internal void NotifyPropertyChanged<TProperty>(Expression<Func<TProperty>> property)
     {
       var lambda = (LambdaExpression)property;
       MemberExpression memberExpression;
@@ -43,7 +43,7 @@
       try
       {
         if (this.PropertyChanged != null)
-          this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+          PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
       }
       catch
       {

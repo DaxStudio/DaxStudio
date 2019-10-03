@@ -4,14 +4,12 @@ using System.Windows;
 using DaxStudio.UI;
 using Serilog;
 using DaxStudio.UI.Utils;
-using System.IO;
 using Fclp;
 using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 
@@ -19,7 +17,7 @@ namespace DaxStudio.Standalone
 {
     public static class EntryPoint 
     {
-        public static ILogger log;
+        private static ILogger log;
         private static  IEventAggregator _eventAggregator;
 
         static EntryPoint()

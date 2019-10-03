@@ -64,7 +64,7 @@ namespace DaxStudio.Checker
             startInfo.UseShellExecute = true;
             startInfo.Verb = "runas";
             startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = string.Format("/C \"SETX VSTO_SUPPRESSDISPLAYALERTS {0}\"", isChecked ? "0" : "\"\"");
+            startInfo.Arguments = $"/C \"SETX VSTO_SUPPRESSDISPLAYALERTS {(isChecked ? "0" : "\"\"")}\"";
             var proc = Process.Start(startInfo);
             proc.WaitForExit(); // block until the process exits
             if (proc.ExitCode != 0) MessageBox.Show($"An Error occurred while setting VSTO_SUPPRESSDISPLAYALERTS environment variable. You may have to try setting this manually"); 
@@ -85,7 +85,7 @@ namespace DaxStudio.Checker
             sw.WriteLine(@"Windows Registry Editor Version 5.00");
             sw.WriteLine();
             sw.WriteLine(@"[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Fusion]");
-            sw.WriteLine(string.Format(@"""LogFailures""=dword:0000000{0}", isChecked ? "1" : "0"));
+            sw.WriteLine($@"""LogFailures""=dword:0000000{(isChecked ? "1" : "0")}");
             sw.WriteLine($@"""LogPath""=""{fusionPath.Replace("\\", "\\\\")}""");
             sw.Close();
 
@@ -155,7 +155,7 @@ namespace DaxStudio.Checker
 
             for (int i = minMSLibVer; i <= maxMSLibVer + 2; i++)
             {
-                CheckLibraryExact(string.Format(longNameFormat, i), i == minMSLibVer);
+                CheckLibraryExact( string.Format(System.Globalization.CultureInfo.InvariantCulture, longNameFormat, i), i == minMSLibVer);
             }
         }
 
@@ -231,7 +231,7 @@ namespace DaxStudio.Checker
             else
             {
                 Output.AppendIndentedLine($"Path: {str}");
-                if (str == "")
+                if (string.IsNullOrEmpty(str))
                 {
                     Output.AppendRange("      WARN > ").Bold().Color("Orange");
                     Output.AppendLine("Dax Studio registry 'Path' value not found.");
@@ -288,31 +288,44 @@ namespace DaxStudio.Checker
 
             // check registry entries
             string name = @"SOFTWARE\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
-            RegistryKey baseKey= RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            switch (excelBitness)
-            {
-                case MachineType.x64:
-                    baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-                    break;
-                case MachineType.x86:
-                    baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                    break;
-                default:
-                    Output.AppendRange("      ERROR:").Color("Red").Bold();
-                    Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
-                    break;
-            }
+            RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            try {
+                
+                
+                    switch (excelBitness)
+                    {
+                        case MachineType.x64:
+                            baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                            break;
+                        case MachineType.x86:
+                            baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                            break;
+                        default:
+                            Output.AppendRange("      ERROR:").Color("Red").Bold();
+                            Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
+                            break;
+                    }
 
-            RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
-
-            Output.AppendIndentedLine("DAX Studio Excel Add-in Registry keys");
-            if (key == null)
-            {
-                Output.AppendRange("      ERROR:").Color("Red").Bold();
-                Output.AppendLine(" DAX Studio Excel addin registry keys not found!");
+                    RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
+                try
+                {
+                    Output.AppendIndentedLine("DAX Studio Excel Add-in Registry keys");
+                    if (key == null)
+                    {
+                        Output.AppendRange("      ERROR:").Color("Red").Bold();
+                        Output.AppendLine(" DAX Studio Excel addin registry keys not found!");
+                    }
+                    else
+                        PrintSubkeyValues(key);
+                }
+                finally
+                {
+                    key.Dispose();
+                }
+                }
+            finally {
+                baseKey.Dispose();
             }
-            else
-                PrintSubkeyValues(key);
             Output.AppendLine();
             // check that add-in is not hard disabled
             ListDisabledExcelAddins("2010", 14);
@@ -371,33 +384,46 @@ namespace DaxStudio.Checker
             var keyPath = @"SOFTWARE\WOW6432Node\Microsoft\VSTO Runtime Setup"; 
             var is64 = true;
             basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            if (basekey == null)
-            {
-                is64 = false;
-                basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                keyPath = @"SOFTWARE\Microsoft\VSTO Runtime Setup";
-            }
-            var arch = is64 ? "x64" : "x86";
-            Output.AppendIndentedLine($"Architecture: {arch}");
-            key = basekey.OpenSubKey(keyPath);
-
-            //            Output.AppendRange("").Indent(20);
-            if (key == null)
-            {
-                Output.AppendRange("      WARN > ").Bold().Color("Orange");
-                Output.AppendLine($"Unable to open {keyPath}");
-            }
-            else
-            {
-                foreach (var subkeyName in key.GetSubKeyNames())
+            try
+            { 
+                if (basekey == null)
                 {
-                    var subkey = key.OpenSubKey(subkeyName);
-                    Output.AppendIndentedLine($"  {subkeyName}");
-                    foreach (var valName in subkey.GetValueNames())
+                    is64 = false;
+                    basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                    keyPath = @"SOFTWARE\Microsoft\VSTO Runtime Setup";
+                }
+                var arch = is64 ? "x64" : "x86";
+                Output.AppendIndentedLine($"Architecture: {arch}");
+                key = basekey.OpenSubKey(keyPath);
+                try
+                {
+                    //            Output.AppendRange("").Indent(20);
+                    if (key == null)
                     {
-                        Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName,"")}");
+                        Output.AppendRange("      WARN > ").Bold().Color("Orange");
+                        Output.AppendLine($"Unable to open {keyPath}");
+                    }
+                    else
+                    {
+                        foreach (var subkeyName in key.GetSubKeyNames())
+                        {
+                            var subkey = key.OpenSubKey(subkeyName);
+                            Output.AppendIndentedLine($"  {subkeyName}");
+                            foreach (var valName in subkey.GetValueNames())
+                            {
+                                Output.AppendIndentedLine($"    {valName} {subkey.GetValue(valName, "")}");
+                            }
+                        }
                     }
                 }
+                finally
+                {
+                    key.Dispose();
+                }
+            }
+            finally
+            {
+                basekey.Dispose();
             }
         }
 
@@ -535,12 +561,16 @@ namespace DaxStudio.Checker
         {
             Output.AppendIndentedLine("Processing DaxStudio.exe.config file...");
             Output.AppendIndentedLine($"Path: '{path}'");
-            XmlDocument document = new XmlDocument();
+            XmlDocument document = new XmlDocument() { XmlResolver = null };
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(document.NameTable);
             nsmgr.AddNamespace("asm", "urn:schemas-microsoft-com:asm.v1");
-            new XmlReaderSettings();
-            FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-            document.Load(inStream);
+            //new XmlReaderSettings();
+            using (FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using(XmlReader reader = XmlReader.Create(inStream, new XmlReaderSettings() { XmlResolver = null }))
+            {
+                
+                document.Load(reader );
+            }
             XmlNodeList list = document.SelectNodes("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly", nsmgr);
             Output.AppendIndentedLine( $"Bindings Found: {list.Count}");
 
@@ -563,7 +593,7 @@ namespace DaxStudio.Checker
             }
         }
 
-        public void RecurseKeysForValue(string rootPath, RegistryKey key, string valueName)
+        internal void RecurseKeysForValue(string rootPath, RegistryKey key, string valueName)
         {
             object obj2 = key.GetValue(valueName);
             if (obj2 != null)
@@ -576,7 +606,7 @@ namespace DaxStudio.Checker
             }
         }
 
-        public void PrintSubkeyValues(RegistryKey key)
+        internal void PrintSubkeyValues(RegistryKey key)
         {
             foreach (string valName in key.GetValueNames())
             {
@@ -585,13 +615,13 @@ namespace DaxStudio.Checker
             }
         }
 
-        public int GetCurrentExcelVersion()
+        internal int GetCurrentExcelVersion()
         {
             string excelApp= (string)Registry.GetValue(@"HKEY_CLASSES_ROOT\Excel.Application\CurVer", null, "Excel.Application.0");
             return int.Parse(excelApp.Replace("Excel.Application.", ""));
         }
 
-        public static string StripRootPath(string name, string rootPath) =>
+        internal static string StripRootPath(string name, string rootPath) =>
             name.Substring((name.IndexOf(rootPath) + rootPath.Length) + 1);
 
         #endregion

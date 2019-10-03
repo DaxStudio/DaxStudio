@@ -8,20 +8,20 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class AdomdDataReader : System.Data.IDataReader
     {
-        private Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _objExcel;
-        private AdomdType _type = AdomdType.AnalysisServices;
+        private readonly Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _objExcel;
+        private readonly AdomdType _type = AdomdType.AnalysisServices;
         public AdomdDataReader() { }
-        public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
+        public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
-            _obj = obj;
+            _obj = dataReader;
            
             _type = AdomdType.AnalysisServices;
             
         }
-        public AdomdDataReader(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
+        public AdomdDataReader(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
-            _objExcel = obj;
+            _objExcel = dataReader;
             _type = AdomdType.Excel;
         }
 
@@ -631,6 +631,7 @@ namespace ADOTabular.AdomdClientWrappers
             DataTable dtSchema = this.GetSchemaTable();
             DataTable dt = new DataTable();
             List<DataColumn> listCols = new List<DataColumn>();
+            var invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             if (dtSchema != null)
             {
@@ -654,7 +655,7 @@ namespace ADOTabular.AdomdClientWrappers
                 for (int i = 0; i < listCols.Count; i++)
                 {
                     if (listCols[i].ExtendedProperties.ContainsKey("FormatString"))
-                        dataRow[((DataColumn)listCols[i])] = string.Format(listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
+                        dataRow[((DataColumn)listCols[i])] = string.Format(invariantCulture, listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
                     else
                         dataRow[((DataColumn)listCols[i])] = this[i];
                 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using DAXEditor;
+using DAXEditorControl;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;

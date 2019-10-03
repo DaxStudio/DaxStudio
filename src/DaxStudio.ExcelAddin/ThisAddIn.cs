@@ -15,7 +15,7 @@ namespace DaxStudio.ExcelAddin
         private static bool _inShutdown;
         private static DaxStudioLauncher _launcher;
         private bool _debugLogEnabled;
-        public ILogger log;
+        private ILogger log;
         private void ThisAddInStartup(object sender, EventArgs e)
         {
             try

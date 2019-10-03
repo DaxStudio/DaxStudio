@@ -65,9 +65,9 @@ namespace DaxStudio.UI.Views
 
         static DataGridCell GetCell(DataGrid dataGrid, DataGridRow row, int column)
         {
-            if (dataGrid == null) throw new ArgumentNullException("dataGrid");
-            if (row == null) throw new ArgumentNullException("row");
-            if (column < 0) throw new ArgumentOutOfRangeException("column");
+            if (dataGrid == null) throw new ArgumentNullException(nameof(dataGrid));
+            if (row == null) throw new ArgumentNullException(nameof(row));
+            if (column < 0) throw new ArgumentOutOfRangeException(nameof(column));
 
             DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(row);
             if (presenter == null)

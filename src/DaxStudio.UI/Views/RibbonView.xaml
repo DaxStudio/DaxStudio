@@ -983,12 +983,12 @@
                                Margin="4,0">
                     <Fluent:Button.LargeIcon>
                         
-                        <fa:FontAwesome  Icon="Bug" Foreground="Blue" Width="32" Height="32" />
+                        <fa:FontAwesome  Icon="Bug" Foreground="{StaticResource DaxStudioBrush}" FontSize="32" />
                         
                     </Fluent:Button.LargeIcon>
                     <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="Bug" Foreground="Blue" Margin="0" Width="16" Height="16" />
+                        <fa:FontAwesome  Icon="Bug" Foreground="{StaticResource DaxStudioBrush}" Margin="0" FontSize="16" />
 
                     </Fluent:Button.Icon>
                     <Fluent:Button.ToolTip>
@@ -998,11 +998,21 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 <Fluent:Button Name="hlpGithubFeatureRequest"
-                               Header="Submit a Feature Request "
+                               Header="Request a Feature"
                                cal:Message.Attach="[Event Click] = [Action LinkToGithubFeatureRequest()]"
-                               Icon="{StaticResource ExternalLinkIcon}"
+
                                SizeDefinition="Large,Middle,Small"
                                Margin="4,0">
+                    <Fluent:Button.LargeIcon>
+
+                        <fa:FontAwesome  Icon="LightbulbOutline" Foreground="{StaticResource FEBrush}" Padding="0" FontSize="32" />
+
+                    </Fluent:Button.LargeIcon>
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="LightbulbOutline" Foreground="{StaticResource FEBrush}" Margin="0" FontSize="16" />
+
+                    </Fluent:Button.Icon>
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Feature Request"
                                           Text="Submit an idea for a new feature to the Github project site for DAX Studio"

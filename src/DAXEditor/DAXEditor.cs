@@ -11,17 +11,17 @@ using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System.Text.RegularExpressions;
-using DAXEditor.BracketRenderer;
+using DAXEditorControl.BracketRenderer;
 using ICSharpCode.AvalonEdit.Search;
 using System.Windows.Media;
-using DAXEditor.Renderers;
+using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Reflection;
 using System.IO;
 using System.Text;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     /// <summary>
     /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
@@ -53,8 +53,37 @@ namespace DAXEditor
     ///
     /// </summary>
     /// 
-    public struct HighlightPosition { public int Index; public int Length; 
+    public struct HighlightPosition : IEquatable<HighlightPosition>
+    {
         
+        public int Length { get; set; }
+        public int Index { get; set; }
+
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(HighlightPosition left, HighlightPosition right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(HighlightPosition left, HighlightPosition right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(HighlightPosition other)
+        {
+            return Index == other.Index && Length == other.Length;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is HighlightPosition && Equals((HighlightPosition)obj);
+        }
     }
     public delegate List<HighlightPosition> HighlightDelegate(string text, int startOffset, int endOffset); 
     public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor , IEditor
@@ -78,7 +107,7 @@ namespace DAXEditor
             //SearchPanel.Install(this.TextArea);
             var brush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#C8FFA55F")); //orange // grey FFE6E6E6
             HighlightBackgroundBrush = brush;
-            this.TextArea.SelectionChanged += textEditor_TextArea_SelectionChanged;
+            this.TextArea.SelectionChanged += TextEditor_TextArea_SelectionChanged;
             TextView textView = this.TextArea.TextView;
 
             // Add Bracket Highlighter
@@ -152,7 +181,7 @@ namespace DAXEditor
                 var foreground = syntaxHighlight.Foreground.GetColor(null);
                 if (foreground == null) return;
                 HSLColor hsl = new HSLColor((System.Windows.Media.Color)foreground);
-                hsl.Luminosity = hsl.Luminosity * factor;
+                hsl.Luminosity *= factor;
                 syntaxHighlight.Foreground = new SimpleHighlightingBrush((Color)hsl);
             }
 
@@ -219,7 +248,7 @@ namespace DAXEditor
             return isInComment;
         }
 
-        void textEditor_TextArea_SelectionChanged(object sender, EventArgs e)
+        void TextEditor_TextArea_SelectionChanged(object sender, EventArgs e)
         {
             this.TextArea.TextView.Redraw();
         }
@@ -229,8 +258,8 @@ namespace DAXEditor
             base.OnInitialized(e);
             base.Loaded += OnLoaded;
             base.Unloaded += OnUnloaded;
-            TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            TextArea.TextEntering += TextEditor_TextArea_TextEntering;
+            TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextArea.PreviewKeyDown += TextArea_PreviewKeyDown;
 
             TextArea.Caret.PositionChanged += Caret_PositionChanged;
@@ -239,7 +268,7 @@ namespace DAXEditor
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
             using (var s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
             {
-                using (var reader = new XmlTextReader(s))
+                using (var reader = new XmlTextReader(s) { DtdProcessing = DtdProcessing.Prohibit } )
                 {
                     SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
@@ -379,7 +408,7 @@ namespace DAXEditor
 
         }
 
-        void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
+        void TextEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
             IntellisenseProvider.ProcessTextEntered(sender, e,ref completionWindow);
         }
@@ -389,13 +418,15 @@ namespace DAXEditor
         private bool IsLineCommented(DocumentLine line)
         {
             var trimmed =  this.Document.GetText(line.Offset,line.Length).Trim();
-            return trimmed.IndexOf(COMMENT_DELIM_DASH).Equals(0) || trimmed.IndexOf(COMMENT_DELIM_SLASH).Equals(0);
+            return trimmed.IndexOf(COMMENT_DELIM_DASH, StringComparison.InvariantCultureIgnoreCase).Equals(0) 
+                || trimmed.IndexOf(COMMENT_DELIM_SLASH, StringComparison.InvariantCultureIgnoreCase).Equals(0);
         }
 
         #region "Commenting/Uncommenting"
+        private static  IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
-        private Regex rxUncommentSlashes = new Regex(string.Format("^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
-        private Regex rxUncommentDashes = new Regex(string.Format("^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
+        private Regex rxUncommentSlashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
+        private Regex rxUncommentDashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
         private Regex rxComment = new Regex("^(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
         //private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
         private void SelectFullLines()
@@ -409,21 +440,21 @@ namespace DAXEditor
         public void CommentSelectedLines()
         {
             SelectFullLines();
-            SelectedText = rxComment.Replace(SelectedText, string.Format("{0}$1",COMMENT_DELIM_SLASH));
+            SelectedText = rxComment.Replace(SelectedText, string.Format(invariantCulture,"{0}$1",COMMENT_DELIM_SLASH));
         }
 
         public void UncommentSelectedLines()
         {
             SelectFullLines();
-            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_SLASH))
+            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_SLASH, StringComparison.InvariantCultureIgnoreCase))
             {  SelectedText = rxUncommentSlashes.Replace(SelectedText, "$1"); }
-            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_DASH))
+            if (SelectedText.TrimStart().StartsWith(COMMENT_DELIM_DASH, StringComparison.InvariantCultureIgnoreCase))
             { SelectedText = rxUncommentDashes.Replace(SelectedText, "$1"); }
         }
 
         #endregion
 
-        void textEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
+        void TextEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
         {
             IntellisenseProvider.ProcessTextEntering(sender, e, ref completionWindow);
         }
@@ -431,12 +462,12 @@ namespace DAXEditor
         
       
 
-        TextLocation IEditor.DocumentGetLocation(int offset)
+        public TextLocation DocumentGetLocation(int offset)
         {
             return this.Document.GetLocation(offset);
         }
 
-        void IEditor.DocumentReplace(int offset, int length, string newText)
+        public void DocumentReplace(int offset, int length, string newText)
         {
             this.Document.Replace(offset, length, newText);
         }
@@ -564,5 +595,7 @@ namespace DAXEditor
         {
             return Document.GetText(segment);
         }
+
+
     }
 }

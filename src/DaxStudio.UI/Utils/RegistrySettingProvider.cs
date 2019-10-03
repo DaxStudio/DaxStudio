@@ -48,7 +48,7 @@ namespace DaxStudio.UI.Utils
             {
                 // server does not exist in list, so insert it as the first item
                 servers.Insert(0, currentServer);
-                while (servers.Count() > Constants.MAX_MRU_SIZE)
+                while (servers.Count() > Constants.MaxMruSize)
                 {
                     servers.RemoveAt(servers.Count() - 1);
                 }
@@ -75,7 +75,7 @@ namespace DaxStudio.UI.Utils
             if (existingItem == null)
             {
                 files.Insert(0, file);
-                while (files.Count() > Constants.MAX_RECENT_FILES)
+                while (files.Count() > Constants.MaxRecentFiles)
                 {
                     files.RemoveAt(files.Count() - 1);
                 }
@@ -169,7 +169,7 @@ namespace DaxStudio.UI.Utils
 
                     foreach (object listItem in itemList)
                     {
-                        if (i > Constants.MAX_MRU_SIZE) break; // don't save more than the max mru size
+                        if (i > Constants.MaxMruSize) break; // don't save more than the max mru size
                         var str = listItem as string;
                         if (str == null) str = listItem.ToString();
                         regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );

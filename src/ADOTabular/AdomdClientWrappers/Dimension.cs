@@ -8,13 +8,13 @@ namespace ADOTabular.AdomdClientWrappers
         private Microsoft.AnalysisServices.AdomdClient.Dimension _obj;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension _objExcel;
 
-        public Dimension(Microsoft.AnalysisServices.AdomdClient.Dimension obj)
+        public Dimension(Microsoft.AnalysisServices.AdomdClient.Dimension dimension)
         {
-            _obj = obj;
+            _obj = dimension;
         }
-        public Dimension(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension obj)
+        public Dimension(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension dimension)
         {
-            _objExcel = obj;
+            _objExcel = dimension;
         }
 
         public List<Hierarchy> Hierarchies

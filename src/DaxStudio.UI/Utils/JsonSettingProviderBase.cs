@@ -126,7 +126,7 @@ namespace DaxStudio.UI.Utils
             if (existingItem == null)
             {
                 Options.RecentFiles.Insert(0, file);
-                while (Options.RecentFiles.Count() > Constants.MAX_RECENT_FILES)
+                while (Options.RecentFiles.Count() > Constants.MaxRecentFiles)
                 {
                     Options.RecentFiles.RemoveAt(Options.RecentFiles.Count() - 1);
                 }
@@ -160,7 +160,7 @@ namespace DaxStudio.UI.Utils
             { 
                 // server does not exist in list, so insert it as the first item
                 Options.RecentServers.Insert(0, currentServer);
-                while (Options.RecentServers.Count() > Constants.MAX_MRU_SIZE)
+                while (Options.RecentServers.Count() > Constants.MaxMruSize)
                 {
                     Options.RecentServers.RemoveAt(Options.RecentServers.Count() - 1);
                 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using DAXEditor;
+using DAXEditorControl;
 using ICSharpCode.AvalonEdit.Document;
 using DaxStudio.Tests.Mocks;
 using Caliburn.Micro;
@@ -23,10 +23,12 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindCaseInsensitive()
         {
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.TextToFind = "SAMPLE";
-            vm.CaseSensitive = false;
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                TextToFind = "SAMPLE",
+                CaseSensitive = false
+            };
             vm.FindText();
             Assert.AreEqual(13, ed.SelectionStart);
             Assert.AreEqual(6, ed.SelectionLength);
@@ -35,10 +37,12 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindCaseSensitive()
         {
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.TextToFind = "SAMPLE";
-            vm.CaseSensitive = true;
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                TextToFind = "SAMPLE",
+                CaseSensitive = true
+            };
             vm.FindText();
             Assert.AreEqual(0, ed.SelectionStart, "Selection Start");
             Assert.AreEqual(0, ed.SelectionLength, "Selection Length");
@@ -57,10 +61,12 @@ namespace DaxStudio.Tests
             // try waiting a little bit to see if that helps, maybe there is a race condition
             System.Threading.Thread.Sleep(50);
 
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.UseWildcards = true;
-            vm.TextToFind = "sam* ";
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                UseWildcards = true,
+                TextToFind = "sam* "
+            };
 
             vm.FindText();
 
@@ -71,10 +77,12 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void FindRegEx()
         {
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.UseRegex = true;
-            vm.TextToFind = "sam[^\\s]*";
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                UseRegex = true,
+                TextToFind = "sam[^\\s]*"
+            };
             vm.FindText();
             Assert.AreEqual(13, ed.SelectionStart, "Selection Start");
             Assert.AreEqual(6, ed.SelectionLength, "Selection Length");
@@ -89,11 +97,13 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void ReplaceTest()
         {
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.UseRegex = true;
-            vm.TextToFind = "sam[^\\s]*";
-            vm.TextToReplace = "hello";
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                UseRegex = true,
+                TextToFind = "sam[^\\s]*",
+                TextToReplace = "hello"
+            };
             vm.FindText();
             vm.ReplaceText();
 
@@ -106,11 +116,13 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void ReplaceAllTest()
         {
-            vm = new FindReplaceDialogViewModel(mockEventAggregator);
-            vm.Editor = ed;
-            vm.UseRegex = true;
-            vm.TextToFind = "sam[^\\s]*";
-            vm.TextToReplace = "hello";
+            vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = ed,
+                UseRegex = true,
+                TextToFind = "sam[^\\s]*",
+                TextToReplace = "hello"
+            };
             //vm.Find();
             vm.ReplaceAllText();
 
