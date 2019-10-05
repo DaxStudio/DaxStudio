@@ -1,14 +1,7 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
-using DaxStudio.Interfaces;
-using System.Diagnostics;
-using System.Web.Http.ModelBinding;
-using DaxStudio.ExcelAddin.Xmla;
 using Serilog;
 
 namespace DaxStudio.ExcelAddin.Xmla
@@ -93,7 +86,7 @@ namespace DaxStudio.ExcelAddin.Xmla
 
         [HttpPost]
         [Route("StaticQueryResult")]
-        public static void PostStaticResult(StaticQueryResult results)
+        public void PostStaticResult(StaticQueryResult results)
         {
             if (results == null) throw new ArgumentNullException(nameof(results));
 
