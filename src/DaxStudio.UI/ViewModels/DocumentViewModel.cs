@@ -216,7 +216,7 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
-                _editor.PreviewDragEnter += OnDragEnter;
+                _editor.PreviewDragEnter += OnDragEnterPreview;
 
                 _editor.OnPasting += OnPasting;
                 
@@ -276,8 +276,31 @@ namespace DaxStudio.UI.ViewModels
             {
                 
                 e.Handled = true;
-                var data = (string)e.Data.GetData(typeof(string));
-                InsertTextAtCaret(data);
+
+                if (e.Data.GetDataPresent(typeof(string)))
+                {
+                    var data = (string)e.Data.GetData(typeof(string));
+                    InsertTextAtCaret(data);
+                }
+
+                if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    var file = files[0];
+
+                    if (file.EndsWith(".dax") || file.EndsWith(".msdax"))
+                    {
+                        _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
+                        _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
+                    } else
+                    {
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop .dax or .msdax files"));
+                    }
+                    if (files.Length > 1)
+                    {
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop a single file at a time"));
+                    }
+                }
             }
         }
 
@@ -3233,7 +3256,6 @@ namespace DaxStudio.UI.ViewModels
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragOver Fired"));
             IntellisenseProvider?.CloseCompletionWindow();
             if (dropInfo.Data.Equals(string.Empty))
             {
@@ -3246,9 +3268,14 @@ namespace DaxStudio.UI.ViewModels
             return;
         }
 
-        public void OnDragEnter(object sender, System.Windows.DragEventArgs e)
+        public void OnDragEnterPreview(object sender, System.Windows.DragEventArgs e)
         {
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragEnter Fired"));
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+                e.Handled = true;
+            }
+
             IntellisenseProvider?.CloseCompletionWindow();
         }
 

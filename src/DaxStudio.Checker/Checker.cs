@@ -23,9 +23,9 @@ namespace DaxStudio.Checker
 
     public class Checker
     {
-        private List<Version> AdomdVersions = new List<Version>();
-        private List<Version> AmoVersions = new List<Version>();
-        private List<Version> NetVersions = new List<Version>();
+        private readonly List<Version> AdomdVersions = new List<Version>();
+        private readonly List<Version> AmoVersions = new List<Version>();
+        private readonly List<Version> NetVersions = new List<Version>();
         private Regex reVer = new Regex(@"version=(?<ver>\d+\.\d+\.\d+\.\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private const int minMSLibVer = 13;
         private const int maxMSLibVer = 13;

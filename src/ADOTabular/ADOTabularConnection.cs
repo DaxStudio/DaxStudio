@@ -624,7 +624,7 @@ namespace ADOTabular
                                                      },true);
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
             
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)))
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
             {
                 if (rdr.NameTable != null)
                 {
@@ -664,7 +664,7 @@ namespace ADOTabular
                                                      }, true);
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
 
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata))) {
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit }) {
                 if (rdr.NameTable != null) {
                     var eSvrMode = rdr.NameTable.Add("ID");
 

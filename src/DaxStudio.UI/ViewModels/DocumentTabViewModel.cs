@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<AutoSaveRecoveryEvent>
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
-        , IHandle<OpenRecentFileEvent>
+        , IHandle<OpenDaxFileEvent>
         , IHandle<RecoverNextAutoSaveFileEvent>
         , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
@@ -210,7 +210,7 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public void Handle(OpenRecentFileEvent message)
+        public void Handle(OpenDaxFileEvent message)
         {
             NewQueryDocument(message.FileName);
         }

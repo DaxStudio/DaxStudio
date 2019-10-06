@@ -1,9 +1,9 @@
 ﻿
 namespace DaxStudio.UI.Events
 {
-    public class OpenRecentFileEvent
+    public class OpenDaxFileEvent
     {
-        public OpenRecentFileEvent(string fileName)
+        public OpenDaxFileEvent(string fileName)
         {
             FileName = fileName;
         }

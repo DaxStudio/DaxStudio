@@ -590,8 +590,8 @@
                                                    EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
                                                    dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                   
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
-                                                   DragEnter="daxEditor_DragEnter"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
                                                    >

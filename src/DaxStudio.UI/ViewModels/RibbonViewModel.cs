@@ -712,7 +712,7 @@ namespace DaxStudio.UI.ViewModels
             // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
             MoveFileToTopOfRecentList(file);
-            _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+            _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(file.FullPath));
         }
 
         private bool RecentFileNoLongerExists(DaxFile file)
@@ -988,37 +988,38 @@ namespace DaxStudio.UI.ViewModels
         {
 
             // Configure open file dialog box
-            var dlg = new System.Windows.Forms.OpenFileDialog()
+            using (var dlg = new System.Windows.Forms.OpenFileDialog()
             {
                 Title = "Open Power BI Performance Data",
                 FileName = "PowerBIPerformanceData.json",
                 DefaultExt = ".json",
                 Filter = "Power BI Performance Data (*.json)|*.json"
-            };
-
-            // Show open file dialog box
-            System.Windows.Forms.DialogResult result = dlg.ShowDialog();
-
-            // Process open file dialog box results 
-            if (result == System.Windows.Forms.DialogResult.OK)
+            })
             {
-                // Open document 
-                var fileName = dlg.FileName;
-                // check if PerfData Window is already open and use that
-                var perfDataWindow = this.ActiveDocument.ToolWindows.FirstOrDefault(win => (win as PowerBIPerformanceDataViewModel) != null) as PowerBIPerformanceDataViewModel;
-                
-                if (perfDataWindow == null)
+                // Show open file dialog box
+                System.Windows.Forms.DialogResult result = dlg.ShowDialog();
+
+                // Process open file dialog box results 
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    // todo - get viewmodel from IoC container
-                    perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
-                    this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    // Open document 
+                    var fileName = dlg.FileName;
+                    // check if PerfData Window is already open and use that
+                    var perfDataWindow = this.ActiveDocument.ToolWindows.FirstOrDefault(win => (win as PowerBIPerformanceDataViewModel) != null) as PowerBIPerformanceDataViewModel;
+
+                    if (perfDataWindow == null)
+                    {
+                        // todo - get viewmodel from IoC container
+                        perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
+                        this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    }
+
+                    // load the perfomance data
+                    perfDataWindow.FileName = fileName;
+
+                    // set the performance window as the active tab
+                    perfDataWindow.Activate();
                 }
-
-                // load the perfomance data
-                perfDataWindow.FileName = fileName;
-
-                // set the performance window as the active tab
-                perfDataWindow.Activate();
             }
         }
     }
