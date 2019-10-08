@@ -46,7 +46,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>DaxStudio.Checker.App</StartupObject>
+    <StartupObject>DaxStudio.CheckerApp.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>DaxStudioChecker.ico</ApplicationIcon>
@@ -68,6 +68,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Checker.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>

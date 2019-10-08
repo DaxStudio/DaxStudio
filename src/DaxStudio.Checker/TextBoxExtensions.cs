@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace DaxStudio.Checker
+namespace DaxStudio.CheckerApp
 {
     public static class TextBoxExtensions
     {

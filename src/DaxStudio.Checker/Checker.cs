@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 
-namespace DaxStudio.Checker
+namespace DaxStudio.CheckerApp
 {
 
     public enum ExcelVersion
@@ -122,8 +122,14 @@ namespace DaxStudio.Checker
 
         internal void ShowVersionInfo()
         {
+            
             var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Output.AppendIndentedLine($"Version =  v{version}");
+
+            var uiPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
+            var uiAss = Assembly.LoadFile(uiPath);
+            var uiVersion = uiAss.GetName().Version;
+            Output.AppendIndentedLine($"DaxStudio.exe Version =  v{uiVersion}");
         }
 
         public void CheckOSInfo()
@@ -271,6 +277,12 @@ namespace DaxStudio.Checker
             string name = @"SOFTWARE\Microsoft\NET Framework Setup\NDP";
             RegistryKey key = Registry.LocalMachine.OpenSubKey(name);
             RecurseKeysForValue(name, key, "Version");
+
+            Output.AppendLine("");
+            string name45 = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full";
+            RegistryKey key45 = Registry.LocalMachine.OpenSubKey(name45);
+            var rel = key45.GetValue("Release");
+            Output.AppendIndentedLine($@"v4\Full\Release = {rel}");
 
         }
 
