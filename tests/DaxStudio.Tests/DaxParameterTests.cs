@@ -158,6 +158,17 @@ table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
             Assert.AreEqual(1, qi.Parameters.Count);
         }
 
+
+        [TestMethod]
+        public void TestQueryParamParsingShouldSkipColumnNameStrings()
+        {
+            var testQuery = @"EVALUATE
+ADDCOLUMNS ( {""Hello""}, ""@test"", 42 )";
+            var qi = new QueryInfo(testQuery, false, false, mockEventAggregator);
+            //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
+            Assert.AreEqual(0, qi.Parameters.Count);
+        }
+
         [TestMethod]
         public void TestQueryParamParsingShouldSkipQuotedTables()
         {
