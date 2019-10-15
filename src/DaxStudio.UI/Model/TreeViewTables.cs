@@ -242,7 +242,7 @@ namespace DaxStudio.UI.Model
         public override ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
         public string Description { get { return _table.Description; } }
         public override bool IsVisible => _table.IsVisible;
-
+        public bool IsDateTable => _table.IsDateTable;
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public override bool IsCriteriaMatched(string criteria)
         {
@@ -538,6 +538,11 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        
+        public bool IsKey { get {
+                var col = _column as ADOTabularColumn;
+                if (col == null) return false;
+                return col.IsKey;
+            }
+        } 
     }
 }

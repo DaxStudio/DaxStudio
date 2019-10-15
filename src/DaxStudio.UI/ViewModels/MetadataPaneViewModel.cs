@@ -436,7 +436,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return this.Connection.Database;
+                return this.Connection?.Database;
             }
         }
 

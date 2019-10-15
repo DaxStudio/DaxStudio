@@ -224,7 +224,7 @@ namespace ADOTabular
 
         }
 
-        private void BuildRelationshipFromAssociationSet(XmlReader rdr, ADOTabularTableCollection tabs, string eAssociationSet)
+        private static void BuildRelationshipFromAssociationSet(XmlReader rdr, ADOTabularTableCollection tabs, string eAssociationSet)
         {
             string refname = string.Empty;
             string fromTableRef = "";
@@ -271,7 +271,7 @@ namespace ADOTabular
 
         }
 
-        private string GetRelationshipTableRef(XmlReader rdr)
+        private static string GetRelationshipTableRef(XmlReader rdr)
         {
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == "End"))
@@ -291,7 +291,7 @@ namespace ADOTabular
             return "";
         }
 
-        private Tuple<string,string> GetRelationshipColumnRef(XmlReader rdr)
+        private static Tuple<string,string> GetRelationshipColumnRef(XmlReader rdr)
         {
             string role = string.Empty;
             string multiplicity = string.Empty;
@@ -377,7 +377,7 @@ namespace ADOTabular
             return tab;
         }
 
-        private void TagKpiComponentColumns(ADOTabularTable tab)
+        private static void TagKpiComponentColumns(ADOTabularTable tab)
         {
             List<ADOTabularColumn> invalidKpis = new List<ADOTabularColumn>();
 
@@ -429,9 +429,13 @@ namespace ADOTabular
             string minValue = "";
             string maxValue = "";
             string formatString = "";
+            string keyRef = "";
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
+            bool isDateTable = false;
+            ADOTabularTable tab = null;
+
             IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
@@ -442,8 +446,13 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntityType))
             {
+                //while (rdr.NodeType == XmlNodeType.Whitespace)
+                //{
+                //    rdr.Read();
+                //}
+
                 if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == eEntityType)
+                    && rdr.Name == eEntityType)
                 {
                     while (rdr.MoveToNextAttribute())
                     {
@@ -451,30 +460,48 @@ namespace ADOTabular
                         {
                             case "Name":
                                 tableId = rdr.Value;
+                                tab = tables.GetById(tableId);
                                 break;
                         }
                     }
                 }
 
                 if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "Key")
+                {
+                    // TODO - store table Key
+                    keyRef = GetKeyReference(rdr);
+                }
+
+                    if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "Hierarchy")
                 {
-                    ProcessHierarchy(rdr, tables.GetById(tableId), eEntityType);
+                    ProcessHierarchy(rdr, tab, eEntityType);
 
+                }
+
+                if (rdr.NodeType == XmlNodeType.Element 
+                    && rdr.Name == "bi:EntityType")
+                {
+                //    rdr.MoveToAttribute("Contents");
+                    var contentAttr = rdr.GetAttribute("Contents");
+                    
+                    isDateTable = contentAttr == "Time";
+                    tab.IsDateTable = isDateTable;
                 }
 
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "DisplayFolder")
                 {
                     Debug.WriteLine("FoundFolder");
-                    var tbl = tables.GetById(tableId);
-                    ProcessDisplayFolder(rdr,tbl,tbl);
+                    
+                    ProcessDisplayFolder(rdr,tab,tab);
                 }
 
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "Kpi")
                 {
-                    kpi = ProcessKpi(rdr, tables.GetById(tableId));
+                    kpi = ProcessKpi(rdr, tab);
                 }
 
                 string defaultAggregateFunction;
@@ -555,7 +582,7 @@ namespace ADOTabular
                         caption = refName;
                     if (!string.IsNullOrWhiteSpace(caption))
                     {
-                        var tab = tables.GetById(tableId);
+                        
                         if (kpi.IsBlank())
                         {
                             var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
@@ -586,7 +613,7 @@ namespace ADOTabular
                     }
 
 
-                    // reset temp variables
+                    // reset temp column variables
                     kpi = new KpiDetails();
                     refName = "";
                     caption = "";
@@ -601,15 +628,36 @@ namespace ADOTabular
                     nullable = true;
                     colType = ADOTabularObjectType.Column;
                     _variations = new List<ADOTabularVariation>();
+
                 }
-                rdr.Read();
+                if (!rdr.Read()) break;// quit the read loop if there is no more data
             }
+
+            // Set Key column
+            var keyCol = tab?.Columns.GetByPropertyRef(keyRef);
+            if(keyCol != null) keyCol.IsKey = true;
 
             //TODO - link up back reference to backing measures for KPIs
 
         }
 
-        private List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
+        private static string GetKeyReference(XmlReader rdr)
+        {
+            var keyRef = "";
+            while (rdr.Read())
+            {
+                if (rdr.NodeType == XmlNodeType.Element && rdr.Name == "PropertyRef")
+                {
+                    keyRef = rdr.GetAttribute("Name");
+                    rdr.Read();
+                    break;
+                }
+                if (rdr.NodeType == XmlNodeType.EndElement && rdr.Name == "Key") break;
+            }
+            return keyRef;
+        }
+
+        private static List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
         {
             string _name = string.Empty;
             bool _default = false;

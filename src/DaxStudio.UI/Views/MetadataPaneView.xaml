@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
@@ -283,7 +284,10 @@
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
-                                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                        <Grid>
+                                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                            <fa:ImageAwesome Icon="ClockOutline" Width="10" Margin="7,12,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
+                                        </Grid>
                                         <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="250">
@@ -292,6 +296,10 @@
                                                                 <TextBlock Text="{Binding Caption}"></TextBlock>
                                                             </StackPanel>
                                                             <TextBlock Text="{Binding Description}"  Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDescription}"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <fa:ImageAwesome Icon="ClockOutline" Width="14" Margin="0,2,3,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
+                                                                <TextBlock Text="Marked As Date Table" FontStyle="Italic" Foreground="{StaticResource DataTypeBrush}" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
+                                                                </StackPanel>
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition />
@@ -334,8 +342,10 @@
                                 <!-- Column Template -->
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}">
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
-
-                                        <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
+                                        <Grid>
+                                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
+                                            <!--<fa:ImageAwesome Icon="Key" Width="10" Margin="3,6,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsKey}"/>-->
+                                        </Grid>
                                         <TextBlock x:Name="Caption" Text="{Binding Caption}" 
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
                                                    >

@@ -523,6 +523,25 @@ namespace DaxStudio.Tests
 
         }
 
+        [TestMethod]
+        public void TestCSDLMarkAsDateTable()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = GetTestDB();
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test Caption", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\advwrkscsdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var cmpyTab = tabs["Date"];
+
+
+            Assert.AreEqual(true, cmpyTab.IsDateTable, "'Date' table is marked as date table");
+            Assert.AreEqual(false, tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
+
+        }
+
+
         [Ignore,TestMethod]
         public void TestInvalidCSDLKPIs()
         {

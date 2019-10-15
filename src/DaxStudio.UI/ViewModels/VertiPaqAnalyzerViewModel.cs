@@ -105,6 +105,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedRelationships);
                 NotifyOfPropertyChange(() => TreeviewColumns);
                 NotifyOfPropertyChange(() => TreeviewRelationships);
+                NotifyOfPropertyChange(() => SummaryViewModel);
             }
         }
 

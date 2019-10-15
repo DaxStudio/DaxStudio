@@ -100,5 +100,6 @@ namespace ADOTabular
 
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }
+        public bool IsDateTable { get; set; } = false;
     }
 }
