@@ -218,6 +218,9 @@ namespace DaxStudio.Standalone
                         return;
                     default:
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                        CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+                        e.Handled = true;
+                        Application.Current.Shutdown(1);
                         break;
                 }
 
@@ -226,7 +229,9 @@ namespace DaxStudio.Standalone
             {
                 Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                 // use CrashReporter.Net to send bug to DrDump
-                //CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
+                CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
+                e.Handled = true;
+                Application.Current.Shutdown(1);
             }
         }
 

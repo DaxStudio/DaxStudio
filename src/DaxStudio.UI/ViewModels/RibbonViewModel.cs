@@ -428,6 +428,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanLaunchExcel);
             NotifyOfPropertyChange(() => CanExportAllData);
             NotifyOfPropertyChange(() => CanExportAnalysisData);
+            NotifyOfPropertyChange(nameof(CanLoadPowerBIPerformanceData));
             UpdateTraceWatchers();
         }
 
@@ -984,8 +985,18 @@ namespace DaxStudio.UI.ViewModels
             _isConnecting = false;
         }
 
+        public bool CanLoadPowerBIPerformanceData
+        {
+            get { return ActiveDocument != null; }
+        }
+
         public void LoadPowerBIPerformanceData()
         {
+            if (this.ActiveDocument == null)
+            {
+                MessageBoxEx.Show("You cannot load Power BI Performance data when you do not have a document window open", "Load Power BI Performance Data");
+                return;
+            }
 
             // Configure open file dialog box
             using (var dlg = new System.Windows.Forms.OpenFileDialog()

@@ -58,48 +58,64 @@ namespace DaxStudio.UI.Utils
         {
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
-            await Task.Run( () =>
+            try { 
+               await Task.Run(() =>
+               {
+                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
+
+
+                   NetworkChange.NetworkAvailabilityChanged
+                       += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+                   try
+                   {
+                       int connDesc;
+                       _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
+                   }
+                   catch
+                   {
+                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
+                       _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
+                   }
+
+                    //todo - how to check that this works with different proxies...??
+                    try
+                   {
+                       if (Proxy == null)
+                           Proxy = GetProxy(DaxTextFormatUri);
+                   }
+                   catch (System.Net.WebException)
+                   {
+                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
+                       _isNetworkOnline = false;
+                   }
+
+                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
+
+               }).ConfigureAwait(false);
+                return this;
+            } catch (Exception ex)
             {
-                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
-
-
-                NetworkChange.NetworkAvailabilityChanged
-                    += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
-                try
-                {
-                    int connDesc;
-                    _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
-                }
-                catch
-                {
-                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
-                    _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
-                }
-
-                //todo - how to check that this works with different proxies...??
-                try
-                {
-                    if (Proxy == null)
-                        Proxy = GetProxy(DaxTextFormatUri);
-                }
-                catch (System.Net.WebException)
-                {
-                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
-                    _isNetworkOnline = false;
-                }
-
-                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
-
-            });
-            return this;
+                Log.Error(ex, "{message} {class} {message}", "WebRequestFactory", "InitializeAsync", ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "An error occurred trying to auto detect your web proxy"));
+                return this;
+            }
+            
         }
 
         // ...
         void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            _isNetworkOnline = e.IsAvailable;
-            // refresh proxy
-            Proxy = GetProxy(DaxTextFormatUri);
+            try
+            {
+                _isNetworkOnline = e.IsAvailable;
+                Log.Information("{class} {method} {message}", nameof(WebRequestFactory), nameof(this.NetworkChange_NetworkAvailabilityChanged), $"Network Availabilty Changed event fired IsAvailable={e.IsAvailable}");
+                // refresh proxy
+                Proxy = GetProxy(DaxTextFormatUri);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}","WebRequestFactory","NetworkChange_NetworkAvailabilityChanged", ex.Message);
+            }
         }
 
         public HttpWebRequest Create(string uri)

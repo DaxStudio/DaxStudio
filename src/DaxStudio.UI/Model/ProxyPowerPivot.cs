@@ -3,13 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Caliburn.Micro;
 using Newtonsoft.Json;
-using System.Net.Http.Formatting;
 using DaxStudio.UI.Events;
 using Serilog;
 using System.IO;
@@ -37,7 +35,7 @@ namespace DaxStudio.UI.Model
             var client = new HttpClient();
             client.BaseAddress = _baseUri;
             client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }
 
@@ -105,7 +103,7 @@ namespace DaxStudio.UI.Model
                     HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
                     if (response.IsSuccessStatusCode)
                     {
-                        return response.Content.ReadAsAsync<string>().Result;
+                        return response.Content.ReadAsStringAsync().Result;
                     }
                     }
                     catch (Exception ex)
