@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.Utils
 {
@@ -20,8 +21,7 @@ namespace DaxStudio.UI.Utils
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
         }
 
-        [DllImport("wininet.dll")]
-        private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
+
  
         // private variables
         private IGlobalOptions _globalOptions;
@@ -47,7 +47,7 @@ namespace DaxStudio.UI.Utils
         async public static Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             var wrf = new WebRequestFactory();
-            await wrf.InitializeAsync(globalOptions, eventAggregator);
+            await wrf.InitializeAsync(globalOptions, eventAggregator).ConfigureAwait(false);
             return wrf;
         }
 
@@ -58,18 +58,22 @@ namespace DaxStudio.UI.Utils
         {
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
-            try { 
-               await Task.Run(() =>
+            try {
+
+                Dispatcher.CurrentDispatcher.Invoke( new System.Action(() => { 
+                    NetworkChange.NetworkAvailabilityChanged
+                        += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+                }));
+
+                await Task.Run(() =>
                {
                    Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
 
 
-                   NetworkChange.NetworkAvailabilityChanged
-                       += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
                    try
                    {
                        int connDesc;
-                       _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
+                       _isNetworkOnline = NativeMethods.InternetGetConnectedState(out connDesc, 0);
                    }
                    catch
                    {
@@ -186,7 +190,7 @@ namespace DaxStudio.UI.Utils
             if (proxy == null) return false;
 
             try {
-                var wr = WebRequest.CreateHttp(CurrentGithubVersionUrl);
+                var wr = WebRequest.CreateHttp(new Uri(CurrentGithubVersionUrl));
                 wr.Proxy = proxy;
                 var resp = wr.GetResponse();
                 
@@ -233,6 +237,13 @@ namespace DaxStudio.UI.Utils
         }
 
         #endregion
+
+    }
+
+    static class NativeMethods
+    {
+        [DllImport("wininet.dll")]
+        internal extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
 
     }
 }

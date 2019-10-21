@@ -838,28 +838,36 @@ namespace ADOTabular
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
         public string ShortFileName { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
         {
             var res = new AdomdRestrictionCollection();
             res.Add(new AdomdRestriction("ObjectExpansion", "ReferenceOnly"));
             var props = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA", res, true);
             var xmla = props.Tables[0].Rows[0][0].ToString();
-            var xdoc = new XmlDocument();
+            var xdoc = new XmlDocument() { XmlResolver = null  };
             var oMgr = new XmlNamespaceManager(xdoc.NameTable);
             oMgr.AddNamespace("d", "http://schemas.microsoft.com/analysisservices/2003/engine");
             oMgr.AddNamespace("ddl400", "http://schemas.microsoft.com/analysisservices/2012/engine/400");
-            xdoc.LoadXml(xmla);
+            System.IO.StringReader sreader = new System.IO.StringReader(xmla);
+            using (XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null }))
+            {
+                xdoc.Load(reader);
+            }
+
             try
             {
                 _serverLocation = xdoc.SelectSingleNode("//ddl400:ServerLocation", oMgr).InnerText ?? "";
-            } catch
+            }
+            catch
             {
                 _serverLocation = "";
             }
             try
             {
                 _serverEdition = xdoc.SelectSingleNode("//d:Edition", oMgr).InnerText ?? "";
-            } catch
+            }
+            catch
             {
                 _serverEdition = "";
             }

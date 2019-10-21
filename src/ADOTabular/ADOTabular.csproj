@@ -182,6 +182,7 @@
     <Compile Include="DatabaseProfile\UserHierarchy.cs" />
     <Compile Include="DatabaseProfile\UserHierarchyCollection.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IADOTabularColumn.cs" />
     <Compile Include="IADOTabularConnection.cs" />
     <Compile Include="IADOTabularObject.cs" />

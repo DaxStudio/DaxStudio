@@ -124,7 +124,7 @@ namespace DaxStudio.UI.ViewModels
      
         public async Task<bool> HasPowerPivotModelAsync() {
 
-            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel);
+            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel).ConfigureAwait(false);
             return res;
             
         }
@@ -190,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void ParseConnectionString()
         {
-            if (_connectionString != String.Empty)
+            if (! string.IsNullOrEmpty(_connectionString))
             {
                 _connectionProperties = SplitConnectionString(_connectionString);
                 // if data source = $Embedded$ then mark Ppvt option as selected 
@@ -375,12 +375,12 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetRolesProperty()
         {
-            return Roles == string.Empty ? string.Empty : string.Format("Roles={0};", Roles);
+            return Roles.Length == 0 ? string.Empty : string.Format("Roles={0};", Roles);
         }
 
         private string GetDirectQueryMode()
         {
-            if (DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default")
+            if (string.IsNullOrEmpty(DirectQueryMode) || DirectQueryMode.ToLower() == "default")
                 return string.Empty;
             else
                 return string.Format("DirectQueryMode={0};", DirectQueryMode);

@@ -25,7 +25,7 @@ namespace DaxStudio.UI.Model
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
         {
             _port = port;
-            _baseUri = new Uri(string.Format("http://localhost:{0}/",port));
+            _baseUri = new Uri($"http://localhost:{port}/");
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
         }
@@ -71,7 +71,8 @@ namespace DaxStudio.UI.Model
                         if (response.IsSuccessStatusCode)
                         {
                             Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
-                            return response.Content.ReadAsAsync<bool>().Result;
+                            return JsonConvert.DeserializeObject<bool>( response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<bool>().Result;
                         }
                     }
                     catch (Exception ex)
@@ -100,11 +101,12 @@ namespace DaxStudio.UI.Model
                 using (var client = GetHttpClient())
                 {
                     try { 
-                    HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return response.Content.ReadAsStringAsync().Result;
-                    }
+                        HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return JsonConvert.DeserializeObject<string>( response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<string>().Result;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -130,7 +132,8 @@ namespace DaxStudio.UI.Model
                         HttpResponseMessage response = client.GetAsync("workbook/worksheets").Result;
                         if (response.IsSuccessStatusCode)
                         {
-                            return response.Content.ReadAsAsync<string[]>().Result;
+                            return JsonConvert.DeserializeObject<string[]>(response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<string[]>().Result;
                         }
                         
                     }
@@ -152,7 +155,7 @@ namespace DaxStudio.UI.Model
             using (var client = GetHttpClient())
             {
                 try { 
-                await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult);
+                await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
                 /*await client.PostAsync<IStaticQueryResult>("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
                         {
                             SerializerSettings = new JsonSerializerSettings
@@ -182,10 +185,11 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult);
+                    var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult).ConfigureAwait(false);
                     if (resp.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        var str = await resp.Content.ReadAsStringAsync();
+                        //var str = resp.Content.ReadAsAsync<string>().Result;
+                        var str = JsonConvert.DeserializeObject<string>(resp.Content.ReadAsStringAsync().Result);
                         var msg = (string)Newtonsoft.Json.Linq.JObject.Parse(str)["Message"];
                         
                         doc.OutputError(string.Format("Error sending results to Excel ({0})", msg));

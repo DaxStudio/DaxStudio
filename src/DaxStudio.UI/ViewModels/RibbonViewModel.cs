@@ -73,7 +73,6 @@ namespace DaxStudio.UI.ViewModels
         private void InitRunStyles()
         {
             // populate run styles
-            RunStyles = new List<RunStyle>();
             RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
 #if DEBUG
@@ -87,7 +86,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
 
-        public List<RunStyle> RunStyles { get; set; }
+        public List<RunStyle> RunStyles { get; } = new List<RunStyle>();
         private RunStyle _selectedRunStyle;
         public RunStyle SelectedRunStyle {
             get { return _selectedRunStyle; }
@@ -851,12 +850,13 @@ namespace DaxStudio.UI.ViewModels
         public void ExportAllData()
         {
             if (ActiveDocument == null) return;
-
-            //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-            using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
+            try
             {
+                //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
+                using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
+                {
 
-                _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
                     { "ShowInTaskbar", false},
@@ -865,6 +865,12 @@ namespace DaxStudio.UI.ViewModels
                     { "AllowsTransparency",true}
 
                 });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(RibbonViewModel), nameof(ExportAllData), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
             }
         }
 

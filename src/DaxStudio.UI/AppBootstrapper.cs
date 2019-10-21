@@ -201,7 +201,7 @@ namespace DaxStudio.UI
             var hostAssembly = Assembly.GetAssembly(hostType);
 
             return AssemblySource.Instance.Any() ?
-                new Assembly[] { } : 
+                Array.Empty<Assembly>() : 
                 new[] {
                     Assembly.GetExecutingAssembly()
                     ,hostAssembly

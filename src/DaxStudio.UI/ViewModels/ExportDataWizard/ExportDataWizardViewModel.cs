@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -41,10 +42,26 @@ namespace DaxStudio.UI.ViewModels
         #region Constructor
         public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document)
         {
-            EventAggregator = eventAggregator;
+            Document = document ?? throw new ArgumentNullException(nameof(document));
+            EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+
             EventAggregator.Subscribe(this);
 
-            Document = document;
+            // check connection state
+            if (Document.Connection == null)
+            {
+                throw new ArgumentException("The current document is not connected to a data source", "Document");
+            }
+
+            if (Document.Connection.State != ConnectionState.Open)
+            {
+                throw new ArgumentException("The connection for the current document is not in an open state", "Document");
+            }
+
+            if (Document.Connection.Database.Models.Count == 0)
+            {
+                throw new ArgumentException("The connection for the current document does not have a data model", "Document");
+            }
 
             PopulateTablesList();
 
@@ -55,7 +72,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void PopulateTablesList()
         {
+            
             var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
+            if (!tables.Any()) throw new ArgumentException("There are no visible tables to export in the current data model");
+
             foreach ( var t in tables)
             {
                 Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
