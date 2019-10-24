@@ -35,7 +35,6 @@ namespace DaxStudio.UI.ViewModels
         private readonly Application _app;
         private Timer _autoSaveTimer;
         private InputBindings _inputBindings;
-
         
         //private ILogger log;
         [ImportingConstructor]
@@ -47,6 +46,7 @@ namespace DaxStudio.UI.ViewModels
                             , IDaxStudioHost host
                             , IVersionCheck versionCheck
                             , IGlobalOptions options
+                            , IAutoSaver autoSaver
                             )
         {
 
@@ -54,6 +54,7 @@ namespace DaxStudio.UI.ViewModels
             Ribbon.Shell = this;
             StatusBar = statusBar;
             Options = options;
+            AutoSaver = autoSaver;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -69,7 +70,7 @@ namespace DaxStudio.UI.ViewModels
             var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
             var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
             // check for auto-saved files and offer to recover them
-            if (filesToRecover.Count() > 0)
+            if (filesToRecover.Any())
             {
                 recoveringFiles = true;
                 RecoverAutoSavedFiles(autoSaveInfo);
@@ -81,7 +82,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // if a filename was passed in on the command line open it
-            if (_host.CommandLineFileName != string.Empty) Tabs.NewQueryDocument(_host.CommandLineFileName);
+            if (!string.IsNullOrEmpty(_host.CommandLineFileName)) Tabs.NewQueryDocument(_host.CommandLineFileName);
 
             // if no tabs are open at this point and we are not recovering autosave file then, open a blank document
             if (Tabs.Items.Count == 0 && !recoveringFiles) NewDocument();
@@ -132,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-
+        public IAutoSaver AutoSaver { get; }
         public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }

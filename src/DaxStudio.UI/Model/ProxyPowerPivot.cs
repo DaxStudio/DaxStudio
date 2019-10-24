@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using DaxStudio.UI.Events;
 using Serilog;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace DaxStudio.UI.Model
 {
@@ -24,6 +25,7 @@ namespace DaxStudio.UI.Model
         private ViewModels.DocumentViewModel _activeDocument;
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
         {
+            Contract.Requires(eventAggregator != null, "The eventAggregator argument must not be null");
             _port = port;
             _baseUri = new Uri($"http://localhost:{port}/");
             _eventAggregator = eventAggregator;

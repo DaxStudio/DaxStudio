@@ -14,7 +14,7 @@ namespace DaxStudio.Common
         public const string ExcelLogFileName = "DaxStudioExcel-{Date}.log";
         public const string StandaloneLogFileName = "DaxStudio-{Date}.log";
         public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveMasterIndex.json";
-        public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
+        //public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
         public const string AvalonDockLayoutFile = @"%APPDATA%\DaxStudio\WindowLayouts\Custom.xml";
         public const string AvalonDockDefaultLayoutFile = @"DaxStudio.UI.Resources.AvalonDockLayout-Default.xml";
 

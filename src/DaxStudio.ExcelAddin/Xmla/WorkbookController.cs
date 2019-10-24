@@ -103,14 +103,17 @@ namespace DaxStudio.ExcelAddin.Xmla
         [Route("LinkedQueryResult")]
         public IHttpActionResult PostLinkedQueryResult(LinkedQueryResult results)
         {
+            if (results == null)
+            {
+                return this.BadRequest("The results parameter cannot be null");
+            }
+
             try
             {
                 Log.Debug("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "Start");
                 using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
                 {
-#pragma warning disable CA1062 // Validate arguments of public methods
                     var sht = xl.GetTargetWorksheet(results.TargetSheet);
-#pragma warning restore CA1062 // Validate arguments of public methods
                     xl.DaxQueryTable(sht, results.DaxQuery, results.ConnectionString);
                 }
                 Log.Debug("{class} {method} {event}", "WorkbookController", "PostLinkedQueryResult", "End");

@@ -1,40 +1,63 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
-    public static class AutoSaver
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    [Export(typeof(IAutoSaver))]
+    public class AutoSaver : IAutoSaver
     {
         private const int INDEX_VERSION = 1;
-        private static Dictionary<int, AutoSaveIndex> _masterAutoSaveIndex;
+        private Dictionary<int, AutoSaveIndex> _masterAutoSaveIndex;
 
-        static AutoSaver()
+        [ImportingConstructor]
+        public AutoSaver(IGlobalOptions options)
         {
+            Options = options;
+            SetAutoSaveFolder();
             CreateAutoSaveFolder();
             _masterAutoSaveIndex = new Dictionary<int, AutoSaveIndex>();
             //LoadAutoSaveMasterIndex();
             GetCurrentAutoSaveIndex();
         }
 
-        private static void CreateAutoSaveFolder()
+        public IGlobalOptions Options { get; }
+
+        private void CreateAutoSaveFolder()
         {
             Directory.CreateDirectory(AutoSaveFolder);
         }
 
-        static string AutoSaveFolder => Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder); 
+        private void SetAutoSaveFolder()
+        {
+            if (Options.IsRunningPortable)
+            {
+                var exePath = new FileInfo(Assembly.GetEntryAssembly().Location);
+                AutoSaveFolder = Path.Combine(exePath.DirectoryName, "AutoSaveFiles");
+            }
+
+            AutoSaveFolder = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AppDataSettingsFolder), "AutoSaveFiles");
+        }
+
+        public string AutoSaveFolder { get; private set; }
         
         static int CurrentProcessId => Process.GetCurrentProcess().Id;
 
-        private static AutoSaveIndex GetCurrentAutoSaveIndex()
+        private AutoSaveIndex GetCurrentAutoSaveIndex()
         {
             AutoSaveIndex index;
             _masterAutoSaveIndex.TryGetValue(CurrentProcessId, out index);
@@ -46,8 +69,9 @@ namespace DaxStudio.UI.Utils
             return index;
         }
 
-        public async static Task Save(DocumentTabViewModel tabs)
+        public async Task Save(DocumentTabViewModel tabs)
         {
+            Contract.Requires(tabs != null, "The tabs parameter must not be null");
             try
             {
                 // exit here if no tabs are open
@@ -62,8 +86,8 @@ namespace DaxStudio.UI.Utils
 
                     // don't autosave if the document has not changed since last save
                     // or if IsDirty is false meaning that the file has been manually saved
-                    if (tab.IsDirty || tab.LastAutoSaveUtcTime < tab.LastModifiedUtcTime) 
-                        await tab.AutoSave();
+                    if (tab.IsDirty && tab.LastAutoSaveUtcTime < tab.LastModifiedUtcTime) 
+                        await tab.AutoSave().ConfigureAwait(false);
                     
                 }
                 SaveIndex(index);
@@ -89,7 +113,7 @@ namespace DaxStudio.UI.Utils
 
 
         // this gets called from a timer, so it's already running off the UI thread, so this IO should not be blocking
-        private static void SaveIndex(AutoSaveIndex index)
+        private void SaveIndex(AutoSaveIndex index)
         {
             JsonSerializer serializer = new JsonSerializer();
             using (StreamWriter sw = new StreamWriter(AutoSaveIndexFile(index)))
@@ -100,7 +124,7 @@ namespace DaxStudio.UI.Utils
         }
 
         // called on a clean shutdown, removes all autosave files
-        internal static void RemoveAll()
+        public void RemoveAll()
         {
             
             // delete autosaveindex
@@ -122,7 +146,7 @@ namespace DaxStudio.UI.Utils
         }
 
         // theis method deletes any indexes/files that have been recovered
-        public static void CleanUpRecoveredFiles()
+        public void CleanUpRecoveredFiles()
         {
             try
             {
@@ -150,9 +174,9 @@ namespace DaxStudio.UI.Utils
         }
 
 
-        internal static string AutoSaveIndexFile(AutoSaveIndex index)
+        internal string AutoSaveIndexFile(AutoSaveIndex index)
         {
-            return Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder),index.IndexFile); 
+            return Path.Combine(AutoSaveFolder,index.IndexFile); 
         }
 
         internal static string AutoSaveMasterIndexFile
@@ -163,7 +187,7 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        internal static Dictionary<int,AutoSaveIndex> LoadAutoSaveMasterIndex()
+        public Dictionary<int,AutoSaveIndex> LoadAutoSaveMasterIndex()
         {
             try
             {
@@ -184,7 +208,7 @@ namespace DaxStudio.UI.Utils
             return _masterAutoSaveIndex;
         }
 
-        private static void UpdateMasterIndexForRunningInstances()
+        private void UpdateMasterIndexForRunningInstances()
         {
             //var currentProcessFileName = Process.GetCurrentProcess().StartInfo.FileName;
             var currentProcessName = Process.GetCurrentProcess().ProcessName;
@@ -235,7 +259,7 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        internal static void EnsureDirectoryExists(string filePath)
+        public void EnsureDirectoryExists(string filePath)
         {
             FileInfo fi = new FileInfo(filePath);
             if (!fi.Directory.Exists)
@@ -244,11 +268,11 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        internal static string GetAutoSaveText(Guid autoSaveId)
+        public string GetAutoSaveText(Guid autoSaveId)
         {
             try
             {
-                var fileName = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder), $"{autoSaveId}.dax");
+                var fileName = Path.Combine(AutoSaveFolder, $"{autoSaveId}.dax");
 
                 using (TextReader tr = new StreamReader(fileName, true))
                 {

@@ -250,7 +250,7 @@ namespace DaxStudio.CheckerApp
                 }
 
             }
-            string configPath = this.GetConfigPath(str);
+            string configPath = GetConfigPath(str);
             if (!File.Exists(configPath))
             {
                 Output.AppendIndentedLine(configPath + " file not found.");
@@ -497,15 +497,15 @@ namespace DaxStudio.CheckerApp
             }
         }
 
-        private string GetConfigPath(string path)
+        private static string GetConfigPath(string path)
         {
-            if (path.EndsWith("\""))
+            if (path.EndsWith("\"", StringComparison.InvariantCultureIgnoreCase))
             {
                 return (path.TrimStart(new char[] { '"' }).TrimEnd(new char[] { '"' }) + ".config");
             }
             return (path + ".config");
         }
-        private string GetExcelAddinLocation()
+        private static string GetExcelAddinLocation()
         {
             string keyPath = @"Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
             string manifest = string.Empty;
@@ -513,20 +513,27 @@ namespace DaxStudio.CheckerApp
 
             if (Environment.Is64BitProcess)
             {
+                RegistryKey basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32); ;
                 // check 32 & 64 bit keys
-                var basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                key = basekey.OpenSubKey(keyPath);
-                if (key == null)
-                {
-                    // if no 32 bit entry is found look for the 64 bit version
-                    basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                try {
+                    // try the 32bit key 
                     key = basekey.OpenSubKey(keyPath);
+                    if (key == null)
+                    {
+                        // if no 32 bit entry is found look for the 64 bit version
+                        basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                        key = basekey.OpenSubKey(keyPath);
+                    }
+                }
+                finally
+                {
+                    basekey.Dispose();
                 }
 
             }
             else
             {
-                // use the default registry base key
+                // use the default registry base key for 32 bit
                 key = Registry.LocalMachine.OpenSubKey(keyPath);
             }
 
@@ -536,6 +543,7 @@ namespace DaxStudio.CheckerApp
                 manifest = manifest.Split('|')[0];
                 manifest = manifest.Replace("file:///", "");
                 manifest = manifest.Replace(".vsto", ".dll");
+                key.Dispose();
             }
 
             return manifest;

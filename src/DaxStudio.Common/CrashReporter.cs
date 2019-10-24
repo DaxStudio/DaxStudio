@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Utils
         
         public static void ReportCrash(Exception exception, string developerMessage)
         {
-            var reportCrash = new ReportCrash()// "daxstudiocrash@gmail.com")
+            var reportCrash = new ReportCrash("daxstudiocrash@gmail.com")
             {
                 AnalyzeWithDoctorDump = true,
                 DeveloperMessage = developerMessage,

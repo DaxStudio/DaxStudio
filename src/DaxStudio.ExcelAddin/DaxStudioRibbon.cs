@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Serilog;
 using System.Windows;
 using DaxStudio.Common;
+using System.IO;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -92,7 +93,14 @@ namespace DaxStudio.ExcelAddin
 
             var path = "";
             // look for daxstudio.exe in the same folder as daxstudio.dll
-            path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
+            path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
+            if (!File.Exists(path))
+            {
+                // try getting daxstudio.exe from the parent directory
+                path = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "daxstudio.exe"));
+                if (!File.Exists(path)) throw new FileNotFoundException("Excel Addin is unable to launch the DAX Studio User Interface");
+            }
+
 
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process

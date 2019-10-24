@@ -109,7 +109,14 @@ namespace DaxStudio.UI.ViewModels
 
 
         [ImportingConstructor]
-        public DocumentViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, IDaxStudioHost host, RibbonViewModel ribbon, ServerTimingDetailsViewModel serverTimingDetails , IGlobalOptions options, ISettingProvider settingProvider)
+        public DocumentViewModel(IWindowManager windowManager
+            , IEventAggregator eventAggregator
+            , IDaxStudioHost host
+            , RibbonViewModel ribbon
+            , ServerTimingDetailsViewModel serverTimingDetails 
+            , IGlobalOptions options
+            , ISettingProvider settingProvider
+            , IAutoSaver autoSaver)
         {
             _host = host;
             _eventAggregator = eventAggregator;
@@ -120,6 +127,7 @@ namespace DaxStudio.UI.ViewModels
             _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
             _uniqueId = Guid.NewGuid();
             Options = options;
+            AutoSaver = autoSaver;
             IconSource = ISC.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
             Init(_ribbon);
         }
@@ -1925,7 +1933,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         internal string AutoSaveFileName {
-            get { return Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AutoSaveFolder), $"{AutoSaveId.ToString()}.dax"); }
+            get { return Path.Combine(AutoSaver.AutoSaveFolder, $"{AutoSaveId.ToString()}.dax"); }
         }
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
@@ -3333,6 +3341,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IGlobalOptions Options { get; set; }
+        public IAutoSaver AutoSaver { get; }
 
         //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
 
