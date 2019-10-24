@@ -12,6 +12,7 @@ using DaxStudio.UI.Events;
 using Serilog;
 using System.IO;
 using System.Diagnostics.Contracts;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -79,9 +80,10 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
+                        var innerEx = ex.GetLeafException();
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
                         Log.Error("{class} {method} {exception} {stacktrace}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", ex.Message, ex.StackTrace );
-                        doc.OutputError(string.Format("Error checking if active Excel workbook has a PowerPivot ({0})", ex.Message));
+                        doc.OutputError($"Error checking if active Excel workbook has a PowerPivot model ({innerEx.Message})");
                     }
 
 

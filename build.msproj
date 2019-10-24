@@ -41,7 +41,7 @@
 
   <Target Name="DeleteReleaseFolder">
     <Message Text="Cleaning Release folder" Importance="High"/>
-    <RemoveDir Directories="./Release" />
+    <RemoveDir Directories="\Release\" />
   </Target>
 
   <Target Name="MakeReleaseFolder" DependsOnTargets="DeleteReleaseFolder">

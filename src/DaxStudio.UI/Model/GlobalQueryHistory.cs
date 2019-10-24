@@ -9,6 +9,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Serilog;
 using DaxStudio.Interfaces;
+using System.Diagnostics.Contracts;
 
 namespace DaxStudio.UI.Model
 {
@@ -22,14 +23,13 @@ namespace DaxStudio.UI.Model
         [ImportingConstructor]
         public GlobalQueryHistory(IEventAggregator eventAggregator, IGlobalOptions globalOptions )
         {
+            Contract.Requires(eventAggregator != null, "The eventAggregator paramter must not be null");
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             QueryHistory = new BindableCollection<QueryHistoryEvent>();
 
-            _queryHistoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "DaxStudio",
-                "QueryHistory");
+            _queryHistoryPath = ApplicationPaths.QueryHistoryPath;
             Log.Debug("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Setting Query History Path", _queryHistoryPath);
             if (!Directory.Exists(_queryHistoryPath))
             {
@@ -58,7 +58,7 @@ namespace DaxStudio.UI.Model
                     }
                 }
                 QueryHistory.AddRange(tempHist);
-                Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList.Count()  + " files)");
+                Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList.Length + " files)");
             });
         }
 
@@ -89,11 +89,12 @@ namespace DaxStudio.UI.Model
 
         private string UniqueFilePath(QueryHistoryEvent message)
         {
+            IFormatProvider fmt = System.Globalization.CultureInfo.InvariantCulture;
             return Path.Combine(_queryHistoryPath,
-                string.Format("{0}-query-history.json"
-                , message.StartTime.ToString("yyyyMMddHHmmssfff")));
+                string.Format(fmt,"{0}-query-history.json"
+                , message.StartTime.ToString("yyyyMMddHHmmssfff",fmt)));
         }
 
-        public BindableCollection<QueryHistoryEvent> QueryHistory { get; set; }
+        public BindableCollection<QueryHistoryEvent> QueryHistory { get; }
     }
 }

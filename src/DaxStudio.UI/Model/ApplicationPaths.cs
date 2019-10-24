@@ -19,12 +19,13 @@ namespace DaxStudio.UI.Model
             
             LogPath = Path.Combine(BasePath, "Log");
             QueryHistoryPath = Path.Combine(BasePath, "QueryHistory");
-            
+            AutoSavePath = Path.Combine(BasePath, "AutoSaveFiles");
         }
 
         public static string LogPath {get;}
         public static string QueryHistoryPath { get; }
         public static string PortableFile { get; }
+        public static string AutoSavePath { get; }
         private static bool IsInPortableMode { get; }
         public static string BasePath { get; }
 

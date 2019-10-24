@@ -38,8 +38,8 @@ namespace DaxStudio.Standalone
         private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)
         {
             //Log.Debug("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.RequestingAssembly, args.Name);
-            System.Diagnostics.Debug.WriteLine(string.Format("ReqAss: {0}, Name{1}", args.RequestingAssembly, args.Name));
-            if (args.Name.StartsWith("Microsoft.AnalysisServices")) return SsasAssemblyResolver.Instance.Resolve(args.Name);
+            System.Diagnostics.Debug.WriteLine($"ReqAss: {args.RequestingAssembly}, Name{args.Name}");
+            if (args.Name.StartsWith("Microsoft.AnalysisServices", StringComparison.InvariantCultureIgnoreCase)) return SsasAssemblyResolver.Instance.Resolve(args.Name);
             return null;
         }
         

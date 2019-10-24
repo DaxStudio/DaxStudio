@@ -22,5 +22,15 @@ namespace DaxStudio.UI.Extensions
             }
             return msg;
         }
+
+        public static Exception GetLeafException(this Exception ex)
+        {
+            var innerEx = ex;
+            while (innerEx.InnerException != null)
+            {
+                innerEx = innerEx.InnerException;
+            }
+            return innerEx;
+        }
     }
 }

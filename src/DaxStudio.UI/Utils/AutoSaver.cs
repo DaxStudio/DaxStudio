@@ -28,7 +28,6 @@ namespace DaxStudio.UI.Utils
         public AutoSaver(IGlobalOptions options)
         {
             Options = options;
-            SetAutoSaveFolder();
             CreateAutoSaveFolder();
             _masterAutoSaveIndex = new Dictionary<int, AutoSaveIndex>();
             //LoadAutoSaveMasterIndex();
@@ -39,21 +38,9 @@ namespace DaxStudio.UI.Utils
 
         private void CreateAutoSaveFolder()
         {
-            Directory.CreateDirectory(AutoSaveFolder);
+            Directory.CreateDirectory(ApplicationPaths.AutoSavePath);
         }
 
-        private void SetAutoSaveFolder()
-        {
-            if (Options.IsRunningPortable)
-            {
-                var exePath = new FileInfo(Assembly.GetEntryAssembly().Location);
-                AutoSaveFolder = Path.Combine(exePath.DirectoryName, "AutoSaveFiles");
-            }
-
-            AutoSaveFolder = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.AppDataSettingsFolder), "AutoSaveFiles");
-        }
-
-        public string AutoSaveFolder { get; private set; }
         
         static int CurrentProcessId => Process.GetCurrentProcess().Id;
 
@@ -135,7 +122,7 @@ namespace DaxStudio.UI.Utils
             //        at the moment this removes all auto save files from all instances
             //        so if one instance crashes and another is still open closing the open one
             //        will wipe out any files from the crashed instance... 
-            System.IO.DirectoryInfo di = new DirectoryInfo(AutoSaveFolder);
+            System.IO.DirectoryInfo di = new DirectoryInfo(ApplicationPaths.AutoSavePath);
             foreach (FileInfo file in di.GetFiles())
             {
                 file.Delete();
@@ -157,13 +144,13 @@ namespace DaxStudio.UI.Utils
 
                 foreach (var f in filesToDelete)
                 {
-                    File.Delete(Path.Combine(AutoSaveFolder, $"{f.AutoSaveId}.dax"));
+                    File.Delete(Path.Combine(ApplicationPaths.AutoSavePath, $"{f.AutoSaveId}.dax"));
                 }
 
                 for (int i = indexesToDelete.Count() -1; i >= 0; i-- )
                 {
                     var idx = indexesToDelete.ElementAt(i);
-                    File.Delete(Path.Combine(AutoSaveFolder, $"index-{idx.IndexId}.json"));
+                    File.Delete(Path.Combine(ApplicationPaths.AutoSavePath, $"index-{idx.IndexId}.json"));
                     _masterAutoSaveIndex.Remove(idx.ProcessId);
                 }
             }
@@ -176,7 +163,7 @@ namespace DaxStudio.UI.Utils
 
         internal string AutoSaveIndexFile(AutoSaveIndex index)
         {
-            return Path.Combine(AutoSaveFolder,index.IndexFile); 
+            return Path.Combine(ApplicationPaths.AutoSavePath,index.IndexFile); 
         }
 
         internal static string AutoSaveMasterIndexFile
@@ -192,7 +179,7 @@ namespace DaxStudio.UI.Utils
             try
             {
                 // get all index-*.json files
-                var indexFiles = Directory.GetFiles(AutoSaveFolder, "*.json");
+                var indexFiles = Directory.GetFiles(ApplicationPaths.AutoSavePath, "*.json");
                 foreach (var f in indexFiles)
                 {
                     var idx = LoadAutoSaveIndex(f);
@@ -272,7 +259,7 @@ namespace DaxStudio.UI.Utils
         {
             try
             {
-                var fileName = Path.Combine(AutoSaveFolder, $"{autoSaveId}.dax");
+                var fileName = Path.Combine(ApplicationPaths.AutoSavePath, $"{autoSaveId}.dax");
 
                 using (TextReader tr = new StreamReader(fileName, true))
                 {

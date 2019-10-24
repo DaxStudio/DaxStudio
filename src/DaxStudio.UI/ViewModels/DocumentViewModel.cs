@@ -676,7 +676,7 @@ namespace DaxStudio.UI.ViewModels
             get {
                 //var cubeEquals = this.Connection.IsMultiDimensional ? $";Cube={this.Sele}: "";
                 //return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase );
-                return Connection.ConnectionStringWithInitialCatalog;
+                return Connection==null?Connection.ConnectionStringWithInitialCatalog:string.Empty;
             }
         }
 
@@ -1933,7 +1933,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         internal string AutoSaveFileName {
-            get { return Path.Combine(AutoSaver.AutoSaveFolder, $"{AutoSaveId.ToString()}.dax"); }
+            get { return Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax"); }
         }
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts

@@ -92,8 +92,8 @@ Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdi
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
 ;Excel Addin configs
-Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
-Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -111,8 +111,6 @@ Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Descr
 ;Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO DaxStudio /D ""DaxStudio Installed"""; WorkingDir: "{sys}"; Flags: runascurrentuser runhidden; StatusMsg: "Registering DaxStudio Eventlog Source"; Components: Core
 ;Filename: {code:GetV4NetDir}ngen.exe; Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; 
 ;Check: CheckFramework;
-;#include "scripts\products\sql2017adomdclient.iss"
-;#include "scripts\products\sql2017amo.iss"
 
 #include "scripts\products.iss"
 #include "scripts\products\stringversion.iss"
@@ -181,6 +179,65 @@ Type: filesandordirs; Name: "{app}\*.exe"
 Type: filesandordirs; Name: "{app}\*.vsto"
 Type: filesandordirs; Name: "{app}\*.manifest"
 Type: filesandordirs; Name: "{app}\*.config"
+
+Type: filesandordirs; Name: "{app}\ar"
+Type: filesandordirs; Name: "{app}\bg"
+Type: filesandordirs; Name: "{app}\ca"
+Type: filesandordirs; Name: "{app}\ca-ES"
+Type: filesandordirs; Name: "{app}\cs"
+Type: filesandordirs; Name: "{app}\cs-CZ"
+Type: filesandordirs; Name: "{app}\da"
+Type: filesandordirs; Name: "{app}\de"
+Type: filesandordirs; Name: "{app}\de-DE"
+Type: filesandordirs; Name: "{app}\el"
+Type: filesandordirs; Name: "{app}\en"
+Type: filesandordirs; Name: "{app}\es"
+Type: filesandordirs; Name: "{app}\es-ES"
+Type: filesandordirs; Name: "{app}\et"
+Type: filesandordirs; Name: "{app}\eu"
+Type: filesandordirs; Name: "{app}\fi"
+Type: filesandordirs; Name: "{app}\fr"
+Type: filesandordirs; Name: "{app}\fr-FR"
+Type: filesandordirs; Name: "{app}\gl"
+Type: filesandordirs; Name: "{app}\he"
+Type: filesandordirs; Name: "{app}\hi"
+Type: filesandordirs; Name: "{app}\hi-IN"
+Type: filesandordirs; Name: "{app}\hr"
+Type: filesandordirs; Name: "{app}\hu"
+Type: filesandordirs; Name: "{app}\id"
+Type: filesandordirs; Name: "{app}\it"
+Type: filesandordirs; Name: "{app}\it-IT"
+Type: filesandordirs; Name: "{app}\ja"
+Type: filesandordirs; Name: "{app}\ja-JP"
+Type: filesandordirs; Name: "{app}\kk"
+Type: filesandordirs; Name: "{app}\ko"
+Type: filesandordirs; Name: "{app}\lt"
+Type: filesandordirs; Name: "{app}\lv"
+Type: filesandordirs; Name: "{app}\ms"
+Type: filesandordirs; Name: "{app}\nl"
+Type: filesandordirs; Name: "{app}\nl-BE"
+Type: filesandordirs; Name: "{app}\nl-NL"
+Type: filesandordirs; Name: "{app}\no"
+Type: filesandordirs; Name: "{app}\pl"
+Type: filesandordirs; Name: "{app}\pt"
+Type: filesandordirs; Name: "{app}\pt-BR"
+Type: filesandordirs; Name: "{app}\pt-PT"
+Type: filesandordirs; Name: "{app}\ro"
+Type: filesandordirs; Name: "{app}\ru"
+Type: filesandordirs; Name: "{app}\ru-RU"
+Type: filesandordirs; Name: "{app}\sk"
+Type: filesandordirs; Name: "{app}\sl"
+Type: filesandordirs; Name: "{app}\sr-Cyrl"
+Type: filesandordirs; Name: "{app}\sr-Latn"
+Type: filesandordirs; Name: "{app}\sv"
+Type: filesandordirs; Name: "{app}\th"
+Type: filesandordirs; Name: "{app}\tr"
+Type: filesandordirs; Name: "{app}\uk"
+Type: filesandordirs; Name: "{app}\vi"
+Type: filesandordirs; Name: "{app}\zh-CHS"
+Type: filesandordirs; Name: "{app}\zh-CHT"
+Type: filesandordirs; Name: "{app}\zh-Hans"
+Type: filesandordirs; Name: "{app}\zh-Hant"
 
 [Code]
 #include "scripts/clihelp.iss"

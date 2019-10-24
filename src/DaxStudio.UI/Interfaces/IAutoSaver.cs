@@ -15,6 +15,5 @@ namespace DaxStudio.UI.Interfaces
         Task Save(DocumentTabViewModel tabs);
         void RemoveAll();
 
-        string AutoSaveFolder { get; }
     }
 }
