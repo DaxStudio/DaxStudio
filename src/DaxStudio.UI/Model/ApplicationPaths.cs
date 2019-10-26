@@ -16,7 +16,9 @@ namespace DaxStudio.UI.Model
             BasePath = IsInPortableMode 
                            ? directory
                            : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            
+
+            BasePath = @"d:\DaxStudio";
+
             LogPath = Path.Combine(BasePath, "Log");
             QueryHistoryPath = Path.Combine(BasePath, "QueryHistory");
             AutoSavePath = Path.Combine(BasePath, "AutoSaveFiles");

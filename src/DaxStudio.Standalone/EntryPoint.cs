@@ -64,26 +64,11 @@ namespace DaxStudio.Standalone
 
                 var logPath = ApplicationPaths.LogPath;
 
-                //var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
-                //                            Constants.StandaloneLogFileName);
-
-
-                // if we have a local settings.json file we are running in "portable" mode
-                //if (JsonSettingProviderBase.SettingsFileExists())
-                //{
-                //    logPath = Path.Combine(JsonSettingProviderBase.LogPath, Constants.StandaloneLogFileName);
-                //}
-
-                // TODO if is portable write to local log folder
-                //var settings = IoC.Get<ISettingProvider>();
-                //logPath = Path.Combine(settings.LogPath, Constants.StandaloneLogFileName);
 
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 
                 log = config.CreateLogger();
-
-                //var app2 = IoC.Get<Application>();
 
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
@@ -98,8 +83,6 @@ namespace DaxStudio.Standalone
                 var theme = "Light"; // settingProvider.GetValue<string>("Theme", "Light");
                 if (theme == "Dark") app.LoadDarkTheme();
                 else app.LoadLightTheme();
-
-
 
                 
                 // then load Caliburn Micro bootstrapper

@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
@@ -22,7 +21,7 @@ namespace DaxStudio.UI.Utils
     public class AutoSaver : IAutoSaver
     {
         private const int INDEX_VERSION = 1;
-        private Dictionary<int, AutoSaveIndex> _masterAutoSaveIndex;
+        private readonly Dictionary<int, AutoSaveIndex> _masterAutoSaveIndex;
 
         [ImportingConstructor]
         public AutoSaver(IGlobalOptions options)
@@ -46,8 +45,7 @@ namespace DaxStudio.UI.Utils
 
         private AutoSaveIndex GetCurrentAutoSaveIndex()
         {
-            AutoSaveIndex index;
-            _masterAutoSaveIndex.TryGetValue(CurrentProcessId, out index);
+            _masterAutoSaveIndex.TryGetValue(CurrentProcessId, out AutoSaveIndex index);
             if (index == null)
             {
                 index = AutoSaveIndex.Create();
@@ -73,7 +71,7 @@ namespace DaxStudio.UI.Utils
 
                     // don't autosave if the document has not changed since last save
                     // or if IsDirty is false meaning that the file has been manually saved
-                    if (tab.IsDirty && tab.LastAutoSaveUtcTime < tab.LastModifiedUtcTime) 
+                    if (tab.IsDirty && tab.LastAutoSaveUtcTime < tab.LastModifiedUtcTime)
                         await tab.AutoSave().ConfigureAwait(false);
                     
                 }
@@ -84,19 +82,6 @@ namespace DaxStudio.UI.Utils
                 Log.Error(ex, "{class} {method} {message}", "AutoSaver", "Save", ex.Message);
             }
         }
-
-
-
-        //private static void SaveMasterIndex()
-        //{
-        //    // TODO - saves current process details to master index
-        //    JsonSerializer serializer = new JsonSerializer();
-        //    using (StreamWriter sw = new StreamWriter(AutoSaveMasterIndexFile))
-        //    using (JsonWriter writer = new JsonTextWriter(sw))
-        //    {
-        //        serializer.Serialize(writer, _masterAutoSaveIndex);
-        //    }
-        //}
 
 
         // this gets called from a timer, so it's already running off the UI thread, so this IO should not be blocking
@@ -113,23 +98,48 @@ namespace DaxStudio.UI.Utils
         // called on a clean shutdown, removes all autosave files
         public void RemoveAll()
         {
-            
-            // delete autosaveindex
-            SharingViolations.Wrap(()=> File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex())));
+            try {
+                // delete autosaveindex
+                SharingViolations.Wrap(() => File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex())));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSaveIndex: {ex.Message}");
+            }
 
             // delete autosave files
             // TODO - should I only delete the files for this instance of DAX Studio??
             //        at the moment this removes all auto save files from all instances
             //        so if one instance crashes and another is still open closing the open one
-            //        will wipe out any files from the crashed instance... 
-            System.IO.DirectoryInfo di = new DirectoryInfo(ApplicationPaths.AutoSavePath);
-            foreach (FileInfo file in di.GetFiles())
+            //        will wipe out any files from the crashed instance...
+            FileInfo[] files;
+            try
             {
-                file.Delete();
+                System.IO.DirectoryInfo di = new DirectoryInfo(ApplicationPaths.AutoSavePath);
+                files = di.GetFiles();
+
+                foreach (FileInfo file in files)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSave file '{file.FullName}' - {ex.Message}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error getting AutoSave file collection: {ex.Message}");
             }
 
             // remove entry from master auto save index
-            _masterAutoSaveIndex.Remove(CurrentProcessId);
+            if (_masterAutoSaveIndex.ContainsKey(CurrentProcessId)) {
+                _masterAutoSaveIndex.Remove(CurrentProcessId);
+            }
         }
 
         // theis method deletes any indexes/files that have been recovered

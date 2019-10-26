@@ -33,7 +33,7 @@ namespace ADOTabular
         private AdomdConnection _adomdConn;
         private readonly AdomdType _connectionType;
         private string _currentDatabase;
-        private Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType)
             : this(connectionString, connectionType, ADOTabularMetadataDiscovery.Csdl)
@@ -66,8 +66,7 @@ namespace ADOTabular
             {
                 Visitor = new MetaDataVisitorCSDL(this);
             }
-            if (ConnectionChanged != null)
-                ConnectionChanged(this, new EventArgs());
+            ConnectionChanged?.Invoke(this, new EventArgs());
         }
 
         private ADOTabularDatabase _db;
@@ -170,8 +169,7 @@ namespace ADOTabular
             //{
             _adomdConn.ChangeDatabase(database);
             //}
-            if (ConnectionChanged != null)
-                ConnectionChanged(this, new EventArgs());
+            ConnectionChanged?.Invoke(this, new EventArgs());
 
             _spid = 0; // reset the spid to 0 so that it will get re-evaluated
                        // the PowerBI xmla endpoint sets the permissions to call DISCOVER_SESSIONS on a per data set basis
@@ -783,7 +781,7 @@ namespace ADOTabular
 
         public void Refresh()
         {
-            _columns.Clear();
+            Columns.Clear();
             _adoTabDatabaseColl = null;
             _db = null;
             _adomdConn.RefreshMetadata();
@@ -800,30 +798,13 @@ namespace ADOTabular
             }
         }
 
-        internal object CurrentCubeInternal { get { return  (_currentCube == string.Empty)? string.Empty:string.Format(";Cube={0}", _currentCube); } }
+        internal object CurrentCubeInternal { get { return  (string.IsNullOrEmpty(_currentCube)) ? string.Empty:string.Format(";Cube={0}", _currentCube); } }
 
-        private Dictionary<string, ADOTabularColumn> _columns = new Dictionary<string, ADOTabularColumn>();
-        public Dictionary<string,ADOTabularColumn> Columns { get { return _columns; } }
+        public Dictionary<string, ADOTabularColumn> Columns { get; } = new Dictionary<string, ADOTabularColumn>();
 
         public string ServerType { get; set; }
-
-        private string _serverLocation = null;
-        public string ServerLocation
-        {
-            get
-            {
-                return _serverLocation;
-            }
-        }
-
-        private string _serverEdition = null;
-        public string ServerEdition
-        {
-            get
-            {
-                return _serverEdition;
-            }
-        }
+        public string ServerLocation { get; private set; } = null;
+        public string ServerEdition { get; private set; } = null;
 
         public int LocaleIdentifier { get {
                 if (_adomdConn == null) return 0;
@@ -857,32 +838,34 @@ namespace ADOTabular
 
             try
             {
-                _serverLocation = xdoc.SelectSingleNode("//ddl400:ServerLocation", oMgr).InnerText ?? "";
+                ServerLocation = xdoc.SelectSingleNode("//ddl400:ServerLocation", oMgr).InnerText ?? "";
             }
             catch
             {
-                _serverLocation = "";
+                ServerLocation = "";
             }
             try
             {
-                _serverEdition = xdoc.SelectSingleNode("//d:Edition", oMgr).InnerText ?? "";
+                ServerEdition = xdoc.SelectSingleNode("//d:Edition", oMgr).InnerText ?? "";
             }
             catch
             {
-                _serverEdition = "";
+                ServerEdition = "";
             }
         }
 
 
         public ADOTabularConnection Clone()
         {
-            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type);
-            // copy keywords, functiongroups, DMV's
-            cnn._functionGroups = _functionGroups;
-            cnn._keywords = _keywords;
-            cnn._serverMode = _serverMode;
-            cnn._dmvCollection = _dmvCollection;
-            cnn.ServerType = ServerType;
+            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type)
+            {
+                // copy keywords, functiongroups, DMV's
+                _functionGroups = _functionGroups,
+                _keywords = _keywords,
+                _serverMode = _serverMode,
+                _dmvCollection = _dmvCollection,
+                ServerType = ServerType
+            };
             return cnn;
         }
     }

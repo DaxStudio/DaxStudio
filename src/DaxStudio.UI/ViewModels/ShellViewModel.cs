@@ -14,6 +14,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -115,13 +116,24 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                await AutoSaver.Save(Tabs);
+                // disable the timer while we are saving, so that if access to the UI thread is 
+                // blocked and we cannot read the contents of the editor controls we do not keep
+                // firing access denied errors on the autosave file. Once the UI thread is free 
+                // the initial request will continue and the timer will be re-enabled.
+              
+                _autoSaveTimer.Enabled = false;
+                
+                await AutoSaver.Save(Tabs).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 // we just catch and log any errors, we don't want the autosave timer to be
                 // the cause of any crashes itself
                 Log.Error(ex, "{class} {method} {message}", "ShellViewModel", "AutoSaveTimerElapsed", ex.Message);
+            }
+            finally
+            {
+                _autoSaveTimer.Enabled = true;
             }
         }
 

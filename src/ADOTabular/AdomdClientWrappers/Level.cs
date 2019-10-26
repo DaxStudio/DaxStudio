@@ -5,8 +5,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Level
     {
-        private Microsoft.AnalysisServices.AdomdClient.Level _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Level _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level _objExcel;
 
         public Level(Microsoft.AnalysisServices.AdomdClient.Level obj)
         {
