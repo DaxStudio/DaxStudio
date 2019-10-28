@@ -415,7 +415,6 @@
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="JsonConverters\VersionConverter.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
-    <Compile Include="Model\ApplicationPaths.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\GlobalOptions.cs" />

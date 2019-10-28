@@ -31,7 +31,7 @@ namespace DaxStudio.ExcelAddin
                 {
                     loggingKeyDown = true;
                     _debugLogEnabled = true;
-                    var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder)
+                    var logPath = Path.Combine(ApplicationPaths.LogPath
                                                 , Constants.ExcelLogFileName);
                     config.WriteTo.RollingFile(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
                     

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Common
 {
     public static class ApplicationPaths
     {
@@ -15,11 +15,11 @@ namespace DaxStudio.UI.Model
 
             BasePath = IsInPortableMode 
                            ? directory
-                           : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                           : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"DaxStudio");
 
             BaseLocalPath = IsInPortableMode
                ? directory
-               : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+               : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DaxStudio");
 
 
             LogPath = Path.Combine(BaseLocalPath, "Log");

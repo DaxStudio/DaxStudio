@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Interfaces;
+﻿using DaxStudio.Common;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
 using System.IO;
 using System.Reflection;

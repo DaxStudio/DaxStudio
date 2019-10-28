@@ -246,7 +246,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var loggingText = string.Format("Debug Logging enabled.\nClick here to open the log folder");
-                var fullPath = System.Environment.ExpandEnvironmentVariables(Constants.LogFolder);
+                var fullPath = ApplicationPaths.LogPath;
                 notifyIcon.Notify(loggingText, fullPath);
             }
             catch (Exception ex)

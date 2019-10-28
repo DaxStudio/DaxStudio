@@ -19,12 +19,14 @@ namespace DaxStudio.UI.Utils
         {
             // Force the use of TLS1.2
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+            NetworkChange.NetworkAvailabilityChanged
+                        += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         }
 
 
  
         // private variables
-        private IGlobalOptions _globalOptions;
+        private static IGlobalOptions _globalOptions;
         private static IWebProxy _proxy;
         private static bool _proxySet = false;
         private static object _proxyLock = new object();
@@ -41,8 +43,8 @@ namespace DaxStudio.UI.Utils
 #endif
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.org";
 
-        private bool _isNetworkOnline = false;
-        private IEventAggregator _eventAggregator;
+        private static bool _isNetworkOnline = false;
+        private static IEventAggregator _eventAggregator;
 
         async public static Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
@@ -60,13 +62,8 @@ namespace DaxStudio.UI.Utils
             _eventAggregator = eventAggregator;
             try {
 
-                Dispatcher.CurrentDispatcher.Invoke( new System.Action(() => { 
-                    NetworkChange.NetworkAvailabilityChanged
-                        += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
-                }));
-
                 await Task.Run(() =>
-               {
+                {
                    Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
 
 
@@ -107,12 +104,12 @@ namespace DaxStudio.UI.Utils
         }
 
         // ...
-        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        static void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             try
             {
                 _isNetworkOnline = e.IsAvailable;
-                Log.Information("{class} {method} {message}", nameof(WebRequestFactory), nameof(this.NetworkChange_NetworkAvailabilityChanged), $"Network Availabilty Changed event fired IsAvailable={e.IsAvailable}");
+                Log.Information("{class} {method} {message}", nameof(WebRequestFactory), nameof(NetworkChange_NetworkAvailabilityChanged), $"Network Availabilty Changed event fired IsAvailable={e.IsAvailable}");
                 // refresh proxy
                 Proxy = GetProxy(DaxTextFormatUri);
             }
@@ -142,7 +139,7 @@ namespace DaxStudio.UI.Utils
 
         #region private methods
 
-        private IWebProxy GetProxy(string uri)
+        private static IWebProxy GetProxy(string uri)
         {
 
             if (_globalOptions.ProxyUseSystem || _globalOptions.ProxyAddress.Length == 0)
@@ -170,7 +167,7 @@ namespace DaxStudio.UI.Utils
             return _proxy;
         }
 
-        private void UseSystemProxy()
+        private static void UseSystemProxy()
         {
             Log.Verbose("Using System Proxy");
             Proxy = System.Net.WebRequest.GetSystemWebProxy();
@@ -222,7 +219,7 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public IWebProxy Proxy
+        public static IWebProxy Proxy
         {
             get { lock (_proxyLock) {
                     if (!_proxySet) {

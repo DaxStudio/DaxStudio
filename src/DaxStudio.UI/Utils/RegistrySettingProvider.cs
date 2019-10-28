@@ -24,7 +24,7 @@ namespace DaxStudio.UI.Utils
         private const string registryRootKey = "SOFTWARE\\DaxStudio";
 
 
-        public string LogPath => Environment.ExpandEnvironmentVariables(Constants.LogFolder);
+        public string LogPath => ApplicationPaths.LogPath;
         public bool IsRunningPortable => false;
 
         public ObservableCollection<string> GetServerMRUList()

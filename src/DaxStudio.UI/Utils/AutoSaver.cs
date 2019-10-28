@@ -180,7 +180,7 @@ namespace DaxStudio.UI.Utils
         {
             get
             {
-                return Environment.ExpandEnvironmentVariables(Constants.AutoSaveIndexPath);
+                return Path.Combine( ApplicationPaths.AutoSavePath, "AutoSaveMasterIndex.json");
             }
         }
 

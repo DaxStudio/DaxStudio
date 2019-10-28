@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
 using DaxStudio.Common;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -106,12 +107,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsLoggingEnabled { get { return _host.DebugLogging; } }
 
-        public void OpenLogFolder()
-        {
-            Process.Start(Constants.LogFolder);
-        }
-
-        public string LogFolder { get { return @"file:///" + Environment.ExpandEnvironmentVariables(Constants.LogFolder); } }
+        public string LogFolder { get { return @"file:///" + ApplicationPaths.LogPath; } }
     }
 
     public class ReferencedAssembly

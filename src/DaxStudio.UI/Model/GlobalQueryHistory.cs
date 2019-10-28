@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Serilog;
 using DaxStudio.Interfaces;
 using System.Diagnostics.Contracts;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.Model
 {
