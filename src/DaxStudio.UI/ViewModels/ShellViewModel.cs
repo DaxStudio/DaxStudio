@@ -34,7 +34,6 @@ namespace DaxStudio.UI.ViewModels
         private NotifyIcon notifyIcon;
         private Window _window;
         private readonly Application _app;
-        private Timer _autoSaveTimer;
         private InputBindings _inputBindings;
         
         //private ILogger log;
@@ -99,10 +98,12 @@ namespace DaxStudio.UI.ViewModels
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
 
-            _autoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
-            _autoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
+            AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
+            AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
             
         }
+
+        private Timer AutoSaveTimer { get; }
 
         private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
@@ -121,7 +122,7 @@ namespace DaxStudio.UI.ViewModels
                 // firing access denied errors on the autosave file. Once the UI thread is free 
                 // the initial request will continue and the timer will be re-enabled.
               
-                _autoSaveTimer.Enabled = false;
+                AutoSaveTimer.Enabled = false;
                 
                 await AutoSaver.Save(Tabs).ConfigureAwait(false);
             }
@@ -133,7 +134,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                _autoSaveTimer.Enabled = true;
+                AutoSaveTimer.Enabled = true;
             }
         }
 
@@ -165,7 +166,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Ribbon.OnClose();
                 notifyIcon?.Dispose();
-                _autoSaveTimer.Enabled = false;
+                AutoSaveTimer.Enabled = false;
                 AutoSaver.RemoveAll();
             }
         }
@@ -370,13 +371,13 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(StartAutoSaveTimerEvent message)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StartAutoSaveTimer>", "AutoSave Timer Starting");
-            _autoSaveTimer.Enabled = true;
+            AutoSaveTimer.Enabled = true;
         }
 
         public void Handle(StopAutoSaveTimerEvent message)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StopAutoSaveTimer>", "AutoSave Timer Stopping");
-            _autoSaveTimer.Enabled = false;
+            AutoSaveTimer.Enabled = false;
         }
 
         public void Handle(ChangeThemeEvent message)

@@ -37,7 +37,15 @@ namespace DaxStudio.UI.Utils
 
         private void CreateAutoSaveFolder()
         {
-            Directory.CreateDirectory(ApplicationPaths.AutoSavePath);
+            try
+            {
+                Directory.CreateDirectory(ApplicationPaths.AutoSavePath);
+            }
+            catch (Exception ex)
+            {
+                // log the error and continue
+                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(CreateAutoSaveFolder), $"Error creating autosave folder: {ex.Message}");
+            }
         }
 
         

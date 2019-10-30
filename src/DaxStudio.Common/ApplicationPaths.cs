@@ -21,7 +21,6 @@ namespace DaxStudio.Common
                ? directory
                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DaxStudio");
 
-
             LogPath = Path.Combine(BaseLocalPath, "Log");
             QueryHistoryPath = Path.Combine(BasePath, "QueryHistory");
             AutoSavePath = Path.Combine(BaseLocalPath, "AutoSaveFiles");

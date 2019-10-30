@@ -107,7 +107,7 @@ namespace DaxStudio.UI.ViewModels
 
                                 // overwrite the username with the effective user if it's present
                                 var effectiveUser = beginEvent.ParseEffectiveUsername();
-                                if (effectiveUser != null) newEvent.Username = effectiveUser;
+                                if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
                             }
 
 
