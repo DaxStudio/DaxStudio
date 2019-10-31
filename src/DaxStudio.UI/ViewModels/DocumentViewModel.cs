@@ -44,6 +44,7 @@ using Xceed.Wpf.AvalonDock;
 using System.Windows.Media;
 using Dax.ViewModel;
 
+
 namespace DaxStudio.UI.ViewModels
 {
 
@@ -3136,38 +3137,47 @@ namespace DaxStudio.UI.ViewModels
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });
-                task.Start();
+                task.Start(TaskScheduler.Default);
                 task.ContinueWith(prevTask =>
                 {
 
-                    if (!prevTask.IsFaulted) { 
-                        // check if PerfData Window is already open and use that
-                        var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
+                    if (!prevTask.IsFaulted) {
+                        try
+                        {
+                            // check if PerfData Window is already open and use that
+                            var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
-                        // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                        if (vpaView == null)
-                        {
-                            vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                            ToolWindows.Add(vpaView);
+                            // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                            if (vpaView == null)
+                            {
+                                vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                                ToolWindows.Add(vpaView);
+                            }
+                            else
+                            {
+                                // update view model
+                                vpaView.ViewModel = viewModel;
+                            }
+                            vpaView.Activate();
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            // update view model
-                            vpaView.ViewModel = viewModel;
+                            Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view: {ex.Message}");
+                            OutputError($"Error viewing metrics: {ex.Message}");
                         }
-                        vpaView.Activate();
+
                     } else
                     {
                         var ex = prevTask.Exception;
                         Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
                         var exMsg = ex.GetAllMessages();
-                        OutputError("Error viewing metrics: " + exMsg);
+                        OutputError($"Error viewing metrics: {exMsg}");
                     }
 
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
-                });
+                }, TaskScheduler.Default);
                     
             }
             catch (Exception ex)
