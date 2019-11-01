@@ -299,7 +299,7 @@
                         <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}" Header="% Table"  HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" Header="% DB"  HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding"/>
-                        <DataGridTextColumn Binding="{Binding TypeName}" Header="Encoding" />
+                        <DataGridTextColumn Binding="{Binding TypeName}" Header="Data Type" />
                         <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  Header="Segments" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" Header="Partitions" ElementStyle="{StaticResource NumTextBlockStyle}"/>
 
