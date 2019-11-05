@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -32,7 +34,7 @@ namespace DaxStudio.CheckerApp
         private RichTextBox _output;
         private const string DEFAULT_DAX_STUDIO_PATH = @"c:\Program Files\DAX Studio\DAXStudio.exe";
 
-       
+
 
         #region Public Properties
         public RichTextBox Output { get { return _output; } }
@@ -67,7 +69,7 @@ namespace DaxStudio.CheckerApp
             startInfo.Arguments = $"/C \"SETX VSTO_SUPPRESSDISPLAYALERTS {(isChecked ? "0" : "\"\"")}\"";
             var proc = Process.Start(startInfo);
             proc.WaitForExit(); // block until the process exits
-            if (proc.ExitCode != 0) MessageBox.Show($"An Error occurred while setting VSTO_SUPPRESSDISPLAYALERTS environment variable. You may have to try setting this manually"); 
+            if (proc.ExitCode != 0) MessageBox.Show($"An Error occurred while setting VSTO_SUPPRESSDISPLAYALERTS environment variable. You may have to try setting this manually");
         }
 
         internal void ToggleFusionLogging(bool isChecked)
@@ -122,7 +124,7 @@ namespace DaxStudio.CheckerApp
 
         internal void ShowVersionInfo()
         {
-            
+
             var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Output.AppendIndentedLine($"Version =  v{version}");
 
@@ -135,7 +137,7 @@ namespace DaxStudio.CheckerApp
         public void CheckOSInfo()
         {
             Output.AppendHeaderLine("Checking Operating System");
-            Output.AppendLine("=======================");
+
             //Output.AppendRange("").Indent(20);
             Output.OutputOSInfo();
             Output.AppendLine();
@@ -145,8 +147,8 @@ namespace DaxStudio.CheckerApp
         public void CheckScreenInfo()
         {
             Output.AppendHeaderLine("Checking Displays");
-            Output.AppendLine("=======================");
-            foreach( var screen in System.Windows.Forms.Screen.AllScreens)
+
+            foreach (var screen in System.Windows.Forms.Screen.AllScreens)
             {
                 Output.AppendLine($"Display: {screen.DeviceName} {(screen.Primary ? "(Primary)" : "")} ");
                 Output.AppendLine($"         X: {screen.Bounds.X} Y: {screen.Bounds.Y} Width: {screen.Bounds.Width} Height: {screen.Bounds.Height}");
@@ -157,11 +159,10 @@ namespace DaxStudio.CheckerApp
         {
             //"Microsoft.AnalysisServices.AdomdClient, Version = 13.0.0.0, Culture = neutral, PublicKeyToken = 89845dcd8080cc91"
             Output.AppendHeaderLine($"Checking {shortName} (GAC)");
-            Output.AppendLine("=======================");
 
             for (int i = minMSLibVer; i <= maxMSLibVer + 2; i++)
             {
-                CheckLibraryExact( string.Format(System.Globalization.CultureInfo.InvariantCulture, longNameFormat, i), i == minMSLibVer);
+                CheckLibraryExact(string.Format(System.Globalization.CultureInfo.InvariantCulture, longNameFormat, i), i == minMSLibVer);
             }
         }
 
@@ -190,12 +191,12 @@ namespace DaxStudio.CheckerApp
             }
         }
 
-        
+
 
         public void CheckLocalLibrary(string shortName, string relativeFilename)
         {
             Output.AppendHeaderLine($"Checking {shortName} (Local)");
-            Output.AppendLine("=======================");
+
             var fullPath = Path.GetFullPath(relativeFilename);
             Output.AppendRange("    Attempting to load: ");
             Output.AppendLine(fullPath);
@@ -215,7 +216,7 @@ namespace DaxStudio.CheckerApp
             catch (Exception exception)
             {
                 //Output.Indent();
-                var result =  "    FAIL" ;
+                var result = "    FAIL";
                 var color = "Red";
                 Output.AppendRange($"{result} > ").Color(color).Bold();
                 Output.AppendLine(exception.Message);
@@ -225,7 +226,7 @@ namespace DaxStudio.CheckerApp
         public void CheckDaxStudioBindings()
         {
             Output.AppendHeaderLine("Dax Studio Configuration");
-            Output.AppendLine("========================");
+
             string str = TryGetPathFromRegistry();
             if (str == null)
             {
@@ -264,7 +265,7 @@ namespace DaxStudio.CheckerApp
         private static string TryGetPathFromRegistry()
         {
             // get the registry value from either 32 or 64 bit hive
-            var val = RegistryHelpers.GetRegValue(@"SOFTWARE\DaxStudio","Path" ,RegistryHive.LocalMachine);
+            var val = RegistryHelpers.GetRegValue(@"SOFTWARE\DaxStudio", "Path", RegistryHive.LocalMachine);
             if (val == null) return string.Empty;
             return val.ToString();
         }
@@ -272,7 +273,7 @@ namespace DaxStudio.CheckerApp
         public void CheckNetFramework()
         {
             Output.AppendHeaderLine("Checking .Net Framework");
-            Output.AppendLine("=======================");
+            
             //Output.AppendRange("").Indent(20);
             string name = @"SOFTWARE\Microsoft\NET Framework Setup\NDP";
             RegistryKey key = Registry.LocalMachine.OpenSubKey(name);
@@ -289,8 +290,7 @@ namespace DaxStudio.CheckerApp
         public void CheckExcelAddin()
         {
             Output.AppendHeaderLine("Checking Excel Add-in");
-            Output.AppendLine("=======================");
-            
+
             // Get Excel Version
             var xlVer = GetCurrentExcelVersion();
             Output.AppendIndentedLine($"Detected Excel Version: {xlVer} - {(ExcelVersion)xlVer}");
@@ -302,23 +302,23 @@ namespace DaxStudio.CheckerApp
             string name = @"SOFTWARE\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
             RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
             try {
-                
-                
-                    switch (excelBitness)
-                    {
-                        case MachineType.x64:
-                            baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-                            break;
-                        case MachineType.x86:
-                            baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                            break;
-                        default:
-                            Output.AppendRange("      ERROR:").Color("Red").Bold();
-                            Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
-                            break;
-                    }
 
-                    RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
+
+                switch (excelBitness)
+                {
+                    case MachineType.x64:
+                        baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                        break;
+                    case MachineType.x86:
+                        baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                        break;
+                    default:
+                        Output.AppendRange("      ERROR:").Color("Red").Bold();
+                        Output.AppendLine($" Unsupported Excel Architecture {excelBitness}");
+                        break;
+                }
+
+                RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
                 try
                 {
                     Output.AppendIndentedLine("DAX Studio Excel Add-in Registry keys");
@@ -334,7 +334,7 @@ namespace DaxStudio.CheckerApp
                 {
                     key.Dispose();
                 }
-                }
+            }
             finally {
                 baseKey.Dispose();
             }
@@ -363,13 +363,13 @@ namespace DaxStudio.CheckerApp
             {
                 var subKeys = addinKey.GetSubKeyNames();
                 string addinName = "";
-                for (int i = 0; i < subKeys.Length;i++)
+                for (int i = 0; i < subKeys.Length; i++)
                 {
                     Debug.WriteLine($"Processing Excel Addin Subkey {i}");
                     var subkey = addinKey.OpenSubKey(subKeys[i]);
 
                     addinName = subkey.GetValue("FriendlyName")?.ToString();
-                    if (addinName != null && addinName.IndexOf("Power Pivot") > 0)
+                    if (addinName != null && addinName.IndexOf("Power Pivot", StringComparison.InvariantCultureIgnoreCase) > 0)
                     {
                         Output.AppendRange("      PASS > ").Color("Green").Bold();
                         Output.AppendLine($" Found Excel Addin: {addinName}");
@@ -390,14 +390,14 @@ namespace DaxStudio.CheckerApp
         {
             Output.AppendLine();
             Output.AppendIndentedLine("Checking VSTO Configuration");
-            
+
             RegistryKey basekey;
             RegistryKey key;
-            var keyPath = @"SOFTWARE\WOW6432Node\Microsoft\VSTO Runtime Setup"; 
+            var keyPath = @"SOFTWARE\WOW6432Node\Microsoft\VSTO Runtime Setup";
             var is64 = true;
             basekey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             try
-            { 
+            {
                 if (basekey == null)
                 {
                     is64 = false;
@@ -445,7 +445,7 @@ namespace DaxStudio.CheckerApp
 
         private MachineType GetExcelDetails()
         {
-            var appPath = (string)Registry.GetValue(  @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe",null,"");
+            var appPath = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe", null, "");
             Output.AppendIndentedLine($"Excel Path: {appPath}");
             var excelArch = GetMachineType(appPath);
             Output.AppendIndentedLine($"Excel Architecture: {excelArch}");
@@ -565,7 +565,7 @@ namespace DaxStudio.CheckerApp
                         Output.AppendRange("      FAIL > ").Bold().Color("Red");
                     else
                         Output.AppendRange("      N/A  > ").Bold().Color("Orange");
-                    
+
                     Output.AppendLine($" - {str}");
                 }
             }
@@ -586,13 +586,13 @@ namespace DaxStudio.CheckerApp
             nsmgr.AddNamespace("asm", "urn:schemas-microsoft-com:asm.v1");
             //new XmlReaderSettings();
             using (FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            using(XmlReader reader = XmlReader.Create(inStream, new XmlReaderSettings() { XmlResolver = null }))
+            using (XmlReader reader = XmlReader.Create(inStream, new XmlReaderSettings() { XmlResolver = null }))
             {
-                
-                document.Load(reader );
+
+                document.Load(reader);
             }
             XmlNodeList list = document.SelectNodes("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly", nsmgr);
-            Output.AppendIndentedLine( $"Bindings Found: {list.Count}");
+            Output.AppendIndentedLine($"Bindings Found: {list.Count}");
 
             XmlNode node = document.SelectSingleNode("configuration/runtime/asm:assemblyBinding/asm:dependentAssembly/asm:assemblyIdentity[@name='Microsoft.AnalysisServices.Core']", nsmgr);
             GetBindingRedirect(document, nsmgr, node, "AMO");
@@ -635,14 +635,68 @@ namespace DaxStudio.CheckerApp
             }
         }
 
-        internal int GetCurrentExcelVersion()
+        internal static int GetCurrentExcelVersion()
         {
-            string excelApp= (string)Registry.GetValue(@"HKEY_CLASSES_ROOT\Excel.Application\CurVer", null, "Excel.Application.0");
-            return int.Parse(excelApp.Replace("Excel.Application.", ""));
+            string excelApp = (string)Registry.GetValue(@"HKEY_CLASSES_ROOT\Excel.Application\CurVer", null, "Excel.Application.0");
+            return int.Parse(excelApp.Replace("Excel.Application.", ""), CultureInfo.InvariantCulture);
         }
 
         internal static string StripRootPath(string name, string rootPath) =>
-            name.Substring((name.IndexOf(rootPath) + rootPath.Length) + 1);
+            name.Substring((name.IndexOf(rootPath, StringComparison.InvariantCultureIgnoreCase) + rootPath.Length) + 1);
+
+        internal string GetCurrentPath()
+        {
+            string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            return Path.GetDirectoryName(path);
+        }
+
+        internal bool IsInPortableMode() {
+            var directory = GetCurrentPath();
+
+            // check for .portable file in bin folder
+            var portableFile = Path.Combine(directory, @"bin\.portable");
+            if (File.Exists(portableFile)) return true;
+
+            // check for .portable file in current folder
+            portableFile = Path.Combine(directory, @".portable");
+            if (File.Exists(portableFile)) return true;
+
+            // else return false
+            return false;
+        }
+
+        public void CheckSettings()
+        {
+            if (IsInPortableMode())
+            {
+                CheckPortableSettings();
+            }
+            else
+            {
+                CheckRegistrySettings();
+            }
+        }
+
+        internal void CheckRegistrySettings()
+        {
+            Output.AppendHeaderLine("Registry Settings");
+
+            var daxStudioKey = Registry.CurrentUser.OpenSubKey(@"Software\DaxStudio");
+            var names = daxStudioKey.GetValueNames().OrderBy(n => n);
+            foreach (var settingName in names)
+            {
+                var settingValue = daxStudioKey.GetValue(settingName);
+                Output.AppendIndentedLine($"{settingName} = {settingValue.ToString()}");
+            }
+        }
+
+        internal void CheckPortableSettings()
+        {
+            Output.AppendHeaderLine("Portable Settings");
+            var settingsJson = File.ReadAllText(Path.Combine(GetCurrentPath(), "settings.json"));
+            // todo - deserialize json
+            Output.AppendIndentedLine(settingsJson);
+        }
 
         #endregion
     }

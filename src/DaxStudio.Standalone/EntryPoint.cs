@@ -12,6 +12,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
+using System.Threading.Tasks;
 
 namespace DaxStudio.Standalone
 {
@@ -55,6 +56,8 @@ namespace DaxStudio.Standalone
 
                 // add unhandled exception handler
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+                TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
                 // Setup logging
                 var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
@@ -160,12 +163,12 @@ namespace DaxStudio.Standalone
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
                 Log.CloseAndFlush();
-#if DEBUG
-                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-#else
+//#if DEBUG
+//                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
+//#else
                 // use CrashReporter.Net to send bug to DrDump
                 CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
-#endif
+//#endif
 
             }
             finally
@@ -173,6 +176,17 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
             }
+        }
+
+        private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+
+            CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            CrashReporter.ReportCrash((Exception)e.ExceptionObject, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

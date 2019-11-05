@@ -43,6 +43,7 @@ namespace DaxStudio.CheckerApp
                 //checker.CheckLibrary("ADOMD.NET", "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
                 checker.CheckDaxStudioBindings();
                 checker.CheckExcelAddin();
+                checker.CheckSettings();
             }
             catch (Exception exception)
             {

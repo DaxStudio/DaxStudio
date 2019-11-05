@@ -55,8 +55,9 @@ namespace DaxStudio.CheckerApp
         {
             myOutput.AppendLine();
             myOutput.AppendRange(text +"\n").Bold().Size("14pt");
+            myOutput.AppendLine("=======================");
             //var inline = new Run();
-            
+
             //myOutput.Document.Blocks.Add( new Paragraph( new Bold( new Underline( new Run( text + "\r")))));
         }
 

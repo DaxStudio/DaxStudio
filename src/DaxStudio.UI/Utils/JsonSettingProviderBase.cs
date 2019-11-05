@@ -1,4 +1,5 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Common.Exceptions;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -96,8 +98,31 @@ namespace DaxStudio.UI.Utils
                 _optionsDict[subKey] = value;
                 // write json file
                 SaveSettingsFile();
-            });
+            }).ContinueWith(t => {
+                if (t.IsFaulted)
+                {
+                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
+                }
+            }, TaskScheduler.Default);
             
+        }
+
+        public Task SetValueAsync(string subKey, DateTime value, bool isInitializing)
+        {
+
+            return Task.Run(() =>
+            {
+                if (isInitializing) return;
+                _optionsDict[subKey] = value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture);
+                // write json file
+                SaveSettingsFile();
+            }).ContinueWith(t => {
+                if (t.IsFaulted)
+                {
+                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
+                }
+            }, TaskScheduler.Default);
+
         }
 
         private void SaveSettingsFile()
@@ -115,8 +140,7 @@ namespace DaxStudio.UI.Utils
 
         public bool IsFileLoggingEnabled()
         {
-            // TODO
-            return false;
+            return GetValue("IsFileLoggingEnabled",false);
         }
 
         public void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files)
@@ -126,9 +150,9 @@ namespace DaxStudio.UI.Utils
             if (existingItem == null)
             {
                 Options.RecentFiles.Insert(0, file);
-                while (Options.RecentFiles.Count() > Constants.MaxRecentFiles)
+                while (Options.RecentFiles.Count > Constants.MaxRecentFiles)
                 {
-                    Options.RecentFiles.RemoveAt(Options.RecentFiles.Count() - 1);
+                    Options.RecentFiles.RemoveAt(Options.RecentFiles.Count - 1);
                 }
                 SaveSettingsFile();
                 return;
@@ -160,9 +184,9 @@ namespace DaxStudio.UI.Utils
             { 
                 // server does not exist in list, so insert it as the first item
                 Options.RecentServers.Insert(0, currentServer);
-                while (Options.RecentServers.Count() > Constants.MaxMruSize)
+                while (Options.RecentServers.Count > Constants.MaxMruSize)
                 {
-                    Options.RecentServers.RemoveAt(Options.RecentServers.Count() - 1);
+                    Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
                 }
             }
 

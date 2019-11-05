@@ -5,6 +5,7 @@ layout: page
 
 {% for release in  site.github.releases %} 
   {% if release.draft != true and release.prerelease != true %}
+### {{ release.name }}
     {% for asset in release.assets %}
       {% assign download_count = asset.download_count  %}
       {% assign download_size = asset.size %}

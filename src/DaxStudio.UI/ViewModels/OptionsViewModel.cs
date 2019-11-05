@@ -607,7 +607,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportMetrics = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExportMetrics", value, _isInitializing);
+                SettingProvider.SetValueAsync("ShowExportMetrics", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportMetrics);
             }
         }
@@ -618,7 +618,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExternalTools = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExternalTools", value, _isInitializing);
+                SettingProvider.SetValueAsync("ShowExternalTools", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExternalTools);
             }
         }
@@ -629,7 +629,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExportAllData = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExportAllData", value, _isInitializing);
+                SettingProvider.SetValueAsync("ShowExportAllData", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportAllData);
             }
         }
@@ -641,7 +641,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _vpaxIncludeTom = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("VpaxIncludeTom", value, _isInitializing);
+                SettingProvider.SetValueAsync("VpaxIncludeTom", value, _isInitializing);
                 NotifyOfPropertyChange(() => VpaxIncludeTom);
             }
         }
@@ -659,7 +659,7 @@ namespace DaxStudio.UI.ViewModels
                 _theme = value;
                 NotifyOfPropertyChange(() => Theme);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("Theme", value, _isInitializing);
+                SettingProvider.SetValueAsync("Theme", value, _isInitializing);
 
             }
         }
@@ -673,7 +673,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _ResultAutoFormat = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ResultAutoFormat", value, _isInitializing);
+                SettingProvider.SetValueAsync("ResultAutoFormat", value, _isInitializing);
                 NotifyOfPropertyChange(() => ResultAutoFormat);
             }
         }
@@ -683,7 +683,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _scaleResultsFontWithEditor = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ScaleResultsFontWithEditor", value, _isInitializing);
+                SettingProvider.SetValueAsync("ScaleResultsFontWithEditor", value, _isInitializing);
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
 
@@ -694,7 +694,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value > 300) value = 300; // value cannot be greater than 300% of the default size
                 _codeCompletionWindowWidthIncrease = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<int>("CodeCompletionWindowWidthIncrease", value, _isInitializing);
+                SettingProvider.SetValueAsync("CodeCompletionWindowWidthIncrease", value, _isInitializing);
                 NotifyOfPropertyChange(() => CodeCompletionWindowWidthIncrease);
             }
         }
@@ -704,7 +704,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _keepMetadataSearchOpen = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("KeepMetadataSearchOpen", value, _isInitializing);
+                SettingProvider.SetValueAsync("KeepMetadataSearchOpen", value, _isInitializing);
                 NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
             }
         }
@@ -715,7 +715,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataLocalMachine = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalMachine", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataLocalMachine", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataLocalMachine);
             }
         }
@@ -726,7 +726,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataLocalNetwork = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalNetwork", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataLocalNetwork", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataLocalNetwork);
             }
         }
@@ -737,7 +737,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataCloud = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataCloud", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataCloud", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataCloud);
             }
         }
@@ -748,7 +748,7 @@ namespace DaxStudio.UI.ViewModels
                 set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowHiddenMetadata", value, _isInitializing);
+                SettingProvider.SetValueAsync("ShowHiddenMetadata", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } }
 
@@ -759,7 +759,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _setClearCacheAndRunAsDefaultRunStyle = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>(nameof(SetClearCacheAsDefaultRunStyle), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(SetClearCacheAsDefaultRunStyle), value, _isInitializing);
                 NotifyOfPropertyChange(() => SetClearCacheAsDefaultRunStyle);
             }
         }
@@ -770,7 +770,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _sortFoldersFirstInMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>(nameof(SortFoldersFirstInMetadata), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(SortFoldersFirstInMetadata), value, _isInitializing);
                 NotifyOfPropertyChange(() => SortFoldersFirstInMetadata);
             }
         }
@@ -783,7 +783,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _windowPosition = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>(nameof(WindowPosition), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(WindowPosition), value, _isInitializing);
                 NotifyOfPropertyChange(() => WindowPosition);
             }
         }
@@ -798,7 +798,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _dismissedVersion = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<Version>(nameof(DismissedVersion), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(DismissedVersion), value, _isInitializing);
                 NotifyOfPropertyChange(() => DismissedVersion);
             }
         }
@@ -812,7 +812,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _lastVersionCheck = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<DateTime>(nameof(LastVersionCheckUTC), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(LastVersionCheckUTC), value, _isInitializing);
                 NotifyOfPropertyChange(() => LastVersionCheckUTC);
             }
         }

@@ -17,6 +17,7 @@ namespace DaxStudio.UI.Interfaces
 
         T GetValue<T>(string subKey, T defaultValue);
         Task SetValueAsync<T>(string subKey, T value, bool isInitializing);
+        Task SetValueAsync(string subKey, DateTime value, bool isInitializing);
 
         bool IsFileLoggingEnabled();
         string LogPath { get; }

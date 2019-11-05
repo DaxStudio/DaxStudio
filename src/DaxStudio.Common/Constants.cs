@@ -35,6 +35,7 @@ namespace DaxStudio.Common
 
         public const string InternalQueryHeader = "/* DAX Studio Internal */";
         public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
+        public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ";
 
         public const int MaxRecentFiles = 25;
         public const int MaxRecentServers = 25;

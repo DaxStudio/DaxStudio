@@ -13,6 +13,8 @@ using System.ComponentModel;
 using Newtonsoft.Json;
 using System.Security;
 using System.Runtime.Serialization;
+using System.Globalization;
+using DaxStudio.Common.Exceptions;
 
 namespace DaxStudio.UI.Utils
 {
@@ -95,11 +97,13 @@ namespace DaxStudio.UI.Utils
             SaveListToRegistry("File",file, files);
         }
 
+
+
         public T GetValue<T>(string subKey, T defaultValue )
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
             if (regDaxStudio == null) return defaultValue;
-            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T) );
+            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T), CultureInfo.InvariantCulture );
         }
 
 
@@ -109,14 +113,38 @@ namespace DaxStudio.UI.Utils
             return (T)regDaxStudio.GetValue(subKey);
         }
 
+        public Task SetValueAsync(string subKey, DateTime value, bool isInitializing)
+        {
+            return Task.Run(() => {
+                if (isInitializing) return;
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
+                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
+                
+                regDaxStudio.SetValue(subKey, value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
+                
+            }).ContinueWith(t => {
+                if (t.IsFaulted)
+                {
+                    throw new SaveSettingValueException($"Error Saving setting {subKey}",  t.Exception);
+                }
+            },TaskScheduler.Default);
+        }
+
         public Task SetValueAsync<T>(string subKey, T value, bool isInitializing)
         {
             return Task.Run(() => {
                 if (isInitializing) return;
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
                 if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
+                
                 regDaxStudio.SetValue(subKey, value);
-            });
+                
+            }).ContinueWith(t => {
+                if (t.IsFaulted)
+                {
+                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
+                }
+            }, TaskScheduler.Default);
         }
 
         public bool IsFileLoggingEnabled()
@@ -181,7 +209,7 @@ namespace DaxStudio.UI.Utils
 
         public void Initialize(IGlobalOptions options)
         {
-            
+            var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
                 //if (interfaceProps.Find(prop.Name, true)==null) continue;
@@ -206,13 +234,15 @@ namespace DaxStudio.UI.Utils
                 // set the property value
                 if (prop.PropertyType == typeof(SecureString))
                 {
-                    SecureString secStr = new SecureString();
-                    if (val == null) continue;
-                    foreach (char c in (string)val)
+                    using (SecureString secStr = new SecureString())
                     {
-                        secStr.AppendChar(c);
+                        if (val == null) continue;
+                        foreach (char c in (string)val)
+                        {
+                            secStr.AppendChar(c);
+                        }
+                        prop.SetValue(options, secStr);
                     }
-                    prop.SetValue(options, secStr);
                 }
                 else if (prop.PropertyType == typeof(Version))
                 {
@@ -221,12 +251,13 @@ namespace DaxStudio.UI.Utils
                 }
                 else if (prop.PropertyType == typeof(DateTime))
                 {
-                    var dateVal = val==null ? DateTime.Parse(attrDefaultVal.Value.ToString()):DateTime.Parse(val.ToString());
+                    DateTime dateVal = DateTime.Parse(attrDefaultVal.Value.ToString(), CultureInfo.InvariantCulture);
+                    if (val != null) _ = DateTime.TryParse(val.ToString(), out dateVal);
                     prop.SetValue(options, dateVal);
                 }
                 else if (prop.PropertyType == typeof(double))
                 {
-                    var doubleVal = val == null ? Double.Parse(attrDefaultVal.Value.ToString()) : double.Parse(val.ToString());
+                    var doubleVal = val == null ? Double.Parse(attrDefaultVal.Value.ToString(),invariantCulture) : double.Parse(val.ToString(),invariantCulture);
                     prop.SetValue(options, doubleVal);
                 }
                 else if (prop.PropertyType == typeof(bool))

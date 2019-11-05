@@ -53,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (e.PropertyName == "VersionStatus")
             {
+                UpdateStatus = VersionChecker.VersionStatus;
                 NotifyOfPropertyChange(() => UpdateStatus);
             }
         }
