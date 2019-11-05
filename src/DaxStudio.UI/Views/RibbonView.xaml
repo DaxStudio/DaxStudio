@@ -120,13 +120,6 @@
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
                                    Icon="{StaticResource NewIconSmall}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="NewQuery">
-
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
                     </Fluent:Button>
 
                     <Fluent:BackstageTabItem Header="Open"  >
