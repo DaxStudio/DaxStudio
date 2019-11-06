@@ -123,7 +123,7 @@
     <ItemGroup>
       <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;" />
     </ItemGroup>
-    <Message Text="Moving exe files" />
+    <Message Text="Moving exe files" Importance="High" />
     <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
   </Target>
 
@@ -158,8 +158,8 @@
 
   <Target Name="SignAssemblies" DependsOnTargets="Build">
     <Message Text="Attempting to sign Assemblies" Importance="high" />
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' IgnoreExitCode="true"/>
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.checker.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
     <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/>
   </Target>
 
@@ -198,7 +198,7 @@
     <ItemGroup>
       <FilesToDelete Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip"/>
     </ItemGroup>
-    <Message Text="Deleting zip file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip"/>
+    <Message Text="Deleting zip file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip" Importance="High"/>
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
@@ -207,7 +207,7 @@
   </Target>
   
   <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable">
-    <Message Text="Performing full build of Signed Installer and Portable zip" />
+    <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
 </Project>
