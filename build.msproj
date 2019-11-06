@@ -22,7 +22,7 @@
     <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
     <MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
     <ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
-    <ManifestThumbPrint>B00D154EDD92C17CA1AC87CA55D52652797A0374</ManifestThumbPrint>
+    <ManifestThumbPrint>7F2BEF6866A0329D2BD2E3D70D347E5AD79CB426</ManifestThumbPrint>
   </PropertyGroup>
 
   <ItemGroup>
@@ -202,11 +202,11 @@
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
-  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes">
+  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies">
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
   
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;Portable;SignedInstaller">
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable">
     <Message Text="Performing full build of Signed Installer and Portable zip" />
   </Target>
 

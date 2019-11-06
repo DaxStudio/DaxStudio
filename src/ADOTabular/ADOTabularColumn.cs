@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 
 namespace ADOTabular
@@ -145,16 +146,16 @@ namespace ADOTabular
             switch (Type.GetTypeCode(DataType))
             {
                 case TypeCode.Boolean:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 case TypeCode.Empty:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 case TypeCode.String:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({{0}},1),\"Max\", LASTNONBLANK({{0}},1), \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 default:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({{0}}),\"Max\", MAX({{0}}), \"DistinctCount\", DISTINCTCOUNT({{0}}) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )";
                     break;
 
             }

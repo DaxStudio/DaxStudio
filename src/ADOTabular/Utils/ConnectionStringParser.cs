@@ -18,6 +18,8 @@ namespace ADOTabular.Utils
 
         public static Dictionary<string,string> Parse(string connectionString)
         {
+            if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
+
             Dictionary<string, string> results = new Dictionary<string, string>();
             ParsingState state = ParsingState.InKey;
             StringBuilder key = new StringBuilder();

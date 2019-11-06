@@ -198,9 +198,8 @@ namespace DaxStudio.UI.Utils
                     foreach (object listItem in itemList)
                     {
                         if (i > Constants.MaxMruSize) break; // don't save more than the max mru size
-                        var str = listItem as string;
-                        if (str == null) str = listItem.ToString();
-                        regListMRU.SetValue(string.Format("{0}{1}",listName, i), str );
+                        if (!(listItem is string str)) str = listItem.ToString();
+                        regListMRU.SetValue($"{listName}{i}", str );
                         i++;
                     }
                 }

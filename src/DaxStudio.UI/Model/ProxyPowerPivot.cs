@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Model
     {
         private readonly int _port;
         private readonly Uri _baseUri;
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
         private ViewModels.DocumentViewModel _activeDocument;
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
         {

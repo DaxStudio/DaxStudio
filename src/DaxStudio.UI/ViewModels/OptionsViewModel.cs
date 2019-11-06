@@ -54,7 +54,7 @@ namespace DaxStudio.UI.ViewModels
         private int _daxFormatterRequestTimeout;
         private bool _traceDirectQuery;
 
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
         
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;

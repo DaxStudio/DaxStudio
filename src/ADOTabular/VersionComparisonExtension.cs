@@ -9,6 +9,9 @@ namespace ADOTabular
     {
         public static bool VersionGreaterOrEqualTo(this string version, string comparisonVersion)
         {
+            if (version == null) throw new ArgumentNullException(nameof(version));
+            if (comparisonVersion == null) throw new ArgumentNullException(nameof(comparisonVersion));
+
             // try to short circuit if both strings are the same
             if (version == comparisonVersion)
                 return true;
@@ -18,10 +21,8 @@ namespace ADOTabular
             var compArray = comparisonVersion.Split('.');
             for (byte i = 0; i < verArray.Length; i++)
             {
-                var iVer = 0;
-                int.TryParse(verArray[i], out iVer);
-                var iCompVer = 0;
-                int.TryParse(compArray[i],out iCompVer);
+                _ = int.TryParse(verArray[i], out int iVer);
+                _ = int.TryParse(compArray[i],out int iCompVer);
                 if (iVer > iCompVer)
                 {
                     return true;

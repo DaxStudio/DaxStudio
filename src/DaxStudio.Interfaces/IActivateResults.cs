@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.Interfaces
+﻿namespace DaxStudio.Interfaces
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This interface is used as a marker at compile time")]
     public interface IActivateResults
     {
     }

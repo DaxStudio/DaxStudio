@@ -29,7 +29,7 @@ namespace DaxStudio.UI.Utils
         private static IGlobalOptions _globalOptions;
         private static IWebProxy _proxy;
         private static bool _proxySet = false;
-        private static object _proxyLock = new object();
+        private static readonly object _proxyLock = new object();
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
         public const string DaxTextFormatUri = "https://www.daxformatter.com/api/daxformatter/DaxTextFormat";
@@ -69,8 +69,7 @@ namespace DaxStudio.UI.Utils
 
                    try
                    {
-                       int connDesc;
-                       _isNetworkOnline = NativeMethods.InternetGetConnectedState(out connDesc, 0);
+                       _isNetworkOnline = NativeMethods.InternetGetConnectedState(out int connDesc, 0);
                    }
                    catch
                    {
@@ -132,8 +131,10 @@ namespace DaxStudio.UI.Utils
 
         public WebClient CreateWebClient()
         {
-            var wc = new WebClient();
-            wc.Proxy = Proxy;
+            var wc = new WebClient
+            {
+                Proxy = Proxy
+            };
             return wc;
         }
 
@@ -150,10 +151,12 @@ namespace DaxStudio.UI.Utils
             {
                 try
                 {
-                    _proxy = new WebProxy(_globalOptions.ProxyAddress);
-                    _proxy.Credentials = new NetworkCredential(
+                    _proxy = new WebProxy(_globalOptions.ProxyAddress)
+                    {
+                        Credentials = new NetworkCredential(
                                                 _globalOptions.ProxyUser,
-                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString());
+                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString())
+                    };
                 }
                 catch (Exception ex)
                 {

@@ -18,7 +18,7 @@ namespace DAXEditorControl.Renderers
         private readonly TextEditor textEditor;
         private readonly TextSegmentCollection<TextMarker> markers;
 
-        public sealed class TextMarker : TextSegment
+        internal sealed class TextMarker : TextSegment
         {
             internal TextMarker(int startOffset, int length)
             {
@@ -145,7 +145,7 @@ namespace DAXEditorControl.Renderers
             Redraw(m);
         }
 
-        public IEnumerable<TextMarker> GetMarkersAtOffset(int offset)
+        internal IEnumerable<TextMarker> GetMarkersAtOffset(int offset)
         {
             return markers == null ? Enumerable.Empty<TextMarker>() : markers.FindSegmentsContaining(offset);
         }

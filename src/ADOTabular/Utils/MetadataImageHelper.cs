@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace ADOTabular.Utils
     {
         public static MetadataImages GetMetadataImage(this IADOTabularObject tabObj)
         {
+            Contract.Requires(tabObj != null, "The tabObj parameter must not be null");
             switch (tabObj.ObjectType)
             {
                 case ADOTabularObjectType.Column:

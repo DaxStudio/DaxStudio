@@ -52,8 +52,8 @@ namespace DaxStudio.Interfaces
         string Theme { get; set; }
         bool CustomCsvQuoteStringFields { get; set; }
         CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
-        ObservableCollection<IDaxFile> RecentFiles { get; set; } 
-        ObservableCollection<string> RecentServers { get; set; } 
+        ObservableCollection<IDaxFile> RecentFiles { get;  } 
+        ObservableCollection<string> RecentServers { get;  } 
 
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }

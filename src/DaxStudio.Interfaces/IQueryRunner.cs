@@ -23,8 +23,8 @@ namespace DaxStudio.Interfaces
         void OutputMessage(string message);
         void OutputMessage(string message, double duration);
         void OutputWarning(string warning);
-        void OutputError(string error);
-        void OutputError(string error, double duration);
+        void OutputError(string errorMessage);
+        void OutputError(string errorMessage, double duration);
         void ActivateResults();
         void ActivateOutput();
         //bool IsOutputActive { get; }

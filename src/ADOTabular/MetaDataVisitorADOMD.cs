@@ -61,8 +61,8 @@ namespace ADOTabular
             var resColl = new AdomdRestrictionCollection
                               {
                                   {"HIERARCHY_ORIGIN", 2},
-                                  {"CUBE_NAME", string.Format("{0}", columns.Table.Model.Name)},
-                                  {"DIMENSION_UNIQUE_NAME", string.Format("[{0}]", columns.Table.Caption)},
+                                  {"CUBE_NAME",  columns.Table.Model.Name},
+                                  {"DIMENSION_UNIQUE_NAME", $"[{columns.Table.Caption}"},
                                   {"HIERARCHY_VISIBILITY", _conn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} 
                               };
             DataTable dtHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", resColl).Tables[0];
@@ -81,8 +81,8 @@ namespace ADOTabular
             }
             var resCollMeasures = new AdomdRestrictionCollection
                 {
-                    {"CUBE_NAME", string.Format("{0}", columns.Table.Model.Name)},
-                    {"MEASUREGROUP_NAME", string.Format("{0}", columns.Table.Caption)},
+                    {"CUBE_NAME",  columns.Table.Model.Name},
+                    {"MEASUREGROUP_NAME", columns.Table.Caption},
                     {
                         "MEASURE_VISIBILITY",
                         _conn.ShowHiddenObjects
@@ -124,7 +124,7 @@ namespace ADOTabular
                 {
                     {"CATALOG_NAME", conn.Database.Name},
                     {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
-                    {"MEASUREGROUP_NAME", string.Format("{0}", measures.Table.Caption)},
+                    {"MEASUREGROUP_NAME",  measures.Table.Caption},
                     {
                         "MEASURE_VISIBILITY",
                         conn.ShowHiddenObjects

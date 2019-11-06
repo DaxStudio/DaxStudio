@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Model
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         private const int CHECK_EVERY_HOURS = 24;
         
-        private BackgroundWorker worker = new BackgroundWorker();
+        private readonly BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
         private WebRequestFactory _webRequestFactory;
         private string _downloadUrl = "https://daxstudio.org/downloads";

@@ -17,8 +17,8 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class HelpAboutViewModel : Screen
     {
-        private IEventAggregator _eventAggregator;
-        private IDaxStudioHost _host;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IDaxStudioHost _host;
 
         [ImportingConstructor]
         public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker, IDaxStudioHost host) {

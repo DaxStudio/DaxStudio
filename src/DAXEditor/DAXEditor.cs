@@ -136,7 +136,7 @@ namespace DAXEditorControl
             
         }
 
-        public EventHandler<DataObjectPastingEventArgs> OnPasting;
+        public EventHandler<DataObjectPastingEventArgs> OnPasting { get; set; }
 
         // Raise Custom OnPasting event
         private void OnDataObjectPasting(object sender, DataObjectPastingEventArgs e)
@@ -198,7 +198,7 @@ namespace DAXEditorControl
             var prefix = theme + ".";
             foreach (var syntaxHighlight in SyntaxHighlighting.NamedHighlightingColors)
             {
-                if (syntaxHighlight.Name.StartsWith(prefix))
+                if (syntaxHighlight.Name.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
                 {
                     var suffix = syntaxHighlight.Name.Replace(prefix, "");
                     var baseColor = SyntaxHighlighting.NamedHighlightingColors.FirstOrDefault(color => color.Name == suffix);
@@ -300,7 +300,9 @@ namespace DAXEditorControl
             try{
                 HighlightBrackets();
             }
-            catch {}
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         public Brush HighlightBackgroundBrush { get; set; }
@@ -415,19 +417,19 @@ namespace DAXEditorControl
 
         const string COMMENT_DELIM_SLASH="//";
         const string COMMENT_DELIM_DASH = "--";
-        private bool IsLineCommented(DocumentLine line)
-        {
-            var trimmed =  this.Document.GetText(line.Offset,line.Length).Trim();
-            return trimmed.IndexOf(COMMENT_DELIM_DASH, StringComparison.InvariantCultureIgnoreCase).Equals(0) 
-                || trimmed.IndexOf(COMMENT_DELIM_SLASH, StringComparison.InvariantCultureIgnoreCase).Equals(0);
-        }
+        //private bool IsLineCommented(DocumentLine line)
+        //{
+        //    var trimmed =  this.Document.GetText(line.Offset,line.Length).Trim();
+        //    return trimmed.IndexOf(COMMENT_DELIM_DASH, StringComparison.InvariantCultureIgnoreCase).Equals(0) 
+        //        || trimmed.IndexOf(COMMENT_DELIM_SLASH, StringComparison.InvariantCultureIgnoreCase).Equals(0);
+        //}
 
         #region "Commenting/Uncommenting"
-        private static  IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
+        private static readonly IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
-        private Regex rxUncommentSlashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
-        private Regex rxUncommentDashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
-        private Regex rxComment = new Regex("^(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
+        private readonly Regex rxUncommentSlashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}",COMMENT_DELIM_SLASH), RegexOptions.Compiled | RegexOptions.Multiline);
+        private readonly Regex rxUncommentDashes = new Regex(string.Format(invariantCulture,"^(\\s*){0}", COMMENT_DELIM_DASH), RegexOptions.Compiled | RegexOptions.Multiline);
+        private readonly Regex rxComment = new Regex("^(.*)", RegexOptions.Compiled | RegexOptions.Multiline);
         //private Regex rxComment = new Regex("^(\\s*)", RegexOptions.Compiled | RegexOptions.Multiline);
         private void SelectFullLines()
         {
