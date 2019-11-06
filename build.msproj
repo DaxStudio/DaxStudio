@@ -119,7 +119,7 @@
     <MakeDir Directories="$(BinDirectory)"/>
   </Target> -->
 
-  <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb;">
+  <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb;SignAssemblies">
     <ItemGroup>
       <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;" />
     </ItemGroup>
