@@ -8,10 +8,11 @@ namespace DaxStudio.Common
         static ApplicationPaths()
         {
             //To get the location the assembly normally resides on disk or the install directory
-            string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var directory = Path.GetDirectoryName(path);
-            PortableFile = Path.Combine(directory, @"bin\.portable");
-            IsInPortableMode = File.Exists(PortableFile);
+            BinPortableFile = Path.Combine(directory, @"bin\.portable");
+            PortableFile = Path.Combine(directory, @".portable");
+            IsInPortableMode = File.Exists(PortableFile) || File.Exists(BinPortableFile);
 
             BasePath = IsInPortableMode 
                            ? directory
@@ -28,9 +29,10 @@ namespace DaxStudio.Common
 
         public static string LogPath {get;}
         public static string QueryHistoryPath { get; }
-        public static string PortableFile { get; }
+        private static string PortableFile { get; }
+        private static string BinPortableFile { get; }
         public static string AutoSavePath { get; }
-        private static bool IsInPortableMode { get; }
+        public static bool IsInPortableMode { get; }
         public static string BasePath { get; }
         internal static string BaseLocalPath { get; }
         public static string AvalonDockLayoutFile => Path.Combine(BaseLocalPath, "WindowLayouts", "Custom.xml");

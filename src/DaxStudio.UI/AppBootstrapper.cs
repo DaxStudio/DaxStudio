@@ -128,8 +128,7 @@ namespace DaxStudio.UI
 	            batch.AddExportedValue(_container);
 	            batch.AddExportedValue(catalog);
 
-                var settingFactory = new SettingsProviderFactory();
-                ISettingProvider settingProvider = settingFactory.GetSettingProvider();
+                ISettingProvider settingProvider = SettingsProviderFactory.GetSettingProvider();
 
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 

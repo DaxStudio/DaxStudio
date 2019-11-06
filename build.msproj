@@ -158,7 +158,8 @@
 
   <Target Name="SignAssemblies" DependsOnTargets="Build">
     <Message Text="Attempting to sign Assemblies" Importance="high" />
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\daxstudio.checker.exe' IgnoreExitCode="true"/>
     <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/>
   </Target>
 
@@ -204,6 +205,9 @@
   <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes">
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
-
+  
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;Portable;SignedInstaller">
+    <Message Text="Performing full build of Signed Installer and Portable zip" />
+  </Target>
 
 </Project>

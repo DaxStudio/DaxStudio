@@ -6,12 +6,12 @@ using System.Reflection;
 
 namespace DaxStudio.UI.Model
 {
-    public class SettingsProviderFactory
+    public static class SettingsProviderFactory
     {
         //[Export(typeof(Func<ISettingProvider>))]
-        public ISettingProvider GetSettingProvider()
+        public static ISettingProvider GetSettingProvider()
         {
-            if (IsRunningPortable())
+            if (IsRunningPortable)
                 return new JsonSettingProviderPortable();
             else
             //return new JsonSettingProviderAppData();
@@ -23,9 +23,6 @@ namespace DaxStudio.UI.Model
             return new RegistrySettingProvider();
         }
 
-        private bool IsRunningPortable()
-        {
-            return File.Exists(ApplicationPaths.PortableFile);
-        }
+        private static bool IsRunningPortable => ApplicationPaths.IsInPortableMode;
     }
 }
