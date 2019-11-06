@@ -26,7 +26,7 @@ js-footer: "/js/index-footer.js"
       <i class="fa fa-calendar" title="release date"></i><span>{% if download.assets[0].created_at != nil %}{{ download.assets[0].created_at | date_to_string }} {% else %}N/A{% endif %} </span>
       <span id="download_cnt"></span> 
     </div>
-
+<!--
     <a href="{{ download.assets[1].browser_download_url }}">
       
         <div><i class="fa fa-download"></i>&nbsp; {{download.name}} (portable)</div>
@@ -42,6 +42,7 @@ js-footer: "/js/index-footer.js"
 {% else %}
     <div>Sorry, but we are not able to get the latest release information from github at this time</div>
 {% endif %}
+  -->
   </div>
 </div>
 
