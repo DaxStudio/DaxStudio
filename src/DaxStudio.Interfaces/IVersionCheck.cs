@@ -14,7 +14,7 @@ namespace DaxStudio.Interfaces
         bool VersionIsLatest { get;  }
         string VersionStatus { get;}
         void Update();
-        string DownloadUrl { get; }
+        Uri DownloadUrl { get; }
 
         event PropertyChangedEventHandler PropertyChanged;
     }

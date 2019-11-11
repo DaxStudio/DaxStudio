@@ -1,12 +1,12 @@
 ﻿namespace UnitComboLib.Unit.Screen
 {
-  using System;
+    using System;
 
-  /// <summary>
-  /// Class to convert from percentage values into other units.
-  /// </summary>
-  public class ScreenPercent
-  {
+    /// <summary>
+    /// Class to convert from percentage values into other units.
+    /// </summary>
+    public static class ScreenPercent
+    {
 
         #region methods
         /// <summary>
@@ -17,19 +17,19 @@
         /// <param name="oneHundredPercentFontSize"></param>
         /// <returns></returns>
         public static double ToUnit(double inputValue, Itemkey targetUnit, double oneHundredPercentFontSize)
-    {
-      switch (targetUnit)
-      {
-        case Itemkey.ScreenPercent:
-          return inputValue;
+        {
+            switch (targetUnit)
+            {
+                case Itemkey.ScreenPercent:
+                    return inputValue;
 
-        case Itemkey.ScreenFontPoints:
-          return (inputValue * oneHundredPercentFontSize) / 100.0;
+                case Itemkey.ScreenFontPoints:
+                    return (inputValue * oneHundredPercentFontSize) / 100.0;
 
-        default:
-          throw new NotImplementedException(targetUnit.ToString());
-      }
+                default:
+                    throw new NotImplementedException(targetUnit.ToString());
+            }
+        }
+        #endregion methods
     }
-    #endregion methods
-  }
 }

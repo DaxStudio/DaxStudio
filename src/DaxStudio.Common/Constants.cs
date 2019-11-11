@@ -40,6 +40,7 @@ namespace DaxStudio.Common
         public const int MaxRecentFiles = 25;
         public const int MaxRecentServers = 25;
         public const int MaxMruSize = 25;
+        public const string DownloadUrl = "https://daxstudio.org/downloads";
         //public const int TraceStartTimeoutSeconds = 30;
     }
 }

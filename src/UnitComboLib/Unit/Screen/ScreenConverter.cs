@@ -25,10 +25,6 @@
     /// </summary>
       public  double OneHundredPercentFontSize { get; set; }
 
-    /// <summary>
-    /// This is the standard value to scale against when using percent instead of fontsize.
-    /// </summary>
-    private const double OneHundredPercent = 100.0;
 
     /// <summary>
     /// Convert between different units of screen resolutions.

@@ -8,11 +8,11 @@ using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
+using System.Globalization;
 
 namespace ADOTabular
 {
 
-    [Flags]
     public enum MdschemaVisibility
     {
         Visible = 0x01,
@@ -94,14 +94,14 @@ namespace ADOTabular
                         dd = Databases.GetDatabaseDictionary(this.SPID, true);
                     }
                     //var db = dd[_adomdConn.Database];
-                    if (_currentDatabase == "" && dd.Count == 0)
+                    if (string.IsNullOrEmpty(_currentDatabase) && dd.Count == 0)
                     {
                         // return an empty database object if there is no current database or no databases on the server
                         return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "","");
                     }
                     // The Power BI XMLA endpoint does not set a default database, so we have a collection of database, but no current database
                     // in this case we just set the current database to the first in the list
-                    if (_currentDatabase == "" && dd.Count > 0)
+                    if (string.IsNullOrEmpty(_currentDatabase) && dd.Count > 0)
                     {
                         var details = dd.First().Value;
                         _db = new ADOTabularDatabase(this, details.Name, details.Id, details.LastUpdate, details.CompatibilityLevel, details.Roles);
@@ -237,30 +237,33 @@ namespace ADOTabular
                 if (connstr.IndexOf("Show Hidden Cubes", StringComparison.OrdinalIgnoreCase) == -1 && ShowHiddenObjects)
                 {
                     connstr =
-                        string.Format(
-                            connstr.EndsWith(";")
+                        string.Format(CultureInfo.InvariantCulture
+                            , connstr.EndsWith(";", StringComparison.InvariantCulture)
                                 ? "{0}Show Hidden Cubes=true"
                                 : "{0};Show Hidden Cubes=true", connstr);
                 }
                 return connstr;
             }
             set { _connectionString = value;
-                _connectionProps = SplitConnectionString(_connectionString);
-                ConnectionType = GetConnectionType(ServerName);
-                //_connectionProps = ConnectionStringParser.Parse(_connectionString);
+                if (_connectionString != null)
+                {
+                    _connectionProps = SplitConnectionString(_connectionString);
+                    ConnectionType = GetConnectionType(ServerName);
+                    //_connectionProps = ConnectionStringParser.Parse(_connectionString);
+                }
             }
         }
 
-        private ADOTabularConnectionType GetConnectionType(string serverName)
+        private static ADOTabularConnectionType GetConnectionType(string serverName)
         {
-            var lowerServerName = serverName.ToLower().Trim();
-            if (lowerServerName.StartsWith("localhost")) return ADOTabularConnectionType.LocalMachine;
-            if (lowerServerName.StartsWith("asazure:") 
-             || lowerServerName.StartsWith("powerbi:")) return ADOTabularConnectionType.Cloud;
+            var lowerServerName = serverName.Trim();
+            if (lowerServerName.StartsWith("localhost",StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.LocalMachine;
+            if (lowerServerName.StartsWith("asazure:", StringComparison.InvariantCultureIgnoreCase) 
+             || lowerServerName.StartsWith("powerbi:", StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.Cloud;
             return ADOTabularConnectionType.LocalNetwork;
         }
 
-        private Dictionary<string, string> SplitConnectionString(string connectionString)
+        private static Dictionary<string, string> SplitConnectionString(string connectionString)
         {
             var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var prop in connectionString.Split(';'))
@@ -291,7 +294,7 @@ namespace ADOTabular
                     }
                     else
                     {
-                        throw new NullReferenceException("Unable to populate Databases collection - a valid connection has not been established");
+                        throw new InvalidOperationException("Unable to populate Databases collection - a valid connection has not been established");
                     }
                 }
                 return _adoTabDatabaseColl;
@@ -353,18 +356,23 @@ namespace ADOTabular
         public void ExecuteNonQuery(string command)
         {
             var cmd = _adomdConn.CreateCommand();
-            cmd.CommandText = command;
-            cmd.CommandType = CommandType.Text;
-            
-            cmd.ExecuteNonQuery();
+            try
+            {
+                cmd.CommandText = command;
+                cmd.CommandType = CommandType.Text;
+
+                cmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                cmd.Dispose();
+            }
+
         }
 
         public void CancelSPID(int spid)
         {
-            var cmd =
-                string.Format(
-                    "<Cancel xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'><SPID>{0}</SPID></Cancel>",
-                    spid);
+            var cmd = $"<Cancel xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'><SPID>{spid}</SPID></Cancel>";
             ExecuteNonQuery(cmd);
         }
 
@@ -380,16 +388,6 @@ namespace ADOTabular
             ExecuteNonQuery(cmd);
         }
 
-        private Func<AdomdDataReader> _execReader; 
-        public IAsyncResult BeginExecuteDaxReader(string query, AsyncCallback callback)
-        {
-            AdomdCommand cmd = _adomdConn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = query;
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            _execReader = cmd.ExecuteReader;
-            return _execReader.BeginInvoke(callback,null);
-        }
 
         public ConnectionState State
         {
@@ -399,48 +397,24 @@ namespace ADOTabular
             }
         }
 
-        public void EndExecuteDaxReader(IAsyncResult result)
-        {
-            _execReader.EndInvoke(result);
-        }
-
         public AdomdDataReader ExecuteReader(string query)
         {
-            return ExecuteReader(query, 0);
-        }
-        public AdomdDataReader ExecuteReader(string query, int maxRows)
-        {
-            _runningCommand = _adomdConn.CreateCommand();
-            _runningCommand.CommandType = CommandType.Text;
-            _runningCommand.CommandText = query;
-            //var dt = new DataTable("DAXResult");
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            AdomdDataReader rdr = _runningCommand.ExecuteReader();
-            rdr.Connection = this;
-            rdr.CommandText = query;
-            return rdr;
-            //int iRow = 0;
-            //dt.BeginLoadData();
-            //if (maxRows <= 0)
-            //{
-            //    dt.Load(rdr);
-            //}
-            //else
-            //{
-            //    while (rdr.Read())
-            //    {
-            //        DataRow dr = dt.NewRow();
-            //        rdr.GetValues(dr.ItemArray);
-            //        dt.ImportRow(dr);
-            //        //dt.LoadDataRow(rdr[iRow], LoadOption.OverwriteChanges);
-            //        iRow++;
-            //    }
-            //    dt.EndLoadData();
-            //}
-            ////while (rdr)
-            //FixColumnNaming(dt);
-            //_runningCommand = null;
-            //return dt;
+            try
+            {
+                _runningCommand = _adomdConn.CreateCommand();
+                _runningCommand.CommandType = CommandType.Text;
+                _runningCommand.CommandText = query;
+
+                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                AdomdDataReader rdr = _runningCommand.ExecuteReader();
+                rdr.Connection = this;
+                rdr.CommandText = query;
+                return rdr;
+            }
+            finally
+            {
+                _runningCommand.Dispose();
+            }
         }
 
         public DataTable ExecuteDaxQueryDataTable(string query)
@@ -448,38 +422,31 @@ namespace ADOTabular
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = query;
-            var da = new AdomdDataAdapter(_runningCommand);
             var dt = new DataTable("DAXResult");
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            da.Fill(dt);
-
+            using (var da = new AdomdDataAdapter(_runningCommand))
+            {
+                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                da.Fill(dt);
+            }
+            _runningCommand.Dispose();
             _runningCommand = null;
             return dt;
         }
 
-        public DataTable ExecuteDaxQueryAsync(string query)
-        {
-            AdomdCommand cmd = _adomdConn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = query;
-            var da = new AdomdDataAdapter(cmd);
-            var dt = new DataTable("DAXResult");
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            da.Fill(dt);
-
-            return dt;
-        }
-
-
         public int ExecuteCommand(string command) {
             AdomdCommand cmd = _adomdConn.CreateCommand();
-            cmd.CommandType = CommandType.Text;
-            cmd.CommandText = command;
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return cmd.ExecuteNonQuery();
-        }
-
-        
+            try
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = command;
+                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                return cmd.ExecuteNonQuery();
+            }
+            finally
+            {
+                cmd.Dispose();
+            }
+        }     
 
 
         public void Close(bool endSession)
@@ -500,10 +467,21 @@ namespace ADOTabular
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _adomdConn?.Dispose();
+                _runningCommand?.Dispose();
+                _runningCommand = null;
+                _spid = 0;
+            }
+        }
+
         public void Dispose()
         {
-            _adomdConn.Dispose();
-            _spid = 0;            
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private ADOTabularFunctionGroupCollection _functionGroups;
@@ -692,7 +670,7 @@ namespace ADOTabular
                         var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
                         foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => dr["SESSION_ID"].ToString() == SessionId))
                         {
-                            _spid = int.Parse(dr["SESSION_SPID"].ToString());
+                            _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
                     }
                     catch 
@@ -708,14 +686,15 @@ namespace ADOTabular
 
         public void Cancel()
         {
-            if (_runningCommand != null)
+            if (_runningCommand == null)
             {
-                _runningCommand.Cancel();
+                return;
             }
-            
+            _runningCommand.Cancel();
+
         }
 
-        
+
         public bool IsMultiDimensional { get {
                 return ServerMode == "Multidimensional";
             }
@@ -750,16 +729,11 @@ namespace ADOTabular
         }
 
 
-        void IDisposable.Dispose()
-        {
-            Close();
-        }
-
         public void SetCube(string cubeName)
         {
             _currentCube = cubeName;
             _adomdConn.Close();
-            _adomdConn = new AdomdConnection(string.Format("{0};Cube={1};Initial Catalog={2}", ConnectionString, cubeName , Database.Name), _connectionType);
+            _adomdConn = new AdomdConnection($"{ConnectionString};Cube={cubeName};Initial Catalog={Database.Name}", _connectionType);
         }
 
         public bool Is2012SP1OrLater
@@ -789,8 +763,10 @@ namespace ADOTabular
 
         public string ConnectionStringWithInitialCatalog {
             get {
-                var builder = new OleDbConnectionStringBuilder(ConnectionString);
-                builder["Initial Catalog"] = _currentDatabase;
+                var builder = new OleDbConnectionStringBuilder(ConnectionString)
+                {
+                    ["Initial Catalog"] = _currentDatabase
+                };
                 if (!string.IsNullOrEmpty(_currentCube)) builder["Cube"] = _currentCube;
                 return builder.ToString();
                 
@@ -798,7 +774,7 @@ namespace ADOTabular
             }
         }
 
-        internal object CurrentCubeInternal { get { return  (string.IsNullOrEmpty(_currentCube)) ? string.Empty:string.Format(";Cube={0}", _currentCube); } }
+        internal object CurrentCubeInternal => (string.IsNullOrEmpty(_currentCube)) ? string.Empty : $";Cube={_currentCube}";
 
         public Dictionary<string, ADOTabularColumn> Columns { get; } = new Dictionary<string, ADOTabularColumn>();
 
@@ -812,7 +788,7 @@ namespace ADOTabular
                 if (_adomdConn.ConnectionString.Trim().Length == 0) return 0;
                 var m = _LocaleIdRegex.Match(_adomdConn.ConnectionString);
                 if (!m.Success) return 0;
-                return int.Parse(m.Groups[1].Value);
+                return int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
             }
         }
 
@@ -822,8 +798,10 @@ namespace ADOTabular
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
         {
-            var res = new AdomdRestrictionCollection();
-            res.Add(new AdomdRestriction("ObjectExpansion", "ReferenceOnly"));
+            var res = new AdomdRestrictionCollection
+            {
+                new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+            };
             var props = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA", res, true);
             var xmla = props.Tables[0].Rows[0][0].ToString();
             var xdoc = new XmlDocument() { XmlResolver = null  };

@@ -103,7 +103,7 @@ namespace DaxStudio.UI.ViewModels
             get;
             set;
         }
-        public string DownloadUrl { get; private set; }
+        public Uri DownloadUrl { get; private set; }
         public bool VersionIsLatest { get; private set; }
 
         public bool IsLoggingEnabled { get { return _host.DebugLogging; } }

@@ -89,7 +89,7 @@ namespace DaxStudio.Tests
             get { throw new NotImplementedException(); }
         }
 
-        public string DownloadUrl
+        public Uri DownloadUrl
         {
             get
             {

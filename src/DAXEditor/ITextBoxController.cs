@@ -33,9 +33,9 @@
   /// </summary>
   public interface ITextBoxController
   {
-    event SelectAllEventHandler SelectAll;
+    event SelectAllEventHandler SelectAllEvent;
 
-    event SelectEventHandler Select;
+    event SelectEventHandler SelectEvent;
 
     event ScrollToLineEventHandler ScrollToLineEvent;
 

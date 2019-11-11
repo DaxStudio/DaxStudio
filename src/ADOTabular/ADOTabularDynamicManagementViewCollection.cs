@@ -24,7 +24,7 @@ namespace ADOTabular
                     // TODO - on error should we return an empty dataset?
                     _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
                 }
-                catch (Exception)
+                catch 
                 {
                     return new DataTable("Emtpy");
                 }
@@ -35,10 +35,12 @@ namespace ADOTabular
 
         public IEnumerator<ADOTabularDynamicManagementView> GetEnumerator()
         {
-            foreach (DataRow dr in GetDmvTable().Rows)
+            using (var dmvTable = GetDmvTable())
             {
-                //yield return new ADOTabularDatabase(_adoTabConn, dr["CATALOG_NAME"].ToString());//, dr);
-                yield return new ADOTabularDynamicManagementView(dr);
+                foreach (DataRow dr in dmvTable.Rows)
+                {
+                    yield return new ADOTabularDynamicManagementView(dr);
+                }
             }
         }
 

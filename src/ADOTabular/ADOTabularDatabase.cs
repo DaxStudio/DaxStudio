@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace ADOTabular
@@ -68,7 +69,7 @@ namespace ADOTabular
 
         public void ClearCache()
         {
-            Connection.ExecuteCommand(String.Format(@"
+            Connection.ExecuteCommand(string.Format(CultureInfo.InvariantCulture, @"
                 <Batch xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
                    <ClearCache>
                      <Object>
@@ -90,10 +91,7 @@ namespace ADOTabular
 
         //}
 
-        public MetadataImages MetadataImage
-        {
-            get { return MetadataImages.Database; }
-        }
+        public MetadataImages MetadataImage => MetadataImages.Database;
 
     }
 }

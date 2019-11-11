@@ -9,7 +9,7 @@ namespace ADOTabular.AdomdClientWrappers
 {
     //Microsoft.Excel.AdomdClient.dll path logic from Microsoft.ReportingServices.AdHoc.Excel.Client.ExcelAdoMdConnections
     //Microsoft.Excel.AdomdClient.dll assembly loading improved over that approach
-    public class ExcelAdoMdConnections
+    public static class ExcelAdoMdConnections
     {
         internal delegate void VoidDelegate();
         internal delegate T ReturnDelegate<T>();
@@ -22,7 +22,7 @@ namespace ADOTabular.AdomdClientWrappers
         [DllImport("Kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        protected static string RetrieveAdomdClientAssemblyPath()
+        private static string RetrieveAdomdClientAssemblyPath()
         {
             string directoryName = RetrieveAdomdAssemblyFolder();
             return Path.Combine(directoryName, "Microsoft.Excel.AdomdClient.dll");
@@ -71,7 +71,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        protected static string ExcelAdomdClientAssemblyPath
+        private static string ExcelAdomdClientAssemblyPath
         {
             get
             {

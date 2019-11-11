@@ -86,7 +86,7 @@ namespace DAXEditorControl
         }
     }
     public delegate List<HighlightPosition> HighlightDelegate(string text, int startOffset, int endOffset); 
-    public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor , IEditor
+    public partial class DAXEditor : ICSharpCode.AvalonEdit.TextEditor, IEditor, IDisposable
     {
         private readonly BracketRenderer.BracketHighlightRenderer _bracketRenderer;
         private WordHighlighTransformer _wordHighlighter;
@@ -268,7 +268,12 @@ namespace DAXEditorControl
             System.Reflection.Assembly myAssembly = System.Reflection.Assembly.GetAssembly(GetType());
             using (var s = myAssembly.GetManifestResourceStream("DAXEditor.Resources.DAX.xshd"))
             {
-                using (var reader = new XmlTextReader(s) { DtdProcessing = DtdProcessing.Prohibit } )
+
+                using (var reader = new XmlTextReader(s) 
+                { 
+                    XmlResolver = null,
+                    DtdProcessing = DtdProcessing.Prohibit 
+                })
                 {
                     SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
@@ -598,6 +603,19 @@ namespace DAXEditorControl
             return Document.GetText(segment);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                documentHighlighter.Dispose();
+            }
+        }
 
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

@@ -13,8 +13,8 @@ namespace DaxStudio.Standalone
         //private const string adomdStrongNamePattern = "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
         //private const int minVer = 11;
         //private const int maxVer = 13;
-        private List<string> _resolving = new List<string>();
-        private object _mutex = new object();
+        private readonly List<string> _resolving = new List<string>();
+        private readonly object _mutex = new object();
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -58,13 +58,12 @@ namespace DaxStudio.Standalone
         private Assembly AddAssemblyToCache(string name)
         {
             if (_assemblies.ContainsKey(name)) return _assemblies[name];
-            Assembly ass = null;
-            if (name.StartsWith("Microsoft.AnalysisServices,") 
-                || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,") 
-                || name.StartsWith("Microsoft.AnalysisServices.Core,"))
+            if (name.StartsWith("Microsoft.AnalysisServices,", StringComparison.InvariantCultureIgnoreCase) 
+                || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,", StringComparison.InvariantCultureIgnoreCase) 
+                || name.StartsWith("Microsoft.AnalysisServices.Core,", StringComparison.InvariantCultureIgnoreCase))
             {
                 var an = new AssemblyName(name);
-                ass = GetAssembly(an);
+                Assembly ass = GetAssembly(an);
                 if (ass != null) _assemblies.Add(name, ass);
                 return ass;
             }
@@ -76,7 +75,7 @@ namespace DaxStudio.Standalone
 /// </summary>
 /// <param name="assemblyName"></param>
 /// <returns>Assembly</returns>
-        private Assembly GetAssembly(AssemblyName assemblyName)
+        private static Assembly GetAssembly(AssemblyName assemblyName)
         {
             int minVer = assemblyName.Version.Major;
             for (int i = 1; i <= 2; i++)

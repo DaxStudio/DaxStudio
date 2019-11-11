@@ -11,8 +11,8 @@ namespace DAXEditorControl.BracketRenderer
   /// </summary>
   public class DaxStudioBracketSearcher : IBracketSearcher
   {
-    string openingBrackets = "([{";
-    string closingBrackets = ")]}";
+        readonly string openingBrackets = "([{";
+        readonly string closingBrackets = ")]}";
 
     #region constructor
     /// <summary>
@@ -23,6 +23,7 @@ namespace DAXEditorControl.BracketRenderer
     /// <returns></returns>
     public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
+      if( document == null) throw new ArgumentNullException(nameof(document));
 
       if (offset > 0)
       {

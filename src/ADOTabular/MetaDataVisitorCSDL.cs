@@ -144,7 +144,7 @@ namespace ADOTabular
         }
 
         // Read the "Culture" attribute from <bi:EntityContainer>
-        private void UpdateDatabaseAndModelFromEntityContainer(XmlReader rdr, ADOTabularTableCollection tabs, string eEntityContainer)
+        private static void UpdateDatabaseAndModelFromEntityContainer(XmlReader rdr, ADOTabularTableCollection tabs, string eEntityContainer)
         {
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntityContainer))
@@ -173,7 +173,7 @@ namespace ADOTabular
             }
         }
 
-        private void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)
+        private static void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             string refname = string.Empty;
             string toColumnRef = string.Empty;
@@ -433,7 +433,6 @@ namespace ADOTabular
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
-            bool isDateTable = false;
             ADOTabularTable tab = null;
 
             IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
@@ -476,7 +475,7 @@ namespace ADOTabular
                     if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "Hierarchy")
                 {
-                    ProcessHierarchy(rdr, tab, eEntityType);
+                    ProcessHierarchy(rdr, tab);
 
                 }
 
@@ -485,8 +484,8 @@ namespace ADOTabular
                 {
                 //    rdr.MoveToAttribute("Contents");
                     var contentAttr = rdr.GetAttribute("Contents");
-                    
-                    isDateTable = contentAttr == "Time";
+
+                    bool isDateTable = contentAttr == "Time";
                     tab.IsDateTable = isDateTable;
                 }
 
@@ -501,7 +500,7 @@ namespace ADOTabular
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "Kpi")
                 {
-                    kpi = ProcessKpi(rdr, tab);
+                    kpi = ProcessKpi(rdr);
                 }
 
                 string defaultAggregateFunction;
@@ -659,7 +658,7 @@ namespace ADOTabular
 
         private static List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
         {
-            string _name = string.Empty;
+            string _name;
             bool _default = false;
             string navigationPropertyRef = string.Empty;
             string defaultHierarchyRef = string.Empty;
@@ -808,7 +807,7 @@ namespace ADOTabular
 
         }
 
-        private KpiDetails ProcessKpi(XmlReader rdr, ADOTabularTable table)
+        private static KpiDetails ProcessKpi(XmlReader rdr)
         {
             KpiDetails kpi = new KpiDetails();
             while (!(rdr.NodeType == XmlNodeType.EndElement
@@ -869,13 +868,13 @@ namespace ADOTabular
             return kpi;
         }
 
-        private void ProcessHierarchy(XmlReader rdr, ADOTabularTable table, string eEntityType)
+        private void ProcessHierarchy(XmlReader rdr, ADOTabularTable table)
         {
             var hierName = "";
             string hierCap = null;
             var hierIsVisible = true;
             ADOTabularHierarchy hier = null;
-            ADOTabularLevel lvl = null;
+            ADOTabularLevel lvl;
             string lvlName = "";
             string lvlCaption = "";
             string lvlRef = "";
@@ -1061,22 +1060,6 @@ namespace ADOTabular
                 int? origin = GetInt(result, result.GetOrdinal("ORIGIN"));
                 if (origin == null) continue;
                 if (origin != 3 && origin != 4) continue;
-
-                var SSAS_VERSION = ssasVersion;
-                var FUNCTION_NAME = GetString(result, result.GetOrdinal("FUNCTION_NAME"));
-                var DESCRIPTION = GetString(result, result.GetOrdinal("DESCRIPTION"));
-                var PARAMETER_LIST = GetString(result, result.GetOrdinal("PARAMETER_LIST"));
-                var RETURN_TYPE = GetInt(result, result.GetOrdinal("RETURN_TYPE"));
-                var ORIGIN = origin;
-                var INTERFACE_NAME = GetString(result, result.GetOrdinal("INTERFACE_NAME"));
-                var LIBRARY_NAME = GetString(result, result.GetOrdinal("LIBRARY_NAME"));
-                var DLL_NAME = GetString(result, result.GetOrdinal("DLL_NAME"));
-                var HELP_FILE = GetString(result, result.GetOrdinal("HELP_FILE"));
-                var HELP_CONTEXT = GetInt(result, result.GetOrdinal("HELP_CONTEXT"));
-                var OBJECT = GetString(result, result.GetOrdinal("OBJECT"));
-                var CAPTION = GetString(result, result.GetOrdinal("CAPTION"));
-                var PARAMETERINFO = GetXmlString(result, result.GetOrdinal("PARAMETERINFO"));
-                var DIRECTQUERY_PUSHABLE = (result.FieldCount >= 14 ? GetInt(result, result.GetOrdinal("DIRECTQUERY_PUSHABLE")) : null);
 
                 var function = new MetadataInfo.DaxFunction {
                     SSAS_VERSION = ssasVersion,

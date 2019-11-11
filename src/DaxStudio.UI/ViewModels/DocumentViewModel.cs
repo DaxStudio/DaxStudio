@@ -2556,7 +2556,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public void Paste() { this.GetEditor().Paste(); }
 
-        public void SetResultsMessage(string message, OutputTargets icon)
+        public void SetResultsMessage(string message, OutputTarget icon)
         {
             QueryResultsPane.ResultsMessage = message;
             QueryResultsPane.ResultsIcon = icon;

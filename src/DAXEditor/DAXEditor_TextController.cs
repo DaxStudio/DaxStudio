@@ -50,8 +50,8 @@ namespace DAXEditorControl
             if (e.OldValue is ITextBoxController oldController)
             {
                 elements.Remove(oldController);
-                oldController.SelectAll -= SelectAll;
-                oldController.Select -= Select;
+                oldController.SelectAllEvent -= SelectAll;
+                oldController.SelectEvent -= Select;
                 oldController.ScrollToLineEvent -= ScrollToLine;
                 oldController.CurrentSelectionEvent -= CurrentSelection;
                 oldController.BeginChangeEvent -= BeginChange;
@@ -68,8 +68,8 @@ namespace DAXEditorControl
                 {
                     elements.Remove(newController);
 
-                    newController.SelectAll -= DAXEditor.SelectAll;
-                    newController.Select -= DAXEditor.Select;
+                    newController.SelectAllEvent -= DAXEditor.SelectAll;
+                    newController.SelectEvent -= DAXEditor.Select;
                     newController.ScrollToLineEvent -= DAXEditor.ScrollToLine;
                     newController.CurrentSelectionEvent -= DAXEditor.CurrentSelection;
                     newController.BeginChangeEvent -= DAXEditor.BeginChange;
@@ -78,8 +78,8 @@ namespace DAXEditorControl
                 }
 
                 elements.Add(newController, txtBox);
-                newController.SelectAll += SelectAll;
-                newController.Select += Select;
+                newController.SelectAllEvent += SelectAll;
+                newController.SelectEvent += Select;
                 newController.ScrollToLineEvent += ScrollToLine;
                 newController.CurrentSelectionEvent += CurrentSelection;
                 newController.BeginChangeEvent += DAXEditor.BeginChange;

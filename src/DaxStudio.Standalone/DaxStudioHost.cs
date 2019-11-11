@@ -13,11 +13,8 @@ namespace DaxStudio.Standalone
     public class DaxStudioHost 
         : IDaxStudioHost
     {
-        private int _port;
-        private IDaxStudioProxy _proxy;
-        private IEventAggregator _eventAggregator;
-        private string _commandLineFileName = string.Empty;
-        private Application _app;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly Application _app;
 
         //private UI.ViewModels.DocumentViewModel _activeDocument;
         [ImportingConstructor]
@@ -25,14 +22,14 @@ namespace DaxStudio.Standalone
         {
             _eventAggregator = eventAggregator;
             _app = app;
-            _port = _app.Args().Port;
+            Port = _app.Args().Port;
 
             if (Port > 0)
             {
-                _proxy = new DaxStudio.UI.Model.ProxyPowerPivot(_eventAggregator, _port);
+                Proxy = new DaxStudio.UI.Model.ProxyPowerPivot(_eventAggregator, Port);
             } else
             {
-                _proxy = new DaxStudio.UI.Model.ProxyStandalone();
+                Proxy = new DaxStudio.UI.Model.ProxyStandalone();
             }
 
 
@@ -58,23 +55,16 @@ namespace DaxStudio.Standalone
         }
 
         public bool IsExcel {
-            get { return _proxy.IsExcel; }
+            get { return Proxy.IsExcel; }
         }
 
-        public IDaxStudioProxy Proxy
-        {
-            get { return _proxy; }
-        }
+        public IDaxStudioProxy Proxy { get; }
 
         public string CommandLineFileName
         {
             get { return  _app.Args().FileName; }
         }
 
-        public void Dispose()
-        {
-            
-        }
 
 
         public ADOTabular.AdomdClientWrappers.AdomdType ConnectionType
@@ -82,13 +72,7 @@ namespace DaxStudio.Standalone
             get { return ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices; }
         }
 
-        public int Port
-        {
-            get
-            {
-                return _port;
-            }
-        }
+        public int Port { get; }
 
         public bool DebugLogging
         {
@@ -96,6 +80,20 @@ namespace DaxStudio.Standalone
             {
                 return (bool)_app.Args().LoggingEnabled;
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Proxy?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

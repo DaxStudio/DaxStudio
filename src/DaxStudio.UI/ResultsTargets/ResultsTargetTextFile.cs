@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public int DisplayOrder => 300;
         public string Message => "Results will be sent to a Text File";
-        public OutputTargets Icon => OutputTargets.File;
+        public OutputTarget Icon => OutputTarget.File;
 
         public bool IsEnabled => true;
 
@@ -171,7 +171,7 @@ namespace DaxStudio.UI.Model
                                 sw.Stop();
                                 durationMs = sw.ElapsedMilliseconds;
 
-                                runner.SetResultsMessage("Query results written to file", OutputTargets.File);
+                                runner.SetResultsMessage("Query results written to file", OutputTarget.File);
                                 runner.ActivateOutput();
                             } else
                                 runner.OutputError("Query Batch Completed with errors", durationMs);

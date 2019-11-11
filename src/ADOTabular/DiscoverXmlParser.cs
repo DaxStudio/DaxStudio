@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Xml;
 
 namespace ADOTabular
@@ -10,6 +8,8 @@ namespace ADOTabular
     {
         public static Dictionary<string,string> Databases(XmlReader rdr)
         {
+            Contract.Requires(rdr != null, "The rdr parameter must not be null");
+
             var dbs = new Dictionary<string, string>();
 
             if (rdr.NameTable == null) return dbs;
@@ -62,11 +62,12 @@ namespace ADOTabular
 
         public static Dictionary<string, string> ServerProperties(XmlReader rdr)
         {
+            Contract.Requires(rdr != null, "The rdr parameter must not be null");
+
             var props = new Dictionary<string, string>();
 
             if (rdr.NameTable == null) return props;
             
-            var eServer = rdr.NameTable.Add("Server");
             var eServerMode = rdr.NameTable.Add("ServerMode");
             
             while (rdr.Read())

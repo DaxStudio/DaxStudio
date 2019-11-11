@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
+using System.Diagnostics.Contracts;
 
 namespace ADOTabular
 {
     public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>
     {
-        private SortedDictionary<string, ADOTabularFunction> _functions; 
+        private readonly SortedDictionary<string, ADOTabularFunction> _functions; 
         private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularFunctionCollection(ADOTabularConnection adoTabConn)
         {
@@ -42,9 +43,11 @@ namespace ADOTabular
             return GetEnumerator();
         }
 
-        public void Add(ADOTabularFunction fun)
+        public void Add(ADOTabularFunction tabularFunc)
         {
-            _functions.Add(fun.Caption, fun);
+            Contract.Requires(tabularFunc != null, "The tabularFunc parameter must not be null");
+
+            _functions.Add(tabularFunc.Caption, tabularFunc);
         }
     }
 }

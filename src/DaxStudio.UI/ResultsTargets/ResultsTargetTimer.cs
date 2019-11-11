@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public int DisplayOrder => 20;
         public string Message => "Query timings sent to output tab";
-        public OutputTargets Icon => OutputTargets.Timer;
+        public OutputTarget Icon => OutputTarget.Timer;
 
         public bool IsEnabled => true;
 
@@ -41,7 +41,7 @@ namespace DaxStudio.UI.Model
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
                 runner.RowCount = res.Rows.Count;
-                runner.SetResultsMessage("Query timings sent to output tab", OutputTargets.Timer);
+                runner.SetResultsMessage("Query timings sent to output tab", OutputTarget.Timer);
                 //runner.QueryCompleted();
                 runner.ActivateOutput();
             }

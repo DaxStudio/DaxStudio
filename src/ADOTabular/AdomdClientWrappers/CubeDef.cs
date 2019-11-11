@@ -28,10 +28,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<AdomdConnection> f = delegate
-                    {
-                        return new AdomdConnection(_objExcel.ParentConnection);
-                    };
+                    AdomdConnection f() => new AdomdConnection(_objExcel.ParentConnection);
                     return f();
                 }
             }
@@ -46,10 +43,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Name;
-                    };
+                    string f() => _objExcel.Name;
                     return f();
                 }
             }
@@ -70,7 +64,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<DimensionCollection> f = delegate
+                    DimensionCollection f()
                     {
                         DimensionCollection list = new DimensionCollection();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension dim in _objExcel.Dimensions)
@@ -78,7 +72,7 @@ namespace ADOTabular.AdomdClientWrappers
                             list.Add(new Dimension(dim));
                         }
                         return list;
-                    };
+                    }
                     return f();
                 }
             }
@@ -99,7 +93,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<List<Measure>> f = delegate
+                    List<Measure> f()
                     {
                         List<Measure> list = new List<Measure>();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Measure dim in _objExcel.Measures)
@@ -107,7 +101,7 @@ namespace ADOTabular.AdomdClientWrappers
                             list.Add(new Measure(dim));
                         }
                         return list;
-                    };
+                    }
                     return f();
                 }
             }
@@ -128,7 +122,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<List<Kpi>> f = delegate
+                    List<Kpi> f()
                     {
                         List<Kpi> list = new List<Kpi>();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi dim in _objExcel.Kpis)
@@ -136,7 +130,7 @@ namespace ADOTabular.AdomdClientWrappers
                             list.Add(new Kpi(dim));
                         }
                         return list;
-                    };
+                    }
                     return f();
                 }
             }
@@ -157,7 +151,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<NamedSetCollection> f = delegate
+                    NamedSetCollection f()
                     {
                         NamedSetCollection list = new NamedSetCollection();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet dim in _objExcel.NamedSets)
@@ -165,7 +159,7 @@ namespace ADOTabular.AdomdClientWrappers
                             list.Add(new NamedSet(dim));
                         }
                         return list;
-                    };
+                    }
                     return f();
                 }
             }
@@ -195,11 +189,11 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<CubeDef> f = delegate
+                CubeDef f()
                 {
                     ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CubeDef obj = _objExcel.Find(index);
                     return obj == null ? null : new CubeDef(obj);
-                };
+                }
                 return f();
             }
         }
@@ -221,7 +215,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
+                    int f()
                     {
                         try
                         {
@@ -231,7 +225,7 @@ namespace ADOTabular.AdomdClientWrappers
                         {
                             throw;// new AdomdConnectionException(); //just to communicate what type of exception
                         }
-                    };
+                    }
                     return f();
                 }
             }
@@ -242,5 +236,12 @@ namespace ADOTabular.AdomdClientWrappers
     [Serializable]
     public class AdomdConnectionException : Exception
     {
+        public AdomdConnectionException(string message) : base(message)
+        {
+        }
+
+        public AdomdConnectionException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

@@ -15,8 +15,7 @@ namespace ADOTabular
         {
             Name = name;
             Id = id;
-            DateTime lastUpdatedDate = new DateTime(1900,1,1);
-            DateTime.TryParse(lastUpdate, out lastUpdatedDate);
+            _ = DateTime.TryParse(lastUpdate, out DateTime lastUpdatedDate);
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
@@ -144,7 +143,7 @@ namespace ADOTabular
                                                      });
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
             
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)))
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Ignore})
             {
                 if (rdr.NameTable != null)
                 {
@@ -220,7 +219,7 @@ namespace ADOTabular
                     i++;
                 }
 
-                throw new IndexOutOfRangeException();
+                throw new InvalidOperationException();
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Diagnostics.Contracts;
+using System.Xml;
 
 namespace ADOTabular.Utils
 {
@@ -6,6 +7,7 @@ namespace ADOTabular.Utils
     {
         public static void ReadToNextElement(this XmlReader reader)
         {
+            Contract.Requires(reader != null, "The reader parameter must not be null");
             while (reader.NodeType != XmlNodeType.Element && reader.NodeType != XmlNodeType.EndElement) {
                 reader.Read();
             }

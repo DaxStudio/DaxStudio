@@ -4,7 +4,7 @@ namespace DaxStudio.UI.Events
 {
     public class NewVersionEvent
     {
-        public NewVersionEvent(Version newVersion, string downloadUrl)
+        public NewVersionEvent(Version newVersion, Uri downloadUrl)
         {
             NewVersion = newVersion;
             DownloadUrl = downloadUrl;
@@ -12,6 +12,6 @@ namespace DaxStudio.UI.Events
 
         public Version NewVersion { get; private set; }
 
-        public string DownloadUrl { get; private set; }
+        public Uri DownloadUrl { get; private set; }
     }
 }

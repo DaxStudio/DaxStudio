@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 
@@ -35,6 +36,8 @@ namespace ADOTabular
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
                                 bool isVisible, ADOTabularObjectType columnType, string contents)
         {
+            Contract.Requires(table != null, "The table parameter must not be null");
+
             Table = table;
             InternalReference = internalReference;
             Name = name ?? internalReference;
@@ -62,8 +65,8 @@ namespace ADOTabular
             {
                 // for measures we exclude the table name
                 return ObjectType == ADOTabularObjectType.Column  
-                    ? string.Format("{0}[{1}]", Table.DaxName, Name)
-                    : string.Format("[{0}]",Name);
+                    ? $"{Table.DaxName}[{Name}]"
+                    : $"[{Name}]";
             }
         }
 
@@ -107,7 +110,7 @@ namespace ADOTabular
 
                 var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 
-                return (measure != null ? measure.Expression : null);
+                return (measure?.Expression);
             }
         }
 
@@ -140,9 +143,9 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
+            Contract.Requires(connection != null, "The connection parameter must not be null");
 
-            string qry = "";
-
+            string qry;
             switch (Type.GetTypeCode(DataType))
             {
                 case TypeCode.Boolean:
@@ -159,34 +162,42 @@ namespace ADOTabular
                     break;
 
             }
-            
-            var dt = connection.ExecuteDaxQueryDataTable(qry);
-            
+
+            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
+            {
+
                 MinValue = dt.Rows[0][0].ToString();
                 MaxValue = dt.Rows[0][1].ToString();
-            if (dt.Rows[0][2] == DBNull.Value) {
-                DistinctValues = 0;
-            }
-            else { 
-                DistinctValues = (long)dt.Rows[0][2];
+                if (dt.Rows[0][2] == DBNull.Value)
+                {
+                    DistinctValues = 0;
+                }
+                else
+                {
+                    DistinctValues = (long)dt.Rows[0][2];
+                }
             }
         }
 
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            string qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
-            if (connection.AllFunctions.Contains("TOPNSKIP"))
-                qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), RAND()) ORDER BY {{1}}";
+            Contract.Requires(connection != null, "The connection parameter must not be null");
 
-            var qry = string.Format(qryTempalte, sampleSize * 2, DaxName);
-            var dt = connection.ExecuteDaxQueryDataTable(qry);
-            List<string> _tmp = new List<string>(sampleSize * 2);
-            foreach(DataRow dr in dt.Rows)
+            string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
+            if (connection.AllFunctions.Contains("TOPNSKIP"))
+                qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), RAND()) ORDER BY {{1}}";
+
+            var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName);
+            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
             {
-                _tmp.Add(string.Format(string.Format("{{0:{0}}}", FormatString), dr[0]));
+                List<string> _tmp = new List<string>(sampleSize * 2);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    _tmp.Add(string.Format(CultureInfo.InvariantCulture, string.Format(CultureInfo.InvariantCulture, "{{0:{0}}}", FormatString), dr[0]));
+                }
+                return _tmp.Distinct().Take(sampleSize).ToList();
             }
-            return _tmp.Distinct().Take(sampleSize).ToList();
         }
 
         // used for relationship links
