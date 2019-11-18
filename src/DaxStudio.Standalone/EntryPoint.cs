@@ -78,14 +78,6 @@ namespace DaxStudio.Standalone
 
                 app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
 
-                // load selected theme
-
-
-                // TODO: Theme - read from settings
-
-                var theme = "Light"; // settingProvider.GetValue<string>("Theme", "Light");
-                if (theme == "Dark") app.LoadDarkTheme();
-                else app.LoadLightTheme();
 
                 
                 // then load Caliburn Micro bootstrapper
@@ -145,6 +137,16 @@ namespace DaxStudio.Standalone
 
                 var options = IoC.Get<OptionsViewModel>();
                 options.Initialize();
+
+
+                // load selected theme
+
+
+                // TODO: Theme - read from settings
+
+                var theme = options.Theme;// "Light"; // settingProvider.GetValue<string>("Theme", "Light");
+                if (theme == "Dark") app.LoadDarkTheme();
+                else app.LoadLightTheme();
 
                 // Launch the User Interface
                 app.Run();
