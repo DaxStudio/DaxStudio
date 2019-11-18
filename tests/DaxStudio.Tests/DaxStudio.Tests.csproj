@@ -115,7 +115,6 @@
     <Compile Include="Assertions\StringAssertion.cs" />
     <Compile Include="CodeCompletionTests.cs" />
     <Compile Include="ConnectionStringParserTests.cs" />
-    <Compile Include="DatabaseProfileTests.cs" />
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="DaxQueryPreProcessorTests.cs" />
