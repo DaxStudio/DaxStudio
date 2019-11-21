@@ -66,6 +66,9 @@ namespace DaxStudio.Interfaces
 
         // Methods
         string GetCustomCsvDelimiter();
+        void Initialize();
+
+        // 
         [JsonIgnore]
         bool IsRunningPortable { get; set; }
     }

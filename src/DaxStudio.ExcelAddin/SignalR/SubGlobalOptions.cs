@@ -96,5 +96,7 @@ namespace DaxStudio.SignalR
         {
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;
         }
+
+        public void Initialize() { }
     }
 }

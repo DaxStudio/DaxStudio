@@ -40,22 +40,37 @@ namespace DaxStudio.UI.Utils
             
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_OperatingSystem");
             var result = new OSInfo();
-            foreach (ManagementObject os in searcher.Get())
+            try
             {
-                result.Name = os["Caption"].ToString();
-                result.Version = Version.Parse(os["Version"].ToString());
-                result.Architecture = "32 bit";
-                if (result.Version.Major > 5)  result.Architecture = os["OSArchitecture"].ToString();
-                continue;
+                foreach (ManagementObject os in searcher.Get())
+                {
+                    result.Name = os["Caption"].ToString();
+                    result.Version = Version.Parse(os["Version"].ToString());
+                    result.Architecture = "32 bit";
+                    if (result.Version.Major > 5) result.Architecture = os["OSArchitecture"].ToString();
+                    continue;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(SystemInfo), nameof(GetOSInfo), $"Error getting OS name and version Info: {ex.Message}");
             }
 
-            searcher = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM Win32_OperatingSystem");
-            foreach (ManagementObject os in searcher.Get())
+            try
             {
-                result.TotalVisibleMemory = long.Parse(os["TotalVisibleMemorySize"].ToString()).KbToGb();
-                result.TotalFreeMemory = long.Parse(os["FreePhysicalMemory"].ToString()).KbToGb();
+                searcher = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM Win32_OperatingSystem");
+                foreach (ManagementObject os in searcher.Get())
+                {
+                    result.TotalVisibleMemory = long.Parse(os["TotalVisibleMemorySize"].ToString()).KbToGb();
+                    result.TotalFreeMemory = long.Parse(os["FreePhysicalMemory"].ToString()).KbToGb();
 
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(SystemInfo), nameof(GetOSInfo), $"Error getting OS memory Info: {ex.Message}");
+            }
+
             return result;
         
         }

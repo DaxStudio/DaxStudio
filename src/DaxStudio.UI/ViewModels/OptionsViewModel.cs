@@ -26,9 +26,7 @@ using System.IO;
 namespace DaxStudio.UI.ViewModels
 {
     [DataContract]
-    [Export(typeof(IGlobalOptions))]
-    [Export(typeof(OptionsViewModel))]
-    
+    [Export(typeof(IGlobalOptions))]   
     public class OptionsViewModel:Screen, IGlobalOptions, IDisposable
     {
         private const string DefaultEditorFontFamily = "Lucida Console";

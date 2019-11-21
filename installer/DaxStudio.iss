@@ -92,7 +92,7 @@ Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdi
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
 ;Excel Addin configs
-Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
 Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

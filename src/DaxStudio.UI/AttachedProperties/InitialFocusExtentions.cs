@@ -64,6 +64,8 @@ namespace DaxStudio.UI.AttachedProperties
             var comboBox = sender as ComboBox;
             if (comboBox == null) return;
 
+            if (comboBox.Items.Count == 0) return; // if there are no items do not attempt to do a selecte all
+
             var textBox = comboBox.FindChild("PART_EditableTextBox", typeof(TextBox)) as TextBox;
             if (textBox == null) return;
 

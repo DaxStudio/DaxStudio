@@ -1,5 +1,5 @@
 ---
-title: Options Winodw
+title: Options Window
 ---
 
 DAX Studio offers a number of options which users can use to customize their experience.
@@ -15,6 +15,8 @@ These settings control the display and behaviour of the main editor window
 | Show Line Numbers | controls whether line numbers are displayed | true |
 | Enable Intellisense | whether to display Intellisense options while typing in the query editor | true |
 | Keep Metadata Search Open | if this is true the search box in the metadata pane will always be displayed otherwise this option collapses to a small magnifying glass option in the upper right corner of the metadata pane | false |
+| Convert Tabs to Spaces | if this setting is TRUE hitting the tab key will insert spaces instead of a tab character. The number of spaces inserted is controlled by the **Indentation Size** setting. | False |
+| Indentation Size | This is the number of spaces to insert if **Convert tabs to spaces** is set to TRUE. | 1 |
 | Intellisense Width | this option can be used to increase the default size of the intellisense dropdown window | 100% |
 
 ## Proxy
@@ -50,13 +52,14 @@ These settings control the length of various timeouts for potentially long runni
 | DAX Formatter Request Timeout | DAX Studio sends a background request https://daxformatter.com this setting controls how long we wait before we consider the request as failed and log an error  | 10 sec |
 | Trace Startup Timeout | When DAX Studio starts a trace it periodically "pings" the server with an empty command. It then waits until the trace captures one of these requests before it considers the trace to be fully active. This setting controls how long DAX Studio will wait to see one of these "ping" requests before it stops waiting and logs and error.  _For high latency connections (such as Azure AS and the Power BI XMLA endpoint) you may need to increase this setting._| 30 sec |
 
-## Separators
+## Defaults
 
 This setting controls the default Separator style used by DAX Studio.
 
 | **Setting** | **Description** | **Default** |
 | --- | --- | --- |
 | Separators | This setting can either be set to US/UK (commas as the list separator character) style or Other (semi-colons as the list separator character) | US/UK |
+| Run Style | checking the **Set 'Clear Cache and Run' as the default** option will change this to the default behaviour for the run button next time DAX Studio is started | False | 
 
 ## Trace
 
@@ -78,24 +81,28 @@ These settings change settings for the Results window
 | Exclude Headers when Copying data | This setting controls whether column headers are included when copying data from the results pane | true |
 | Automatic Format Results | This setting controls whether the results pane attempts to auotmaticlly format numbers and percentages | false |
 
-## Version Notifications 
-**TBA**
+## Metadata Pane
 
-## Metadata
+### Tooltips
 
 This section controls what additional information is displayed in the tooltips for various metadata objects
+
 | **Setting** | **Description** | **Default** |
 | --- | --- | --- |
 | Show Basic Statistics | This will show statistics like min/max/distinct values for a column | true |
 | Show Sample Data | This will show a sample of 10 values from a given column | true |
 
+### Automatic Metadata Refresh
 
 These setting control the bahaviour of the automatic metadata refresh
+
 | **Setting** | **Description** | **Default** |
 | --- | --- | --- |
 | Local Connections | For any connections to localhost (eg. PowerPivot, Power BI Desktop, SSDT)| true |
 | Network Connections | For any connections to SSAS | true |
 | Cloud Connections | For any connections to data sources that start with asazure:// or powerbi:// | false |
+
+### Hidden Objects
 
 This section controls the visibilty of hidden objects in the Metadata pane.
 
@@ -103,6 +110,23 @@ This section controls the visibilty of hidden objects in the Metadata pane.
 | --- | --- | --- |
 | Show Hidden columns, tables and Measures | This setting allows for the showing of objects that are hidden in the normal report views | true |
 
+### Sorting
+
+This section controls the sorting of objects in the Metadata pane.
+
+| **Setting** | **Description** | **Default** |
+| --- | --- | --- |
+| Sort Folders First in metadata pane | This setting will force folders to be sorted first in the metadata pane | true |
+
 ## DAX Formatter
 
-**TBA**
+| **Setting** | **Description** | **Default** |
+| --- | --- | --- |
+| Default Format Style | Specifies whether DAX Formatter should favour Long or Short lines | Long Line|
+
+## Custom Export Format
+
+| **Setting** | **Description** | **Default** |
+| --- | --- | --- |
+| CSV Delimiter | This controls the delimiter character used by the custom export format option | Culture Default Delimiter |
+| Quote String Fields | This specifies whether to always quote all string fields or whether to only insert quotes if required (quotes are required if the field value includes line breaks or the delimiter character) | True|

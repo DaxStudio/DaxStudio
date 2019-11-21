@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Serilog;
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Management;
 
@@ -22,8 +24,9 @@ namespace DaxStudio.UI.Extensions
                       .FirstOrDefault();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Error(ex, "{class} {method} {message}", nameof(ProcessExtensions), nameof(GetParent), $"Error getting parent processid via WMI: {ex.Message}");
                 return null;
             }
         }

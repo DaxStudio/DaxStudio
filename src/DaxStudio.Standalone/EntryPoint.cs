@@ -66,8 +66,6 @@ namespace DaxStudio.Standalone
                     .MinimumLevel.ControlledBy(levelSwitch);
 
                 var logPath = ApplicationPaths.LogPath;
-
-
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 
@@ -76,9 +74,8 @@ namespace DaxStudio.Standalone
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
 
-                app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
-
-
+                // TODO - do we need to customize the navigator window to fix the styling?
+                //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
                 
                 // then load Caliburn Micro bootstrapper
                 AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
@@ -100,7 +97,6 @@ namespace DaxStudio.Standalone
                 Log.Debug("Information Logging Enabled due to running in debug mode");
 #endif
 
-                //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
                 if (isLoggingKeyDown || logCmdLineSwitch)
                 {
 #if DEBUG
@@ -113,7 +109,6 @@ namespace DaxStudio.Standalone
 #endif
                 }
 
-                //RegistryHelper.IsFileLoggingEnabled();
 
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -122,8 +117,8 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
-                if (isLoggingKeyDown) log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
-                if (logCmdLineSwitch) log.Information("Logging enabled by Excel Add-in");
+                if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
+                if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
                 Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
@@ -135,16 +130,13 @@ namespace DaxStudio.Standalone
                     typeof(Control),
                     new FrameworkPropertyMetadata(true));
 
-                var options = IoC.Get<OptionsViewModel>();
+                // get the global options
+                var options = bootstrapper.GetOptions(); 
                 options.Initialize();
 
 
                 // load selected theme
-
-
-                // TODO: Theme - read from settings
-
-                var theme = options.Theme;// "Light"; // settingProvider.GetValue<string>("Theme", "Light");
+                var theme = options.Theme;// "Light"; 
                 if (theme == "Dark") app.LoadDarkTheme();
                 else app.LoadLightTheme();
 
@@ -158,7 +150,7 @@ namespace DaxStudio.Standalone
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
                     if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
-                    log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
+                    Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                 }
             }
             catch (Exception ex)

@@ -1443,8 +1443,8 @@ namespace DaxStudio.UI.ViewModels
                             // if the server times trace watcher is not active then just record client timings
                             if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
                             {
-                                currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
-                                currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
+                                currentQueryDetails.ClientDurationMs = _queryStopWatch?.ElapsedMilliseconds??0;
+                                currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                                 _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
                             }
 
@@ -3231,6 +3231,58 @@ namespace DaxStudio.UI.ViewModels
                     if (prevTask.IsFaulted) throw prevTask.Exception;
                 });
             }
+        }
+
+        public void ImportAnalysisData()
+        {
+            // TODO - FileOpen dialog
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Multiselect = false,
+                DefaultExt = ".vpax",
+                Filter = "Analyzer Data (vpax)|*.vpax"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                var filename = dlg.FileName;
+                ImportAnalysisData(filename);
+            }
+
+        }
+
+        private void ImportAnalysisData(string path)
+        {
+
+            VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
+
+            try
+            {
+                // check if PerfData Window is already open and use that
+                var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
+
+                // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                if (vpaView == null)
+                {
+                    vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                    ToolWindows.Add(vpaView);
+                }
+                else
+                {
+                    // update view model
+                    vpaView.ViewModel = viewModel;
+                }
+                vpaView.Activate();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ImportAnalysisData), $"Error loading VPA view: {ex.Message}");
+                OutputError($"Error opening metrics: {ex.Message}");
+            }
+
         }
 
         public void ExportAnalysisData(string path)
