@@ -170,6 +170,7 @@
     <Compile Include="ADOTabularTable.cs" />
     <Compile Include="ADOTabularTableCollection.cs" />
     <Compile Include="ADOTabularVariation.cs" />
+    <Compile Include="ADOTabularEnums.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IADOTabularColumn.cs" />

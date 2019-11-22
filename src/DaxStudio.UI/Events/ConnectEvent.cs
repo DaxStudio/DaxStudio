@@ -1,12 +1,14 @@
 ﻿
 
+using ADOTabular.Enums;
+
 namespace DaxStudio.UI.Events
 {
     public class ConnectEvent
     {
 
 
-        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string workbookName, string connectionType, string powerBIFileName, string serverType) 
+        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string workbookName, string connectionType, string powerBIFileName, ServerType serverType) 
         {
             ConnectionString = connectionString;
             PowerPivotModeSelected = powerPivotModeSelected;
@@ -21,7 +23,7 @@ namespace DaxStudio.UI.Events
         public string WorkbookName { get; set; }
         public string ConnectionType { get; set; }
         public string PowerBIFileName { get; set; }
-        public string ServerType { get; internal set; }
+        public ServerType ServerType { get; internal set; }
 
         public string DatabaseName { get; set; }
     }

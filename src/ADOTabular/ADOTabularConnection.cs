@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
+using ADOTabular.Enums;
 
 namespace ADOTabular
 {
@@ -778,7 +779,7 @@ namespace ADOTabular
 
         public Dictionary<string, ADOTabularColumn> Columns { get; } = new Dictionary<string, ADOTabularColumn>();
 
-        public string ServerType { get; set; }
+        public ServerType ServerType { get; set; }
         public string ServerLocation { get; private set; } = null;
         public string ServerEdition { get; private set; } = null;
 
@@ -838,11 +839,11 @@ namespace ADOTabular
             var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type)
             {
                 // copy keywords, functiongroups, DMV's
-                _functionGroups = _functionGroups,
-                _keywords = _keywords,
-                _serverMode = _serverMode,
-                _dmvCollection = _dmvCollection,
-                ServerType = ServerType
+                _functionGroups = this._functionGroups,
+                _keywords = this._keywords,
+                _serverMode = this._serverMode,
+                _dmvCollection = this._dmvCollection,
+                ServerType = this.ServerType
             };
             return cnn;
         }

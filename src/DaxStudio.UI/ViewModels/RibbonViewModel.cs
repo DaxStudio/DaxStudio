@@ -457,6 +457,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanConnect);
                 NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                 NotifyOfPropertyChange(() => IsActiveDocumentVertipaqAnalyzerRunning);
+                NotifyOfPropertyChange(() => CanImportAnalysisData);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -829,6 +830,12 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ResultAutoFormat);
                 NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
+        }
+
+        public bool CanImportAnalysisData => ActiveDocument != null && !ActiveDocument.IsVertipaqAnalyzerRunning; // we don't need a valid connection to import a .vpax file
+        public void ImportAnalysisData()
+        {
+            ActiveDocument?.ImportAnalysisData();
         }
 
         public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;

@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -472,7 +473,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                string serverType=null;
+                ServerType serverType= ServerType.AnalysisServices;
                 string powerBIFileName = "";
                 var vw = (Window)this.GetView();
                 vw.Visibility = Visibility.Hidden;
@@ -484,22 +485,22 @@ namespace DaxStudio.UI.ViewModels
                 if (ServerModeSelected)
                 {
                     SettingProvider.SaveServerMRUList(DataSource, RecentServers);
-                    serverType = "SSAS";
+                    serverType = ServerType.AnalysisServices;
                 }
-                if (PowerPivotModeSelected) { serverType = "PowerPivot"; }
+                if (PowerPivotModeSelected) { serverType = ServerType.PowerPivot; }
                 if (PowerBIModeSelected)
                 {
                     powerBIFileName = SelectedPowerBIInstance.Name;
                     switch (SelectedPowerBIInstance.Icon)
                     {
                         case EmbeddedSSASIcon.Devenv:
-                            serverType = "SSDT";
+                            serverType = ServerType.SSDT;
                             break;
                         case EmbeddedSSASIcon.PowerBI:
-                            serverType = "PBI Desktop";
+                            serverType = ServerType.PowerBIDesktop;
                             break;
                         case EmbeddedSSASIcon.PowerBIReportServer:
-                            serverType = "PBI Report Server";
+                            serverType = ServerType.PowerBIReportServer;
                             break;
                     }
                 }

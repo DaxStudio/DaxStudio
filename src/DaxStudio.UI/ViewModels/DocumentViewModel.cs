@@ -43,7 +43,7 @@ using System.ComponentModel;
 using Xceed.Wpf.AvalonDock;
 using System.Windows.Media;
 using Dax.ViewModel;
-
+using System.Reflection;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -677,7 +677,7 @@ namespace DaxStudio.UI.ViewModels
             get {
                 //var cubeEquals = this.Connection.IsMultiDimensional ? $";Cube={this.Sele}: "";
                 //return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase );
-                return Connection==null?Connection.ConnectionStringWithInitialCatalog:string.Empty;
+                return Connection!=null?Connection.ConnectionStringWithInitialCatalog:string.Empty;
             }
         }
 
@@ -860,7 +860,7 @@ namespace DaxStudio.UI.ViewModels
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
-                + (Connection.ServerType=="PBI Desktop"?"\nIf your Power BI File is using a Live Connection please connect directly to the source model instead.": "");
+                + (Connection.ServerType==ADOTabular.Enums.ServerType.PowerBIDesktop ? "\nIf your Power BI File is using a Live Connection please connect directly to the source model instead.": "");
                 OutputWarning(msg);
             }
         }
@@ -2499,7 +2499,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ConnectedToPowerPivot
         {
-            get { return Connection.IsPowerPivot; } 
+            get { return Connection?.IsPowerPivot??false; } 
         }
 
         private string _statusBarMessage = "Ready";
@@ -2730,7 +2730,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         info.ServerName = serverName ?? "";
                         info.ServerEdition = _connection.ServerEdition ?? "";
-                        info.ServerType = _connection.ServerType ?? "";
+                        info.ServerType = _connection.ServerType.ToString() ?? "";
                         info.ServerMode = _connection.ServerMode ?? "";
                         info.ServerLocation = _connection.ServerLocation ?? "";
                         info.ServerVersion = _connection.ServerVersion ?? "";
@@ -3000,7 +3000,7 @@ namespace DaxStudio.UI.ViewModels
         public ADOTabular.MetadataInfo.DaxMetadata DaxMetadataInfo
         {
             get {
-                return _connection.DaxMetadataInfo;
+                return _connection?.DaxMetadataInfo;
             }
         }
 
@@ -3291,9 +3291,30 @@ namespace DaxStudio.UI.ViewModels
             {
                 try
                 {
-                    // TODO - replace DAX Studio version in second argument (temporary 0.1)
+
                     OutputMessage(String.Format("Saving {0}...", path));
-                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", "0.1");
+                    // get current DAX Studio version
+                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                    string modelCaption = Connection.Database.Name;
+                    switch( Connection.ServerType)
+                    {
+                        case ADOTabular.Enums.ServerType.PowerBIDesktop:
+                            modelCaption = $"{Connection?.ShortFileName??"<unknown>"}.pbix" ;
+                            break;
+                        case ADOTabular.Enums.ServerType.PowerPivot:
+                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.xlsx";
+                            break;
+                        case ADOTabular.Enums.ServerType.SSDT:
+                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (SSDT)";
+                            break;
+                        case ADOTabular.Enums.ServerType.PowerBIReportServer:
+                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBIRS)";
+                            break;
+                        case ADOTabular.Enums.ServerType.AnalysisServices:
+                            modelCaption = $"{Connection?.Database?.Name?? "<unknown>"}";
+                            break;
+                    }
+                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)

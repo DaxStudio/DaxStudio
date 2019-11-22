@@ -326,7 +326,7 @@ namespace DaxStudio.UI.ViewModels
             ColumnCount = parent.ViewModel.Columns.Count();
             CompatibilityLevel = parent.ViewModel.Model.CompatibilityLevel;
             TotalSize = parent.ViewModel.Tables.Sum(t => t.TableSize);
-            DataSource = parent.ViewModel.Model.ServerName.Name; 
+            DataSource = parent.ViewModel.Model.ServerName?.Name??"<Unknown>"; 
             ModelName = parent.ViewModel.Model.ModelName.Name;
             LastDataRefresh = parent.ViewModel.Model.LastDataRefresh;
             ExtractionDate = parent.ViewModel.Model.ExtractionDate;
