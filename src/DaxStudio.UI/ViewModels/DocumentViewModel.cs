@@ -179,7 +179,9 @@ namespace DaxStudio.UI.ViewModels
             var editor = GetEditor();
             
             editor.Dispatcher.Invoke(() => {
-                editor.Text = text;
+                editor.Document.BeginUpdate();
+                editor.Document.Text = text;
+                editor.Document.EndUpdate();
             });
                 
             LoadState();
@@ -767,7 +769,9 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                _editor.Text = SwapDelimiters(_editor.Text);
+                _editor.Document.BeginUpdate();
+                _editor.Document.Text = SwapDelimiters(_editor.Text);
+                _editor.Document.EndUpdate();
             }
         }
 
@@ -1067,18 +1071,30 @@ namespace DaxStudio.UI.ViewModels
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
-                { editor.Text = txt; }
+                {
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = txt;
+                    editor.Document.EndUpdate();
+                }
                 else
-                { editor.SelectedText = txt; }
+                { 
+                    editor.SelectedText = txt; 
+                }
             }
             else
             {
                 editor.Dispatcher.Invoke(new System.Action(() =>
                 {
                     if (editor.SelectionLength == 0)
-                    { editor.Text = txt; }
+                    {
+                        editor.Document.BeginUpdate();
+                        editor.Document.Text = txt;
+                        editor.Document.EndUpdate();
+                    }
                     else
-                    { editor.SelectedText = txt; }
+                    { 
+                        editor.SelectedText = txt; 
+                    }
                 }));
             }
         }
@@ -1780,8 +1796,9 @@ namespace DaxStudio.UI.ViewModels
 
 
                 });
-
-                editor.Text = currentText;
+                editor.Document.BeginUpdate();
+                editor.Document.Text = currentText;
+                editor.Document.EndUpdate();
 
                 editor.Focus();
             }
@@ -1801,8 +1818,9 @@ namespace DaxStudio.UI.ViewModels
                     return newSection.ToString();
 
                 });
-
-                editor.Text = currentText;
+                editor.Document.BeginUpdate();
+                editor.Document.Text = currentText;
+                editor.Document.EndUpdate();
 
                 editor.Focus();
             }

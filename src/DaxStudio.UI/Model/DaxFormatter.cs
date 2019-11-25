@@ -191,7 +191,11 @@ namespace DaxStudio.UI.Model
 
                 DaxFormatterRequest req = new DaxFormatterRequest();
                 req.Dax = query;
-
+                if (globalOptions.DefaultSeparator == DaxStudio.Interfaces.Enums.DelimiterType.SemiColon)
+                {
+                    req.DecimalSeparator = ',';
+                    req.ListSeparator = ';';
+                }
                 req.ServerName = Crypto.SHA256( serverDbInfo.ServerName );
                 req.ServerEdition = serverDbInfo.ServerEdition;
                 req.ServerType = serverDbInfo.ServerType; 
