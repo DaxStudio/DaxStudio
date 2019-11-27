@@ -54,6 +54,16 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
                 this.ProcessCharacter = processCharacter;
             }
 
+            public State(string name)
+            {
+                this.Name = name;
+                this.ProcessCharacter = (sm, str, pos) => {
+                    sm.EventHappens(str, pos);
+                    return str[pos];
+                };
+            }
+
+
             public char currentChar;
             public State When(char @event, Func<T, State, string, int, State> action)
             {
