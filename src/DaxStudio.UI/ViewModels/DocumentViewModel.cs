@@ -148,6 +148,8 @@ namespace DaxStudio.UI.ViewModels
             MetadataPane =  new MetadataPaneViewModel(_connection, _eventAggregator, this, Options);
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
+            QueryBuilder = new QueryBuilderViewModel(_eventAggregator, this, Options);
+
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
 
@@ -573,7 +575,8 @@ namespace DaxStudio.UI.ViewModels
                         DmvPane,
                         OutputPane,
                         QueryResultsPane,
-                        QueryHistoryPane
+                        QueryHistoryPane,
+                        QueryBuilder
                     });
             }
         }
@@ -995,7 +998,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DmvPaneViewModel DmvPane { get; private set; }
-
+        public QueryBuilderViewModel QueryBuilder { get; private set; }
         public OutputPaneViewModel OutputPane { get; set; }
 
         public QueryResultsPaneViewModel QueryResultsPane { get; set; }
