@@ -6,9 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils.DelimiterTranslator
-{
-
-    
+{   
 
     public abstract class StringStateMachine<T> where T : StringStateMachine<T>
     {

@@ -78,7 +78,14 @@ namespace DaxStudio.UI.ViewModels
 
             foreach ( var t in tables)
             {
-                Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
+                if (t.Columns.Count > 0)
+                {
+                    Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
+                }
+                else
+                {
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Skipping tables '{t.Caption}' as it has no columns to export"));
+                }
             }
         }
 

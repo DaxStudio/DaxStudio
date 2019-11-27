@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
 
         public DelimiterStateMachine() : base(OtherText) { TargetDelimiterType = DelimiterType.Unknown; }
         public DelimiterStateMachine(DelimiterType targetDelimiterType) : base(OtherText) { TargetDelimiterType = targetDelimiterType; }
-//        public DelimiterStateMachine(State initial, DelimiterType targetDelimiterType) : base(initial) { TargetDelimiterType = targetDelimiterType; }
+        public DelimiterStateMachine(State initial, DelimiterType targetDelimiterType) : base(initial) { TargetDelimiterType = targetDelimiterType; }
         #endregion
 
         public static char ProcessOtherText(DelimiterStateMachine sm, string input, int pos)
