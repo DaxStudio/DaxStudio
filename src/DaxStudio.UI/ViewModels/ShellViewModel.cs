@@ -197,7 +197,7 @@ namespace DaxStudio.UI.ViewModels
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
             _window.SetPlacement(Options.WindowPosition);
-            notifyIcon = new NotifyIcon(_window);
+            notifyIcon = new NotifyIcon(_window, _eventAggregator);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
             //Application.Current.LoadRibbonTheme();
