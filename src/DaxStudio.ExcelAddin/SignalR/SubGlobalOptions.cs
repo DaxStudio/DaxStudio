@@ -91,6 +91,10 @@ namespace DaxStudio.SignalR
         public bool EditorConvertTabsToSpaces { get; set; }
         public int EditorIndentationSize { get; set; }
         public bool IsRunningPortable { get; set; }
+        public string HotkeyCommentSelection { get;set; }
+        public string HotkeyUnCommentSelection { get; set; }
+        public string HotkeyToUpper { get; set; }
+        public string HotkeyToLower { get; set; }
 
         public string GetCustomCsvDelimiter()
         {
