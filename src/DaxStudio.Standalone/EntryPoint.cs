@@ -66,7 +66,7 @@ namespace DaxStudio.Standalone
                     .ReadFrom.AppSettings()
                     .MinimumLevel.ControlledBy(levelSwitch);
 
-                var logPath = Path.Combine(ApplicationPaths.LogPath, "DaxStudio-{Date}.log");
+                var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.StandaloneLogFileName);
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 
