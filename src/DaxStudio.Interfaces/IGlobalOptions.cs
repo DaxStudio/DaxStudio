@@ -58,6 +58,13 @@ namespace DaxStudio.Interfaces
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
 
+        // Hotkeys
+        string HotkeyCommentSelection { get; set; }
+        string HotkeyUnCommentSelection { get; set; }
+
+        string HotkeyToUpper { get; set; }
+        string HotkeyToLower { get; set; }
+
         // Preview Features
         bool ShowExportMetrics { get; set; }
         bool ShowExternalTools { get; set; }

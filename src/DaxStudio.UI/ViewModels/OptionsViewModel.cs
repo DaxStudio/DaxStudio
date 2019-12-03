@@ -546,6 +546,92 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #region Hotkeys
+
+        private string _hotkeyCommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + C")]
+        public string HotkeyCommentSelection { get => _hotkeyCommentSelection;
+                set {
+                _hotkeyCommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyCommentSelection);
+            } 
+        }
+
+        private string _hotkeyUncommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + U")]
+        public string HotkeyUnCommentSelection { get => _hotkeyUncommentSelection;
+            set {
+                _hotkeyUncommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyUnCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyUnCommentSelection);
+            } 
+        }
+
+        private string _hotkeyToUpper;
+        [DataMember, DefaultValue("Ctrl + Shift + U")]
+        public string HotkeyToUpper
+        {
+            get => _hotkeyToUpper;
+            set
+            {
+                _hotkeyToUpper = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToUpper), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToUpper);
+            }
+        }
+
+        private string _hotkeyToLower;
+        [DataMember, DefaultValue("Ctrl + Shift + L")]
+        public string HotkeyToLower
+        {
+            get => _hotkeyToLower;
+            set
+            {
+                _hotkeyToLower = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToLower), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToLower);
+            }
+        }
+
+        public void ResetKeyBindings()
+        {
+            //try
+            //{
+            //    _isInitializing = true;
+                var props = typeof(OptionsViewModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                foreach (var prop in props)
+                {
+                    if (!prop.Name.StartsWith("Hotkey")) continue;
+
+                    foreach (var att in prop.GetCustomAttributes(false))
+                    {
+                        if (att is DefaultValueAttribute)
+                        {
+                            var val = att as DefaultValueAttribute;
+
+                            prop.SetValue(this, val.Value.ToString());
+                        }
+                    }
+                }
+
+
+            //}
+            //finally
+            //{
+            //    _isInitializing = false;
+                
+            //}
+            
+        }
+        #endregion
+
+
+        #region methods
         public string GetCustomCsvDelimiter()
         {
             switch (CustomCsvDelimiterType)
@@ -558,6 +644,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+        #endregion
 
         #region View Specific Properties
         public bool UseCultureDefaultDelimiter
@@ -605,7 +692,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportMetrics = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExportMetrics", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportMetrics), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportMetrics);
             }
         }
@@ -616,7 +703,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExternalTools = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExternalTools", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExternalTools);
             }
         }
@@ -627,7 +714,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExportAllData = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExportAllData", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportAllData), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportAllData);
             }
         }
@@ -639,11 +726,33 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _vpaxIncludeTom = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("VpaxIncludeTom", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(VpaxIncludeTom), value, _isInitializing);
                 NotifyOfPropertyChange(() => VpaxIncludeTom);
             }
         }
 
+
+        private bool _showKeyBindings = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowKeyBindings
+        {
+            get
+            {
+                return _showKeyBindings;
+            }
+
+            set
+            {
+                _showKeyBindings = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowKeyBindings), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowKeyBindings);
+            }
+        }
+
+        #endregion
+        
+        
         private bool _scaleResultsFontWithEditor = true;
 
         private string _theme = "Light";
@@ -871,7 +980,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        #endregion
+        #region Export Function Methods
 
         public void ExportDaxFunctions()
         {
@@ -882,6 +991,8 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
+
+        #endregion
 
         private bool? _isExcelAddinEnabledForAllUsers = null;
         public bool CanToggleExcelAddin

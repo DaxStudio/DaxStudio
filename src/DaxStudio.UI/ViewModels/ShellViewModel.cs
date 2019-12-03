@@ -26,7 +26,8 @@ namespace DaxStudio.UI.ViewModels
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
         IHandle<StopAutoSaveTimerEvent>,
-        IHandle<ChangeThemeEvent>
+        IHandle<ChangeThemeEvent>,
+        IHandle<UpdateHotkeys>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -154,8 +155,6 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public ISettingProvider SettingProvider { get; }
 
-        public void ContentRendered()
-        { }
 
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
@@ -203,13 +202,39 @@ namespace DaxStudio.UI.ViewModels
             //Application.Current.LoadRibbonTheme();
             _inputBindings = new InputBindings(_window);
             _inputBindings.RegisterCommands(GetInputBindingCommands());
+            
         }
 
         private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // TODO - we should load custom key bindings from Options
-            yield return new InputBindingCommand(this, nameof(CommentSelection), "Ctrl+Alt C");
-            
+            yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
+            yield return new InputBindingCommand(this, nameof(RunQuery), "F5");
+            yield return new InputBindingCommand(this, nameof(RunQuery), "Ctrl E");
+            yield return new InputBindingCommand(this, nameof(NewDocument), "Ctrl N");
+            yield return new InputBindingCommand(this, nameof(NewDocumentWithCurrentConnection), "Ctrl+Shift N");
+            yield return new InputBindingCommand(this, nameof(OpenDocument), "Ctrl O");
+            yield return new InputBindingCommand(this, nameof(SaveCurrentDocument), "Ctrl S");
+            yield return new InputBindingCommand(this, nameof(SelectionToUpper), "Ctrl+Shift U");
+            yield return new InputBindingCommand(this, nameof(SelectionToLower), "Ctrl_Shift L");
+            yield return new InputBindingCommand(this, nameof(UncommentSelection), Options.HotkeyUnCommentSelection);
+            yield return new InputBindingCommand(this, nameof(Redo), "Ctrl Y");
+            yield return new InputBindingCommand(this, nameof(Undo), "Ctrl Z");
+            yield return new InputBindingCommand(this, nameof(Undo), "Alt Delete");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl OemSemiColon");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl OemComma");
+            yield return new InputBindingCommand(this, nameof(Find), "F3");
+            yield return new InputBindingCommand(this, nameof(FindPrev), "Shift F3");
+            yield return new InputBindingCommand(this, nameof(FormatQueryStandard), "F6");
+            yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), "Ctrl F6");
+            yield return new InputBindingCommand(this, nameof(GotoLine), "Ctrl G");
+
+        }
+
+        public void ResetInputBindings()
+        {
+            _inputBindings.DeregisterCommands();
+            _inputBindings.RegisterCommands(GetInputBindingCommands());
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -394,6 +419,11 @@ namespace DaxStudio.UI.ViewModels
         private void SetDarkTheme()
         {
             _app.LoadDarkTheme();
+        }
+
+        public void Handle(UpdateHotkeys message)
+        {
+            ResetInputBindings();
         }
 
 

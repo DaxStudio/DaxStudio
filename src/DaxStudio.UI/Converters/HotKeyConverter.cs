@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.Model;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,14 +13,15 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string tooltip = (string)parameter;
+            Hotkey hotkey = new Hotkey( (string)value);
             // TODO - get key and modifiers from value
-            return tooltip;
+            return hotkey;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException("This converter cannot be used in 2 way data binding");
+            Hotkey key = value as Hotkey;
+            return key?.ToString()??string.Empty;
         }
     }
 }

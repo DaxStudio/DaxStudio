@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.Model;
+using System;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Input;
@@ -38,7 +39,12 @@ namespace DaxStudio.UI.Utils
             Action myAction = (System.Action)Delegate.CreateDelegate(typeof(System.Action), target, _methodInfo);
             _executeDelegate = x => myAction();
             _canExecutePredicate = x => true;
-            ParseKeyString(hotKey);
+
+            var hotkey = new Hotkey(hotKey);
+            GestureKey = hotkey.Key;
+            GestureModifier = hotkey.Modifiers;
+
+            //ParseKeyString(hotKey);
         }
 
         public InputBindingCommand(Action executeDelegate)
@@ -73,34 +79,34 @@ namespace DaxStudio.UI.Utils
             return this;
         }
 
-        private  void ParseKeyString(string hotkey)
-        {
-            string ksc = hotkey.ToLower();
+        //private  void ParseKeyString(string hotkey)
+        //{
+        //    string ksc = hotkey.ToLower();
 
-            if (ksc.Contains("alt"))
-                GestureModifier = ModifierKeys.Alt;
-            if (ksc.Contains("shift"))
-                GestureModifier |= ModifierKeys.Shift;
-            if (ksc.Contains("ctrl") || ksc.Contains("ctl"))
-                GestureModifier |= ModifierKeys.Control;
+        //    if (ksc.Contains("alt"))
+        //        GestureModifier = ModifierKeys.Alt;
+        //    if (ksc.Contains("shift"))
+        //        GestureModifier |= ModifierKeys.Shift;
+        //    if (ksc.Contains("ctrl") || ksc.Contains("ctl"))
+        //        GestureModifier |= ModifierKeys.Control;
 
-            string key =
-                ksc.Replace("+", "")
-                    .Replace("-", "")
-                    .Replace("_", "")
-                    .Replace(" ", "")
-                    .Replace("alt", "")
-                    .Replace("shift", "")
-                    .Replace("ctrl", "")
-                    .Replace("ctl", "");
+        //    string key =
+        //        ksc.Replace("+", "")
+        //            .Replace("-", "")
+        //            .Replace("_", "")
+        //            .Replace(" ", "")
+        //            .Replace("alt", "")
+        //            .Replace("shift", "")
+        //            .Replace("ctrl", "")
+        //            .Replace("ctl", "");
 
-            key = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(key);
-            if (!string.IsNullOrEmpty(key))
-            {
-                KeyConverter k = new KeyConverter();
-                GestureKey = (Key)k.ConvertFromString(key);
-            }
-        }
+        //    key = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(key);
+        //    if (!string.IsNullOrEmpty(key))
+        //    {
+        //        KeyConverter k = new KeyConverter();
+        //        GestureKey = (Key)k.ConvertFromString(key);
+        //    }
+        //}
 
 
     }
