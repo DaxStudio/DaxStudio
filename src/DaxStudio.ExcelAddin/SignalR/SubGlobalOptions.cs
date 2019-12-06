@@ -95,6 +95,15 @@ namespace DaxStudio.SignalR
         public string HotkeyUnCommentSelection { get; set; }
         public string HotkeyToUpper { get; set; }
         public string HotkeyToLower { get; set; }
+        public string HotkeyRunQuery { get; set; }
+        public string HotkeyRunQueryAlt { get; set; }
+        public string HotkeyNewDocument { get; set; }
+        public string HotkeyNewDocumentWithCurrentConnection { get; set; }
+        public string HotkeyOpenDocument { get; set; }
+        public string HotkeySaveDocument { get; set; }
+        public string HotkeyGotoLine { get; set; }
+        public string HotkeyFormatQueryStandard { get; set; }
+        public string HotkeyFormatQueryAlternate { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

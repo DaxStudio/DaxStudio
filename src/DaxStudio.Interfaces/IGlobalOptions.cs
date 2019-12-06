@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Security;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.Interfaces
 {
@@ -59,11 +60,32 @@ namespace DaxStudio.Interfaces
         int EditorIndentationSize { get; set; }
 
         // Hotkeys
+        [Hotkey]
         string HotkeyCommentSelection { get; set; }
+        [Hotkey]
         string HotkeyUnCommentSelection { get; set; }
-
+        [Hotkey]
         string HotkeyToUpper { get; set; }
+        [Hotkey]
         string HotkeyToLower { get; set; }
+        [Hotkey]
+        string HotkeyRunQuery { get; set; }
+        [Hotkey]
+        string HotkeyRunQueryAlt { get; set; }
+        [Hotkey]
+        string HotkeyNewDocument { get; set; }
+        [Hotkey]
+        string HotkeyNewDocumentWithCurrentConnection { get; set; }
+        [Hotkey]
+        string HotkeyOpenDocument { get; set; }
+        [Hotkey]
+        string HotkeySaveDocument { get; set; }
+        [Hotkey]
+        string HotkeyGotoLine { get; set; }
+        [Hotkey]
+        string HotkeyFormatQueryStandard { get; set; }
+        [Hotkey]
+        string HotkeyFormatQueryAlternate { get; set; }
 
         // Preview Features
         bool ShowExportMetrics { get; set; }

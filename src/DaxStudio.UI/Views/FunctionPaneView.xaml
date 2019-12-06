@@ -78,7 +78,17 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" >
                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
-                                <TextBlock Text="{Binding Caption}"></TextBlock>
+                                <TextBlock Text="{Binding Caption}" >
+                                    <TextBlock.ToolTip>
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
+                                                <TextBlock Text="{Binding Caption}" FontWeight="Bold"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding DaxName}"/>
+                                        </StackPanel>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
                             </StackPanel>
                         </DataTemplate>
                     </HierarchicalDataTemplate.ItemTemplate>

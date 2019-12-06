@@ -111,7 +111,7 @@ namespace DaxStudio.UI.Model
             public override string Name => Function?.Name ?? _caption;
             public override ADOTabularObjectType ObjectType => Function.ObjectType;
             public string Description { get; private set; }
-            string IADOTabularObject.DaxName => Function?.DaxName ?? string.Empty;
+            public string DaxName => Function?.DaxName ?? string.Empty;
 
 
 

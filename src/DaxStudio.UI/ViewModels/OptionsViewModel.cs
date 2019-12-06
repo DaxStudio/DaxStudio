@@ -22,6 +22,7 @@ using System.Collections.Specialized;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.IO;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -549,7 +550,7 @@ namespace DaxStudio.UI.ViewModels
         #region Hotkeys
 
         private string _hotkeyCommentSelection;
-        [DataMember, DefaultValue("Ctrl + Alt + C")]
+        [DataMember, DefaultValue("Ctrl + Alt + C"),Hotkey]
         public string HotkeyCommentSelection { get => _hotkeyCommentSelection;
                 set {
                 _hotkeyCommentSelection = value;
@@ -560,7 +561,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyUncommentSelection;
-        [DataMember, DefaultValue("Ctrl + Alt + U")]
+        [DataMember, DefaultValue("Ctrl + Alt + U"), Hotkey]
         public string HotkeyUnCommentSelection { get => _hotkeyUncommentSelection;
             set {
                 _hotkeyUncommentSelection = value;
@@ -571,7 +572,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyToUpper;
-        [DataMember, DefaultValue("Ctrl + Shift + U")]
+        [DataMember, DefaultValue("Ctrl + Shift + U"), Hotkey]
         public string HotkeyToUpper
         {
             get => _hotkeyToUpper;
@@ -585,7 +586,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyToLower;
-        [DataMember, DefaultValue("Ctrl + Shift + L")]
+        [DataMember, DefaultValue("Ctrl + Shift + L"), Hotkey]
         public string HotkeyToLower
         {
             get => _hotkeyToLower;
@@ -595,6 +596,134 @@ namespace DaxStudio.UI.ViewModels
                 if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
                 SettingProvider.SetValueAsync<string>(nameof(HotkeyToLower), value, _isInitializing);
                 NotifyOfPropertyChange(() => HotkeyToLower);
+            }
+        }
+
+        private string _hotkeyRunQuery;
+        [DataMember, DefaultValue("F5"), Hotkey]
+        public string HotkeyRunQuery
+        {
+            get => _hotkeyRunQuery;
+            set
+            {
+                _hotkeyRunQuery = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQuery), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQuery);
+            }
+        }
+
+        private string _hotkeyRunQueryAlt;
+        [DataMember, DefaultValue("Ctrl + E"), Hotkey]
+        public string HotkeyRunQueryAlt
+        {
+            get => _hotkeyRunQueryAlt;
+            set
+            {
+                _hotkeyRunQueryAlt = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQueryAlt), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQueryAlt);
+            }
+        }
+
+        private string _hotkeyNewDocument;
+        [DataMember, DefaultValue("Ctrl + N"),Hotkey]
+        public string HotkeyNewDocument
+        {
+            get => _hotkeyNewDocument;
+            set
+            {
+                _hotkeyNewDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocument);
+            }
+        }
+
+        private string _hotkeyNewDocumentWithCurrentConnection;
+        [DataMember, DefaultValue("Ctrl + Shift + N"),Hotkey]
+        public string HotkeyNewDocumentWithCurrentConnection
+        {
+            get => _hotkeyNewDocumentWithCurrentConnection;
+            set
+            {
+                _hotkeyNewDocumentWithCurrentConnection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocumentWithCurrentConnection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocumentWithCurrentConnection);
+            }
+        }
+
+        private string _hotkeySaveDocument;
+        [DataMember, DefaultValue("Ctrl + S"), Hotkey]
+        public string HotkeySaveDocument
+        {
+            get => _hotkeySaveDocument;
+            set
+            {
+                _hotkeySaveDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeySaveDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeySaveDocument);
+            }
+        }
+
+        private string _hotkeyOpenDocument;
+        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        public string HotkeyOpenDocument
+        {
+            get => _hotkeyOpenDocument;
+            set
+            {
+                _hotkeyOpenDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyOpenDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyOpenDocument);
+            }
+        }
+
+        private string _hotkeyGotoLine;
+        [DataMember, DefaultValue("Ctrl + G"), Hotkey]
+        public string HotkeyGotoLine
+        {
+            get => _hotkeyGotoLine;
+            set
+            {
+                _hotkeyGotoLine = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyGotoLine), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyGotoLine);
+            }
+        }
+
+        private string _hotkeyFormatQueryStandard;
+        [DataMember, DefaultValue("F6"), Hotkey]
+        public string HotkeyFormatQueryStandard
+        {
+            get => _hotkeyFormatQueryStandard;
+            set
+            {
+                _hotkeyFormatQueryStandard = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryStandard), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryStandard);
+            }
+        }
+
+
+
+        private string _hotkeyFormatQueryAlternate;
+        [DataMember, DefaultValue("Ctrl + F6"), Hotkey]
+        public string HotkeyFormatQueryAlternate
+        {
+            get => _hotkeyFormatQueryAlternate;
+            set
+            {
+                _hotkeyFormatQueryAlternate = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryAlternate), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryAlternate);
             }
         }
 

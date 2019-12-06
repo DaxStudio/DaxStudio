@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              x:Name="UserControl"
              d:DesignHeight="300"
              d:DesignWidth="300"
@@ -44,5 +46,23 @@
         <TextBox.ContextMenu>
             <ContextMenu Visibility="Collapsed" />
         </TextBox.ContextMenu>
+        <i:Interaction.Behaviors>
+            <beh:ResetInvalidTextBehaviour />
+        </i:Interaction.Behaviors>
+        <Validation.ErrorTemplate>
+            <ControlTemplate>
+                <StackPanel>
+                    <!-- Placeholder for the TextBox itself -->
+                    <AdornedElementPlaceholder x:Name="HotkeyTextBox"/>
+                    <ItemsControl ItemsSource="{Binding}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ErrorContent}" Foreground="Red"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ControlTemplate>
+        </Validation.ErrorTemplate>
     </TextBox>
 </UserControl>

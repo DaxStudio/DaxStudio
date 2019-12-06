@@ -209,25 +209,25 @@ namespace DaxStudio.UI.ViewModels
         {
             // TODO - we should load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
-            yield return new InputBindingCommand(this, nameof(RunQuery), "F5");
-            yield return new InputBindingCommand(this, nameof(RunQuery), "Ctrl E");
-            yield return new InputBindingCommand(this, nameof(NewDocument), "Ctrl N");
-            yield return new InputBindingCommand(this, nameof(NewDocumentWithCurrentConnection), "Ctrl+Shift N");
-            yield return new InputBindingCommand(this, nameof(OpenDocument), "Ctrl O");
-            yield return new InputBindingCommand(this, nameof(SaveCurrentDocument), "Ctrl S");
-            yield return new InputBindingCommand(this, nameof(SelectionToUpper), "Ctrl+Shift U");
-            yield return new InputBindingCommand(this, nameof(SelectionToLower), "Ctrl_Shift L");
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQuery);
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQueryAlt);
+            yield return new InputBindingCommand(this, nameof(NewDocument), Options.HotkeyNewDocument);
+            yield return new InputBindingCommand(this, nameof(NewDocumentWithCurrentConnection), Options.HotkeyNewDocumentWithCurrentConnection);
+            yield return new InputBindingCommand(this, nameof(OpenDocument), Options.HotkeyOpenDocument);
+            yield return new InputBindingCommand(this, nameof(SaveCurrentDocument), Options.HotkeySaveDocument);
+            yield return new InputBindingCommand(this, nameof(SelectionToUpper), Options.HotkeyToUpper);
+            yield return new InputBindingCommand(this, nameof(SelectionToLower), Options.HotkeyToLower);
             yield return new InputBindingCommand(this, nameof(UncommentSelection), Options.HotkeyUnCommentSelection);
-            yield return new InputBindingCommand(this, nameof(Redo), "Ctrl Y");
-            yield return new InputBindingCommand(this, nameof(Undo), "Ctrl Z");
-            yield return new InputBindingCommand(this, nameof(Undo), "Alt Delete");
-            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl OemSemiColon");
-            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl OemComma");
+            yield return new InputBindingCommand(this, nameof(Redo), "Ctrl + Y");
+            yield return new InputBindingCommand(this, nameof(Undo), "Ctrl + Z");
+            yield return new InputBindingCommand(this, nameof(Undo), "Alt + Delete");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemSemiColon");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemComma");
             yield return new InputBindingCommand(this, nameof(Find), "F3");
-            yield return new InputBindingCommand(this, nameof(FindPrev), "Shift F3");
-            yield return new InputBindingCommand(this, nameof(FormatQueryStandard), "F6");
-            yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), "Ctrl F6");
-            yield return new InputBindingCommand(this, nameof(GotoLine), "Ctrl G");
+            yield return new InputBindingCommand(this, nameof(FindPrev), "Shift + F3");
+            yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
+            yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
+            yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
 
         }
 

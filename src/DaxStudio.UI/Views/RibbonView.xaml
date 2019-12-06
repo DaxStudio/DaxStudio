@@ -269,27 +269,7 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-                    <!--
-                    <Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="PublishDaxFunctions">
 
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-
-                    </Fluent:Button>                    <Fluent:Button Name="btnExportDaxFunctions" Header="Export DAX Functions" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="ExportDaxFunctions">
-
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-
-                    </Fluent:Button>
--->
                     <Fluent:BackstageTabItem Header="Options"  >
                         <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}" />
                     </Fluent:BackstageTabItem>
@@ -332,7 +312,7 @@
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:SplitButton.ToolTip>
-                        <Fluent:ScreenTip Title="Run Query (F5)"
+                        <Fluent:ScreenTip Title="{Binding RunQueryTitle}"
                                           Text="{Binding Path=SelectedRunStyle.Tooltip}"
                                           DisableReason="{Binding RunQueryDisableReason}"
                                            ></Fluent:ScreenTip>
@@ -551,7 +531,7 @@
                                Margin="0,0,10,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Format Query (F6)"
+                        <Fluent:ScreenTip Title="{Binding FormatQueryTitle}"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -566,7 +546,7 @@
                                Margin="4,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
+                        <Fluent:ScreenTip Title="{Binding ToUpperTitle}"
                                           Text="Converts the selected text to Uppercase"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -579,7 +559,7 @@
                                Margin="4,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
+                        <Fluent:ScreenTip Title="{Binding ToLowerTitle}"
                                           Text="Converts the selected text to Lowercase"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -606,7 +586,7 @@
                                SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
-                            <Fluent:ScreenTip Title="Comment (Ctrl+Alt C)"
+                            <Fluent:ScreenTip Title="{Binding CommentSelectionTitle}"
                                           Text="Comments the selected lines"
                                            ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>
@@ -619,7 +599,7 @@
                                SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
-                            <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
+                            <Fluent:ScreenTip Title="{Binding UncommentSelectionTitle}"
                                           Text="Uncomments the selected lines"
                                            ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>

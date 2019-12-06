@@ -12,7 +12,8 @@
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-            mc:Ignorable="d" 
+             xmlns:val="clr-namespace:DaxStudio.UI.Validation"
+             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -565,8 +566,13 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -579,17 +585,47 @@
                                 <Button Content="Reset All" Grid.Column="1" x:Name="ResetKeyBindings" Height="22" Width="60"/>
 
                                 <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" Hotkey="{Binding HotkeyCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
+                                    <controls:HotkeyEditorControl.Resources>
+                                        <val:BindingProxy x:Key="proxy" Data="{Binding}"/>
+                                    </controls:HotkeyEditorControl.Resources>
+                                    <controls:HotkeyEditorControl.Hotkey>
+                                        <Binding Path="HotkeyCommentSelection" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" Converter="{StaticResource HotKeyConverter}">
+                                            <Binding.ValidationRules>
+                                                <val:HotkeyValidationRule ValidationStep="ConvertedProposedValue">
+                                                    <val:HotkeyValidationRule.Wrapper>
+                                                        <val:Wrapper Options="{Binding Data, Source={StaticResource proxy}}" PropertyName="HotkeyCommentSelection"/>
+                                                    </val:HotkeyValidationRule.Wrapper>
+                                                </val:HotkeyValidationRule>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </controls:HotkeyEditorControl.Hotkey>
+                                </controls:HotkeyEditorControl>
 
                                 <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Selection To Upper" Padding="2" Grid.Row="3" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyToUpper, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Run Query" Padding="2" Grid.Row="3" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="2" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQueryAlt, Converter={StaticResource HotKeyConverter}}"/>
+                                
+                                <Label Content="Selection To Upper" Padding="2" Grid.Row="4" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyToUpper, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Selection To Lower" Padding="2" Grid.Row="4" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyToLower, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Selection To Lower" Padding="2" Grid.Row="5" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="5" Padding="2" Hotkey="{Binding HotkeyToLower, Converter={StaticResource HotKeyConverter}}"/>
 
+                                <Label Content="Open Document" Padding="2" Grid.Row="6" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="6" Padding="2" Hotkey="{Binding HotkeyOpenDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Save Document" Padding="2" Grid.Row="7" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="7" Padding="2" Hotkey="{Binding HotkeySaveDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="New Document" Padding="2" Grid.Row="8" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="8" Padding="2" Hotkey="{Binding HotkeyNewDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="New Document with current Connection" Padding="2" Grid.Row="9" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="9" Padding="2" Hotkey="{Binding HotkeyNewDocumentWithCurrentConnection, Converter={StaticResource HotKeyConverter}}"/>
                             </Grid>
                             
                             
