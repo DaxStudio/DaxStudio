@@ -614,13 +614,13 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted(bool isCancelled)
         {
-            _queryStopWatch.Stop();
+            _queryStopWatch?.Stop();
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             QueryResultsPane.IsBusy = false;  // TODO - this should be some sort of collection of objects with a specific interface, not a hard coded object reference
             if (currentQueryDetails != null)
             {
-                currentQueryDetails.ClientDurationMs = _queryStopWatch.ElapsedMilliseconds;
+                currentQueryDetails.ClientDurationMs = _queryStopWatch?.ElapsedMilliseconds??-1;
                 currentQueryDetails.RowCount = ResultsDataSet.RowCounts();
             }
             bool svrTimingsEnabled = false;
@@ -635,6 +635,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.BeginPublishOnUIThread(currentQueryDetails);
             }
+
         }
 
         public IDaxStudioHost Host { get { return _host; } }
@@ -1279,7 +1280,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma) {
                     var dsm = new DelimiterStateMachine(DaxStudio.Interfaces.Enums.DelimiterType.Comma);
                     daxQuery = dsm.ProcessString(daxQuery);
-                } 
+                }
                 _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
@@ -1298,17 +1299,22 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
+
+                _queryStopWatch.Stop();
                 _timer.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
+                NotifyOfPropertyChange(() => ElapsedQueryTime);
+                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                
 
                 // if this is an internal refresh session query don't  
-                if (!daxQuery.StartsWith(Constants.InternalQueryHeader))
-                {
-                    NotifyOfPropertyChange(() => ElapsedQueryTime);
-                    _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
-                    QueryCompleted();
-                }
+                //if (!daxQuery.StartsWith(Constants.InternalQueryHeader))
+                //{
+                //    NotifyOfPropertyChange(() => ElapsedQueryTime);
+                //    _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                //    QueryCompleted();
+                //}
             }
 
         }
@@ -1463,7 +1469,7 @@ namespace DaxStudio.UI.ViewModels
                                 currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                                 _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
                             }
-
+                            _queryStopWatch.Reset();
                             _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                             msg.Dispose();
                         }, TaskScheduler.Default);

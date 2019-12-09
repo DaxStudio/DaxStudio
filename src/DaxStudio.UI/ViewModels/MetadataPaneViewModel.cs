@@ -375,8 +375,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = Connection.IsPowerPivot && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
-                                    Description = Connection.IsPowerPivot && Connection.FileName.Length > 0 ? Connection.FileName : ""
+                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.FileName.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -444,7 +444,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return Connection != null && !Connection.IsPowerPivot && !ActiveDocument.IsQueryRunning;
+                return Connection != null && !(Connection.IsPowerPivot) && !ActiveDocument.IsQueryRunning;
             }
         }
 

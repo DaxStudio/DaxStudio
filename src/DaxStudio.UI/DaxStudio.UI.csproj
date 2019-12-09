@@ -392,6 +392,7 @@
     <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\RefreshOutputTargetsEvent.cs" />
+    <Compile Include="Events\ServerTimingsEvent.cs" />
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
     <Compile Include="Events\SizeUnitsUpdatedEvent.cs" />
     <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
