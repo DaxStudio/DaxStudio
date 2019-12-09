@@ -28,15 +28,19 @@ namespace DaxStudio
             string baseAddress = string.Format("http://localhost:{0}/", port);
 
             Log.Information("{class} {method} DaxStudio Host starting on port {port}", "WebHost", "Start", port);
-            try {
-                System.Diagnostics.EventLog appLog = new System.Diagnostics.EventLog();
-                appLog.Source = "DaxStudio";
-                appLog.WriteEntry(string.Format("DaxStudio Excel Add-in Listening on port {0}", port), EventLogEntryType.Information);
-            }
-            catch (Exception ex) {
-                // if we have a problem writing to the event log, just write to the application log and continue
-                Log.Error("{class} {method} {message} {stacktrace}", "WebHost", "Start", ex.Message, ex.StackTrace);
-            }
+            //try {
+            //    using (System.Diagnostics.EventLog appLog = new System.Diagnostics.EventLog
+            //    {
+            //        Source = "DaxStudio"
+            //    })
+            //    {
+            //        appLog.WriteEntry(string.Format("DaxStudio Excel Add-in Listening on port {0}", port), EventLogEntryType.Information);
+            //    }
+            //}
+            //catch (Exception ex) {
+            //    // if we have a problem writing to the event log, just write to the application log and continue
+            //    Log.Error("{class} {method} {message} {stacktrace}", "WebHost", "Start", ex.Message, ex.StackTrace);
+            //}
 
             // Start OWIN host 
             try

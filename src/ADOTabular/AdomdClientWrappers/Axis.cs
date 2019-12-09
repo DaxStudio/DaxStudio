@@ -5,16 +5,16 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Axis
     {
-        private Microsoft.AnalysisServices.AdomdClient.Axis _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Axis _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis _objExcel;
 
-        public Axis(Microsoft.AnalysisServices.AdomdClient.Axis obj)
+        public Axis(Microsoft.AnalysisServices.AdomdClient.Axis axis)
         {
-            _obj = obj;
+            _obj = axis;
         }
-        public Axis(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis obj)
+        public Axis(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Axis axis)
         {
-            _objExcel = obj;
+            _objExcel = axis;
         }
 
         public List<Position> Positions

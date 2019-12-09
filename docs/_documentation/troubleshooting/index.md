@@ -1,5 +1,5 @@
 ---
-title: Installation
+title: Troubleshooting
 feature: "false"
 permalink: /:collection/troubleshooting/index.html
 index: true

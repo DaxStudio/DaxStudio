@@ -1,4 +1,4 @@
-﻿namespace DAXEditor.BracketRenderer
+﻿namespace DAXEditorControl.BracketRenderer
 {
   /// <summary>
   /// Allows language specific search for matching brackets.

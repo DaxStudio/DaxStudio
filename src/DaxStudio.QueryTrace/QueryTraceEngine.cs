@@ -114,9 +114,9 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-        private IGlobalOptions _globalOptions;
-        private object connectionLockObj = new object();
-        private bool _filterForCurrentSession = true;
+        private readonly IGlobalOptions _globalOptions;
+        private readonly object connectionLockObj = new object();
+        private readonly bool _filterForCurrentSession = true;
         private readonly string _powerBIFileName = string.Empty;
         public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
         {
@@ -143,6 +143,7 @@ namespace DaxStudio.QueryTrace
             connStrBuilder.Remove("MDX Compatibility");
             connStrBuilder.Remove("Cell Error Mode");
             connStrBuilder.Remove("Roles");
+            connStrBuilder.Remove("EffectiveUsername");
             connStrBuilder["SessionId"] = _sessionId;
             if (_databaseName.Length > 0) connStrBuilder["Initial Catalog"] = _databaseName;
             _connectionString = connStrBuilder.ToString();
@@ -326,8 +327,7 @@ namespace DaxStudio.QueryTrace
 
         public void OnTraceEvent( TraceEventArgs e)
         {
-            if (TraceEvent != null)
-                TraceEvent(this, e);
+            TraceEvent?.Invoke(this, e);
         }
 
         public void RaiseError( string message)
@@ -434,8 +434,7 @@ namespace DaxStudio.QueryTrace
                     if (e.EventClass == TraceEventClass.QueryEnd)
                     {
                         // Raise an event with the captured events
-                        if (TraceCompleted != null)
-                            TraceCompleted(this, _capturedEvents);
+                        TraceCompleted?.Invoke(this, _capturedEvents);
                         // reset the captured events collection
                         _capturedEvents = new List<DaxStudioTraceEventArgs>();
 

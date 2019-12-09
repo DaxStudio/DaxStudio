@@ -14,6 +14,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,7 +26,8 @@ namespace DaxStudio.UI.ViewModels
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
         IHandle<StopAutoSaveTimerEvent>,
-        IHandle<ChangeThemeEvent>
+        IHandle<ChangeThemeEvent>,
+        IHandle<UpdateHotkeys>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -33,9 +35,7 @@ namespace DaxStudio.UI.ViewModels
         private NotifyIcon notifyIcon;
         private Window _window;
         private readonly Application _app;
-        private Timer _autoSaveTimer;
         private InputBindings _inputBindings;
-
         
         //private ILogger log;
         [ImportingConstructor]
@@ -47,6 +47,7 @@ namespace DaxStudio.UI.ViewModels
                             , IDaxStudioHost host
                             , IVersionCheck versionCheck
                             , IGlobalOptions options
+                            , IAutoSaver autoSaver
                             )
         {
 
@@ -54,6 +55,7 @@ namespace DaxStudio.UI.ViewModels
             Ribbon.Shell = this;
             StatusBar = statusBar;
             Options = options;
+            AutoSaver = autoSaver;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -69,7 +71,7 @@ namespace DaxStudio.UI.ViewModels
             var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
             var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
             // check for auto-saved files and offer to recover them
-            if (filesToRecover.Count() > 0)
+            if (filesToRecover.Any())
             {
                 recoveringFiles = true;
                 RecoverAutoSavedFiles(autoSaveInfo);
@@ -81,7 +83,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // if a filename was passed in on the command line open it
-            if (_host.CommandLineFileName != string.Empty) Tabs.NewQueryDocument(_host.CommandLineFileName);
+            if (!string.IsNullOrEmpty(_host.CommandLineFileName)) Tabs.NewQueryDocument(_host.CommandLineFileName);
 
             // if no tabs are open at this point and we are not recovering autosave file then, open a blank document
             if (Tabs.Items.Count == 0 && !recoveringFiles) NewDocument();
@@ -97,10 +99,12 @@ namespace DaxStudio.UI.ViewModels
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
 
-            _autoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
-            _autoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
+            AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
+            AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
             
         }
+
+        private Timer AutoSaveTimer { get; }
 
         private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
@@ -114,13 +118,24 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                await AutoSaver.Save(Tabs);
+                // disable the timer while we are saving, so that if access to the UI thread is 
+                // blocked and we cannot read the contents of the editor controls we do not keep
+                // firing access denied errors on the autosave file. Once the UI thread is free 
+                // the initial request will continue and the timer will be re-enabled.
+              
+                AutoSaveTimer.Enabled = false;
+                
+                await AutoSaver.Save(Tabs).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 // we just catch and log any errors, we don't want the autosave timer to be
                 // the cause of any crashes itself
                 Log.Error(ex, "{class} {method} {message}", "ShellViewModel", "AutoSaveTimerElapsed", ex.Message);
+            }
+            finally
+            {
+                AutoSaveTimer.Enabled = true;
             }
         }
 
@@ -132,7 +147,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-
+        public IAutoSaver AutoSaver { get; }
         public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
@@ -140,8 +155,6 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public ISettingProvider SettingProvider { get; }
 
-        public void ContentRendered()
-        { }
 
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
@@ -152,7 +165,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Ribbon.OnClose();
                 notifyIcon?.Dispose();
-                _autoSaveTimer.Enabled = false;
+                AutoSaveTimer.Enabled = false;
                 AutoSaver.RemoveAll();
             }
         }
@@ -183,19 +196,45 @@ namespace DaxStudio.UI.ViewModels
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
             _window.SetPlacement(Options.WindowPosition);
-            notifyIcon = new NotifyIcon(_window);
+            notifyIcon = new NotifyIcon(_window, _eventAggregator);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
             //Application.Current.LoadRibbonTheme();
             _inputBindings = new InputBindings(_window);
             _inputBindings.RegisterCommands(GetInputBindingCommands());
+            
         }
 
         private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // TODO - we should load custom key bindings from Options
-            yield return new InputBindingCommand(this, nameof(CommentSelection), "Ctrl+Alt C");
-            
+            yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQuery);
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQueryAlt);
+            yield return new InputBindingCommand(this, nameof(NewDocument), Options.HotkeyNewDocument);
+            yield return new InputBindingCommand(this, nameof(NewDocumentWithCurrentConnection), Options.HotkeyNewDocumentWithCurrentConnection);
+            yield return new InputBindingCommand(this, nameof(OpenDocument), Options.HotkeyOpenDocument);
+            yield return new InputBindingCommand(this, nameof(SaveCurrentDocument), Options.HotkeySaveDocument);
+            yield return new InputBindingCommand(this, nameof(SelectionToUpper), Options.HotkeyToUpper);
+            yield return new InputBindingCommand(this, nameof(SelectionToLower), Options.HotkeyToLower);
+            yield return new InputBindingCommand(this, nameof(UncommentSelection), Options.HotkeyUnCommentSelection);
+            yield return new InputBindingCommand(this, nameof(Redo), "Ctrl + Y");
+            yield return new InputBindingCommand(this, nameof(Undo), "Ctrl + Z");
+            yield return new InputBindingCommand(this, nameof(Undo), "Alt + Delete");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemSemiColon");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemComma");
+            yield return new InputBindingCommand(this, nameof(Find), "F3");
+            yield return new InputBindingCommand(this, nameof(FindPrev), "Shift + F3");
+            yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
+            yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
+            yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
+
+        }
+
+        public void ResetInputBindings()
+        {
+            _inputBindings.DeregisterCommands();
+            _inputBindings.RegisterCommands(GetInputBindingCommands());
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -219,7 +258,7 @@ namespace DaxStudio.UI.ViewModels
         {           
             var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
-            notifyIcon.Notify(newVersionText, message.DownloadUrl);
+            notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
         }
 
         public void Handle(AutoSaveEvent message)
@@ -233,7 +272,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var loggingText = string.Format("Debug Logging enabled.\nClick here to open the log folder");
-                var fullPath = System.Environment.ExpandEnvironmentVariables(Constants.LogFolder);
+                var fullPath = ApplicationPaths.LogPath;
                 notifyIcon.Notify(loggingText, fullPath);
             }
             catch (Exception ex)
@@ -357,13 +396,13 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(StartAutoSaveTimerEvent message)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StartAutoSaveTimer>", "AutoSave Timer Starting");
-            _autoSaveTimer.Enabled = true;
+            AutoSaveTimer.Enabled = true;
         }
 
         public void Handle(StopAutoSaveTimerEvent message)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StopAutoSaveTimer>", "AutoSave Timer Stopping");
-            _autoSaveTimer.Enabled = false;
+            AutoSaveTimer.Enabled = false;
         }
 
         public void Handle(ChangeThemeEvent message)
@@ -380,6 +419,11 @@ namespace DaxStudio.UI.ViewModels
         private void SetDarkTheme()
         {
             _app.LoadDarkTheme();
+        }
+
+        public void Handle(UpdateHotkeys message)
+        {
+            ResetInputBindings();
         }
 
 

@@ -375,8 +375,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = Connection.IsPowerPivot && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
-                                    Description = Connection.IsPowerPivot && Connection.FileName.Length > 0 ? Connection.FileName : ""
+                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.FileName.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -432,11 +432,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public ADOTabularDatabase SelectedDatabaseObject
+        {
+            get
+            {
+                return this.Connection?.Database;
+            }
+        }
+
         public bool CanSelectDatabase
         {
             get
             {
-                return Connection != null && !Connection.IsPowerPivot && !ActiveDocument.IsQueryRunning;
+                return Connection != null && !(Connection.IsPowerPivot) && !ActiveDocument.IsQueryRunning;
             }
         }
 
@@ -841,6 +849,12 @@ namespace DaxStudio.UI.ViewModels
 
                         measureExpression = column.DaxName;
                     }
+                }
+                else if (item.Column is ADOTabularKpi)
+                {
+                    column = (ADOTabularColumn)item.Column;
+                    var kpi = (ADOTabularKpi)item.Column;
+                    measureExpression = kpi.MeasureExpression;
                 }
                 else
                 {

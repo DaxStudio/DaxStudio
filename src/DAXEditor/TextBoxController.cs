@@ -1,11 +1,11 @@
-﻿namespace DAXEditor
+﻿namespace DAXEditorControl
 {
     public class TextBoxController : ITextBoxController
   {
     #region Events
-    public event SelectAllEventHandler SelectAll;
+    public event SelectAllEventHandler SelectAllEvent;
 
-    public event SelectEventHandler Select;
+    public event SelectEventHandler SelectEvent;
 
     public event ScrollToLineEventHandler ScrollToLineEvent;
 
@@ -21,15 +21,15 @@
     #region methods
     public void SelectAllText()
     {
-      if (this.SelectAll != null)
-        this.SelectAll(this);
+      if (this.SelectAllEvent != null)
+        this.SelectAllEvent(this);
     }
 
     public void SelectText(int start, int length)
     {
-      if (this.Select != null)
+      if (this.SelectEvent != null)
       {
-        this.Select(this, start, length);       // Execute select event to be propagated into view via attached property
+        this.SelectEvent(this, start, length);       // Execute select event to be propagated into view via attached property
       }
     }
 

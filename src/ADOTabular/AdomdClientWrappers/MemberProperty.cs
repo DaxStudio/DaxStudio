@@ -5,8 +5,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class MemberProperty
     {
-        private Microsoft.AnalysisServices.AdomdClient.MemberProperty _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberProperty _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.MemberProperty _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberProperty _objExcel;
 
         public MemberProperty(Microsoft.AnalysisServices.AdomdClient.MemberProperty obj)
         {
@@ -27,10 +27,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Name;
-                    };
+                    string f() => _objExcel.Name;
                     return f();
                 }
             }
@@ -46,10 +43,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<object> f = delegate
-                    {
-                        return _objExcel.Value;
-                    };
+                    object f() => _objExcel.Value;
                     return f();
                 }
             }
@@ -65,10 +59,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.UniqueName;
-                    };
+                    string f() => _objExcel.UniqueName;
                     return f();
                 }
             }

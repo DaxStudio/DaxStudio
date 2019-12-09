@@ -25,7 +25,7 @@ namespace DaxStudio.UI.Utils
         public static void Wrap(WrapSharingViolationsCallback action, WrapSharingViolationsExceptionsCallback exceptionsCallback, int retryCount, int waitTime)
         {
             if (action == null)
-                throw new ArgumentNullException("action");
+                throw new ArgumentNullException(nameof(action));
 
             for (int i = 0; i < retryCount; i++)
             {

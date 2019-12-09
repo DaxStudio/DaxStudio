@@ -27,20 +27,22 @@ namespace DaxStudio.UI.ViewModels
         IViewAware 
         
     {
-        private Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
-        private Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
-        private IGlobalOptions _globalOptions;
+        private readonly Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
+        private readonly Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
+        private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
         public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             _globalOptions = globalOptions;
-            QueryTypes = new ObservableCollection<string>();
-            QueryTypes.Add("DAX");
-            QueryTypes.Add("Dmx");
-            QueryTypes.Add("Mdx");
-            QueryTypes.Add("Sql");
+            QueryTypes = new ObservableCollection<string>
+            {
+                "DAX",
+                "Dmx",
+                "Mdx",
+                "Sql"
+            };
         }
 
 
@@ -107,7 +109,7 @@ namespace DaxStudio.UI.ViewModels
 
                                 // overwrite the username with the effective user if it's present
                                 var effectiveUser = beginEvent.ParseEffectiveUsername();
-                                if (effectiveUser != null) newEvent.Username = effectiveUser;
+                                if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
                             }
 
 

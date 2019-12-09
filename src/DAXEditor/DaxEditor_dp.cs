@@ -1,7 +1,8 @@
 ﻿using ICSharpCode.AvalonEdit;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
+    using System;
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Media;
@@ -22,6 +23,16 @@ namespace DAXEditor
                                          new UIPropertyMetadata(new SolidColorBrush(Color.FromArgb(33, 33, 33, 33)),
                                          DAXEditor.OnCurrentLineBackgroundChanged));
         #endregion EditorCurrentLineBackground
+
+        #region Indenting
+
+        private static readonly DependencyProperty ConvertTabsToSpacesProperty =
+            DependencyProperty.Register("ConvertTabsToSpaces", typeof(bool), typeof(DAXEditor), new UIPropertyMetadata(false, OnConvertTabsToSpacesChanged));
+
+        private static readonly DependencyProperty IndentationSizeProperty =
+            DependencyProperty.Register("IndentationSize", typeof(int), typeof(DAXEditor), new UIPropertyMetadata(4, OnIndentationSizeChanged));
+
+        #endregion
 
         #region CaretPosition
         private static readonly DependencyProperty ColumnProperty =
@@ -95,6 +106,21 @@ namespace DAXEditor
             set { SetValue(EditorCurrentLineBackgroundProperty, value); }
         }
         #endregion EditorCurrentLineBackground
+
+        #region Indenting
+        public bool ConvertTabsToSpaces
+        {
+            get => (bool)GetValue(ConvertTabsToSpacesProperty);
+            set => SetValue(ConvertTabsToSpacesProperty, value);
+        }
+
+        public int IndentationSize
+        {
+            get => (int)GetValue(IndentationSizeProperty);
+            set => SetValue(IndentationSizeProperty, value);
+        }
+
+        #endregion
 
         #region CaretPosition
         public int Column
@@ -258,6 +284,34 @@ namespace DAXEditor
                 }
             }
         }
+
+
+        private static void OnConvertTabsToSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DAXEditor view = d as DAXEditor;
+
+            if (view == null) return;
+            if (e == null) return;
+
+            var convertTabsToSpaces = e.NewValue as bool?;
+
+            view.Options.ConvertTabsToSpaces = convertTabsToSpaces ?? false;
+            
+        }
+
+        private static void OnIndentationSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DAXEditor view = d as DAXEditor;
+
+            if (view == null) return;
+            if (e == null) return;
+
+            var indentSize = e.NewValue as int?;
+
+            view.Options.IndentationSize = indentSize ?? 4;
+        }
+
+        
         #endregion methods
 
 

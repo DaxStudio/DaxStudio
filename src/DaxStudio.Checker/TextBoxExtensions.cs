@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace DaxStudio.Checker
+namespace DaxStudio.CheckerApp
 {
     public static class TextBoxExtensions
     {
@@ -55,8 +55,9 @@ namespace DaxStudio.Checker
         {
             myOutput.AppendLine();
             myOutput.AppendRange(text +"\n").Bold().Size("14pt");
+            myOutput.AppendLine("=======================");
             //var inline = new Run();
-            
+
             //myOutput.Document.Blocks.Add( new Paragraph( new Bold( new Underline( new Run( text + "\r")))));
         }
 

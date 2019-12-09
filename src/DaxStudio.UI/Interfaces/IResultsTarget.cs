@@ -18,6 +18,6 @@ namespace DaxStudio.UI.Interfaces
         int DisplayOrder { get; }
 
         string Message { get; }
-        OutputTargets Icon { get; }
+        OutputTarget Icon { get; }
     }
 }

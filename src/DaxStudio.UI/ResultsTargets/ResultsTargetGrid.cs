@@ -33,7 +33,7 @@ namespace DaxStudio.UI.Model
         public bool IsDefault => true;
         public bool IsAvailable => true;
         public string Message => string.Empty;
-        public OutputTargets Icon => OutputTargets.Grid;
+        public OutputTarget Icon => OutputTarget.Grid;
 
         public bool IsEnabled => true;
 

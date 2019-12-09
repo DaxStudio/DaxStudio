@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Linq;
 
 namespace ADOTabular
@@ -10,30 +12,12 @@ namespace ADOTabular
 
     public  class ADOTabularColumn:IADOTabularColumn
     {
-        // TODO - can we delete this??
-        //public ADOTabularColumn(ADOTabularTable table, DataRow dr, ADOTabularObjectType colType)
-        //{
-        //    Table = table;
-        //    ObjectType = colType;
-        //    if (colType == ADOTabularObjectType.Column)
-        //    {
-        //        Caption = dr["HIERARCHY_CAPTION"].ToString();
-        //        Name = dr["HIERARCHY_NAME"].ToString();
-        //        IsVisible = bool.Parse(dr["HIERARCHY_IS_VISIBLE"].ToString());
-        //        Description = dr["DESCRIPTION"].ToString();
-        //    }
-        //    else
-        //    {
-        //        Caption = dr["MEASURE_CAPTION"].ToString();
-        //        Name = dr["MEASURE_NAME"].ToString();
-        //        IsVisible = bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString());
-        //        Description = dr["DESCRIPTION"].ToString();
-        //    }
-        //}
-
+        
         public ADOTabularColumn( ADOTabularTable table, string internalReference, string name, string caption,  string description,
                                 bool isVisible, ADOTabularObjectType columnType, string contents)
         {
+            Contract.Requires(table != null, "The table parameter must not be null");
+
             Table = table;
             InternalReference = internalReference;
             Name = name ?? internalReference;
@@ -61,8 +45,8 @@ namespace ADOTabular
             {
                 // for measures we exclude the table name
                 return ObjectType == ADOTabularObjectType.Column  
-                    ? string.Format("{0}[{1}]", Table.DaxName, Name)
-                    : string.Format("[{0}]",Name);
+                    ? $"{Table.DaxName}[{Name.Replace("]","]]")}]"
+                    : $"[{Name.Replace("]", "]]")}]";
             }
         }
 
@@ -93,7 +77,10 @@ namespace ADOTabular
         {
             get
             {
-                if ((this.MetadataImage != MetadataImages.Measure) && (this.MetadataImage != MetadataImages.HiddenMeasure))
+                if ((MetadataImage != MetadataImages.Measure) 
+                    && (MetadataImage != MetadataImages.HiddenMeasure )
+                    && (MetadataImage != MetadataImages.Kpi)
+                    )
                 {
                     return null;
                 }
@@ -103,7 +90,7 @@ namespace ADOTabular
 
                 var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 
-                return (measure != null ? measure.Expression : null);
+                return (measure?.Expression);
             }
         }
 
@@ -136,57 +123,66 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
+            Contract.Requires(connection != null, "The connection parameter must not be null");
 
-            string qry = "";
-
+            string qry;
             switch (Type.GetTypeCode(DataType))
             {
                 case TypeCode.Boolean:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 case TypeCode.Empty:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 case TypeCode.String:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({{0}},1),\"Max\", LASTNONBLANK({{0}},1), \"DistinctCount\", COUNTROWS(DISTINCT({{0}})) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
                     break;
                 default:
-                    qry = string.Format($"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({{0}}),\"Max\", MAX({{0}}), \"DistinctCount\", DISTINCTCOUNT({{0}}) )", DaxName);
+                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )";
                     break;
 
             }
-            
-            var dt = connection.ExecuteDaxQueryDataTable(qry);
-            
+
+            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
+            {
+
                 MinValue = dt.Rows[0][0].ToString();
                 MaxValue = dt.Rows[0][1].ToString();
-            if (dt.Rows[0][2] == DBNull.Value) {
-                DistinctValues = 0;
-            }
-            else { 
-                DistinctValues = (long)dt.Rows[0][2];
+                if (dt.Rows[0][2] == DBNull.Value)
+                {
+                    DistinctValues = 0;
+                }
+                else
+                {
+                    DistinctValues = (long)dt.Rows[0][2];
+                }
             }
         }
 
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            string qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
-            if (connection.AllFunctions.Contains("TOPNSKIP"))
-                qryTempalte = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), RAND()) ORDER BY {{1}}";
+            Contract.Requires(connection != null, "The connection parameter must not be null");
 
-            var qry = string.Format(qryTempalte, sampleSize * 2, DaxName);
-            var dt = connection.ExecuteDaxQueryDataTable(qry);
-            List<string> _tmp = new List<string>(sampleSize * 2);
-            foreach(DataRow dr in dt.Rows)
+            string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
+            if (connection.AllFunctions.Contains("TOPNSKIP"))
+                qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), RAND()) ORDER BY {{1}}";
+
+            var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName);
+            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
             {
-                _tmp.Add(string.Format(string.Format("{{0:{0}}}", FormatString), dr[0]));
+                List<string> _tmp = new List<string>(sampleSize * 2);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    _tmp.Add(string.Format(CultureInfo.InvariantCulture, string.Format(CultureInfo.InvariantCulture, "{{0:{0}}}", FormatString), dr[0]));
+                }
+                return _tmp.Distinct().Take(sampleSize).ToList();
             }
-            return _tmp.Distinct().Take(sampleSize).ToList();
         }
 
         // used for relationship links
         public string Role { get; internal set; }
         public List<ADOTabularVariation> Variations { get; internal set; }
+        public bool IsKey { get; internal set; } = false;
     }
 }

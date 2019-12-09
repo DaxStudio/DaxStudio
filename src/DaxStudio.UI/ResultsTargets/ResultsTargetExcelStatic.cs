@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => _host.IsExcel;
         public int DisplayOrder => 110;
         public string Message => "Static Results will be sent to Excel";
-        public OutputTargets Icon => OutputTargets.Static;
+        public OutputTarget Icon => OutputTarget.Static;
 
         public bool IsEnabled => true;
 
@@ -56,7 +56,7 @@ namespace DaxStudio.UI.Model
                                               res.Rows.Count == 1 ? "" : "s"), durationMs);
                             runner.RowCount = res.Rows.Count;
                             runner.ActivateOutput();
-                            runner.SetResultsMessage("Static results sent to Excel", OutputTargets.Static);
+                            runner.SetResultsMessage("Static results sent to Excel", OutputTarget.Static);
                         },TaskScheduler.Default);
                     }
                     catch (Exception ex)

@@ -10,14 +10,15 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
 using DaxStudio.Common;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
     [Export]
     public class HelpAboutViewModel : Screen
     {
-        private IEventAggregator _eventAggregator;
-        private IDaxStudioHost _host;
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IDaxStudioHost _host;
 
         [ImportingConstructor]
         public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker, IDaxStudioHost host) {
@@ -52,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (e.PropertyName == "VersionStatus")
             {
+                UpdateStatus = VersionChecker.VersionStatus;
                 NotifyOfPropertyChange(() => UpdateStatus);
             }
         }
@@ -101,17 +103,12 @@ namespace DaxStudio.UI.ViewModels
             get;
             set;
         }
-        public string DownloadUrl { get; private set; }
+        public Uri DownloadUrl { get; private set; }
         public bool VersionIsLatest { get; private set; }
 
         public bool IsLoggingEnabled { get { return _host.DebugLogging; } }
 
-        public void OpenLogFolder()
-        {
-            Process.Start(Constants.LogFolder);
-        }
-
-        public string LogFolder { get { return @"file:///" + Environment.ExpandEnvironmentVariables(Constants.LogFolder); } }
+        public string LogFolder { get { return @"file:///" + ApplicationPaths.LogPath; } }
     }
 
     public class ReferencedAssembly

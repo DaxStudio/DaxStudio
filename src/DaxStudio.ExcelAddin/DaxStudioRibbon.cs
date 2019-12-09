@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Serilog;
 using System.Windows;
 using DaxStudio.Common;
+using System.IO;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -14,8 +15,6 @@ namespace DaxStudio.ExcelAddin
         private Process _client;
         private int _port;
 
-        [DllImport("user32.dll")]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
 
         private void Ribbon1Load(object sender, RibbonUIEventArgs e)
         {
@@ -45,7 +44,7 @@ namespace DaxStudio.ExcelAddin
         private void BtnDaxClick(object sender, RibbonControlEventArgs e)
         {
             try {
-                var xl = new ExcelHelper(Globals.ThisAddIn.Application);
+                //var xl = new ExcelHelper(Globals.ThisAddIn.Application);
                 //if (!xl.HasPowerPivotData())
                 //{
                 //    MessageBox.Show("The Active Workbook must have a PowerPivot in order to launch DAX Studio");
@@ -78,30 +77,41 @@ namespace DaxStudio.ExcelAddin
             Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Entering Launch()");
             // Find free port and start the web host
             _port = WebHost.Start();
-            
-            
-            //todo - can I search for DaxStudio.exe and set _client if found (would need to send it a message with the port number) ??
 
+
+            //todo - can I search for DaxStudio.exe and set _client if found (would need to send it a message with the port number) ??
+            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Checking for an existing instance of DaxStudio.exe");
             // activate DAX Studio if it's already running
             if (_client != null)
             {
                 if (!_client.HasExited)
                 {
-                    SetForegroundWindow(_client.MainWindowHandle);
+                    NativeMethods.SetForegroundWindow(_client.MainWindowHandle);
                     return;
                 }
             }
 
             var path = "";
             // look for daxstudio.exe in the same folder as daxstudio.dll
-            path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
+            path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
+            if (!File.Exists(path))
+            {
+                // try getting daxstudio.exe from the parent directory
+                path = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "daxstudio.exe"));
+                if (!File.Exists(path)) throw new FileNotFoundException("Excel Addin is unable to launch the DAX Studio User Interface");
+            }
+
 
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
             // start Dax Studio process
-            ProcessStartInfo psi = new ProcessStartInfo(path);
-            psi.Arguments = string.Format("-port {0}", _port);
+            ProcessStartInfo psi = new ProcessStartInfo(path)
+            {
+                Arguments = $"-port {_port}",
+                UseShellExecute = false // this is false as we are executing a .exe file directly
+            };
             if (enableLogging) psi.Arguments += " -log";
             _client = Process.Start(psi);
+
             if (!_client.WaitForInputIdle(Constants.ExcelUIStartupTimeout))
             {
                 Log.Error("Launching User Interface from Excel exceeded the {timeout} ms timeout", Constants.ExcelUIStartupTimeout);
@@ -145,5 +155,11 @@ namespace DaxStudio.ExcelAddin
         }
 
 
+    }
+
+    internal static class NativeMethods
+    {
+        [DllImport("user32.dll")]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }

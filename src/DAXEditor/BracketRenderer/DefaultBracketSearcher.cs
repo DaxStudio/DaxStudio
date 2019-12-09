@@ -1,5 +1,5 @@
 ﻿// This code was largely "borrowed" from http://edi.codeplex.com
-namespace DAXEditor.BracketRenderer
+namespace DAXEditorControl.BracketRenderer
 {
   public class DefaultBracketSearcher : IBracketSearcher
   {

@@ -87,19 +87,19 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
-Source: "..\release\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "..\release\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
-Source: "..\release\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
+Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
+Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
+Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}"; Flags: ignoreversion; Components: Excel
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto"
 
 ;Standalone configs
-Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: Not IsComponentSelected('ASAzureSupport')
-Source: "..\release\DaxStudio.exe.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsComponentSelected('ASAzureSupport')
+;Source: "..\release\DaxStudio.exe.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: Not IsComponentSelected('ASAzureSupport')
+;Source: "..\release\DaxStudio.exe.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.exe.config"; Flags: ignoreversion; Components: Core; Check: IsComponentSelected('ASAzureSupport')
 
 ;Excel Addin configs
-Source: "..\release\DaxStudio.dll.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And Not IsExcel2010Installed
-Source: "..\release\DaxStudio.dll.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsComponentSelected('ASAzureSupport') 
+Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And IsExcel2010Installed
+;Source: "..\release\bin\DaxStudio.dll.2016.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: Not IsComponentSelected('ASAzureSupport') And Not IsExcel2010Installed
+;Source: "..\release\bin\DaxStudio.dll.2017.config"; DestDir: "{app}"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsComponentSelected('ASAzureSupport') 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -128,10 +128,10 @@ Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO D
 #include "scripts\products\excelversion.iss"
 #include "scripts\products\dotnetfx45.iss"
 #include "scripts\products\dotnetassembly.iss"
-#include "scripts\products\sql2016adomdclient.iss"
-#include "scripts\products\sql2016amo.iss"
-#include "scripts\products\sql2017adomdclient.iss"
-#include "scripts\products\sql2017amo.iss"
+;#include "scripts\products\sql2016adomdclient.iss"
+;#include "scripts\products\sql2016amo.iss"
+;#include "scripts\products\sql2017adomdclient.iss"
+;#include "scripts\products\sql2017amo.iss"
 
 [UninstallRun]
 ;Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden; 

@@ -138,13 +138,13 @@ namespace DaxStudio.UI.Extensions
                         Type columnType = (Type)row["DataType"];
                         if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
                         DataColumn column = new DataColumn(columnName, columnType); // (Type)(row["DataType"]));
-                        column.Unique = (bool)row[Constants.IS_UNIQUE];
-                        column.AllowDBNull = (bool)row[Constants.ALLOW_DBNULL];
+                        column.Unique = (bool)row[Constants.IsUnique];
+                        column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
                         reader.Connection.Columns.TryGetValue(columnName, out daxCol);
                         if (daxCol != null) {
-                            column.ExtendedProperties.Add(Constants.FORMAT_STRING, daxCol.FormatString);
-                            if (localeId != 0) column.ExtendedProperties.Add(Constants.LOCALE_ID, localeId);
+                            column.ExtendedProperties.Add(Constants.FormatString, daxCol.FormatString);
+                            if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                         }
                         else if (autoFormat) {
                             string formatString;
@@ -167,8 +167,8 @@ namespace DaxStudio.UI.Extensions
                                     break;
                             }
                             if (formatString != null) {
-                                column.ExtendedProperties.Add(Constants.FORMAT_STRING, formatString);
-                                if (localeId != 0) column.ExtendedProperties.Add(Constants.LOCALE_ID, localeId);
+                                column.ExtendedProperties.Add(Constants.FormatString, formatString);
+                                if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                             }
                         }
                         listCols.Add(column);

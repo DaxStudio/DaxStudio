@@ -34,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<AllDocumentsClosedEvent>
         , IHandle<RefreshOutputTargetsEvent>
+        , IHandle<UpdateHotkeys>
     //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -46,6 +47,8 @@ namespace DaxStudio.UI.ViewModels
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
         private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
+        private const string urlGithubBugReport = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=bug_report.md&title=";
+        private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
@@ -71,7 +74,6 @@ namespace DaxStudio.UI.ViewModels
         private void InitRunStyles()
         {
             // populate run styles
-            RunStyles = new List<RunStyle>();
             RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
 #if DEBUG
@@ -85,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
 
-        public List<RunStyle> RunStyles { get; set; }
+        public List<RunStyle> RunStyles { get; } = new List<RunStyle>();
         private RunStyle _selectedRunStyle;
         public RunStyle SelectedRunStyle {
             get { return _selectedRunStyle; }
@@ -114,6 +116,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget));
         }
 
+        //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
+
         public void NewQueryWithCurrentConnection()
         {
             if (ActiveDocument == null) return;
@@ -130,6 +134,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new CommentEvent(true));
         }
 
+        public string CommentSelectionTitle => $"Comment ({Options.HotkeyCommentSelection})";
+
         public void MergeParameters()
         {
             ActiveDocument?.MergeParameters();
@@ -141,6 +147,8 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument?.FormatQuery( false );
         }
+
+        public string FormatQueryTitle => $"Format Query ({Options.HotkeyFormatQueryStandard})";
         public void FormatQueryAlternate()
         {
             ActiveDocument?.FormatQuery( true );
@@ -162,17 +170,18 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
-
+        public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
         public void ToUpper()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
+        public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
         public void ToLower()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
-
+        public string ToLowerTitle => $"To Lower ({Options.HotkeyToLower})";
         public void RunQuery()
         {
             _queryRunning = true;
@@ -184,6 +193,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
 
         }
+        public string RunQueryTitle => $"Run Query ({Options.HotkeyRunQuery})";
 
         public string RunQueryDisableReason
         {
@@ -426,11 +436,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanLaunchExcel);
             NotifyOfPropertyChange(() => CanExportAllData);
             NotifyOfPropertyChange(() => CanExportAnalysisData);
+            NotifyOfPropertyChange(nameof(CanLoadPowerBIPerformanceData));
             UpdateTraceWatchers();
         }
 
         private void UpdateTraceWatchers()
         {
+            if (TraceWatchers == null) return;
+
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
@@ -453,6 +466,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanConnect);
                 NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                 NotifyOfPropertyChange(() => IsActiveDocumentVertipaqAnalyzerRunning);
+                NotifyOfPropertyChange(() => CanImportAnalysisData);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -481,6 +495,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    NotifyOfPropertyChange(() => CanExportAllData);
                     NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                     break;
             }
@@ -498,9 +513,10 @@ namespace DaxStudio.UI.ViewModels
 
         public void LinkToDaxStudioWiki()
         {
-            OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");
-                
+            OpenUrl(urlDaxStudioWiki, "LinkToDaxStudioWiki");        
         }
+
+
 
         public void LinkToPowerPivotForum()
         {
@@ -510,6 +526,16 @@ namespace DaxStudio.UI.ViewModels
         public void LinkToSsasForum()
         {
             OpenUrl(urlSsasForum, "LinkToSsasForum");
+        }
+
+        public void LinkToGithubBugReport()
+        {
+            OpenUrl(urlGithubBugReport, "LinkToGithubBugReport");
+        }
+
+        public void LinkToGithubFeatureRequest()
+        {
+            OpenUrl(urlGithubFeatureRequest, "LinkToGithubFeatureRequest");
         }
 
         internal void OpenUrl(string url, string name)
@@ -643,28 +669,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ObservableCollection<DaxFile> RecentFiles { get; set; }
+        public ObservableCollection<IDaxFile> RecentFiles { get; set; }
 
         internal void OnClose()
         {
-            SettingProvider.SaveFileMRUList(this.RecentFiles);
+            //SettingProvider.SaveFileMRUList(null, this.RecentFiles);
         }
 
         private void AddToRecentFiles(string fileName)
         {
-            DaxFile df = (from DaxFile f in RecentFiles
-                          where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
-                          select f).FirstOrDefault<DaxFile>();
-            if (df == null)
-            {
-                RecentFiles.Insert(0, new DaxFile(fileName));
-            }
-            else
-            {
-                // move the file to the first position in the list                
-                RecentFiles.Remove(df);
-                RecentFiles.Insert(0, df);
-            }
+            SettingProvider.SaveFileMRUList(new DaxFile(fileName,false), RecentFiles);
+
+            //DaxFile df = (from DaxFile f in RecentFiles
+            //              where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
+            //              select f).FirstOrDefault<DaxFile>();
+            //if (df == null)
+            //{
+            //    RecentFiles.Insert(0, new DaxFile(fileName));
+            //}
+            //else
+            //{
+            //    // move the file to the first position in the list     
+            //    RecentFiles.Move(RecentFiles.IndexOf(df), 0);
+            //    //RecentFiles.Remove(df);
+            //    //RecentFiles.Insert(0, df);
+            //}
+
+            //int MAX_RECENT_FILES = 25;
+            //while (RecentFiles.Count() > MAX_RECENT_FILES) { RecentFiles.RemoveAt(RecentFiles.Count() - 1); }
         }
 
         public void Handle(FileOpenedEvent message)
@@ -690,7 +722,7 @@ namespace DaxStudio.UI.ViewModels
             // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
             MoveFileToTopOfRecentList(file);
-            _eventAggregator.PublishOnUIThread(new OpenRecentFileEvent(file.FullPath));
+            _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(file.FullPath));
         }
 
         private bool RecentFileNoLongerExists(DaxFile file)
@@ -709,12 +741,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void MoveFileToTopOfRecentList(DaxFile file)
         {
-            // remove the file from it's current position
-            RecentFiles.Remove(file);
-            // insert it at the top of the list
-            RecentFiles.Insert(0, file);
+            //// remove the file from it's current position
+            //RecentFiles.Remove(file);
+            //// insert it at the top of the list
+            //RecentFiles.Insert(0, file);
 
-            SettingProvider.SaveFileMRUList(this.RecentFiles);
+            SettingProvider.SaveFileMRUList(file, this.RecentFiles);
         }
 
         public void SwapDelimiters()
@@ -809,6 +841,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool CanImportAnalysisData => ActiveDocument != null && !ActiveDocument.IsVertipaqAnalyzerRunning; // we don't need a valid connection to import a .vpax file
+        public void ImportAnalysisData()
+        {
+            ActiveDocument?.ImportAnalysisData();
+        }
+
         public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;
 
         public void ExportAnalysisData()
@@ -828,12 +866,13 @@ namespace DaxStudio.UI.ViewModels
         public void ExportAllData()
         {
             if (ActiveDocument == null) return;
-
-            //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-            using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
+            try
             {
+                //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
+                using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
+                {
 
-                _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
                     { "ShowInTaskbar", false},
@@ -842,6 +881,12 @@ namespace DaxStudio.UI.ViewModels
                     { "AllowsTransparency",true}
 
                 });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(RibbonViewModel), nameof(ExportAllData), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
             }
         }
 
@@ -962,42 +1007,65 @@ namespace DaxStudio.UI.ViewModels
             _isConnecting = false;
         }
 
+        public bool CanLoadPowerBIPerformanceData
+        {
+            get { return ActiveDocument != null; }
+        }
+
         public void LoadPowerBIPerformanceData()
         {
+            if (this.ActiveDocument == null)
+            {
+                MessageBoxEx.Show("You cannot load Power BI Performance data when you do not have a document window open", "Load Power BI Performance Data");
+                return;
+            }
 
             // Configure open file dialog box
-            var dlg = new System.Windows.Forms.OpenFileDialog()
+            using (var dlg = new System.Windows.Forms.OpenFileDialog()
             {
                 Title = "Open Power BI Performance Data",
                 FileName = "PowerBIPerformanceData.json",
                 DefaultExt = ".json",
                 Filter = "Power BI Performance Data (*.json)|*.json"
-            };
-
-            // Show open file dialog box
-            System.Windows.Forms.DialogResult result = dlg.ShowDialog();
-
-            // Process open file dialog box results 
-            if (result == System.Windows.Forms.DialogResult.OK)
+            })
             {
-                // Open document 
-                var fileName = dlg.FileName;
-                // check if PerfData Window is already open and use that
-                var perfDataWindow = this.ActiveDocument.ToolWindows.FirstOrDefault(win => (win as PowerBIPerformanceDataViewModel) != null) as PowerBIPerformanceDataViewModel;
-                
-                if (perfDataWindow == null)
+                // Show open file dialog box
+                System.Windows.Forms.DialogResult result = dlg.ShowDialog();
+
+                // Process open file dialog box results 
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    // todo - get viewmodel from IoC container
-                    perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
-                    this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    // Open document 
+                    var fileName = dlg.FileName;
+                    // check if PerfData Window is already open and use that
+                    var perfDataWindow = this.ActiveDocument.ToolWindows.FirstOrDefault(win => (win as PowerBIPerformanceDataViewModel) != null) as PowerBIPerformanceDataViewModel;
+
+                    if (perfDataWindow == null)
+                    {
+                        // todo - get viewmodel from IoC container
+                        perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
+                        this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    }
+
+                    // load the perfomance data
+                    perfDataWindow.FileName = fileName;
+
+                    // set the performance window as the active tab
+                    perfDataWindow.Activate();
                 }
-
-                // load the perfomance data
-                perfDataWindow.FileName = fileName;
-
-                // set the performance window as the active tab
-                perfDataWindow.Activate();
             }
+        }
+
+        public void Handle(UpdateHotkeys message)
+        {
+            // TODO - should we create an attribute for these properties so that we don't
+            //        have to maintain a hard coded list?
+            NotifyOfPropertyChange(nameof(CommentSelectionTitle));
+            NotifyOfPropertyChange(nameof(UncommentSelectionTitle));
+            NotifyOfPropertyChange(nameof(ToLowerTitle));
+            NotifyOfPropertyChange(nameof(ToUpperTitle));
+            NotifyOfPropertyChange(nameof(FormatQueryTitle));
+            NotifyOfPropertyChange(nameof(RunQueryTitle));
         }
     }
 }

@@ -70,7 +70,6 @@ namespace DaxStudio.UI.ViewModels
     {
 
         private readonly IEventAggregator _eventAggregator;
-        private readonly DocumentViewModel _currentDocument;
         private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
@@ -81,8 +80,15 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = options;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
-            _currentDocument = currentDocument;
+            CurrentDocument = currentDocument;
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "end");
+        }
+
+        public override void TryClose(bool? dialogResult = null)
+        {
+            // unsubscribe from event aggregator
+            _eventAggregator.Unsubscribe(this);
+            base.TryClose(dialogResult);
         }
 
         private VpaModel _viewModel;
@@ -93,11 +99,13 @@ namespace DaxStudio.UI.ViewModels
                 _viewModel = value;
                 _groupedColumns = null;
                 _groupedRelationships = null;
+                SummaryViewModel = new VpaSummaryViewModel(this);
                 NotifyOfPropertyChange(() => ViewModel);
                 NotifyOfPropertyChange(() => GroupedColumns);
                 NotifyOfPropertyChange(() => GroupedRelationships);
                 NotifyOfPropertyChange(() => TreeviewColumns);
                 NotifyOfPropertyChange(() => TreeviewRelationships);
+                NotifyOfPropertyChange(() => SummaryViewModel);
             }
         }
 
@@ -118,6 +126,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private ICollectionView _groupedRelationships;
+
+        public VpaSummaryViewModel SummaryViewModel { get; private set; }
+
         public ICollectionView GroupedRelationships
         {
             get
@@ -162,6 +173,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DocumentConnectionUpdateEvent message)
         {
+
             // TODO connect VPA data
             Log.Information("VertiPaq Analyzer Handle DocumentConnectionUpdateEvent call");
         }
@@ -179,13 +191,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void SortTableColumn(System.Windows.Controls.DataGridSortingEventArgs e)
         {
-            if (SortColumn == e.Column.Header.ToString()) { SortDirection = SortDirection * -1; }
+            if (SortColumn == e.Column.SortMemberPath) { SortDirection = SortDirection * -1; }
             else { SortDirection = 1; }
-            SortColumn = e.Column.Header.ToString();
+            SortColumn = e.Column.SortMemberPath;
         }
 
         public string SortColumn { get; set; }
         public int SortDirection { get; set; }
+        public DocumentViewModel CurrentDocument { get; }
     }
 
     public class VpaColumnViewModel 
@@ -203,6 +216,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public VpaTableViewModel Table { get; }
         public string TableColumnName => _col.TableColumnName;
+        public long TableRowsCount => _col.TableRowsCount;
         public string ColumnName => _col.ColumnName;
         public string TypeName => _col.TypeName;
         public long ColumnCardinality => _col.ColumnCardinality;
@@ -271,6 +285,7 @@ namespace DaxStudio.UI.ViewModels
         public long RowsCount => _table.RowsCount;
         public long SegmentsNumber => _table.SegmentsNumber;
         public long PartitionsNumber => _table.PartitionsNumber;
+        public long ReferentialIntegrityViolationCount => _table.ReferentialIntegrityViolationCount;
 
         public IEnumerable<VpaColumnViewModel> Columns { get; }
         public IEnumerable<VpaRelationshipViewModel> RelationshipsFrom { get; }
@@ -283,14 +298,16 @@ namespace DaxStudio.UI.ViewModels
             var objTable = (VpaTableViewModel)obj;
             switch (_parentViewModel.SortColumn)
             {
-                case "Cardinality":
+                case "ColumnCardinality":
                     return RowsCount.CompareTo(objTable.RowsCount) * _parentViewModel.SortDirection;
-                case "Columns":
+                case "TotalSize":
                     return ColumnsTotalSize.CompareTo(objTable.ColumnsTotalSize) * _parentViewModel.SortDirection;
-                case "Dictionary":
+                case "DictionarySize":
                     return ColumnsDictionarySize.CompareTo(objTable.ColumnsDictionarySize) * _parentViewModel.SortDirection;
-                case "Data":
+                case "DataSize":
                     return ColumnsDataSize.CompareTo(objTable.ColumnsDataSize) * _parentViewModel.SortDirection;
+                case "HierarchiesSize":
+                    return ColumnsHierarchySize.CompareTo(objTable.ColumnsHierarchySize) * _parentViewModel.SortDirection;
                 default:
                     return TableName.CompareTo(objTable.TableName) * _parentViewModel.SortDirection;
             }
@@ -301,4 +318,39 @@ namespace DaxStudio.UI.ViewModels
         public long RelationshipMaxToCardinality { get; }
     }
    
+    public class VpaSummaryViewModel
+    {
+        public VpaSummaryViewModel(VertiPaqAnalyzerViewModel parent)
+        {
+            ParentViewModel = parent;
+            TableCount = parent.ViewModel.Tables.Count();
+            ColumnCount = parent.ViewModel.Columns.Count();
+            CompatibilityLevel = parent.ViewModel.Model.CompatibilityLevel;
+            TotalSize = parent.ViewModel.Tables.Sum(t => t.TableSize);
+            DataSource = parent.ViewModel.Model.ServerName?.Name??"<Unknown>"; 
+            ModelName = parent.ViewModel.Model.ModelName.Name;
+            LastDataRefresh = parent.ViewModel.Model.LastDataRefresh;
+            ExtractionDate = parent.ViewModel.Model.ExtractionDate;
+        }
+
+        public VertiPaqAnalyzerViewModel ParentViewModel { get; }
+        public int TableCount { get; }
+        public int ColumnCount { get; }
+        public int CompatibilityLevel { get; }
+        public long TotalSize { get; }
+        public string FormattedTotalSize { get {
+                switch (TotalSize)
+                {
+                    case long size when size < 1024: return TotalSize.ToString("N0") + " b";
+                    case long size when size < (Math.Pow(1024,2)): return (TotalSize / (double)(1024)).ToString("N2") + " Kb";
+                    case long size when size < (Math.Pow(1024,3)): return (TotalSize / (double)(Math.Pow(1024, 2))).ToString("N2") + " Mb";
+                    default: return (TotalSize / (double)(Math.Pow(1024, 3))).ToString("N2") + " Gb";
+                }
+            }
+        }
+        public string DataSource { get; }
+        public string ModelName { get; }
+        public DateTime LastDataRefresh { get; }
+        public DateTime ExtractionDate { get; }
+    }
 }

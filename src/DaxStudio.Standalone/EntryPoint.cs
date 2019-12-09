@@ -4,22 +4,22 @@ using System.Windows;
 using DaxStudio.UI;
 using Serilog;
 using DaxStudio.UI.Utils;
-using System.IO;
 using Fclp;
 using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace DaxStudio.Standalone
 {
     public static class EntryPoint 
     {
-        public static ILogger log;
+        private static ILogger log;
         private static  IEventAggregator _eventAggregator;
 
         static EntryPoint()
@@ -40,8 +40,8 @@ namespace DaxStudio.Standalone
         private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)
         {
             //Log.Debug("Class {0} Method {1} RequestingAssembly: {2} Name: {3}", "EntryPoint", "ResolveAssembly", args.RequestingAssembly, args.Name);
-            System.Diagnostics.Debug.WriteLine(string.Format("ReqAss: {0}, Name{1}", args.RequestingAssembly, args.Name));
-            if (args.Name.StartsWith("Microsoft.AnalysisServices")) return SsasAssemblyResolver.Instance.Resolve(args.Name);
+            System.Diagnostics.Debug.WriteLine($"ReqAss: {args.RequestingAssembly}, Name{args.Name}");
+            if (args.Name.StartsWith("Microsoft.AnalysisServices", StringComparison.InvariantCultureIgnoreCase)) return SsasAssemblyResolver.Instance.Resolve(args.Name);
             return null;
         }
         
@@ -52,56 +52,33 @@ namespace DaxStudio.Standalone
         {
             try
             {
+                // need to create application first
+                var app = new Application();
+
+                // add unhandled exception handler
+                app.DispatcherUnhandledException += App_DispatcherUnhandledException;
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+                TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+
                 // Setup logging
                 var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
                 var config = new LoggerConfiguration()
                     .ReadFrom.AppSettings()
                     .MinimumLevel.ControlledBy(levelSwitch);
 
-                var logPath = ApplicationPaths.LogPath;
-
-                //var logPath = Path.Combine(Environment.ExpandEnvironmentVariables(Constants.LogFolder),
-                //                            Constants.StandaloneLogFileName);
-
-
-                // if we have a local settings.json file we are running in "portable" mode
-                //if (JsonSettingProviderBase.SettingsFileExists())
-                //{
-                //    logPath = Path.Combine(JsonSettingProviderBase.LogPath, Constants.StandaloneLogFileName);
-                //}
-
-                // TODO if is portable write to local log folder
-                //var settings = IoC.Get<ISettingProvider>();
-                //logPath = Path.Combine(settings.LogPath, Constants.StandaloneLogFileName);
-
+                var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.StandaloneLogFileName);
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 
                 log = config.CreateLogger();
-
-                // need to create application first
-                var app = new Application();
-                //var app2 = IoC.Get<Application>();
+                Log.Logger = log;
 
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
 
-                app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
-
-                // load selected theme
-
-
-                // TODO: Theme - read from settings
-
-                var theme = "Light"; // settingProvider.GetValue<string>("Theme", "Light");
-                if (theme == "Dark") app.LoadDarkTheme();
-                else app.LoadLightTheme();
-
-
-
-                // add unhandled exception handler
-                app.DispatcherUnhandledException += App_DispatcherUnhandledException;
-
+                // TODO - do we need to customize the navigator window to fix the styling?
+                //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
+                
                 // then load Caliburn Micro bootstrapper
                 AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
@@ -122,7 +99,6 @@ namespace DaxStudio.Standalone
                 Log.Debug("Information Logging Enabled due to running in debug mode");
 #endif
 
-                //if (RegistryHelper.IsFileLoggingEnabled() || isLoggingKeyDown || logCmdLineSwitch)
                 if (isLoggingKeyDown || logCmdLineSwitch)
                 {
 #if DEBUG
@@ -135,17 +111,16 @@ namespace DaxStudio.Standalone
 #endif
                 }
 
-                //RegistryHelper.IsFileLoggingEnabled();
 
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
-                Log.Logger = log;
+
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
-                if (isLoggingKeyDown) log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
-                if (logCmdLineSwitch) log.Information("Logging enabled by Excel Add-in");
+                if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
+                if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
                 Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
@@ -157,8 +132,15 @@ namespace DaxStudio.Standalone
                     typeof(Control),
                     new FrameworkPropertyMetadata(true));
 
-                var options = IoC.Get<OptionsViewModel>();
+                // get the global options
+                var options = bootstrapper.GetOptions(); 
                 options.Initialize();
+
+
+                // load selected theme
+                var theme = options.Theme;// "Light"; 
+                if (theme == "Dark") app.LoadDarkTheme();
+                else app.LoadLightTheme();
 
                 // Launch the User Interface
                 app.Run();
@@ -170,18 +152,19 @@ namespace DaxStudio.Standalone
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
                     if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
-                    log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
+                    Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                 }
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-#if DEBUG
-                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-#else
+                Log.CloseAndFlush();
+//#if DEBUG
+//                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
+//#else
                 // use CrashReporter.Net to send bug to DrDump
                 CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
-#endif
+//#endif
 
             }
             finally
@@ -189,6 +172,17 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
             }
+        }
+
+        private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+
+            CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            CrashReporter.ReportCrash((Exception)e.ExceptionObject, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -217,6 +211,9 @@ namespace DaxStudio.Standalone
                         return;
                     default:
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                        CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+                        e.Handled = true;
+                        Application.Current.Shutdown(1);
                         break;
                 }
 
@@ -225,7 +222,9 @@ namespace DaxStudio.Standalone
             {
                 Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                 // use CrashReporter.Net to send bug to DrDump
-                //CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
+                CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
+                e.Handled = true;
+                Application.Current.Shutdown(1);
             }
         }
 

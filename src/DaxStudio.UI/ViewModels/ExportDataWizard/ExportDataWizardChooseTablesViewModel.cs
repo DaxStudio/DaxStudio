@@ -37,14 +37,21 @@ namespace DaxStudio.UI.ViewModels
 
     public class SelectedTable : PropertyChangedBase
     {
-        public SelectedTable(string name, string caption)
+        public SelectedTable(string name, string caption, bool isVisible, bool isprivate, bool showAsVariationsOnly)
         {
             DaxName = name;
             Caption = caption;
+            IsVisible = isVisible;
+            Private = isprivate;
+            ShowAsVariationsOnly = showAsVariationsOnly;
             
         }
         public string DaxName { get;  }
         public string Caption { get;  }
+        public bool IsVisible { get; }
+        public bool Private { get; }
+        public bool ShowAsVariationsOnly { get; }
+
         private bool _isSelected = true;
         public bool IsSelected { get { return _isSelected; }
             set {
@@ -89,7 +96,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     case ExportStatus.Done:
                     case ExportStatus.Exporting:
-                        return $"{RowCount} rows exported";
+                        return $"{RowCount:N0} rows exported";
                     case ExportStatus.Ready:
                         return "Waiting...";
                     case ExportStatus.Error:
@@ -128,10 +135,38 @@ namespace DaxStudio.UI.ViewModels
             }            
         }
 
-        public ObservableCollection<SelectedTable> Tables
+        public IEnumerable<SelectedTable> Tables
         {
-            get { return Wizard.Tables; }
+            get { foreach (var t in Wizard.Tables) {
+                    
+                    if ((t.IsVisible || IncludeHiddenTables)
+                        && (!t.ShowAsVariationsOnly || IncludeInternalTables))
+                    {
+                        t.IsSelected = true;
+                        yield return t;
+                    }
+                    else
+                    {
+                        t.IsSelected = false;
+                    }
+                }
+            }
         }
+        private bool _includeHidden = true;
+        public bool IncludeHiddenTables { get { return _includeHidden; }
+            set {
+                _includeHidden = value;
+                NotifyOfPropertyChange(nameof(Tables));
+            }
+        }
+
+        private bool _includeInternalTables = false;
+        public bool IncludeInternalTables { get { return _includeInternalTables; }
+            set {
+                _includeInternalTables = value;
+                NotifyOfPropertyChange(nameof(Tables));
+            }
+        } 
 
     }
 }

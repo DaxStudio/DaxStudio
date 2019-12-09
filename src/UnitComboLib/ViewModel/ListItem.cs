@@ -59,7 +59,7 @@
     {
       get
       {
-        return string.Format("{0} ({1})", this.DisplayNameShort, this.DisplayNameLong);
+        return $"{DisplayNameShort} ({DisplayNameLong})";
       }
     }
 

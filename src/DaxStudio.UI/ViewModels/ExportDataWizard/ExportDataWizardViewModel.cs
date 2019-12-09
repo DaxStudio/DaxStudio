@@ -12,10 +12,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
@@ -40,10 +42,26 @@ namespace DaxStudio.UI.ViewModels
         #region Constructor
         public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document)
         {
-            EventAggregator = eventAggregator;
+            Document = document ?? throw new ArgumentNullException(nameof(document));
+            EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
+
             EventAggregator.Subscribe(this);
 
-            Document = document;
+            // check connection state
+            if (Document.Connection == null)
+            {
+                throw new ArgumentException("The current document is not connected to a data source", "Document");
+            }
+
+            if (Document.Connection.State != ConnectionState.Open)
+            {
+                throw new ArgumentException("The connection for the current document is not in an open state", "Document");
+            }
+
+            if (Document.Connection.Database.Models.Count == 0)
+            {
+                throw new ArgumentException("The connection for the current document does not have a data model", "Document");
+            }
 
             PopulateTablesList();
 
@@ -54,10 +72,20 @@ namespace DaxStudio.UI.ViewModels
 
         private void PopulateTablesList()
         {
-            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables;
+            
+            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
+            if (!tables.Any()) throw new ArgumentException("There are no visible tables to export in the current data model");
+
             foreach ( var t in tables)
             {
-                Tables.Add(new SelectedTable(t.DaxName, t.Caption));
+                if (t.Columns.Count > 0)
+                {
+                    Tables.Add(new SelectedTable(t.DaxName, t.Caption, t.IsVisible, t.Private, t.ShowAsVariationsOnly));
+                }
+                else
+                {
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Skipping tables '{t.Caption}' as it has no columns to export"));
+                }
             }
         }
 
@@ -138,7 +166,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Dispose()
         {
-            EventAggregator.Unsubscribe(this);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                EventAggregator.Unsubscribe(this);
+                SecurePassword?.Dispose();
+            }
         }
         #endregion
 
@@ -211,6 +249,7 @@ namespace DaxStudio.UI.ViewModels
             var tableCnt = 0;
             string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
+            var encoding = new UTF8Encoding(false);
 
             foreach (var table in  selectedTables)
             {
@@ -221,69 +260,80 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     table.Status = ExportStatus.Exporting;
-                    var csvFilePath = System.IO.Path.Combine(outputPath, $"{table.Caption}.csv");
+                    var fileName = CleanNameOfIllegalChars(table.Caption);
+                    
+                    var csvFilePath = System.IO.Path.Combine(outputPath, $"{fileName}.csv");
                     var daxQuery = $"EVALUATE {table.DaxName}";
 
-                    using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
-                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
-                    using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
-                    using (var reader = Document.Connection.ExecuteReader(daxQuery))
-                    {
-                        rows = 0;
-                        tableCnt++;
+                    StreamWriter textWriter = null;
+                    try { 
+                        textWriter = new StreamWriter(csvFilePath, false, encoding);
 
-                        // configure delimiter
-                        csvWriter.Configuration.Delimiter = CsvDelimiter;
-
-                        // output dates using ISO 8601 format
-                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
-                            typeof(DateTime),
-                            new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
-
-                        // Write Header
-                        foreach (var colName in reader.CleanColumnNames())
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                        using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                        using (var reader = Document.Connection.ExecuteReader(daxQuery))
                         {
-                            csvWriter.WriteField(colName);
-                        }
+                            rows = 0;
+                            tableCnt++;
 
-                        csvWriter.NextRecord();
+                            // configure delimiter
+                            csvWriter.Configuration.Delimiter = CsvDelimiter;
 
-                        // Write data
-                        while (reader.Read())
-                        {
-                            for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+                            // output dates using ISO 8601 format
+                            csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                                typeof(DateTime),
+                                new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+
+                            // Write Header
+                            foreach (var colName in reader.CleanColumnNames())
                             {
-                                var fieldValue = reader[fieldOrdinal];
-                                csvWriter.WriteField(fieldValue);
+                                csvWriter.WriteField(colName);
                             }
 
-                            rows++;
-                            if (rows % 5000 == 0)
-                            {
-                                table.RowCount = rows;
-                                new StatusBarMessage(Document, $"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rows:N0} rows)");
-                                Document.RefreshElapsedTime();
-
-                                // if cancel has been requested do not write any more records
-                                if (CancelRequested)
-                                {
-                                    table.Status = ExportStatus.Cancelled;
-                                    break;
-                                }
-                            }
                             csvWriter.NextRecord();
 
-                        }
+                            // Write data
+                            while (reader.Read())
+                            {
+                                for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+                                {
+                                    var fieldValue = reader[fieldOrdinal];
+                                    csvWriter.WriteField(fieldValue);
+                                }
 
-                        Document.RefreshElapsedTime();
-                        table.RowCount = rows;
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.DaxName}.csv"));
+                                rows++;
+                                if (rows % 5000 == 0)
+                                {
+                                    table.RowCount = rows;
+                                    new StatusBarMessage(Document, $"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rows:N0} rows)");
+                                    Document.RefreshElapsedTime();
 
-                        // if cancel has been requested do not write any more files
-                        if (CancelRequested) {
-                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
-                            break;
+                                    // if cancel has been requested do not write any more records
+                                    if (CancelRequested)
+                                    {
+                                        table.Status = ExportStatus.Cancelled;
+                                        break;
+                                    }
+                                }
+                                csvWriter.NextRecord();
+
+                            }
+
+                            Document.RefreshElapsedTime();
+                            table.RowCount = rows;
+                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {rows:N0} rows to {table.DaxName}.csv"));
+
+                            // if cancel has been requested do not write any more files
+                            if (CancelRequested)
+                            {
+                                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                break;
+                            }
                         }
+                    }
+                    finally
+                    {
+                        textWriter?.Dispose();
                     }
                     table.Status = ExportStatus.Done;
                 }
@@ -293,7 +343,8 @@ namespace DaxStudio.UI.ViewModels
                     exceptionFound = true;
                     Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "ExportDataToFolder", "Error while exporting model to CSV");
                     EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
-                    break; // exit from the loop if we have caught an exception 
+                    EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                    continue; // skip to the next table if we have caught an exception 
                 }
 
             }
@@ -303,16 +354,37 @@ namespace DaxStudio.UI.ViewModels
             if (!exceptionFound)
             {
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {tableCnt} tables exported", Document.QueryStopWatch.ElapsedMilliseconds));
-                EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
             }
+            EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
             Document.QueryStopWatch.Reset();
         }
+
+        private object CleanNameOfIllegalChars(string caption)
+        {
+            if (_illegalFileCharsRegex == null)
+            {
+                string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                _illegalFileCharsRegex = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            }
+            string newName =  _illegalFileCharsRegex.Replace(caption, "_");
+            if (newName != caption)
+            {
+                var warning = $"Exporting table '{caption}' as '{newName}' due to characters that are illegal in a file name.";
+                Log.Warning("{class} {method} {message}", "ExportDataWizardViewModel", "CleanNameOfIllegalChars", warning);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,warning));
+            }
+            return newName;
+        }
+
+        private Regex _illegalFileCharsRegex = null;
+        
 
         private string sqlTableName = string.Empty;
         private int currentTableIdx = 0;
         private int totalTableCnt = 0;
         private SelectedTable currentTable = null;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
@@ -391,6 +463,8 @@ namespace DaxStudio.UI.ViewModels
                         currentTable.Status = ExportStatus.Error;
                         Log.Error(ex, "{class} {method} {message}", "ExportDataWizardViewModel", "ExportDataToSQLServer", ex.Message);
                         EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
+                        EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                        continue; // skip to next table on error
                     }
                 }
             }

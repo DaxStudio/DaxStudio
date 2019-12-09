@@ -10,10 +10,12 @@ using ADOTabular.AdomdClientWrappers;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using Caliburn.Micro;
+using System.Globalization;
+using System.Diagnostics.Contracts;
 
 namespace DaxStudio.QueryTrace
 {
-    public class QueryTraceEngineExcel: IQueryTrace
+    public class QueryTraceEngineExcel : IQueryTrace, IDisposable
     {
 #region public IQueryTrace interface
         public Task StartAsync(int startTimeoutSecs)
@@ -52,9 +54,7 @@ namespace DaxStudio.QueryTrace
                     if (shouldDispose)
                     {
                         //_trace.OnEvent -= OnTraceEventInternal;
-                        _trace.Drop();
-                        _trace.Dispose();
-                        _trace = null;
+                        Dispose();
                     }
                     else
                     {
@@ -74,11 +74,7 @@ namespace DaxStudio.QueryTrace
         }
 
         public int TraceStartTimeoutSecs { get; private set; }
-        public QueryTraceStatus Status
-        {
-	        get { return _status;  }
-            private set {_status = value;}
-        }
+        public QueryTraceStatus Status { get; private set; }
 
         public List<DaxStudioTraceEventClass> Events { get; }
         public delegate void DaxStudioTraceEventHandler(System.Object sender, DaxStudioTraceEventArgs e);
@@ -94,21 +90,25 @@ namespace DaxStudio.QueryTrace
         private xlAmo.Server _server;
         private xlAmo.Trace _trace;
         private DateTime utcPingStart;
-        private QueryTraceStatus _status;
         private string _connectionString;
         private readonly string _originalConnectionString;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
         private ADOTabular.ADOTabularConnection _connection;
+
         private AdomdType _connectionType;
         private readonly string _sessionId;
-        //private List<DaxStudioTraceEventClass> _eventsToCapture;
+        
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private string _friendlyServerName = "";
-        //public delegate void TraceStartedHandler(object sender);//, TraceStartedEventArgs eventArgs);
 
         
         public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession)
         {
+            Contract.Requires(connectionString != null, "connectionString must not be null");
+
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
@@ -128,7 +128,7 @@ namespace DaxStudio.QueryTrace
             _connectionType = connectionType;
             _applicationName = applicationName;
         }
-        private void SetupTrace(xlAmo.Trace trace, List<DaxStudioTraceEventClass> events)
+        private static void SetupTrace(xlAmo.Trace trace, List<DaxStudioTraceEventClass> events)
         {
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "enter");
             trace.Events.Clear();
@@ -154,29 +154,43 @@ namespace DaxStudio.QueryTrace
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "exit");
         }
 
-        private XmlNode GetSpidFilter(int spid)
+        private static  XmlNode GetSpidFilter(int spid)
         {
-            var filterXml = string.Format(
-                "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>"
+            var filterXml = string.Format(CultureInfo.InvariantCulture
+                , "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>"
                 , (int)xlAmo.TraceColumn.Spid
                 , spid );
-            var doc = new XmlDocument();
-            doc.LoadXml(filterXml);
-            return doc;
+            var doc = new XmlDocument()
+            { 
+                XmlResolver = null
+            };
+
+            System.IO.StringReader sreader = new System.IO.StringReader(filterXml);
+            using (XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null }))
+            {
+                doc.Load(reader);
+                return doc;
+            }
+            
         }
 
-        private XmlNode GetSessionIdFilter(string sessionId)
+        private static XmlNode GetSessionIdFilter(string sessionId)
         {
             string filterTemplate = "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
                             "<ColumnID>{0}</ColumnID><Value>{1}</Value>" +
                             "</Equal>";
-            var filterXml = string.Format(
-                filterTemplate
+            var filterXml = string.Format(CultureInfo.InvariantCulture
+                , filterTemplate
                 , (int)xlAmo.TraceColumn.SessionID
                 , sessionId);
-            var doc = new XmlDocument();
-            doc.LoadXml(filterXml);
-            return doc;
+            var doc = new XmlDocument() { XmlResolver = null };
+
+            System.IO.StringReader sreader = new System.IO.StringReader(filterXml);
+            using (XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null }))
+            {
+                doc.Load(reader);
+                return doc;
+            }
         }
 
 
@@ -197,7 +211,7 @@ namespace DaxStudio.QueryTrace
 				Log.Debug("{class} {method} {event}", "QueryTraceEngine", "Start", "Connecting to: " + _connectionString);
                 //HACK - wait 1.5 seconds to allow trace to start 
                 //       using the ping method thows a connection was lost error when starting a second trace
-                _connection = new ADOTabular.ADOTabularConnection(string.Format("{0};SessionId={1}", _originalConnectionString, _sessionId), _connectionType);
+                _connection = new ADOTabular.ADOTabularConnection($"{_originalConnectionString};SessionId={_sessionId}", _connectionType);
                 _connection.Open();
                 _trace = GetTrace();
 	            SetupTrace(_trace, Events);
@@ -221,7 +235,7 @@ namespace DaxStudio.QueryTrace
             }
 			catch (Exception ex)
 			{
-                RaiseError(string.Format("Error starting trace: {0}", ex.Message));
+                OutputError($"Error starting trace: {ex.Message}" );
 				Log.Error("{class} {method} {message} {stacktrace}","QueryTraceEngine" , "Start", ex.Message, ex.StackTrace);
 			}
         }
@@ -238,7 +252,7 @@ namespace DaxStudio.QueryTrace
             {
                 _startingTimer.Stop();
                 _trace.Drop();
-                RaiseError("Timeout exceeded attempting to start Trace");
+                OutputError("Timeout exceeded attempting to start Trace");
                 Log.Warning("{class} {method} {event}", "QueryTraceEngineExcel", "OnTimerElapsed", "Timeout exceeded attempting to start Trace");
             }
             //StopTimer();
@@ -262,7 +276,7 @@ namespace DaxStudio.QueryTrace
                 Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "GetTrace", "about to create new trace");
                 _server = new xlAmo.Server();
                 _server.Connect(_connectionString);
-                _trace = _server.Traces.Add( string.Format("DaxStudio_Trace_SPID_{0}", _sessionId));
+                _trace = _server.Traces.Add( $"DaxStudio_Trace_SPID_{_sessionId}");
                 if (FilterForCurrentSession) _trace.Filter = GetSessionIdFilter(_sessionId);
                 // set default stop time in case trace gets disconnected
                 //_trace.StopTime = DateTime.UtcNow.AddHours(24);
@@ -276,9 +290,9 @@ namespace DaxStudio.QueryTrace
             TraceEvent?.Invoke(this, e);
         }
 
-        public void RaiseError( string message)
+        public void OutputError( string message)
         {
-            if (TraceError != null) TraceError(this, message);
+            TraceError?.Invoke(this, message);
         }
 
         private bool _traceStarted;
@@ -384,12 +398,47 @@ namespace DaxStudio.QueryTrace
             Start();
         }
 
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    
+                    if (_trace != null)
+                    {
+                        _trace.OnEvent -= OnTraceEventInternal;
+                        _trace?.Drop();
+                        _trace?.Dispose();
+                        _trace = null;
+                    }
+                    
+                    _connection?.Dispose();
+                    _connection = null;
+                    
+                    _server?.Disconnect();
+                    _server?.Dispose();
+                    _server = null;
+                    
+                    if (_startingTimer != null)
+                    {
+                        _startingTimer.Stop();
+                        _startingTimer.Elapsed -= OnTimerElapsed;
+                        _startingTimer.Dispose();
+                        _startingTimer = null;
+                    }
+                }
+
+                disposedValue = true;
+            }
+        }
         public void Dispose()
         {
-            if (_trace == null) return;
-			_trace.OnEvent -= OnTraceEventInternal;
-            _trace.Dispose();
-			_trace = null;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

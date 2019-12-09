@@ -1,6 +1,6 @@
 ﻿// This code was largely "borrowed" from http://edi.codeplex.com
 
-namespace DAXEditor.BracketRenderer
+namespace DAXEditorControl.BracketRenderer
 {
   /// <summary>
   /// Describes a pair of matching brackets found by IBracketSearcher.

@@ -1,6 +1,7 @@
 namespace DaxStudio.UI.Model
 {
     using Caliburn.Micro;
+    using DaxStudio.Common;
     using DaxStudio.Interfaces;
     using DaxStudio.UI.Events;
     using DaxStudio.UI.Interfaces;
@@ -22,10 +23,10 @@ namespace DaxStudio.UI.Model
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
         private const int CHECK_EVERY_HOURS = 24;
         
-        private BackgroundWorker worker = new BackgroundWorker();
+        private readonly BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
         private WebRequestFactory _webRequestFactory;
-        private string _downloadUrl = "https://daxstudio.org/downloads";
+        private Uri _downloadUrl = new Uri( Constants.DownloadUrl);
         private readonly IGlobalOptions _globalOptions;
 
         /// <summary>
@@ -35,10 +36,9 @@ namespace DaxStudio.UI.Model
 
         private Version _productionVersion;
         private Version _prereleaseVersion;
-        private string _productionDownloadUrl;
-        private string _prereleaseDownloadUrl;
+        private Uri _productionDownloadUrl;
+        private Uri _prereleaseDownloadUrl;
         private string _serverVersionType;
-        private ISettingProvider RegistryHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
@@ -51,7 +51,6 @@ namespace DaxStudio.UI.Model
             
             _globalOptions = globalOptions;
 
-            RegistryHelper = new RegistrySettingProvider();
             if (Enabled && LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow)
             {
                 worker.DoWork += new DoWorkEventHandler(BackgroundGetGitHubVersion);
@@ -114,6 +113,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
+                if (_globalOptions.LastVersionCheckUTC == null) _globalOptions.LastVersionCheckUTC = DateTime.UtcNow;
                 return _globalOptions.LastVersionCheckUTC;
             }
             set
@@ -214,12 +214,12 @@ namespace DaxStudio.UI.Model
                 JObject jobj = JObject.Parse(json);
 
                 _productionVersion = Version.Parse((string)jobj["Version"]);
-                _productionDownloadUrl = (string)jobj["DownloadUrl"];
+                _productionDownloadUrl = new Uri((string)jobj["DownloadUrl"]);
 
                 _prereleaseVersion = Version.Parse((string)jobj["PreRelease"]["Version"]);
-                _prereleaseDownloadUrl = (string)jobj["PreRelease"]["DownloadUrl"];
+                _prereleaseDownloadUrl = new Uri((string)jobj["PreRelease"]["DownloadUrl"]);
 
-                if (_globalOptions.ShowPreReleaseNotifcations && _productionVersion.CompareTo(_prereleaseVersion) < 0)
+                if (_globalOptions.ShowPreReleaseNotifications && _productionVersion.CompareTo(_prereleaseVersion) < 0)
                 {
                     ServerVersionType = "Pre-Release";
                     _serverVersion = _prereleaseVersion;
@@ -258,7 +258,7 @@ namespace DaxStudio.UI.Model
         public void OpenDaxStudioReleasePageInBrowser()
         {
             // Open URL in Browser
-            System.Diagnostics.Process.Start(DownloadUrl);
+            System.Diagnostics.Process.Start(DownloadUrl.ToString());
         }
         public void Update()
         {
@@ -269,7 +269,7 @@ namespace DaxStudio.UI.Model
 
 
 
-        public string DownloadUrl { 
+        public Uri DownloadUrl { 
             get { return _downloadUrl; } 
             set { if (value == _downloadUrl) return; 
                 _downloadUrl = value; 

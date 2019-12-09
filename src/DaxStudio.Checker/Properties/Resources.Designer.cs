@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DaxStudio.Checker.Properties {
+namespace DaxStudio.CheckerApp.Properties {
     using System;
     
     

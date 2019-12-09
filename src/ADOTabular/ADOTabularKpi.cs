@@ -7,9 +7,9 @@ namespace ADOTabular
 {
     public struct KpiDetails
     {
-        public string Goal;
-        public string Status;
-        public string Graphic;
+        public string Goal { get; set; }
+        public string Status { get; set; }
+        public string Graphic { get; set; }
         public bool IsBlank()
         {
             return string.IsNullOrEmpty(Goal) && string.IsNullOrEmpty(Status) && string.IsNullOrEmpty(Graphic);

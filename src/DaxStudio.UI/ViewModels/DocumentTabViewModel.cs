@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<AutoSaveRecoveryEvent>
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
-        , IHandle<OpenRecentFileEvent>
+        , IHandle<OpenDaxFileEvent>
         , IHandle<RecoverNextAutoSaveFileEvent>
         , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
@@ -39,13 +39,18 @@ namespace DaxStudio.UI.ViewModels
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
         [ImportingConstructor]
-        public DocumentTabViewModel(IWindowManager windowManager, IEventAggregator eventAggregator, Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory , IGlobalOptions options)
+        public DocumentTabViewModel(IWindowManager windowManager
+            , IEventAggregator eventAggregator
+            , Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory 
+            , IGlobalOptions options
+            , IAutoSaver autoSaver)
         {
             _documentFactory = documentFactory;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _options = options;
             _eventAggregator.Subscribe(this);
+            AutoSaver = autoSaver;
         }
 
         
@@ -77,6 +82,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public IAutoSaver AutoSaver { get; }
 
         public void NewQueryDocument(string fileName)
         {
@@ -210,7 +216,7 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public void Handle(OpenRecentFileEvent message)
+        public void Handle(OpenDaxFileEvent message)
         {
             NewQueryDocument(message.FileName);
         }

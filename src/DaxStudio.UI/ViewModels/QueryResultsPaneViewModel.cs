@@ -167,8 +167,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ShowResultsMessage);
             }
         }
-        private OutputTargets _icon;
-        public OutputTargets ResultsIcon
+        private OutputTarget _icon;
+        public OutputTarget ResultsIcon
         {
             get { return _icon; }
             set
@@ -243,7 +243,7 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 // Only show the worksheets option if the output is one of the Excel Targets
-                return ResultsIcon == OutputTargets.Linked || ResultsIcon == OutputTargets.Static;
+                return ResultsIcon == OutputTarget.Linked || ResultsIcon == OutputTarget.Static;
             }
         }
 

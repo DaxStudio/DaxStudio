@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.Utils
 {
@@ -18,16 +19,17 @@ namespace DaxStudio.UI.Utils
         {
             // Force the use of TLS1.2
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+            NetworkChange.NetworkAvailabilityChanged
+                        += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         }
 
-        [DllImport("wininet.dll")]
-        private extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
+
  
         // private variables
-        private IGlobalOptions _globalOptions;
+        private static IGlobalOptions _globalOptions;
         private static IWebProxy _proxy;
         private static bool _proxySet = false;
-        private static object _proxyLock = new object();
+        private static readonly object _proxyLock = new object();
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
         public const string DaxTextFormatUri = "https://www.daxformatter.com/api/daxformatter/DaxTextFormat";
@@ -41,13 +43,13 @@ namespace DaxStudio.UI.Utils
 #endif
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.org";
 
-        private bool _isNetworkOnline = false;
-        private IEventAggregator _eventAggregator;
+        private static bool _isNetworkOnline = false;
+        private static IEventAggregator _eventAggregator;
 
         async public static Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             var wrf = new WebRequestFactory();
-            await wrf.InitializeAsync(globalOptions, eventAggregator);
+            await wrf.InitializeAsync(globalOptions, eventAggregator).ConfigureAwait(false);
             return wrf;
         }
 
@@ -58,48 +60,62 @@ namespace DaxStudio.UI.Utils
         {
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
-            await Task.Run( () =>
+            try {
+
+                await Task.Run(() =>
+                {
+                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
+
+
+                   try
+                   {
+                       _isNetworkOnline = NativeMethods.InternetGetConnectedState(out int connDesc, 0);
+                   }
+                   catch
+                   {
+                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
+                       _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
+                   }
+
+                    //todo - how to check that this works with different proxies...??
+                    try
+                   {
+                       if (Proxy == null)
+                           Proxy = GetProxy(DaxTextFormatUri);
+                   }
+                   catch (System.Net.WebException)
+                   {
+                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
+                       _isNetworkOnline = false;
+                   }
+
+                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
+
+               }).ConfigureAwait(false);
+                return this;
+            } catch (Exception ex)
             {
-                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
-
-
-                NetworkChange.NetworkAvailabilityChanged
-                    += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
-                try
-                {
-                    int connDesc;
-                    _isNetworkOnline = InternetGetConnectedState(out connDesc, 0);
-                }
-                catch
-                {
-                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
-                    _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
-                }
-
-                //todo - how to check that this works with different proxies...??
-                try
-                {
-                    if (Proxy == null)
-                        Proxy = GetProxy(DaxTextFormatUri);
-                }
-                catch (System.Net.WebException)
-                {
-                    Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
-                    _isNetworkOnline = false;
-                }
-
-                Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
-
-            });
-            return this;
+                Log.Error(ex, "{message} {class} {message}", "WebRequestFactory", "InitializeAsync", ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "An error occurred trying to auto detect your web proxy"));
+                return this;
+            }
+            
         }
 
         // ...
-        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        static void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            _isNetworkOnline = e.IsAvailable;
-            // refresh proxy
-            Proxy = GetProxy(DaxTextFormatUri);
+            try
+            {
+                _isNetworkOnline = e.IsAvailable;
+                Log.Information("{class} {method} {message}", nameof(WebRequestFactory), nameof(NetworkChange_NetworkAvailabilityChanged), $"Network Availabilty Changed event fired IsAvailable={e.IsAvailable}");
+                // refresh proxy
+                Proxy = GetProxy(DaxTextFormatUri);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}","WebRequestFactory","NetworkChange_NetworkAvailabilityChanged", ex.Message);
+            }
         }
 
         public HttpWebRequest Create(string uri)
@@ -115,14 +131,16 @@ namespace DaxStudio.UI.Utils
 
         public WebClient CreateWebClient()
         {
-            var wc = new WebClient();
-            wc.Proxy = Proxy;
+            var wc = new WebClient
+            {
+                Proxy = Proxy
+            };
             return wc;
         }
 
         #region private methods
 
-        private IWebProxy GetProxy(string uri)
+        private static IWebProxy GetProxy(string uri)
         {
 
             if (_globalOptions.ProxyUseSystem || _globalOptions.ProxyAddress.Length == 0)
@@ -133,10 +151,12 @@ namespace DaxStudio.UI.Utils
             {
                 try
                 {
-                    _proxy = new WebProxy(_globalOptions.ProxyAddress);
-                    _proxy.Credentials = new NetworkCredential(
+                    _proxy = new WebProxy(_globalOptions.ProxyAddress)
+                    {
+                        Credentials = new NetworkCredential(
                                                 _globalOptions.ProxyUser,
-                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString());
+                                                _globalOptions.ProxySecurePassword.ConvertToUnsecureString())
+                    };
                 }
                 catch (Exception ex)
                 {
@@ -150,7 +170,7 @@ namespace DaxStudio.UI.Utils
             return _proxy;
         }
 
-        private void UseSystemProxy()
+        private static void UseSystemProxy()
         {
             Log.Verbose("Using System Proxy");
             Proxy = System.Net.WebRequest.GetSystemWebProxy();
@@ -170,7 +190,7 @@ namespace DaxStudio.UI.Utils
             if (proxy == null) return false;
 
             try {
-                var wr = WebRequest.CreateHttp(CurrentGithubVersionUrl);
+                var wr = WebRequest.CreateHttp(new Uri(CurrentGithubVersionUrl));
                 wr.Proxy = proxy;
                 var resp = wr.GetResponse();
                 
@@ -202,7 +222,7 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public IWebProxy Proxy
+        public static IWebProxy Proxy
         {
             get { lock (_proxyLock) {
                     if (!_proxySet) {
@@ -217,6 +237,13 @@ namespace DaxStudio.UI.Utils
         }
 
         #endregion
+
+    }
+
+    static class NativeMethods
+    {
+        [DllImport("wininet.dll")]
+        internal extern static bool InternetGetConnectedState(out int connDescription, int ReservedValue);
 
     }
 }

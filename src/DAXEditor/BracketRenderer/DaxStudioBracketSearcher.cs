@@ -1,6 +1,6 @@
 ﻿// This code was largely "borrowed" from http://edi.codeplex.com
 
-namespace DAXEditor.BracketRenderer
+namespace DAXEditorControl.BracketRenderer
 {
   using System;
   using System.Collections.Generic;
@@ -11,8 +11,8 @@ namespace DAXEditor.BracketRenderer
   /// </summary>
   public class DaxStudioBracketSearcher : IBracketSearcher
   {
-    string openingBrackets = "([{";
-    string closingBrackets = ")]}";
+        readonly string openingBrackets = "([{";
+        readonly string closingBrackets = ")]}";
 
     #region constructor
     /// <summary>
@@ -23,6 +23,7 @@ namespace DAXEditor.BracketRenderer
     /// <returns></returns>
     public BracketSearchResult SearchBracket(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset)
     {
+      if( document == null) throw new ArgumentNullException(nameof(document));
 
       if (offset > 0)
       {
@@ -395,7 +396,7 @@ namespace DAXEditor.BracketRenderer
     }
     #endregion
 
-    private int QuickSearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
+    private static int QuickSearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
       int brackets = 0;
       // first try "quick find" - find the matching bracket if there is no string/comment in the way
@@ -432,7 +433,7 @@ namespace DAXEditor.BracketRenderer
       return -1;
     }
 
-    private int QuickSearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
+    private static int QuickSearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
       int brackets = 1;
       // try "quick find" - find the matching bracket if there is no string/comment in the way

@@ -128,8 +128,7 @@ namespace DaxStudio.UI
 	            batch.AddExportedValue(_container);
 	            batch.AddExportedValue(catalog);
 
-                var settingFactory = new SettingsProviderFactory();
-                ISettingProvider settingProvider = settingFactory.GetSettingProvider();
+                ISettingProvider settingProvider = SettingsProviderFactory.GetSettingProvider();
 
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 
@@ -201,7 +200,7 @@ namespace DaxStudio.UI
             var hostAssembly = Assembly.GetAssembly(hostType);
 
             return AssemblySource.Instance.Any() ?
-                new Assembly[] { } : 
+                Array.Empty<Assembly>() : 
                 new[] {
                     Assembly.GetExecutingAssembly()
                     ,hostAssembly
@@ -211,11 +210,9 @@ namespace DaxStudio.UI
         private Fluent.Ribbon LookForRibbon(DependencyObject k)
         {
             Fluent.Ribbon foundRibbon = null;
-            var contentControl = k as ContentControl;
-            if (null != contentControl)
+            if (k is ContentControl contentControl)
             {
-                var child = contentControl.Content as DependencyObject;
-                if (null != child)
+                if (contentControl.Content is DependencyObject child)
                 {
                     foundRibbon = child as Fluent.Ribbon;
                     if (null != foundRibbon)
@@ -229,7 +226,7 @@ namespace DaxStudio.UI
                             return foundRibbon;
                     }
                 }
-                    //return LookForRibbon(child);
+                //return LookForRibbon(child);
             }
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(k); ++i)
             {

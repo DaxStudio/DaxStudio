@@ -6,22 +6,22 @@ using System.Text;
 
 namespace ADOTabular.AdomdClientWrappers
 {
-    public class AdomdDataReader : System.Data.IDataReader
+    public sealed class AdomdDataReader : System.Data.IDataReader
     {
-        private Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _objExcel;
-        private AdomdType _type = AdomdType.AnalysisServices;
+        private readonly Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _objExcel;
+        private readonly AdomdType _type = AdomdType.AnalysisServices;
         public AdomdDataReader() { }
-        public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
+        public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
-            _obj = obj;
+            _obj = dataReader;
            
             _type = AdomdType.AnalysisServices;
             
         }
-        public AdomdDataReader(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader obj)
+        public AdomdDataReader(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
-            _objExcel = obj;
+            _objExcel = dataReader;
             _type = AdomdType.Excel;
         }
 
@@ -34,10 +34,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
-                {
-                    return _objExcel.Read();
-                };
+                bool f() => _objExcel.Read();
                 return f();
             }
         }
@@ -50,10 +47,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
-                {
-                    return _objExcel.NextResult();
-                };
+                bool f() => _objExcel.NextResult();
                 return f();
             }
         }
@@ -68,10 +62,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _objExcel.Close();
-                };
+                void f() => _objExcel.Close();
                 f();
             }
         }
@@ -84,11 +75,8 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                {
-                    return _objExcel.Depth;
-                };
-                return f();
+                    int f() => _objExcel.Depth;
+                    return f();
             } }
         }
 
@@ -100,10 +88,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<DataTable> f = delegate
-                {
-                    return _objExcel.GetSchemaTable();
-                };
+                DataTable f() => _objExcel.GetSchemaTable();
                 return f();
             }
         }
@@ -118,10 +103,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
-                    {
-                        return _objExcel.IsClosed;
-                    };
+                    bool f() => _objExcel.IsClosed;
                     return f();
                 }
             }
@@ -138,10 +120,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                    {
-                        return _objExcel.RecordsAffected;
-                    };
+                    int f() => _objExcel.RecordsAffected;
                     return f();
                 }
             }
@@ -155,10 +134,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _objExcel.Dispose();
-                };
+                void f() => _objExcel.Dispose();
                 f();
             }
         }
@@ -173,10 +149,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                    {
-                        return _objExcel.FieldCount;
-                    };
+                    int f() => _objExcel.FieldCount;
                     return f();
                 }
             }
@@ -193,10 +166,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
-                {
-                    return _objExcel.GetBoolean(i);
-                };
+                bool f() => _objExcel.GetBoolean(i);
                 return f();
             }
         }
@@ -209,10 +179,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<byte> f = delegate
-                {
-                    return _objExcel.GetByte(i);
-                };
+                byte f() => _objExcel.GetByte(i);
                 return f();
             }
         }
@@ -225,10 +192,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<long> f = delegate
-                {
-                    return _objExcel.GetBytes(i, fieldOffset,buffer,bufferoffset,length);
-                };
+                long f() => _objExcel.GetBytes(i, fieldOffset, buffer, bufferoffset, length);
                 return f();
             }
         }
@@ -241,10 +205,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<char> f = delegate
-                {
-                    return _objExcel.GetChar(i);
-                };
+                char f() => _objExcel.GetChar(i);
                 return f();
             }
         }
@@ -257,10 +218,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<long> f = delegate
-                {
-                    return _objExcel.GetChars(i,fieldoffset,buffer,bufferoffset, length);
-                };
+                long f() => _objExcel.GetChars(i, fieldoffset, buffer, bufferoffset, length);
                 return f();
             }
         }
@@ -273,10 +231,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<IDataReader> f = delegate
-                {
-                    return _objExcel.GetData(i);
-                };
+                IDataReader f() => _objExcel.GetData(i);
                 return f();
             }
         }
@@ -289,10 +244,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                {
-                    return _objExcel.GetDataTypeName(i);
-                };
+                string f() => _objExcel.GetDataTypeName(i);
                 return f();
             }
         }
@@ -305,10 +257,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<DateTime> f = delegate
-                {
-                    return _objExcel.GetDateTime(i);
-                };
+                DateTime f() => _objExcel.GetDateTime(i);
                 return f();
             }
         }
@@ -321,10 +270,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<decimal> f = delegate
-                {
-                    return _objExcel.GetDecimal(i);
-                };
+                decimal f() => _objExcel.GetDecimal(i);
                 return f();
             }
         }
@@ -337,10 +283,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<double> f = delegate
-                {
-                    return _objExcel.GetDouble(i);
-                };
+                double f() => _objExcel.GetDouble(i);
                 return f();
             }
         }
@@ -353,10 +296,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<Type> f = delegate
-                {
-                    return _objExcel.GetFieldType(i);
-                };
+                Type f() => _objExcel.GetFieldType(i);
                 return f();
             }
         }
@@ -382,10 +322,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                {
-                    return _objExcel.GetValue(i).ToString();
-                };
+                string f() => _objExcel.GetValue(i).ToString();
                 return f();
             }
         }
@@ -398,10 +335,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<float> f = delegate
-                {
-                    return _objExcel.GetFloat(i);
-                };
+                float f() => _objExcel.GetFloat(i);
                 return f();
             }
         }
@@ -414,10 +348,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<Guid> f = delegate
-                {
-                    return _objExcel.GetGuid(i);
-                };
+                Guid f() => _objExcel.GetGuid(i);
                 return f();
             }
         }
@@ -430,10 +361,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<short> f = delegate
-                {
-                    return _objExcel.GetInt16(i);
-                };
+                short f() => _objExcel.GetInt16(i);
                 return f();
             }
         }
@@ -446,10 +374,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                {
-                    return _objExcel.GetInt32(i);
-                };
+                int f() => _objExcel.GetInt32(i);
                 return f();
             }
         }
@@ -462,10 +387,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<long> f = delegate
-                {
-                    return _objExcel.GetInt64(i);
-                };
+                long f() => _objExcel.GetInt64(i);
                 return f();
             }
         }
@@ -478,10 +400,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                {
-                    return _objExcel.GetName(i);
-                };
+                string f() => _objExcel.GetName(i);
                 return f();
             }
         }
@@ -494,10 +413,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                {
-                    return _objExcel.GetOrdinal(name);
-                };
+                int f() => _objExcel.GetOrdinal(name);
                 return f();
             }
         }
@@ -510,10 +426,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                {
-                    return _objExcel.GetString(i);
-                };
+                string f() => _objExcel.GetString(i);
                 return f();
             }
         }
@@ -526,10 +439,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<object> f = delegate
-                {
-                    return _objExcel.GetValue(i);
-                };
+                object f() => _objExcel.GetValue(i);
                 return f();
             }
         }
@@ -542,10 +452,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<int> f = delegate
-                {
-                    return _objExcel.GetValues(values);
-                };
+                int f() => _objExcel.GetValues(values);
                 return f();
             }
         }
@@ -558,10 +465,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<bool> f = delegate
-                {
-                    return _objExcel.IsDBNull(i);
-                };
+                bool f() => _objExcel.IsDBNull(i);
                 return f();
             }
         }
@@ -580,10 +484,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<object> f = delegate
-                    {
-                        return _objExcel[name];
-                    };
+                    object f() => _objExcel[name];
                     return f();
                 }
             }
@@ -599,10 +500,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<object> f = delegate
-                    {
-                        return _objExcel[i];
-                    };
+                    object f() => _objExcel[i];
                     return f();
                 }
             } 
@@ -631,17 +529,18 @@ namespace ADOTabular.AdomdClientWrappers
             DataTable dtSchema = this.GetSchemaTable();
             DataTable dt = new DataTable();
             List<DataColumn> listCols = new List<DataColumn>();
+            var invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
             if (dtSchema != null)
             {
                 foreach (DataRow drow in dtSchema.Rows)
                 {
-                    string columnName = System.Convert.ToString(drow["ColumnName"]);
+                    string columnName = drow["ColumnName"].ToString();
                     DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
                     //column.Unique = (bool)drow["IsUnique"];
                     //column.AllowDBNull = (bool)drow["AllowDBNull"];
                     //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
-                    if (formats?.ContainsKey(columnName)??false) column.ExtendedProperties.Add("FormatString", string.Format("{{0:{0}}}" + formats[columnName]));
+                    if (formats?.ContainsKey(columnName)??false) column.ExtendedProperties.Add("FormatString", string.Format(invariantCulture, "{{0:{0}}}" + formats[columnName]));
                     listCols.Add(column);
                     dt.Columns.Add(column);
                 }
@@ -654,7 +553,7 @@ namespace ADOTabular.AdomdClientWrappers
                 for (int i = 0; i < listCols.Count; i++)
                 {
                     if (listCols[i].ExtendedProperties.ContainsKey("FormatString"))
-                        dataRow[((DataColumn)listCols[i])] = string.Format(listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
+                        dataRow[((DataColumn)listCols[i])] = string.Format(invariantCulture, listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
                     else
                         dataRow[((DataColumn)listCols[i])] = this[i];
                 }

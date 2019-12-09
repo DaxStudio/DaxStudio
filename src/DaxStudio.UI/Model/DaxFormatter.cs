@@ -37,24 +37,24 @@ namespace DaxStudio.UI.Model
 
     public class DaxFormatterError
     {
-        public int line;
-        public int column;
-        public string message;
+        public int line { get; set; }
+        public int column { get; set; }
+        public string message { get; set; }
     }
 
     public class ServerDatabaseInfo
     {
-        public string ServerName; // SHA-256 hash of server name
-        public string ServerEdition; // # Values: null, "Enterprise64", "Developer64", "Standard64"
-        public string ServerType; // Values: null, "SSAS", "PBI Desktop", "SSDT Workspace", "Tabular Editor"
-        public string ServerMode; // Values: null, "SharePoint", "Tabular"
-        public string ServerLocation; // Values: null, "OnPremise", "Azure"
-        public string ServerVersion; // Example: "14.0.800.192"
-        public string DatabaseName; // SHA-256 hash of database name
-        public string DatabaseCompatibilityLevel; // Values: 1200, 1400
+        public string ServerName { get; set; } // SHA-256 hash of server name
+        public string ServerEdition { get; set; } // # Values: null, "Enterprise64", "Developer64", "Standard64"
+        public string ServerType { get; set; } // Values: null, "SSAS", "PBI Desktop", "SSDT Workspace", "Tabular Editor"
+        public string ServerMode { get; set; } // Values: null, "SharePoint", "Tabular"
+        public string ServerLocation { get; set; } // Values: null, "OnPremise", "Azure"
+        public string ServerVersion { get; set; } // Example: "14.0.800.192"
+        public string DatabaseName { get; set; } // SHA-256 hash of database name
+        public string DatabaseCompatibilityLevel { get; set; } // Values: 1200, 1400
     }
 
-    public class DaxFormatterRequest
+    public class DaxFormatterRequest : ServerDatabaseInfo
     {
         public string Dax { get; set; }
         public int? MaxLineLenght { get; set; }
@@ -62,20 +62,6 @@ namespace DaxStudio.UI.Model
         public char DecimalSeparator { get; set; }
         public string CallerApp { get; set; }
         public string CallerVersion { get; set; }
-
-        // TODO: complete server info
-
-        public string ServerName; // SHA-256 hash of server name
-        public string ServerEdition; // # Values: null, "Enterprise64", "Developer64", "Standard64"
-        public string ServerType; // Values: null, "SSAS", "PBI Desktop", "SSDT Workspace", "Tabular Editor"
-        public string ServerMode; // Values: null, "SharePoint", "Tabular"
-        public string ServerLocation; // Values: null, "OnPremise", "Azure"
-        public string ServerVersion; // Example: "14.0.800.192"
-        public string DatabaseName; // SHA-256 hash of database name
-        public string DatabaseCompatibilityLevel; // Values: 1200, 1400
-
-        // TODO: end complete server info
-
 
         public DaxFormatterRequest()
         {
@@ -205,7 +191,11 @@ namespace DaxStudio.UI.Model
 
                 DaxFormatterRequest req = new DaxFormatterRequest();
                 req.Dax = query;
-
+                if (globalOptions.DefaultSeparator == DaxStudio.Interfaces.Enums.DelimiterType.SemiColon)
+                {
+                    req.DecimalSeparator = ',';
+                    req.ListSeparator = ';';
+                }
                 req.ServerName = Crypto.SHA256( serverDbInfo.ServerName );
                 req.ServerEdition = serverDbInfo.ServerEdition;
                 req.ServerType = serverDbInfo.ServerType; 

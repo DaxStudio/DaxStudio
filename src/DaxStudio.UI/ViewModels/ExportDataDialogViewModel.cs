@@ -227,6 +227,7 @@ namespace DaxStudio.UI.ViewModels
         private int currentTableIdx = 0;
         private int totalTableCnt = 0;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.ActiveDocument.MetadataPane;

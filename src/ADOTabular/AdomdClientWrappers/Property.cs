@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "This is just wrapping the ADOMD Property class")]
     public class Property
     {
         public Property(string name, object restrictionValue, Type type)
@@ -17,6 +18,7 @@ namespace ADOTabular.AdomdClientWrappers
         public Type Type { get; set; }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "This is just wrapping the ADOMD PropertyCollection class")]
     public class PropertyCollection : Dictionary<string, Property>
     {
     }

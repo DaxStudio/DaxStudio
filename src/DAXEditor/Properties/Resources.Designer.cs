@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DAXEditor.Properties {
+namespace DAXEditorControl.Properties {
     using System;
     
     

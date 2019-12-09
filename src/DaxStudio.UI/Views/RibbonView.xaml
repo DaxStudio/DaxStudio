@@ -9,6 +9,7 @@
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" 
              d:DesignWidth="980">
     <UserControl.Resources>
@@ -106,6 +107,42 @@
             
         </Fluent:Ribbon.Resources>
 
+
+        <!--Quick Access Toolbar Items-->
+        <Fluent:Ribbon.QuickAccessItems>
+            <!--You Can Just Bind with Any Control-->
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=NewQuery}" IsChecked="True"/>
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=Save}" IsChecked="True"/>
+            
+
+            <!--<Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=newButtonQat}" />
+            <Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=saveButtonQat}"/>-->
+
+            <!--<Fluent:QuickAccessMenuItem>
+                <Fluent:Button Header="Save" Icon="{StaticResource SaveIcon}" Name="qatSave">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="Save">
+
+                            </cal:ActionMessage>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
+            </Fluent:QuickAccessMenuItem>
+
+            <Fluent:QuickAccessMenuItem >
+                <Fluent:Button Header="New" Icon="{StaticResource NewIconSmall}" Name="qatNew" >
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="NewQuery">
+                            </cal:ActionMessage>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
+            </Fluent:QuickAccessMenuItem>-->
+
+        </Fluent:Ribbon.QuickAccessItems>
+
         <!--Backstage-->
             
         <Fluent:Ribbon.Menu>
@@ -115,17 +152,12 @@
 
                     <!-- File New -->
                     <Fluent:Button Header="New" 
-                                   x:Name="NewQuery" 
+                                   Name="NewQuery" 
+                      
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
                                    Icon="{StaticResource NewIconSmall}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="NewQuery">
 
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
                     </Fluent:Button>
 
                     <Fluent:BackstageTabItem Header="Open"  >
@@ -217,7 +249,7 @@
                     </Fluent:BackstageTabItem>
                     <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
 
-                    <Fluent:Button Header="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
+                    <Fluent:Button Header="Save" Name="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
                                 <cal:ActionMessage MethodName="Save">
@@ -237,27 +269,7 @@
                         </i:Interaction.Triggers>
 
                     </Fluent:Button>
-                    <!--
-                    <Fluent:Button Name="btnPublishDaxFunctions" Header="Publish DAX Functions" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="PublishDaxFunctions">
 
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-
-                    </Fluent:Button>                    <Fluent:Button Name="btnExportDaxFunctions" Header="Export DAX Functions" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="ExportDaxFunctions">
-
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-
-                    </Fluent:Button>
--->
                     <Fluent:BackstageTabItem Header="Options"  >
                         <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}" />
                     </Fluent:BackstageTabItem>
@@ -275,35 +287,7 @@
             </Fluent:Backstage>
         </Fluent:Ribbon.Menu>
 
-        <Fluent:Ribbon.QuickAccessItems>
-
-            <!--<Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=newButtonQat}" />
-            <Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=saveButtonQat}"/>-->
-
-            <!--<Fluent:QuickAccessMenuItem IsChecked="True" >
-                <Fluent:Button Header="Save" Icon="{StaticResource SaveIcon}" Name="qatSave">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="Save">
-
-                            </cal:ActionMessage>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
-            </Fluent:QuickAccessMenuItem>
-
-            <Fluent:QuickAccessMenuItem IsChecked="True" >
-                <Fluent:Button Header="New" Icon="{StaticResource NewIconSmall}" Name="qatNew" >
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="NewQuery">
-                            </cal:ActionMessage>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
-            </Fluent:QuickAccessMenuItem>-->
-
-        </Fluent:Ribbon.QuickAccessItems>
+        
   
         <!-- Home Tabs-->
         
@@ -328,7 +312,7 @@
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:SplitButton.ToolTip>
-                        <Fluent:ScreenTip Title="Run Query (F5)"
+                        <Fluent:ScreenTip Title="{Binding RunQueryTitle}"
                                           Text="{Binding Path=SelectedRunStyle.Tooltip}"
                                           DisableReason="{Binding RunQueryDisableReason}"
                                            ></Fluent:ScreenTip>
@@ -547,7 +531,7 @@
                                Margin="0,0,10,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Format Query (F6)"
+                        <Fluent:ScreenTip Title="{Binding FormatQueryTitle}"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -562,7 +546,7 @@
                                Margin="4,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="To Upper (Ctrl+Shift U)"
+                        <Fluent:ScreenTip Title="{Binding ToUpperTitle}"
                                           Text="Converts the selected text to Uppercase"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -575,7 +559,7 @@
                                Margin="4,0"
                                FocusManager.IsFocusScope="True">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="To Lower (Ctrl+Shift L)"
+                        <Fluent:ScreenTip Title="{Binding ToLowerTitle}"
                                           Text="Converts the selected text to Lowercase"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -602,7 +586,7 @@
                                SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
-                            <Fluent:ScreenTip Title="Comment (Ctrl+Alt C)"
+                            <Fluent:ScreenTip Title="{Binding CommentSelectionTitle}"
                                           Text="Comments the selected lines"
                                            ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>
@@ -615,7 +599,7 @@
                                SizeDefinition="Middle,Middle,Small"
                                Margin="4,0">
                         <Fluent:Button.ToolTip>
-                            <Fluent:ScreenTip Title="Uncomment (Ctrl+Alt U)"
+                            <Fluent:ScreenTip Title="{Binding UncommentSelectionTitle}"
                                           Text="Uncomments the selected lines"
                                            ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>
@@ -806,6 +790,22 @@
        
         <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
             <Fluent:RibbonGroupBox Header="Metrics" Visibility="{Binding ShowMetricsGroup, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Fluent:Button Name="ImportAnalysisData"
+                                   Header="Import Metrics"
+                                   cal:Message.Attach="[Event Click] = [Action ImportAnalysisData()]"
+                                   Icon="{StaticResource ImportMetricsIcon}"
+                                   LargeIcon="{StaticResource ImportMetricsIconLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Small"
+                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Import Metrics"
+                                   Text="Imports information and metrics from a *.vpax file to allow for detailed analysis of the model design. The import only includes metadata and size of objects, no actual data is included."
+                                   DisableReason="{Binding ClearCacheDisableReason}"
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"
                                    cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
@@ -968,6 +968,53 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Analysis Services Forum"
                                           Text="Link to the Analysis Services MSDN Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
+            <Fluent:RibbonGroupBox Header="Issues">
+                
+                <Fluent:Button Name="hlpGithubBugReport"
+                               Header="Report a Bug"
+                               cal:Message.Attach="[Event Click] = [Action LinkToGithubBugReport()]"
+                               SizeDefinition="Large,Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.LargeIcon>
+                        
+                        <fa:FontAwesome  Icon="Bug" Foreground="{StaticResource DaxStudioBrush}" FontSize="32" />
+                        
+                    </Fluent:Button.LargeIcon>
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="Bug" Foreground="{StaticResource DaxStudioBrush}" Margin="0" FontSize="16" />
+
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Report a Bug"
+                                          Text="Submit a bug report to the Github project site for DAX Studio"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpGithubFeatureRequest"
+                               Header="Request a Feature"
+                               cal:Message.Attach="[Event Click] = [Action LinkToGithubFeatureRequest()]"
+
+                               SizeDefinition="Large,Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.LargeIcon>
+
+                        <fa:FontAwesome  Icon="LightbulbOutline" Foreground="{StaticResource FEBrush}" Padding="0" FontSize="32" />
+
+                    </Fluent:Button.LargeIcon>
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="LightbulbOutline" Foreground="{StaticResource FEBrush}" Margin="0" FontSize="16" />
+
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Feature Request"
+                                          Text="Submit an idea for a new feature to the Github project site for DAX Studio"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>

@@ -83,6 +83,49 @@ namespace DaxStudio.Tests
             Assert.AreEqual(expected, actual);
         }
 
+        [TestMethod]
+        public void DashCommentTest()
+        {
+            string input = @"
+-- this is a comment with ; semi colon and comma , .
+Evaluate Filter(Values('Product'[Categories]); Product[Prod ,;. Rank] = 1,0)";
+            var dsm = new DelimiterStateMachine(DelimiterType.Comma);
+            string actual = dsm.ProcessString(input);
+            string expected = @"
+-- this is a comment with ; semi colon and comma , .
+Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SlashCommentTest()
+        {
+            string input = @"
+// this is a comment with ; semi colon and comma , .
+Evaluate Filter(Values('Product'[Categories]); Product[Prod ,;. Rank] = 1,0)";
+            var dsm = new DelimiterStateMachine(DelimiterType.Comma);
+            string actual = dsm.ProcessString(input);
+            string expected = @"
+// this is a comment with ; semi colon and comma , .
+Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void BlockCommentTest()
+        {
+            string input = @"
+/* this is a comment with ; semi colon and comma , . */
+Evaluate Filter(Values('Product'[Categories]); Product[Prod ,;. Rank] = 1,0)";
+            var dsm = new DelimiterStateMachine(DelimiterType.Comma);
+            string actual = dsm.ProcessString(input);
+            string expected = @"
+/* this is a comment with ; semi colon and comma , . */
+Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
+            Assert.AreEqual(expected, actual);
+        }
+
+
 
     }
 }

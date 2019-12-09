@@ -15,11 +15,11 @@ namespace ADOTabular
         {
             Name = name;
             Id = id;
-            DateTime lastUpdatedDate = new DateTime(1900,1,1);
-            DateTime.TryParse(lastUpdate, out lastUpdatedDate);
+            _ = DateTime.TryParse(lastUpdate, out DateTime lastUpdatedDate);
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
+
         }
 
         public DatabaseDetails(string name, string lastUpdate, string compatLevel, string roles) : this(name, string.Empty, lastUpdate, compatLevel, roles) { }
@@ -123,7 +123,9 @@ namespace ADOTabular
                     row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
                     row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
-                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""));
+                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""
+                    )
+                    );
                 // TODO - add support for loading Database Description
             }
             return databaseDictionary;
@@ -141,7 +143,7 @@ namespace ADOTabular
                                                      });
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
             
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)))
+            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Ignore})
             {
                 if (rdr.NameTable != null)
                 {
@@ -217,7 +219,7 @@ namespace ADOTabular
                     i++;
                 }
 
-                throw new IndexOutOfRangeException();
+                throw new InvalidOperationException();
             }
         }
 

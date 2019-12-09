@@ -5,8 +5,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Level
     {
-        private Microsoft.AnalysisServices.AdomdClient.Level _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Level _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Level _objExcel;
 
         public Level(Microsoft.AnalysisServices.AdomdClient.Level obj)
         {
@@ -27,10 +27,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Caption;
-                    };
+                    string f() => _objExcel.Caption;
                     return f();
                 }
             }
@@ -46,10 +43,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Description;
-                    };
+                    string f() => _objExcel.Description;
                     return f();
                 }
             }
@@ -65,10 +59,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.UniqueName;
-                    };
+                    string f() => _objExcel.UniqueName;
                     return f();
                 }
             }
@@ -84,10 +75,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<Hierarchy> f = delegate
-                    {
-                        return new Hierarchy(_objExcel.ParentHierarchy);
-                    };
+                    Hierarchy f() => new Hierarchy(_objExcel.ParentHierarchy);
                     return f();
                 }
             }
@@ -103,16 +91,13 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<LevelTypeEnum> f = delegate
-                    {
-                        return (LevelTypeEnum)_objExcel.LevelType;
-                    };
+                    LevelTypeEnum f() => (LevelTypeEnum)_objExcel.LevelType;
                     return f();
                 }
             }
         }
 
-        public MemberCollection GetMembers(long start, long count, string[] properties, params MemberFilter[] filters)
+        public MemberCollection GetMembers(long start, long count, string[] properties) //, params MemberFilter[] filters)
         {
             if (_obj != null)
             {
@@ -125,7 +110,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<MemberCollection> f = delegate
+                MemberCollection f()
                 {
                     MemberCollection coll = new MemberCollection();
                     foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member member in _objExcel.GetMembers(start, count, properties, new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberFilter[] { }))
@@ -133,7 +118,7 @@ namespace ADOTabular.AdomdClientWrappers
                         coll.Add(new Member(member));
                     }
                     return coll;
-                };
+                }
                 return f();
             }
         }

@@ -4,21 +4,21 @@ using System.Data;
 
 namespace ADOTabular.AdomdClientWrappers
 {
-    public class AdomdConnection:IDisposable
+    public sealed class AdomdConnection:IDisposable
     {
-        private AdomdType _type;
+        private readonly AdomdType _type;
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
-        private Object rowsetLock = new Object();
-        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
+        private readonly Object rowsetLock = new Object();
+        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
-            _conn = obj;
+            _conn = connection;
         }
-        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection obj)
+        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.Excel;
-            _connExcel = obj;
+            _connExcel = connection;
         }
         
         public AdomdConnection(string connectionString, AdomdType type)
@@ -30,10 +30,10 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
+                void f()
                 {
                     _connExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
-                };
+                }
                 f();
             }
         }
@@ -53,10 +53,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<object> f = delegate
+                    object f()
                     {
                         return _connExcel;
-                    };
+                    }
                     return f();
                 }
             }
@@ -72,10 +72,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                    {
-                        _connExcel.Open();
-                    };
+                void f() => _connExcel.Open();
                 f();
             }
         }
@@ -88,10 +85,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _connExcel.Open(connectionString);
-                };
+                void f() => _connExcel.Open(connectionString);
                 f();
             }
         }
@@ -104,10 +98,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _connExcel.Close();
-                };
+                void f() => _connExcel.Close();
                 f();
             }
         }
@@ -120,10 +111,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _connExcel.Close(endSession);
-                };
+                void f() => _connExcel.Close(endSession);
                 f();
             }
         }
@@ -138,10 +126,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
-                {
-                    _connExcel.ChangeDatabase(database);
-                };
+                void f() => _connExcel.ChangeDatabase(database);
                 f();
             }
         }
@@ -156,10 +141,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _connExcel.ConnectionString;
-                    };
+                    string f() => _connExcel.ConnectionString;
                     return f();
                 }
             }
@@ -175,10 +157,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _connExcel.ClientVersion;
-                    };
+                    string f() => _connExcel.ClientVersion;
                     return f();
                 }
             }
@@ -188,9 +167,11 @@ namespace ADOTabular.AdomdClientWrappers
         {
             //if (_type == AdomdType.AnalysisServices)
             //{
-                var cmd = new AdomdCommand();
-                cmd.Connection = this;
-                return cmd;
+            var cmd = new AdomdCommand
+            {
+                Connection = this
+            };
+            return cmd;
             /*}
             else
             {
@@ -213,10 +194,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<CubeCollection> f = delegate
-                    {
-                        return new CubeCollection(_connExcel.Cubes);
-                    };
+                    CubeCollection f() => new CubeCollection(_connExcel.Cubes);
                     return f();
                 }
             }
@@ -233,11 +211,11 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<ConnectionState> f = delegate
+                    ConnectionState f()
                     {
                         if (_connExcel != null) return _connExcel.State;
                         return ConnectionState.Closed;
-                    };
+                    }
                     return f();
                 }
             }
@@ -253,10 +231,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                    string f()
                     {
                         return _connExcel.SessionID;
-                    };
+                    }
                     return f();
                 }
             }
@@ -268,10 +246,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.VoidDelegate f = delegate
-                    {
-                        _connExcel.SessionID = value;
-                    };
+                    void f() => _connExcel.SessionID = value;
                     f();
                 }
             }
@@ -287,10 +262,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _connExcel.Database;
-                    };
+                    string f() => _connExcel.Database;
                     return f();
                 }
             }
@@ -308,10 +280,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _connExcel.ServerVersion;
-                    };
+                    string f() => _connExcel.ServerVersion;
                     return f();
                 }
             }
@@ -341,7 +310,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.ReturnDelegate<DataSet> f = delegate
+                DataSet f()
                 {
                     ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                     if (restrictions != null)
@@ -359,7 +328,7 @@ namespace ADOTabular.AdomdClientWrappers
                     {
                         return _connExcel.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
                     }
-                };
+                }
                 return f();
             }
         }
@@ -373,11 +342,11 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
+                void f()
                 {
                     if (_connExcel != null)
                         _connExcel.RefreshMetadata();
-                };
+                }
                 f();
                 
             }
@@ -395,14 +364,14 @@ namespace ADOTabular.AdomdClientWrappers
             }
             else
             {
-                ExcelAdoMdConnections.VoidDelegate f = delegate
+                void f()
                 {
                     if (_connExcel != null)
                     {
                         _connExcel.Dispose();
                         _connExcel = null;
                     }
-                };
+                }
                 f();
                 
             }

@@ -15,19 +15,25 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using DaxStudio.UI.Enums;
+using System.Collections.ObjectModel;
+using DaxStudio.UI.Model;
+using DaxStudio.UI.JsonConverters;
+using System.Collections.Specialized;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using System.IO;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.UI.ViewModels
 {
     [DataContract]
-    [Export(typeof(IGlobalOptions))]
-    [Export(typeof(OptionsViewModel))]
-    
-    public class OptionsViewModel:Screen, IGlobalOptions
+    [Export(typeof(IGlobalOptions))]   
+    public class OptionsViewModel:Screen, IGlobalOptions, IDisposable
     {
         private const string DefaultEditorFontFamily = "Lucida Console";
-        private const int DefaultEditorFontSize = 11;
+        private const double DefaultEditorFontSize = 11.0;
         private const string DefaultResultsFontFamily = "Segoe UI";
-        private const int DefaultResultsFontSize = 11;
+        private const double DefaultResultsFontSize = 11.0;
         private const string DefaultWindowPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
 
         private string _selectedEditorFontFamily;
@@ -47,11 +53,11 @@ namespace DaxStudio.UI.ViewModels
         private int _daxFormatterRequestTimeout;
         private bool _traceDirectQuery;
 
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
         
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;
-        private bool _showPreReleaseNotifcations;
+        private bool _showPreReleaseNotifications;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
 
@@ -64,69 +70,11 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator = eventAggregator;
             SettingProvider = settingProvider;
-
             
-
-            // Iterate through each property
-            /*
-            _isInitializing = true; 
-            foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(this))
-            {
-                // Set default value if DefaultValueAttribute is present
-                DefaultValueAttribute attr = prop.Attributes[typeof(DefaultValueAttribute)]
-                                                                 as DefaultValueAttribute;
-                if (attr != null)
-                    prop.SetValue(this, attr.Value);
-            }
-            _isInitializing = false;
-            */
-
-            // Set Default Values
-            /*
-            EditorFontFamily = SettingProvider.GetValue<string>("EditorFontFamily", DefaultEditorFontFamily);
-            EditorFontSize = SettingProvider.GetValue<double>("EditorFontSize", DefaultEditorFontSize);
-            ResultFontFamily = SettingProvider.GetValue<string>("ResultFontFamily", DefaultResultsFontFamily);
-            ResultFontSize = SettingProvider.GetValue<double>("ResultFontSize", DefaultResultsFontSize);
-            EditorShowLineNumbers = SettingProvider.GetValue<bool>("EditorShowLineNumbers", true);
-            EditorEnableIntellisense = SettingProvider.GetValue<bool>("EditorEnableIntellisense", true);
-            ProxyUseSystem = SettingProvider.GetValue<bool>("ProxyUseSystem", true);
-            ProxyAddress = SettingProvider.GetValue<string>("ProxyAddress", "");
-            ProxyUser = SettingProvider.GetValue<string>("ProxyUser", "");
-            ProxyPassword = SettingProvider.GetValue<string>("ProxyPassword", "").Decrypt();
-            QueryHistoryMaxItems = SettingProvider.GetValue<int>("QueryHistoryMaxItems", 200);
-            QueryHistoryShowTraceColumns = SettingProvider.GetValue<bool>("QueryHistoryShowTraceColumns", true);
-            QueryEndEventTimeout = SettingProvider.GetValue<int>(nameof(QueryEndEventTimeout), 15);
-            DaxFormatterRequestTimeout = SettingProvider.GetValue<int>(nameof(DaxFormatterRequestTimeout), 10);
-            TraceStartupTimeout = SettingProvider.GetValue<int>(nameof(TraceStartupTimeout), 30);
-            DefaultSeparator = (DelimiterType)SettingProvider.GetValue<int>(nameof(DefaultSeparator), (int)DelimiterType.Comma);
-            TraceDirectQuery = SettingProvider.GetValue<bool>("TraceDirectQuery", false);
-            ShowPreReleaseNotifcations = SettingProvider.GetValue<bool>("ShowPreReleaseNotifcations", false);
-            ShowTooltipBasicStats = SettingProvider.GetValue<bool>("ShowTooltipBasicStats", true);
-            ShowTooltipSampleData = SettingProvider.GetValue<bool>("ShowTooltipSampleData", true);
-            ExcludeHeadersWhenCopyingResults = SettingProvider.GetValue<bool>("ExcludeHeadersWhenCopyingResults", true);
-            DefaultDaxFormatStyle = (DaxFormatStyle)SettingProvider.GetValue<int>(nameof(DefaultDaxFormatStyle),(int)DaxFormatStyle.LongLine);
-            ScaleResultsFontWithEditor = SettingProvider.GetValue<bool>("ScaleResultsFontWithEditor", true);
-            // Preview Feature Toggles
-            ShowExportMetrics = SettingProvider.GetValue<bool>(nameof(ShowExportMetrics), false);
-            ShowExternalTools = SettingProvider.GetValue<bool>(nameof(ShowExternalTools), false);
-            ShowExportAllData = SettingProvider.GetValue<bool>(nameof(ShowExportAllData), false);
-            Theme = SettingProvider.GetValue<string>(nameof(Theme), "Light");
-            ResultAutoFormat = SettingProvider.GetValue<bool>("ResultAutoFormat", false);
-            CodeCompletionWindowWidthIncrease = SettingProvider.GetValue<int>(nameof(CodeCompletionWindowWidthIncrease), 100);
-            KeepMetadataSearchOpen = SettingProvider.GetValue<bool>(nameof(KeepMetadataSearchOpen), false);
-            AutoRefreshMetadataLocalMachine = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalMachine", true);
-            AutoRefreshMetadataLocalNetwork = SettingProvider.GetValue<bool>("AutoRefreshMetadataLocalNetwork", true);
-            AutoRefreshMetadataCloud = SettingProvider.GetValue<bool>("AutoRefreshMetadataCloud", false);
-            ShowHiddenMetadata = SettingProvider.GetValue<bool>("ShowHiddenMetadata", true);
-            SetClearCacheAsDefaultRunStyle = SettingProvider.GetValue<bool>("SetClearCacheAsDefaultRunStyle", false);
-            SortFoldersFirstInMetadata = SettingProvider.GetValue<bool>(nameof(SortFoldersFirstInMetadata), true);
-            WindowPosition = SettingProvider.GetValue<string>(nameof(WindowPosition), DefaultWindowPosition);
-            */
         }
 
         public void Initialize()
         {
-
             _isInitializing = true;
             SettingProvider.Initialize(this);
             _isInitializing = false;
@@ -143,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
                 _selectedEditorFontFamily = value;
                 NotifyOfPropertyChange(() => EditorFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("EditorFontFamily", value , _isInitializing);
+                SettingProvider.SetValueAsync<string>(nameof(EditorFontFamily), value , _isInitializing);
 
             } 
         }
@@ -160,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => EditorFontSize);
                 NotifyOfPropertyChange(() => EditorFontSizePx);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<double>("EditorFontSize", value, _isInitializing);
+                SettingProvider.SetValueAsync<double>(nameof(EditorFontSize), value, _isInitializing);
             } 
         }
 
@@ -185,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
                 _selectedResultFontFamily = value;
                 NotifyOfPropertyChange(() => ResultFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("ResultFontFamily", value, _isInitializing);
+                SettingProvider.SetValueAsync<string>(nameof(ResultFontFamily), value, _isInitializing);
 
             }
         }
@@ -203,7 +151,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ResultFontSize);
                 NotifyOfPropertyChange(() => ResultFontSizePx);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<double>("ResultFontSize", value, _isInitializing);
+                SettingProvider.SetValueAsync<double>(nameof(ResultFontSize), value, _isInitializing);
             }
         }
 
@@ -243,7 +191,7 @@ namespace DaxStudio.UI.ViewModels
                 _traceDirectQuery = value;
                 NotifyOfPropertyChange(() => TraceDirectQuery);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("TraceDirectQuery", value, _isInitializing);
+                SettingProvider.SetValueAsync<bool>(nameof(TraceDirectQuery), value, _isInitializing);
             }
         }
         #region Http Proxy properties
@@ -259,7 +207,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyUseSystem);
                 NotifyOfPropertyChange(() => ProxyDontUseSystem);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ProxyUseSystem", value, _isInitializing);
+                SettingProvider.SetValueAsync<bool>(nameof(ProxyUseSystem), value, _isInitializing);
                 WebRequestFactory.ResetProxy();
             }
         }
@@ -280,7 +228,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxyAddress = value;
                 NotifyOfPropertyChange(() => ProxyAddress);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("ProxyAddress", value, _isInitializing);
+                SettingProvider.SetValueAsync<string>(nameof(ProxyAddress), value, _isInitializing);
                 WebRequestFactory.ResetProxy();
             }
         }
@@ -295,7 +243,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxyUser = value;
                 NotifyOfPropertyChange(() => ProxyUser);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("ProxyUser", value, _isInitializing);
+                SettingProvider.SetValueAsync<string>(nameof(ProxyUser), value, _isInitializing);
                 WebRequestFactory.ResetProxy();
             }
         }
@@ -311,7 +259,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxyPassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("ProxyPassword", value.Encrypt(), _isInitializing);
+                //SettingProvider.SetValueAsync<string>("ProxyPassword", value.Encrypt(), _isInitializing);
                 SetProxySecurePassword(value);
                 WebRequestFactory.ResetProxy();
             }
@@ -326,7 +274,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        [DataMember, DefaultValue("")]
+        [DataMember]
         public SecureString ProxySecurePassword
         {
             get { return _proxySecurePassword; }
@@ -336,7 +284,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxySecurePassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("ProxyPassword", value.GetInsecureString().Encrypt(), _isInitializing);
+                SettingProvider.SetValueAsync<string>("ProxySecurePassword", value.GetInsecureString().Encrypt(), _isInitializing);
             }
         }
 
@@ -352,7 +300,7 @@ namespace DaxStudio.UI.ViewModels
                 _maxQueryHistory = value;
                 NotifyOfPropertyChange(() => QueryHistoryMaxItems);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<int>("QueryHistoryMaxItems", value, _isInitializing);
+                SettingProvider.SetValueAsync<int>(nameof(QueryHistoryMaxItems), value, _isInitializing);
             }
 
         }
@@ -367,7 +315,7 @@ namespace DaxStudio.UI.ViewModels
                 _queryHistoryShowTraceColumns = value;
                 NotifyOfPropertyChange(() => QueryHistoryShowTraceColumns);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("QueryHistoryShowTraceColumns", value, _isInitializing);
+                SettingProvider.SetValueAsync<bool>(nameof(QueryHistoryShowTraceColumns), value, _isInitializing);
             }
 
         }
@@ -460,15 +408,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [DataMember, DefaultValue(false)]
-        public bool ShowPreReleaseNotifcations {
-            get { return _showPreReleaseNotifcations; }
+        public bool ShowPreReleaseNotifications {
+            get { return _showPreReleaseNotifications; }
             set
             {
-                if (_showPreReleaseNotifcations == value) return;
-                _showPreReleaseNotifcations = value;
-                NotifyOfPropertyChange(() => ShowPreReleaseNotifcations);
+                if (_showPreReleaseNotifications == value) return;
+                _showPreReleaseNotifications = value;
+                NotifyOfPropertyChange(() => ShowPreReleaseNotifications);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowPreReleaseNotifcations", value, _isInitializing);
+                SettingProvider.SetValueAsync<bool>(nameof(ShowPreReleaseNotifications), value, _isInitializing);
             }
         }
 
@@ -599,6 +547,220 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #region Hotkeys
+
+        private string _hotkeyCommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + C"),Hotkey]
+        public string HotkeyCommentSelection { get => _hotkeyCommentSelection;
+                set {
+                _hotkeyCommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyCommentSelection);
+            } 
+        }
+
+        private string _hotkeyUncommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + U"), Hotkey]
+        public string HotkeyUnCommentSelection { get => _hotkeyUncommentSelection;
+            set {
+                _hotkeyUncommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyUnCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyUnCommentSelection);
+            } 
+        }
+
+        private string _hotkeyToUpper;
+        [DataMember, DefaultValue("Ctrl + Shift + U"), Hotkey]
+        public string HotkeyToUpper
+        {
+            get => _hotkeyToUpper;
+            set
+            {
+                _hotkeyToUpper = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToUpper), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToUpper);
+            }
+        }
+
+        private string _hotkeyToLower;
+        [DataMember, DefaultValue("Ctrl + Shift + L"), Hotkey]
+        public string HotkeyToLower
+        {
+            get => _hotkeyToLower;
+            set
+            {
+                _hotkeyToLower = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToLower), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToLower);
+            }
+        }
+
+        private string _hotkeyRunQuery;
+        [DataMember, DefaultValue("F5"), Hotkey]
+        public string HotkeyRunQuery
+        {
+            get => _hotkeyRunQuery;
+            set
+            {
+                _hotkeyRunQuery = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQuery), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQuery);
+            }
+        }
+
+        private string _hotkeyRunQueryAlt;
+        [DataMember, DefaultValue("Ctrl + E"), Hotkey]
+        public string HotkeyRunQueryAlt
+        {
+            get => _hotkeyRunQueryAlt;
+            set
+            {
+                _hotkeyRunQueryAlt = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQueryAlt), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQueryAlt);
+            }
+        }
+
+        private string _hotkeyNewDocument;
+        [DataMember, DefaultValue("Ctrl + N"),Hotkey]
+        public string HotkeyNewDocument
+        {
+            get => _hotkeyNewDocument;
+            set
+            {
+                _hotkeyNewDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocument);
+            }
+        }
+
+        private string _hotkeyNewDocumentWithCurrentConnection;
+        [DataMember, DefaultValue("Ctrl + Shift + N"),Hotkey]
+        public string HotkeyNewDocumentWithCurrentConnection
+        {
+            get => _hotkeyNewDocumentWithCurrentConnection;
+            set
+            {
+                _hotkeyNewDocumentWithCurrentConnection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocumentWithCurrentConnection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocumentWithCurrentConnection);
+            }
+        }
+
+        private string _hotkeySaveDocument;
+        [DataMember, DefaultValue("Ctrl + S"), Hotkey]
+        public string HotkeySaveDocument
+        {
+            get => _hotkeySaveDocument;
+            set
+            {
+                _hotkeySaveDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeySaveDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeySaveDocument);
+            }
+        }
+
+        private string _hotkeyOpenDocument;
+        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        public string HotkeyOpenDocument
+        {
+            get => _hotkeyOpenDocument;
+            set
+            {
+                _hotkeyOpenDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyOpenDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyOpenDocument);
+            }
+        }
+
+        private string _hotkeyGotoLine;
+        [DataMember, DefaultValue("Ctrl + G"), Hotkey]
+        public string HotkeyGotoLine
+        {
+            get => _hotkeyGotoLine;
+            set
+            {
+                _hotkeyGotoLine = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyGotoLine), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyGotoLine);
+            }
+        }
+
+        private string _hotkeyFormatQueryStandard;
+        [DataMember, DefaultValue("F6"), Hotkey]
+        public string HotkeyFormatQueryStandard
+        {
+            get => _hotkeyFormatQueryStandard;
+            set
+            {
+                _hotkeyFormatQueryStandard = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryStandard), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryStandard);
+            }
+        }
+
+
+
+        private string _hotkeyFormatQueryAlternate;
+        [DataMember, DefaultValue("Ctrl + F6"), Hotkey]
+        public string HotkeyFormatQueryAlternate
+        {
+            get => _hotkeyFormatQueryAlternate;
+            set
+            {
+                _hotkeyFormatQueryAlternate = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryAlternate), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryAlternate);
+            }
+        }
+
+        public void ResetKeyBindings()
+        {
+            //try
+            //{
+            //    _isInitializing = true;
+                var props = typeof(OptionsViewModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                foreach (var prop in props)
+                {
+                    if (!prop.Name.StartsWith("Hotkey")) continue;
+
+                    foreach (var att in prop.GetCustomAttributes(false))
+                    {
+                        if (att is DefaultValueAttribute)
+                        {
+                            var val = att as DefaultValueAttribute;
+
+                            prop.SetValue(this, val.Value.ToString());
+                        }
+                    }
+                }
+
+
+            //}
+            //finally
+            //{
+            //    _isInitializing = false;
+                
+            //}
+            
+        }
+        #endregion
+
+
+        #region methods
         public string GetCustomCsvDelimiter()
         {
             switch (CustomCsvDelimiterType)
@@ -611,6 +773,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+        #endregion
 
         #region View Specific Properties
         public bool UseCultureDefaultDelimiter
@@ -658,7 +821,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportMetrics = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExportMetrics", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportMetrics), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportMetrics);
             }
         }
@@ -669,7 +832,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExternalTools = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExternalTools", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExternalTools);
             }
         }
@@ -680,7 +843,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExportAllData = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowExportAllData", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportAllData), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportAllData);
             }
         }
@@ -692,11 +855,33 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _vpaxIncludeTom = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("VpaxIncludeTom", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(VpaxIncludeTom), value, _isInitializing);
                 NotifyOfPropertyChange(() => VpaxIncludeTom);
             }
         }
 
+
+        private bool _showKeyBindings = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowKeyBindings
+        {
+            get
+            {
+                return _showKeyBindings;
+            }
+
+            set
+            {
+                _showKeyBindings = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowKeyBindings), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowKeyBindings);
+            }
+        }
+
+        #endregion
+        
+        
         private bool _scaleResultsFontWithEditor = true;
 
         private string _theme = "Light";
@@ -710,7 +895,7 @@ namespace DaxStudio.UI.ViewModels
                 _theme = value;
                 NotifyOfPropertyChange(() => Theme);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>("Theme", value, _isInitializing);
+                SettingProvider.SetValueAsync("Theme", value, _isInitializing);
 
             }
         }
@@ -724,7 +909,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _ResultAutoFormat = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ResultAutoFormat", value, _isInitializing);
+                SettingProvider.SetValueAsync("ResultAutoFormat", value, _isInitializing);
                 NotifyOfPropertyChange(() => ResultAutoFormat);
             }
         }
@@ -734,7 +919,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _scaleResultsFontWithEditor = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ScaleResultsFontWithEditor", value, _isInitializing);
+                SettingProvider.SetValueAsync("ScaleResultsFontWithEditor", value, _isInitializing);
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
 
@@ -745,7 +930,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value > 300) value = 300; // value cannot be greater than 300% of the default size
                 _codeCompletionWindowWidthIncrease = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<int>("CodeCompletionWindowWidthIncrease", value, _isInitializing);
+                SettingProvider.SetValueAsync("CodeCompletionWindowWidthIncrease", value, _isInitializing);
                 NotifyOfPropertyChange(() => CodeCompletionWindowWidthIncrease);
             }
         }
@@ -755,7 +940,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _keepMetadataSearchOpen = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("KeepMetadataSearchOpen", value, _isInitializing);
+                SettingProvider.SetValueAsync("KeepMetadataSearchOpen", value, _isInitializing);
                 NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
             }
         }
@@ -766,7 +951,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataLocalMachine = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalMachine", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataLocalMachine", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataLocalMachine);
             }
         }
@@ -777,7 +962,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataLocalNetwork = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataLocalNetwork", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataLocalNetwork", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataLocalNetwork);
             }
         }
@@ -788,7 +973,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoRefreshMetadataCloud = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("AutoRefreshMetadataCloud", value, _isInitializing);
+                SettingProvider.SetValueAsync("AutoRefreshMetadataCloud", value, _isInitializing);
                 NotifyOfPropertyChange(() => AutoRefreshMetadataCloud);
             }
         }
@@ -799,7 +984,7 @@ namespace DaxStudio.UI.ViewModels
                 set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>("ShowHiddenMetadata", value, _isInitializing);
+                SettingProvider.SetValueAsync("ShowHiddenMetadata", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } }
 
@@ -810,7 +995,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _setClearCacheAndRunAsDefaultRunStyle = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>(nameof(SetClearCacheAsDefaultRunStyle), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(SetClearCacheAsDefaultRunStyle), value, _isInitializing);
                 NotifyOfPropertyChange(() => SetClearCacheAsDefaultRunStyle);
             }
         }
@@ -821,7 +1006,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _sortFoldersFirstInMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<bool>(nameof(SortFoldersFirstInMetadata), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(SortFoldersFirstInMetadata), value, _isInitializing);
                 NotifyOfPropertyChange(() => SortFoldersFirstInMetadata);
             }
         }
@@ -834,13 +1019,14 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _windowPosition = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<string>(nameof(WindowPosition), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(WindowPosition), value, _isInitializing);
                 NotifyOfPropertyChange(() => WindowPosition);
             }
         }
 
         private Version _dismissedVersion = new Version();
         [DataMember, DefaultValue("0.0.0.0")]
+        [JsonConverter(typeof(VersionConverter))]
         public Version DismissedVersion
         {
             get { return _dismissedVersion; }
@@ -848,7 +1034,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _dismissedVersion = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<Version>(nameof(DismissedVersion), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(DismissedVersion), value, _isInitializing);
                 NotifyOfPropertyChange(() => DismissedVersion);
             }
         }
@@ -862,13 +1048,68 @@ namespace DaxStudio.UI.ViewModels
             {
                 _lastVersionCheck = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValueAsync<DateTime>(nameof(LastVersionCheckUTC), value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(LastVersionCheckUTC), value, _isInitializing);
                 NotifyOfPropertyChange(() => LastVersionCheckUTC);
             }
         }
 
+        private ObservableCollection<IDaxFile> _recentFiles;
+        [DataMember]
+        //[JsonConverter(typeof(DaxFileConverter))]
+        public ObservableCollection<IDaxFile> RecentFiles
+        {
+            get
+            {
+                if (_recentFiles == null)
+                {
+                    _recentFiles = new ObservableCollection<IDaxFile>();
+                }
+                return _recentFiles;
+            }
+            set
+            {
+                if (value != null) {
+                    _recentFiles = value;
+                }
 
-        #endregion
+            }
+        }
+
+
+        private ObservableCollection<string> _recentServers;
+        [DataMember]
+        public ObservableCollection<string> RecentServers { get {
+                if (_recentServers == null)
+                {
+                    _recentServers = new ObservableCollection<string>();
+                }
+                return _recentServers;
+            } set {
+                if (value != null) _recentServers = value;
+            }
+        }
+
+        private bool _editorConvertTabsToSpaces = false;
+        [DataMember,DefaultValue(false)]
+        public bool EditorConvertTabsToSpaces { get => _editorConvertTabsToSpaces; set {
+                _editorConvertTabsToSpaces = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(EditorConvertTabsToSpaces), value, _isInitializing);
+                NotifyOfPropertyChange(() => EditorConvertTabsToSpaces);
+            }
+        }
+
+        private int _editorIndentationSize = 4;
+        [DataMember,DefaultValue(4)]
+        public int EditorIndentationSize { get => _editorIndentationSize; set {
+                _editorIndentationSize = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<int>(nameof(EditorIndentationSize), value, _isInitializing);
+                NotifyOfPropertyChange(() => EditorIndentationSize);
+            }
+        }
+
+        #region Export Function Methods
 
         public void ExportDaxFunctions()
         {
@@ -879,5 +1120,145 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
+
+        #endregion
+
+        private bool? _isExcelAddinEnabledForAllUsers = null;
+        public bool CanToggleExcelAddin
+        {
+            get {
+                if (IsRunningPortable) return false;
+                if (_isExcelAddinEnabledForAllUsers == null) _isExcelAddinEnabledForAllUsers = IsExcelAddinEnabledForAllUsers();
+                return (bool)!_isExcelAddinEnabledForAllUsers;
+            }
+        }
+
+        private string ExcelAddinKey
+        {
+            get
+            {
+                var wowKey = "";
+                if (!Is64BitExcelFromRegisteredExe()) wowKey = @"\Wow6432Node";
+                return $@"Software{wowKey}\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
+            }
+        }
+        private bool IsExcelAddinEnabledForAllUsers()
+        {
+            // check the registry
+            var key = Registry.LocalMachine.OpenSubKey(ExcelAddinKey);
+            return key != null;
+        }
+
+        private bool IsExcelAddinEnabledForCurrentUser()
+        {
+            // check the registry
+            var key = Registry.CurrentUser.OpenSubKey(ExcelAddinKey);
+            return key != null;
+        }
+
+        public string ToggleExcelAddinCaption
+        {
+            get {
+                if (IsExcelAddinEnabledForCurrentUser())
+                    return "Disable Excel Addin";
+                else
+                    return "Enable Excel Addin";
+            }
+        }
+
+        public string ToggleExcelAddinDescription
+        {
+            get {
+                if (IsRunningPortable)
+                    return "DAX Studio is currently running in Portable mode. You need to install DAX Studio using the installer in order to activate the Excel Addin";
+
+                if (IsExcelAddinEnabledForAllUsers())
+                    return "The Excel add-in was installed using the 'All Users' option so it cannot be enabled/disable using this button. If you want to enable/disable the addin using this button you need to re-run the installer and choose the 'Current User' option for the Addin";
+                
+                return "This button will enable/disable the DAX Studio Excel addin. If Excel is already open you will need to close and re-open it for this setting to take effect.";
+            }
+        }
+
+        public bool IsRunningPortable { get; set; } = false;
+
+        public void ToggleExcelAddin()
+        {
+            // TODO
+            if (IsExcelAddinEnabledForCurrentUser())
+                DeleteExcelAddinKeys();
+            else
+                WriteExcelAddinKeys();
+
+            NotifyOfPropertyChange(nameof(CanToggleExcelAddin));
+            NotifyOfPropertyChange(nameof(ToggleExcelAddinCaption));
+        }
+
+        // Gets the path to the currently running DAXStudio.exe, but swaps back slashes for forward slashes
+        private string exePathForRegistry()
+        {
+            return Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).Replace("\\","/");
+        }
+
+
+        private void WriteExcelAddinKeys()
+        {
+
+            var key = Registry.CurrentUser.CreateSubKey(ExcelAddinKey);
+            key.SetValue("LoadBehavior", 3, RegistryValueKind.DWord);
+            key.SetValue("Description", "DAX Studio Excel Add-In", RegistryValueKind.String);
+            key.SetValue("FriendlyName", "DAX Studio Excel Add-In", RegistryValueKind.String);
+            key.SetValue("Manifest", $"file:///{exePathForRegistry()}/bin/DaxStudio.vsto|vstolocal", RegistryValueKind.String);
+
+        }
+
+        private void DeleteExcelAddinKeys()
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(ExcelAddinKey, false);
+        }
+        
+
+        private bool Is64BitExcelFromRegisteredExe()
+        {
+            return false;
+            
+            // read the "ExcelBitness" value that should be written by the installer
+            //var key = Registry.CurrentUser.GetValue(@"HKEY_CURRENT_USER\Software\DaxStudio\ExcelBitness");
+            //if (key== null)
+            //var key = Registry.LocalMachine.OpenSubKey(@"Software\DaxStudio", false);
+            //if (key == null) return false;
+            //return (string)(key?.GetValue("ExcelBitness", "32Bit")??"32Bit") == "64Bit";
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (_proxySecurePassword != null)
+                    {
+                        _proxySecurePassword.Dispose();
+                        _proxySecurePassword = null;
+                    }
+                }
+
+
+                disposedValue = true;
+            }
+        }
+
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
+
+
     }
 }

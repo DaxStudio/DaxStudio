@@ -1,4 +1,4 @@
-﻿using DAXEditor;
+﻿using DAXEditorControl;
 using System.Media;
 using Caliburn.Micro;
 using DaxStudio.UI.Extensions;

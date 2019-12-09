@@ -8,7 +8,7 @@ using System.Windows.Data;
 namespace DaxStudio.UI.Converters
 {
 
-    public class EnumDescriptionConverter : IValueConverter
+    public sealed class EnumDescriptionConverter : IValueConverter
         {
             private string GetEnumDescription(Enum enumObj)
             {

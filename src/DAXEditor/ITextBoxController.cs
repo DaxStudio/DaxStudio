@@ -1,4 +1,4 @@
-﻿namespace DAXEditor
+﻿namespace DAXEditorControl
 {
   /// <summary>
   /// Define a deligate method that is called for processing the SelectAll event.
@@ -33,9 +33,9 @@
   /// </summary>
   public interface ITextBoxController
   {
-    event SelectAllEventHandler SelectAll;
+    event SelectAllEventHandler SelectAllEvent;
 
-    event SelectEventHandler Select;
+    event SelectEventHandler SelectEvent;
 
     event ScrollToLineEventHandler ScrollToLineEvent;
 

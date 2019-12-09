@@ -5,16 +5,16 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class CellSet
     {
-        private Microsoft.AnalysisServices.AdomdClient.CellSet _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.CellSet _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet _objExcel;
 
-        public CellSet(Microsoft.AnalysisServices.AdomdClient.CellSet obj)
+        public CellSet(Microsoft.AnalysisServices.AdomdClient.CellSet cellSet)
         {
-            _obj = obj;
+            _obj = cellSet;
         }
-        public CellSet(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet obj)
+        public CellSet(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.CellSet cellSet)
         {
-            _objExcel = obj;
+            _objExcel = cellSet;
         }
 
         public List<Axis> Axes

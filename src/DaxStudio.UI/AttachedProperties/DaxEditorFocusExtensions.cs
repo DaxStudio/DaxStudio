@@ -23,7 +23,7 @@ namespace DaxStudio.UI.AttachedProperties
 
         public static void OnIsFocusedChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
-            DAXEditor.DAXEditor editor = dependencyObject as DAXEditor.DAXEditor;
+            DAXEditorControl.DAXEditor editor = dependencyObject as DAXEditorControl.DAXEditor;
             bool newValue = (bool)dependencyPropertyChangedEventArgs.NewValue;
             bool oldValue = (bool)dependencyPropertyChangedEventArgs.OldValue;
             if (newValue && !oldValue && !editor.IsFocused) editor.Focus();

@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 
 
-namespace DaxStudio.Checker
+namespace DaxStudio.CheckerApp
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -33,15 +33,17 @@ namespace DaxStudio.Checker
                 checker.SetVSTOLoggingState(menuToggleVSTOLogging);
                 checker.ShowVersionInfo();
                 checker.CheckOSInfo();
+                checker.CheckScreenInfo();
                 checker.CheckNetFramework();
-                checker.CheckLocalLibrary("AMO", "bin\\Microsoft.AnalysisServices.dll");
+                checker.CheckLocalLibrary("AMO", "Microsoft.AnalysisServices.dll");
                 checker.CheckLibraryExact("Microsoft.AnalysisServices",true);
-                checker.CheckLocalLibrary("ADOMD.NET", "bin\\Microsoft.AnalysisServices.AdomdClient.dll");
+                checker.CheckLocalLibrary("ADOMD.NET", "Microsoft.AnalysisServices.AdomdClient.dll");
                 checker.CheckLibraryExact("Microsoft.AnalysisServices.AdomdClient", true);
-                checker.CheckLibrary("AMO",       "Microsoft.AnalysisServices, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
-                checker.CheckLibrary("ADOMD.NET", "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                //checker.CheckLibrary("AMO",       "Microsoft.AnalysisServices, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                //checker.CheckLibrary("ADOMD.NET", "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
                 checker.CheckDaxStudioBindings();
                 checker.CheckExcelAddin();
+                checker.CheckSettings();
             }
             catch (Exception exception)
             {
@@ -85,7 +87,7 @@ namespace DaxStudio.Checker
 
         private void OnOpenFusionLogFolderMenuClick(object sender, RoutedEventArgs e)
         {
-            checker.OpenFusionLogFolder();
+            Checker.OpenFusionLogFolder();
         }
     }
 }

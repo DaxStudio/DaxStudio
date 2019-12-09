@@ -1,7 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 
-namespace DAXEditor
+namespace DAXEditorControl
 {
     public interface IEditor
     {
@@ -11,7 +11,9 @@ namespace DAXEditor
         //ITextSource Document { get; }
         void BeginChange();
         void EndChange();
+#pragma warning disable CA1716 // Identifiers should not match keywords
         void Select(int start, int length);
+#pragma warning restore CA1716 // Identifiers should not match keywords
         void ScrollTo(int line, int col);
         TextLocation DocumentGetLocation(int offset);
         void DocumentReplace(int offset, int length, string newText);

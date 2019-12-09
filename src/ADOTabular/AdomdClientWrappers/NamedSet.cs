@@ -5,8 +5,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class NamedSet
     {
-        private Microsoft.AnalysisServices.AdomdClient.NamedSet _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.NamedSet _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.NamedSet _objExcel;
 
         public NamedSet(Microsoft.AnalysisServices.AdomdClient.NamedSet obj)
         {
@@ -27,10 +27,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Name;
-                    };
+                    string f() => _objExcel.Name;
                     return f();
                 }
             }
@@ -46,10 +43,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
-                    {
-                        return _objExcel.Description;
-                    };
+                    string f() => _objExcel.Description;
                     return f();
                 }
             }
@@ -65,10 +59,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<CubeDef> f = delegate
-                    {
-                        return new CubeDef(_objExcel.ParentCube);
-                    };
+                    CubeDef f() => new CubeDef(_objExcel.ParentCube);
                     return f();
                 }
             }
@@ -89,7 +80,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<PropertyCollection> f = delegate
+                    PropertyCollection f()
                     {
                         PropertyCollection coll = new PropertyCollection();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Property prop in _objExcel.Properties)
@@ -97,7 +88,7 @@ namespace ADOTabular.AdomdClientWrappers
                             coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                         }
                         return coll;
-                    };
+                    }
                     return f();
                 }
             }

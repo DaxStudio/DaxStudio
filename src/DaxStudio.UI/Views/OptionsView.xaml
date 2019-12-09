@@ -5,20 +5,26 @@
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
             xmlns:fluent="urn:fluent-ribbon" 
             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+            xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
-             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
+            xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
+            xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-            mc:Ignorable="d" 
-             d:DesignHeight="1008" d:DesignWidth="1400">
+             xmlns:val="clr-namespace:DaxStudio.UI.Validation"
+             mc:Ignorable="d" 
+            d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="fontConverter"/>
             <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter" />
             <conv:IntToDoubleConverter x:Key="IntToDoubleConverter" />
+            <conv:HotKeyConverter x:Key="HotKeyConverter" />
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+            
             <Style TargetType="{x:Type wmc:WatermarkTextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
@@ -144,6 +150,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -183,19 +191,25 @@
                                 </ComboBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
                                 <!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>-->
-                                <fluent:Spinner x:Name="EditorFontSize" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-12" Padding="0" />
+                                <nud:DoubleUpDown x:Name="ctlEditorFontSize" Value="{Binding EditorFontSize,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  MinValue="6" MaxValue="120" IsReadOnly="False" FormatString="0.0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" Padding="0" />
                                 <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
-                                
+
                                 <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
 
                                 <Label Grid.Row="4" Grid.Column="0" Content="Keep Metadata Search Open:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="4" Grid.Column="1" x:Name="KeepMetadataSearchOpen" VerticalAlignment="Center" />
 
-                                <Label Grid.Row="5" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
-                                <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
-                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <Label Grid.Row="5" Grid.Column="0" Content="Convert Tabs to Spaces:" HorizontalAlignment="Right"/>
+                                <CheckBox Grid.Row="5" Grid.Column="1" x:Name="EditorConvertTabsToSpaces" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="6" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
+                                <nud:ShortUpDown Grid.Row="6" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="ctrlEditorIndentationSize" VerticalAlignment="Center" />
+
+                                <Label Grid.Row="7" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
                             </Grid>
@@ -251,7 +265,7 @@
 
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
                             </Grid>
@@ -272,16 +286,16 @@
                                 </Grid.RowDefinitions>
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
                                 <!-- x:Name="ctrlTraceStartupTimeout" -->
-                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
+                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
                         </GroupBox>
@@ -402,16 +416,15 @@
                                         </ComboBox.ItemsSource>
                                     </ComboBox>
                                     <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <nud:NumericUpDown Value="{Binding ResultFontSize, Converter={StaticResource IntToDoubleConverter}}" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>
+                                    <nud:DoubleUpDown Value="{Binding ResultFontSize, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" FormatString="0.0" MinValue="6" MaxValue="120" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:DoubleUpDown>
                                 </Grid>
                                 <Grid Margin="5,5,0,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-
+                                        <ColumnDefinition Width="20"/>
                                         <ColumnDefinition Width="*"/>
-
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -420,19 +433,19 @@
                                         <RowDefinition Height="*"/>
 
                                     </Grid.RowDefinitions>
-                                    <Label Grid.Row="0" Grid.Column="1" Content="Scale Results Font with Editor" Margin="0,0,40.5,0"/>
-                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
-                                    <Label Grid.Row="2" Grid.Column="1" Content="Exclude Headers when Copying Data" Margin="0,0,40.5,0"/>
-                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" VerticalAlignment="Top" Margin="2,7,2,0" Height="15" />
-                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">Setting this option will just copy the raw data from the query results pane</TextBlock>
-                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top" Margin="2,7,2,0" Content="Automatic Format Results" Grid.ColumnSpan="2"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
+                                    
+                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top"  Height="15" Content="Scale Results Font with Editor" Grid.ColumnSpan="2" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
+                                    <Label Grid.Row="2" Grid.Column="1"   />
+                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" Content="Exclude Headers when Copying Data" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will just copy the raw data from the query results pane</TextBlock>
+                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top"  Content="Automatic Format Results" Grid.ColumnSpan="2"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5" >Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
 
                                 </Grid>
                             </StackPanel>
                         </GroupBox>
-                        <GroupBox Header="Version Notifications">
+                        <!--<GroupBox Header="Excel Addin">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="20"/>
@@ -446,11 +459,11 @@
 
 
                                 </Grid.RowDefinitions>
-                                <CheckBox Grid.Column="0" x:Name="ShowPreReleaseNotifcations" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Pre-Releases" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This will give early access to new features, but may not be as stable as the production releases</TextBlock>
+                                <Button Grid.Column="0" x:Name="ToggleExcelAddin" VerticalAlignment="Top" Margin="2,7,2,0" Content="{Binding ToggleExcelAddinCaption}" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0" Text="{Binding ToggleExcelAddinDescription}"></TextBlock>
 
                             </Grid>
-                        </GroupBox>
+                        </GroupBox>-->
                         <GroupBox Header="Metadata Pane">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
@@ -518,13 +531,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <GroupBox Header="CSV Delimiter:" Grid.Row="0">
                                     <StackPanel Orientation="Vertical">
                                         <RadioButton GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" >
                                             <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Culture Default List Separator  (" />
-                                            <TextBlock x:Name="CultureSpecificListDelimiter"/>
+                                                <TextBlock Text="Culture Default List Separator  (" />
+                                                <TextBlock x:Name="CultureSpecificListDelimiter"/>
                                                 <TextBlock Text=")"/>
                                             </StackPanel>
 
@@ -542,6 +555,81 @@
                         </GroupBox>
                         <!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
                         </GroupBox>-->
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Key Bindings" Visibility="{Binding ShowKeyBindings, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
+                    <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer2, Path=ViewportWidth}" Orientation="Horizontal" >
+                        <GroupBox Header="Hotkeys">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Click on the key binding next to a command and type a new key combination or use Esc or backspace to clear a hotkey" Foreground="Black" TextWrapping="Wrap"/>
+                                <Button Content="Reset All" Grid.Column="1" x:Name="ResetKeyBindings" Height="22" Width="60"/>
+
+                                <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
+                                    <controls:HotkeyEditorControl.Resources>
+                                        <val:BindingProxy x:Key="proxy" Data="{Binding}"/>
+                                    </controls:HotkeyEditorControl.Resources>
+                                    <controls:HotkeyEditorControl.Hotkey>
+                                        <Binding Path="HotkeyCommentSelection" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" Converter="{StaticResource HotKeyConverter}">
+                                            <Binding.ValidationRules>
+                                                <val:HotkeyValidationRule ValidationStep="ConvertedProposedValue">
+                                                    <val:HotkeyValidationRule.Wrapper>
+                                                        <val:Wrapper Options="{Binding Data, Source={StaticResource proxy}}" PropertyName="HotkeyCommentSelection"/>
+                                                    </val:HotkeyValidationRule.Wrapper>
+                                                </val:HotkeyValidationRule>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </controls:HotkeyEditorControl.Hotkey>
+                                </controls:HotkeyEditorControl>
+
+                                <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Run Query" Padding="2" Grid.Row="3" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="2" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQueryAlt, Converter={StaticResource HotKeyConverter}}"/>
+                                
+                                <Label Content="Selection To Upper" Padding="2" Grid.Row="4" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyToUpper, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Selection To Lower" Padding="2" Grid.Row="5" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="5" Padding="2" Hotkey="{Binding HotkeyToLower, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Open Document" Padding="2" Grid.Row="6" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="6" Padding="2" Hotkey="{Binding HotkeyOpenDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Save Document" Padding="2" Grid.Row="7" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="7" Padding="2" Hotkey="{Binding HotkeySaveDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="New Document" Padding="2" Grid.Row="8" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="8" Padding="2" Hotkey="{Binding HotkeyNewDocument, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="New Document with current Connection" Padding="2" Grid.Row="9" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="9" Padding="2" Hotkey="{Binding HotkeyNewDocumentWithCurrentConnection, Converter={StaticResource HotKeyConverter}}"/>
+                            </Grid>
+                            
+                            
+                        </GroupBox>
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
@@ -569,6 +657,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -581,7 +671,9 @@
                                 <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Launch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
 
-                                
+                                <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>
+
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="VertiPaq Analyzer">

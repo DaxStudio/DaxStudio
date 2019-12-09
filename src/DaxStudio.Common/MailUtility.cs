@@ -33,9 +33,11 @@ namespace DaxStudio.Common
             {
                 if (addUnsentHeader)
                 {
-                    var binaryWriter = new BinaryWriter(filestream);
-                    //Write the Unsent header to the file so the mail client knows this mail must be presented in "New message" mode
-                    binaryWriter.Write(System.Text.Encoding.UTF8.GetBytes("X-Unsent: 1" + Environment.NewLine));
+                    using (var binaryWriter = new BinaryWriter(filestream))
+                    {
+                        //Write the Unsent header to the file so the mail client knows this mail must be presented in "New message" mode
+                        binaryWriter.Write(System.Text.Encoding.UTF8.GetBytes("X-Unsent: 1" + Environment.NewLine));
+                    }
                 }
 
                 var assembly = typeof(SmtpClient).Assembly;

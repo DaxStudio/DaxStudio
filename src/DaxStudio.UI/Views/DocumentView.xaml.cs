@@ -12,9 +12,5 @@ namespace DaxStudio.UI.Views
             InitializeComponent();
         }
 
-        private void daxEditor_DragEnter(object sender, System.Windows.DragEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("DragEnter Event");
-        }
     }
 }

@@ -33,8 +33,8 @@ namespace DaxStudio.UI.Model
         //public new bool CanClose { get { return _canClose; } set { if (value != _canClose) { _canClose = value;  NotifyOfPropertyChange(() => CanClose); } } }
         //public bool CanClose { get; set; }
         public bool IsEnabled { get; set; }
-        public  bool CanHide { get; set; }
-        public virtual int AutoHideMinHeight { get; set; }
+        public bool CanHide { get; set; }
+        public int AutoHideMinHeight { get; set; }
         public new  bool IsActive { get; set; }
         private bool _isSelected;
         public bool IsSelected {

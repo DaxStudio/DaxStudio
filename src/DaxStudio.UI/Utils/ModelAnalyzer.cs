@@ -12,6 +12,8 @@ using System.IO.Packaging;
 using System.IO;
 using Newtonsoft.Json;
 using System.Data.OleDb;
+using Dax.ViewModel;
+using Dax.Vpax.Tools;
 
 namespace DaxStudio.UI.Utils
 {
@@ -24,12 +26,12 @@ namespace DaxStudio.UI.Utils
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Model.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion);
+            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion);
 
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Model.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
+            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
 
             // 
             // Create VertiPaq Analyzer views
@@ -41,6 +43,13 @@ namespace DaxStudio.UI.Utils
             // 
             // TODO: export of database should be optional
             Dax.Vpax.Tools.VpaxTools.ExportVpax(path, model, viewVpa, database);
+        }
+
+        public static VpaModel ImportVPAX(string filename)
+        {
+            var content = VpaxTools.ImportVpax(filename);
+            var view = new Dax.ViewModel.VpaModel(content.DaxModel);
+            return view;
         }
         
     }

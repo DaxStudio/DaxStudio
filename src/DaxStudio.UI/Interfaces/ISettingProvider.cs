@@ -12,16 +12,19 @@ namespace DaxStudio.UI.Interfaces
         ObservableCollection<string> GetServerMRUList();
         void SaveServerMRUList(string currentServer, ObservableCollection<string> servers);
 
-        ObservableCollection<DaxFile> GetFileMRUList();
-        void SaveFileMRUList(IEnumerable<object> files);
+        ObservableCollection<IDaxFile> GetFileMRUList();
+        void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files);
 
         T GetValue<T>(string subKey, T defaultValue);
         Task SetValueAsync<T>(string subKey, T value, bool isInitializing);
+        Task SetValueAsync(string subKey, DateTime value, bool isInitializing);
 
         bool IsFileLoggingEnabled();
         string LogPath { get; }
 
         void Initialize(IGlobalOptions options);
+
+        bool IsRunningPortable { get; }
     }
 }
 

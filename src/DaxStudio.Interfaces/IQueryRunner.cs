@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Interfaces
 {
-    public enum OutputTargets
+    public enum OutputTarget
     {
         Grid,
         Timer,
@@ -23,8 +23,8 @@ namespace DaxStudio.Interfaces
         void OutputMessage(string message);
         void OutputMessage(string message, double duration);
         void OutputWarning(string warning);
-        void OutputError(string error);
-        void OutputError(string error, double duration);
+        void OutputError(string errorMessage);
+        void OutputError(string errorMessage, double duration);
         void ActivateResults();
         void ActivateOutput();
         //bool IsOutputActive { get; }
@@ -35,7 +35,7 @@ namespace DaxStudio.Interfaces
         string ConnectionStringWithInitialCatalog { get; }
         bool ConnectedToPowerPivot { get; }
 
-        void SetResultsMessage(string message, OutputTargets icon);
+        void SetResultsMessage(string message, OutputTarget icon);
         IStatusBarMessage NewStatusBarMessage(string message);
         int RowCount { get; set; }
 

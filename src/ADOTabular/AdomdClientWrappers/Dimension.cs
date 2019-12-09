@@ -5,16 +5,16 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Dimension
     {
-        private Microsoft.AnalysisServices.AdomdClient.Dimension _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Dimension _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension _objExcel;
 
-        public Dimension(Microsoft.AnalysisServices.AdomdClient.Dimension obj)
+        public Dimension(Microsoft.AnalysisServices.AdomdClient.Dimension dimension)
         {
-            _obj = obj;
+            _obj = dimension;
         }
-        public Dimension(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension obj)
+        public Dimension(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Dimension dimension)
         {
-            _objExcel = obj;
+            _objExcel = dimension;
         }
 
         public List<Hierarchy> Hierarchies
@@ -32,7 +32,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<List<Hierarchy>> f = delegate
+                    List<Hierarchy> f()
                     {
                         List<Hierarchy> list = new List<Hierarchy>();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy dim in _objExcel.Hierarchies)
@@ -40,7 +40,7 @@ namespace ADOTabular.AdomdClientWrappers
                             list.Add(new Hierarchy(dim));
                         }
                         return list;
-                    };
+                    }
                     return f();
                 }
             }
@@ -56,10 +56,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                    string f()
                     {
                         return _objExcel.Caption;
-                    };
+                    }
                     return f();
                 }
             }
@@ -75,10 +75,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                    string f()
                     {
                         return _objExcel.Name;
-                    };
+                    }
                     return f();
                 }
             }
@@ -94,10 +94,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                    string f()
                     {
                         return _objExcel.UniqueName;
-                    };
+                    }
                     return f();
                 }
             }
@@ -113,10 +113,10 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<string> f = delegate
+                    string f()
                     {
                         return _objExcel.Description;
-                    };
+                    }
                     return f();
                 }
             }
@@ -137,7 +137,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
                 else
                 {
-                    ExcelAdoMdConnections.ReturnDelegate<PropertyCollection> f = delegate
+                    PropertyCollection f()
                     {
                         PropertyCollection coll = new PropertyCollection();
                         foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Property prop in _objExcel.Properties)
@@ -145,7 +145,7 @@ namespace ADOTabular.AdomdClientWrappers
                             coll.Add(prop.Name, new Property(prop.Name, prop.Value, prop.Type));
                         }
                         return coll;
-                    };
+                    }
                     return f();
                 }
             }

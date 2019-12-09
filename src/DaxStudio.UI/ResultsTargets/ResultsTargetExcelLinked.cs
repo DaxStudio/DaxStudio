@@ -37,7 +37,7 @@ namespace DaxStudio.UI.ResultsTargets
         public bool IsAvailable => _host.IsExcel && !_isPowerBIOrSSDTConnection;
         public int DisplayOrder => 100;
         public string Message => "Query will be sent to Excel for execution";
-        public OutputTargets Icon => OutputTargets.Linked;
+        public OutputTarget Icon => OutputTarget.Linked;
 
         public bool IsEnabled => !_isPowerBIOrSSDTConnection;
 
@@ -79,7 +79,7 @@ namespace DaxStudio.UI.ResultsTargets
                                 runner.OutputMessage(
                                     string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
                                 runner.ActivateOutput();
-                                runner.SetResultsMessage("Query sent to Excel for execution", OutputTargets.Linked);
+                                runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
 
                             },TaskScheduler.Default);
                     }

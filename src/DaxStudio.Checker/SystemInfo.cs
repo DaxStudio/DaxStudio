@@ -2,7 +2,7 @@
 using System.Management;
 using System.Threading;
 
-namespace DaxStudio.Checker
+namespace DaxStudio.CheckerApp
 {
     public static class SystemInfo
     {

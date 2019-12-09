@@ -19,31 +19,34 @@ namespace DaxStudio.ExcelAddin.Xmla
     {
         // This code configures Web API. The Startup class is specified as a type
         // parameter in the WebApp.Start method.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
         public void Configuration( IAppBuilder appBuilder)
         {
             Serilog.Log.Debug("{class} {method} {message}", "Startup", "Configuration", "Starting OWIN configuration");
             // Configure Web API for self-host. 
             try {
-                HttpConfiguration config = new HttpConfiguration();
-
-                appBuilder.Use<UnhandledExceptionMiddleware>();
-                appBuilder.Map("/signalr", map =>
+                using (HttpConfiguration config = new HttpConfiguration())
                 {
-                    var hubConfiguration = new HubConfiguration
-                    {
-                        EnableDetailedErrors = true
-                    };
-                    map.RunSignalR(hubConfiguration);
-                });
 
-                config.MapHttpAttributeRoutes();
-                config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
-                config.Formatters.Clear();
-                config.Formatters.Add(new JsonMediaTypeFormatter());
-                config.Formatters.Add(new XmlMediaTypeFormatter());
-                config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
-                
-                appBuilder.UseWebApi(config);
+                    appBuilder.Use<UnhandledExceptionMiddleware>();
+                    appBuilder.Map("/signalr", map =>
+                    {
+                        var hubConfiguration = new HubConfiguration
+                        {
+                            EnableDetailedErrors = true
+                        };
+                        map.RunSignalR(hubConfiguration);
+                    });
+
+                    config.MapHttpAttributeRoutes();
+                    config.Services.Add(typeof(IExceptionLogger), new TraceExceptionLogger());
+                    config.Formatters.Clear();
+                    config.Formatters.Add(new JsonMediaTypeFormatter());
+                    config.Formatters.Add(new XmlMediaTypeFormatter());
+                    config.Formatters.JsonFormatter.SerializerSettings.TypeNameHandling = TypeNameHandling.All;
+
+                    appBuilder.UseWebApi(config);
+                }
             }
             catch (Exception ex)
             {

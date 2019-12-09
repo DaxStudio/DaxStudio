@@ -9,13 +9,13 @@ namespace ADOTabular.AdomdClientWrappers
         private Microsoft.AnalysisServices.AdomdClient.Hierarchy _obj;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy _objExcel;
 
-        public Hierarchy(Microsoft.AnalysisServices.AdomdClient.Hierarchy obj)
+        public Hierarchy(Microsoft.AnalysisServices.AdomdClient.Hierarchy hierarchy)
         {
-            _obj = obj;
+            _obj = hierarchy;
         }
-        public Hierarchy(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy obj)
+        public Hierarchy(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy hierarchy)
         {
-            _objExcel = obj;
+            _objExcel = hierarchy;
         }
 
         public string Caption

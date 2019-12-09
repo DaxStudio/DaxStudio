@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly Regex _ppvtRegex;
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
         private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<none found>", -1, EmbeddedSSASIcon.Loading);
-        private ISettingProvider SettingProvider;
+        private ISettingProvider SettingProvider { get; }
 
 
         public ConnectionDialogViewModel(string connectionString
@@ -34,7 +35,8 @@ namespace DaxStudio.UI.ViewModels
             , IEventAggregator eventAggregator
             , bool hasPowerPivotModel
             , DocumentViewModel document
-            , ISettingProvider settingProvider) 
+            , ISettingProvider settingProvider
+            , IGlobalOptions options) 
         {
             try
             {
@@ -47,6 +49,7 @@ namespace DaxStudio.UI.ViewModels
                 PowerPivotEnabled = true;
                 Host = host;
                 ServerModeSelected = true;
+                Options = options;
 
                 RefreshPowerBIInstances();
 
@@ -78,6 +81,8 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error("{class} {method} {message} {stacktrace}", "ConnectionDialogViewModel", "ctor", ex.Message, ex.StackTrace);
             }
         }
+
+        public IGlobalOptions Options { get; }
 
         private void RefreshPowerBIInstances()
         {
@@ -120,7 +125,7 @@ namespace DaxStudio.UI.ViewModels
      
         public async Task<bool> HasPowerPivotModelAsync() {
 
-            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel);
+            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel).ConfigureAwait(false);
             return res;
             
         }
@@ -186,7 +191,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void ParseConnectionString()
         {
-            if (_connectionString != String.Empty)
+            if (! string.IsNullOrEmpty(_connectionString))
             {
                 _connectionProperties = SplitConnectionString(_connectionString);
                 // if data source = $Embedded$ then mark Ppvt option as selected 
@@ -359,9 +364,10 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<string> RecentServers
         {
-            get {var list = SettingProvider.GetServerMRUList();
-                return list;
-            }
+            //get {var list = SettingProvider.GetServerMRUList();
+            //    return list;
+            //}
+            get => Options.RecentServers;
         }
 
         public bool PowerPivotEnabled { get; private set; }
@@ -370,12 +376,12 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetRolesProperty()
         {
-            return Roles == string.Empty ? string.Empty : string.Format("Roles={0};", Roles);
+            return Roles.Length == 0 ? string.Empty : string.Format("Roles={0};", Roles);
         }
 
         private string GetDirectQueryMode()
         {
-            if (DirectQueryMode == string.Empty || DirectQueryMode.ToLower() == "default")
+            if (string.IsNullOrEmpty(DirectQueryMode) || DirectQueryMode.ToLower() == "default")
                 return string.Empty;
             else
                 return string.Format("DirectQueryMode={0};", DirectQueryMode);
@@ -467,7 +473,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                string serverType=null;
+                ServerType serverType= ServerType.AnalysisServices;
                 string powerBIFileName = "";
                 var vw = (Window)this.GetView();
                 vw.Visibility = Visibility.Hidden;
@@ -479,22 +485,22 @@ namespace DaxStudio.UI.ViewModels
                 if (ServerModeSelected)
                 {
                     SettingProvider.SaveServerMRUList(DataSource, RecentServers);
-                    serverType = "SSAS";
+                    serverType = ServerType.AnalysisServices;
                 }
-                if (PowerPivotModeSelected) { serverType = "PowerPivot"; }
+                if (PowerPivotModeSelected) { serverType = ServerType.PowerPivot; }
                 if (PowerBIModeSelected)
                 {
                     powerBIFileName = SelectedPowerBIInstance.Name;
                     switch (SelectedPowerBIInstance.Icon)
                     {
                         case EmbeddedSSASIcon.Devenv:
-                            serverType = "SSDT";
+                            serverType = ServerType.SSDT;
                             break;
                         case EmbeddedSSASIcon.PowerBI:
-                            serverType = "PBI Desktop";
+                            serverType = ServerType.PowerBIDesktop;
                             break;
                         case EmbeddedSSASIcon.PowerBIReportServer:
-                            serverType = "PBI Report Server";
+                            serverType = ServerType.PowerBIReportServer;
                             break;
                     }
                 }

@@ -37,6 +37,12 @@
 //
 // ----------------------------------------------------------------------------
 
+
+const 
+   ComponentList = 'CORE - core components| EXCEL - Excel Addin'; 
+   TaskList = 'DESKTOPICON - adds a desktop icon'; 
+   ParameterList = '/SKIPDEPENDENCIES=True/False - Skips the standard dependency checks';  
+
 // Define Escape key and form controls
 const
 	VK_ESCAPE = $1B;
@@ -327,15 +333,6 @@ end;
 
 // Changed to InitializeWizard() for Universal Extractor
 // function InitializeSetup: Boolean;
-procedure InitializeWizard();
-var
-	i: Integer;
-begin
-	// Check for help switch passed on installer command line
-	if paramcount() > 0 then
-		for i:=1 to paramcount() do
-			if (Lowercase(Copy(ParamStr(i), 1, 2)) = '/?') OR ((Length(ParamStr(i)) = 2) AND (Lowercase(Copy(ParamStr(i), 1, 2)) = '/h')) OR (Lowercase(Copy(ParamStr(i), 1, 5)) = '/help') then
-				DisplayHelp();
-	//Result := True;
-end;
+//procedure InitializeWizard();
+//end;
 

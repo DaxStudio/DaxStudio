@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Resources;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -44,4 +45,6 @@ using System.Windows;
   
   // (used if a resource is not found in the page, 
   // app, or any theme specific resource dictionaries)
-)] 
+)]
+[assembly: NeutralResourcesLanguage("en-US")]
+

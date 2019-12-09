@@ -10,11 +10,11 @@ namespace ADOTabular
     public class ADOTabularModelCollection:IEnumerable<ADOTabularModel>
     {
         private readonly IADOTabularConnection _adoTabConn;
-        private readonly ADOTabularDatabase  _database;
+
         public ADOTabularModelCollection(IADOTabularConnection adoTabConn, ADOTabularDatabase database)
         {
             _adoTabConn = adoTabConn;
-            _database = database;
+            Database = database;
             //_models = _adoTabConn.Visitor.Visit(this);
         }
 
@@ -37,10 +37,7 @@ namespace ADOTabular
             _models.Add(model.Name, model);
         }
 
-        public ADOTabularDatabase Database
-        {
-            get { return _database; }
-        }
+        public ADOTabularDatabase Database { get; }
 
         public ADOTabularModel BaseModel
         {

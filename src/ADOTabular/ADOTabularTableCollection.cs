@@ -8,14 +8,13 @@ namespace ADOTabular
     {
         
         private readonly IADOTabularConnection _adoTabConn;
-        private readonly ADOTabularModel  _model;
         private SortedDictionary<string, ADOTabularTable> _tables;
         private object mutex = new object();
 
         public ADOTabularTableCollection(IADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
-            _model = model;
+            Model = model;
 
         }
 
@@ -39,7 +38,7 @@ namespace ADOTabular
 
         public ADOTabularModel Model
         {
-            get { return _model; }
+            get;
         }
 
         public int Count

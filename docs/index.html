@@ -15,7 +15,8 @@ js-footer: "/js/index-footer.js"
 {% if download.browser_download_url != ''  %}    
     <a href="{{ download.assets[0].browser_download_url }}">
       <button class="btn btn-lg btn-success"> 
-        <h3><i class="fa fa-download"></i>&nbsp; {{download.name}} </h3>
+        <h3><i class="fa fa-download"></i>&nbsp; {{download.name}}DAX Studio 2.9.5 </h3>
+        <div>(installer)</div>
       </button>
     </a>
     {% assign download_count = download.assets[0].download_count %}
@@ -25,9 +26,23 @@ js-footer: "/js/index-footer.js"
       <i class="fa fa-calendar" title="release date"></i><span>{% if download.assets[0].created_at != nil %}{{ download.assets[0].created_at | date_to_string }} {% else %}N/A{% endif %} </span>
       <span id="download_cnt"></span> 
     </div>
+<!--
+    <a href="{{ download.assets[1].browser_download_url }}">
+      
+        <div><i class="fa fa-download"></i>&nbsp; {{download.name}} (portable)</div>
+      
+    </a>
+    {% assign download_count_1 = download.assets[1].download_count %}
+    {% assign download_size_1 = download.assets[1].size %}
+    <div class="download-info">
+      <i class="fa fa-download" title="downloads"></i><span>Size: {% include filesize.html number=download_size_1 %} | </span>
+      <i class="fa fa-calendar" title="release date"></i><span>{% if download.assets[1].created_at != nil %}{{ download.assets[1].created_at | date_to_string }} {% else %}N/A{% endif %} </span>
+      <span id="download_cnt_1"></span> 
+    </div>
 {% else %}
     <div>Sorry, but we are not able to get the latest release information from github at this time</div>
 {% endif %}
+  -->
   </div>
 </div>
 
@@ -108,6 +123,11 @@ js-footer: "/js/index-footer.js"
 <div class="row">
   <div class="col-lg-2 pull-left"><i class="fa fa-question-circle" style="font-size: 48pt"></i></div> 
   <div class="col-lg-10">If you have an idea for a feature that you would like to see in DAX Studio submit your idea to our <a href="/issues">issues register</a></div>
+</div>
+<hr>
+<div class="row">
+  <div class="col-lg-2 pull-left"><i class="fa fa-cogs" style="font-size: 48pt"></i></div> 
+  <div class="col-lg-10">Will DAX Studio run on your machine? Probably, but you can double check the <a href="/documentation/Requirements">Requirements</a> for running DAX Studio</div>
 </div>
 
 {% if posts.size > 0 %}

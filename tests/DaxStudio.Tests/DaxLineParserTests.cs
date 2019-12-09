@@ -195,11 +195,17 @@ namespace DaxStudio.Tests
             Assert.AreEqual(8, daxState.StartOffset, "StartOffset");
         }
 
-        [Ignore]
+
         [TestMethod]
         public void TestFindTableNameEuropeanListSeparator()
         {
-            Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table;table1[col1"));
+            Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table; table1["));
+        }
+
+        [TestMethod]
+        public void TestFindTableNameUsListSeparator()
+        {
+            Assert.AreEqual("table1", DaxLineParser.GetPreceedingTableName("filter(table, table1["));
         }
 
         [TestMethod]

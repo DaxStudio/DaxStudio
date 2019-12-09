@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public int DisplayOrder => 300;
         public string Message => "Results will be sent to a Text File";
-        public OutputTargets Icon => OutputTargets.File;
+        public OutputTarget Icon => OutputTarget.File;
 
         public bool IsEnabled => true;
 
@@ -60,7 +60,7 @@ namespace DaxStudio.UI.Model
                         bool shouldQuoteStrings = true; //default to quoting all string fields
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
                         string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
-                        var enc = Encoding.UTF8;
+                        Encoding enc = new UTF8Encoding(false);
 
                         switch (dlg.FilterIndex)
                         {
@@ -71,7 +71,7 @@ namespace DaxStudio.UI.Model
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
                             case 3: //unicode csv
-                                enc = Encoding.Unicode;
+                                enc = new UnicodeEncoding();
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
                             case 4:
@@ -171,7 +171,7 @@ namespace DaxStudio.UI.Model
                                 sw.Stop();
                                 durationMs = sw.ElapsedMilliseconds;
 
-                                runner.SetResultsMessage("Query results written to file", OutputTargets.File);
+                                runner.SetResultsMessage("Query results written to file", OutputTarget.File);
                                 runner.ActivateOutput();
                             } else
                                 runner.OutputError("Query Batch Completed with errors", durationMs);

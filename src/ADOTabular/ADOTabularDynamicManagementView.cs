@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics.Contracts;
 
 namespace ADOTabular
 {
@@ -7,6 +8,8 @@ namespace ADOTabular
     {
         public ADOTabularDynamicManagementView(DataRow dr)
         {
+            Contract.Requires(dr != null, "The dr parameter must not be null");
+
             _caption = dr["SchemaName"].ToString();
         }
 
@@ -22,14 +25,8 @@ namespace ADOTabular
             get { return DefaultQuery; }
         }
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.DMV;
-        public string DefaultQuery
-        {
-            get { return String.Format("select * from $SYSTEM.{0}", _caption); }
-        }
-        public MetadataImages MetadataImage
-        {
-            get { return MetadataImages.DmvTable; }
-        }
+        public string DefaultQuery => $"select * from $SYSTEM.{Caption}";
+        public MetadataImages MetadataImage => MetadataImages.DmvTable;
         public bool IsVisible => true;
     }
 }

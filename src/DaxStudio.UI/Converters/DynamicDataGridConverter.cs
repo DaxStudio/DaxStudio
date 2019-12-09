@@ -82,15 +82,15 @@ namespace DaxStudio.UI.Converters
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
 
                         // Bind FormatString if it exists
-                        if (item.ExtendedProperties[Constants.FORMAT_STRING] != null)
-                            colBinding.StringFormat = item.ExtendedProperties[Constants.FORMAT_STRING].ToString();
+                        if (item.ExtendedProperties[Constants.FormatString] != null)
+                            colBinding.StringFormat = item.ExtendedProperties[Constants.FormatString].ToString();
                         // set culture if it exists
-                        if (item.ExtendedProperties[Constants.LOCALE_ID] != null)
+                        if (item.ExtendedProperties[Constants.LocaleId] != null)
                         {
                             var cultureInfo = CultureInfo.InvariantCulture;
                             try
                             {
-                                cultureInfo = new CultureInfo((int)item.ExtendedProperties[Constants.LOCALE_ID]);
+                                cultureInfo = new CultureInfo((int)item.ExtendedProperties[Constants.LocaleId]);
                             }
                             catch { 
                                 // Do Nothing, just use the initialized value for cultureInfo 

@@ -3,16 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Caliburn.Micro;
 using Newtonsoft.Json;
-using System.Net.Http.Formatting;
 using DaxStudio.UI.Events;
 using Serilog;
 using System.IO;
+using System.Diagnostics.Contracts;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -22,12 +22,13 @@ namespace DaxStudio.UI.Model
     {
         private readonly int _port;
         private readonly Uri _baseUri;
-        private IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _eventAggregator;
         private ViewModels.DocumentViewModel _activeDocument;
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
         {
+            Contract.Requires(eventAggregator != null, "The eventAggregator argument must not be null");
             _port = port;
-            _baseUri = new Uri(string.Format("http://localhost:{0}/",port));
+            _baseUri = new Uri($"http://localhost:{port}/");
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
         }
@@ -37,7 +38,7 @@ namespace DaxStudio.UI.Model
             var client = new HttpClient();
             client.BaseAddress = _baseUri;
             client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }
 
@@ -48,7 +49,7 @@ namespace DaxStudio.UI.Model
 
         public bool SupportsQueryTable
         {
-            get { throw new NotImplementedException(); }
+            get { return true; }
         }
 
         public bool SupportsStaticTable
@@ -73,14 +74,16 @@ namespace DaxStudio.UI.Model
                         if (response.IsSuccessStatusCode)
                         {
                             Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
-                            return response.Content.ReadAsAsync<bool>().Result;
+                            return JsonConvert.DeserializeObject<bool>( response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<bool>().Result;
                         }
                     }
                     catch (Exception ex)
                     {
+                        var innerEx = ex.GetLeafException();
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
                         Log.Error("{class} {method} {exception} {stacktrace}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", ex.Message, ex.StackTrace );
-                        doc.OutputError(string.Format("Error checking if active Excel workbook has a PowerPivot ({0})", ex.Message));
+                        doc.OutputError($"Error checking if active Excel workbook has a PowerPivot model ({innerEx.Message})");
                     }
 
 
@@ -102,16 +105,17 @@ namespace DaxStudio.UI.Model
                 using (var client = GetHttpClient())
                 {
                     try { 
-                    HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return response.Content.ReadAsAsync<string>().Result;
-                    }
+                        HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return JsonConvert.DeserializeObject<string>( response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<string>().Result;
+                        }
                     }
                     catch (Exception ex)
                     {
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
-                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel", ex.Message));
+                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
                     }
 
                     return "<Workbook not found>";
@@ -132,7 +136,8 @@ namespace DaxStudio.UI.Model
                         HttpResponseMessage response = client.GetAsync("workbook/worksheets").Result;
                         if (response.IsSuccessStatusCode)
                         {
-                            return response.Content.ReadAsAsync<string[]>().Result;
+                            return JsonConvert.DeserializeObject<string[]>(response.Content.ReadAsStringAsync().Result);
+                            //return response.Content.ReadAsAsync<string[]>().Result;
                         }
                         
                     }
@@ -154,19 +159,22 @@ namespace DaxStudio.UI.Model
             using (var client = GetHttpClient())
             {
                 try { 
-                await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult);
-                /*await client.PostAsync<IStaticQueryResult>("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
-                        {
-                            SerializerSettings = new JsonSerializerSettings
-                            {
-                                Converters = new List<JsonConverter>
-                                    {
-                                        //list of your converters
-                                        new JsonDataTableConverter()
-                                    }
-                            }
-                        });
-                 */ 
+                    //await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
+
+                    await client.PostStreamAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results) as IStaticQueryResult).ConfigureAwait(false);
+
+                    //await client.PostAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
+                    //        {
+                    //            SerializerSettings = new JsonSerializerSettings
+                    //            {
+                    //                Converters = new List<JsonConverter>
+                    //                    {
+                    //                        //list of your converters
+                    //                        new JsonDataTableConverter()
+                    //                    }
+                    //            }
+                    //        });
+
                 }
                 catch (Exception ex)
                 {
@@ -184,10 +192,12 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult);
+                    //var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult).ConfigureAwait(false);
+                    var resp = await client.PostStreamAsync("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery, sheetName, connectionString) as ILinkedQueryResult).ConfigureAwait(false);
                     if (resp.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        var str = await resp.Content.ReadAsStringAsync();
+                        //var str = resp.Content.ReadAsAsync<string>().Result;
+                        var str = JsonConvert.DeserializeObject<string>(resp.Content.ReadAsStringAsync().Result);
                         var msg = (string)Newtonsoft.Json.Linq.JObject.Parse(str)["Message"];
                         
                         doc.OutputError(string.Format("Error sending results to Excel ({0})", msg));
@@ -211,7 +221,7 @@ namespace DaxStudio.UI.Model
         public int Port { get { return _port; } }
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // Do Nothing
         }
 
         public void Handle(ActivateDocumentEvent message)

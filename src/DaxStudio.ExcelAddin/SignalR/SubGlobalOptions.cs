@@ -1,6 +1,7 @@
 ﻿using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using System;
+using System.Collections.ObjectModel;
 using System.Security;
 
 namespace DaxStudio.SignalR
@@ -41,7 +42,7 @@ namespace DaxStudio.SignalR
 
         public bool QueryHistoryShowTraceColumns { get; set; }
 
-        public bool ShowPreReleaseNotifcations { get; set; }
+        public bool ShowPreReleaseNotifications { get; set; }
 
         public bool ShowTooltipBasicStats { get; set; }
 
@@ -85,10 +86,30 @@ namespace DaxStudio.SignalR
         public bool VpaxIncludeTom { get;set; }
         public bool CustomCsvQuoteStringFields { get; set; }
         public CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
+        public ObservableCollection<IDaxFile> RecentFiles { get; set; }
+        public ObservableCollection<string> RecentServers { get; set; }
+        public bool EditorConvertTabsToSpaces { get; set; }
+        public int EditorIndentationSize { get; set; }
+        public bool IsRunningPortable { get; set; }
+        public string HotkeyCommentSelection { get;set; }
+        public string HotkeyUnCommentSelection { get; set; }
+        public string HotkeyToUpper { get; set; }
+        public string HotkeyToLower { get; set; }
+        public string HotkeyRunQuery { get; set; }
+        public string HotkeyRunQueryAlt { get; set; }
+        public string HotkeyNewDocument { get; set; }
+        public string HotkeyNewDocumentWithCurrentConnection { get; set; }
+        public string HotkeyOpenDocument { get; set; }
+        public string HotkeySaveDocument { get; set; }
+        public string HotkeyGotoLine { get; set; }
+        public string HotkeyFormatQueryStandard { get; set; }
+        public string HotkeyFormatQueryAlternate { get; set; }
 
         public string GetCustomCsvDelimiter()
         {
-            throw new NotImplementedException();
+            return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;
         }
+
+        public void Initialize() { }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
-
+using System.Diagnostics.Contracts;
 
 namespace ADOTabular
 {
@@ -26,6 +26,8 @@ namespace ADOTabular
         private readonly IADOTabularConnection _adoTabConn;
         public ADOTabularColumnCollection(IADOTabularConnection adoTabConn, ADOTabularTable table)
         {
+            Contract.Requires(adoTabConn != null, "The adoTabConn parameter must not be null");
+
             Table = table;
             _adoTabConn = adoTabConn;
             if (_cols == null)
@@ -39,12 +41,14 @@ namespace ADOTabular
 
         public void Add(ADOTabularColumn column)
         {
+            if (column == null) return;
             _cols.Add(column.Name,column);
             _colsByRef.Add(column.InternalReference, column);
         }
 
         public void Remove(ADOTabularColumn column)
         {
+            if (column == null) return;
             _cols.Remove(column.Name);
             _colsByRef.Remove(column.InternalReference);
         }

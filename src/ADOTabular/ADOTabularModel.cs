@@ -8,20 +8,21 @@ namespace ADOTabular
     {
         private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularTableCollection _tableColl;
-        public ADOTabularModel(IADOTabularConnection adoTabConn, DataRow dr)
-        {
-            _adoTabConn = adoTabConn;
-            Name = dr["CUBE_NAME"].ToString();
-            Caption = dr["CUBE_CAPTION"].ToString();
-            Description = dr["DESCRIPTION"].ToString();
-            BaseModelName = dr["BASE_CUBE_NAME"].ToString();
-            Roles = new Dictionary<string, ADOTabularColumn>();
-            Relationships = new List<ADOTabularRelationship>();
-        }
+        //public ADOTabularModel(IADOTabularConnection adoTabConn, DataRow dr)
+        //{
+        //    _adoTabConn = adoTabConn;
+        //    Name = dr["CUBE_NAME"].ToString();
+        //    Caption = dr["CUBE_CAPTION"].ToString();
+        //    Description = dr["DESCRIPTION"].ToString();
+        //    BaseModelName = dr["BASE_CUBE_NAME"].ToString();
+        //    Roles = new Dictionary<string, ADOTabularColumn>();
+        //    Relationships = new List<ADOTabularRelationship>();
+        //}
 
-        public ADOTabularModel(IADOTabularConnection adoTabConn, string name, string caption, string description, string baseModelName)
+        public ADOTabularModel(IADOTabularConnection adoTabConn, ADOTabularDatabase database, string name, string caption, string description, string baseModelName)
         {
             _adoTabConn = adoTabConn;
+            Database = database;
             Name = name;
             Caption = caption;
             Description = description;
@@ -29,7 +30,7 @@ namespace ADOTabular
             Roles = new Dictionary<string, ADOTabularColumn>();
             Relationships = new List<ADOTabularRelationship>();
         }
-
+        public ADOTabularDatabase Database { get; }
         public string BaseModelName { get; private set; }
 
         public bool IsPerspective { get { return !string.IsNullOrEmpty(BaseModelName); } }

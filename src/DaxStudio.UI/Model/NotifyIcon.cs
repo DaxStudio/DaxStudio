@@ -1,6 +1,9 @@
 ﻿using System;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
+using Caliburn.Micro;
+using Serilog;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model
 {
@@ -10,11 +13,11 @@ namespace DaxStudio.UI.Model
         private string BalloonMessage;
         private System.Drawing.Icon _icon;
 
-        public NotifyIcon(Window window) 
+        public NotifyIcon(Window window, IEventAggregator eventAggreator) 
         {
             BalloonTitle = "DAX Studio"; //TODO - get current version for title
             System.Drawing.Icon ico = Icon;
-            
+            EventAggregator = eventAggreator;
             window.Dispatcher.Invoke(new System.Action(() =>
             {
                 icon = new TaskbarIcon
@@ -53,7 +56,19 @@ namespace DaxStudio.UI.Model
         private void icon_TrayBalloonTipClicked(object sender, RoutedEventArgs e)
         {
             if (DownloadUrl != null)
-                System.Diagnostics.Process.Start(DownloadUrl);
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(DownloadUrl);
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", nameof(NotifyIcon), nameof(icon_TrayBalloonTipClicked), "Unable to open log folder");
+                    EventAggregator.PublishOnUIThread(new OutputMessage( MessageType.Error, $"Unable to open log folder: '{DownloadUrl}'\n{ex.Message}"));
+                }
+            }
+        
         }
 
         public string DownloadUrl { get; set; }
@@ -66,13 +81,32 @@ namespace DaxStudio.UI.Model
             icon.ShowBalloonTip(BalloonTitle, BalloonMessage, BalloonIcon.Info); 
         }
         public string BalloonTitle { get; set; }
+        public IEventAggregator EventAggregator { get; }
 
         public void Dispose()
         {
-            icon.TrayBalloonTipClicked -= icon_TrayBalloonTipClicked;
-            icon.TrayLeftMouseDown -= icon_TrayMouseDown;
-            icon.TrayRightMouseDown -= icon_TrayMouseDown;
-            icon.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (icon != null)
+                {
+                    icon.TrayBalloonTipClicked -= icon_TrayBalloonTipClicked;
+                    icon.TrayLeftMouseDown -= icon_TrayMouseDown;
+                    icon.TrayRightMouseDown -= icon_TrayMouseDown;
+                    icon.Dispose();
+                    icon = null;
+                }
+                if (_icon != null)
+                {
+                    _icon.Dispose();
+                    _icon = null;
+                }
+            }
         }
     }
 }
