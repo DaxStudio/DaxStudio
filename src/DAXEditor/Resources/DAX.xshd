@@ -93,6 +93,7 @@
     <Keywords color="Operator">
       <Word>&amp;&amp;</Word>
       <Word>||</Word>
+      <Word>==</Word>
       <!--<Word>&gt;</Word>
       <Word>&lt;</Word>
       <Word>=</Word>
@@ -102,14 +103,20 @@
       <Word>/</Word>-->
     </Keywords>
     
+    <!-- 
+    NOTE: this function list is only used when the editor is not connected 
+          if the editor is connected we use the functions from the DISCOVER_FUNCTIONS DMV
+    -->
 		<Keywords color="Function">
       <Word>ABS</Word>
       <Word>ADDCOLUMNS</Word>
       <Word>ALL</Word>
+      <Word>ALLCROSSFILTERED</Word>
       <Word>ALLEXCEPT</Word>
       <Word>ALLNOBLANKROW</Word>
       <Word>ALLSELECTED</Word>
       <Word>AND</Word>
+      <Word>APPROXIMATEDISTINCTCOUNT</Word>
       <Word>AVERAGE</Word>
       <Word>AVERAGEA</Word>
       <Word>AVERAGEX</Word>
@@ -122,12 +129,15 @@
       <Word>CLOSINGBALANCEYEAR</Word>
       <Word>CONCATENATE</Word>
       <Word>CONTAINS</Word>
+      <Word>CONTAINSSTRING</Word>
+      <Word>CONTAINSSTRINGEXACT</Word>
       <Word>COUNT</Word>
       <Word>COUNTA</Word>
       <Word>COUNTAX</Word>
       <Word>COUNTBLANK</Word>
       <Word>COUNTROWS</Word>
       <Word>COUNTX</Word>
+      <Word>CONVERT</Word>
       <Word>CROSSJOIN</Word>
       <Word>CURRENCY</Word>
       <Word>CUSTOMDATA</Word>
@@ -143,6 +153,7 @@
       <Word>DIVIDE</Word>
       <Word>DISTINCT</Word>
       <Word>DISTINCTCOUNT</Word>
+      <Word>DISTINCTCOUNTNOBLANK</Word>
       <Word>EARLIER</Word>
       <Word>EARLIEST</Word>
       <Word>EDATE</Word>
@@ -175,6 +186,7 @@
       <Word>ISEMPTY</Word>
       <Word>ISERROR</Word>
       <Word>ISFILTERED</Word>
+      <Word>ISINSCOPE</Word>
       <Word>ISLOGICAL</Word>
       <Word>ISNONTEXT</Word>
       <Word>ISNUMBER</Word>
@@ -231,6 +243,7 @@
       <Word>RANKX</Word>
       <Word>RELATED</Word>
       <Word>RELATEDTABLE</Word>
+      <Word>REMOVEFILTERS</Word>
       <Word>REPLACE</Word>
       <Word>REPT</Word>
       <Word>RIGHT</Word>
@@ -295,6 +308,7 @@
       <Word>DESC</Word>
       <Word>EVALUATE</Word>
       <Word>FROM</Word>
+      <Word>IN</Word>
       <Word>MEASURE</Word>
       <Word>ON</Word>
       <Word>ORDER</Word>

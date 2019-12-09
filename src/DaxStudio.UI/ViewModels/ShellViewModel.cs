@@ -26,7 +26,8 @@ namespace DaxStudio.UI.ViewModels
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
         IHandle<StopAutoSaveTimerEvent>,
-        IHandle<ChangeThemeEvent>
+        IHandle<ChangeThemeEvent>,
+        IHandle<UpdateHotkeys>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -154,8 +155,6 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public ISettingProvider SettingProvider { get; }
 
-        public void ContentRendered()
-        { }
 
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
@@ -197,19 +196,45 @@ namespace DaxStudio.UI.ViewModels
             // SetPlacement will adjust the position if it's outside of the visible boundaries
             //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
             _window.SetPlacement(Options.WindowPosition);
-            notifyIcon = new NotifyIcon(_window);
+            notifyIcon = new NotifyIcon(_window, _eventAggregator);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
             //Application.Current.LoadRibbonTheme();
             _inputBindings = new InputBindings(_window);
             _inputBindings.RegisterCommands(GetInputBindingCommands());
+            
         }
 
         private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // TODO - we should load custom key bindings from Options
-            yield return new InputBindingCommand(this, nameof(CommentSelection), "Ctrl+Alt C");
-            
+            yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQuery);
+            yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQueryAlt);
+            yield return new InputBindingCommand(this, nameof(NewDocument), Options.HotkeyNewDocument);
+            yield return new InputBindingCommand(this, nameof(NewDocumentWithCurrentConnection), Options.HotkeyNewDocumentWithCurrentConnection);
+            yield return new InputBindingCommand(this, nameof(OpenDocument), Options.HotkeyOpenDocument);
+            yield return new InputBindingCommand(this, nameof(SaveCurrentDocument), Options.HotkeySaveDocument);
+            yield return new InputBindingCommand(this, nameof(SelectionToUpper), Options.HotkeyToUpper);
+            yield return new InputBindingCommand(this, nameof(SelectionToLower), Options.HotkeyToLower);
+            yield return new InputBindingCommand(this, nameof(UncommentSelection), Options.HotkeyUnCommentSelection);
+            yield return new InputBindingCommand(this, nameof(Redo), "Ctrl + Y");
+            yield return new InputBindingCommand(this, nameof(Undo), "Ctrl + Z");
+            yield return new InputBindingCommand(this, nameof(Undo), "Alt + Delete");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemSemiColon");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemComma");
+            yield return new InputBindingCommand(this, nameof(Find), "F3");
+            yield return new InputBindingCommand(this, nameof(FindPrev), "Shift + F3");
+            yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
+            yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
+            yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
+
+        }
+
+        public void ResetInputBindings()
+        {
+            _inputBindings.DeregisterCommands();
+            _inputBindings.RegisterCommands(GetInputBindingCommands());
         }
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -394,6 +419,11 @@ namespace DaxStudio.UI.ViewModels
         private void SetDarkTheme()
         {
             _app.LoadDarkTheme();
+        }
+
+        public void Handle(UpdateHotkeys message)
+        {
+            ResetInputBindings();
         }
 
 

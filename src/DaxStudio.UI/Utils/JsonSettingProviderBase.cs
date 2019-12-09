@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Utils
 
         private IGlobalOptions _options;
         private IDictionary<string, object> _optionsDict;
-
+        private static object locker = new Object();
 
         //[Import]
         public IGlobalOptions Options {
@@ -127,14 +127,17 @@ namespace DaxStudio.UI.Utils
 
         private void SaveSettingsFile()
         {
-            using (StreamWriter file = File.CreateText(settingsFile))
+            lock (locker)
             {
-                JsonSerializer serializer = new JsonSerializer();
-                //serializer.Converters.Add(new VersionConverter());
-                serializer.Formatting = Formatting.Indented;
-                serializer.NullValueHandling = NullValueHandling.Ignore;
-                serializer.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
-                serializer.Serialize(file, Options);
+                using (StreamWriter file = File.CreateText(settingsFile))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    //serializer.Converters.Add(new VersionConverter());
+                    serializer.Formatting = Formatting.Indented;
+                    serializer.NullValueHandling = NullValueHandling.Ignore;
+                    serializer.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+                    serializer.Serialize(file, Options);
+                }
             }
         }
 

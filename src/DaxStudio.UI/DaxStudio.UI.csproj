@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.7\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.7\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" />
-  <Import Project="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\build\Microsoft.NetFramework.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\build\Microsoft.NetFramework.Analyzers.props')" />
-  <Import Project="..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\build\Microsoft.NetCore.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\build\Microsoft.NetCore.Analyzers.props')" />
-  <Import Project="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\build\Microsoft.CodeQuality.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\build\Microsoft.CodeQuality.Analyzers.props')" />
-  <Import Project="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.8\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.8\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" />
+  <Import Project="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\build\Microsoft.NetFramework.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\build\Microsoft.NetFramework.Analyzers.props')" />
+  <Import Project="..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\build\Microsoft.NetCore.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\build\Microsoft.NetCore.Analyzers.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props" Condition="Exists('..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" />
   <Import Project="..\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -187,20 +187,20 @@
     <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CsvHelper.12.2.1\lib\net47\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Metadata, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Metadata.1.0.12\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
+    <Reference Include="Dax.Metadata, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Metadata.1.0.14\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Model.Extractor, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.12\lib\net471\Dax.Model.Extractor.dll</HintPath>
+    <Reference Include="Dax.Model.Extractor, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.14\lib\net471\Dax.Model.Extractor.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewModel, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewModel.1.0.12\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
+    <Reference Include="Dax.ViewModel, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewModel.1.0.14\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewVpaExport, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.12\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
+    <Reference Include="Dax.ViewVpaExport, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.14\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Vpax, Version=1.0.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Vpax.1.0.12\lib\net471\Dax.Vpax.dll</HintPath>
+    <Reference Include="Dax.Vpax, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Vpax.1.0.14\lib\net471\Dax.Vpax.dll</HintPath>
     </Reference>
     <Reference Include="Fluent, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.7.0.0\lib\net462\Fluent.dll</HintPath>
@@ -268,9 +268,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.4\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -327,9 +324,13 @@
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
+    <Compile Include="Behaviours\ResetInvalidTextBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
+    <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
+      <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
@@ -350,6 +351,7 @@
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
     <Compile Include="Converters\FontConverter.cs" />
+    <Compile Include="Converters\GreaterThanConverter.cs" />
     <Compile Include="Converters\HotKeyConverter.cs" />
     <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
@@ -390,10 +392,12 @@
     <Compile Include="Events\LoggingEnabledEvent.cs" />
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\RefreshOutputTargetsEvent.cs" />
+    <Compile Include="Events\ServerTimingsEvent.cs" />
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
     <Compile Include="Events\SizeUnitsUpdatedEvent.cs" />
     <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
     <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
+    <Compile Include="Events\UpdateHotkeys.cs" />
     <Compile Include="Extensions\ApplicationExtensions.cs" />
     <Compile Include="Extensions\ADOTabularConnectionExtensions.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
@@ -401,6 +405,8 @@
     <Compile Include="Extensions\DataSetExtensions.cs" />
     <Compile Include="Extensions\DockingManagerExtensions.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Extensions\HttpClientExtensions.cs" />
+    <Compile Include="Extensions\MiscExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\QueryBeginEventExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
@@ -420,11 +426,13 @@
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\GlobalOptions.cs" />
+    <Compile Include="Model\HotKey.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />
+    <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
@@ -560,6 +568,8 @@
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
+    <Compile Include="Validation\BindingProxy.cs" />
+    <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
@@ -717,6 +727,10 @@
     <Compile Include="Views\VertiPaqAnalyzerView.xaml.cs">
       <DependentUpon>VertiPaqAnalyzerView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\HotKeyEditorControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\Themes\TextBoxEx.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1440,21 +1454,21 @@
     <Resource Include="Images\icon-sql-table.png" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\analyzers\dotnet\Microsoft.CodeAnalysis.VersionCheckAnalyzer.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\analyzers\dotnet\cs\Humanizer.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.CodeQuality.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.CodeQuality.CSharp.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.NetCore.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.NetCore.CSharp.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\icon-import-metrics.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-import-metrics%4096ppi.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\analyzers\dotnet\Microsoft.CodeAnalysis.VersionCheckAnalyzer.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\analyzers\dotnet\cs\Humanizer.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.CodeQuality.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.CodeQuality.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.NetCore.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.NetCore.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -1463,11 +1477,11 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.7\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\build\Microsoft.CodeQuality.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.7\build\Microsoft.CodeQuality.Analyzers.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\build\Microsoft.NetCore.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.NetCore.Analyzers.2.9.7\build\Microsoft.NetCore.Analyzers.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\build\Microsoft.NetFramework.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.NetFramework.Analyzers.2.9.7\build\Microsoft.NetFramework.Analyzers.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.7\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.7\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeQuality.Analyzers.2.9.8\build\Microsoft.CodeQuality.Analyzers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\build\Microsoft.NetCore.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.NetCore.Analyzers.2.9.8\build\Microsoft.NetCore.Analyzers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\build\Microsoft.NetFramework.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.NetFramework.Analyzers.2.9.8\build\Microsoft.NetFramework.Analyzers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.8\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.8\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

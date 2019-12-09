@@ -130,158 +130,6 @@
         
     </Fluent:RibbonWindow.Resources>
     
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="ContentRendered">
-            <cal:ActionMessage MethodName="ContentRendered" />
-        </i:EventTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="F5"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="RunQuery"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="E" Modifiers="Ctrl"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="RunQuery"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="X" Modifiers="Alt"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="RunQuery"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="N" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="NewDocument"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="N" Modifiers="Control+Shift"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="NewDocumentWithCurrentConnection"/>
-        </triggers:InputBindingTrigger>
-        
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="O" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="OpenDocument"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="S" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="SaveCurrentDocument"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="U" Modifiers="Control+Shift"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="SelectionToUpper"/>
-        </triggers:InputBindingTrigger>
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding   Key="L" Modifiers="Control+Shift"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="SelectionToLower"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="U" Modifiers="Control+Alt"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="UncommentSelection"/>
-        </triggers:InputBindingTrigger>
-<!--
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="C" Modifiers="Control+Alt"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="CommentSelection"/>
-        </triggers:InputBindingTrigger>
--->
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="Y" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="Redo"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="OemSemicolon" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="SwapDelimiters"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="OemComma" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="SwapDelimiters"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="Z" Modifiers="Control"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="Undo"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="Delete" Modifiers="Alt"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="Undo"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="F3" />
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="Find"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="F3" Modifiers="Shift"/>
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="FindPrev"/>
-        </triggers:InputBindingTrigger>
-
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Key="F6" />
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="FormatQueryStandard"/>
-        </triggers:InputBindingTrigger>
-        
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding Modifiers="Ctrl" Key="F6" />
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="FormatQueryAlternate"/>
-        </triggers:InputBindingTrigger>
-        
-        <triggers:InputBindingTrigger>
-            <triggers:InputBindingTrigger.InputBinding>
-                <KeyBinding  Modifiers="Ctrl" Key="G" />
-            </triggers:InputBindingTrigger.InputBinding>
-            <cal:ActionMessage MethodName="GotoLine"/>
-        </triggers:InputBindingTrigger>
-
-    </i:Interaction.Triggers>
     <Grid>
         <Grid x:Name="LayoutRoot"
               Margin="0,0,0,-2" >
@@ -324,8 +172,10 @@
     </Border>
     </Grid>
     <!-- TODO - show pulsing taskbar window while query is running -->
-    <!--<Window.TaskbarItemInfo>
+    <!--
+    <Window.TaskbarItemInfo>
         <TaskbarItemInfo Description="DAX Studio" 
                       ProgressState="Indeterminate"/>
-    </Window.TaskbarItemInfo>-->
+    </Window.TaskbarItemInfo>
+    -->
 </Fluent:RibbonWindow>

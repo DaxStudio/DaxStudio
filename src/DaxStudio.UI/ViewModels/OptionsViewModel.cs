@@ -22,6 +22,7 @@ using System.Collections.Specialized;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.IO;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -546,6 +547,220 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        #region Hotkeys
+
+        private string _hotkeyCommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + C"),Hotkey]
+        public string HotkeyCommentSelection { get => _hotkeyCommentSelection;
+                set {
+                _hotkeyCommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyCommentSelection);
+            } 
+        }
+
+        private string _hotkeyUncommentSelection;
+        [DataMember, DefaultValue("Ctrl + Alt + U"), Hotkey]
+        public string HotkeyUnCommentSelection { get => _hotkeyUncommentSelection;
+            set {
+                _hotkeyUncommentSelection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyUnCommentSelection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyUnCommentSelection);
+            } 
+        }
+
+        private string _hotkeyToUpper;
+        [DataMember, DefaultValue("Ctrl + Shift + U"), Hotkey]
+        public string HotkeyToUpper
+        {
+            get => _hotkeyToUpper;
+            set
+            {
+                _hotkeyToUpper = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToUpper), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToUpper);
+            }
+        }
+
+        private string _hotkeyToLower;
+        [DataMember, DefaultValue("Ctrl + Shift + L"), Hotkey]
+        public string HotkeyToLower
+        {
+            get => _hotkeyToLower;
+            set
+            {
+                _hotkeyToLower = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyToLower), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyToLower);
+            }
+        }
+
+        private string _hotkeyRunQuery;
+        [DataMember, DefaultValue("F5"), Hotkey]
+        public string HotkeyRunQuery
+        {
+            get => _hotkeyRunQuery;
+            set
+            {
+                _hotkeyRunQuery = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQuery), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQuery);
+            }
+        }
+
+        private string _hotkeyRunQueryAlt;
+        [DataMember, DefaultValue("Ctrl + E"), Hotkey]
+        public string HotkeyRunQueryAlt
+        {
+            get => _hotkeyRunQueryAlt;
+            set
+            {
+                _hotkeyRunQueryAlt = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyRunQueryAlt), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyRunQueryAlt);
+            }
+        }
+
+        private string _hotkeyNewDocument;
+        [DataMember, DefaultValue("Ctrl + N"),Hotkey]
+        public string HotkeyNewDocument
+        {
+            get => _hotkeyNewDocument;
+            set
+            {
+                _hotkeyNewDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocument);
+            }
+        }
+
+        private string _hotkeyNewDocumentWithCurrentConnection;
+        [DataMember, DefaultValue("Ctrl + Shift + N"),Hotkey]
+        public string HotkeyNewDocumentWithCurrentConnection
+        {
+            get => _hotkeyNewDocumentWithCurrentConnection;
+            set
+            {
+                _hotkeyNewDocumentWithCurrentConnection = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyNewDocumentWithCurrentConnection), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyNewDocumentWithCurrentConnection);
+            }
+        }
+
+        private string _hotkeySaveDocument;
+        [DataMember, DefaultValue("Ctrl + S"), Hotkey]
+        public string HotkeySaveDocument
+        {
+            get => _hotkeySaveDocument;
+            set
+            {
+                _hotkeySaveDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeySaveDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeySaveDocument);
+            }
+        }
+
+        private string _hotkeyOpenDocument;
+        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        public string HotkeyOpenDocument
+        {
+            get => _hotkeyOpenDocument;
+            set
+            {
+                _hotkeyOpenDocument = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyOpenDocument), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyOpenDocument);
+            }
+        }
+
+        private string _hotkeyGotoLine;
+        [DataMember, DefaultValue("Ctrl + G"), Hotkey]
+        public string HotkeyGotoLine
+        {
+            get => _hotkeyGotoLine;
+            set
+            {
+                _hotkeyGotoLine = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyGotoLine), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyGotoLine);
+            }
+        }
+
+        private string _hotkeyFormatQueryStandard;
+        [DataMember, DefaultValue("F6"), Hotkey]
+        public string HotkeyFormatQueryStandard
+        {
+            get => _hotkeyFormatQueryStandard;
+            set
+            {
+                _hotkeyFormatQueryStandard = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryStandard), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryStandard);
+            }
+        }
+
+
+
+        private string _hotkeyFormatQueryAlternate;
+        [DataMember, DefaultValue("Ctrl + F6"), Hotkey]
+        public string HotkeyFormatQueryAlternate
+        {
+            get => _hotkeyFormatQueryAlternate;
+            set
+            {
+                _hotkeyFormatQueryAlternate = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValueAsync<string>(nameof(HotkeyFormatQueryAlternate), value, _isInitializing);
+                NotifyOfPropertyChange(() => HotkeyFormatQueryAlternate);
+            }
+        }
+
+        public void ResetKeyBindings()
+        {
+            //try
+            //{
+            //    _isInitializing = true;
+                var props = typeof(OptionsViewModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                foreach (var prop in props)
+                {
+                    if (!prop.Name.StartsWith("Hotkey")) continue;
+
+                    foreach (var att in prop.GetCustomAttributes(false))
+                    {
+                        if (att is DefaultValueAttribute)
+                        {
+                            var val = att as DefaultValueAttribute;
+
+                            prop.SetValue(this, val.Value.ToString());
+                        }
+                    }
+                }
+
+
+            //}
+            //finally
+            //{
+            //    _isInitializing = false;
+                
+            //}
+            
+        }
+        #endregion
+
+
+        #region methods
         public string GetCustomCsvDelimiter()
         {
             switch (CustomCsvDelimiterType)
@@ -558,6 +773,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+        #endregion
 
         #region View Specific Properties
         public bool UseCultureDefaultDelimiter
@@ -605,7 +821,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExportMetrics = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExportMetrics", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportMetrics), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportMetrics);
             }
         }
@@ -616,7 +832,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExternalTools = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExternalTools", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExternalTools);
             }
         }
@@ -627,7 +843,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showExportAllData = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("ShowExportAllData", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(ShowExportAllData), value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowExportAllData);
             }
         }
@@ -639,11 +855,33 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _vpaxIncludeTom = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync("VpaxIncludeTom", value, _isInitializing);
+                SettingProvider.SetValueAsync(nameof(VpaxIncludeTom), value, _isInitializing);
                 NotifyOfPropertyChange(() => VpaxIncludeTom);
             }
         }
 
+
+        private bool _showKeyBindings = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowKeyBindings
+        {
+            get
+            {
+                return _showKeyBindings;
+            }
+
+            set
+            {
+                _showKeyBindings = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowKeyBindings), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowKeyBindings);
+            }
+        }
+
+        #endregion
+        
+        
         private bool _scaleResultsFontWithEditor = true;
 
         private string _theme = "Light";
@@ -871,7 +1109,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        #endregion
+        #region Export Function Methods
 
         public void ExportDaxFunctions()
         {
@@ -882,6 +1120,8 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent(true));
         }
+
+        #endregion
 
         private bool? _isExcelAddinEnabledForAllUsers = null;
         public bool CanToggleExcelAddin

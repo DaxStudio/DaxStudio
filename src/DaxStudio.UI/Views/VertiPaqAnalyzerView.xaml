@@ -56,7 +56,15 @@
                 <Setter Property="HorizontalAlignment" Value="Right"/>
                 <Setter Property="TextAlignment" Value="Right"/>
             </Style>
-
+            <Style x:Key="RIBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource NumBlockBoldStyle}">
+                <Style.Triggers>
+                    <DataTrigger 
+                        Binding="{Binding Text, RelativeSource={RelativeSource Self}, Converter={conv:GreaterThanConverter 0} }"
+                        Value="True">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
             <Style x:Key="NumCell" >
                 <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
             </Style>
@@ -73,7 +81,7 @@
             </Style>
 
             <DataTemplate x:Key="DashTemplate">
-                <TextBlock Text="-" HorizontalAlignment="Right"/>
+                <TextBlock Text="-" HorizontalAlignment="Right" Style="{StaticResource TextBlockStyle}"/>
             </DataTemplate>
 
             <ResourceDictionary.MergedDictionaries>
@@ -115,44 +123,6 @@
                                             <ControlTemplate TargetType="{x:Type GroupItem}">
                                                 <Expander IsExpanded="{Binding Name.IsExpanded}" Style="{StaticResource ArrowGroupExpander}">
                                                     <Expander.Header>
-                                                        <!--<Grid >
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colColumn, Converter={StaticResource MinusConverter}, ConverterParameter=16}"/>
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colRows}"/>
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colTableSize}"/>
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colColumns}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colData}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colDictionary}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colHierarchies}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colEncoding}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colDataType}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colUserHierarchies}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colRelationships}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colPercentageTable}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colPercentageDB}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colSegmentsNumber}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
-                                                                <ColumnDefinition Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{Binding Name.TableName}"  Style="{StaticResource TextBlockBoldStyle}"/>
-                                                            <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Grid.Column="1" Style="{StaticResource NumBlockBoldStyle}"/>
-                                                            <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" Grid.Column="2" Style="{StaticResource NumBlockBoldStyle}"/>
-
-                                                            <TextBlock Text="{Binding Name.ColumnsTotalSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="3" TextAlignment="Right" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
-                                                            <TextBlock Text="{Binding Name.ColumnsDataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="4" />
-                                                            <TextBlock Text="{Binding Name.ColumnsDictionarySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="5" />
-                                                            <TextBlock Text="{Binding Name.ColumnsHierarchySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="6" />
-                                                            <TextBlock Text="{Binding Name.ColumnsEncoding,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}" Grid.Column="7" />
-                                                            <TextBlock Text="{Binding Name.ColumnsTypeName,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}" Grid.Column="8" />
-                                                            <TextBlock Text="{Binding Name.UserHierarchiesSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="9" />
-                                                            <TextBlock Text="{Binding Name.RelationshipSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="10" />
-                                                            <TextBlock Text="" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="11" />
-                                                            <TextBlock Text="{Binding Name.PercentageDatabase,StringFormat=P2}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="12" />
-                                                            <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="13" />
-                                                            <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="14" />
-                                                            <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Grid.Column="15" />
-                                                        </Grid>-->
-
                                                         <StackPanel Orientation="Horizontal" >
                                                             <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colColumn, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                             <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRows}" Style="{StaticResource NumBlockBoldStyle}"/>
@@ -164,6 +134,8 @@
                                                             <TextBlock Text="{Binding Name.ColumnsHierarchySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colHierarchies}" />
                                                             <TextBlock Text="{Binding Name.ColumnsEncoding,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colEncoding}" />
                                                             <TextBlock Text="{Binding Name.ColumnsTypeName,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colDataType}" />
+                                                            <TextBlock Text="{Binding Name.ReferentialIntegrityViolationCount,StringFormat={}{0:#;#;-}}" Style="{StaticResource RIBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colReferentialIntegrityViolationCount}" />
+
                                                             <TextBlock Text="{Binding Name.UserHierarchiesSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colUserHierarchies}"/>
                                                             <TextBlock Text="{Binding Name.RelationshipSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colRelationships}" />
                                                             <TextBlock Text="" Style="{StaticResource NumBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colPercentageTable}" />
@@ -215,7 +187,7 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}" />
-                        <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending">
+                        <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending" >
 
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -234,11 +206,13 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" Header="Data" x:Name="colData" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
+                        <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" Header="Data" x:Name="colData" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" Width="Auto"/>
                         <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" Header="Dictionary" x:Name="colDictionary" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" Header="Hier Size" x:Name="colHierarchies" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding" x:Name="colEncoding"/>
                         <DataGridTextColumn Binding="{Binding TypeName}" Header="Data Type" x:Name="colDataType"/>
+
+                        <DataGridTemplateColumn Header="RI Violations" x:Name="colReferentialIntegrityViolationCount" CellTemplate="{StaticResource DashTemplate}" />
 
                         <DataGridTemplateColumn Header="User Hier Size" x:Name="colUserHierarchies" CellTemplate="{StaticResource DashTemplate}"/>
 

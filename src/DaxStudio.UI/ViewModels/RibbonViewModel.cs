@@ -34,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<AllDocumentsClosedEvent>
         , IHandle<RefreshOutputTargetsEvent>
+        , IHandle<UpdateHotkeys>
     //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
@@ -115,6 +116,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget));
         }
 
+        //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
+
         public void NewQueryWithCurrentConnection()
         {
             if (ActiveDocument == null) return;
@@ -131,6 +134,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new CommentEvent(true));
         }
 
+        public string CommentSelectionTitle => $"Comment ({Options.HotkeyCommentSelection})";
+
         public void MergeParameters()
         {
             ActiveDocument?.MergeParameters();
@@ -142,6 +147,8 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument?.FormatQuery( false );
         }
+
+        public string FormatQueryTitle => $"Format Query ({Options.HotkeyFormatQueryStandard})";
         public void FormatQueryAlternate()
         {
             ActiveDocument?.FormatQuery( true );
@@ -163,17 +170,18 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
-
+        public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
         public void ToUpper()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
+        public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
         public void ToLower()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
-
+        public string ToLowerTitle => $"To Lower ({Options.HotkeyToLower})";
         public void RunQuery()
         {
             _queryRunning = true;
@@ -185,6 +193,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
 
         }
+        public string RunQueryTitle => $"Run Query ({Options.HotkeyRunQuery})";
 
         public string RunQueryDisableReason
         {
@@ -1045,6 +1054,18 @@ namespace DaxStudio.UI.ViewModels
                     perfDataWindow.Activate();
                 }
             }
+        }
+
+        public void Handle(UpdateHotkeys message)
+        {
+            // TODO - should we create an attribute for these properties so that we don't
+            //        have to maintain a hard coded list?
+            NotifyOfPropertyChange(nameof(CommentSelectionTitle));
+            NotifyOfPropertyChange(nameof(UncommentSelectionTitle));
+            NotifyOfPropertyChange(nameof(ToLowerTitle));
+            NotifyOfPropertyChange(nameof(ToUpperTitle));
+            NotifyOfPropertyChange(nameof(FormatQueryTitle));
+            NotifyOfPropertyChange(nameof(RunQueryTitle));
         }
     }
 }

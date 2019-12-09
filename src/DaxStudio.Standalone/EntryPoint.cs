@@ -13,6 +13,7 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace DaxStudio.Standalone
 {
@@ -65,11 +66,12 @@ namespace DaxStudio.Standalone
                     .ReadFrom.AppSettings()
                     .MinimumLevel.ControlledBy(levelSwitch);
 
-                var logPath = ApplicationPaths.LogPath;
+                var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.StandaloneLogFileName);
                 config.WriteTo.RollingFile(logPath
                         , retainedFileCountLimit: 10);
 
                 log = config.CreateLogger();
+                Log.Logger = log;
 
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
@@ -113,7 +115,7 @@ namespace DaxStudio.Standalone
 #if DEBUG
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
-                Log.Logger = log;
+
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();

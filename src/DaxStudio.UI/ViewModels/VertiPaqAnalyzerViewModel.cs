@@ -285,6 +285,7 @@ namespace DaxStudio.UI.ViewModels
         public long RowsCount => _table.RowsCount;
         public long SegmentsNumber => _table.SegmentsNumber;
         public long PartitionsNumber => _table.PartitionsNumber;
+        public long ReferentialIntegrityViolationCount => _table.ReferentialIntegrityViolationCount;
 
         public IEnumerable<VpaColumnViewModel> Columns { get; }
         public IEnumerable<VpaRelationshipViewModel> RelationshipsFrom { get; }

@@ -159,19 +159,22 @@ namespace DaxStudio.UI.Model
             using (var client = GetHttpClient())
             {
                 try { 
-                await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
-                /*await client.PostAsync<IStaticQueryResult>("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
-                        {
-                            SerializerSettings = new JsonSerializerSettings
-                            {
-                                Converters = new List<JsonConverter>
-                                    {
-                                        //list of your converters
-                                        new JsonDataTableConverter()
-                                    }
-                            }
-                        });
-                 */ 
+                    //await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
+
+                    await client.PostStreamAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results) as IStaticQueryResult).ConfigureAwait(false);
+
+                    //await client.PostAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
+                    //        {
+                    //            SerializerSettings = new JsonSerializerSettings
+                    //            {
+                    //                Converters = new List<JsonConverter>
+                    //                    {
+                    //                        //list of your converters
+                    //                        new JsonDataTableConverter()
+                    //                    }
+                    //            }
+                    //        });
+
                 }
                 catch (Exception ex)
                 {
@@ -189,7 +192,8 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult).ConfigureAwait(false);
+                    //var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult).ConfigureAwait(false);
+                    var resp = await client.PostStreamAsync("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery, sheetName, connectionString) as ILinkedQueryResult).ConfigureAwait(false);
                     if (resp.StatusCode != System.Net.HttpStatusCode.OK)
                     {
                         //var str = resp.Content.ReadAsAsync<string>().Result;

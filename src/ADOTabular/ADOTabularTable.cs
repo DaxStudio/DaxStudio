@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -49,9 +50,9 @@ namespace ADOTabular
 
             bool goodFirstCharacter = VALID_NAME_START.IndexOf(Name[0]) >= 0;
             bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
-            string nameUpper = Name.ToUpper();
+            //string nameUpper = Name.ToUpper();
             //bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
-            bool noSpecialName = !(_adoTabConn.Keywords.Contains(nameUpper) || _adoTabConn.AllFunctions.Contains(nameUpper));
+            bool noSpecialName = !(_adoTabConn.Keywords.Contains(Name, StringComparer.OrdinalIgnoreCase) || _adoTabConn.AllFunctions.Contains(Name, StringComparer.OrdinalIgnoreCase));
             if (Name.Length > 0
                 && goodFirstCharacter
                 && noSpecialCharacters
@@ -61,7 +62,8 @@ namespace ADOTabular
             }
             else
             {
-                return string.Format("'{0}'", Name);
+                // need to double up any single quote characters
+                return string.Format("'{0}'", Name.Replace("'","''"));
             }
         }
 
