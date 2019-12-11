@@ -6,6 +6,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.JsonConverters;
 using DaxStudio.UI.Model;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -200,12 +201,21 @@ namespace DaxStudio.UI.Utils
         {
             // load settings from settings.json
             var json = "{}";
-            if (SettingsFileExists()) { json = File.ReadAllText(settingsFile); }
+            if (SettingsFileExists()) { json = File.ReadAllText(settingsFile);  }
             var settings = new JsonSerializerSettings();
             settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             settings.NullValueHandling = NullValueHandling.Ignore;
             settings.Converters.Add(new DaxFileConverter());
-            JsonConvert.PopulateObject(json, options, settings);
+            try
+            {
+                JsonConvert.PopulateObject(json, options, settings);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(JsonSettingProviderBase), nameof(Initialize), "Error reading json in settings file, using default settings");
+                // using default settings by passing in an empty json object
+                JsonConvert.PopulateObject("{}", options, settings);
+            }
             Options = options;
             Options.IsRunningPortable = this.IsRunningPortable;
         }

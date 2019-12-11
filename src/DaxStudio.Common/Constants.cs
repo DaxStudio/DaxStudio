@@ -31,9 +31,9 @@ namespace DaxStudio.Common
         public const string StatusBarTimerFormat = "mm\\:ss\\.f";
 
         public const int AutoSaveIntervalMs = 10000; // autosave every 30 seconds
-        public const string RefreshSessionQuery = "/* DAX Studio Internal */\nEVALUATE ROW(\"DAX Studio Session Refresh\",0)";
+        public const string RefreshSessionQuery =  "EVALUATE " + InternalQueryHeader + " ROW(\"DAX Studio Session Refresh\",0)";
 
-        public const string InternalQueryHeader = "/* DAX Studio Internal */";
+        public const string InternalQueryHeader = "/* <<DAX Studio Internal>> */";
         public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
         public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ";
 

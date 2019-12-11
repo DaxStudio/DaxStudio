@@ -137,7 +137,7 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _showResultsTable = value;
-                _showResultsMessage = !value;
+                if (value) ResultsMessage = string.Empty;
                 NotifyOfPropertyChange(() => ShowResultsTable);
                 NotifyOfPropertyChange(() => ShowResultsMessage);
             }
@@ -150,22 +150,22 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _resultsMessage = value;
-                ShowResultsTable = string.IsNullOrEmpty(_resultsMessage);
                 NotifyOfPropertyChange(() => ResultsMessage);
             }
         }
 
 
 
-        private bool _showResultsMessage;
+        //private bool _showResultsMessage;
         public bool ShowResultsMessage
         {
-            get { return _showResultsMessage; }
-            private set
-            {
-                _showResultsMessage = value;
-                NotifyOfPropertyChange(() => ShowResultsMessage);
-            }
+            get { return !ShowResultsTable; }
+            //private set
+            //{
+            //    _showResultsMessage = value;
+            //    NotifyOfPropertyChange(() => ShowResultsMessage);
+            //    NotifyOfPropertyChange(() => ShowResultsTable);
+            //}
         }
         private OutputTarget _icon;
         public OutputTarget ResultsIcon

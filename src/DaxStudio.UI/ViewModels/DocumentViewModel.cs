@@ -515,6 +515,7 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceStarted(object sender, EventArgs e)
         {
             Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", "DocumentViewModel", "TracerOnTraceStarted", e);
+
             Execute.OnUIThread(() => { 
                 OutputMessage("Query Trace Started");
                 TraceWatchers.EnableAll();
@@ -1424,12 +1425,47 @@ namespace DaxStudio.UI.ViewModels
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
             if (!CanRunQuery) return;
 
+            // the benchmark run style will pop up it's own dialog
+            if (message.RunStyle.Icon == RunStyleIcons.RunBenchmark)
+            {
+                BenchmarkQuery();
+                return;
+            }
+
             IsQueryRunning = true;
             
             NotifyOfPropertyChange(()=>CanRunQuery);
             if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
+
             RunQueryInternal(message);
             
+        }
+
+        private void BenchmarkQuery()
+        {
+            
+            try
+            {
+                //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
+                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
+                {
+
+                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", System.Windows.Media.Brushes.Transparent},
+                    { "AllowsTransparency",true}
+
+                });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
+            }
         }
 
         private void RunQueryInternal(RunQueryEvent message)

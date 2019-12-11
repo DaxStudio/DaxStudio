@@ -22,7 +22,6 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
-            <!--<conv:LeftMarginConverter x:Key="LeftMarginConverter"/>-->
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
@@ -50,10 +49,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        
+        <!-- Results Grid -->
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
-
-            <!--  -->
+    
             <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
                 <!-- Style to hide tabs if only one is present -->
                 <TabControl.ItemContainerStyle>

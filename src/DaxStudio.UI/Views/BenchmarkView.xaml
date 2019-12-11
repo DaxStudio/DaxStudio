@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.BenchmarkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+
+             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="400">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
+            <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
+        <Border Style="{StaticResource DaxStudioDialog}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0" Background="{DynamicResource DialogBackground}">
+
+            <Grid Margin="25 10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Benchmark" Foreground="{StaticResource DaxStudioBrush}" 
+                   Margin="0,0,0,10" Padding="0"
+                   FontWeight="Light" FontSize="44"
+                   Grid.ColumnSpan="2"/>
+
+                <TextBlock Text="This feature will run the selected query the following times. And will output the timing details" Padding="5" TextWrapping="Wrap" Grid.Row="1" Grid.ColumnSpan="2"/>
+
+                <TextBox x:Name="ColdCacheRuns" Width="25" Margin="3"  Grid.Row="2"/>
+                <Label Content="Cold Cache Executions" Grid.Column="1"  Grid.Row="2"/>
+
+                <TextBox x:Name="WarmCacheRuns" Width="25"   Grid.Row="3" Margin="3"/>
+                <Label Content="Warm Cache Executions" Grid.Column="1" Grid.Row="3"/>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4" HorizontalAlignment="Right">
+                    <Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55"/>
+                    <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />
+                        <TextBlock x:Name="ProgressMessage" Text="Ready..."></TextBlock>
+                    </StackPanel>
+                    <Grid x:Name="gridProgress">
+                        <Rectangle x:Name="ProgressBackground" Fill="LightGray" Height="3"></Rectangle>
+                        <Rectangle x:Name="ProgressRectangle" Fill="RoyalBlue" Height="3"  HorizontalAlignment="Left">
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
+                                    <Binding Path="ProgressPercentage"/>
+                                    <Binding Path="ActualWidth" ElementName="gridProgress"/>
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>
+                    </Grid>
+                </StackPanel>
+
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>

@@ -5,7 +5,8 @@
         RunOnly,
         ClearThenRun,
         RunFunction,
-        RunScalar
+        RunScalar,
+        RunBenchmark,
     }
     public class RunStyle
     {

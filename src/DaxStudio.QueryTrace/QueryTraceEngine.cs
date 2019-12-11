@@ -433,8 +433,15 @@ namespace DaxStudio.QueryTrace
                     _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBIFileName));
                     if (e.EventClass == TraceEventClass.QueryEnd)
                     {
-                        // Raise an event with the captured events
-                        TraceCompleted?.Invoke(this, _capturedEvents);
+                        // if this is not an internal DAX Studio query 
+                        // like the one we issue after a ClearCache to re-establish the session
+                        // then call TraceCompleted, otherwise we clear out the captured events
+                        // and keep waiting
+                        if (!e.TextData.Contains(Constants.InternalQueryHeader))
+                        {
+                            // Raise an event with the captured events
+                            TraceCompleted?.Invoke(this, _capturedEvents);
+                        }
                         // reset the captured events collection
                         _capturedEvents = new List<DaxStudioTraceEventArgs>();
 

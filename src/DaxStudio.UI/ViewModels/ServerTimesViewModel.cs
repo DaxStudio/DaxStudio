@@ -331,11 +331,12 @@ namespace DaxStudio.UI.ViewModels
 
                     _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
                 }
+                if (Events.Count > 0) _eventAggregator.PublishOnUIThread(new ServerTimingsEvent(this));
+
                 Events.Clear();
 
                 NotifyOfPropertyChange(() => StorageEngineEvents);
-
-                _eventAggregator.PublishOnUIThread(new ServerTimingsEvent(this));
+                
             }
         }
 
@@ -476,7 +477,6 @@ namespace DaxStudio.UI.ViewModels
                            (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
 
 
-
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
@@ -495,26 +495,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SelectedEvent);
             }
         }
-
-        /*
-        // Filter for visualization 
-        private bool _cacheVisible;
-        private bool _internalVisible;
-        private bool _scanVisible = true;
-        public bool CacheVisible {
-            get { return _cacheVisible; }
-            set { _cacheVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
-        }
-        public bool InternalVisible {
-            get { return _internalVisible; }
-            set { _internalVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
-        }
-        public bool ScanVisible 
-        {
-            get { return _scanVisible; }
-            set { _scanVisible = value; NotifyOfPropertyChange(() => StorageEngineEvents); }
-        }
-    */
 
         // IToolWindow interface
         public override string Title
