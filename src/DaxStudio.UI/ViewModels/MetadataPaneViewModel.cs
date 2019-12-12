@@ -26,7 +26,7 @@ namespace DaxStudio.UI.ViewModels
     public class MetadataPaneViewModel : 
         ToolPaneBaseViewModel
         , IHandle<UpdateGlobalOptions>
-        , IDragSource
+        //, IDragSource
         , IMetadataPane
     {
         private string _modelName;

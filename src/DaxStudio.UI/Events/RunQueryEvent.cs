@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Interfaces;
+﻿using DaxStudio.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Events
@@ -18,5 +19,7 @@ namespace DaxStudio.UI.Events
         public IResultsTarget ResultsTarget { get; set; }
 
         public RunStyle RunStyle { get; }
+
+        public IQueryTextProvider QueryProvider { get; set; }
     }
 }

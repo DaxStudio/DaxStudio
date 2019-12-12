@@ -41,7 +41,7 @@ namespace DaxStudio.UI.Model
         #endregion
 
         // This is the core method that handles the output of the results
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
             // Read the AutoFormat option from the options singleton
             bool autoFormat = _options.ResultAutoFormat;
@@ -54,7 +54,7 @@ namespace DaxStudio.UI.Model
                         runner.OutputMessage("Query Started");
                         var sw = Stopwatch.StartNew();
 
-                        var dq = runner.QueryText;
+                        var dq = textProvider.QueryText;
                         //var res = runner.ExecuteDataTableQuery(dq);
                         using (var dataReader = runner.ExecuteDataReaderQuery(dq))
                         {

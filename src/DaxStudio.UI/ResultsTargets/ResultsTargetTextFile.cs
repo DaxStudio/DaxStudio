@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
 
             var dlg = new Microsoft.Win32.SaveFileDialog
@@ -81,7 +81,7 @@ namespace DaxStudio.UI.Model
                                 break;
                         }
 
-                        var daxQuery = runner.QueryText;
+                        var daxQuery = textProvider.QueryText;
                         var reader = runner.ExecuteDataReaderQuery(daxQuery);
 
                         try

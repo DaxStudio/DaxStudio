@@ -16,7 +16,7 @@ using System.Windows.Input;
 namespace DaxStudio.UI.ViewModels
 {
 
-    public class ToolPaneBaseViewModel : ToolWindowBase, IDragSource
+    public abstract class ToolPaneBaseViewModel : ToolWindowBase, IDragSource
     {
         private ADOTabularConnection _connection;
 
@@ -82,6 +82,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 dragInfo.Data = ((IADOTabularObject)dragInfo.SourceItem).DaxName;
                 dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
+                
                 dragInfo.Effects = DragDropEffects.Move;
             }
             else
@@ -90,10 +91,14 @@ namespace DaxStudio.UI.ViewModels
 
 
         public void DragCancelled()
-        { }
+        {
+            System.Diagnostics.Debug.WriteLine("ToolPaneBaneViewModel.DragCancelled Fired");
+        }
 
         public void Dropped(IDropInfo dropInfo)
-        { }
+        {
+            System.Diagnostics.Debug.WriteLine("ToolPaneBaneViewModel.Dropped Fired");
+        }
 
         public bool CanStartDrag(IDragInfo dragInfo)
         {
@@ -109,6 +114,7 @@ namespace DaxStudio.UI.ViewModels
         public void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
         {
             // Not currently used
+            System.Diagnostics.Debug.WriteLine("ToolPaneBaneViewModel.DragDropFinished Fired");
         }
     }
 

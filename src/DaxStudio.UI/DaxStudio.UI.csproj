@@ -429,6 +429,8 @@
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
+    <Compile Include="Model\QueryBuilderFieldList.cs" />
+    <Compile Include="Model\QueryBuilderFilterList.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />

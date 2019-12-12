@@ -112,6 +112,7 @@
     <Compile Include="IOpenable.cs" />
     <Compile Include="IQueryRunner.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
+    <Compile Include="IQueryTextProvider.cs" />
     <Compile Include="ISaveable.cs" />
     <Compile Include="IServerTimes.cs" />
     <Compile Include="IStatusBarMessage.cs" />

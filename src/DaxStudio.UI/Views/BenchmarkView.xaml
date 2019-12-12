@@ -60,7 +60,7 @@
                 <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />
-                        <TextBlock x:Name="ProgressMessage" Text="Ready..."></TextBlock>
+                        <TextBlock x:Name="ProgressMessage" Text="Ready..." Margin="2"></TextBlock>
                     </StackPanel>
                     <Grid x:Name="gridProgress">
                         <Rectangle x:Name="ProgressBackground" Fill="LightGray" Height="3"></Rectangle>

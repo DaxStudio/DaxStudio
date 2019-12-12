@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
@@ -12,11 +14,34 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ListBox Name="Columns" Margin="10" />
+        <ListView Name="Columns" ItemsSource="{Binding Columns.Items}" 
+                 dd:DragDrop.IsDropTarget="True" 
+                 dd:DragDrop.IsDragSource="True"
+                 
+                 dd:DragDrop.DropHandler="{Binding Columns}" 
+                 Margin="10" >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Caption}" />
+                        <Button Grid.Column="1" Background="Transparent" BorderThickness="0">
+                            <fa:FontAwesome Icon="TimesCircle" Foreground="LightGray"/>
+                        </Button>
+                    </Grid>
+
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            
+        </ListView>
+
         <ListBox Name="Filters" Grid.Row="1" Margin="10"/>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
-            <Button x:Name="SendToEditor" Content="Send to Editor" Margin="5"/>
-            <Button x:Name="RunQueryBuilder" Margin="5" Content="Run Query"/>
+            <Button x:Name="SendTextToEditor" Content="Send to Editor" Margin="5"/>
+            <Button x:Name="RunQuery" Margin="5" Content="Run Query"/>
 
         </StackPanel>
     </Grid>

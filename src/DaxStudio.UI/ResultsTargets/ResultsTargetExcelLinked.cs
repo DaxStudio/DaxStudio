@@ -58,7 +58,7 @@ namespace DaxStudio.UI.ResultsTargets
         }
         #endregion
 
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
             return Task.Run(() =>
                 {
@@ -66,7 +66,7 @@ namespace DaxStudio.UI.ResultsTargets
                     {
                         runner.OutputMessage("Query Started");
                         var sw = Stopwatch.StartNew();
-                        var dq = runner.QueryText;
+                        var dq = textProvider.QueryText;
                         
                         //  write results to Excel
                         runner.Host.Proxy.OutputLinkedResultAsync(dq

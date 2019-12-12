@@ -80,6 +80,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IDropTarget
         , IQueryRunner
+        , IQueryTextProvider
         , IHaveShutdownTask
         , IConnection
         , ISaveable
@@ -1437,6 +1438,9 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(()=>CanRunQuery);
             if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
 
+            // if the query provider is not set use the current document
+            message.QueryProvider = message.QueryProvider ?? this;
+
             RunQueryInternal(message);
             
         }
@@ -1495,7 +1499,7 @@ namespace DaxStudio.UI.ViewModels
 
                         currentQueryDetails = CreateQueryHistoryEvent(QueryText);
 
-                        message.ResultsTarget.OutputResultsAsync(this).ContinueWith((antecendant) =>
+                        message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider).ContinueWith((antecendant) =>
                         {
                             // todo - should we be checking for exceptions in this continuation
                             IsQueryRunning = false;
@@ -3412,7 +3416,17 @@ namespace DaxStudio.UI.ViewModels
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
             IntellisenseProvider?.CloseCompletionWindow();
-            if (dropInfo.Data.Equals(string.Empty))
+            if (dropInfo.Data is IADOTabularObject)
+            {
+                dropInfo.Effects = DragDropEffects.Move;
+                var pt = dropInfo.DropPosition;
+                var pos = _editor.GetPositionFromPoint(pt);
+                if (!pos.HasValue) return;
+                var off = _editor.Document.GetOffset(pos.Value.Location);
+                _editor.CaretOffset = off;
+                _editor.Focus();
+            }
+            else
             {
                 dropInfo.Effects = DragDropEffects.None;
             }
@@ -3420,6 +3434,10 @@ namespace DaxStudio.UI.ViewModels
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
+            var obj = dropInfo.Data as IADOTabularObject;
+            if (obj == null) return;
+            var daxName = obj.DaxName;
+            InsertTextAtCaret(daxName);
             return;
         }
 

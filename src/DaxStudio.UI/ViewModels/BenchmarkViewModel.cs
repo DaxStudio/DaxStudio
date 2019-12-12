@@ -34,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressSpin = false;
             ProgressMessage = "Ready";
             ProgressPercentage = 0;
+            ProgressColor = "LightGray";
         }
 
 
@@ -43,6 +44,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressIcon = FontAwesomeIcon.Refresh;
             ProgressSpin = true;
             ProgressMessage = "Starting Server Timings trace...";
+            ProgressColor = "RoyalBlue";
 
             SetSelectedOutputTarget(OutputTarget.Timer);
 
@@ -142,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressIcon = FontAwesomeIcon.CheckCircle;
 
             ProgressMessage = "Benchmark Complete";
-
+            ProgressColor = "Green";
 
         }
 
@@ -226,6 +228,14 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _progressPercentage = value;
                 NotifyOfPropertyChange(nameof(ProgressPercentage));
+            }
+        }
+
+        private string _progressColor = "lightgray";
+        public string ProgressColor { get => _progressColor;
+            set {
+                _progressColor = value;
+                NotifyOfPropertyChange(nameof(ProgressColor));
             }
         }
 
