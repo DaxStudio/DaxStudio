@@ -50,24 +50,24 @@
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <BootstrapperEnabled>false</BootstrapperEnabled>
     <BootstrapperComponentsLocation>Relative</BootstrapperComponentsLocation>
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
-    <ApplicationVersion>1.1.3.0</ApplicationVersion>
+    <ApplicationVersion>2.10.0.0</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <ProductName>DaxStudio</ProductName>
-    <PublisherName />
-    <SupportUrl />
+    <ProductName>DAX Studio</ProductName>
+    <PublisherName>Darren Gosbell</PublisherName>
+    <SupportUrl>https://daxstudio.org</SupportUrl>
     <FriendlyName>DaxStudio Excel Addin</FriendlyName>
     <OfficeApplicationDescription />
     <LoadBehavior>3</LoadBehavior>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
