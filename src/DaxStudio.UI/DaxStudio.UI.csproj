@@ -347,6 +347,9 @@
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
+    <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\EnumDescriptionConverter.cs" />
     <Compile Include="Converters\EventSubclassConverter.cs" />
@@ -377,6 +380,7 @@
     <Compile Include="Enums\DialogResult.cs" />
     <Compile Include="Enums\ExportDataType.cs" />
     <Compile Include="Enums\ExportStatus.cs" />
+    <Compile Include="Enums\FilterType.cs" />
     <Compile Include="Enums\OpenDialogResult.cs" />
     <Compile Include="Enums\QueryEndSubClass.cs" />
     <Compile Include="Enums\SqlAuthenticationType.cs" />
@@ -429,6 +433,8 @@
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
+    <Compile Include="Model\QueryBuilder.cs" />
+    <Compile Include="Model\QueryBuilderDropHandler.cs" />
     <Compile Include="Model\QueryBuilderFieldList.cs" />
     <Compile Include="Model\QueryBuilderFilterList.cs" />
     <Compile Include="Model\QueryInfo.cs" />
@@ -603,6 +609,7 @@
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
+    <Compile Include="Model\TreeViewColumnFilter.cs" />
     <Compile Include="ViewModels\VertiPaqAnalyzerViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>

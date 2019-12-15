@@ -5,20 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <!--                    -->
         <ListView Name="Columns" ItemsSource="{Binding Columns.Items}" 
                  dd:DragDrop.IsDropTarget="True" 
                  dd:DragDrop.IsDragSource="True"
-                 
-                 dd:DragDrop.DropHandler="{Binding Columns}" 
+                 dd:DragDrop.UseDefaultDragAdorner="True"
+                 dd:DragDrop.DropTargetAdornerBrush="Coral"
+                 dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
+                 dd:DragDrop.DropHandler="{Binding Columns.DropHandler}"
                  Margin="10" >
             <ListView.ItemTemplate>
                 <DataTemplate>
@@ -38,7 +45,46 @@
             
         </ListView>
 
-        <ListBox Name="Filters" Grid.Row="1" Margin="10"/>
+        <ListView Name="Filters"
+                 ItemsSource="{Binding Filters.Items}" 
+                 dd:DragDrop.IsDropTarget="True" 
+                 dd:DragDrop.IsDragSource="True"
+                 dd:DragDrop.UseDefaultDragAdorner="True"
+                 dd:DragDrop.DropTargetAdornerBrush="Coral"
+                 dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
+                 dd:DragDrop.DropHandler="{Binding Filters.DropHandler}"
+                 Grid.Row="1" Margin="10"
+                 >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding Caption}" />
+                        <Button Grid.Column="1" Background="Transparent" BorderThickness="0">
+                            <fa:FontAwesome Icon="TimesCircle" Foreground="LightGray"/>
+                        </Button>
+
+                        <ComboBox Grid.Row="1" Grid.ColumnSpan="2" x:Name="FilterType" ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding FilterType}" >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBox Grid.Row="2" Grid.ColumnSpan="2" x:Name="FilterValue" Text="{Binding FilterValue}"/>
+                    </Grid>
+
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
             <Button x:Name="SendTextToEditor" Content="Send to Editor" Margin="5"/>
             <Button x:Name="RunQuery" Margin="5" Content="Run Query"/>

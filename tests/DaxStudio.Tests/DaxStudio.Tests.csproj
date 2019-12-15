@@ -121,6 +121,7 @@
     <Compile Include="DaxQueryPreProcessorTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Helpers\StringHelpers.cs" />
+    <Compile Include="Mocks\MockColumn.cs" />
     <Compile Include="Mocks\MockEditor.cs" />
     <Compile Include="Mocks\MockEventAggregator.cs" />
     <Compile Include="Mocks\MockDaxStudioHost.cs" />
@@ -137,6 +138,7 @@
     <Compile Include="DelimiterTranslatorTests.cs" />
     <Compile Include="TraceEventTests.cs" />
     <Compile Include="TreeViewDisplayFolderTests.cs" />
+    <Compile Include="QueryBuilderTests.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />

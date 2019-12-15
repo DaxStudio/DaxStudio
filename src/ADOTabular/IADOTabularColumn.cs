@@ -13,5 +13,7 @@ namespace ADOTabular
         long DistinctValues { get; }
         void UpdateBasicStats(ADOTabularConnection connection);
         List<string> GetSampleData(ADOTabularConnection connection, int sampleSize);
+        Type DataType { get; }
+
     }
 }
