@@ -11,6 +11,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using System.Data;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -120,13 +121,13 @@ namespace DaxStudio.UI.ViewModels
                 ProgressMessage = $"Running Cold Cache Query {_currentColdRun} of {ColdCacheRuns}";
                 return;
             }
-            if (_currentWarmRun < WarmCacheRuns)
+            if (_currentWarmRun <= WarmCacheRuns && !_benchmarkingComplete)
             {
                 ProgressMessage = $"Running Warm Cache Query {_currentWarmRun} of {WarmCacheRuns}";
                 return;
             }
 
-            BenchmarkingComplete();
+            
             
 
         }
@@ -138,14 +139,55 @@ namespace DaxStudio.UI.ViewModels
             // todo - should we add an option to output directly to a file
             SetSelectedOutputTarget(OutputTarget.Grid);
 
+            CalculateBenchmarkSummary();
+
             Document.ResultsDataSet = BenchmarkDataSet;
+
 
             ProgressSpin = false;
             ProgressIcon = FontAwesomeIcon.CheckCircle;
-
             ProgressMessage = "Benchmark Complete";
             ProgressColor = "Green";
 
+        }
+
+        private void CalculateBenchmarkSummary()
+        {
+            var dt = BenchmarkDataSet.Tables[0];
+            string[] statistics = { "Average", "StdDev" };
+            var newDt2 = from d in dt.AsEnumerable()
+                         from stat in statistics
+                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"] };
+
+            var newGrp = newDt2.GroupBy(x => new { Cache = x.Cache, Statistic = x.Statistic });
+
+            DataTable summary = new DataTable("Summary");
+            summary.Columns.Add("Cache", typeof(string));
+            summary.Columns.Add("Statistic", typeof(string));
+            summary.Columns.Add("TotalDuration", typeof(long));
+
+            foreach (var grp in newGrp)
+            {
+                DataRow newRow = summary.Rows.Add();
+                newRow["Cache"] = grp.Key.Cache;
+                newRow["Statistic"] = grp.Key.Statistic;
+                
+                switch (grp.Key.Statistic)
+                {
+                    case "Average":
+                        newRow["TotalDuration"] = grp.Average(x => x.TotalDuration);
+                        break;
+                    case "StdDev":
+                        newRow["TotalDuration"] = grp.StdDev(x => x.TotalDuration);
+                        break;
+                    default:
+
+                        break;
+                }
+                
+            }
+
+            BenchmarkDataSet.Tables.Add(summary);
         }
 
         private void CreateOutputTable()
@@ -185,6 +227,10 @@ namespace DaxStudio.UI.ViewModels
                 || _currentWarmRun < WarmCacheRuns)
             {
                 RunNextQuery();
+            } 
+            else
+            {
+                BenchmarkingComplete();
             }
 
         }

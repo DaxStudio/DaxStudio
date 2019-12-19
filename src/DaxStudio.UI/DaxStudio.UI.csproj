@@ -326,6 +326,7 @@
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
     <Compile Include="Behaviours\ResetInvalidTextBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
+    <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
@@ -349,6 +350,8 @@
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Extensions\DependencyObjectExtensions.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />

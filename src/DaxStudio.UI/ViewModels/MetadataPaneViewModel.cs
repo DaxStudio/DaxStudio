@@ -63,6 +63,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public IEnumerable<FilterableTreeViewItem> SelectedItems { get; } = new List<FilterableTreeViewItem>();
+
         private bool _pinSearchOpen = false;
         public bool PinSearchOpen
         {

@@ -274,7 +274,7 @@
                                         dd:DragDrop.IsDragSource="True"
                                         dd:DragDrop.IsDropTarget="False" 
                                         dd:DragDrop.UseDefaultDragAdorner="True"
-                                         
+                                                
                                         cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"         
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
@@ -282,6 +282,7 @@
 
                             <i:Interaction.Behaviors>
                                 <beh:TreeViewClipboardBehavior />
+                                <beh:TreeViewMultipleSelectionBehaviour SelectedItems="{Binding SelectedItems}" />
                             </i:Interaction.Behaviors>
                             <ctrl:TreeViewEx.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
