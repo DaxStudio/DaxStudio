@@ -8,7 +8,7 @@
 
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="250" d:DesignWidth="400">
+             d:DesignHeight="280" d:DesignWidth="400">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -16,11 +16,10 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
+    <Border Padding="10,10,10,10" Margin="0,0,0,0"  >
         <Border Style="{StaticResource DaxStudioDialog}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0" Background="{DynamicResource DialogBackground}">
 
             <Grid Margin="25 10">

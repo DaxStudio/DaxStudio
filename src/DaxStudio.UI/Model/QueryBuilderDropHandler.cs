@@ -28,17 +28,36 @@ namespace DaxStudio.UI.Model
                 dropInfo.Effects = DragDropEffects.None;
                 return;
             }
-            
-            var dragItem = dropInfo.DragInfo.SourceItem as TreeViewColumn;
-            IADOTabularColumn sourceItem = dragItem.Column as IADOTabularColumn;
-            //var targetColl = dropInfo.TargetCollection as IList;
-            var sourceColl = dropInfo.DragInfo.SourceCollection as ObservableCollection<IADOTabularColumn>;
-            //QueryBuilderFieldList targetItem = dropInfo.TargetItem as QueryBuilderFieldList;
+            IADOTabularColumn adoCol;
+            // if we are re-ordering columns sourceItem will be non-null
+            adoCol = dropInfo.DragInfo.SourceItem as IADOTabularColumn;
+            var treeViewCol = dropInfo.DragInfo.SourceItem as TreeViewColumn;
 
-            if (sourceItem != null && List != null && (!List.Contains(sourceItem) || List == sourceColl))
+            // if we are dragging a column from the metadata pane it will be detected here
+            if (adoCol == null)
             {
+                if (treeViewCol == null)
+                {
+                    dropInfo.Effects = DragDropEffects.None;
+                    return;
+                }
+                adoCol = treeViewCol.Column as IADOTabularColumn;
+            }
 
-                //dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+            if (adoCol == null)
+            {
+                // this is an unknown source item so exit here
+                dropInfo.Effects = DragDropEffects.None;
+                return;
+            }
+            
+            var sourceColl = dropInfo.DragInfo.SourceCollection as ObservableCollection<IADOTabularColumn>;
+            
+            if (adoCol != null && List != null                        // if we have a valid item and List
+                && ((!List.Contains(adoCol) && treeViewCol != null))|| treeViewCol == null)   // and if we are dragging from the metadata pane and this item is not already in the list
+
+
+            {
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = DragDropEffects.Move;
             }
@@ -51,16 +70,19 @@ namespace DaxStudio.UI.Model
 
         public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.Data as TreeViewColumn;
-
-            IADOTabularColumn col = obj.Column as IADOTabularColumn;
+            var objTreeViewCol = dropInfo.Data as TreeViewColumn;
+            IADOTabularColumn col = dropInfo.Data as IADOTabularColumn;
+            if (col == null & objTreeViewCol != null )
+            {
+                col = objTreeViewCol.Column as IADOTabularColumn;
+            }
 
             // check if we are moving within list
             if (dropInfo.TargetCollection == dropInfo.DragInfo.SourceCollection)
             {
 
                 // move item in collection
-                var targetIdx = dropInfo.InsertIndex > List.Count && List.Count > 0 ? List.Count - 1 : dropInfo.InsertIndex;
+                var targetIdx = dropInfo.InsertIndex >= List.Count && List.Count > 0 ? List.Count - 1 : dropInfo.InsertIndex;
                 List.Move(List.IndexOf(col), targetIdx);
                 return;
             }

@@ -17,8 +17,11 @@ namespace DaxStudio.UI.Model
             DropHandler = new QueryBuilderDropHandler(this);
         }
 
-
-        public ObservableCollection<TreeViewColumnFilter> Items { get; } = new ObservableCollection<TreeViewColumnFilter>();
+        public void Remove(QueryBuilderFilter item)
+        {
+            Items.Remove(item);
+        }
+        public ObservableCollection<QueryBuilderFilter> Items { get; } = new ObservableCollection<QueryBuilderFilter>();
         public QueryBuilderDropHandler DropHandler { get; }
 
         public IEnumerable<FilterType> FilterTypes
@@ -35,7 +38,7 @@ namespace DaxStudio.UI.Model
         #region IQueryBuilderFieldList
         public void Add(IADOTabularColumn item)
         {
-            var filter = new TreeViewColumnFilter(item);
+            var filter = new QueryBuilderFilter(item);
             Items.Add(filter);
         }
 
@@ -52,7 +55,7 @@ namespace DaxStudio.UI.Model
         }
         public void Insert(int index, IADOTabularColumn item)
         {
-            var filter = new TreeViewColumnFilter(item);
+            var filter = new QueryBuilderFilter(item);
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(filter);
             Items.Insert(index, filter);

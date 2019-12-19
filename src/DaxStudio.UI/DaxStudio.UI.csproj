@@ -348,6 +348,7 @@
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
@@ -609,7 +610,7 @@
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
-    <Compile Include="Model\TreeViewColumnFilter.cs" />
+    <Compile Include="Model\QueryBuilderFilter.cs" />
     <Compile Include="ViewModels\VertiPaqAnalyzerViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>

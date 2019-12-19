@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using GongSolutions.Wpf.DragDrop;
 using System;
@@ -12,7 +13,7 @@ using System.Windows;
 namespace DaxStudio.UI.Model
 {
     public class QueryBuilderFieldList : 
-        //IDropTarget, 
+        PropertyChangedBase,
         IQueryBuilderFieldList
     {
         public QueryBuilderFieldList()
@@ -20,6 +21,11 @@ namespace DaxStudio.UI.Model
             DropHandler = new QueryBuilderDropHandler(this);
         }
 
+        public void Remove(IADOTabularColumn item)
+        {
+            Items.Remove(item);
+            NotifyOfPropertyChange(nameof(Items));
+        }
         public ObservableCollection<IADOTabularColumn> Items { get; } = new ObservableCollection<IADOTabularColumn>();
         public QueryBuilderDropHandler DropHandler { get; }
 
@@ -27,6 +33,7 @@ namespace DaxStudio.UI.Model
         public void Add(IADOTabularColumn item)
         {
             Items.Add(item);
+            NotifyOfPropertyChange(nameof(Items));
         }
 
         public bool Contains(IADOTabularColumn item)
@@ -52,62 +59,6 @@ namespace DaxStudio.UI.Model
             return Items.IndexOf(obj);
         }
         #endregion
-
-        //public void DragOver(IDropInfo dropInfo)
-        //{
-        //    if (dropInfo.DragInfo == null)
-        //    {
-        //        dropInfo.Effects = DragDropEffects.None;
-        //        return;
-        //    }
-
-        //    IADOTabularObject sourceItem = dropInfo.DragInfo.SourceItem as TreeViewColumn;
-        //    var targetColl = dropInfo.TargetCollection as ObservableCollection<IADOTabularObject>;
-        //    var sourceColl = dropInfo.DragInfo.SourceCollection as ObservableCollection<IADOTabularObject>;
-        //    //QueryBuilderFieldList targetItem = dropInfo.TargetItem as QueryBuilderFieldList;
-
-        //    if (sourceItem != null && targetColl != null &&  (!targetColl.Contains(sourceItem) || targetColl == sourceColl) ) 
-        //    {
-
-        //        //dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
-        //        dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-        //        dropInfo.Effects = DragDropEffects.Move;
-        //    }
-        //    else
-        //    {
-        //        dropInfo.Effects = DragDropEffects.None;
-        //    }
-
-        //}
-
-        //public void Drop(IDropInfo dropInfo)
-        //{
-        //    var obj = dropInfo.Data;
-        //    var col = obj as TreeViewColumn;
-        //    ObservableCollection<IADOTabularObject> targetColl = dropInfo.TargetCollection as ObservableCollection<IADOTabularObject>;
-        //    int targetIdx = dropInfo.InsertIndex >= targetColl.Count && targetColl.Count > 0 ? targetColl.Count - 1 : dropInfo.InsertIndex;
-        //    // check if we are moving within list
-        //    if (dropInfo.TargetCollection == dropInfo.DragInfo.SourceCollection) {
-
-        //        // move item in collection
-                
-        //        targetColl.Move(targetColl.IndexOf(col), targetIdx);
-        //        return;
-        //    }
-
-        //    // don't add the same column twice
-        //    if (Items.Contains(col)) return;
-
-        //    // Inser new item
-        //    if (dropInfo.InsertIndex == targetColl.Count) 
-        //    {
-        //        Items.Add(col);
-        //    }
-        //    else
-        //    {
-        //        Items.Insert(targetIdx, col);
-        //    }
-        //}
 
        
     }

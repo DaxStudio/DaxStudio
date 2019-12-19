@@ -26,6 +26,14 @@ namespace DaxStudio.UI.Enums
         [Description("Is blank")]
         IsBlank,
         [Description("Is not blank")]
-        IsNotBlank
+        IsNotBlank,
+        [Description(">")]
+        GreaterThan,
+        [Description(">=")]
+        GreaterThanOrEqual,
+        [Description("<")]
+        LessThan,
+        [Description("<=")]
+        LessThanOrEqual,
     }
 }

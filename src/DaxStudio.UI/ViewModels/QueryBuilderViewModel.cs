@@ -8,6 +8,7 @@ using GongSolutions.Wpf.DragDrop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
@@ -20,6 +21,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
+        , IDisposable
     { 
         [ImportingConstructor]
         public QueryBuilderViewModel(IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base()
@@ -29,6 +31,13 @@ namespace DaxStudio.UI.ViewModels
             Options = globalOptions;
             Title = "Builder";
 
+            Columns.PropertyChanged += OnColumnsPropertyChanged;
+        }
+
+        private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            NotifyOfPropertyChange(nameof(CanRunQuery));
+            NotifyOfPropertyChange(nameof(CanSendTextToEditor));
         }
 
         public QueryBuilderFieldList Columns { get; } = new QueryBuilderFieldList();
@@ -51,6 +60,34 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText));
         }
 
+        public bool CanRunQuery => Columns.Items.Count > 0;
+
+        public bool CanSendTextToEditor => Columns.Items.Count > 0;
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // unhook PropertyChanged event
+                    Columns.PropertyChanged -= OnColumnsPropertyChanged;
+                }
+
+                disposedValue = true;
+            }
+        }
+
         
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
     }
 }

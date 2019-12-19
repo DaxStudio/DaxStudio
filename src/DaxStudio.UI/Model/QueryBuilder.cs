@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using DaxStudio.UI.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,13 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ICollection<IADOTabularColumn> columns, ICollection<TreeViewColumnFilter> filters)
+        public static string BuildQuery(ICollection<IADOTabularColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
+            var defineStart = filters.Count > 0 ? "DEFINE\n    " : string.Empty;
+            
+            // using filter variables will not work against older data sources...
+            //var filterDefines = BuildFilterDefines(filters);
+
             var columnList = BuildColumns(columns);
             var filterList = BuildFilters(filters);
             var measureList = BuildMeasures(columns);
@@ -19,14 +25,16 @@ namespace DaxStudio.UI.Model
 
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("// START QUERY BUILDER\n");
-            sbQuery.Append("EVALUATE\nSUMMARIZECOLUMNS(\n    ");
+            //sbQuery,Append(filterDefines);
+            sbQuery.Append("EVALUATE\n");
+            sbQuery.Append("SUMMARIZECOLUMNS(\n    "); // table function start
             sbQuery.Append(columnList);
             sbQuery.Append(filterStart);
             sbQuery.Append(filterList);
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
-
-            sbQuery.Append("\n)\n// END QUERY BUILDER");
+            sbQuery.Append("\n)"); // query function end
+            sbQuery.Append("\n// END QUERY BUILDER");
             return sbQuery.ToString();
         }
 
@@ -50,7 +58,7 @@ namespace DaxStudio.UI.Model
             return cols.Select(c => c.DaxName).Aggregate((i, j) => i + "\n    ," + j);
         }
 
-        private static string BuildFilters(ICollection<TreeViewColumnFilter> filters)
+        private static string BuildFilters(ICollection<QueryBuilderFilter> filters)
         {
             //DEFINE VAR __DS0FilterTable =
             //FILTER(
@@ -58,7 +66,53 @@ namespace DaxStudio.UI.Model
             //  'DimCustomer'[EnglishEducation] = "Bachelors"
             //)
             if (filters.Count == 0) return string.Empty;
-            return (string)filters.Select(f => f.FilterExpression).Aggregate((i, j) => i + "\n    ," + j);
+            return (string)filters.Select(f => FilterExpression(f)).Aggregate((i, j) => i + "\n    ," + j);
+        }
+
+        public static string FilterExpression(QueryBuilderFilter filter)
+        {
+            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
+            var formattedVal = FormattedValue(filter);
+            var colName = filter.TabularObject.DaxName;
+            switch (filter.FilterType)
+            {
+                case FilterType.Is:
+                    return $"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} = {formattedVal})";
+                case Enums.FilterType.IsNot:
+                    return $@"FILTER(KEEPFLTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
+                case FilterType.StartsWith:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) = 1)";
+                case FilterType.Contains:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) >= 1)";
+                case FilterType.DoesNotStartWith:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) = 1))";
+                case FilterType.DoesNotContain:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) >= 1))";
+                case FilterType.IsBlank:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), ISBLANK({colName}))";
+                case FilterType.IsNotBlank:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(ISBLANK({colName})))";
+                case FilterType.GreaterThan:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} > {formattedVal})";
+                case FilterType.GreaterThanOrEqual:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} >= {formattedVal})";
+                case FilterType.LessThan:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} < {formattedVal})";
+                case FilterType.LessThanOrEqual:
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <= {formattedVal})";
+                    break;
+                default:
+                    throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
+            }
+
+            
+            
+        }
+
+        public static string FormattedValue(QueryBuilderFilter filter)
+        {
+            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
+            return $"{quotes}{filter.FilterValue}{quotes}";
         }
     }
 }
