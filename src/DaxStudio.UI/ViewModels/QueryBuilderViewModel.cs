@@ -30,7 +30,8 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
             Options = globalOptions;
             Title = "Builder";
-
+            DefaultDockingPane = "DockMidLeft";
+            CanCloseWindow = true;
             Columns.PropertyChanged += OnColumnsPropertyChanged;
         }
 
@@ -42,7 +43,6 @@ namespace DaxStudio.UI.ViewModels
 
         public QueryBuilderFieldList Columns { get; } = new QueryBuilderFieldList();
         public QueryBuilderFilterList Filters { get; } = new QueryBuilderFilterList();
-
 
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
