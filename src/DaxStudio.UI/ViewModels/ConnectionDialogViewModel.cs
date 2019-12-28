@@ -101,11 +101,18 @@ namespace DaxStudio.UI.ViewModels
                 // look for local workspace instances
                 _powerBIInstances = PowerBIHelper.GetLocalInstances();
 
+                if (_powerBIInstances.Count == 0 )
+                {
+                    // Add the none found 'fake' instance
+                    _powerBIInstances.Add(_pbiNoneInstance);
+                }
 
                 if (PowerBIInstanceDetected)
                 {
-                    if (SelectedPowerBIInstance == null) SelectedPowerBIInstance = _powerBIInstances[0];
-                } else
+                    if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1) 
+                    { SelectedPowerBIInstance = _powerBIInstances[0]; }
+                } 
+                else
                 {
                     if (PowerBIModeSelected) ServerModeSelected = true;
                     SelectedPowerBIInstance = null;
@@ -171,6 +178,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -185,6 +193,7 @@ namespace DaxStudio.UI.ViewModels
                     _powerPivotModeSelected = value;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -420,15 +429,27 @@ namespace DaxStudio.UI.ViewModels
 
         private string BuildPowerBIDesignerConnection()
         {
+            var port = -1;
+            try
+            {
+                port = SelectedPowerBIInstance.Port;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex,"{class} {method} {message}",nameof(ConnectionDialogViewModel),nameof(BuildPowerBIDesignerConnection),ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occured while trying to connect to Power BI Desktop/SSDT : {ex.Message}"));
+            }
+
             return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6}{7}"
-                        , SelectedPowerBIInstance.Port // 0
-                        , GetMdxCompatibilityMode()    // 1
-                        , GetDirectQueryMode()         // 2 
-                        , GetRolesProperty()           // 3
-                        , GetLocaleIdentifier()        // 4
-                        , GetEffectiveUserName()       // 5
-                        , AdditionalOptions            // 6
-                        , GetApplicationName("Power BI")); // 7
+                            , port // 0
+                            , GetMdxCompatibilityMode()    // 1
+                            , GetDirectQueryMode()         // 2 
+                            , GetRolesProperty()           // 3
+                            , GetLocaleIdentifier()        // 4
+                            , GetEffectiveUserName()       // 5
+                            , AdditionalOptions            // 6
+                            , GetApplicationName("Power BI")); // 7
+            
         }
 
         private object GetEffectiveUserName()
@@ -467,6 +488,22 @@ namespace DaxStudio.UI.ViewModels
         {    
             return Host.Proxy.GetPowerPivotConnection(GetApplicationName("Power Pivot"), string.Format("Location=\"{0}\";Extended Properties='Location=\"{1}\"';Workstation ID=\"{0}\"",WorkbookName, WorkbookName.Replace("'","''"))).ConnectionString;
             
+        }
+
+        public bool CanConnect
+        {
+            get {
+
+                return true;
+                if (!PowerBIModeSelected) return true;
+
+                if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1)
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         public void Connect()
@@ -552,13 +589,14 @@ namespace DaxStudio.UI.ViewModels
         // do we have more than one detected instance of a local workspace
         // or we have 1 instance that is not the "Loading..." instance 
         public bool PowerBIInstanceDetected => _powerBIInstances.Count > 1 
-                                              || (_powerBIInstances.Count == 1 && _powerBIInstances[0] != _pbiLoadingInstance);
+                                              || (_powerBIInstances.Count == 1 && ( _powerBIInstances[0] != _pbiLoadingInstance && _powerBIInstances[0] != _pbiNoneInstance));
 
         public List<PowerBIInstance> PowerBIDesignerInstances { get { return _powerBIInstances; } }
         public bool PowerBIModeSelected { get => _powerBIModeSelected; set {
                 _powerBIModeSelected = value;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 

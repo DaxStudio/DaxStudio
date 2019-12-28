@@ -29,14 +29,14 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        private void OutputResults(IQueryRunner runner)
+        private async Task OutputResults(IQueryRunner runner)
         {
             try
             {
                 runner.OutputMessage("Query Started");
                 var sw = Stopwatch.StartNew();
                 var dq = runner.QueryText;
-                var res = runner.ExecuteDataTableQuery(dq);
+                var res = await runner.ExecuteDataTableQueryAsync(dq);
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
@@ -58,7 +58,7 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Run(() => OutputResults(runner));
+            return Task.Run(async () => OutputResults(runner));
         }
 
     }

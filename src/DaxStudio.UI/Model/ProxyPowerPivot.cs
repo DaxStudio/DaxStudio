@@ -158,15 +158,23 @@ namespace DaxStudio.UI.Model
             var doc = _activeDocument;
             using (var client = GetHttpClient())
             {
+                
                 try { 
                     //await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
 
-                    await client.PostStreamAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results) as IStaticQueryResult).ConfigureAwait(false);
+                    var response = await client.PostStreamAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results) as IStaticQueryResult).ConfigureAwait(false);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var msg = await response.Content.ReadAsStringAsync();
+                        doc.OutputError(string.Format("Error sending results to Excel: ({0})", msg));
+
+                    }
+
 
                     //await client.PostAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
                     //        {
                     //            SerializerSettings = new JsonSerializerSettings
-                    //            {
+                    //            {s
                     //                Converters = new List<JsonConverter>
                     //                    {
                     //                        //list of your converters

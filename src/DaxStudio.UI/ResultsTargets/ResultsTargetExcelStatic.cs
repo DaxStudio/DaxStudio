@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
+using System.Data;
+using Serilog;
 
 namespace DaxStudio.UI.Model
 {
@@ -35,7 +37,7 @@ namespace DaxStudio.UI.Model
 
         public Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
                 {
                     try
                     {
@@ -43,24 +45,25 @@ namespace DaxStudio.UI.Model
                         var sw = Stopwatch.StartNew();
 
                         var dq = runner.QueryText;
-                        var res = runner.ExecuteDataTableQuery(dq);
+                        DataTable res = await runner.ExecuteDataTableQueryAsync(dq);
 
                         sw.Stop();
                         var durationMs = sw.ElapsedMilliseconds;
 
-
                         // write results to Excel
-                        runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet).ContinueWith((ascendant) => {
-                            runner.OutputMessage(
-                                string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                              res.Rows.Count == 1 ? "" : "s"), durationMs);
-                            runner.RowCount = res.Rows.Count;
-                            runner.ActivateOutput();
-                            runner.SetResultsMessage("Static results sent to Excel", OutputTarget.Static);
-                        },TaskScheduler.Default);
+                        await runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet); //.ContinueWith((ascendant) => {
+                        
+                        runner.OutputMessage(
+                            string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
+                                            res.Rows.Count == 1 ? "" : "s"), durationMs);
+                        runner.RowCount = res.Rows.Count;
+                        runner.ActivateOutput();
+                        runner.SetResultsMessage("Static results sent to Excel", OutputTarget.Static);
+                        //},TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, "{class} {method} [message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
                     }

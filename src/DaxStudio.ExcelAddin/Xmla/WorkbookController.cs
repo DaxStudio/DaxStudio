@@ -86,17 +86,21 @@ namespace DaxStudio.ExcelAddin.Xmla
 
         [HttpPost]
         [Route("StaticQueryResult")]
-        public void PostStaticResult(StaticQueryResult results)
+        public IHttpActionResult PostStaticResult(StaticQueryResult results)
         {
-            if (results == null) throw new ArgumentNullException(nameof(results));
-
             Log.Debug("{class} {method} {event}", "WorkbookController", "PostStaticResult", "Start");
+
+            if (results == null) throw new ArgumentNullException(nameof(results));
+            if (results.QueryResults == null) return this.BadRequest("Resultset is null");
+            if (results.QueryResults.Columns.Count == 0) return this.NotFound();// BadRequest("Resultset has no columns");
+            
             using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
             {
                 var sht = xl.GetTargetWorksheet(results.TargetSheet);
                 ExcelHelper.CopyDataTableToRange(results.QueryResults, sht);
             }
             Log.Debug("{class} {method} {event}", "WorkbookController", "PostStaticResult", "End");
+            return this.Ok();
         }
 
         [HttpPost]

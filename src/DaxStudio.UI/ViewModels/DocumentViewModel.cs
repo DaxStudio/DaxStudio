@@ -1255,20 +1255,25 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ElapsedQueryTime);
         }
 
-        public DataTable ExecuteDataTableQuery(string daxQuery)
+        public async Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
         {
+
             int row = 0;
             int col = 0;
-            this._editor.Dispatcher.Invoke(() =>
-            {
-                if (_editor.SelectionLength > 0) { 
-                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
-                    row = loc.Line;
-                    col = loc.Column;
-                }
-            });
             try
             {
+                await this._editor.Dispatcher.InvokeAsync(async () =>
+                    {
+                        // capture the row and column location for error reporting (if needed)
+                        if (_editor.SelectionLength > 0)
+                        {
+                            var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                            row = loc.Line;
+                            col = loc.Column;
+                        }
+                    }
+                ); 
+            
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
@@ -1410,10 +1415,10 @@ namespace DaxStudio.UI.ViewModels
             return Task.Run(()=>CancelQuery());
         }
 
-        public Task<DataTable> ExecuteQueryAsync(string daxQuery)
-        {
-            return Task.Run(() => ExecuteDataTableQuery(daxQuery));
-        }
+        //public Task<DataTable> ExecuteQueryAsync(string daxQuery)
+        //{
+        //    return Task.Run(() => ExecuteDataTableQueryAsync(daxQuery));
+        //}
 
         public async void Handle(RunQueryEvent message)
         {
@@ -1472,6 +1477,15 @@ namespace DaxStudio.UI.ViewModels
                             _queryStopWatch.Reset();
                             _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                             msg.Dispose();
+
+                            if (antecendant.IsFaulted)
+                            {
+                                var ex = antecendant.Exception;
+
+                                Log.Error(antecendant.Exception, "", nameof(DocumentViewModel), nameof(RunQueryInternal), $"Error running query: {ex.GetAllMessages()}");
+                                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.GetAllMessages()}"));
+                            }
+
                         }, TaskScheduler.Default);
                     }
                 }
@@ -2436,7 +2450,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                await ExecuteQueryAsync(Constants.RefreshSessionQuery).ContinueWith((ascendant) =>
+                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery).ContinueWith((ascendant) =>
                 {
                     // todo - should we be checking for exceptions in this continuation
                     sw.Stop();
