@@ -29,7 +29,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        private async Task OutputResults(IQueryRunner runner)
+        public async Task OutputResultsAsync(IQueryRunner runner)
         {
             try
             {
@@ -56,10 +56,10 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public Task OutputResultsAsync(IQueryRunner runner)
-        {
-            return Task.Run(async () => OutputResults(runner));
-        }
+        //public Task OutputResultsAsync(IQueryRunner runner)
+        //{
+        //    return Task.Run(async () => OutputResults(runner));
+        //}
 
     }
 }

@@ -58,9 +58,9 @@ namespace DaxStudio.UI.ResultsTargets
         }
         #endregion
 
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public async Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Run(() =>
+            await Task.Run(() =>
                 {
                     try
                     {

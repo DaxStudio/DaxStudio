@@ -21,6 +21,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                 var wb = app.ActiveWorkbook;
                 var wbName = "<No Workbook>";
                 if (wb != null) { wbName = wb.FullName; }
+                Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook Fullname: '{wb.FullName}'");
+                Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook FullnameUrlEncoded: '{wb.FullNameURLEncoded}'");
                 System.Diagnostics.Debug.WriteLine($"Workbook: {wbName}");
                 return Ok(wbName);
             }

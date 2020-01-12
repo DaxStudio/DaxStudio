@@ -13,6 +13,7 @@ using Serilog;
 using System.IO;
 using System.Diagnostics.Contracts;
 using DaxStudio.UI.Extensions;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.Model
 {
@@ -108,12 +109,18 @@ namespace DaxStudio.UI.Model
                         HttpResponseMessage response = client.GetAsync("workbook/filename").Result;
                         if (response.IsSuccessStatusCode)
                         {
-                            return JsonConvert.DeserializeObject<string>( response.Content.ReadAsStringAsync().Result);
+                            var workbookName = JsonConvert.DeserializeObject<string>( response.Content.ReadAsStringAsync().Result);
+                            if (OneDriveHelper.IsOneDrivePath(workbookName))
+                            {
+                                workbookName = OneDriveHelper.ConvertToLocalPath(workbookName);
+                            }
+                            return workbookName;
                             //return response.Content.ReadAsAsync<string>().Result;
                         }
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, "{class} {method} {message}", nameof(ProxyPowerPivot), nameof(WorkbookName), ex.Message);
                         //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
                         doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
                     }

@@ -385,6 +385,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool WordWrap
+        {
+            get => Options.EditorWordWrap;
+        }
+
         public bool ConvertTabsToSpaces
         {
             // TODO - bind to options
@@ -3416,6 +3421,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
+            NotifyOfPropertyChange(nameof(WordWrap));
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             UpdateTheme();

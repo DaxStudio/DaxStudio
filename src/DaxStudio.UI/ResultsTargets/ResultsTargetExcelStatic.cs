@@ -35,9 +35,9 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public async Task OutputResultsAsync(IQueryRunner runner)
         {
-            return Task.Run(async () =>
+            await Task.Run(async () =>
                 {
                     try
                     {
@@ -46,6 +46,15 @@ namespace DaxStudio.UI.Model
 
                         var dq = runner.QueryText;
                         DataTable res = await runner.ExecuteDataTableQueryAsync(dq);
+
+                        if (res == null || res.Rows?.Count == 0)
+                        {
+                            Log.Warning("{class} {method} {message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), "Query Result DataTable has no rows");
+                            runner.ActivateOutput();
+                            runner.OutputWarning("Unable to send results to Excel as there are no rows in the result set");
+                            return;
+                        }
+
 
                         sw.Stop();
                         var durationMs = sw.ElapsedMilliseconds;
@@ -63,7 +72,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "{class} {method} [message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), ex.Message);
+                        Log.Error(ex, "{class} {method} {message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
                     }

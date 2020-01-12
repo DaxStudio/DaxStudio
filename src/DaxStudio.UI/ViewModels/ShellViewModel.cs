@@ -27,7 +27,8 @@ namespace DaxStudio.UI.ViewModels
         IHandle<StartAutoSaveTimerEvent>,
         IHandle<StopAutoSaveTimerEvent>,
         IHandle<ChangeThemeEvent>,
-        IHandle<UpdateHotkeys>
+        IHandle<UpdateHotkeys>,
+        IHandle<UpdateGlobalOptions>
     {
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
@@ -35,6 +36,7 @@ namespace DaxStudio.UI.ViewModels
         private NotifyIcon notifyIcon;
         private Window _window;
         private readonly Application _app;
+        private readonly string _username;
         private InputBindings _inputBindings;
         
         //private ILogger log;
@@ -65,11 +67,13 @@ namespace DaxStudio.UI.ViewModels
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             _app = Application.Current;
+            _username = UserHelper.GetUser();
             var recoveringFiles = false;
 
             // get master auto save indexes and only get crashed index files...
             var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
             var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
+
             // check for auto-saved files and offer to recover them
             if (filesToRecover.Any())
             {
@@ -91,11 +95,8 @@ namespace DaxStudio.UI.ViewModels
 
             VersionChecker = versionCheck;
 
-#if PREVIEW
-            DisplayName = string.Format("DaxStudio - {0} (PREVIEW)", Version.ToString(4));
-#else
-            DisplayName = string.Format("DaxStudio - {0}", Version.ToString(3));
-#endif
+            DisplayName = AppTitle;
+
             Application.Current.Activated += OnApplicationActivated; 
             Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
 
@@ -299,9 +300,20 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _overlayDependencies > 0; }
         }
-#endregion
 
-#region Global Keyboard Hooks
+        public object UserString => Options.ShowUserInTitlebar? $" ({_username})":string.Empty;
+
+        public string AppTitle { get {
+#if PREVIEW
+                return string.Format("DaxStudio - {0} (PREVIEW){1}", Version.ToString(4),UserString);
+#else
+                return string.Format("DaxStudio - {0}{1}", Version.ToString(3), UserString);
+#endif    
+            }
+        }
+        #endregion
+
+        #region Global Keyboard Hooks
         public void RunQuery()
         {
             Ribbon.RunQuery();
@@ -424,6 +436,12 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateHotkeys message)
         {
             ResetInputBindings();
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            // force a refresh of the Userstring in case this was just turned on in the options
+            DisplayName = AppTitle;
         }
 
 

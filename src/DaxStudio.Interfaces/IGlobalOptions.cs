@@ -59,6 +59,9 @@ namespace DaxStudio.Interfaces
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
 
+        bool ShowUserInTitlebar { get; set; }
+
+        #region Hotkeys
         // Hotkeys
         [Hotkey]
         string HotkeyCommentSelection { get; set; }
@@ -86,6 +89,7 @@ namespace DaxStudio.Interfaces
         string HotkeyFormatQueryStandard { get; set; }
         [Hotkey]
         string HotkeyFormatQueryAlternate { get; set; }
+        #endregion
 
         // Preview Features
         bool ShowExportMetrics { get; set; }
@@ -93,6 +97,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
 
+        #region Methods
         // Methods
         string GetCustomCsvDelimiter();
         void Initialize();
@@ -100,5 +105,7 @@ namespace DaxStudio.Interfaces
         // 
         [JsonIgnore]
         bool IsRunningPortable { get; set; }
+        bool EditorWordWrap { get; set; }
+        #endregion
     }
 }
