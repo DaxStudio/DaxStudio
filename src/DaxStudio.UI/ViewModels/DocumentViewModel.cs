@@ -457,19 +457,27 @@ namespace DaxStudio.UI.ViewModels
             OutputMessage("Reconfiguring Trace");
             var events = GetTraceEvents(TraceWatchers);
             var newEventCnt = 0;
-            _tracer.Events.Clear();
-            _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
-            _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
-            foreach (var e in events)
+            if (_tracer == null)
             {
-                if (!_tracer.Events.Contains(e))
-                {
-                    _tracer.Events.Add(e);
-                    newEventCnt++;
-                } 
+                Log.Warning("{class} {method} {message}", nameof(DocumentViewModel), nameof(UpdateTraceEvents), "_trace field was null, calling CreateTracer()");
+                CreateTracer();
             }
-            _tracer.Update();
-            Log.Debug("Trace Updated with {count} new events", newEventCnt);
+            else
+            {
+                _tracer.Events.Clear();
+                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
+                _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
+                foreach (var e in events)
+                {
+                    if (!_tracer.Events.Contains(e))
+                    {
+                        _tracer.Events.Add(e);
+                        newEventCnt++;
+                    }
+                }
+                _tracer.Update();
+                Log.Debug("Trace Updated with {count} new events", newEventCnt);
+            }
         }
 
         private void TracerOnTraceError(object sender, string e)
@@ -2119,7 +2127,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions",ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Publishing DAX Functions: " + ex.Message));
+                OutputError( "Error Publishing DAX Functions: " + ex.Message);
             }
             finally {
                 // Remove temporary filename
@@ -2159,31 +2167,39 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
-        public void ExportDaxFunctions(string path) {
+        private void ExportDaxFunctions(string path) {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
             ExportDaxFunctions(path, compression);
         }
 
-        public void ExportDaxFunctions(string path, bool compression) {
+        // Note we don't do exception handling in this private method as this is handled in the calling methods
+        private void ExportDaxFunctions(string path, bool compression) {
+            
             var info = DaxMetadataInfo;
-            if (compression) {
-                string pathJson = string.Format( @".\{0}.json", Path.GetFileNameWithoutExtension(path) );
+            if (compression)
+            {
+                string pathJson = string.Format(@".\{0}.json", Path.GetFileNameWithoutExtension(path));
                 Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
-                using (Package package = Package.Open(path, FileMode.Create)) {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(),Encoding.Unicode)) {
+                using (Package package = Package.Open(path, FileMode.Create))
+                {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    {
                         tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
                         tw.Close();
                     }
                     package.Close();
                 }
             }
-            else {
-                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode)) {
+            else
+            {
+                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode))
+                {
                     tw2.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
                     tw2.Close();
                 }
             }
+            
         }
 
         // TODO: move Versionrequest definition elsewhere?
@@ -2455,16 +2471,16 @@ namespace DaxStudio.UI.ViewModels
                 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery).ContinueWith((ascendant) =>
-                {
-                    // todo - should we be checking for exceptions in this continuation
-                    sw.Stop();
-                    var duration = sw.ElapsedMilliseconds;
-                    OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
-                },TaskScheduler.Default);
+                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+                
+                sw.Stop();
+                var duration = sw.ElapsedMilliseconds;
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
+                
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ClearDatabaseCacheAsync), ex.Message);
                 OutputError(ex.Message);
             }
         }

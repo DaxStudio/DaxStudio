@@ -405,7 +405,7 @@
       <DependentUpon>Ribbon.xml</DependentUpon>
     </Compile>
     <Compile Include="SignalR\QueryTraceHub.cs" />
-    <Compile Include="SignalR\SubGlobalOptions.cs" />
+    <Compile Include="SignalR\StubGlobalOptions.cs" />
     <Compile Include="WebHost.cs" />
     <Compile Include="Xmla\ExcelAmoWrapper.cs" />
     <Compile Include="Xmla\JsonDataTableConverter.cs" />
