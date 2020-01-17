@@ -670,7 +670,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyOpenDocument;
-        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        [DataMember, DefaultValue("Ctrl + O"), Hotkey]
         public string HotkeyOpenDocument
         {
             get => _hotkeyOpenDocument;
