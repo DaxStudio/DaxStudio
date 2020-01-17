@@ -723,7 +723,7 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
-        protected override void OnActivate()
+        protected override async void OnActivate()
         {
             Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", this.DisplayName);
             _logger.Info("In OnActivate");
@@ -745,7 +745,7 @@ namespace DaxStudio.UI.ViewModels
             { 
                 try
                 {
-                    if (ShouldAutoRefreshMetadata())
+                    if (await ShouldAutoRefreshMetadataAsync())
                     {
                         RefreshMetadata();
                         OutputMessage("Model schema change detected - Metadata refreshed");
@@ -2899,7 +2899,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool ShouldAutoRefreshMetadata()
+        public async Task<bool> ShouldAutoRefreshMetadataAsync()
         {
             try
             {
@@ -2923,7 +2923,13 @@ namespace DaxStudio.UI.ViewModels
                 if (Connection.Database == null) return false;
                 if (!Connection.ShouldAutoRefreshMetadata(Options)) return false;
 
-                return Connection.Database.HasSchemaChanged();
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
+
+                var hasChanged = await Connection.Database.HasSchemaChangedAsync();
+
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
+
+                return hasChanged;
             }
             catch (Exception ex)
             {
