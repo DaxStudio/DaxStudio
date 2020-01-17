@@ -385,6 +385,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool WordWrap
+        {
+            get => Options.EditorWordWrap;
+        }
+
         public bool ConvertTabsToSpaces
         {
             // TODO - bind to options
@@ -452,19 +457,27 @@ namespace DaxStudio.UI.ViewModels
             OutputMessage("Reconfiguring Trace");
             var events = GetTraceEvents(TraceWatchers);
             var newEventCnt = 0;
-            _tracer.Events.Clear();
-            _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
-            _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
-            foreach (var e in events)
+            if (_tracer == null)
             {
-                if (!_tracer.Events.Contains(e))
-                {
-                    _tracer.Events.Add(e);
-                    newEventCnt++;
-                } 
+                Log.Warning("{class} {method} {message}", nameof(DocumentViewModel), nameof(UpdateTraceEvents), "_trace field was null, calling CreateTracer()");
+                CreateTracer();
             }
-            _tracer.Update();
-            Log.Debug("Trace Updated with {count} new events", newEventCnt);
+            else
+            {
+                _tracer.Events.Clear();
+                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
+                _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
+                foreach (var e in events)
+                {
+                    if (!_tracer.Events.Contains(e))
+                    {
+                        _tracer.Events.Add(e);
+                        newEventCnt++;
+                    }
+                }
+                _tracer.Update();
+                Log.Debug("Trace Updated with {count} new events", newEventCnt);
+            }
         }
 
         private void TracerOnTraceError(object sender, string e)
@@ -710,7 +723,7 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
-        protected override void OnActivate()
+        protected override async void OnActivate()
         {
             Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", this.DisplayName);
             _logger.Info("In OnActivate");
@@ -732,7 +745,7 @@ namespace DaxStudio.UI.ViewModels
             { 
                 try
                 {
-                    if (ShouldAutoRefreshMetadata())
+                    if (await ShouldAutoRefreshMetadataAsync())
                     {
                         RefreshMetadata();
                         OutputMessage("Model schema change detected - Metadata refreshed");
@@ -1255,20 +1268,25 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ElapsedQueryTime);
         }
 
-        public DataTable ExecuteDataTableQuery(string daxQuery)
+        public async Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
         {
+
             int row = 0;
             int col = 0;
-            this._editor.Dispatcher.Invoke(() =>
-            {
-                if (_editor.SelectionLength > 0) { 
-                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
-                    row = loc.Line;
-                    col = loc.Column;
-                }
-            });
             try
             {
+                await this._editor.Dispatcher.InvokeAsync(async () =>
+                    {
+                        // capture the row and column location for error reporting (if needed)
+                        if (_editor.SelectionLength > 0)
+                        {
+                            var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                            row = loc.Line;
+                            col = loc.Column;
+                        }
+                    }
+                ); 
+            
                 var c = Connection;
                 foreach (var tw in TraceWatchers)
                 {
@@ -1410,10 +1428,10 @@ namespace DaxStudio.UI.ViewModels
             return Task.Run(()=>CancelQuery());
         }
 
-        public Task<DataTable> ExecuteQueryAsync(string daxQuery)
-        {
-            return Task.Run(() => ExecuteDataTableQuery(daxQuery));
-        }
+        //public Task<DataTable> ExecuteQueryAsync(string daxQuery)
+        //{
+        //    return Task.Run(() => ExecuteDataTableQueryAsync(daxQuery));
+        //}
 
         public async void Handle(RunQueryEvent message)
         {
@@ -1472,6 +1490,15 @@ namespace DaxStudio.UI.ViewModels
                             _queryStopWatch.Reset();
                             _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                             msg.Dispose();
+
+                            if (antecendant.IsFaulted)
+                            {
+                                var ex = antecendant.Exception;
+
+                                Log.Error(antecendant.Exception, "", nameof(DocumentViewModel), nameof(RunQueryInternal), $"Error running query: {ex.GetAllMessages()}");
+                                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.GetAllMessages()}"));
+                            }
+
                         }, TaskScheduler.Default);
                     }
                 }
@@ -2100,7 +2127,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions",ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Publishing DAX Functions: " + ex.Message));
+                OutputError( "Error Publishing DAX Functions: " + ex.Message);
             }
             finally {
                 // Remove temporary filename
@@ -2140,31 +2167,39 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
-        public void ExportDaxFunctions(string path) {
+        private void ExportDaxFunctions(string path) {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
             ExportDaxFunctions(path, compression);
         }
 
-        public void ExportDaxFunctions(string path, bool compression) {
+        // Note we don't do exception handling in this private method as this is handled in the calling methods
+        private void ExportDaxFunctions(string path, bool compression) {
+            
             var info = DaxMetadataInfo;
-            if (compression) {
-                string pathJson = string.Format( @".\{0}.json", Path.GetFileNameWithoutExtension(path) );
+            if (compression)
+            {
+                string pathJson = string.Format(@".\{0}.json", Path.GetFileNameWithoutExtension(path));
                 Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
-                using (Package package = Package.Open(path, FileMode.Create)) {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(),Encoding.Unicode)) {
+                using (Package package = Package.Open(path, FileMode.Create))
+                {
+                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    {
                         tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
                         tw.Close();
                     }
                     package.Close();
                 }
             }
-            else {
-                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode)) {
+            else
+            {
+                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode))
+                {
                     tw2.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
                     tw2.Close();
                 }
             }
+            
         }
 
         // TODO: move Versionrequest definition elsewhere?
@@ -2436,16 +2471,16 @@ namespace DaxStudio.UI.ViewModels
                 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                await ExecuteQueryAsync(Constants.RefreshSessionQuery).ContinueWith((ascendant) =>
-                {
-                    // todo - should we be checking for exceptions in this continuation
-                    sw.Stop();
-                    var duration = sw.ElapsedMilliseconds;
-                    OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
-                },TaskScheduler.Default);
+                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+                
+                sw.Stop();
+                var duration = sw.ElapsedMilliseconds;
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
+                
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ClearDatabaseCacheAsync), ex.Message);
                 OutputError(ex.Message);
             }
         }
@@ -2864,7 +2899,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool ShouldAutoRefreshMetadata()
+        public async Task<bool> ShouldAutoRefreshMetadataAsync()
         {
             try
             {
@@ -2888,7 +2923,13 @@ namespace DaxStudio.UI.ViewModels
                 if (Connection.Database == null) return false;
                 if (!Connection.ShouldAutoRefreshMetadata(Options)) return false;
 
-                return Connection.Database.HasSchemaChanged();
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
+
+                var hasChanged = await Connection.Database.HasSchemaChangedAsync();
+
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
+
+                return hasChanged;
             }
             catch (Exception ex)
             {
@@ -3402,6 +3443,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
+            NotifyOfPropertyChange(nameof(WordWrap));
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             UpdateTheme();

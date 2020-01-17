@@ -555,12 +555,12 @@ namespace DaxStudio.UI.ViewModels
         {
             _isConnecting = true;
         }
-        public void Handle(ApplicationActivatedEvent message)
+        public async void Handle(ApplicationActivatedEvent message)
         {
             Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
             {
-                if (ActiveDocument.ShouldAutoRefreshMetadata())
+                if (await ActiveDocument.ShouldAutoRefreshMetadataAsync())
                 {
                     
                     ActiveDocument.RefreshMetadata();

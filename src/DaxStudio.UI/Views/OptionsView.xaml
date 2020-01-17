@@ -152,6 +152,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -204,11 +205,14 @@
                                 <Label Grid.Row="5" Grid.Column="0" Content="Convert Tabs to Spaces:" HorizontalAlignment="Right"/>
                                 <CheckBox Grid.Row="5" Grid.Column="1" x:Name="EditorConvertTabsToSpaces" VerticalAlignment="Center" />
 
-                                <Label Grid.Row="6" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
-                                <nud:ShortUpDown Grid.Row="6" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="ctrlEditorIndentationSize" VerticalAlignment="Center" />
+                                <Label Grid.Row="6" Grid.Column="0" Content="Enable Word Wrapping:" HorizontalAlignment="Right"/>
+                                <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorWordWrap" VerticalAlignment="Center" />
+                                
+                                <Label Grid.Row="7" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
+                                <nud:ShortUpDown Grid.Row="7" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="ctrlEditorIndentationSize" VerticalAlignment="Center" />
 
-                                <Label Grid.Row="7" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
-                                <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                                <Label Grid.Row="8" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
+                                <StackPanel Orientation="Horizontal" Grid.Row="8" Grid.Column="1">
                                     <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
                                     <Label  Content="% (100 - 300)"/>
                                 </StackPanel>
@@ -311,6 +315,7 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
@@ -326,7 +331,8 @@
                                 <Label Grid.Row="1">Run Style:</Label>
                                 <CheckBox  Grid.Row="1" Grid.Column="1" Margin="0,5,0,0" x:Name="SetClearCacheAsDefaultRunStyle" Content="Set 'Clear Cache and Run' as the default"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">This option affects the default run style that is selected when DAX Studio starts up. Any change will take effect next time DAX Studio starts up.</TextBlock>
-
+                                <Label Grid.Row="3">Username:</Label>
+                                <CheckBox Grid.Row="3"  Grid.Column="1" Margin="0,5,0,0" x:Name="ShowUserInTitlebar" Content="Show Username in Title bar" />
                             </Grid>
                         </GroupBox>
 

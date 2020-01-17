@@ -41,11 +41,11 @@ namespace DaxStudio.UI.Model
         #endregion
 
         // This is the core method that handles the output of the results
-        public Task OutputResultsAsync(IQueryRunner runner)
+        public async Task OutputResultsAsync(IQueryRunner runner)
         {
             // Read the AutoFormat option from the options singleton
             bool autoFormat = _options.ResultAutoFormat;
-            return Task.Run(() =>
+            await Task.Run(() =>
                 {
                     long durationMs = 0;
                     int queryCnt = 1;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ADOTabular
 {
@@ -18,11 +19,11 @@ namespace ADOTabular
             Roles = roles;
         }
 
-        public bool HasSchemaChanged()
+        public async Task<bool> HasSchemaChangedAsync()
         {
             try
             {
-                var ddColl = Connection.Databases.GetDatabaseDictionary(Connection.SPID, true);
+                var ddColl = await Task.Run(() => { return Connection.Databases.GetDatabaseDictionary(Connection.SPID, true); });
                 if (ddColl.Count == 0) return false; // no databases on server
                 var dd = ddColl[Name];
                 if (dd.LastUpdate > LastUpdate)
