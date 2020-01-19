@@ -57,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
         
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;
+        private bool _skipSpaceAfterFunctionName;
         private bool _showPreReleaseNotifications;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
@@ -404,6 +405,18 @@ namespace DaxStudio.UI.ViewModels
             get {
                 var items = Enum.GetValues(typeof(DaxFormatStyle)).Cast<DaxFormatStyle>();
                 return items;
+            }
+        }
+
+        [DataMember, DefaultValue(false)]
+        public bool SkipSpaceAfterFunctionName {
+            get { return _skipSpaceAfterFunctionName; }
+            set {
+                if (_skipSpaceAfterFunctionName == value) return;
+                _skipSpaceAfterFunctionName = value;
+                NotifyOfPropertyChange(() => SkipSpaceAfterFunctionName);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(SkipSpaceAfterFunctionName), value, _isInitializing);
             }
         }
 

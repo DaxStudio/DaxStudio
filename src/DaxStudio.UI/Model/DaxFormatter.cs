@@ -58,6 +58,7 @@ namespace DaxStudio.UI.Model
     {
         public string Dax { get; set; }
         public int? MaxLineLenght { get; set; }
+        public bool? SkipSpaceAfterFunctionName { get; set; }
         public char ListSeparator { get; set; }
         public char DecimalSeparator { get; set; }
         public string CallerApp { get; set; }
@@ -211,6 +212,7 @@ namespace DaxStudio.UI.Model
                 {
                     req.MaxLineLenght = 1;
                 }
+                req.SkipSpaceAfterFunctionName = globalOptions.SkipSpaceAfterFunctionName;
 
                 var data = JsonConvert.SerializeObject(req);
 
