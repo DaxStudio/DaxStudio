@@ -13,7 +13,7 @@ $(document).ready(function() {
     if (release && release.downloadCnt ) {
         //console.log('returning download cnt from cache');
         $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt.toLocaleString() + "</span>");
-        $('#download_cnt_1').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt1.toLocaleString() + "</span>");
+   //     $('#download_cnt_1').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt1.toLocaleString() + "</span>");
 
         var today = new Date();
         var lastRefresh = new Date(release.refreshDate);
@@ -33,7 +33,7 @@ $(document).ready(function() {
                 localData = {
                     refreshDate: new Date(),
                     downloadCnt: data.assets[0].download_count,
-                    downloadCnt1: data.assets[1].download_count,
+               //     downloadCnt1: data.assets[1].download_count,
                     tagName: data.tag_name
                 }
                 localStorage.release = JSON.stringify(localData);
@@ -41,7 +41,7 @@ $(document).ready(function() {
             
             //console.log('downloads: ' + data.assets[0].download_count);
             $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + data.assets[0].download_count.toLocaleString() + "</span>");
-            $('#download_cnt_1').html('<span> | downloads: </span><span class="badge badge-info">' + data.assets[1].download_count.toLocaleString() + "</span>");
+           // $('#download_cnt_1').html('<span> | downloads: </span><span class="badge badge-info">' + data.assets[1].download_count.toLocaleString() + "</span>");
         });
     }
   });
