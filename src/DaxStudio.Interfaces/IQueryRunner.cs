@@ -14,10 +14,9 @@ namespace DaxStudio.Interfaces
     }
     public interface IQueryRunner
     {
-        //string QueryText { get; }
-        DataTable ExecuteDataTableQuery(string daxQuery);
+        string QueryText { get; }
+        Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery);
         AdomdDataReader ExecuteDataReaderQuery(string daxQuery);
-        Task<DataTable> ExecuteQueryAsync(string daxQuery);
         DataTable ResultsTable { get; set; }
         DataSet ResultsDataSet { get; set; }
         void OutputMessage(string message);

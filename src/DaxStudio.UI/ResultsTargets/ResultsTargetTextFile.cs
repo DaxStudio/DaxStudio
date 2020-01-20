@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
 
             var dlg = new Microsoft.Win32.SaveFileDialog
@@ -47,7 +47,7 @@ namespace DaxStudio.UI.Model
             {
                 // Save document 
                 fileName = dlg.FileName;
-                return Task.Run(() =>
+                await Task.Run(() =>
                 {
 
                     try
@@ -203,7 +203,7 @@ namespace DaxStudio.UI.Model
 
             }
             // else dialog was cancelled so return an empty task.
-            return Task.Run(() => { });
+            await Task.Run(() => { });
         }
 
         private string AddFileCntSuffix(string fileName, int iFileCnt)

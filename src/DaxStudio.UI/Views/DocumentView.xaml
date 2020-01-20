@@ -591,10 +591,12 @@
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 
+
                                                    dd:DragDrop.IsDropTarget="True"
                                                    dd:DragDrop.DropHandler="{Binding }"
                                                    dd:DragDrop.DragHandler="{Binding}"
                                                    
+                                                   WordWrap="{Binding WordWrap}"
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"

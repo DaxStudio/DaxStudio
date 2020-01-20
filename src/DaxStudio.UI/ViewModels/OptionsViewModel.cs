@@ -57,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
         
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;
+        private bool _skipSpaceAfterFunctionName;
         private bool _showPreReleaseNotifications;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
@@ -408,6 +409,18 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [DataMember, DefaultValue(false)]
+        public bool SkipSpaceAfterFunctionName {
+            get { return _skipSpaceAfterFunctionName; }
+            set {
+                if (_skipSpaceAfterFunctionName == value) return;
+                _skipSpaceAfterFunctionName = value;
+                NotifyOfPropertyChange(() => SkipSpaceAfterFunctionName);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(SkipSpaceAfterFunctionName), value, _isInitializing);
+            }
+        }
+
+        [DataMember, DefaultValue(false)]
         public bool ShowPreReleaseNotifications {
             get { return _showPreReleaseNotifications; }
             set
@@ -670,7 +683,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyOpenDocument;
-        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        [DataMember, DefaultValue("Ctrl + O"), Hotkey]
         public string HotkeyOpenDocument
         {
             get => _hotkeyOpenDocument;
@@ -726,6 +739,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => HotkeyFormatQueryAlternate);
             }
         }
+
 
         public void ResetKeyBindings()
         {
@@ -882,7 +896,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
         
         
-        private bool _scaleResultsFontWithEditor = true;
+
 
         private string _theme = "Light";
         [DataMember, DefaultValue("Light")]
@@ -901,8 +915,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _ResultAutoFormat = false;
-        private int _codeCompletionWindowWidthIncrease;
-        private bool _keepMetadataSearchOpen;
         [DataMember, DefaultValue(false)]
         public bool ResultAutoFormat {
             get => _ResultAutoFormat;
@@ -914,8 +926,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _scaleResultsFontWithEditor = true;
         [DataMember, DefaultValue(true)]
-        public bool ScaleResultsFontWithEditor { get => _scaleResultsFontWithEditor;
+        public bool ScaleResultsFontWithEditor { 
+            get => _scaleResultsFontWithEditor;
             set {
                 _scaleResultsFontWithEditor = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -923,8 +937,10 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
 
+        private int _codeCompletionWindowWidthIncrease;
         [DataMember, DefaultValue(100)]
-        public int CodeCompletionWindowWidthIncrease { get => _codeCompletionWindowWidthIncrease;
+        public int CodeCompletionWindowWidthIncrease { 
+            get => _codeCompletionWindowWidthIncrease;
             set {
                 if (value < 100) value = 100; // value should not be less than 100% of the default size
                 if (value > 300) value = 300; // value cannot be greater than 300% of the default size
@@ -935,8 +951,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _keepMetadataSearchOpen;
         [DataMember, DefaultValue(false)]
-        public bool KeepMetadataSearchOpen { get => _keepMetadataSearchOpen;
+        public bool KeepMetadataSearchOpen { 
+            get => _keepMetadataSearchOpen;
             set {
                 _keepMetadataSearchOpen = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -947,7 +965,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataLocalMachine = true;
         [DataMember, DefaultValue(true)]
-        public bool AutoRefreshMetadataLocalMachine { get => _autoRefreshMetadataLocalMachine;
+        public bool AutoRefreshMetadataLocalMachine { 
+            get => _autoRefreshMetadataLocalMachine;
             set {
                 _autoRefreshMetadataLocalMachine = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -958,7 +977,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataLocalNetwork = true;
         [DataMember, DefaultValue(true)]
-        public bool AutoRefreshMetadataLocalNetwork { get => _autoRefreshMetadataLocalNetwork;
+        public bool AutoRefreshMetadataLocalNetwork { 
+            get => _autoRefreshMetadataLocalNetwork;
             set {
                 _autoRefreshMetadataLocalNetwork = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -969,7 +989,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataCloud = true;
         [DataMember, DefaultValue(false)]
-        public bool AutoRefreshMetadataCloud { get => _autoRefreshMetadataCloud;
+        public bool AutoRefreshMetadataCloud { 
+            get => _autoRefreshMetadataCloud;
             set {
                 _autoRefreshMetadataCloud = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -980,13 +1001,15 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _showHiddenMetadata = true;
         [DataMember, DefaultValue(true)]
-        public bool ShowHiddenMetadata { get => _showHiddenMetadata;
-                set {
+        public bool ShowHiddenMetadata { 
+            get => _showHiddenMetadata;
+            set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValueAsync("ShowHiddenMetadata", value, _isInitializing);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
-            } }
+            } 
+        }
 
         private bool _setClearCacheAndRunAsDefaultRunStyle = false;
         [DataMember, DefaultValue(false)]
@@ -1002,7 +1025,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _sortFoldersFirstInMetadata = false;
         [DataMember, DefaultValue(true)]
-        public bool SortFoldersFirstInMetadata { get => _sortFoldersFirstInMetadata;
+        public bool SortFoldersFirstInMetadata { 
+            get => _sortFoldersFirstInMetadata;
             set {
                 _sortFoldersFirstInMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
@@ -1101,11 +1125,40 @@ namespace DaxStudio.UI.ViewModels
 
         private int _editorIndentationSize = 4;
         [DataMember,DefaultValue(4)]
-        public int EditorIndentationSize { get => _editorIndentationSize; set {
+        public int EditorIndentationSize { 
+            get => _editorIndentationSize; 
+            set {
                 _editorIndentationSize = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValueAsync<int>(nameof(EditorIndentationSize), value, _isInitializing);
                 NotifyOfPropertyChange(() => EditorIndentationSize);
+            }
+        }
+
+        private bool _editorWordWrap = false;
+        [DataMember, DefaultValue(false)]
+        public bool EditorWordWrap
+        {
+            get => _editorWordWrap;
+            set {
+                _editorWordWrap = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(EditorWordWrap), value, _isInitializing);
+                NotifyOfPropertyChange(() => EditorWordWrap);
+            }
+        }
+
+        private bool _showUserInTitlebar = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowUserInTitlebar
+        {
+            get => _showUserInTitlebar;
+            set
+            {
+                _showUserInTitlebar = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(ShowUserInTitlebar), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowUserInTitlebar);
             }
         }
 
