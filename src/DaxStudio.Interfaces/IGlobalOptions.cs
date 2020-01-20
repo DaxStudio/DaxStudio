@@ -30,6 +30,7 @@ namespace DaxStudio.Interfaces
         int TraceStartupTimeout { get; set; }
         DelimiterType DefaultSeparator { get; set; }
         DaxFormatStyle DefaultDaxFormatStyle { get; set; }
+        bool SkipSpaceAfterFunctionName { get; set; }
         bool TraceDirectQuery { get; set; }
         bool ShowPreReleaseNotifications { get; set; }
         bool ShowTooltipBasicStats { get; set; }

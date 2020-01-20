@@ -57,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
         
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;
+        private bool _skipSpaceAfterFunctionName;
         private bool _showPreReleaseNotifications;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
@@ -408,6 +409,18 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [DataMember, DefaultValue(false)]
+        public bool SkipSpaceAfterFunctionName {
+            get { return _skipSpaceAfterFunctionName; }
+            set {
+                if (_skipSpaceAfterFunctionName == value) return;
+                _skipSpaceAfterFunctionName = value;
+                NotifyOfPropertyChange(() => SkipSpaceAfterFunctionName);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<bool>(nameof(SkipSpaceAfterFunctionName), value, _isInitializing);
+            }
+        }
+
+        [DataMember, DefaultValue(false)]
         public bool ShowPreReleaseNotifications {
             get { return _showPreReleaseNotifications; }
             set
@@ -670,7 +683,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _hotkeyOpenDocument;
-        [DataMember, DefaultValue("Ctrl + N"), Hotkey]
+        [DataMember, DefaultValue("Ctrl + O"), Hotkey]
         public string HotkeyOpenDocument
         {
             get => _hotkeyOpenDocument;

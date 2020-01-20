@@ -518,7 +518,7 @@
                                     <RowDefinition Height="Auto" />
 
                                 </Grid.RowDefinitions>
-                                <Label  Content="Default Format Style:"/>
+                                <Label  Grid.Column="0" Content="Default Format Style:"/>
                                 <ComboBox Grid.Column="1" ItemsSource="{Binding DaxFormatStyles}" SelectedItem="{Binding DefaultDaxFormatStyle}">
 
                                     <ComboBox.ItemTemplate>
@@ -527,7 +527,8 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-
+                                <Label Grid.Row="1" Grid.Column="0" Content="Spacing:"/>
+                                <CheckBox Grid.Row="1" Grid.Column="1" x:Name="SkipSpaceAfterFunctionName" VerticalAlignment="Top" Content="Skip space after function name" Margin="2,7,2,0" />
                             </Grid>
                         </GroupBox>
 
