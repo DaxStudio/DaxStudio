@@ -106,6 +106,7 @@ namespace DaxStudio.SignalR
         public string HotkeyFormatQueryAlternate { get; set; }
         public bool ShowUserInTitlebar { get; set; }
         public bool EditorWordWrap { get; set; }
+        public bool SkipSpaceAfterFunctionName { get; set; }
 
         public string GetCustomCsvDelimiter()
         {
