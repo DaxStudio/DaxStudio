@@ -150,6 +150,7 @@ namespace DaxStudio.UI.ViewModels
             FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this, Options);
             DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
             QueryBuilder = new QueryBuilderViewModel(_eventAggregator, this, Options);
+            QueryBuilder.VisibilityChanged += QueryBuilder_VisibilityChanged;
 
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
@@ -167,6 +168,11 @@ namespace DaxStudio.UI.ViewModels
 
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
 
+        }
+
+        private void QueryBuilder_VisibilityChanged(object sender, EventArgs e)
+        {
+            NotifyOfPropertyChange(nameof(ShowQueryBuilder));
         }
 
         private void SizeUnitLabelChanged(object sender, PropertyChangedEventArgs e)
@@ -594,6 +600,17 @@ namespace DaxStudio.UI.ViewModels
                         QueryBuilder
                     });
             }
+        }
+
+        public bool ShowQueryBuilder { 
+            get {
+                return QueryBuilder?.IsVisible ?? false; ;
+            } 
+            set {
+                QueryBuilder.IsVisible = value;
+                NotifyOfPropertyChange(nameof(ShowQueryBuilder));
+
+            } 
         }
 
         private DAXEditorControl.DAXEditor GetEditor()

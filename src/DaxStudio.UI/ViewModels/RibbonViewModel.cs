@@ -77,7 +77,7 @@ namespace DaxStudio.UI.ViewModels
             RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
 #if DEBUG
-            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
+//            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
             //RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
             //RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
 #endif
@@ -88,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
 
-        public List<RunStyle> RunStyles { get; } = new List<RunStyle>();
+        public ObservableCollection<RunStyle> RunStyles { get; } = new ObservableCollection<RunStyle>();
         private RunStyle _selectedRunStyle;
         public RunStyle SelectedRunStyle {
             get { return _selectedRunStyle; }
@@ -471,6 +471,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                 NotifyOfPropertyChange(() => IsActiveDocumentVertipaqAnalyzerRunning);
                 NotifyOfPropertyChange(() => CanImportAnalysisData);
+                NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
+                NotifyOfPropertyChange(() => DisplayQueryBuilder);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -501,6 +503,9 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAllData);
                     NotifyOfPropertyChange(() => IsActiveDocumentConnected);
+                    break;
+                case nameof(ActiveDocument.ShowQueryBuilder):
+                    NotifyOfPropertyChange(() => DisplayQueryBuilder);
                     break;
             }
         }
@@ -1057,6 +1062,34 @@ namespace DaxStudio.UI.ViewModels
                     // set the performance window as the active tab
                     perfDataWindow.Activate();
                 }
+            }
+        }
+
+        public bool CanDisplayQueryBuilder { get => ActiveDocument != null; }
+
+        public bool DisplayQueryBuilder {
+            get => ActiveDocument?.ShowQueryBuilder??false;
+            set {
+                ActiveDocument.ShowQueryBuilder = value;
+                NotifyOfPropertyChange(nameof(DisplayQueryBuilder));
+            }
+        }
+
+        private bool _displayBenchmarking = false;
+        public bool DisplayBenchmarking
+        {
+            get => _displayBenchmarking;
+            set
+            {
+                _displayBenchmarking = value;
+                if (_displayBenchmarking)
+                    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
+                else
+                {
+                    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
+                    if (benchmark != null) RunStyles.Remove(benchmark);
+                }
+                NotifyOfPropertyChange(nameof(RunStyles));
             }
         }
 

@@ -39,6 +39,7 @@
 
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+            <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
@@ -505,12 +506,13 @@
                         <Style TargetType="{x:Type avalondock:LayoutAnchorableItem}">
                             <Setter Property="Title" Value="{Binding Model.Title}"/>
                             <Setter Property="IconSource" Value="{Binding Model.IconSource}"/>
-                            <!--<Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>-->
+                            <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToHiddenConverter}}"/>
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                             <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
                             <!--<Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>-->
                             <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
+                            
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
                             <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
 

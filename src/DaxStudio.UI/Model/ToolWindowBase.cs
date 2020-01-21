@@ -8,6 +8,7 @@ namespace DaxStudio.UI.Model
 {
     public class ToolWindowBase:Screen , IToolWindow
     {
+        public event EventHandler VisibilityChanged;
         public virtual string Title { get; set; }
         public virtual string DefaultDockingPane { get; set; }
         public DisabledCommand DockAsDocumentCommand;
@@ -29,6 +30,21 @@ namespace DaxStudio.UI.Model
             DockAsDocumentCommand.RaiseCanExecuteChanged();
         }
 
+        private bool _isVisible = true;
+        public bool IsVisible { get => _isVisible;
+            set
+            {
+                _isVisible = value;
+                OnVisibilityChanged(EventArgs.Empty);
+                NotifyOfPropertyChange(nameof(IsVisible));
+            }
+        }
+
+        protected virtual void OnVisibilityChanged(EventArgs e)
+        {
+            EventHandler handler = VisibilityChanged;
+            handler?.Invoke(this, e);
+        }
         //private bool _canClose;
         //public new bool CanClose { get { return _canClose; } set { if (value != _canClose) { _canClose = value;  NotifyOfPropertyChange(() => CanClose); } } }
         //public bool CanClose { get; set; }

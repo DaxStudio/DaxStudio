@@ -928,7 +928,26 @@
                     <TextBlock Text="Dark" />
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
-            
+            <Fluent:RibbonGroupBox Header="Experimental Features">
+                <Fluent:ToggleButton 
+                    Header="Query Builder"
+                    x:Name="DisplayQueryBuilder" 
+                    IsChecked="{Binding DisplayQueryBuilder}"
+                    SizeDefinition="Large">
+                    <Fluent:ToggleButton.Icon>
+
+                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
+
+                    </Fluent:ToggleButton.Icon>
+                    <Fluent:ToggleButton.LargeIcon>
+
+                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
+
+                    </Fluent:ToggleButton.LargeIcon>
+
+                </Fluent:ToggleButton>
+                <CheckBox Content="Show Benchmark Run Style" IsChecked="{Binding DisplayBenchmarking}"/>
+            </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           
             

@@ -31,8 +31,8 @@ namespace DaxStudio.UI.ViewModels
             Options = globalOptions;
             Title = "Builder";
             DefaultDockingPane = "DockMidLeft";
-            CanCloseWindow = true;
             Columns.PropertyChanged += OnColumnsPropertyChanged;
+            IsVisible = false;
         }
 
         private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -40,6 +40,9 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
         }
+
+
+        public bool CanHide => true;      
 
         public QueryBuilderFieldList Columns { get; } = new QueryBuilderFieldList();
         public QueryBuilderFilterList Filters { get; } = new QueryBuilderFilterList();
