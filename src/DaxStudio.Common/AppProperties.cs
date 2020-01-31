@@ -13,9 +13,15 @@ namespace DaxStudio.Common
         internal const string PortNumber = "PortNumber";
         internal const string FileName = "FileName";
         internal const string CrashTest = "CrashTest";
+        internal const string Database = "Database";
+        internal const string Server = "Server";
+
+        public static CmdLineArgs _args;
         public static CmdLineArgs Args(this System.Windows.Application app)
         {
             return new CmdLineArgs(app);
+            //if (_args == null) _args = new CmdLineArgs(app);
+            //return _args;
         }
     }
 }

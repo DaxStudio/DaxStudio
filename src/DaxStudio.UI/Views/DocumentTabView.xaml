@@ -75,11 +75,11 @@
             <avalondock:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0"
+                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0"
                                    Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsQueryRunning}"
                                    />
-                        <TextBlock Text="{Binding Content.DisplayName}"/>
-                        <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Text="{Binding Content.DisplayName}" Margin="0,0,0,0"/>
+                        <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}" Padding="0,0,0,0"/>
                         <!-- 
                         <Button x:Name="DocumentCloseButton"
                                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 

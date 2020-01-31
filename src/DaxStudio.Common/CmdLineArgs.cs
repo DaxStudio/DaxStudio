@@ -96,5 +96,36 @@ namespace DaxStudio.Common
                 _app.Properties.Add(AppProperties.CrashTest, value);
             }
         }
+
+        public string Server
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.Server))
+                    return (string)_app.Properties[AppProperties.Server];
+                return string.Empty;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.Server))
+                    _app.Properties[AppProperties.Server] = value;
+                _app.Properties.Add(AppProperties.Server, value);
+            }
+        }
+        public string Database
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.Database))
+                    return (string)_app.Properties[AppProperties.Database];
+                return string.Empty;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.Database))
+                    _app.Properties[AppProperties.Database] = value;
+                _app.Properties.Add(AppProperties.Database, value);
+            }
+        }
     }
 }

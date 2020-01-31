@@ -122,6 +122,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _host = host;
             _eventAggregator = eventAggregator;
+            _eventAggregator.Subscribe(this);
             _windowManager = windowManager;
             _ribbon = ribbon;
             SettingProvider = settingProvider;
@@ -750,6 +751,9 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", this.DisplayName);
             _logger.Info("In OnActivate");
             base.OnActivate();
+
+            _eventAggregator.Unsubscribe(this);
+            
             _eventAggregator.Subscribe(this);
             _eventAggregator.Subscribe(QueryResultsPane);
             foreach (var tw in this.TraceWatchers)
@@ -2959,8 +2963,17 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
+        private bool _isCheckForSchemaUpdateRunning = false;
+        private object _checkForSchemaUpdateLock = new object();
+ 
         public async Task<bool> ShouldAutoRefreshMetadataAsync()
         {
+            lock(_checkForSchemaUpdateLock)
+            {
+                if (_isCheckForSchemaUpdateRunning) return false; 
+                _isCheckForSchemaUpdateRunning = true;
+            }
+
             try
             {
                 if (IsQueryRunning) return false; // if query is running schema cannot have changed (and this connection will be busy with the query)
@@ -2985,7 +2998,9 @@ namespace DaxStudio.UI.ViewModels
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
 
-                var hasChanged = await Connection.Database.HasSchemaChangedAsync();
+                var conn = Connection.Clone();
+                var hasChanged = await conn.Database.HasSchemaChangedAsync();
+                conn.Close();
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
 
@@ -3004,6 +3019,10 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
                 return false;
+            } 
+            finally
+            {
+                _isCheckForSchemaUpdateRunning = false;
             }
         }
 

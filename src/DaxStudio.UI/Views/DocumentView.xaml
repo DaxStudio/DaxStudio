@@ -265,13 +265,12 @@
                 <local:DaxStudioLayoutStrategy/>
             </avalondock:DockingManager.LayoutUpdateStrategy>
 
-            <avalondock:DockingManager.AnchorableHeaderTemplate>
+            <!--<avalondock:DockingManager.AnchorableHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0" Margin="0,0,5,0"
+                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}" />
-
 
                         <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,3,2,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
@@ -281,11 +280,56 @@
                                    Visibility="{Binding Content.IsChecked, Converter={StaticResource BoolToNotCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                             />
-                        <TextBlock Text="{Binding Content.Title}"/>
+                        <TextBlock Text="{Binding Content.Title}" Margin="0,0,0,0" Padding="0"/>
                     </StackPanel>
                 </DataTemplate>
-            </avalondock:DockingManager.AnchorableHeaderTemplate>
+            </avalondock:DockingManager.AnchorableHeaderTemplate>-->
 
+            <avalondock:DockingManager.AnchorableHeaderTemplateSelector>
+                <selectors:DataGridWindowTemplateSelector>
+                    <selectors:DataGridWindowTemplateSelector.TraceTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}" 
+                                   VerticalAlignment="Center"
+                                   />
+
+
+                                <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   VerticalAlignment="Center"
+                            />
+                                <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsChecked, Converter={StaticResource BoolToNotCollapsedConverter}, FallbackValue=Collapsed}"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   VerticalAlignment="Center"
+                            />
+                                <TextBlock Text="{Binding Content.Title}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </selectors:DataGridWindowTemplateSelector.TraceTemplate>
+
+                    <selectors:DataGridWindowTemplateSelector.DefaultTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Content.Title}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </selectors:DataGridWindowTemplateSelector.DefaultTemplate>
+
+                    <selectors:DataGridWindowTemplateSelector.DataGridTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Content.Title}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </selectors:DataGridWindowTemplateSelector.DataGridTemplate>
+                </selectors:DataGridWindowTemplateSelector>
+            </avalondock:DockingManager.AnchorableHeaderTemplateSelector>
+            
             <avalondock:DockingManager.AnchorableTitleTemplate>
                 <DataTemplate>
                     <Grid>

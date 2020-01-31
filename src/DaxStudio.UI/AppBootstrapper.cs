@@ -25,6 +25,8 @@ namespace DaxStudio.UI
     using DaxStudio.UI.Interfaces;
     using DaxStudio.Interfaces;
     using DaxStudio.UI.Model;
+    using MLib;
+    using MLib.Interfaces;
 
     public class AppBootstrapper : BootstrapperBase//<IShell>
 	{
@@ -132,6 +134,9 @@ namespace DaxStudio.UI
 
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 
+                // add support for MLib themes
+                batch.AddExportedValue<IAppearanceManager>(AppearanceManager.GetInstance());
+
                 _container.Compose(batch);
 
 	            // Add AvalonDock binding convetions
@@ -157,6 +162,11 @@ namespace DaxStudio.UI
 	            Debug.WriteLine(e);
 	        }
 		}
+
+        public IThemeManager GetThemeManager()
+        {
+            return GetInstance(typeof(IThemeManager), null) as IThemeManager;
+        }
 
         public IEventAggregator GetEventAggregator()
         {

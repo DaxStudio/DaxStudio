@@ -15,6 +15,7 @@ using System.Windows;
 using System.Linq;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -51,6 +52,7 @@ namespace DaxStudio.UI.ViewModels
             _options = options;
             _eventAggregator.Subscribe(this);
             AutoSaver = autoSaver;
+            _app = Application.Current;
         }
 
         
@@ -83,6 +85,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IAutoSaver AutoSaver { get; }
+
+        private Application _app;
 
         public void NewQueryDocument(string fileName)
         {
@@ -166,11 +170,22 @@ namespace DaxStudio.UI.ViewModels
             
             new System.Action(CleanActiveDocument).BeginOnUIThread();
 
-            if (sourceDocument == null 
-                || sourceDocument.Connection == null 
+            if (sourceDocument == null
+                || sourceDocument.Connection == null
                 || sourceDocument.Connection.State != System.Data.ConnectionState.Open)
+            {
+                if (!string.IsNullOrEmpty(_app.Args().Server) && !string.IsNullOrEmpty(_app.Args().Database))
+                {
+                    var server = _app.Args().Server;
+                    var database = _app.Args().Database;
+                    Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
+                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server};Initial Catalog={database}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                }
+                else
                     new System.Action(ChangeConnection).BeginOnUIThread();
-            else {
+            }
+            else
+            {
                 _eventAggregator.PublishOnUIThread(new CopyConnectionEvent(sourceDocument));
             }
             

@@ -116,6 +116,7 @@
     <Compile Include="ISaveable.cs" />
     <Compile Include="IServerTimes.cs" />
     <Compile Include="IStatusBarMessage.cs" />
+    <Compile Include="IThemeManager.cs" />
     <Compile Include="IVersionCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IStaticQueryResult.cs" />

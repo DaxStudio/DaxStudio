@@ -12,6 +12,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using System.Data;
 using DaxStudio.UI.Extensions;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -154,17 +155,20 @@ namespace DaxStudio.UI.ViewModels
         private void CalculateBenchmarkSummary()
         {
             var dt = BenchmarkDataSet.Tables[0];
-            string[] statistics = { "Average", "StdDev" };
+            string[] statistics = { "Average", "StdDev","Min","Max" };
             var newDt2 = from d in dt.AsEnumerable()
                          from stat in statistics
-                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"] };
+                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"] , StorageEngineDuration = (int)d["StorageEngineDuration"] };
 
             var newGrp = newDt2.GroupBy(x => new { Cache = x.Cache, Statistic = x.Statistic });
 
             DataTable summary = new DataTable("Summary");
             summary.Columns.Add("Cache", typeof(string));
             summary.Columns.Add("Statistic", typeof(string));
-            summary.Columns.Add("TotalDuration", typeof(long));
+            summary.Columns.Add("TotalDuration", typeof(double));
+            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns.Add("StorageEngineDuration", typeof(double));
+            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
 
             foreach (var grp in newGrp)
             {
@@ -176,9 +180,19 @@ namespace DaxStudio.UI.ViewModels
                 {
                     case "Average":
                         newRow["TotalDuration"] = grp.Average(x => x.TotalDuration);
+                        newRow["StorageEngineDuration"] = grp.Average(x => x.StorageEngineDuration);
                         break;
                     case "StdDev":
                         newRow["TotalDuration"] = grp.StdDev(x => x.TotalDuration);
+                        newRow["StorageEngineDuration"] = grp.StdDev(x => x.StorageEngineDuration);
+                        break;
+                    case "Min":
+                        newRow["TotalDuration"] = grp.Min(x => x.TotalDuration);
+                        newRow["StorageEngineDuration"] = grp.Min(x => x.StorageEngineDuration);
+                        break;
+                    case "Max":
+                        newRow["TotalDuration"] = grp.Max(x => x.TotalDuration);
+                        newRow["StorageEngineDuration"] = grp.Max(x => x.StorageEngineDuration);
                         break;
                     default:
 

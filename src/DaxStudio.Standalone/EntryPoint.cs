@@ -138,9 +138,12 @@ namespace DaxStudio.Standalone
 
 
                 // load selected theme
-                var theme = options.Theme;// "Light"; 
-                if (theme == "Dark") app.LoadDarkTheme();
-                else app.LoadLightTheme();
+                var themeManager = bootstrapper.GetThemeManager();
+                themeManager.SetTheme(options.Theme);
+
+                //var theme = options.Theme;// "Light"; 
+                //if (theme == "Dark") app.LoadDarkTheme();
+                //else app.LoadLightTheme();
 
                 // Launch the User Interface
                 app.Run();
@@ -249,7 +252,14 @@ namespace DaxStudio.Standalone
                 .Callback(crashtest => app.Args().TriggerCrashTest = crashtest)
                 .WithDescription("Used for testing the Crash Test reporting")
                 .SetDefault(false);
-                
+
+            p.Setup<string>('s', "server")
+                .Callback(server => app.Args().Server = server)
+                .WithDescription("Server to connect to");
+
+            p.Setup<string>('d', "database")
+                .Callback(database => app.Args().Database = database)
+                .WithDescription("Database to connect to");
 
             p.Parse(args);
             

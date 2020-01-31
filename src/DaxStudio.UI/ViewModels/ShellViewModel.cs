@@ -15,12 +15,14 @@ using System.Collections.Generic;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using System.Threading.Tasks;
+using MLib.Interfaces;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.ViewModels
 {
-    [Export(typeof (IShell))]
-    public class ShellViewModel : 
-        Screen, 
+    [Export(typeof(IShell))]
+    public class ShellViewModel :
+        Screen,
         IShell,
         IHandle<NewVersionEvent>,
         IHandle<AutoSaveEvent>,
@@ -37,12 +39,13 @@ namespace DaxStudio.UI.ViewModels
         private Window _window;
         private readonly Application _app;
         private readonly string _username;
+
         private InputBindings _inputBindings;
-        
+
         //private ILogger log;
         [ImportingConstructor]
         public ShellViewModel(IWindowManager windowManager
-                            , IEventAggregator eventAggregator 
+                            , IEventAggregator eventAggregator
                             , RibbonViewModel ribbonViewModel
                             , StatusBarViewModel statusBar
                             , IConductor conductor
@@ -50,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
                             , IVersionCheck versionCheck
                             , IGlobalOptions options
                             , IAutoSaver autoSaver
+                            , IThemeManager themeManager
                             )
         {
 
@@ -58,10 +62,11 @@ namespace DaxStudio.UI.ViewModels
             StatusBar = statusBar;
             Options = options;
             AutoSaver = autoSaver;
+            ThemeManager = themeManager;
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
-            Tabs = (DocumentTabViewModel) conductor;
+            Tabs = (DocumentTabViewModel)conductor;
             Tabs.ConductWith(this);
             //Tabs.CloseStrategy = new ApplicationCloseStrategy();
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
@@ -81,7 +86,7 @@ namespace DaxStudio.UI.ViewModels
                 RecoverAutoSavedFiles(autoSaveInfo);
             }
             else
-            {   
+            {
                 // if there are no auto-save files to recover, start the auto save timer
                 eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
             }
@@ -97,13 +102,15 @@ namespace DaxStudio.UI.ViewModels
 
             DisplayName = AppTitle;
 
-            Application.Current.Activated += OnApplicationActivated; 
-            Log.Verbose("============ Shell Started - v{version} =============",Version.ToString());
+            Application.Current.Activated += OnApplicationActivated;
+            Log.Verbose("============ Shell Started - v{version} =============", Version.ToString());
 
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
-            
+
         }
+
+        private IThemeManager ThemeManager { get; }
 
         private Timer AutoSaveTimer { get; }
 
@@ -419,19 +426,35 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ChangeThemeEvent message)
         {
-            if (message.Theme == "Dark") SetDarkTheme();
-            else SetLightTheme();
+            ThemeManager.SetTheme(message.Theme);
+            //if (message.Theme == "Dark") SetDarkTheme();
+            //else SetLightTheme();
         }
 
-        private void SetLightTheme()
-        {
-            _app.LoadLightTheme();
-        }
+        //private IThemeInfos _themes;
+        //public IThemeInfos Themes
+        //{
+        //    get
+        //    {
+        //        if (_themes == null) _themes = AppearanceManager.CreateThemeInfos();
+        //        return _themes;
 
-        private void SetDarkTheme()
-        {
-            _app.LoadDarkTheme();
-        }
+        //    }
+        //}
+
+        private Color DaxStudioBlue => Color.FromRgb(0,114,198);
+
+        //private void SetLightTheme()
+        //{
+        //    _app.LoadLightTheme();
+        //    AppearanceManager.SetTheme( Themes, "Light", DaxStudioBlue);
+        //}
+
+        //private void SetDarkTheme()
+        //{
+        //    _app.LoadDarkTheme();
+        //    AppearanceManager.SetTheme(Themes, "Dark", DaxStudioBlue);
+        //}
 
         public void Handle(UpdateHotkeys message)
         {

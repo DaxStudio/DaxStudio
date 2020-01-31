@@ -1,4 +1,5 @@
 ﻿using Fluent;
+using MLib.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -57,6 +58,8 @@ namespace DaxStudio.UI.Extensions
 
             app.ChangeRibbonTheme("Light");
         }
+
+
 
         private static void RemoveMergedThemeDictionaries(Application app, string[] dictionariesToRemove)
         {
