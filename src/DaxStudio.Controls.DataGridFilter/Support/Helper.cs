@@ -4,11 +4,11 @@ namespace DaxStudio.Controls.DataGridFilter.Support
 {
     public static class Helper
     {
-        public static Dictionary<string, FilterData> CloneDictionaryHelper(Dictionary<string, FilterData> dict)
+        public static Dictionary<string, FilterData> CloneDictionaryHelper(Dictionary<string, FilterData> dictionary)
         {
             var dictNew = new Dictionary<string, FilterData>();
 
-            foreach (KeyValuePair<string, FilterData> kvp in dict)
+            foreach (KeyValuePair<string, FilterData> kvp in dictionary)
             {
                 var data = new FilterData(
                     kvp.Value.Operator, kvp.Value.Type,

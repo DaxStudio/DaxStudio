@@ -19,9 +19,9 @@ namespace DaxStudio.Controls.DataGridFilter.Support
 
         public string ResourceKey { get; set; }
 
-        public DisplayStringAttribute(string v)
+        public DisplayStringAttribute(string displayString)
         {
-            this.value = v;
+            this.value = displayString;
         }
 
         public DisplayStringAttribute()

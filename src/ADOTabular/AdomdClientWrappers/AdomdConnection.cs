@@ -1,6 +1,7 @@
 ﻿extern alias ExcelAdomdClientReference;
 using System;
 using System.Data;
+using System.Threading;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -303,9 +304,21 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     _conn.Open();
                 }
-                lock (rowsetLock)
+
+                // wait 10 seconds before timing out
+                if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,10 )))
                 {
-                    return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                    try
+                    {
+                        return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
+                    }
+                    finally
+                    {
+                        Monitor.Exit(rowsetLock);
+                    }
+                } else
+                {
+                    throw new InvalidOperationException("Timeout exceeded attempting to establish internal lock for GetSchemaDataSet");
                 }
             }
             else
