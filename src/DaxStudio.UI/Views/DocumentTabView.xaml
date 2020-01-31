@@ -31,6 +31,7 @@
     <Grid>
         <avalondock:DockingManager 
             x:Name="Items"
+      
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"  
             >
             <!-- Theme="{Binding AvalonDockTheme}"-->
@@ -78,7 +79,7 @@
                         <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,3,0,0"
                                    Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsQueryRunning}"
                                    />
-                        <TextBlock Text="{Binding Content.DisplayName}"/>
+                        <TextBlock Text="{Binding Content.DisplayName}" ToolTip="{Binding Content.FileName}"/>
                         <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <!-- 
                         <Button x:Name="DocumentCloseButton"
