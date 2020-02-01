@@ -11,6 +11,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Threading.Tasks;
 using Serilog;
+using System.Globalization;
 //using System.Windows.Forms;
 
 namespace DaxStudio.UI.ViewModels
@@ -161,7 +162,7 @@ namespace DaxStudio.UI.ViewModels
                     var totalTables = metadataPane.SelectedModel.Tables.Count;
 
                     using (var textWriter = new StreamWriter(csvFilePath, false, Encoding.UTF8))
-                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                    using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
                     using (var statusMsg = new StatusBarMessage(this.ActiveDocument, $"Exporting {table.Name}"))
                     using (var reader = ActiveDocument.Connection.ExecuteReader(daxQuery))
                     {

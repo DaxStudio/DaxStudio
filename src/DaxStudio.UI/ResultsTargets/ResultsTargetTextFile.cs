@@ -5,6 +5,7 @@ using DaxStudio.UI.Interfaces;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,10 +101,10 @@ namespace DaxStudio.UI.Model
                                     int iMaxCol = reader.FieldCount - 1;
                                     int iRowCnt = 0;
                                     if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
-
+                                    
                                     using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                                     {
-                                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
                                         {
                                             // CSV Writer config
 

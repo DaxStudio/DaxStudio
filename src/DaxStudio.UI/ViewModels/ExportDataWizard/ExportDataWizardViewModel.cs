@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -269,7 +270,7 @@ namespace DaxStudio.UI.ViewModels
                     try { 
                         textWriter = new StreamWriter(csvFilePath, false, encoding);
 
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter))
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                         using (var reader = Document.Connection.ExecuteReader(daxQuery))
                         {
