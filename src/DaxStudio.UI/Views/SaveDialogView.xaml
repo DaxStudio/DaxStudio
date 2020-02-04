@@ -67,8 +67,8 @@
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldSave($this.SelectedItem)]">
             </ListView>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
-                <Button x:Name="Save">Save</Button>
-                <Button x:Name="DontSave">Don't Save</Button>
+                <Button x:Name="Save">_Save</Button>
+                <Button x:Name="DontSave" >Do_n't Save</Button>
                 <Button x:Name="Cancel" IsCancel="True">Cancel</Button>
             </StackPanel>
         </Grid>

@@ -149,10 +149,10 @@
                 </ListView.View>
  
             </ListView>-->
-            <Button x:Name="WriteParameterXml" IsDefault="True" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4">Write Parameter XML</Button>
+            <Button x:Name="WriteParameterXml" IsDefault="True" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4">_Write Parameter XML</Button>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 
-                <Button x:Name="Ok" IsDefault="True" TabIndex="1">Ok</Button>
+                <Button x:Name="OK" IsDefault="True" TabIndex="1">Ok</Button>
                 <Button x:Name="Cancel" IsCancel="True" TabIndex="2">Cancel</Button>
             </StackPanel>
         </Grid>
