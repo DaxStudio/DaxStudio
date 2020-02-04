@@ -94,7 +94,7 @@
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
-                <Button x:Name="Open">Open</Button>
+                <Button x:Name="_Open" IsDefault="True">Open</Button>
                 <Button x:Name="Cancel" IsCancel="True">Cancel</Button>
             </StackPanel>
         </Grid>
