@@ -242,7 +242,7 @@ namespace DaxStudio.UI.Utils
             //if (!funcName.EndsWith("(")) return;
             funcName = funcName.TrimEnd('(');
 
-            ADOTabularFunction f = Document.Connection.FunctionGroups.GetByName(funcName);
+            ADOTabularFunction f = Document?.Connection?.FunctionGroups?.GetByName(funcName);
             
             if (f != null)
             {
