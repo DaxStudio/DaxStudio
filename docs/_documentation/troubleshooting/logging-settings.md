@@ -5,7 +5,7 @@ title: Logging Settings
 ## Enabling Diagnostic Logging
 As of v2.7.0 you can enable diagnostic logging in DAX Studio by holding down the left SHIFT key while starting the application. If you are having issues with the Excel addin you need to hold down the SHIFT key while Excel is starting up. 
 
-Logs are stored in the ```%APPDATA%\DaxStudio\log``` folder. You can either paste this address into the Windows Explorer address bar or the Help - About window also has a link to this location.
+Logs are stored in the ```%LOCALAPPDATA%\DaxStudio\log``` folder. You can either paste this address into the Windows Explorer address bar or the Help - About window also has a link to this location.
 
 ![](Help-About.png)
 
