@@ -803,15 +803,23 @@ namespace DaxStudio.UI.ViewModels
 
         internal void SwapDelimiters()
         {
-            if (_editor.SelectionLength > 0)
+            try
             {
-                _editor.SelectedText = SwapDelimiters(_editor.SelectedText);
+                if (_editor.SelectionLength > 0)
+                {
+                    _editor.SelectedText = SwapDelimiters(_editor.SelectedText);
+                }
+                else
+                {
+                    _editor.Document.BeginUpdate();
+                    _editor.Document.Text = SwapDelimiters(_editor.Text);
+                    _editor.Document.EndUpdate();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _editor.Document.BeginUpdate();
-                _editor.Document.Text = SwapDelimiters(_editor.Text);
-                _editor.Document.EndUpdate();
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SwapDelimiters), $"ERROR: {ex.Message}");
+                OutputError($"The following error occurred attempting to swap delimiters: {ex.Message}");
             }
         }
 
