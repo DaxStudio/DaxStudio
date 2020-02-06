@@ -16,17 +16,13 @@ namespace DaxStudio.Common
             PortableFile = Path.Combine(directory, @".portable");
             IsInPortableMode = File.Exists(PortableFile) || File.Exists(BinPortableFile);
 
-            BasePath = IsInPortableMode 
-                           ? directory
-                           : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"DaxStudio");
-
-            BaseLocalPath = IsInPortableMode
+            BasePath = IsInPortableMode
                ? directory
                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DaxStudio");
 
-            LogPath = Path.Combine(BaseLocalPath, "Log");
+            LogPath = Path.Combine(BasePath, "Log");
             QueryHistoryPath = Path.Combine(BasePath, "QueryHistory");
-            AutoSavePath = Path.Combine(BaseLocalPath, "AutoSaveFiles");
+            AutoSavePath = Path.Combine(BasePath, "AutoSaveFiles");
         }
 
         public static string LogPath {get;}
@@ -36,8 +32,7 @@ namespace DaxStudio.Common
         public static string AutoSavePath { get; }
         public static bool IsInPortableMode { get; }
         public static string BasePath { get; }
-        internal static string BaseLocalPath { get; }
-        public static string AvalonDockLayoutFile => Path.Combine(BaseLocalPath, "WindowLayouts", "Custom.xml");
+        public static string AvalonDockLayoutFile => Path.Combine(BasePath, "WindowLayouts", "Custom.xml");
 
     }
 }

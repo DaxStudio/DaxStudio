@@ -681,6 +681,12 @@ namespace DaxStudio.CheckerApp
             Output.AppendHeaderLine("Registry Settings");
 
             var daxStudioKey = Registry.CurrentUser.OpenSubKey(@"Software\DaxStudio");
+            if (daxStudioKey == null)
+            {
+                Output.AppendIndentedLine($"WARNING: No Registry settings found", "Orange");
+                return;
+            }
+
             var names = daxStudioKey.GetValueNames().OrderBy(n => n);
             foreach (var settingName in names)
             {

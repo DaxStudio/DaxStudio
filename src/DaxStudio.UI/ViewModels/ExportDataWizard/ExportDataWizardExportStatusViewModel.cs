@@ -25,6 +25,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Wizard.CancelRequested = true;
             NotifyOfPropertyChange(() => CanRequestCancel);
+            NotifyOfPropertyChange(() => CanCloseExport);
         }
 
         public bool Completed { get; private set; }
@@ -36,7 +37,10 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanCloseExport
         {
-            get { return Completed || Tables.Where(t => t.Status == ExportStatus.Ready || t.Status == ExportStatus.Exporting).Count() == 0; }
+            get { return Completed 
+                    || Tables.Where(t => t.Status == ExportStatus.Ready || t.Status == ExportStatus.Exporting).Count() == 0
+                    || Wizard.CancelRequested;
+            }
         }
 
         public void CloseExport()

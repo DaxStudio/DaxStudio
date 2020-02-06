@@ -2,6 +2,7 @@
 using DaxStudio.UI.Enums;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -44,19 +45,20 @@ namespace DaxStudio.UI.ViewModels
             IsVisible = isVisible;
             Private = isprivate;
             ShowAsVariationsOnly = showAsVariationsOnly;
-            
         }
         public string DaxName { get;  }
         public string Caption { get;  }
         public bool IsVisible { get; }
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }
+        public ExportDataWizardChooseTablesViewModel Parent { get; set; }
 
         private bool _isSelected = true;
         public bool IsSelected { get { return _isSelected; }
             set {
                 _isSelected = value;
                 NotifyOfPropertyChange(() => IsSelected);
+                Parent?.UpdateCanNext();
             }
         }
 
@@ -117,12 +119,26 @@ namespace DaxStudio.UI.ViewModels
         public ExportDataWizardChooseTablesViewModel(ExportDataWizardViewModel wizard) : base(wizard)
         {
             SelectAll = true;
+            foreach (var t in Tables)
+            {
+                t.Parent = this;
+            }
         }
 
         public void Next()
         {
             NextPage = ExportDataWizardPage.ExportStatus;
             TryClose();
+        }
+
+        public bool CanNext
+        {
+            get { return Wizard.Tables.Count(t => t.IsSelected) > 0; }
+        }
+
+        public void UpdateCanNext()
+        {
+            NotifyOfPropertyChange(() => CanNext);
         }
 
         public bool SelectAll { get; set; }

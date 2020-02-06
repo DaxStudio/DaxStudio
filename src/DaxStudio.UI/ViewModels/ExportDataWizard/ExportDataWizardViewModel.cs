@@ -19,7 +19,9 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -185,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 Document.IsQueryRunning = true;
                 try
@@ -196,7 +198,7 @@ namespace DaxStudio.UI.ViewModels
                             ExportDataToFolder(this.CsvFolder);
                             break;
                         case ExportDataType.SqlTables:
-                            ExportDataToSQLServer(this.SqlConnectionString, this.Schema, this.TruncateTables);
+                            await ExportDataToSQLServer(this.SqlConnectionString, this.Schema, this.TruncateTables);
                             break;
                         default:
                             throw new ArgumentException("Unknown ExportType requested");
@@ -300,6 +302,7 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     var fieldValue = reader[fieldOrdinal];
                                     csvWriter.WriteField(fieldValue);
+                                    
                                 }
 
                                 rows++;
@@ -384,11 +387,25 @@ namespace DaxStudio.UI.ViewModels
         private int currentTableIdx = 0;
         private int totalTableCnt = 0;
         private SelectedTable currentTable = null;
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
+        private async Task ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
+
+            var builder = new SqlConnectionStringBuilder(connStr);
+            builder.ApplicationName = "DAX Studio Table Export";
+
+            currentTableIdx = 0;
+            var selectedTables = Tables.Where(t => t.IsSelected);
+            totalTableCnt = selectedTables.Count();
+
+            // no tables were selected so exit here
+            if (totalTableCnt == 0)
+            {
+                return;
+            }
 
             // TODO: Use async but to be well done need to apply async on the DBCommand & DBConnection
             // TODO: Show warning message?
@@ -396,88 +413,103 @@ namespace DaxStudio.UI.ViewModels
             {
                 return;
             }
-            Document.QueryStopWatch.Start();
-            using (var conn = new SqlConnection(connStr))
+            try
             {
-                conn.Open();
-                var currentTableIdx = 0;
-                var selectedTables = Tables.Where(t => t.IsSelected);
-                totalTableCnt = selectedTables.Count(); 
-                foreach (var table in selectedTables)
+                Document.QueryStopWatch.Start();
+                using (var conn = new SqlConnection(builder.ToString()))
                 {
-                    try
+                    conn.Open();
+
+                    foreach (var table in selectedTables)
                     {
-                        EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(table));
-
-                        currentTable = table;
-                        currentTable.Status = ExportStatus.Exporting;
-                        currentTableIdx++;
-                        var daxQuery = $"EVALUATE {table.DaxName}";
-
-                        using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
-                        using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
+                        try
                         {
-                            sqlTableName = $"[{schemaName}].[{table.Caption}]";
+                            EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(table));
 
-                            EnsureSQLTableExists(conn, sqlTableName, reader);
+                            currentTable = table;
+                            currentTable.Status = ExportStatus.Exporting;
+                            currentTableIdx++;
+                            var daxQuery = $"EVALUATE {table.DaxName}";
 
-                            using (var transaction = conn.BeginTransaction())
+                            using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                            using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
                             {
-                                if (truncateTables)
-                                {
-                                    using (var cmd = new SqlCommand($"truncate table {sqlTableName}", conn))
-                                    {
-                                        cmd.Transaction = transaction;
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                }
+                                sqlTableName = $"[{schemaName}].[{table.Caption}]";
 
-                                using (var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
+                                EnsureSQLTableExists(conn, sqlTableName, reader);
+
+                                using (var transaction = conn.BeginTransaction())
                                 {
+                                    if (truncateTables)
+                                    {
+                                        using (var cmd = new SqlCommand($"truncate table {sqlTableName}", conn))
+                                        {
+                                            cmd.Transaction = transaction;
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
+
+                                    var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction); //)//, transaction))
+                                
                                     sqlBulkCopy.DestinationTableName = sqlTableName;
                                     sqlBulkCopy.BatchSize = 5000;
                                     sqlBulkCopy.NotifyAfter = 5000;
                                     sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
                                     sqlBulkCopy.EnableStreaming = true;
                                     sqlBulkCopy.WriteToServer(reader);
+                                    // update the currentTable with the final rowcount
                                     currentTable.RowCount = sqlBulkCopy.RowsCopiedCount();
-                                }
                                 
-                                transaction.Commit();
-                                currentTable.Status = ExportStatus.Done;
+
+                                    transaction.Commit();
+                                    currentTable.Status = ExportStatus.Done;
+                                }
+
                             }
 
-                        }
+                            // jump out of table loop if we have been cancelled
+                            if (CancelRequested)
+                            {
+                                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                break;
+                            }
 
-                        // jump out of table loop if we have been cancelled
-                        if (CancelRequested)
+                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {table.Caption} to {sqlTableName}"));
+                            currentTable.Status = ExportStatus.Done;
+                        }
+                        catch (Exception ex)
                         {
-                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
-                            break;
+                            currentTable.Status = ExportStatus.Error;
+                            Log.Error(ex, "{class} {method} {message}", "ExportDataWizardViewModel", "ExportDataToSQLServer", ex.Message);
+                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {ex.Message}"));
+                            EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                            continue; // skip to next table on error
                         }
-
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Exported {table.Caption} to {sqlTableName}"));
-                        currentTable.Status = ExportStatus.Done;
-                    }
-                    catch (Exception ex)
-                    {
-                        currentTable.Status = ExportStatus.Error;
-                        Log.Error(ex, "{class} {method} {message}", "ExportDataWizardViewModel", "ExportDataToSQLServer", ex.Message);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
-                        EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
-                        continue; // skip to next table on error
                     }
                 }
+                Document.QueryStopWatch.Stop();
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {currentTableIdx} tables exported", Document.QueryStopWatch.ElapsedMilliseconds));
+                EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+                Document.QueryStopWatch.Reset();
             }
-            Document.QueryStopWatch.Stop();
-            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Model Export Complete: {currentTableIdx} tables exported", Document.QueryStopWatch.ElapsedMilliseconds));
-            EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable,true));
-            Document.QueryStopWatch.Reset();
+            catch (Exception ex)
+            {
+                Document.QueryStopWatch.Stop();
+                if (currentTable == null && totalTableCnt > 0) { currentTable = selectedTables.FirstOrDefault(); }
+                if (currentTable != null) { currentTable.Status = ExportStatus.Error; }
+                Log.Error(ex, "{class} {method} {message}", "ExportDataWizardViewModel", "ExportDataToSQLServer", ex.Message);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
+                EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(currentTable, true));
+            }
         }
 
         private void SqlBulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
         {
-            if (CancelRequested) e.Abort = true;
+            if (CancelRequested)
+            {
+                e.Abort = true;
+                cancellationTokenSource.Cancel();
+            }
             new StatusBarMessage(Document, $"Exporting Table {currentTableIdx} of {totalTableCnt} : {sqlTableName} ({e.RowsCopied:N0} rows)");
             currentTable.RowCount = e.RowsCopied;
             Document.RefreshElapsedTime();
