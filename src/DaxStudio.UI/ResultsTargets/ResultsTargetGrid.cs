@@ -90,7 +90,7 @@ namespace DaxStudio.UI.Model
                         Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
-                        runner.OutputError("Query Batch Completed with erros", durationMs);
+                        runner.OutputError("Query Batch Completed with errors", durationMs);
                     }
                     finally
                     {
