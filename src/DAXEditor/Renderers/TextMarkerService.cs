@@ -1,5 +1,5 @@
 ﻿//
-// Code copied from http://stackoverflow.com/questions/11149907/showing-invalid-xml-syntax-with-avalonedit
+// Code copied from https://stackoverflow.com/questions/11149907/showing-invalid-xml-syntax-with-avalonedit
 //
 
 using ICSharpCode.AvalonEdit;

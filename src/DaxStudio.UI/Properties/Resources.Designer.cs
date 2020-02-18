@@ -108,7 +108,7 @@ namespace DaxStudio.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://daxstudio.org.
+        ///   Looks up a localized string similar to https://daxstudio.org.
         /// </summary>
         public static string DocumentationUrl {
             get {
@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/.
+        ///   Looks up a localized string similar to https://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/.
         /// </summary>
         public static string MsdnForumsUrl {
             get {

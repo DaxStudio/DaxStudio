@@ -125,10 +125,10 @@
     <value>DAX Studio</value>
   </data>
   <data name="DocumentationUrl" xml:space="preserve">
-    <value>http://daxstudio.org</value>
+    <value>https://daxstudio.org</value>
   </data>
   <data name="MsdnForumsUrl" xml:space="preserve">
-    <value>http://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/</value>
+    <value>https://social.msdn.microsoft.com/forums/en-us/sqlanalysisservices/threads/</value>
   </data>
   <data name="Refreshing_Metadata" xml:space="preserve">
     <value>Refreshing Metadata...</value>
