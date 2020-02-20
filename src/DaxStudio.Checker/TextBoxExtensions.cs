@@ -31,14 +31,14 @@ namespace DaxStudio.CheckerApp
             myOutput.AppendRange(text + "\r").Color(colour);
         }
 
-        public static void AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text)
+        public static TextRange AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text)
         {
-            myOutput.AppendIndentedLine(text, "Black");
+            return myOutput.AppendIndentedLine(text, "Black");
         }
 
-        public static void AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text, string colour)
+        public static TextRange AppendIndentedLine(this System.Windows.Controls.RichTextBox myOutput, string text, string colour)
         {
-            myOutput.AppendRange(INDENT + text + "\r\n").Color(colour);
+            return myOutput.AppendRange(INDENT + text + "\r\n").Color(colour);
         }
 
         //public static TextRange Indent(this System.Windows.Controls.RichTextBox myOutput)

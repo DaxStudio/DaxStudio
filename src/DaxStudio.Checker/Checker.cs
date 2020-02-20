@@ -31,6 +31,7 @@ namespace DaxStudio.CheckerApp
         private const int minMSLibVer = 13;
         private const int maxMSLibVer = 13;
         private RichTextBox _output;
+        private Version RequiredMinumumNetVersion = new Version(4,7,1);
         private const string DEFAULT_DAX_STUDIO_PATH = @"c:\Program Files\DAX Studio\DAXStudio.exe";
 
 
@@ -282,8 +283,55 @@ namespace DaxStudio.CheckerApp
             string name45 = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full";
             RegistryKey key45 = Registry.LocalMachine.OpenSubKey(name45);
             var rel = key45.GetValue("Release");
-            Output.AppendIndentedLine($@"v4\Full\Release = {rel}");
+            string versionString = null;
+            if (rel != null) {
+                var relNumber = (int)rel;
+                versionString = Get45PlusVersion(relNumber);
+            }
+            Output.AppendIndentedLine($@"v4\Full\Release = {rel} ({versionString??"<Unknown>"})");
 
+            if (!string.IsNullOrEmpty(versionString))
+            {
+                Version v45PlusVersion = Version.Parse(versionString);
+                if (v45PlusVersion < RequiredMinumumNetVersion)
+                {
+                    Output.AppendIndentedLine($"ERROR > .Net Version {versionString} is lower than the required minimum ({RequiredMinumumNetVersion.ToString(3)})", "Red").Bold();
+                }
+                else
+                {
+                    Output.AppendIndentedLine($"PASS > .Net Version {versionString} is above the required minimum", "Green").Bold();
+                }
+            }
+        }
+
+        // Sourced from: CheckFor45PlusVersion function at
+        // https://github.com/jmalarcon/DotNetVersions/blob/7bb9069d239d63ddc71ca7dba2eb44cde93248f0/Program.cs#L138
+
+        private string Get45PlusVersion(int releaseKey)
+        {
+            if (releaseKey >= 528040)
+                return "4.8";
+            if (releaseKey >= 461808)
+                return "4.7.2";
+            if (releaseKey >= 461308)
+                return "4.7.1";
+            if (releaseKey >= 460798)
+                return "4.7";
+            if (releaseKey >= 394802)
+                return "4.6.2";
+            if (releaseKey >= 394254)
+                return "4.6.1";
+            if (releaseKey >= 393295)
+                return "4.6";
+            if (releaseKey >= 379893)
+                return "4.5.2";
+            if (releaseKey >= 378675)
+                return "4.5.1";
+            if (releaseKey >= 378389)
+                return "4.5";
+            // This code should never execute. A non-null release key should mean
+            // that 4.5 or later is installed.
+            return "";
         }
 
         public void CheckExcelAddin()
@@ -298,7 +346,7 @@ namespace DaxStudio.CheckerApp
             Output.AppendLine();
 
             // check registry entries
-            string name = @"SOFTWARE\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
+            string keyName = @"SOFTWARE\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn";
             RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
             try {
 
@@ -317,21 +365,21 @@ namespace DaxStudio.CheckerApp
                         break;
                 }
 
-                RegistryKey key = baseKey.OpenSubKey(name); //Registry.LocalMachine.OpenSubKey(name);
+                RegistryKey xlKey = baseKey.OpenSubKey(keyName); //Registry.LocalMachine.OpenSubKey(name);
                 try
                 {
                     Output.AppendIndentedLine("DAX Studio Excel Add-in Registry keys");
-                    if (key == null)
+                    if (xlKey == null)
                     {
                         Output.AppendRange("      ERROR:").Color("Red").Bold();
                         Output.AppendLine(" DAX Studio Excel addin registry keys not found!");
                     }
                     else
-                        PrintSubkeyValues(key);
+                        PrintSubkeyValues(xlKey);
                 }
                 finally
                 {
-                    key.Dispose();
+                    xlKey.Dispose();
                 }
             }
             finally {

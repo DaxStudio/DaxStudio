@@ -7,6 +7,7 @@ using Serilog;
 using System.Management;
 using System.Threading;
 using System.Reflection;
+using Microsoft.Win32;
 
 namespace DaxStudio.UI.Utils
 {
@@ -20,6 +21,7 @@ namespace DaxStudio.UI.Utils
             var curCulture = Thread.CurrentThread.CurrentCulture;
             Log.Information("DAX STUDIO VERSION: {version}", version);
             Log.Information("System Info: {setting} = {value}", "OSCaption",osInfo.Name  );
+            Log.Information("System Info: {setting} = {value}", "OSRelease", osInfo.Release);
             Log.Information("System Info: {setting} = {value}", "OSVersion", osInfo.Version.ToString());
             Log.Information("System Info: {setting} = {value}", "OSArchitecture", osInfo.Architecture);
             Log.Information("System Info: {setting} = {value}", "VisibleMemoryGB", osInfo.TotalVisibleMemory.ToString("n2"));
@@ -71,6 +73,10 @@ namespace DaxStudio.UI.Utils
                 Log.Error(ex, "{class} {method} {message}", nameof(SystemInfo), nameof(GetOSInfo), $"Error getting OS memory Info: {ex.Message}");
             }
 
+            string releaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", "")?.ToString();
+            if (string.IsNullOrEmpty(releaseId)) releaseId = "<Unknown>";
+            result.Release = releaseId;
+
             return result;
         
         }
@@ -82,6 +88,7 @@ namespace DaxStudio.UI.Utils
             public string Architecture;
             public decimal TotalVisibleMemory;
             public decimal TotalFreeMemory;
+            public string Release;
         }
 
         public static decimal KbToGb(this long bytes)

@@ -59,7 +59,7 @@ namespace DaxStudio.Standalone
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
                 TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
-
+                
                 // Setup logging
                 var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
                 var config = new LoggerConfiguration()
@@ -179,13 +179,29 @@ namespace DaxStudio.Standalone
 
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-
-            CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+            var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
+            //e.Exception.InnerExceptions
+            LogFatalCrash(e.Exception, msg);
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            CrashReporter.ReportCrash((Exception)e.ExceptionObject, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+            string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
+            Exception ex = e.ExceptionObject as Exception;   
+            LogFatalCrash(ex, msg);
+        }
+
+        private static void LogFatalCrash(Exception ex, string msg)
+        {
+            Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(CurrentDomainOnUnhandledException), msg);
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                CrashReporter.ReportCrash(ex, msg);
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
+            }
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
