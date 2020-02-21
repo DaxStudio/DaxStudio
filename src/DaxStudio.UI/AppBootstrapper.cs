@@ -107,7 +107,7 @@ namespace DaxStudio.UI
 
 
                 // Fixes the default datetime format in the results listview
-                // from: http://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
+                // from: https://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
                 FrameworkElement.LanguageProperty.OverrideMetadata(
                     typeof(FrameworkElement),
                     new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));

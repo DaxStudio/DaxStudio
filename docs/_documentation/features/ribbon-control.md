@@ -17,7 +17,7 @@ The ribbon in DAX Studio is split into a number of functional groups
 - **Cut / Copy / Paste** - buttons for standard edit operations, the standard hotkeys for these commands also work
 - Undo / Redo -
 ## Format
-- **Format Query** - this button will send the contents of the query editor (or the current selection) to [http://daxformatter.com](http://DaxFormatter.com) for [formatting](../daxformatter-support)
+- **Format Query** - this button will send the contents of the query editor (or the current selection) to [https://daxformatter.com](https://DaxFormatter.com) for [formatting](../daxformatter-support)
 - **To Upper** - will convert the current selection to uppercase
 - **To Lower** - will convert the current selection to lowercase
 - **Swap Delimiters** - will convert the current selection between delimiter styles for lists & decimals

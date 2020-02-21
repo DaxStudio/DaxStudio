@@ -220,7 +220,7 @@ namespace DaxStudio.UI.Model
                 var data1 = enc.GetBytes(data);
 
                 // this should allow DaxFormatter to work through http 1.0 proxies
-                // see: http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
+                // see: https://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
                 //System.Net.ServicePointManager.Expect100Continue = false;
 
                 

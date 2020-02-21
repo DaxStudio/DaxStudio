@@ -261,7 +261,7 @@ begin
 
     // in case the target is 3.5, replace 'v4' with 'v3.5'
     // for other info, check out this link 
-    // http://stackoverflow.com/questions/199080/how-to-detect-what-net-framework-versions-and-service-packs-are-installed
+    // https://stackoverflow.com/questions/199080/how-to-detect-what-net-framework-versions-and-service-packs-are-installed
     regkey := 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full'
 
     RegQueryStringValue(HKLM, regkey, 'InstallPath', regval);
@@ -517,7 +517,7 @@ begin
   Result := False; // Default value - assume 32-bit unless proven otherwise.
   // RegQueryStringValue second param is '' to get the (default) value for the key
   // with no sub-key name, as described at
-  // http://stackoverflow.com/questions/913938/
+  // https://stackoverflow.com/questions/913938/
   if IsWin64() and RegQueryStringValue(HKEY_LOCAL_MACHINE,
       'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe',
       '', excelPath) then begin

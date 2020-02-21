@@ -45,8 +45,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly string _sqlProfilerCommand = "";
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
-        private const string urlPowerPivotForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
-        private const string urlSsasForum = "http://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
+        private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
+        private const string urlSsasForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
         private const string urlGithubBugReport = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=bug_report.md&title=";
         private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
         private ISettingProvider SettingProvider;
