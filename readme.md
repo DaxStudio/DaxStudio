@@ -41,5 +41,5 @@ Once you have the above dependencies installed,
 the following commands will run the DAX Studio site locally:
 ```
 cd /mnt/c/<folder with DaxStudio git repo>/docs
-Bundler exec jekyll serve -w
+bundler exec jekyll serve -w
 ```
