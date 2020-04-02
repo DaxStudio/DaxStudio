@@ -187,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
                 Document.IsQueryRunning = true;
                 try
@@ -198,7 +198,7 @@ namespace DaxStudio.UI.ViewModels
                             ExportDataToFolder(this.CsvFolder);
                             break;
                         case ExportDataType.SqlTables:
-                            await ExportDataToSQLServer(this.SqlConnectionString, this.Schema, this.TruncateTables);
+                            ExportDataToSQLServer(this.SqlConnectionString, this.Schema, this.TruncateTables);
                             break;
                         default:
                             throw new ArgumentException("Unknown ExportType requested");
@@ -316,6 +316,7 @@ namespace DaxStudio.UI.ViewModels
                                     if (CancelRequested)
                                     {
                                         table.Status = ExportStatus.Cancelled;
+                                        // break out of datareader.Read() loop
                                         break;
                                     }
                                 }
@@ -331,6 +332,10 @@ namespace DaxStudio.UI.ViewModels
                             if (CancelRequested)
                             {
                                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+
+                                MarkWaitingTablesAsSkipped();
+
+                                // break out of foreach table loop
                                 break;
                             }
                         }
@@ -339,6 +344,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         textWriter?.Dispose();
                     }
+
                     table.Status = ExportStatus.Done;
                 }
                 catch (Exception ex)
@@ -393,6 +399,7 @@ namespace DaxStudio.UI.ViewModels
         private async Task ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
+            var cancellationTokenSource = new CancellationTokenSource();
 
             var builder = new SqlConnectionStringBuilder(connStr);
             builder.ApplicationName = "DAX Studio Table Export";
@@ -450,19 +457,29 @@ namespace DaxStudio.UI.ViewModels
                                     }
 
                                     var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction); //)//, transaction))
-                                
+
                                     sqlBulkCopy.DestinationTableName = sqlTableName;
                                     sqlBulkCopy.BatchSize = 5000;
                                     sqlBulkCopy.NotifyAfter = 5000;
                                     sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
                                     sqlBulkCopy.EnableStreaming = true;
-                                    sqlBulkCopy.WriteToServer(reader);
+                                    var task = sqlBulkCopy.WriteToServerAsync(reader, cancellationTokenSource.Token);
+
+                                    WaitForTaskPollingForCancellation(cancellationTokenSource, task);
+
                                     // update the currentTable with the final rowcount
                                     currentTable.RowCount = sqlBulkCopy.RowsCopiedCount();
-                                
 
-                                    transaction.Commit();
-                                    currentTable.Status = ExportStatus.Done;
+                                    if (CancelRequested)
+                                    {
+                                        transaction.Rollback();
+                                        currentTable.Status = ExportStatus.Cancelled;
+                                    }
+                                    else
+                                    {
+                                        transaction.Commit();
+                                        currentTable.Status = ExportStatus.Done;
+                                    }
                                 }
 
                             }
@@ -471,6 +488,9 @@ namespace DaxStudio.UI.ViewModels
                             if (CancelRequested)
                             {
                                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                // mark an tables not yet exported as skipped
+                                MarkWaitingTablesAsSkipped();
+
                                 break;
                             }
 
@@ -503,13 +523,47 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void MarkWaitingTablesAsSkipped()
+        {
+            foreach (var tbl in Tables)
+            {
+                if (tbl.Status == ExportStatus.Ready)
+                {
+                    tbl.Status = ExportStatus.Skipped;
+                }
+            }
+        }
+
+        private void WaitForTaskPollingForCancellation(CancellationTokenSource cancellationTokenSource, Task task)
+        {
+            // poll every 1 second to see if the Cancel button has been clicked
+            while (!task.Wait(1000))
+            {
+                if (CancelRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                    try
+                    {
+                        task.Wait();
+                    }
+                    catch (AggregateException ex)
+                    {
+                        Console.WriteLine(ex.InnerException.Message);
+                        Console.WriteLine("WriteToServer Canceled");
+                        break;
+                    }
+                }
+                if (task.IsCompleted || task.IsCompleted || task.IsFaulted) { break;  }
+            }
+        }
+
         private void SqlBulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
         {
-            if (CancelRequested)
-            {
-                e.Abort = true;
-                cancellationTokenSource.Cancel();
-            }
+            //if (CancelRequested)
+            //{
+            //    e.Abort = true;
+            //    cancellationTokenSource.Cancel();
+            //}
             new StatusBarMessage(Document, $"Exporting Table {currentTableIdx} of {totalTableCnt} : {sqlTableName} ({e.RowsCopied:N0} rows)");
             currentTable.RowCount = e.RowsCopied;
             Document.RefreshElapsedTime();

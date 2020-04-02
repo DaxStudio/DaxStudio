@@ -19,11 +19,11 @@ namespace ADOTabular
             Roles = roles;
         }
 
-        public async Task<bool> HasSchemaChangedAsync()
+        public bool HasSchemaChanged()
         {
             try
             {
-                var ddColl = await Task.Run(() => { return Connection.Databases.GetDatabaseDictionary(Connection.SPID, true); });
+                var ddColl = Connection.Databases.GetDatabaseDictionary(Connection.SPID, true);
                 if (ddColl.Count == 0) return false; // no databases on server
                 var dd = ddColl[Name];
                 if (dd.LastUpdate > LastUpdate)

@@ -33,7 +33,7 @@ namespace DaxStudio.UI.Utils
         private int _startOffset=0;
         private int _caretOffset;
         private int _startOfLineOffset = 0;
-        private Utils.LineState _state;
+        private LineState _state;
         private LineState _endState;
         private string _tableName;
         //private object _columnName;
@@ -44,7 +44,7 @@ namespace DaxStudio.UI.Utils
             _caretOffset = caretOffset;
             _startOffset = startOffset;
             _endOffset = endOffset;
-            _endState = Utils.LineState.NotSet;
+            _endState = LineState.NotSet;
             _startOfLineOffset = startOfLineOffset;
         }
         public LineState LineState { get { return _state; } }

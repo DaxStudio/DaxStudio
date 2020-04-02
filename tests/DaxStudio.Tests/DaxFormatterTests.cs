@@ -57,7 +57,7 @@ namespace DaxStudio.Tests
             var reader = new System.IO.StreamReader(outStrm);
             var output = reader.ReadToEnd();
 
-            Assert.AreEqual("\"EVALUATE\\r\\nFILTER ( tatatata, blah[x] = 1 )\\r\\n\\r\\n\"", output);
+            Assert.AreEqual("\"EVALUATE\\r\\nFILTER ( tatatata, blah[x] = 1 )\\r\\n\"", output);
         }
 
         [TestMethod,Ignore]

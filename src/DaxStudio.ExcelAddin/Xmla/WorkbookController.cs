@@ -3,29 +3,58 @@ using System;
 using System.Collections.Generic;
 using System.Web.Http;
 using Serilog;
+using Polly;
+using System.Runtime.InteropServices;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
     [RoutePrefix("workbook")]
     public class WorkbookController : ApiController
     {
+
+        // setup a standard retry policy 
+        private void UseRetryPolicy(System.Action action)
+        {
+            Policy
+                .Handle<COMException>() //message => message.HResult == 0x8001010A)
+                .WaitAndRetry(5, i => TimeSpan.FromMilliseconds(250), (exception, timeSpan, retryCount, context) =>
+                {
+                    Log.Warning($"Request failed with {exception.Message}. Waiting {timeSpan} before next retry. Retry attempt {retryCount}");
+                })
+                .Execute(action);
+        }
+
         [HttpGet]
         [Route("FileName")]
         public IHttpActionResult GetWorkbookFileName()
         {
 
-            using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+            var wbName = "<No Workbook>";
+
+            try
             {
-                var addin = Globals.ThisAddIn;
-                var app = addin.Application;
-                var wb = app.ActiveWorkbook;
-                var wbName = "<No Workbook>";
-                if (wb != null) { wbName = wb.FullName; }
-                Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook Fullname: '{wb.FullName}'");
-                Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook FullnameUrlEncoded: '{wb.FullNameURLEncoded}'");
-                System.Diagnostics.Debug.WriteLine($"Workbook: {wbName}");
+                UseRetryPolicy(() =>
+                    {
+
+                        var addin = Globals.ThisAddIn;
+                        var app = addin.Application;
+                        var wb = app.ActiveWorkbook;
+
+                        if (wb != null) { wbName = wb.FullName; }
+                        Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook Fullname: '{wb.FullName}'");
+                        Log.Debug("{class} {method} {message}", nameof(WorkbookController), nameof(GetWorkbookFileName), $"Workbook FullnameUrlEncoded: '{wb.FullNameURLEncoded}'");
+                        System.Diagnostics.Debug.WriteLine($"Workbook: {wbName}");
+
+                    });
+
                 return Ok(wbName);
             }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+            
         }
         
         
@@ -37,12 +66,14 @@ namespace DaxStudio.ExcelAddin.Xmla
             try
             {
                 Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "Start");
-                using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+
+                var shts = new List<string>();
+                UseRetryPolicy(() =>
                 {
                     var addin = Globals.ThisAddIn;
                     var app = addin.Application;
                     var wb = app.ActiveWorkbook;
-                    var shts = new List<string>
+                    shts = new List<string>
                     {
                         WorksheetDaxResults,
                         WorksheetNew
@@ -51,10 +82,11 @@ namespace DaxStudio.ExcelAddin.Xmla
                     {
                         shts.Add(sht.Name);
                     }
+
+                });
                 
-                    Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "End");
-                    return Ok(shts.ToArray());
-                }
+                Log.Debug("{class} {method} {event}", "WorkbookController", "GetWorksheets", "End");
+                return Ok(shts.ToArray());
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -77,12 +109,26 @@ namespace DaxStudio.ExcelAddin.Xmla
         public IHttpActionResult GetHasDatamodel()
         {
             Log.Debug("{class} {method} {event}", "WorkbookController", "GetHasDataModel", "Start");
-            using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+            var hasModel = false;
+            try
             {
-                if (xl.HasPowerPivotData())
-                    return Ok(true);
-                else
-                    return Ok(false);
+                UseRetryPolicy(() =>
+                {
+
+                    using (var xl = new ExcelHelper(Globals.ThisAddIn.Application))
+                    {
+                        if (xl.HasPowerPivotData())
+                            hasModel = true;
+                        else
+                            hasModel = false;
+                    }
+                });
+
+                return Ok(hasModel);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
             }
         }
 

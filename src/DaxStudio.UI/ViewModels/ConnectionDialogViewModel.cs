@@ -26,7 +26,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly DocumentViewModel _activeDocument;
         private readonly Regex _ppvtRegex;
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
-        private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<none found>", -1, EmbeddedSSASIcon.Loading);
+        private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<no running PBI/SSDT windows found>", -1, EmbeddedSSASIcon.None);
         private ISettingProvider SettingProvider { get; }
 
 
@@ -99,7 +99,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);
 
                 // look for local workspace instances
-                _powerBIInstances = PowerBIHelper.GetLocalInstances();
+                _powerBIInstances = PowerBIHelper.GetLocalInstances(false);
 
                 if (_powerBIInstances.Count == 0 )
                 {
@@ -115,7 +115,7 @@ namespace DaxStudio.UI.ViewModels
                 else
                 {
                     if (PowerBIModeSelected) ServerModeSelected = true;
-                    SelectedPowerBIInstance = null;
+                    SelectedPowerBIInstance = _pbiNoneInstance;
                 }
                 // update bound properties
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);

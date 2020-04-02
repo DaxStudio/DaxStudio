@@ -9,7 +9,7 @@
 #define MyAppVersionFull ParseVersion('..\release\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
 #define MyAppVersion GetFileVersion('..\release\DaxStudio.exe')
 #define MyAppPublisher "Dax Studio"
-#define MyAppURL "http://daxstudio.codeplex.com"
+#define MyAppURL "https://daxstudio.org"
 #define MyAppExeName "DaxStudio.exe"
 ; Calculated Constants
 #define MyAppFileVersion StringChange(MyAppVersion, ".", "_")

@@ -31,6 +31,7 @@ namespace DaxStudio.UI.ViewModels
             Icons.Add(ExportStatus.Exporting, new StatusIcon("Refresh", "royalblue", true));
             Icons.Add(ExportStatus.Error, new StatusIcon("TimesCircle", "red"));
             Icons.Add(ExportStatus.Ready, new StatusIcon("ChevronCircleRight", "lightgray"));
+            Icons.Add(ExportStatus.Skipped, new StatusIcon("ChevronCircleRight", "lightgray"));
             Icons.Add(ExportStatus.Cancelled, new StatusIcon("ExclamationTriangle", "goldenrod"));
         }
         public static Dictionary<ExportStatus, StatusIcon> Icons { get; private set; }
@@ -105,6 +106,8 @@ namespace DaxStudio.UI.ViewModels
                         return "Error - check output pane";
                     case ExportStatus.Cancelled:
                         return "Cancelled";
+                    case ExportStatus.Skipped:
+                        return "Skipped";
                     default:
                         return Caption;
                 }

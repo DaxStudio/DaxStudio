@@ -29,7 +29,8 @@ namespace DaxStudio.UI.Extensions
         public static void SaveLayout(this DockingManager dockingManager)
         {
             var layoutFile = ApplicationPaths.AvalonDockLayoutFile;
-            Directory.CreateDirectory(layoutFile); //ensure that all the folders in the file path exist
+            var layoutFolder = Path.GetDirectoryName(layoutFile);
+            Directory.CreateDirectory(layoutFolder); //ensure that all the folders in the file path exist
             using (StreamWriter sw = new StreamWriter(layoutFile))
             {
 

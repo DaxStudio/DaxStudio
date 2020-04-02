@@ -2318,8 +2318,14 @@ namespace DaxStudio.UI.ViewModels
         public bool IsDiskFileName { get; set; }
 
         public void OpenFile()
-        {    
-            Execute.OnUIThread(() =>
+        {
+
+            //LoadFile(FileName);
+            //ChangeConnection();
+            //IsDirty = false; 
+
+
+        Execute.OnUIThread(() =>
             {
                 Task.Run(() =>
                 {
@@ -3007,7 +3013,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
 
                 var conn = Connection.Clone();
-                var hasChanged = await conn.Database.HasSchemaChangedAsync();
+                bool hasChanged = await Task<bool>.Run(() => conn.Database.HasSchemaChanged());
                 conn.Close();
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");

@@ -13,7 +13,8 @@ namespace DaxStudio.UI.Utils
         PowerBI,
         Devenv,
         PowerBIReportServer,
-        Loading
+        Loading,
+        None
     }
     public class PowerBIInstance
     {
@@ -28,8 +29,10 @@ namespace DaxStudio.UI.Utils
                 { Name = name.Substring(0, dashPos); }  // Strip "Power BI Designer" or "Power BI Desktop" off the end of the string
                 else
                 {
-                    Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", $"Unable to find ' - ' in Power BI title '{name}'", dashPos);
-
+                    if (port != -1)
+                    {
+                        Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", $"Unable to find ' - ' in Power BI title '{name}'", dashPos);
+                    }
                     Name = name; 
                 }
             }
@@ -48,7 +51,7 @@ namespace DaxStudio.UI.Utils
     public class PowerBIHelper
     {
     
-        public static List<PowerBIInstance> GetLocalInstances()
+        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS)
         {
             List<PowerBIInstance> _instances = new List<PowerBIInstance>();
 
@@ -72,7 +75,7 @@ namespace DaxStudio.UI.Utils
                     {
                         // only show PBI Report Server if we are running as admin
                         // otherwise we won't have any access to the models
-                        if (IsAdministrator())
+                        if (IsAdministrator() && includePBIRS)
                             _icon = EmbeddedSSASIcon.PowerBIReportServer;
                         else
                             continue;

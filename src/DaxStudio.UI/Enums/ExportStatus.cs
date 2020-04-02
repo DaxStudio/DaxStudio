@@ -6,6 +6,7 @@
         Exporting,
         Done,
         Error,
-        Cancelled
+        Cancelled,
+        Skipped,
     }
 }

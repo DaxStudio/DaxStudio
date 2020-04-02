@@ -311,8 +311,12 @@ namespace DaxStudio.UI.Utils
             var segmentLength = completionWindow.EndOffset - completionWindow.StartOffset;
             SpacePressed = e.Key == Key.Space;
             // close window if F5 or F6 are pressed
-            if (e.Key == Key.F5
-                || e.Key == Key.F6) 
+            var keyStr = e.Key.ToString();
+            if (keyStr == _options.HotkeyRunQuery
+                || keyStr == _options.HotkeyRunQueryAlt
+                || keyStr == _options.HotkeyFormatQueryStandard
+                || keyStr == _options.HotkeyFormatQueryAlternate
+                )
             { 
                 completionWindow.Close(); 
                 return;

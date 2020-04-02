@@ -40,8 +40,8 @@ namespace DaxStudio.UI.Theme
 
                   //,new Uri("/MLib;component/Themes/LightTheme.xaml", UriKind.RelativeOrAbsolute)
 
-                  ,new Uri("/DaxStudio.UI;component/Themes/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Themes/Light.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
                 }, Themes);
 
 
@@ -52,13 +52,13 @@ namespace DaxStudio.UI.Theme
                   
                   //,new Uri("/MLib;component/Themes/DarkTheme.xaml", UriKind.RelativeOrAbsolute)
                   
-                  ,new Uri("/DaxStudio.UI;component/Themes/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
                   
-                  ,new Uri("/DaxStudio.UI;component/Themes/Dark.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Themes/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Themes/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Themes/Monotone.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Themes/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.xaml", UriKind.RelativeOrAbsolute)
+                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
 
                 }, Themes);
         }

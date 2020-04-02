@@ -62,22 +62,29 @@ namespace DaxStudio.UI.Model
         {
             get {
                 Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Start");
+                var hasModel = false;
                 var doc = _activeDocument;
                 using (var client = GetHttpClient())
                 {
                     try
                     {
                         //HACK: see if this helps with the PowerPivot client spinning issue
-                        client.Timeout = new TimeSpan(0,0, 30); // set 30 second timeout
+                        client.Timeout = new TimeSpan(0, 0, 30); // set 30 second timeout
 
                         HttpResponseMessage response = client.GetAsync("workbook/hasdatamodel").Result;
                         Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Got Response");
                         if (response.IsSuccessStatusCode)
                         {
                             Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
-                            return JsonConvert.DeserializeObject<bool>( response.Content.ReadAsStringAsync().Result);
-                            //return response.Content.ReadAsAsync<bool>().Result;
+                            hasModel = JsonConvert.DeserializeObject<bool>(response.Content.ReadAsStringAsync().Result);
                         }
+                        else
+                        {
+                            var msg = response.Content.ReadAsStringAsync().Result;
+                            Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error checking if Workbook has a PowerPivot model\n {msg}");
+                            doc.OutputError("Error checking if the active Workbook in Excel has a PowerPivot model");
+                        }
+                        
                     }
                     catch (Exception ex)
                     {
@@ -88,7 +95,7 @@ namespace DaxStudio.UI.Model
                     }
 
 
-                    return false;
+                    return hasModel;
                 }
             }
         }
@@ -115,13 +122,16 @@ namespace DaxStudio.UI.Model
                                 workbookName = OneDriveHelper.ConvertToLocalPath(workbookName);
                             }
                             return workbookName;
-                            //return response.Content.ReadAsAsync<string>().Result;
+                        } 
+                        else
+                        {
+                            var msg = response.Content.ReadAsStringAsync().Result;
+                            Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error getting WorkbookName:\n{msg}");
                         }
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex, "{class} {method} {message}", nameof(ProxyPowerPivot), nameof(WorkbookName), ex.Message);
-                        //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error getting ActiveWorkbook from Excel",ex.Message)));
                         doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
                     }
 

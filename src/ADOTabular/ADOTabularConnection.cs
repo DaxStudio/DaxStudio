@@ -315,14 +315,6 @@ namespace ADOTabular
             return _adomdConn.GetSchemaDataSet(schemaName, null,true);
         }
 
-         public Task<DataSet> GetSchemaDataSetAsync(string schemaName)
-        {
-            return Task.Run(() =>
-                {
-                    if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-                    return _adomdConn.GetSchemaDataSet(schemaName, null,true);
-                });
-        }
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection)
         {
@@ -343,16 +335,6 @@ namespace ADOTabular
             
         }
 
-        public Task<DataSet> GetSchemaDataSetAsync(string schemaName, AdomdRestrictionCollection restrictionCollection)
-        {
-            
-            return Task.Run(() =>
-                {
-                    if (_adomdConn.State != ConnectionState.Open)
-                        _adomdConn.Open();
-                    return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection,true);
-                });
-        }
 
         public void ExecuteNonQuery(string command)
         {

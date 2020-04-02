@@ -19,10 +19,10 @@ namespace DaxStudio.QueryTrace
     {
 
         #region public IQueryTrace interface
-        public Task StartAsync(int startTimeoutSec)
+        public async Task StartAsync(int startTimeoutSec)
         {
             TraceStartTimeoutSecs = startTimeoutSec;
-            return Task.Run(() => Start());
+            await Task.Run(() => Start());
         }
 
         public void Stop()
