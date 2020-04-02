@@ -10,6 +10,7 @@ using DaxStudio.UI.Events;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.Model
 {
@@ -33,7 +34,7 @@ namespace DaxStudio.UI.Model
 
         public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, IADOTabularObject table2, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
-            var lst = new SortedList<string, FilterableTreeViewItem>();
+            var lst = new SortedList<string, FilterableTreeViewItem>( new DuplicateKeyComparer<string>());
             foreach (var c in table.Columns)
             {
 
