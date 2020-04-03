@@ -108,5 +108,71 @@ namespace DaxStudio.Tests
             System.Diagnostics.Debug.WriteLine(pos);
             Assert.AreEqual(3, pos.Length);
         }
+
+        //[TestMethod]
+        //public void TestOpenColumnCompletion()
+        //{
+        //    var line = "OR ( PATHCONTAINS ( @Store, 'Store'[Store K), @Store = \"All\" )";
+        //    var col = 43;
+        //    var daxState = DaxLineParser.ParseLine(line, col, 0);
+
+        //    var pos = DaxLineParser.GetPreceedingWordSegment(0, col, line, daxState);
+        //    System.Diagnostics.Debug.WriteLine(pos);
+        //    var colName = line.Substring(pos.Offset, pos.Length);
+
+        //    Assert.AreEqual(35, pos.Offset);
+        //    Assert.AreEqual("[Store K", colName);
+        //    //Assert.AreEqual(6, pos.Length);
+
+        //}
+
+        [TestMethod]
+        public void TestOpenColumnCompletion()
+        {
+            var line = "'Store'[Store K), @Store = \"All\" )";
+            var col = 15;
+            var daxState = DaxLineParser.ParseLine(line, col, 0);
+
+            var pos = DaxLineParser.GetPreceedingWordSegment(0, col, line, daxState);
+            System.Diagnostics.Debug.WriteLine(pos);
+            var colName = line.Substring(pos.Offset, pos.Length);
+
+            Assert.AreEqual(7, pos.Offset);
+            Assert.AreEqual("[Store K", colName);
+            //Assert.AreEqual(6, pos.Length);
+
+        }
+
+
+        [TestMethod]
+        public void TestClosedColumnCompletion()
+        {
+            var line = "'Store'[Store K]), @Store = \"All\" )";
+            var col = 15;
+            var daxState = DaxLineParser.ParseLine(line, col, 0);
+
+            var pos = DaxLineParser.GetPreceedingWordSegment(0, col, line, daxState);
+            System.Diagnostics.Debug.WriteLine(pos);
+            var colName = line.Substring(pos.Offset, pos.Length);
+            Assert.AreEqual(7, pos.Offset);
+            Assert.AreEqual("[Store K]", colName);
+            Assert.AreEqual(LineState.ColumnClosed, daxState.LineState);
+        }
+
+
+        [TestMethod]
+        public void TestDmvCompletion()
+        {
+            var line = "SELECT * FROM $SYS";
+            var col = line.Length;
+            var daxState = DaxLineParser.ParseLine(line, col, 0);
+
+            var pos = DaxLineParser.GetPreceedingWordSegment(0, col, line, daxState);
+            System.Diagnostics.Debug.WriteLine(pos);
+            Assert.AreEqual(14, pos.Offset);
+            Assert.AreEqual(4, pos.Length);
+
+        }
+
     }
 }

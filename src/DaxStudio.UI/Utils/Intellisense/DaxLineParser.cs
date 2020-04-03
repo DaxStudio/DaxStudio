@@ -82,14 +82,17 @@ namespace DaxStudio.UI.Utils
                         _endOffset = pos;
                         if (newState == LineState.MeasureClosed) {
                             _endState = LineState.Measure;
+                            _state = newState;
                             _endOffset++;
                         }
                         if (newState == LineState.TableClosed) {
                             _endState = LineState.Table;
+                            _state = newState;
                             _endOffset++;
                         }
                         if (newState == LineState.ColumnClosed) {
                             _endState = LineState.Column;
+                            _state = newState;
                             _endOffset++;
                         }
                         
@@ -221,7 +224,7 @@ namespace DaxStudio.UI.Utils
                             && daxState.LineState != LineState.Dmv
                             && daxState.LineState != LineState.Measure)
                         {
-                            daxState.SetState( line[i].IsDaxLetterOrDigit()?LineState.LetterOrDigit:LineState.Other ,i);
+                            daxState.SetState( line[i].IsDaxLetterOrDigit() || line[i] == '$'?LineState.LetterOrDigit:LineState.Other ,i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
                         if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
@@ -283,11 +286,8 @@ namespace DaxStudio.UI.Utils
             {
                 switch (daxState.LineState)
                 {
-                    case LineState.Table:
                     case LineState.TableClosed:
                     case LineState.ColumnClosed:
-                    case LineState.Column:
-                    case LineState.Measure:
                     case LineState.MeasureClosed:
                         // for these states we want to replace the entire current "word"
                         segment = new LinePosition() { Offset = startOfLineOffset + daxState.StartOffset, Length = daxState.EndOffset - daxState.StartOffset };

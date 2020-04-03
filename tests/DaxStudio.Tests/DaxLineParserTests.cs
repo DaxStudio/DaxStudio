@@ -86,7 +86,7 @@ namespace DaxStudio.Tests
         public void GetCompletionSegmentTest()
         {
             var daxState = DaxLineParser.ParseLine("table[column]",10,0);
-            Assert.AreEqual(LineState.Column, daxState.LineState );
+            Assert.AreEqual(LineState.ColumnClosed, daxState.LineState );
             Assert.AreEqual("column", daxState.ColumnName);
             Assert.AreEqual(5, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(13, daxState.EndOffset, "EndOffset");
@@ -100,7 +100,7 @@ namespace DaxStudio.Tests
             var dax = "filter( table[column] , table[column]=\"red\"";
             //                       ^ 15                       ^ 41
             var daxState = DaxLineParser.ParseLine(dax, 15,0); 
-            Assert.AreEqual(LineState.Column, daxState.LineState);
+            Assert.AreEqual(LineState.ColumnClosed, daxState.LineState);
             Assert.AreEqual(13, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(21, daxState.EndOffset, "EndOffset");
             Assert.AreEqual("table", daxState.TableName);
@@ -150,7 +150,7 @@ namespace DaxStudio.Tests
             var dax = "'my table'[column name], blah";
             //                         ^16
             var daxState = DaxLineParser.ParseLine(dax, 11, 0);
-            Assert.AreEqual(LineState.Column, daxState.LineState);
+            Assert.AreEqual(LineState.ColumnClosed, daxState.LineState);
             Assert.AreEqual(10, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(23, daxState.EndOffset, "EndOffset");
             Assert.AreEqual("my table", daxState.TableName);
@@ -216,7 +216,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(LineState.Column, daxState.LineState, "Column state not detected");
             Assert.AreEqual("Product ", daxState.ColumnName, "preceeding word not correct");
 
-            Assert.AreEqual(LineState.Table, DaxLineParser.ParseLine(testText, 30, 0).LineState, "string state not detected");
+            Assert.AreEqual(LineState.TableClosed, DaxLineParser.ParseLine(testText, 30, 0).LineState, "string state not detected");
         }
 
 
@@ -254,7 +254,7 @@ namespace DaxStudio.Tests
         {
             var qry = "EVALUATE FILTER(Reseller, Reseller[Reselle]= \"bob\")";
             var daxState = DaxLineParser.ParseLine(qry, 42, 0);
-            Assert.AreEqual(LineState.Column, daxState.LineState,"LineState");
+            Assert.AreEqual(LineState.ColumnClosed, daxState.LineState,"LineState");
             Assert.AreEqual(43, daxState.EndOffset,"EndOffset");
             Assert.AreEqual(34, daxState.StartOffset, "StartOffset");
         }
