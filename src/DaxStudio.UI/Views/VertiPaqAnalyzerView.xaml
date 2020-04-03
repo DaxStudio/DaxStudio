@@ -110,7 +110,7 @@
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
-
+                          CanUserReorderColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action SortTableColumn($eventArgs)]">
@@ -159,7 +159,7 @@
 
                     <DataGrid.Columns>
                         <!--<DataGridTextColumn Binding="{Binding ColumnName}" Header="Name" x:Name="colColumn" MinWidth="200" />-->
-                        <DataGridTemplateColumn Header="Name" x:Name="colColumn" MinWidth="200">
+                        <DataGridTemplateColumn Header="Name" x:Name="colColumn" MinWidth="200" SortMemberPath="ColumnName">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0"/>
@@ -185,8 +185,11 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
-                        <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}" />
+                         
+                        <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}"/>
+                        <!-- 
+                        <DataGridTextColumn Binding="{Binding TableSize, StringFormat=N0}" Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" Width="Auto" SortMemberPath="TableSize"/>
+                        -->
                         <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending" >
 
                             <DataGridTemplateColumn.CellTemplate>
