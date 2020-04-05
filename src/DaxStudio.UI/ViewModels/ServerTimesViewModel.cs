@@ -336,7 +336,7 @@ namespace DaxStudio.UI.ViewModels
                 Events.Clear();
 
                 NotifyOfPropertyChange(() => StorageEngineEvents);
-                
+                NotifyOfPropertyChange(() => CanExport);
             }
         }
 
@@ -522,6 +522,13 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveState methods
         void ISaveState.Save(string filename)
         {
+            string json = GetJsonString();
+            File.WriteAllText(filename + ".serverTimings", json);
+
+        }
+
+        private string GetJsonString()
+        {
             var m = new ServerTimesModel()
             {
                 FormulaEngineDuration = this.FormulaEngineDuration,
@@ -534,8 +541,7 @@ namespace DaxStudio.UI.ViewModels
                 TotalCpuDuration = this.TotalCpuDuration
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented);
-            File.WriteAllText(filename + ".serverTimings", json);
-
+            return json;
         }
 
         void ISaveState.Load(string filename)
@@ -632,6 +638,7 @@ namespace DaxStudio.UI.ViewModels
             TotalDuration = 0;
             _storageEngineEvents.Clear();
             NotifyOfPropertyChange(() => StorageEngineEvents);
+            NotifyOfPropertyChange(() => CanExport);
         }
 
         public override void CopyAll()
@@ -639,5 +646,11 @@ namespace DaxStudio.UI.ViewModels
             Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
         }
         #endregion
+
+        public override bool CanExport => _storageEngineEvents.Count > 0;
+        public override void ExportTraceDetails(string filePath)
+        {
+            File.WriteAllText(filePath, GetJsonString());
+        }
     }
 }

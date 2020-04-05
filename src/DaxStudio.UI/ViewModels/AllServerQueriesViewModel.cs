@@ -169,6 +169,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => QueryEvents);
                 NotifyOfPropertyChange(() => CanClearAll);
                 NotifyOfPropertyChange(() => CanCopyAll);
+                NotifyOfPropertyChange(() => CanExport);
             }
         }
         
@@ -211,6 +212,7 @@ namespace DaxStudio.UI.ViewModels
             QueryEvents.Clear();
             NotifyOfPropertyChange(() => CanClearAll);
             NotifyOfPropertyChange(() => CanCopyAll);
+            NotifyOfPropertyChange(() => CanExport);
         }
 
         
@@ -265,8 +267,13 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveState methods
         void ISaveState.Save(string filename)
         {
-            var json = JsonConvert.SerializeObject(QueryEvents, Formatting.Indented);
+            string json = GetJsonString();
             File.WriteAllText(filename + ".allQueries", json);
+        }
+
+        private string GetJsonString()
+        {
+            return JsonConvert.SerializeObject(QueryEvents, Formatting.Indented);
         }
 
         void ISaveState.Load(string filename)
@@ -298,6 +305,12 @@ namespace DaxStudio.UI.ViewModels
 
                 controller.SetFiltersForColumns(filters);
             }
+        }
+
+        public override bool CanExport => _queryEvents.Count > 0;
+        public override void ExportTraceDetails(string filePath)
+        {
+            File.WriteAllText(filePath, GetJsonString());
         }
 
 

@@ -113,6 +113,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TotalDuration);
                 }
             }
+            NotifyOfPropertyChange(() => CanExport);
         }
 
         public override void OnReset() {
@@ -203,13 +204,19 @@ namespace DaxStudio.UI.ViewModels
 
         void ISaveState.Save(string filename)
         {
+            string json = GetJsonString();
+            File.WriteAllText(filename + ".queryPlans", json);
+        }
+
+        private string GetJsonString()
+        {
             var m = new QueryPlanModel()
             {
                 PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
                 LogicalQueryPlanRows = this.LogicalQueryPlanRows
             };
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText(filename + ".queryPlans", json);
+            return json;
         }
 
         void ISaveState.Load(string filename)
@@ -227,6 +234,7 @@ namespace DaxStudio.UI.ViewModels
             
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+            NotifyOfPropertyChange(() => CanExport);
         }
         #endregion
 
@@ -246,5 +254,12 @@ namespace DaxStudio.UI.ViewModels
             Log.Warning("CopyAll method not implemented for QueryPlanTraceViewModel");
         }
         #endregion
+
+        public override bool CanExport => _logicalQueryPlanRows.Count > 0;
+
+        public override void ExportTraceDetails(string filePath)
+        {
+            File.WriteAllText(filePath, GetJsonString());
+        }
     }
 }

@@ -293,6 +293,18 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool IsCopyAllVisible { get { return false; } }
         public abstract void CopyAll();
 
+        public virtual bool CanExport { get { return true; }  }  // TOD - should this be conditional on whether we have data?
+
+        public void Export() {
+            var dialog = new System.Windows.Forms.SaveFileDialog();
+            dialog.Filter = "JSON file (*.json)|*.json";
+            dialog.Title = "Export Trace Details";
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportTraceDetails(dialog.FileName);
+        }
+
+        public abstract void ExportTraceDetails(string filePath);
+
         public virtual bool IsFilterVisible { get { return false; } }
         public virtual void ClearFilters() { }
 

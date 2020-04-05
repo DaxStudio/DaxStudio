@@ -12,7 +12,7 @@
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-
+    xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
@@ -462,6 +462,21 @@
                                         </Border>
                                     </Button>
 
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"/>
+                                    
+                                    <!-- Export Button -->
+                                    <Button x:Name="Export" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}" 
+                                            >
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Export Trace Details"
+                                                Text="Exports the trace data"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            <fa:FontAwesome Icon="Download" />
+                                        </Border>
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
