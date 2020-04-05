@@ -1474,7 +1474,7 @@ namespace DaxStudio.UI.ViewModels
             if (!CanRunQuery) return;
 
             // the benchmark run style will pop up it's own dialog
-            if (message.RunStyle.Icon == RunStyleIcons.RunBenchmark)
+            if (message.IsBenchmark)
             {
                 BenchmarkQuery();
                 return;

@@ -10,16 +10,26 @@ namespace DaxStudio.UI.Events
         {
             ResultsTarget = target;
             RunStyle = new RunStyle("Run", RunStyleIcons.RunOnly, false,false,false, "");
+            IsBenchmark = false;
         }
         public RunQueryEvent(IResultsTarget target, RunStyle runStyle)
         {
             ResultsTarget = target;
             RunStyle = runStyle;
+            IsBenchmark = false;
+        }
+
+        public RunQueryEvent(IResultsTarget target, RunStyle runStyle, bool isBenchmark)
+        {
+            ResultsTarget = target;
+            RunStyle = runStyle;
+            IsBenchmark = isBenchmark;
         }
         public IResultsTarget ResultsTarget { get; set; }
 
         public RunStyle RunStyle { get; }
 
         public IQueryTextProvider QueryProvider { get; set; }
+        public bool IsBenchmark { get; set; }
     }
 }

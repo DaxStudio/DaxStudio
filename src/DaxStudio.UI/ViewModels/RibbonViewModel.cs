@@ -185,15 +185,14 @@ namespace DaxStudio.UI.ViewModels
         public string ToLowerTitle => $"To Lower ({Options.HotkeyToLower})";
         public void RunQuery()
         {
-            if (SelectedRunStyle.Icon != RunStyleIcons.RunBenchmark)
-            {
-                _queryRunning = true;
-                NotifyOfPropertyChange(() => CanRunQuery);
-                NotifyOfPropertyChange(() => CanCancelQuery);
-                NotifyOfPropertyChange(() => CanClearCache);
-                NotifyOfPropertyChange(() => CanRefreshMetadata);
-                NotifyOfPropertyChange(() => CanConnect);
-            }
+            
+            _queryRunning = true;
+            NotifyOfPropertyChange(() => CanRunQuery);
+            NotifyOfPropertyChange(() => CanCancelQuery);
+            NotifyOfPropertyChange(() => CanClearCache);
+            NotifyOfPropertyChange(() => CanRefreshMetadata);
+            NotifyOfPropertyChange(() => CanConnect);
+            
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
 
         }
@@ -344,6 +343,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
+                NotifyOfPropertyChange(() => TraceGroupVisible);
             }
         }
         
@@ -453,6 +453,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.CheckEnabled(ActiveDocument, activeTrace);
             }
+            NotifyOfPropertyChange(() => TraceGroupVisible);
         }
 
         private DocumentViewModel _activeDocument;
@@ -590,6 +591,7 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
+            NotifyOfPropertyChange(() => TraceGroupVisible);
         }
 
         public void Handle(TraceChangedEvent message)
@@ -598,6 +600,7 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
+            NotifyOfPropertyChange(() => TraceGroupVisible);
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)
@@ -1082,15 +1085,25 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _displayBenchmarking = value;
-                if (_displayBenchmarking)
-                    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
-                else
-                {
-                    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
-                    if (benchmark != null) RunStyles.Remove(benchmark);
-                }
-                NotifyOfPropertyChange(nameof(RunStyles));
+                //if (_displayBenchmarking)
+                //    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
+                //else
+                //{
+                //    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
+                //    if (benchmark != null) RunStyles.Remove(benchmark);
+                //}
+                //NotifyOfPropertyChange(nameof(RunStyles));
             }
+        }
+
+        public void RunBenchmark()
+        {
+            _eventAggregator.PublishOnUIThread(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
+        }
+
+        public bool TraceGroupVisible { get {
+                return TraceWatchers.Any(tw => tw.IsChecked);
+            } 
         }
 
         public void Handle(UpdateHotkeys message)

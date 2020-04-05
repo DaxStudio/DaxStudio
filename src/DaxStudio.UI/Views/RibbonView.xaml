@@ -83,7 +83,9 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Fluent:Ribbon Height="Auto" CanCustomizeQuickAccessToolBar="True" CanCustomizeQuickAccessToolBarItems="True" >    
+    <Fluent:Ribbon Height="Auto" 
+                   CanCustomizeQuickAccessToolBar="True" 
+                   CanCustomizeQuickAccessToolBarItems="True" >    
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
@@ -667,86 +669,8 @@
                                    >
                 
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked, Mode=OneWay}"
-                                   Icon="{StaticResource TimerIcon}">
-                <Fluent:ToggleButton x:Name="TimingsScan" IsChecked="{Binding ServerTimingDetails.ShowScan, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Scan"
-                                Icon="{StaticResource TimerIcon}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Scan"
-                                          Text="Show scan timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsCache" IsChecked="{Binding ServerTimingDetails.ShowCache, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Cache" 
-                                Icon="{StaticResource TimingsCache}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Cache"
-                                          Text="Show cache timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsInternal" IsChecked="{Binding ServerTimingDetails.ShowInternal, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Internal"
-                                Icon="{StaticResource TimingsInternal}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Internal"
-                                          Text="Show internal timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsBatch" IsChecked="{Binding ServerTimingDetails.ShowBatch, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Batch"
-                                Icon="{StaticResource TimingsBatch}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Batch"
-                                          Text="Show batch events"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                
-
-                <Fluent:ToggleButton x:Name="TimingsRightPane" 
-                                IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Right Layout"
-                                Icon="{StaticResource RightPane}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Right Layout"
-                                          Text="Show Preview Pane on the right"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-
-                <Fluent:ToggleButton x:Name="TimingsBottomPane"
-                                IsChecked="{Binding ServerTimingDetails.LayoutBottom, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Bottom Layout"
-                                Icon="{StaticResource BottomPane}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Bottom Layout"
-                                          Text="Show Preview Pane on bottom"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-            </Fluent:RibbonGroupBox>
+            
+            
 
             <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0" Icon="{StaticResource ConnectIcon}" >
                 <Fluent:Button x:Name="Connect" 
@@ -946,6 +870,17 @@
                     </Fluent:ToggleButton.LargeIcon>
 
                 </Fluent:ToggleButton>
+                <Fluent:Button
+                    Name="RunBenchmark"
+                               Header="Run Benchmark"
+                               cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
+                                   Icon="{StaticResource RunBenchmark}"
+                                   LargeIcon="{StaticResource RunBenchmarkLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Middel,Small"
+                    />
+
+
                 <CheckBox Content="Show Benchmark Run Style" IsChecked="{Binding DisplayBenchmarking}"/>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
@@ -1056,6 +991,106 @@
             
             
         </Fluent:RibbonTabItem>
+
+        <!-- Part of  -->
+        <Fluent:RibbonTabItem
+            Header="Trace"
+            x:Name="tabTrace"
+            Group="{Binding Source={x:Reference traceGroup}}"
+            >
+            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked, Mode=OneWay}"
+                                   Icon="{StaticResource TimerIcon}">
+                <Fluent:ToggleButton x:Name="TimingsScan" IsChecked="{Binding ServerTimingDetails.ShowScan, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Scan"
+                                Icon="{StaticResource TimerIcon}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Scan"
+                                          Text="Show scan timings"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+                <Fluent:ToggleButton x:Name="TimingsCache" IsChecked="{Binding ServerTimingDetails.ShowCache, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Cache" 
+                                Icon="{StaticResource TimingsCache}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Cache"
+                                          Text="Show cache timings"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+                <Fluent:ToggleButton x:Name="TimingsInternal" IsChecked="{Binding ServerTimingDetails.ShowInternal, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Internal"
+                                Icon="{StaticResource TimingsInternal}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Internal"
+                                          Text="Show internal timings"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+                <Fluent:ToggleButton x:Name="TimingsBatch" IsChecked="{Binding ServerTimingDetails.ShowBatch, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Batch"
+                                Icon="{StaticResource TimingsBatch}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Batch"
+                                          Text="Show batch events"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+
+
+                <Fluent:ToggleButton x:Name="TimingsRightPane" 
+                                IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Right Layout"
+                                Icon="{StaticResource RightPane}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Right Layout"
+                                          Text="Show Preview Pane on the right"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+
+                <Fluent:ToggleButton x:Name="TimingsBottomPane"
+                                IsChecked="{Binding ServerTimingDetails.LayoutBottom, Mode=TwoWay}" 
+                                IsEnabled="{Binding ServerTimingsChecked}"
+                                Header="Bottom Layout"
+                                Icon="{StaticResource BottomPane}"
+                                SizeDefinition="Middle,Middle,Small"
+                                >
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Bottom Layout"
+                                          Text="Show Preview Pane on bottom"
+                                           />
+                    </Fluent:ToggleButton.ToolTip>
+                </Fluent:ToggleButton>
+            </Fluent:RibbonGroupBox>
+
+        </Fluent:RibbonTabItem>
+        
+        <!--Contextual Tab Groups-->
+        <!-- Visibility="{Binding Path=TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter} }" -->
+        <Fluent:Ribbon.ContextualGroups>
+            <Fluent:RibbonContextualTabGroup 
+                x:Name="traceGroup"
+                Header="" 
+                Visibility="{Binding Path=RibbonViewModel.TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Background="{StaticResource DaxStudioBrush}" 
+                BorderBrush="{StaticResource DaxStudioBrush}" />
+        </Fluent:Ribbon.ContextualGroups>
 
         <!-- Quick Access Targets -->
         <!--<Fluent:RibbonTabItem Visibility="Collapsed">

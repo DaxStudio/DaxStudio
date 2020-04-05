@@ -43,7 +43,6 @@
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-run.png"></BitmapImage>
             <BitmapImage x:Key="RunFunction"  UriSource="..\images\icon-run-function.png"></BitmapImage>
             <BitmapImage x:Key="RunScalar"  UriSource="..\images\icon-run-scalar.png"></BitmapImage>
-            <BitmapImage x:Key="RunBenchmark"  UriSource="..\images\icon-run-benchmark.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
 
@@ -53,7 +52,6 @@
             <BitmapImage x:Key="ClearThenRun"  UriSource="..\images\icon-clear-then-run@96ppi.png"></BitmapImage>
             <BitmapImage x:Key="RunFunction"  UriSource="..\images\icon-run-function@96ppi.png"></BitmapImage>
             <BitmapImage x:Key="RunScalar"  UriSource="..\images\icon-run-scalar@96ppi.png"></BitmapImage>
-            <BitmapImage x:Key="RunBenchmark"  UriSource="..\images\icon-run-benchmark@96ppi.png"></BitmapImage>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
     
@@ -125,7 +123,9 @@
     <BitmapImage x:Key="LayoutResetIcon"  UriSource="..\images\icon-layout-reset-16.png"></BitmapImage>
     <!--<BitmapImage x:Key="LayoutResetIconLarger"  UriSource="..\images\icon-layout-reset-64.png"></BitmapImage>-->
     <BitmapImage x:Key="LoadPBIPerfDataIcon"  UriSource="..\images\icon-pbi-tachometer@2x.png"></BitmapImage>
-    
+
+    <BitmapImage x:Key="RunBenchmark"  UriSource="..\images\icon-run-benchmark.png"></BitmapImage>
+    <BitmapImage x:Key="RunBenchmarkLarger"  UriSource="..\images\icon-run-benchmark@96ppi.png"></BitmapImage>
     <!-- trace control icons -->
     <BitmapImage x:Key="TraceStart" UriSource="..\images\TraceControls\play.png"></BitmapImage>
     <BitmapImage x:Key="TracePause" UriSource="..\images\TraceControls\pause.png"></BitmapImage>

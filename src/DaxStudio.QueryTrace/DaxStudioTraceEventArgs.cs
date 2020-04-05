@@ -22,6 +22,9 @@ namespace DaxStudio.QueryTrace
             /*
             switch (e.EventClass)
             {
+                case TraceEventClass.QueryBegin:
+                    // TODO
+
                 case TraceEventClass.QueryEnd:
                     Duration = e.Duration;
                     DatabaseName = e.DatabaseName;
