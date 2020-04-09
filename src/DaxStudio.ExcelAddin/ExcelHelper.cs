@@ -91,6 +91,8 @@ namespace DaxStudio.ExcelAddin
             var iCol = 1;     // Excel ranges are 1 based
             foreach (DataColumn c in dt.Columns)
             {
+                Range rngHdr = r[1, iCol];
+                rngHdr.Value = rngHdr.Value.Replace('`',' ');
                 if (c.DataType == typeof(DateTime))
                 {
                     Range col = r.Columns[iCol];
