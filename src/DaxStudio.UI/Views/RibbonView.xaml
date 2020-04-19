@@ -83,9 +83,13 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <!--
+               CanCustomizeQuickAccessToolBar="True" 
+                   CanCustomizeQuickAccessToolBarItems="True"
+    -->
     <Fluent:Ribbon Height="Auto" 
-                   CanCustomizeQuickAccessToolBar="True" 
-                   CanCustomizeQuickAccessToolBarItems="True" >    
+                   AutomaticStateManagement="False"
+         >    
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
@@ -113,36 +117,41 @@
         <!--Quick Access Toolbar Items-->
         <Fluent:Ribbon.QuickAccessItems>
             <!--You Can Just Bind with Any Control-->
-            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=NewQuery}" IsChecked="True"/>
-            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=Save}" IsChecked="True"/>
             
-
-            <!--<Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=newButtonQat}" />
-            <Fluent:QuickAccessMenuItem IsChecked="True" Target="{Binding ElementName=saveButtonQat}"/>-->
-
-            <!--<Fluent:QuickAccessMenuItem>
-                <Fluent:Button Header="Save" Icon="{StaticResource SaveIcon}" Name="qatSave">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="Save">
-
-                            </cal:ActionMessage>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
+            <!--<Fluent:QuickAccessMenuItem Target="{Binding ElementName=NewQueryQat}" IsChecked="True"/>
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=NewConnectedQueryQat}" IsChecked="True"/>
+            <Fluent:QuickAccessMenuItem Target="{Binding ElementName=SaveQat}" IsChecked="True"/>-->
+            
+            <!-- 
+            Note these QuickAccess Buttons use code behind event handlers 
+            As the event bindings did not seem to work reliably until an Target element
+            Had been drawn so using the elements from the backstage menu did not work all the time
+            -->
+            <Fluent:QuickAccessMenuItem IsChecked="True">
+                <Fluent:Button Header="New" Icon="{StaticResource NewIconSmall}" 
+                               Name="qatNew" 
+                               Click="NewQuery_Click" 
+                               ToolTip="Open a new query window" />
             </Fluent:QuickAccessMenuItem>
 
-            <Fluent:QuickAccessMenuItem >
-                <Fluent:Button Header="New" Icon="{StaticResource NewIconSmall}" Name="qatNew" >
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="NewQuery">
-                            </cal:ActionMessage>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
-            </Fluent:QuickAccessMenuItem>-->
+            <Fluent:QuickAccessMenuItem IsChecked="True">
+                <Fluent:Button Header="New" Icon="{StaticResource NewConnectedIconSmall}" 
+                               Name="qatNewConnected" 
+                               Click="NewConnectedQuery_Click" 
+                               ToolTip="Open a new query window using the current connection"
+                               IsEnabled="{Binding CanNewQueryWithCurrentConnection}" />
+            </Fluent:QuickAccessMenuItem>
 
+            <Fluent:QuickAccessMenuItem IsChecked="True">
+                <Fluent:Button Header="Save" 
+                               Icon="{StaticResource SaveIcon}" 
+                               Name="qatSave" 
+                               Click="Save_Click" 
+                               ToolTip="Save the current query window"
+                               IsEnabled="{Binding CanSave}" />
+            </Fluent:QuickAccessMenuItem>
+
+            
         </Fluent:Ribbon.QuickAccessItems>
 
         <!--Backstage-->
@@ -154,14 +163,31 @@
 
                     <!-- File New -->
                     <Fluent:Button Header="New" 
-                                   Name="NewQuery" 
-                      
+                                   Name="btnNewQuery" 
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
-                                   Icon="{StaticResource NewIconSmall}">
-
+                                   Icon="{StaticResource NewIconSmall}"
+                                   ToolTip="Open a New Query">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="NewQuery"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
                     </Fluent:Button>
 
+                    <Fluent:Button
+                        Name="btnNewQueryConnected"
+                        Header="New (Copy Connection)"
+                        Icon="{StaticResource NewConnectedIconSmall}"
+                        ToolTip="Open a New Query with the current connection">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        
+                    </Fluent:Button>
+                    
                     <Fluent:BackstageTabItem Header="Open"  >
                         
                         <!-- Right-side content here -->
@@ -251,12 +277,10 @@
                     </Fluent:BackstageTabItem>
                     <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
 
-                    <Fluent:Button Header="Save" Name="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
+                    <Fluent:Button Header="btnSave" Name="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="Save">
-
-                                </cal:ActionMessage>
+                                <cal:ActionMessage MethodName="Save"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
 
@@ -292,6 +316,7 @@
         
   
         <!-- Home Tabs-->
+
         
         <Fluent:RibbonTabItem Header="Home" ReduceOrder="Query, 
                               Connection,Query,Connection,Connection,
@@ -304,6 +329,8 @@
                               Edit,Edit
                               "
                               >
+            
+
             <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
@@ -407,8 +434,71 @@
                 </Fluent:DropDownButton>
 
             </Fluent:RibbonGroupBox>
-            
-            
+
+            <!--<Fluent:RibbonGroupBox x:Name="QuickAccessHiddenCommands" Visibility="Visible" Header="File">
+                <Fluent:Button Header="New" 
+                                   x:Name="NewQueryQat" 
+                                   HorizontalContentAlignment="Left" 
+                                   Icon="{StaticResource NewIconSmall}"
+                               SizeDefinition="Small,Small,Small"
+                               ToolTip="Open a New Query window" >
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="NewQuery"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
+
+                <Fluent:Button Header="New (Copy Connection)" 
+                                   x:Name="NewConnectedQueryQat" 
+                                   HorizontalContentAlignment="Left" 
+                                   Icon="{StaticResource NewConnectedIconSmall}"
+                               SizeDefinition="Small,Small,Small"
+                               ToolTip="Open a New Query window with the current connection details">
+
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Fluent:Button>
+
+                <Fluent:Button Header="Save" 
+                               x:Name="SaveQat" 
+                               HorizontalContentAlignment="Left" 
+                               Icon="{StaticResource SaveIcon}"
+                               SizeDefinition="Small,Small,Small"
+                               ToolTip="Save the current Query window">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <cal:ActionMessage MethodName="Save"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>-->
+
+
+            <Fluent:RibbonGroupBox Header="View" Visibility="{Binding ShowPreviewQueryBuilder, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Fluent:ToggleButton 
+                    Header="Query Builder"
+                    Name="DisplayQueryBuilder" 
+                    IsEnabled="{Binding CanDisplayQueryBuilder}"
+                    IsChecked="{Binding DisplayQueryBuilder}"
+                    SizeDefinition="Large">
+                    <Fluent:ToggleButton.Icon>
+
+                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
+
+                    </Fluent:ToggleButton.Icon>
+                    <Fluent:ToggleButton.LargeIcon>
+
+                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
+
+                    </Fluent:ToggleButton.LargeIcon>
+
+                </Fluent:ToggleButton>
+            </Fluent:RibbonGroupBox>
             
 
             <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Margin="4,0" Icon="{StaticResource CutIcon}">
@@ -781,6 +871,17 @@
                     </Fluent:Button>
                 
             </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Performance" Visibility="{Binding ShowPreviewBenchmark, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Fluent:Button
+                    Name="RunBenchmark"
+                               Header="Run Benchmark"
+                               cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
+                                   Icon="{StaticResource RunBenchmark}"
+                                   LargeIcon="{StaticResource RunBenchmarkLarger}"
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Middel,Small"
+                    />
+            </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="External Tools" Visibility="{Binding ShowExternalTools, Converter={StaticResource BoolToVisibilityConverter}}"
                                    >
                 <Fluent:Button Name="LaunchSqlProfiler"
@@ -853,32 +954,8 @@
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Experimental Features">
-                <Fluent:ToggleButton 
-                    Header="Query Builder"
-                    x:Name="DisplayQueryBuilder" 
-                    IsChecked="{Binding DisplayQueryBuilder}"
-                    SizeDefinition="Large">
-                    <Fluent:ToggleButton.Icon>
-
-                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
-                    </Fluent:ToggleButton.Icon>
-                    <Fluent:ToggleButton.LargeIcon>
-
-                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
-                    </Fluent:ToggleButton.LargeIcon>
-
-                </Fluent:ToggleButton>
-                <Fluent:Button
-                    Name="RunBenchmark"
-                               Header="Run Benchmark"
-                               cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
-                                   Icon="{StaticResource RunBenchmark}"
-                                   LargeIcon="{StaticResource RunBenchmarkLarger}"
-                                   Margin="4,0"
-                                   SizeDefinition="Large,Middel,Small"
-                    />
+                
+                
 
 
                 <CheckBox Content="Show Benchmark Run Style" IsChecked="{Binding DisplayBenchmarking}"/>
@@ -1087,7 +1164,7 @@
             <Fluent:RibbonContextualTabGroup 
                 x:Name="traceGroup"
                 Header="" 
-                Visibility="{Binding Path=RibbonViewModel.TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Visibility="{Binding Path=Ribbon.TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 Background="{StaticResource DaxStudioBrush}" 
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>
