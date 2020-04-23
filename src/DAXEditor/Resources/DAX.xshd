@@ -1,36 +1,36 @@
 ﻿<SyntaxDefinition name="DAX" extensions=".dax" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <!-- default colors use the Light set -->
-	<Color name="Comment"    foreground="Green" />
-	<Color name="String"     foreground="Red"        fontStyle="normal"/>
-  <Color name="Identifier" foreground="Black" />
-  <Color name="Operator"   foreground="Magenta"/>
+	<Color name="Comment"    foreground="#39A03B" />
+	<Color name="String"     foreground="#D93124"        fontStyle="normal"/>
+  <Color name="Identifier" foreground="#333333" />
+  <Color name="Operator"   foreground="#333333"/>
   <Color name="Parameter"  foreground="#FFE00587"  fontStyle="normal" />
-  <Color name="Function"   foreground="Blue" /> <!-- fontWeight="bold" />-->
-  <Color name="Kword"      foreground="Teal" />  <!--fontWeight="bold"/>-->
+  <Color name="Function"   foreground="#035ACA" /> <!-- fontWeight="bold" />-->
+  <Color name="Kword"      foreground="#035ACA" />  <!--fontWeight="bold"/>-->
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
-  <Color name="Numbers"    foreground="MidnightBlue" />
+  <Color name="Numbers"    foreground="#EE7F18" />
 
   <!-- Light theme colors-->
-  <Color name="Light.Comment"    foreground="Green" />
-  <Color name="Light.String"     foreground="Red"        fontStyle="normal"/>
-  <Color name="Light.Identifier" foreground="Black" />
-  <Color name="Light.Operator"   foreground="Magenta"/>
+  <Color name="Light.Comment"    foreground="#39A03B" />
+  <Color name="Light.String"     foreground="#D93124"        fontStyle="normal"/>
+  <Color name="Light.Identifier" foreground="#333333" />
+  <Color name="Light.Operator"   foreground="#333333"/>
   <Color name="Light.Parameter"  foreground="#FFE00587"  fontStyle="normal" />
-  <Color name="Light.Function"   foreground="Blue" />
-  <Color name="Light.Kword"      foreground="Teal" />
+  <Color name="Light.Function"   foreground="#035ACA" />
+  <Color name="Light.Kword"      foreground="#035ACA" />
   <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
-  <Color name="Light.Numbers"    foreground="MidnightBlue" />
+  <Color name="Light.Numbers"    foreground="#EE7F18" />
 
   <!-- dark theme colors-->
-  <Color name="Dark.Comment"    foreground="#007700" />
-  <Color name="Dark.String"     foreground="#FF5959"        fontStyle="normal"/>
-  <Color name="Dark.Identifier" foreground="#cccccc" />
-  <Color name="Dark.Operator"   foreground="#FF1AFF"/>
+  <Color name="Dark.Comment"    foreground="#86C573" />
+  <Color name="Dark.String"     foreground="#E44E44"        fontStyle="normal"/>
+  <Color name="Dark.Identifier" foreground="#FFFFFF" />
+  <Color name="Dark.Operator"   foreground="#FFFFFF"/>
   <Color name="Dark.Parameter"  foreground="#FC32AB"  fontStyle="normal" />
-  <Color name="Dark.Function"   foreground="#7373FF" />
-  <Color name="Dark.Kword"      foreground="#009595" />
+  <Color name="Dark.Function"   foreground="#0095FF" />
+  <Color name="Dark.Kword"      foreground="#0095FF" />
   <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
-  <Color name="Dark.Numbers"    foreground="#ccccE7" />
+  <Color name="Dark.Numbers"    foreground="#EE7F18" />
   
 	<RuleSet ignoreCase="true">
 		<Span color="Comment" multiline="false">
