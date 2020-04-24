@@ -92,7 +92,7 @@ namespace ADOTabular
 
         public MetadataImages MetadataImage
         {
-            get { return IsVisible ? MetadataImages.Table : MetadataImages.HiddenTable; }
+            get { return IsVisible && !Private && !ShowAsVariationsOnly ? MetadataImages.Table : MetadataImages.HiddenTable; }
         }
 
         public IList<ADOTabularRelationship> Relationships { get; private set; } 

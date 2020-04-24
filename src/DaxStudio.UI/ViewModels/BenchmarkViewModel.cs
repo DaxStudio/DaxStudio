@@ -37,6 +37,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressMessage = "Ready";
             ProgressPercentage = 0;
             ProgressColor = "LightGray";
+            RunSameWarmAndCold = true;
         }
 
 
@@ -50,7 +51,8 @@ namespace DaxStudio.UI.ViewModels
 
             SetSelectedOutputTarget(OutputTarget.Timer);
 
-            CreateOutputTable();
+            CreateSummaryOutputTable();
+            CreateDetailOutputTable();
             
             // start server timings
             // once the server timings starts it will trigger the first query
@@ -60,6 +62,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
+            IsCancelled = true;
             TryClose(true);
         }
         #endregion
@@ -135,6 +138,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void BenchmarkingComplete()
         {
+            // Stop listening to events
+            EventAggregator.Unsubscribe(this);
+
             ProgressMessage = "Compiling Results";
 
             // todo - should we add an option to output directly to a file
@@ -150,32 +156,30 @@ namespace DaxStudio.UI.ViewModels
             ProgressMessage = "Benchmark Complete";
             ProgressColor = "Green";
 
+            // todo - activeate results
+
+            // close the Benchmarking dialog
+            this.TryClose(true);
         }
 
         private void CalculateBenchmarkSummary()
         {
-            var dt = BenchmarkDataSet.Tables[0];
-            string[] statistics = { "Average", "StdDev","Min","Max" };
+            var dt = BenchmarkDataSet.Tables["Details"];
+            string[] statistics = { "Average", "StdDev", "Min", "Max" };
             var newDt2 = from d in dt.AsEnumerable()
                          from stat in statistics
-                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"] , StorageEngineDuration = (int)d["StorageEngineDuration"] };
+                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"], StorageEngineDuration = (int)d["StorageEngineDuration"] };
 
             var newGrp = newDt2.GroupBy(x => new { Cache = x.Cache, Statistic = x.Statistic });
 
-            DataTable summary = new DataTable("Summary");
-            summary.Columns.Add("Cache", typeof(string));
-            summary.Columns.Add("Statistic", typeof(string));
-            summary.Columns.Add("TotalDuration", typeof(double));
-            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
-            summary.Columns.Add("StorageEngineDuration", typeof(double));
-            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            DataTable summary = BenchmarkDataSet.Tables["Summary"]; 
 
             foreach (var grp in newGrp)
             {
                 DataRow newRow = summary.Rows.Add();
                 newRow["Cache"] = grp.Key.Cache;
                 newRow["Statistic"] = grp.Key.Statistic;
-                
+
                 switch (grp.Key.Statistic)
                 {
                     case "Average":
@@ -198,13 +202,25 @@ namespace DaxStudio.UI.ViewModels
 
                         break;
                 }
-                
+
             }
+
+        }
+
+        private void CreateSummaryOutputTable()
+        {
+            DataTable summary = new DataTable("Summary");
+            summary.Columns.Add("Cache", typeof(string));
+            summary.Columns.Add("Statistic", typeof(string));
+            summary.Columns.Add("TotalDuration", typeof(double));
+            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns.Add("StorageEngineDuration", typeof(double));
+            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
 
             BenchmarkDataSet.Tables.Add(summary);
         }
 
-        private void CreateOutputTable()
+        private void CreateDetailOutputTable()
         {
             var details = new DataTable("Details");
             details.Columns.Add("Sequence", typeof(int));
@@ -218,6 +234,7 @@ namespace DaxStudio.UI.ViewModels
             details.Columns.Add("StorageEngineCpuFactor", typeof(double));
             details.Columns.Add("FormulaEngineDuration", typeof(int));
             details.Columns.Add("VertipaqCacheMatches", typeof(int));
+            
             BenchmarkDataSet.Tables.Add(details);
         }
 
@@ -280,7 +297,18 @@ namespace DaxStudio.UI.ViewModels
         private int _currentWarmRun;
 
         #region Properties
-        public int ColdCacheRuns { get; set; } = 5;
+        private int _coldCacheRuns = 5;
+        public int ColdCacheRuns { 
+            get { return _coldCacheRuns; } 
+            set { _coldCacheRuns = value;
+                NotifyOfPropertyChange(() => ColdCacheRuns);
+                if (RunSameWarmAndCold)
+                {
+                    WarmCacheRuns = ColdCacheRuns;
+                    NotifyOfPropertyChange(() => WarmCacheRuns);
+                }
+            } 
+        }
         public int WarmCacheRuns { get; set; } = 5;
 
         private double _progressPercentage;
@@ -298,6 +326,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(ProgressColor));
             }
         }
+
+        public bool RunSameWarmAndCold { get; set; }
 
         private string _progressMessage;
         public string ProgressMessage { get => _progressMessage;
@@ -334,6 +364,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DataSet BenchmarkDataSet { get; } = new DataSet("BenchmarkResults");
+        public bool IsCancelled { get; internal set; }
         #endregion
 
         #region IDisposable

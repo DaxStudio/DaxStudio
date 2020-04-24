@@ -11,6 +11,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
+        <ResourceDictionary>
         <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
         <conv:MinWidthOrientationConverter x:Key="MinWidthOrientationConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -27,14 +28,75 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="EmptyColumnListStyle"
+           TargetType="ListBox"
+           BasedOn="{StaticResource {x:Type ListBox}}">
+            <Style.Triggers>
+                <!-- Use ListBox.HasItems instead of Binding -->
+                <Trigger Property="HasItems" Value="False">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Border BorderBrush="Gray" BorderThickness="0.5">
+                                    <TextBlock 
+                                           
+                                           TextWrapping="Wrap" 
+                                           Padding="10"
+                                           FontWeight ="Bold"
+                                           FontSize="28"
+                                           Margin="0"
+                                    
+                                           Foreground="LightGray"
+                                           TextAlignment="Center">Drag output Columns / Measures Here</TextBlock>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
+        <Style x:Key="EmptyFilterListStyle"
+           TargetType="ListBox"
+           BasedOn="{StaticResource {x:Type ListBox}}">
+            <Style.Triggers>
+                <!-- Use ListBox.HasItems instead of Binding -->
+                <Trigger Property="HasItems" Value="False">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Border BorderBrush="Gray" BorderThickness="0.5">
+                                    <TextBlock  
+                                           
+                                           TextWrapping="Wrap" 
+                                           Padding="10"
+                                           FontWeight ="Bold"
+                                           FontSize="28"
+                                           Foreground="LightGray"
+                                           TextAlignment="Center">Drag Filter Columns Here</TextBlock>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <TextBlock Text="Columns / Measures" Margin="10,0" FontSize="14"/>
         <!--                    -->
         <ListBox Name="Columns" ItemsSource="{Binding Columns.Items}" 
                  dd:DragDrop.IsDropTarget="True" 
@@ -44,7 +106,9 @@
                  dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
                  dd:DragDrop.DropHandler="{Binding Columns.DropHandler}"
                   HorizontalContentAlignment="Stretch"
-                 Margin="10" >
+                 Margin="10,5"
+                 Grid.Row="1"
+                 Style="{StaticResource EmptyColumnListStyle}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid >
@@ -52,7 +116,14 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding Caption}" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                            <TextBlock Text="{Binding Caption}" />
+                            <StackPanel.ToolTip>
+                                <TextBlock Text="{Binding DaxName}"/>
+                            </StackPanel.ToolTip>
+                        </StackPanel>
                         <!--<Button fa:Awesome.Content="TimesRectangle" Foreground="LightGray" Grid.Column="1"
                                 TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"
                                 cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -73,7 +144,7 @@
             </ListBox.ItemTemplate>
             
         </ListBox>
-
+        <TextBlock Grid.Row="2" Text="Filters" Margin="10,0" FontSize="14"/>
         <ListView Name="Filters"
                  ItemsSource="{Binding Filters.Items}" 
                  dd:DragDrop.IsDropTarget="True" 
@@ -82,58 +153,90 @@
                  dd:DragDrop.DropTargetAdornerBrush="Coral"
                  dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
                  dd:DragDrop.DropHandler="{Binding Filters.DropHandler}"
-                 Grid.Row="1" Margin="10"
-                  HorizontalContentAlignment="Stretch"
-                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                 Grid.Row="3" Margin="10"
+                 HorizontalContentAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                  Style="{StaticResource EmptyFilterListStyle}"
                  >
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding Caption}" />
-                        <fa:ImageAwesome Grid.Column="1"  x:Name="RemoveFilter" 
+                    <Border BorderBrush="LightGray"  
+                            BorderThickness="0,0,0,1"
+                            Padding="0,0,0,3">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock FontWeight="SemiBold" 
+                                       Text="{Binding Caption}"
+                                       Foreground="Blue"
+                                   Grid.Row="1">
+                                <TextBlock.ToolTip>
+                                    <TextBlock Text="{Binding TabularObject.DaxName}"/>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                            <fa:ImageAwesome Grid.Column="1"  
+                                         Grid.Row ="1"
+                                         x:Name="RemoveFilter" 
                                          cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"
                                          cal:Action.TargetWithoutContext="{Binding Path=DataContext.Filters, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                          Icon="TimesCircle"
                                          Style="{StaticResource RemoveButton}">
-                            
-                        </fa:ImageAwesome>
 
-                        <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="{Binding Path=ActualWidth, ElementName=Filters, Converter={StaticResource MinWidthOrientationConverter}, ConverterParameter=250}" >
-                            
-                        <ComboBox Grid.Row="1" Grid.ColumnSpan="2" 
+                            </fa:ImageAwesome>
+
+                            <WrapPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="{Binding Path=ActualWidth, ElementName=Filters, Converter={StaticResource MinWidthOrientationConverter}, ConverterParameter=250}" >
+
+                                <ComboBox Grid.Row="2" Grid.ColumnSpan="2" 
                                   x:Name="FilterType" ItemsSource="{Binding FilterTypes}" 
                                   SelectedItem="{Binding FilterType}"
                                   Margin="3">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <TextBox Grid.Row="2" Grid.ColumnSpan="2" 
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Grid.Row="3" Grid.ColumnSpan="2" 
                                  x:Name="FilterValue" 
                                  Text="{Binding FilterValue}" 
                                  Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
                                  MinWidth="150"
                                  Margin="3"/>
-                        </WrapPanel>
-                    </Grid>
-
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
-            <Button x:Name="SendTextToEditor" Content="Send to Editor" Margin="5" Padding="3"/>
-            <Button x:Name="RunQuery" Margin="5" Content="Run Query" Padding="3"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Right">
+            <Button x:Name="SendTextToEditor" Margin="5" Padding="5,3">
+                <StackPanel Orientation="Vertical">
+                    <fa:FontAwesome Icon="Edit" 
+                                    FontSize="32"
+                                    Foreground="{StaticResource DaxStudioBrush}"
+                                    Margin="5,2,5,0" />
+                    <TextBlock Text="Edit Query"/>
+                </StackPanel>
+                
+            </Button>
+            <Button x:Name="RunQuery" Margin="5"  Padding="5,3">
+                <StackPanel Orientation="Vertical">
+                    <fa:FontAwesome Icon="Play" 
+                                    FontSize="32" 
+                                    Foreground="{StaticResource RunGreenBrush}"
+                                    Margin="5,2,5,0" />
+                    <TextBlock Text="Run Query"/>
+                </StackPanel>
+            </Button>
 
         </StackPanel>
     </Grid>

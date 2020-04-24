@@ -277,7 +277,7 @@
                     </Fluent:BackstageTabItem>
                     <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
 
-                    <Fluent:Button Header="btnSave" Name="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
+                    <Fluent:Button Name="btnSave" Header="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Click">
                                 <cal:ActionMessage MethodName="Save"/>
@@ -802,8 +802,8 @@
 
             <!-- Advanced Ribbon Tab-->
        
-        <Fluent:RibbonTabItem Header="Advanced" Visibility="{Binding ShowAdvancedTab, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Fluent:RibbonGroupBox Header="Metrics" Visibility="{Binding ShowMetricsGroup, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Fluent:RibbonTabItem Header="Advanced" >
+            <Fluent:RibbonGroupBox Header="Metrics" >
                 <Fluent:Button Name="ImportAnalysisData"
                                    Header="Import Metrics"
                                    cal:Message.Attach="[Event Click] = [Action ImportAnalysisData()]"
@@ -853,7 +853,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Export" Visibility="{Binding ShowExportGroup, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Export" >
                 <Fluent:Button Name="ExportAllData"
                                    Header="Export Data"
                                    cal:Message.Attach="[Event Click] = [Action ExportAllData()]"
@@ -1071,9 +1071,9 @@
 
         <!-- Part of  -->
         <Fluent:RibbonTabItem
-            Header="Trace"
+            Header="Layout"
             x:Name="tabTrace"
-            Group="{Binding Source={x:Reference traceGroup}}"
+            Group="{Binding Source={x:Reference traceLayoutGroup}}"
             >
             <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked, Mode=OneWay}"
                                    Icon="{StaticResource TimerIcon}">
@@ -1162,9 +1162,9 @@
         <!-- Visibility="{Binding Path=TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter} }" -->
         <Fluent:Ribbon.ContextualGroups>
             <Fluent:RibbonContextualTabGroup 
-                x:Name="traceGroup"
-                Header="" 
-                Visibility="{Binding Path=Ribbon.TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                x:Name="traceLayoutGroup"
+                Header="Traces" 
+                Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 Background="{StaticResource DaxStudioBrush}" 
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>

@@ -107,6 +107,8 @@ namespace DaxStudio.SignalR
         public bool ShowUserInTitlebar { get; set; }
         public bool EditorWordWrap { get; set; }
         public bool SkipSpaceAfterFunctionName { get; set; }
+        public bool ShowPreviewQueryBuilder { get; set; }
+        public bool ShowPreviewBenchmark { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

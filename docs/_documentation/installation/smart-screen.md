@@ -3,17 +3,21 @@ title: Windows 10 Smartscreen
 ---
 ## What is SmartScreen?
 
-SmartScreen is a set of technologies from Microsoft that is designed to protect your pc from malicious software. Unfortunately for specialty products like DAX Studio, one of the criteria that Smart Screen uses to determine if a given download is safe is whether the download is digitally signed and whether or not it has been "frequently dowloaded". And while the executables, Installer and Excel Add-in are all digitally signed apparently the level at which something is considered "frequently downloaded" is quite high.
+SmartScreen is a set of technologies from Microsoft that is designed to protect your pc from malicious software. Unfortunately for specialty products like DAX Studio, one of the criteria that Smart Screen uses to determine if a given download is safe:
+* is the download is digitally signed and 
+* has been "frequently dowloaded". 
+
+The executables, Installer and Excel Add-in are all digitally signed. But apparently the level at which something is considered "frequently downloaded" is quite high. The digital certificate used for signing also expires every 12 months and when SmartScreen sees a new signature it can also take some time for it to build up trust in that new certificate.
 
 ## Digital Signature
 
 If you right click on the installer or DaxStudio.exe in Windows Explorer and view the properties you should see a Digital Signature signed by "Darren Gosbell" (the primary developer of DAX Studio)
 
-[Digital Signature](digital-signature.png)
+![Digital Signature](digital-signature.png)
 
 ## Can I check DAX Studio for malicious software before downloading it?
 
-Yes, you can right click on the download button and choose the option to "copy shortcut" (the exact wording of this my vary between the various browsers). Then go to https://wwww.virustotal.com and you can submit the URL there for scanning. Virus total will the scan using a large number of AV scanners and report any issues. Typically it should report being 100% clean, but from time to time you may see a false positives often these resolve themselves within a few days. 
+Yes, you can right click on the download button and choose the option to "copy shortcut" (the exact wording of this my vary between the various browsers). Then go to [https://wwww.virustotal.com](https://wwww.virustotal.com) and you can submit the URL there for scanning. Virus total will the scan using a large number of AV scanners and report any issues. Typically it should report being 100% clean, but from time to time you may see a false positives often these resolve themselves within a few days. 
 
 ## Installing DAX Studio on Windows 10 with Microsoft Edge and SmartScreen Warnings
 
@@ -37,7 +41,9 @@ Another prompt will now appear saying that "This app might harm your device"
 | ![](smart-screen-1.png) |
 
 
- To proceed you need to click on **Show more** then click on **Keep anyway**
+ To proceed you need to click on **Show more** then click on **Keep anyway** 
+ 
+ > If you feel comfortable doing so clicking on **Report this app as safe** will help DAX Studio to build more *reputation* and this will help SmartScreen to trust our downloads faster for others
 
 | ![](smart-screen-keep-anyway.png) |
 
@@ -54,9 +60,11 @@ If you click on **More info** it will then show the option to **Run anyway** if 
 
 ![](install-anyway.png)
 
-The installer is now running and you can choose to installer for All Users or just for the current user.
+The installer is now running and you can choose to installer for All Users or just for the current user. 
 
 ![](install-mode.png)
+
+> **Note:** this prompt only appears the **first** time DAX Studio is installed. If you are upgrading the installer will use the option that you installed with the first time. So to change between All Users and Current User you need to do a full uninstall first.
 
 The install of DAX Studio should now proceed normally.
 

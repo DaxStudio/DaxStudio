@@ -79,6 +79,33 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void FindWildcardWithFullWords()
+        {
+
+            var newEd = new MockEditor("This is some sample text\non 3 different lines\nwith more samples");
+            var vm2 = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                Editor = newEd,
+                UseWildcards = true,
+                UseRegex = false,
+                CaseSensitive = false,
+                UseWholeWord = true,
+                TextToFind = "sam*"
+            };
+
+            vm2.FindText();
+
+            Assert.AreEqual(13, newEd.SelectionStart, "Selection Start First");
+            Assert.AreEqual(6, newEd.SelectionLength, "Selection Length First");
+
+            vm2.FindNext();
+
+            Assert.AreEqual(56, newEd.SelectionStart, "Selection Start Next");
+            Assert.AreEqual(7, newEd.SelectionLength, "Selection Length Next");
+
+        }
+
+        [TestMethod]
         public void FindRegEx()
         {
             var vm = new FindReplaceDialogViewModel(mockEventAggregator)

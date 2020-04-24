@@ -408,6 +408,8 @@ namespace DaxStudio.UI.ViewModels
             var selectedTables = Tables.Where(t => t.IsSelected);
             totalTableCnt = selectedTables.Count();
 
+            var connRead = Document.Connection.Clone();
+
             // no tables were selected so exit here
             if (totalTableCnt == 0)
             {
@@ -437,9 +439,14 @@ namespace DaxStudio.UI.ViewModels
                             currentTable.Status = ExportStatus.Exporting;
                             currentTableIdx++;
                             var daxQuery = $"EVALUATE {table.DaxName}";
+                            var daxRowCount = $"EVALUATE ROW(\"RowCount\", COUNTROWS( {table.DaxName} ) )";
+
+                            // get a count of the total rows in the table
+                            DataTable dtRows = connRead.ExecuteDaxQueryDataTable(daxRowCount);
+                            var totalRows = dtRows.Rows[0].Field<long>("RowCount");
 
                             using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
-                            using (var reader = metadataPane.Connection.ExecuteReader(daxQuery))
+                            using (var reader = connRead.ExecuteReader(daxQuery))
                             {
                                 sqlTableName = $"[{schemaName}].[{table.Caption}]";
 

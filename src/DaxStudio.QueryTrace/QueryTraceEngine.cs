@@ -500,7 +500,9 @@ namespace DaxStudio.QueryTrace
                 Log.Error(ex, "{Class} {Method} Exception while dropping query trace {message}", "QueryTraceEngine", "DisposeTrace", ex.Message);
             }
 
-            _trace.Dispose();
+            // TODO - do we need to call both DROP and DISPOSE ?? Sometimes causes hanging
+            //        need to check if AMO is also trying to drop the trace
+            //_trace.Dispose();
             _trace = null;
         }
 

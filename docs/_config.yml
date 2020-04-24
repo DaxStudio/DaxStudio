@@ -35,6 +35,7 @@ navbar-links:
     - Installation: "documentation/installation"
     - Requirements: "documentation/requirements"
     - Troubleshooting: "documentation/troubleshooting"
+    - License: "documentation/license"
   FAQ: "faq"
 #  Discussions: "https://gitter.im/daxstudio/Lobby"
   "Issues / Requests": "issues"

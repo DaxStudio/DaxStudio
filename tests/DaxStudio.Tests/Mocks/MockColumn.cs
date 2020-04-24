@@ -35,6 +35,8 @@ namespace DaxStudio.Tests.Mocks
 
         public ADOTabularObjectType ObjectType { get; }
 
+        public MetadataImages MetadataImage => throw new NotImplementedException();
+
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
             throw new NotImplementedException();
@@ -44,5 +46,7 @@ namespace DaxStudio.Tests.Mocks
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

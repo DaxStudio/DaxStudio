@@ -875,6 +875,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
+
+
         private bool _showKeyBindings = false;
         [DataMember, DefaultValue(false)]
         public bool ShowKeyBindings
@@ -893,9 +895,44 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showPreviewQueryBuilder = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowPreviewQueryBuilder
+        {
+            get
+            {
+                return _showPreviewQueryBuilder;
+            }
+
+            set
+            {
+                _showPreviewQueryBuilder = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowPreviewQueryBuilder), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowPreviewQueryBuilder);
+            }
+        }
+
+        private bool _showPreviewBenchmark = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowPreviewBenchmark
+        {
+            get
+            {
+                return _showPreviewBenchmark;
+            }
+
+            set
+            {
+                _showPreviewBenchmark = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowPreviewBenchmark), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowPreviewBenchmark);
+            }
+        }
         #endregion
-        
-        
+
+
 
 
         private string _theme = "Light";

@@ -76,12 +76,13 @@ namespace DaxStudio.UI.ViewModels
 
         public int SelectedIndex { get; set; }
 
-        public void StartDrag(IDragInfo dragInfo)
+        public virtual void StartDrag(IDragInfo dragInfo)
         {
             if (dragInfo.SourceItem as IADOTabularObject != null)
             {
                 dragInfo.Data = ((IADOTabularObject)dragInfo.SourceItem).DaxName;
-                dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
+                dragInfo.DataObject = new DataObject(typeof(object), dragInfo.SourceItem);
+                //dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
                 
                 dragInfo.Effects = DragDropEffects.Move;
             }

@@ -630,7 +630,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void ActivateResults()
         {
-            if (!TraceWatchers.Any(tw => tw.IsChecked))
+            ActivateResults(false);
+        }
+
+        public void ActivateResults(bool forceActivation)
+        {
+            if (!TraceWatchers.Any(tw => tw.IsChecked) || forceActivation)
             {
                 // only activate if no trace watchers are active
                 // otherwise we assume that the user will want to keep the
@@ -908,7 +913,6 @@ namespace DaxStudio.UI.ViewModels
                    }
                });
 
-                Log.Information("TODO: Refresh VertiPaq Analyzer!");
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -1497,20 +1501,33 @@ namespace DaxStudio.UI.ViewModels
             
             try
             {
+                var serverTimingsTrace = TraceWatchers.FirstOrDefault(tw => tw is ServerTimesViewModel);
+
+                var serverTimingsInitialState = serverTimingsTrace.IsChecked; 
+
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
                 using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
                 {
 
                     _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
-                {
-                    { "WindowStyle", WindowStyle.None},
-                    { "ShowInTaskbar", false},
-                    { "ResizeMode", ResizeMode.NoResize},
-                    { "Background", System.Windows.Media.Brushes.Transparent},
-                    { "AllowsTransparency",true}
+                    {
+                        { "WindowStyle", WindowStyle.None},
+                        { "ShowInTaskbar", false},
+                        { "ResizeMode", ResizeMode.NoResize},
+                        { "Background", System.Windows.Media.Brushes.Transparent},
+                        { "AllowsTransparency",true}
 
-                });
+                    });
+
+                    if (dialog.IsCancelled) return;
+                    
                 }
+                
+                // reset status of ServerTimings
+                serverTimingsTrace.IsChecked = serverTimingsInitialState;
+                
+                // once the dialog closes we should activate the results pane
+                this.ActivateResults(true);
             }
             catch (Exception ex)
             {
@@ -2048,12 +2065,26 @@ namespace DaxStudio.UI.ViewModels
 
         private void ResetTracer()
         {
-            if (Tracer != null)
+            if (Dispatcher.CurrentDispatcher.CheckAccess())
             {
-                Tracer?.Stop();
-                Tracer?.Dispose();
-                _tracer = null;
+                ResetTracerInternal();
+            } 
+            else
+            {
+                Dispatcher.CurrentDispatcher.BeginInvoke( DispatcherPriority.Normal, (System.Action)delegate { ResetTracerInternal(); }) ;
             }
+            
+        }
+
+        private void ResetTracerInternal()
+        {
+            if (Dispatcher.CurrentDispatcher.CheckAccess())
+                if (Tracer != null)
+                {
+                    Tracer?.Stop();
+                    Tracer?.Dispose();
+                    _tracer = null;
+                }
         }
 
         internal string AutoSaveFileName {
@@ -2868,7 +2899,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         info.ServerName = serverName ?? "";
                         info.ServerEdition = _connection.ServerEdition ?? "";
-                        info.ServerType = _connection.ServerType.ToString() ?? "";
+                        info.ServerType = _connection.ServerType.GetDescription() ?? "";
                         info.ServerMode = _connection.ServerMode ?? "";
                         info.ServerLocation = _connection.ServerLocation ?? "";
                         info.ServerVersion = _connection.ServerVersion ?? "";
@@ -3013,7 +3044,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
 
                 var conn = Connection.Clone();
-                bool hasChanged = await Task<bool>.Run(() => conn.Database.HasSchemaChanged());
+                bool hasChanged = await Task<bool>.Run(() => conn?.Database?.HasSchemaChanged() ?? false); 
                 conn.Close();
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
@@ -3507,7 +3538,8 @@ namespace DaxStudio.UI.ViewModels
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
             IntellisenseProvider?.CloseCompletionWindow();
-            if (dropInfo.Data is IADOTabularObject)
+
+            if (dropInfo.DragInfo.DataObject is IADOTabularObject || dropInfo.DragInfo.Data is string)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -3525,10 +3557,18 @@ namespace DaxStudio.UI.ViewModels
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.Data as IADOTabularObject;
-            if (obj == null) return;
-            var daxName = obj.DaxName;
-            InsertTextAtCaret(daxName);
+            var obj = dropInfo.DragInfo.DataObject as IADOTabularObject;
+            var text = string.Empty;
+            if (obj != null)
+            {
+                text = obj.DaxName;
+            }
+
+            if (dropInfo.DragInfo.Data is string)
+            {
+                text = dropInfo.DragInfo.Data as string;
+            }
+            InsertTextAtCaret(text);
             return;
         }
 

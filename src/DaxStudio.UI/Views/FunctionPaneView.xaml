@@ -60,7 +60,7 @@
         <!-- TreeView -->
         <controls:TreeViewEx Grid.Row="1" x:Name="FunctionGroups" Height="Auto"  ItemsSource="{Binding FunctionGroups}"
                   Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
-                    dd:DragDrop.IsDragSource="True"
+                  dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
                   cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]"

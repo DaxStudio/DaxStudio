@@ -1,36 +1,39 @@
 ﻿<SyntaxDefinition name="DAX" extensions=".dax" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <!-- default colors use the Light set -->
-	<Color name="Comment"    foreground="#39A03B" />
-	<Color name="String"     foreground="#D93124"        fontStyle="normal"/>
-  <Color name="Identifier" foreground="#333333" />
-  <Color name="Operator"   foreground="#333333"/>
-  <Color name="Parameter"  foreground="#FFE00587"  fontStyle="normal" />
-  <Color name="Function"   foreground="#035ACA" /> <!-- fontWeight="bold" />-->
-  <Color name="Kword"      foreground="#035ACA" />  <!--fontWeight="bold"/>-->
-  <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
-  <Color name="Numbers"    foreground="#EE7F18" />
+	<Color name="Comment"           foreground="#39A03B" />
+	<Color name="String"            foreground="#D93124"        fontStyle="normal"/>
+  <Color name="Identifier"        foreground="#333333" />
+  <Color name="Operator"          foreground="#333333"/>
+  <Color name="Parameter"         foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Function"          foreground="#035ACA" /> <!-- fontWeight="bold" />-->
+  <Color name="Kword"             foreground="#035ACA" />  <!--fontWeight="bold"/>-->
+  <Color name="Xmla"              foreground="#EE666666"  fontStyle="italic" />
+  <Color name="Numbers"           foreground="#EE7F18" />
+  <Color name="Parenthesis"       foreground="#808080" />
 
   <!-- Light theme colors-->
-  <Color name="Light.Comment"    foreground="#39A03B" />
-  <Color name="Light.String"     foreground="#D93124"        fontStyle="normal"/>
-  <Color name="Light.Identifier" foreground="#333333" />
-  <Color name="Light.Operator"   foreground="#333333"/>
-  <Color name="Light.Parameter"  foreground="#FFE00587"  fontStyle="normal" />
-  <Color name="Light.Function"   foreground="#035ACA" />
-  <Color name="Light.Kword"      foreground="#035ACA" />
-  <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
-  <Color name="Light.Numbers"    foreground="#EE7F18" />
+  <Color name="Light.Comment"     foreground="#39A03B" />
+  <Color name="Light.String"      foreground="#D93124"        fontStyle="normal"/>
+  <Color name="Light.Identifier"  foreground="#333333" />
+  <Color name="Light.Operator"    foreground="#333333"/>
+  <Color name="Light.Parameter"   foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Light.Function"    foreground="#035ACA" />
+  <Color name="Light.Kword"       foreground="#035ACA" />
+  <Color name="Light.Xmla"        foreground="#EE666666"  fontStyle="italic" />
+  <Color name="Light.Numbers"     foreground="#EE7F18" />
+  <Color name="Light.Parenthesis" foreground="#808080" />
 
   <!-- dark theme colors-->
-  <Color name="Dark.Comment"    foreground="#86C573" />
-  <Color name="Dark.String"     foreground="#E44E44"        fontStyle="normal"/>
-  <Color name="Dark.Identifier" foreground="#FFFFFF" />
-  <Color name="Dark.Operator"   foreground="#FFFFFF"/>
-  <Color name="Dark.Parameter"  foreground="#FC32AB"  fontStyle="normal" />
-  <Color name="Dark.Function"   foreground="#0095FF" />
-  <Color name="Dark.Kword"      foreground="#0095FF" />
-  <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
-  <Color name="Dark.Numbers"    foreground="#EE7F18" />
+  <Color name="Dark.Comment"      foreground="#86C573" />
+  <Color name="Dark.String"       foreground="#E44E44"        fontStyle="normal"/>
+  <Color name="Dark.Identifier"   foreground="#FFFFFF" />
+  <Color name="Dark.Operator"     foreground="#FFFFFF"/>
+  <Color name="Dark.Parameter"    foreground="#FC32AB"  fontStyle="normal" />
+  <Color name="Dark.Function"     foreground="#0095FF" />
+  <Color name="Dark.Kword"        foreground="#0095FF" />
+  <Color name="Dark.Xmla"         foreground="#808080"  fontStyle="italic" />
+  <Color name="Dark.Numbers"      foreground="#EE7F18" />
+  <Color name="Dark.Parenthesis"  foreground="#808080" />
   
 	<RuleSet ignoreCase="true">
 		<Span color="Comment" multiline="false">
@@ -84,7 +87,10 @@
         </Span>
       </RuleSet>
     </Span>
-    
+    <Keywords color="Parenthesis">
+      <Word>(</Word>
+      <Word>)</Word>
+    </Keywords>
     <!-- EVALUATE is defined as a keyword - should it be a separate one?
 		<Keywords foreground="DarkCyan" fontWeight="bold">
       <Word>evaluate</Word>

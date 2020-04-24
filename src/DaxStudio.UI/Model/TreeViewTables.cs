@@ -436,7 +436,7 @@ namespace DaxStudio.UI.Model
         public override ADOTabularObjectType ObjectType => Column.ObjectType;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
-        string IADOTabularObject.DaxName => Column?.DaxName??string.Empty;
+        public string DaxName => Column?.DaxName??string.Empty;
 
         public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
         public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }

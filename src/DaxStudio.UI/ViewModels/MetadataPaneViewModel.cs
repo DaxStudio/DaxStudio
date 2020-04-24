@@ -965,6 +965,22 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
+        public override void StartDrag(IDragInfo dragInfo)
+        {
+            //base.StartDrag(dragInfo);
+            if (dragInfo.SourceItem as IADOTabularObject != null)
+            {
+                //dragInfo.Data = ((IADOTabularObject)dragInfo.SourceItem).DaxName;
+                dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
+            }
+             
+            dragInfo.DataObject =  dragInfo.SourceItem;
+            //dragInfo.DataObject = new DataObject(typeof(string), ((IADOTabularObject)dragInfo.SourceItem).DaxName);
+
+            dragInfo.Effects = DragDropEffects.Move;
+
+        }
+
     }
 
 

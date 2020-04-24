@@ -129,6 +129,15 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
+        public bool CanNewQueryWithCurrentConnection
+        {
+            get
+            {
+                if (ActiveDocument == null) return false;
+                return ActiveDocument.IsConnected;
+            }
+        }
+
         public bool CanCommentSelection { get => ActiveDocument != null; }
         public void CommentSelection()
         {
@@ -230,6 +239,26 @@ namespace DaxStudio.UI.ViewModels
             {
                 return !_queryRunning 
                     && (ActiveDocument != null && ActiveDocument.IsConnected) 
+                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            }
+        }
+
+        public bool CanDisplayQueryBuilder
+        {
+            get
+            {
+                return !_queryRunning
+                    && (ActiveDocument != null && ActiveDocument.IsConnected)
+                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            }
+        }
+
+        public bool CanRunBenchmark
+        {
+            get
+            {
+                return !_queryRunning
+                    && (ActiveDocument != null && ActiveDocument.IsConnected)
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
@@ -343,7 +372,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
-                NotifyOfPropertyChange(() => TraceGroupVisible);
+                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
             }
         }
         
@@ -441,6 +470,9 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanExportAllData);
             NotifyOfPropertyChange(() => CanExportAnalysisData);
             NotifyOfPropertyChange(nameof(CanLoadPowerBIPerformanceData));
+            NotifyOfPropertyChange(nameof(CanDisplayQueryBuilder));
+            NotifyOfPropertyChange(nameof(CanRunBenchmark));
+            NotifyOfPropertyChange(nameof(CanNewQueryWithCurrentConnection));
             UpdateTraceWatchers();
         }
 
@@ -453,7 +485,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.CheckEnabled(ActiveDocument, activeTrace);
             }
-            NotifyOfPropertyChange(() => TraceGroupVisible);
+            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
 
         private DocumentViewModel _activeDocument;
@@ -591,7 +623,7 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceGroupVisible);
+            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
 
         public void Handle(TraceChangedEvent message)
@@ -600,7 +632,7 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceGroupVisible);
+            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)
@@ -791,15 +823,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool ShowAdvancedTab
-        {
-            get
-            {
-                return ShowExportMetrics | ShowExternalTools | ShowExportAllData | ResultAutoFormat;
-            }
-        }
 
-        public bool ShowExportGroup => ShowExportAllData ;
+        #region "Preview Features"
 
         private bool _showExternalTools;
         public bool ShowExternalTools
@@ -809,39 +834,35 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showExternalTools = value;
                 NotifyOfPropertyChange(() => ShowExternalTools);
-                NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
 
 
-        private bool _showExportAllData;
-        public bool ShowExportAllData
+
+
+        private bool _showPreviewQueryBuilder;
+        public bool ShowPreviewQueryBuilder
         {
-            get { return _showExportAllData; }
+            get { return _showPreviewQueryBuilder; }
             private set
             {
-                _showExportAllData = value;
-                NotifyOfPropertyChange(() => ShowExportAllData);
-                NotifyOfPropertyChange(() => ShowExportGroup);
-                NotifyOfPropertyChange(() => ShowAdvancedTab);
+                _showPreviewQueryBuilder = value;
+                NotifyOfPropertyChange(() => ShowPreviewQueryBuilder);
             }
         }
 
-    
-        public bool ShowMetricsGroup => ShowExportMetrics;
-        
-
-
-        private bool _showExportMetrics;
-        public bool ShowExportMetrics {
-            get { return _showExportMetrics; }
-            private set {
-                _showExportMetrics = value;
-                NotifyOfPropertyChange(() => ShowExportMetrics);
-                NotifyOfPropertyChange(() => ShowMetricsGroup);
-                NotifyOfPropertyChange(() => ShowAdvancedTab);
+        private bool _showPreviewBenchmark;
+        public bool ShowPreviewBenchmark
+        {
+            get { return _showPreviewBenchmark; }
+            private set
+            {
+                _showPreviewBenchmark = value;
+                NotifyOfPropertyChange(() => ShowPreviewBenchmark);
             }
         }
+
+        #endregion
 
         private bool _ResultAutoFormat;
         public bool ResultAutoFormat {
@@ -849,7 +870,6 @@ namespace DaxStudio.UI.ViewModels
             private set {
                 _ResultAutoFormat = value;
                 NotifyOfPropertyChange(() => ResultAutoFormat);
-                NotifyOfPropertyChange(() => ShowAdvancedTab);
             }
         }
 
@@ -909,9 +929,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowExportMetrics = Options.ShowExportMetrics;
             ShowExternalTools = Options.ShowExternalTools;
-            ShowExportAllData = Options.ShowExportAllData;
+            ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
+            ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
         }
 
@@ -952,7 +972,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanLaunchExcel => IsActiveDocumentConnected;
+        public bool CanLaunchExcel { 
+            get { 
+                if (!IsActiveDocumentConnected) return false;
+                if (ActiveDocument.Connection.IsPowerPivot) return false;
+                return true;
+            } 
+        }
 
         private bool IsActiveDocumentConnected
         {
@@ -1068,7 +1094,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanDisplayQueryBuilder { get => ActiveDocument != null; }
 
         public bool DisplayQueryBuilder {
             get => ActiveDocument?.ShowQueryBuilder??false;
@@ -1101,8 +1126,9 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
-        public bool TraceGroupVisible { get {
-                return TraceWatchers.Any(tw => tw.IsChecked);
+        public bool TraceLayoutGroupVisible { get {
+                if (TraceWatchers == null) return false;
+                return TraceWatchers.Any(tw => tw.IsChecked && tw is ServerTimesViewModel);
             } 
         }
 

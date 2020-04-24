@@ -15,5 +15,7 @@ namespace ADOTabular
         List<string> GetSampleData(ADOTabularConnection connection, int sampleSize);
         Type DataType { get; }
 
+        MetadataImages MetadataImage { get; }
+
     }
 }

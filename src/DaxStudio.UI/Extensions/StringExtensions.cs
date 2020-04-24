@@ -34,5 +34,10 @@ namespace DaxStudio.UI.Extensions
             return sb.ToString();
         }
         
+        public static bool IsNumeric(this string input)
+        {
+            return input.All(c => Char.IsDigit(c));
+        } 
+
     }
 }

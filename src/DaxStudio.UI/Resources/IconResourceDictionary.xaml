@@ -87,6 +87,7 @@
     <BitmapImage x:Key="ToUpperIcon"  UriSource="..\images\icon-to-upper.png"></BitmapImage>
     <BitmapImage x:Key="ToLowerIcon"  UriSource="..\images\icon-to-lower.png"></BitmapImage>
     <BitmapImage x:Key="NewIconSmall"  UriSource="..\images\icon-new@16x16.png"></BitmapImage>
+    <BitmapImage x:Key="NewConnectedIconSmall"  UriSource="..\images\icon-new-connected@16x16.png"></BitmapImage>
     <BitmapImage x:Key="ExternalLinkIcon"  UriSource="..\images\icon-externalLink@17px.png"></BitmapImage>
     <BitmapImage x:Key="UndoIcon"  UriSource="..\images\icon-undo.png"></BitmapImage>
     <BitmapImage x:Key="RedoIcon"  UriSource="..\images\icon-redo.png"></BitmapImage>
