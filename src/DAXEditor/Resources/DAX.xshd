@@ -9,7 +9,8 @@
   <Color name="Kword"      foreground="#035ACA" />  <!--fontWeight="bold"/>-->
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Numbers"    foreground="#EE7F18" />
-
+  <Color name="Parenthesis" foreground="#808080" />
+  
   <!-- Light theme colors-->
   <Color name="Light.Comment"    foreground="#39A03B" />
   <Color name="Light.String"     foreground="#D93124"        fontStyle="normal"/>
@@ -20,7 +21,8 @@
   <Color name="Light.Kword"      foreground="#035ACA" />
   <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
   <Color name="Light.Numbers"    foreground="#EE7F18" />
-
+  <Color name="Light.Parenthesis"      foreground="#808080" />
+  
   <!-- dark theme colors-->
   <Color name="Dark.Comment"    foreground="#86C573" />
   <Color name="Dark.String"     foreground="#E44E44"        fontStyle="normal"/>
@@ -31,8 +33,9 @@
   <Color name="Dark.Kword"      foreground="#0095FF" />
   <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
   <Color name="Dark.Numbers"    foreground="#EE7F18" />
+  <Color name="Dark.Parenthesis"     foreground="#808080" />
   
-	<RuleSet ignoreCase="true">
+  <RuleSet ignoreCase="true">
 		<Span color="Comment" multiline="false">
       <Begin>//</Begin>
     </Span>
@@ -62,6 +65,11 @@
     </Span>
     
     <Rule color="Parameter">@([\w]+)</Rule>
+
+    <Keywords color="Parenthesis">
+      <Word>(</Word>
+      <Word>)</Word>
+    </Keywords>
     
     <!-- Xmla Parameter blocks -->
     <Span color="Xmla" multiline="true">
