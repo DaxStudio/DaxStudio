@@ -70,8 +70,8 @@ namespace DaxStudio.UI.Model
 
         public void Drop(IDropInfo dropInfo)
         {
-            var objTreeViewCol = dropInfo.Data as TreeViewColumn;
-            IADOTabularColumn col = dropInfo.Data as IADOTabularColumn;
+            var objTreeViewCol = dropInfo.DragInfo.DataObject as TreeViewColumn;
+            IADOTabularColumn col = dropInfo.DragInfo.DataObject as IADOTabularColumn;
             if (col == null & objTreeViewCol != null )
             {
                 col = objTreeViewCol.Column as IADOTabularColumn;

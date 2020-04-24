@@ -282,8 +282,10 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 string pattern = Regex.Escape(textToFind);
-                if (UseWildcards)
+                if (UseWildcards && !UseWholeWord)
                     pattern = pattern.Replace("\\*", ".*").Replace("\\?", ".");
+                if (UseWildcards && UseWholeWord)
+                    pattern = pattern.Replace("\\*", "[^\\s]*").Replace("\\?", ".");
                 if (UseWholeWord)
                     pattern = "\\b" + pattern + "\\b";
                 return new Regex(pattern, options);

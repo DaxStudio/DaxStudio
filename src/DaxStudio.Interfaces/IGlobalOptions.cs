@@ -98,6 +98,10 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
 
+        bool ShowPreviewQueryBuilder { get; set; }
+
+        bool ShowPreviewBenchmark { get; set; }
+
         #region Methods
         // Methods
         string GetCustomCsvDelimiter();

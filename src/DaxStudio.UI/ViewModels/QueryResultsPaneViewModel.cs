@@ -75,7 +75,9 @@ namespace DaxStudio.UI.ViewModels
         public DataSet ResultsDataSet
         {
             get { return _resultsDataSet; }
-            set { _resultsDataSet = value;
+            set {
+                _resultsDataSet?.Dispose();
+                _resultsDataSet = value;
                 ShowResultsTable = true;
                 NotifyOfPropertyChange(() => Tables);
                 SelectedTableIndex = 0;

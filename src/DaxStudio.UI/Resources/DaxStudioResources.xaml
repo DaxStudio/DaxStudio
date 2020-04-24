@@ -8,11 +8,13 @@
     <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
     <Color x:Key="WarningBarBackgroundColor">#FFFBFF92</Color>
     <Color x:Key="MutedTextColor">#FF626161</Color>
+    <Color x:Key="RunGreen">#FF75A697</Color>
     
     <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
     <SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>
     <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}" />
     <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
+    <SolidColorBrush x:Key="RunGreenBrush" Color="{StaticResource RunGreen}"/>
 
     <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
     <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">

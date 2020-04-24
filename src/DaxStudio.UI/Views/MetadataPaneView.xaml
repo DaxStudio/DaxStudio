@@ -27,7 +27,6 @@
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
-            <conv:BooleanOrConverter x:Key="BooleanOrConverter" />
             <conv:MultiplyWithMinConverter x:Key="multiplyWithMinConverter"/>
             <conv:StringFormatConverter x:Key="StringFormatConverter"/>
 
@@ -79,22 +78,6 @@
                 </Setter>
             </Style>
 
-            <conv:ResourceLookupConverter x:Key="MetadataIcons">
-                <ResourceDictionary>
-                    <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/Table.png"/>
-                    <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
-                    <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
-                    <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
-                    <BitmapImage x:Key="Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Measure.png" />
-                    <BitmapImage x:Key="HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenMeasure.png" />
-                    <BitmapImage x:Key="Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/model.png" />
-                    <BitmapImage x:Key="Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Table.png" />
-                    <BitmapImage x:Key="Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
-                    <BitmapImage x:Key="Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>
-                    <BitmapImage x:Key="UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
-                    <BitmapImage x:Key="Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
-                </ResourceDictionary>
-            </conv:ResourceLookupConverter>
 
             <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
             <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
@@ -152,9 +135,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
@@ -273,6 +257,7 @@
                                         FocusManager.IsFocusScope="True"
                                         dd:DragDrop.IsDragSource="True"
                                         dd:DragDrop.IsDropTarget="False" 
+                                        dd:DragDrop.DragHandler="{Binding}"
                                         dd:DragDrop.UseDefaultDragAdorner="True"
                                                 
                                         cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"         
@@ -299,6 +284,7 @@
                                                                 <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                                                 <TextBlock Text="{Binding Caption}"></TextBlock>
                                                             </StackPanel>
+                                                            <TextBlock Text="{Binding DaxName}" FontStyle="Italic" />
                                                             <TextBlock Text="{Binding Description}"  Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDescription}"/>
                                                             <StackPanel Orientation="Horizontal">
                                                                 <fa:ImageAwesome Icon="ClockOutline" Width="14" Margin="0,2,3,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
@@ -364,7 +350,8 @@
                                                             <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
                                                             <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
                                                         </StackPanel>
-                                                        <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
+                                                            <TextBlock Text="{Binding DaxName}" />
+                                                            <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
 
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
@@ -468,6 +455,7 @@
                             </ctrl:TreeViewEx.Resources>
                         </ctrl:TreeViewEx>
 
+                        <!-- Search Box -->
                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
                             <Border Style="{StaticResource searchBox}" 
                                     Grid.Row="1" 
