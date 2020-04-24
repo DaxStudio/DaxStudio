@@ -4,7 +4,7 @@
 	<Color name="String"     foreground="#D93124"        fontStyle="normal"/>
   <Color name="Identifier" foreground="#333333" />
   <Color name="Operator"   foreground="#333333"/>
-  <Color name="Parameter"  foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Parameter"  foreground="#DC419D"  fontStyle="normal" />
   <Color name="Function"   foreground="#035ACA" /> <!-- fontWeight="bold" />-->
   <Color name="Kword"      foreground="#035ACA" />  <!--fontWeight="bold"/>-->
   <Color name="Xmla"       foreground="#EE666666"  fontStyle="italic" />
@@ -15,7 +15,7 @@
   <Color name="Light.String"     foreground="#D93124"        fontStyle="normal"/>
   <Color name="Light.Identifier" foreground="#333333" />
   <Color name="Light.Operator"   foreground="#333333"/>
-  <Color name="Light.Parameter"  foreground="#FFE00587"  fontStyle="normal" />
+  <Color name="Light.Parameter"  foreground="#DC419D"  fontStyle="normal" />
   <Color name="Light.Function"   foreground="#035ACA" />
   <Color name="Light.Kword"      foreground="#035ACA" />
   <Color name="Light.Xmla"       foreground="#EE666666"  fontStyle="italic" />
@@ -25,8 +25,8 @@
   <Color name="Dark.Comment"    foreground="#86C573" />
   <Color name="Dark.String"     foreground="#E44E44"        fontStyle="normal"/>
   <Color name="Dark.Identifier" foreground="#FFFFFF" />
-  <Color name="Dark.Operator"   foreground="#FFFFFF"/>
-  <Color name="Dark.Parameter"  foreground="#FC32AB"  fontStyle="normal" />
+  <Color name="Dark.Operator"   foreground="#39A03B"/>
+  <Color name="Dark.Parameter"  foreground="#DECD06"  fontStyle="normal" />
   <Color name="Dark.Function"   foreground="#0095FF" />
   <Color name="Dark.Kword"      foreground="#0095FF" />
   <Color name="Dark.Xmla"       foreground="#808080"  fontStyle="italic" />
@@ -109,7 +109,12 @@
     -->
 		<Keywords color="Function">
       <Word>ABS</Word>
+      <Word>ACOS</Word>
+      <Word>ACOSH</Word>
+      <Word>ACOT</Word>
+      <Word>ACOTH</Word>
       <Word>ADDCOLUMNS</Word>
+      <Word>ADDMISSINGITEMS</Word>
       <Word>ALL</Word>
       <Word>ALLCROSSFILTERED</Word>
       <Word>ALLEXCEPT</Word>
@@ -117,20 +122,45 @@
       <Word>ALLSELECTED</Word>
       <Word>AND</Word>
       <Word>APPROXIMATEDISTINCTCOUNT</Word>
+      <Word>ASIN</Word>
+      <Word>ASINH</Word>
+      <Word>ATAN</Word>
+      <Word>ATANH</Word>
       <Word>AVERAGE</Word>
       <Word>AVERAGEA</Word>
       <Word>AVERAGEX</Word>
+      <Word>BETA</Word>
+      <Word>BETA.DIST</Word>
+      <Word>BETA.INV</Word>
       <Word>BLANK</Word>
       <Word>CALCULATE</Word>
       <Word>CALCULATETABLE</Word>
+      <Word>CALENDAR</Word>
+      <Word>CALENDARAUTO</Word>
       <Word>CEILING</Word>
+      <Word>CHISQ.DIST</Word>
+      <Word>CHISQ.DIST.RT</Word>
+      <Word>CHISQ.INV</Word>
+      <Word>CHISQ.INV.RT</Word>
       <Word>CLOSINGBALANCEMONTH</Word>
       <Word>CLOSINGBALANCEQUARTER</Word>
       <Word>CLOSINGBALANCEYEAR</Word>
+      <Word>COALESCE</Word>
+      <Word>COMBIN</Word>
+      <Word>COMBINA</Word>
+      <Word>COMBINEVALUES</Word>
       <Word>CONCATENATE</Word>
+      <Word>CONCATENATEX</Word>
+      <Word>CONFIDENCE.NORM</Word>
+      <Word>CONFIDENCE.T</Word>
       <Word>CONTAINS</Word>
+      <Word>CONTAINSROW</Word>
       <Word>CONTAINSSTRING</Word>
       <Word>CONTAINSSTRINGEXACT</Word>
+      <Word>COS</Word>
+      <Word>COSH</Word>
+      <Word>COT</Word>
+      <Word>COTH</Word>
       <Word>COUNT</Word>
       <Word>COUNTA</Word>
       <Word>COUNTAX</Word>
@@ -138,9 +168,12 @@
       <Word>COUNTROWS</Word>
       <Word>COUNTX</Word>
       <Word>CONVERT</Word>
+      <Word>CROSSFILTER</Word>
       <Word>CROSSJOIN</Word>
       <Word>CURRENCY</Word>
+      <Word>CURRENTGROUP</Word>
       <Word>CUSTOMDATA</Word>
+      <Word>DATATABLE</Word>
       <Word>DATE</Word>
       <Word>DATEADD</Word>
       <Word>DATESBETWEEN</Word>
@@ -150,10 +183,12 @@
       <Word>DATESYTD</Word>
       <Word>DATEVALUE</Word>
       <Word>DAY</Word>
-      <Word>DIVIDE</Word>
+      <Word>DEGREES</Word>
+      <Word>DETAILROWS</Word>
       <Word>DISTINCT</Word>
       <Word>DISTINCTCOUNT</Word>
       <Word>DISTINCTCOUNTNOBLANK</Word>
+      <Word>DIVIDE</Word>
       <Word>EARLIER</Word>
       <Word>EARLIEST</Word>
       <Word>EDATE</Word>
@@ -161,8 +196,12 @@
       <Word>ENDOFQUARTER</Word>
       <Word>ENDOFYEAR</Word>
       <Word>EOMONTH</Word>
+      <Word>ERROR</Word>
+      <Word>EVEN</Word>
       <Word>EXACT</Word>
+      <Word>EXCEPT</Word>
       <Word>EXP</Word>
+      <Word>EXPON.DIST</Word>
       <Word>FACT</Word>
       <Word>FALSE</Word>
       <Word>FILTER</Word>
@@ -170,32 +209,47 @@
       <Word>FIND</Word>
       <Word>FIRSTDATE</Word>
       <Word>FIRSTNONBLANK</Word>
+      <Word>FIRSTNONBLANKVALUE</Word>
       <Word>FIXED</Word>
       <Word>FLOOR</Word>
       <Word>FORMAT</Word>
+      <Word>GCD</Word>
       <Word>GENERATE</Word>
       <Word>GENERATEALL</Word>
+      <Word>GENERATESERIES</Word>
+      <Word>GEOMEAN</Word>
+      <Word>GEOMEANX</Word>
+      <Word>GROUPBY</Word>
       <Word>HASONEFILTER</Word>
       <Word>HASONEVALUE</Word>
       <Word>HOUR</Word>
       <Word>IF</Word>
+      <Word>IF.EAGER</Word>
       <Word>IFERROR</Word>
+      <Word>IGNORE</Word>
       <Word>INT</Word>
+      <Word>INTERSECT</Word>
       <Word>ISBLANK</Word>
       <Word>ISCROSSFILTERED</Word>
       <Word>ISEMPTY</Word>
       <Word>ISERROR</Word>
+      <Word>ISEVEN</Word>
       <Word>ISFILTERED</Word>
       <Word>ISINSCOPE</Word>
       <Word>ISLOGICAL</Word>
       <Word>ISNONTEXT</Word>
       <Word>ISNUMBER</Word>
-      <Word>ISO</Word>
+      <Word>ISO.CEILING</Word>
+      <Word>ISODD</Word>
+      <Word>ISONORAFTER</Word>
+      <Word>ISSELECTEDMEASURE</Word>
       <Word>ISSUBTOTAL</Word>
       <Word>ISTEXT</Word>
       <Word>KEEPFILTERS</Word>
       <Word>LASTDATE</Word>
       <Word>LASTNONBLANK</Word>
+      <Word>LASTNONBLANKVALUE</Word>
+      <Word>LCM</Word>
       <Word>LEFT</Word>
       <Word>LEN</Word>
       <Word>LN</Word>
@@ -206,6 +260,8 @@
       <Word>MAX</Word>
       <Word>MAXA</Word>
       <Word>MAXX</Word>
+      <Word>MEDIAN</Word>
+      <Word>MEDIANX</Word>
       <Word>MID</Word>
       <Word>MIN</Word>
       <Word>MINA</Word>
@@ -214,12 +270,20 @@
       <Word>MOD</Word>
       <Word>MONTH</Word>
       <Word>MROUND</Word>
+      <Word>NATURALINNERJOIN</Word>
+      <Word>NATURALLEFTOUTERJOIN</Word>
       <Word>NEXTDAY</Word>
       <Word>NEXTMONTH</Word>
       <Word>NEXTQUARTER</Word>
       <Word>NEXTYEAR</Word>
+      <Word>NONVISUAL</Word>
+      <Word>NORM.DIST</Word>
+      <Word>NORM.INV</Word>
+      <Word>NORM.S.DIST</Word>
+      <Word>NORM.S.INV</Word>
       <Word>NOT</Word>
       <Word>NOW</Word>
+      <Word>ODD</Word>
       <Word>OPENINGBALANCEMONTH</Word>
       <Word>OPENINGBALANCEQUARTER</Word>
       <Word>OPENINGBALANCEYEAR</Word>
@@ -230,13 +294,23 @@
       <Word>PATHITEM</Word>
       <Word>PATHITEMREVERSE</Word>
       <Word>PATHLENGTH</Word>
+      <Word>PERCENTILE.EXC</Word>
+      <Word>PERCENTILE.INC</Word>
+      <Word>PERCENTILEX.EXC</Word>
+      <Word>PERCENTILEX.INC</Word>
+      <Word>PERMUT</Word>
       <Word>PI</Word>
+      <Word>POISSON.DIST</Word>
       <Word>POWER</Word>
       <Word>PREVIOUSDAY</Word>
       <Word>PREVIOUSMONTH</Word>
       <Word>PREVIOUSQUARTER</Word>
       <Word>PREVIOUSYEAR</Word>
+      <Word>PRODUCT</Word>
+      <Word>PRODUCT.X</Word>
+      <Word>QUARTER</Word>
       <Word>QUOTIENT</Word>
+      <Word>RADIANS</Word>
       <Word>RAND</Word>
       <Word>RANDBETWEEN</Word>
       <Word>RANK.EQ</Word>
@@ -248,7 +322,9 @@
       <Word>REPT</Word>
       <Word>RIGHT</Word>
       <Word>ROLLUP</Word>
+      <Word>ROLLUPADDISSUBTOTAL</Word>
       <Word>ROLLUPGROUP</Word>
+      <Word>ROLLUPISSUBTOTAL</Word>
       <Word>ROUND</Word>
       <Word>ROUNDDOWN</Word>
       <Word>ROUNDUP</Word>
@@ -257,8 +333,15 @@
       <Word>SAMPLE</Word>
       <Word>SEARCH</Word>
       <Word>SECOND</Word>
+      <Word>SELECTCOLUMNS</Word>
+      <Word>SELECTEDMEASURE</Word>
+      <Word>SELECTEDMEASUREFORMATSTRING</Word>
+      <Word>SELECTEDVALUE</Word>
       <Word>SIGN</Word>
+      <Word>SIN</Word>
+      <Word>SINH</Word>
       <Word>SQRT</Word>
+      <Word>SQRTPI</Word>
       <Word>STARTOFMONTH</Word>
       <Word>STARTOFQUARTER</Word>
       <Word>STARTOFYEAR</Word>
@@ -267,23 +350,41 @@
       <Word>STDEVX.P</Word>
       <Word>STDEVX.S</Word>
       <Word>SUBSTITUTE</Word>
+      <Word>SUBSTITUTEWITHINDEX</Word>
       <Word>SUM</Word>
       <Word>SUMMARIZE</Word>
+      <Word>SUMMARIZECOLUMNS</Word>
       <Word>SUMX</Word>
       <Word>SWITCH</Word>
+      <Word>T.DIST</Word>
+      <Word>T.DIST.2T</Word>
+      <Word>T.DIST.RT</Word>
+      <Word>T.INV</Word>
+      <Word>T.INV.2T</Word>
+      <Word>TAN</Word>
+      <Word>TANH</Word>
       <Word>TIME</Word>
       <Word>TIMEVALUE</Word>
       <Word>TODAY</Word>
       <Word>TOPN</Word>
+      <Word>TOPNPERLEVEL</Word>
+      <Word>TOPNSKIP</Word>
       <Word>TOTALMTD</Word>
       <Word>TOTALQTD</Word>
       <Word>TOTALYTD</Word>
       <Word>TRIM</Word>
       <Word>TRUE</Word>
       <Word>TRUNC</Word>
+      <Word>INICHAR</Word>
+      <Word>UNICODE</Word>
+      <Word>UNION</Word>
       <Word>UPPER</Word>
       <Word>USERELATIONSHIP</Word>
       <Word>USERNAME</Word>
+      <Word>USEROBJECTID</Word>
+      <Word>USERPRINCIPALNAME</Word>
+      <Word>UTCNOW</Word>
+      <Word>UTCTODAY</Word>
       <Word>VALUE</Word>
       <Word>VALUES</Word>
       <Word>VAR.P</Word>
@@ -292,29 +393,37 @@
       <Word>VARX.S</Word>
       <Word>WEEKDAY</Word>
       <Word>WEEKNUM</Word>
+      <Word>XIRR</Word>
+      <Word>XNPV</Word>
       <Word>YEAR</Word>
       <Word>YEARFRAC</Word>
     </Keywords>
     
     <Keywords color="Kword">
       <Word>$SYSTEM</Word>
+      <Word>ALPHABETICAL</Word>
       <Word>ASC</Word>
       <Word>AT</Word>
+      <Word>BOTH</Word>
       <Word>BY</Word>
       <Word>COLUMN</Word>
       <Word>COLUMNS</Word>
       <Word>CREATE</Word>
       <Word>DEFINE</Word>
+      <Word>DENSE</Word>
       <Word>DESC</Word>
       <Word>EVALUATE</Word>
       <Word>FROM</Word>
       <Word>IN</Word>
       <Word>MEASURE</Word>
+      <Word>NONE</Word>
       <Word>ON</Word>
       <Word>ORDER</Word>
       <Word>RETURN</Word>
       <Word>ROWS</Word>
       <Word>SELECT</Word>
+      <Word>SINGLE</Word>
+      <Word>SKIP</Word>
       <Word>START</Word>
       <Word>TABLE</Word>
       <Word>VAR</Word>
@@ -325,7 +434,7 @@
       <Word>YEAR</Word>
       -->
     </Keywords>
-    
+   
     <Rule color="Numbers">[\d\w_]+(?=(\s*\())</Rule>
     
 		<Rule color="Numbers">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
