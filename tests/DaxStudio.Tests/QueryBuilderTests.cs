@@ -212,5 +212,78 @@ SUMMARIZECOLUMNS(
             StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
 
         }
+
+        [TestMethod]
+        public void TestDateFilterQuery()
+        {
+            List<IADOTabularColumn> cols = new List<IADOTabularColumn>();
+            List<QueryBuilderFilter> fils = new List<QueryBuilderFilter>();
+
+            cols.Add(new MockColumn("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(new MockColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(new MockColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            fils.Add(new QueryBuilderFilter(new MockColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Is, FilterValue = "24/11/2019" });
+            
+            var qry = QueryBuilder.BuildQuery(cols, fils);
+            var expectedQry = @"// START QUERY BUILDER
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category]
+    ,'Product'[Color]
+    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24))
+    ,""Total Sales"", [Total Sales]
+)
+// END QUERY BUILDER".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
+        //[ExpectedException(typeof(ArgumentException))]
+        public void TestInvalideDateFilterQuery()
+        {
+            List<IADOTabularColumn> cols = new List<IADOTabularColumn>();
+            List<QueryBuilderFilter> fils = new List<QueryBuilderFilter>();
+
+            cols.Add(new MockColumn("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(new MockColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(new MockColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            fils.Add(new QueryBuilderFilter(new MockColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Is, FilterValue = "24/24/2019" });
+
+            ExceptionAssert.Throws<ArgumentException>(() =>  QueryBuilder.BuildQuery(cols, fils), "Unable to parse the value '24/24/2019' as a DateTime value");
+
+
+        }
+
+        [TestMethod]
+        public void TestOnlyMeasuresQuery()
+        {
+            List<IADOTabularColumn> cols = new List<IADOTabularColumn>();
+            List<QueryBuilderFilter> fils = new List<QueryBuilderFilter>();
+
+            cols.Add(new MockColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+            cols.Add(new MockColumn("Total Freight", "[Total Freight]", typeof(double), ADOTabularObjectType.Measure));
+
+            fils.Add(new QueryBuilderFilter(new MockColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Is, FilterValue = "24/11/2019" });
+
+            var qry = QueryBuilder.BuildQuery(cols, fils);
+            var expectedQry = @"// START QUERY BUILDER
+EVALUATE
+CALCULATETABLE(
+    ROW(
+    ""Total Sales"", [Total Sales]
+    ,""Total Freight"", [Total Freight]
+    )
+    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24))
+)
+// END QUERY BUILDER".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
     }
 }

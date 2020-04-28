@@ -13,7 +13,7 @@ namespace DaxStudio.UI.Model
         public static string BuildQuery(ICollection<IADOTabularColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
             var defineStart = filters.Count > 0 ? "DEFINE\n    " : string.Empty;
-            
+
             // using filter variables will not work against older data sources...
             //var filterDefines = BuildFilterDefines(filters);
 
@@ -21,8 +21,14 @@ namespace DaxStudio.UI.Model
             var filterList = BuildFilters(filters);
             var measureList = BuildMeasures(columns);
             var filterStart = filters.Count > 0 ? "\n    ," : string.Empty;
-            var measureStart = columns.Count(c=> c.ObjectType == ADOTabularObjectType.Measure) > 0 ? "\n    ," : string.Empty;
+            var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0 ? "\n    ," : string.Empty;
 
+            if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(filterList, measureList, filterStart, measureStart);
+            return BuildQueryWithColumns(columnList, filterList, measureList, filterStart, measureStart);
+        }
+
+        private static string BuildQueryWithColumns(string columnList, string filterList, string measureList, string filterStart, string measureStart)
+        {
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("// START QUERY BUILDER\n");
             //sbQuery,Append(filterDefines);
@@ -33,6 +39,25 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(filterList);
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
+            sbQuery.Append("\n)"); // query function end
+            sbQuery.Append("\n// END QUERY BUILDER");
+            return sbQuery.ToString();
+        }
+
+        private static string BuildQueryWithOnlyMeasures(string filterList, string measureList, string filterStart, string measureStart)
+        {
+            StringBuilder sbQuery = new StringBuilder();
+            sbQuery.Append("// START QUERY BUILDER\n");
+            //sbQuery,Append(filterDefines);
+            sbQuery.Append("EVALUATE\n");
+            sbQuery.Append("CALCULATETABLE(\n    "); // table function start
+            sbQuery.Append("ROW(");                // ROW function start
+            sbQuery.Append(measureStart);
+            sbQuery.Append(measureList);
+            sbQuery.Append("\n    )");                     // end of ROW() function
+            sbQuery.Append(filterStart);
+            sbQuery.Append(filterList);
+
             sbQuery.Append("\n)"); // query function end
             sbQuery.Append("\n// END QUERY BUILDER");
             return sbQuery.ToString();
@@ -111,6 +136,18 @@ namespace DaxStudio.UI.Model
 
         public static string FormattedValue(QueryBuilderFilter filter)
         {
+            if (filter.TabularObject.DataType == typeof(DateTime)) {
+                DateTime parsedDate = DateTime.MinValue;
+                DateTime.TryParse(filter.FilterValue, out parsedDate);
+                if (parsedDate > DateTime.MinValue)
+                {
+                    return $"DATE({parsedDate.Year},{parsedDate.Month},{parsedDate.Day})";
+                }
+                else
+                {
+                    throw new ArgumentException($"Unable to parse the value '{filter.FilterValue}' as a DateTime value");
+                }
+            }
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
             return $"{quotes}{filter.FilterValue}{quotes}";
         }
