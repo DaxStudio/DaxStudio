@@ -81,7 +81,7 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration";
+;Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration"; Check: IsAdmin;
 
 [Files]
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
@@ -91,7 +91,7 @@ Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ig
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json"
 
 ; PBI Desktop integration
-Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Tasks: pbiintegration;
+Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core\PBI ; 
 
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
@@ -172,6 +172,7 @@ win_sp_title=Windows %1 Service Pack %2
 [Components]
 Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
+Name: "Core\PBI"; Description: "Power BI Desktop External Tools integration"; Types: full standalone custom; Check: IsAdminInstallMode;
 ;Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
 ; Make sure that local copies of the Excel files do not exist
@@ -644,7 +645,8 @@ begin
   end;
   if (CurStep=ssPostInstall) then begin
     
-    if (IsTaskSelected('pbiintegration')) then 
+    //if (IsTaskSelected('pbiintegration')) then 
+    if (IsComponentSelected('Core\PBI')) then
       begin
         Log('Writing Power BI Desktop External Tools File');
         WriteExternalToolsFile();
