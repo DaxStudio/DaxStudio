@@ -267,7 +267,7 @@ SUMMARIZECOLUMNS(
             cols.Add(new MockColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
             cols.Add(new MockColumn("Total Freight", "[Total Freight]", typeof(double), ADOTabularObjectType.Measure));
 
-            fils.Add(new QueryBuilderFilter(new MockColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Is, FilterValue = "24/11/2019" });
+            fils.Add(new QueryBuilderFilter(new MockColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Is, FilterValue = "2019-11-24" });
 
             var qry = QueryBuilder.BuildQuery(cols, fils);
             var expectedQry = @"// START QUERY BUILDER
