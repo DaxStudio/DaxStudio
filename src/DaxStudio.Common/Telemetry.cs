@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Serilog;
 
 namespace DaxStudio.UI.Utils
 {
@@ -42,21 +43,36 @@ namespace DaxStudio.UI.Utils
     {
         if (Enabled)
         {
-            _telemetry.TrackEvent(key, properties, metrics);
+                try
+                {
+                    _telemetry.TrackEvent(key, properties, metrics);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackEvent), $"Error tracking event: {key} Message: {ex.Message}");
+                }
         }
     }
 
     public static void TrackException(Exception ex)
     {
+
         if (ex != null && Enabled)
         {
-            var telex = new Microsoft.ApplicationInsights.DataContracts.ExceptionTelemetry(ex);
-            _telemetry.TrackException(telex);
-            Flush();
+                try
+                {
+                    var telex = new Microsoft.ApplicationInsights.DataContracts.ExceptionTelemetry(ex);
+                    _telemetry.TrackException(telex);
+                    Flush();
+                }
+                catch(Exception trackEx)
+                {
+                    Log.Fatal(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackException), trackEx.Message);
+                }
         }
     }
 
-    internal static void Flush()
+    public static void Flush()
     {
         _telemetry.Flush();
 

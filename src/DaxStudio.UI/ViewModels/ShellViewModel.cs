@@ -39,6 +39,7 @@ namespace DaxStudio.UI.ViewModels
         private Window _window;
         private readonly Application _app;
         private readonly string _username;
+        private readonly DateTime utcSessionStart;
 
         private InputBindings _inputBindings;
 
@@ -56,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
                             , IThemeManager themeManager
                             )
         {
-
+            utcSessionStart = DateTime.UtcNow;
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
@@ -107,7 +108,9 @@ namespace DaxStudio.UI.ViewModels
 
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
-
+            
+            Telemetry.TrackEvent("App.Startup", new Dictionary<string, string> { });
+            
         }
 
         private IThemeManager ThemeManager { get; }
@@ -247,6 +250,20 @@ namespace DaxStudio.UI.ViewModels
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            double sessionMin = -1;
+            try
+            {
+                TimeSpan sessionSpan = utcSessionStart - DateTime.UtcNow;
+                sessionMin = sessionSpan.TotalMinutes;
+            }
+            catch 
+            { }
+
+            Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
+            { 
+                { "SessionMin", sessionMin.ToString("#")}
+            });
+            Telemetry.Flush();
             // Store the current window position
             var w = sender as Window;
             //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();

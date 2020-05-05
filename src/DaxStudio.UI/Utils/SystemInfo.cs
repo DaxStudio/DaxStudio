@@ -8,17 +8,19 @@ using System.Management;
 using System.Threading;
 using System.Reflection;
 using Microsoft.Win32;
+using System.Globalization;
 
 namespace DaxStudio.UI.Utils
 {
     public static class SystemInfo
     {
+        private static OSInfo osInfo;
+        private static Version version;
+        private static CultureInfo curCulture;
         public static void WriteToLog()
         {
             if (!Serilog.Log.IsEnabled(Serilog.Events.LogEventLevel.Information)) return;
-            var osInfo = GetOSInfo();
-            Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            var curCulture = Thread.CurrentThread.CurrentCulture;
+            PopulateInfo();
             Log.Information("DAX STUDIO VERSION: {version}", version);
             Log.Information("System Info: {setting} = {value}", "OSCaption",osInfo.Name  );
             Log.Information("System Info: {setting} = {value}", "OSRelease", osInfo.Release);
@@ -35,6 +37,25 @@ namespace DaxStudio.UI.Utils
             Log.Information("Culture Info: {setting} = {value}", "CurrencySymbol", curCulture.NumberFormat.CurrencySymbol);
             Log.Information("Culture Info: {setting} = {value}", "ShortDatePattern", curCulture.DateTimeFormat.ShortDatePattern);
             
+        }
+
+        public static void WriteStartUpEventToAppInsights()
+        {
+            Telemetry.TrackEvent("App.Startup"
+                , new Dictionary<string, string>()
+                {
+                    {"UtcDateTime",DateTime.UtcNow.ToString("o") }
+                    ,{"Version", version.ToString()}
+                });
+
+        }
+
+        private static void PopulateInfo()
+        {
+            if (version != null) return; // exit here if this info is already populated
+            osInfo = GetOSInfo();
+            version = Assembly.GetExecutingAssembly().GetName().Version;
+            curCulture = Thread.CurrentThread.CurrentCulture;
         }
 
         private static OSInfo GetOSInfo()
