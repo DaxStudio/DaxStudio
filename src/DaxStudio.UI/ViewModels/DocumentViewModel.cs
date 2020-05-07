@@ -61,6 +61,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
+        , IHandle<DatabaseChangedEvent>
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
@@ -885,6 +886,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value == null) return;
                 _connection = value;
                 NotifyOfPropertyChange(() => IsAdminConnection);
+                NotifyOfPropertyChange(() => SelectedDatabase);
                 var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 // enable/disable traces depending on the current connection
                 foreach (var traceWatcher in TraceWatchers)
@@ -3623,7 +3625,14 @@ namespace DaxStudio.UI.ViewModels
                 IsTraceChanging = false;
             }
         }
+
+
         #endregion
+
+        public void Handle(DatabaseChangedEvent message)
+        {
+            NotifyOfPropertyChange(nameof(SelectedDatabase));
+        }
 
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 

@@ -99,8 +99,9 @@ namespace DaxStudio.Interfaces
         bool VpaxIncludeTom { get; set; }
 
         bool ShowPreviewQueryBuilder { get; set; }
-
         bool ShowPreviewBenchmark { get; set; }
+        bool ShowPreviewDatabaseIDStatus { get; set; }
+
 
         #region Methods
         // Methods

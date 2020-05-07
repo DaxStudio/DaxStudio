@@ -429,6 +429,8 @@ namespace DaxStudio.UI.ViewModels
                     _selectedDatabase = value;
 
                     NotifyOfPropertyChange(() => SelectedDatabase);
+                    NotifyOfPropertyChange(() => ModelList);
+                    EventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
                 }
 
             }

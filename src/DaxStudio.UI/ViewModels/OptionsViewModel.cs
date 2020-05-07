@@ -930,6 +930,26 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ShowPreviewBenchmark);
             }
         }
+
+        private bool _showPreviewDatabaseIDStatus = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowPreviewDatabaseIDStatus {
+
+            get
+            {
+                return _showPreviewDatabaseIDStatus;
+            }
+
+            set
+            {
+                _showPreviewDatabaseIDStatus = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(ShowPreviewDatabaseIDStatus), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowPreviewDatabaseIDStatus);
+            }
+
+        }
+
         #endregion
 
 

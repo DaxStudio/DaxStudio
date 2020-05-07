@@ -3,6 +3,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using ADOTabular;
 using Caliburn.Micro;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using Serilog;
@@ -14,14 +15,16 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<EditorPositionChangedMessage>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<ConnectionClosedEvent>
+        , IHandle<UpdateGlobalOptions>
         , IHandle<ActivateDocumentEvent>
     {
         
         [ImportingConstructor]
-        public StatusBarViewModel(IEventAggregator eventAggregator)
+        public StatusBarViewModel(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
+            Options = options;
         }
 
         public bool Working { get; set; }
@@ -56,6 +59,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _databaseID = string.Empty;
+        public string DatabaseID { get => _databaseID;
+            private set { 
+                _databaseID = value;
+                NotifyOfPropertyChange(nameof(DatabaseID));
+            } 
+        }
 
         private string _spid = "";
         
@@ -143,6 +153,7 @@ namespace DaxStudio.UI.ViewModels
             Spid = ActiveDocument.Spid.ToString() ;
             ServerName = ActiveDocument.ServerName;
             ServerVersion = ActiveDocument.ServerVersion;
+            DatabaseID = ActiveDocument.SelectedDatabase;
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
             RowCount = ActiveDocument.RowCount;
@@ -162,7 +173,10 @@ namespace DaxStudio.UI.ViewModels
                     ServerName = ActiveDocument.ServerName;
                     break;
                 case "ServerVersion":
-                    NotifyOfPropertyChange(() => ServerVersion);
+                    ServerVersion = ActiveDocument.ServerVersion;
+                    break;
+                case "SelectedDatabase":
+                    DatabaseID = ActiveDocument.SelectedDatabase;
                     break;
                 case "ElapsedQueryTime":
                     TimerText = ActiveDocument.ElapsedQueryTime;
@@ -179,7 +193,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 System.Windows.Clipboard.SetText(ServerName);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied \"{ServerName}\" to clipboard"));
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
             }
             catch(Exception ex)
             {
@@ -188,12 +202,35 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
+        public bool ShowDatabaseID { get => Options.ShowPreviewDatabaseIDStatus; }
+
+        public bool CanCopyDatabaseIDToClipboard { get => !string.IsNullOrWhiteSpace(DatabaseID); }
+        public void CopyDatabaseIdToClipboard()
+        {
+            try
+            {
+                System.Windows.Clipboard.SetText(DatabaseID);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(StatusBarViewModel), nameof(CopyDatabaseIdToClipboard), "Error copying DatabaseID to clipboard: " + ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
+            }
+        }
+
         public DocumentViewModel ActiveDocument { get; set; }
+        public IGlobalOptions Options { get; }
 
         public void Handle(ConnectionClosedEvent message)
         {
             ServerName = string.Empty;
         }
-        
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            NotifyOfPropertyChange(nameof(ShowDatabaseID));
+        }
     }
 }

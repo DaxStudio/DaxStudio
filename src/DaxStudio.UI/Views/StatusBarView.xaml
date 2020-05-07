@@ -20,6 +20,7 @@
             <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
             <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
             <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>
+            <BitmapImage x:Key="StatusDatabase"  UriSource="..\images\status-database.png"></BitmapImage>
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White"></SolidColorBrush>
             <!--<Storyboard x:Key="Rotation">
                 <DoubleAnimation Storyboard.TargetName="rotateTransform"
@@ -95,6 +96,8 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="60" />
                             <ColumnDefinition Width="20" />
                         </Grid.ColumnDefinitions>
@@ -121,7 +124,40 @@
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="5"/>
-            <Fluent:StatusBarItem Grid.Column="6" Title="Server Details">
+
+            <Fluent:StatusBarItem Grid.Column="6" Title="Database Details" Visibility="{Binding ShowDatabaseID, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource StatusDatabase}"></Image>
+                        <!-- TODO: we could look at text trimming the server name now that we have the copy button 
+                                   but we would probably want to trim the start of the name as it's the end bit that will
+                                   contain key information like org/workspace...
+                        -->
+                        <TextBlock x:Name="DatabaseID" VerticalAlignment="Center" MaxWidth="150">DatabaseID</TextBlock>
+
+                        <StackPanel.ToolTip>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock>Database ID:</TextBlock>
+                                <TextBlock Text="{Binding DatabaseID}"/>
+                            </StackPanel>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
+
+                    <Fluent:Button
+                                   x:Name="CopyDatabaseIdToClipboard" 
+                                   HorizontalContentAlignment="Left" 
+                                   Foreground="White"
+                                   Icon="{StaticResource StatusCopy}"
+                                   Size="Small" Margin="5,0,1,0">
+                        <Fluent:Button.ToolTip>Copy DatabaseID to Clipboard</Fluent:Button.ToolTip>
+                    </Fluent:Button>
+
+                    
+                </StackPanel>
+            </Fluent:StatusBarItem>
+            <Separator Grid.Column="7"/>
+
+            <Fluent:StatusBarItem Grid.Column="8" Title="Server Details">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{StaticResource StatusServer}"></Image>
@@ -150,8 +186,8 @@
 
             </Fluent:StatusBarItem>
             
-            <Separator Grid.Column="7"/>
-            <Fluent:StatusBarItem Grid.Column="8" Title="SPID">
+            <Separator Grid.Column="9"/>
+            <Fluent:StatusBarItem Grid.Column="10" Title="SPID">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{StaticResource StatusSpid}"></Image>
                 <TextBlock x:Name="Spid" VerticalAlignment="Center">SPID</TextBlock>
@@ -160,12 +196,12 @@
                     <TextBlock>Connection SPID</TextBlock>
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
-            <Separator Grid.Column="9"/>
-            <Fluent:StatusBarItem Grid.Column="10" Title="Rowcount">
+            <Separator Grid.Column="11"/>
+            <Fluent:StatusBarItem Grid.Column="12" Title="Rowcount">
             <TextBlock x:Name="Rows">rows</TextBlock>
             </Fluent:StatusBarItem>
-            <Separator Grid.Column="11"/>
-            <Fluent:StatusBarItem Grid.Column="12" Title="Timer" >
+            <Separator Grid.Column="13"/>
+            <Fluent:StatusBarItem Grid.Column="14" Title="Timer" >
                 <TextBlock x:Name="TimerText">0:00:00.00</TextBlock>
             </Fluent:StatusBarItem>
         </Fluent:StatusBar>
