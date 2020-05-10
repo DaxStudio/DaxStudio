@@ -232,7 +232,7 @@
         <TabItem Header="Columns">
             <Border BorderBrush="Black" BorderThickness="1">
 
-                <DataGrid ItemsSource="{Binding SortedColumns}" 
+                <DataGrid ItemsSource="{Binding SortedColumns, UpdateSourceTrigger=PropertyChanged}" 
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           BorderBrush="LightGray"
