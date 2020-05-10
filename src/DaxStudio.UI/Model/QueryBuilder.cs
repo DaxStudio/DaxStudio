@@ -21,7 +21,12 @@ namespace DaxStudio.UI.Model
             var filterList = BuildFilters(filters);
             var measureList = BuildMeasures(columns);
             var filterStart = filters.Count > 0 ? "\n    ," : string.Empty;
-            var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0 ? "\n    ," : string.Empty;
+            var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
+                ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
+                ? "\n    ," 
+                : "\n    "
+                : string.Empty;  
+
 
             if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(filterList, measureList, filterStart, measureStart);
             return BuildQueryWithColumns(columnList, filterList, measureList, filterStart, measureStart);

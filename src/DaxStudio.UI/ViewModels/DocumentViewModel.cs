@@ -3504,7 +3504,7 @@ namespace DaxStudio.UI.ViewModels
                             modelCaption = $"{Connection?.Database?.Name?? "<unknown>"}";
                             break;
                     }
-                    ModelAnalyzer.ExportVPAX(this.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
+                    ModelAnalyzer.ExportVPAX(this.Connection.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)

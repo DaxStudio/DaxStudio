@@ -174,17 +174,19 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                         <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
                         <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                     </StackPanel>
-                    <TextBlock Text="Compatibility: " Grid.Row="1"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
-                    <TextBlock Text="Culture: " Grid.Row="2"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="2"/>
-                    <TextBlock Text="Last Updated: " Grid.Row="3"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="3" Grid.Column="1"/>
+                    <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
+                    <TextBlock Text="Compatibility: " Grid.Row="2"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
+                    <TextBlock Text="Culture: " Grid.Row="3"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
+                    <TextBlock Text="Last Updated: " Grid.Row="4"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
                 </Grid>
             </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
@@ -243,6 +245,27 @@
                     </Style.Triggers>
                 </Style>
             </ComboBox.Style>
+            <ComboBox.ToolTip>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+                        <Image Source="{StaticResource ModelIcon}" Width="16" Height="16"></Image>
+                        <TextBlock Text="{Binding Path=SelectedModel.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                    </StackPanel>
+
+                    <TextBlock Text="Tables: " Grid.Row="1"/>
+                    <TextBlock Text="{Binding SelectedModel.Tables.Count, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
+
+                </Grid>
+            </ComboBox.ToolTip>
         </ComboBox>
         <ContentControl Grid.Row="2">
             <Control.Template>
