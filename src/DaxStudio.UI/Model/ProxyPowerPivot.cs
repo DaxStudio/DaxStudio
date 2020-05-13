@@ -117,10 +117,6 @@ namespace DaxStudio.UI.Model
                         if (response.IsSuccessStatusCode)
                         {
                             var workbookName = JsonConvert.DeserializeObject<string>( response.Content.ReadAsStringAsync().Result);
-                            if (OneDriveHelper.IsOneDrivePath(workbookName))
-                            {
-                                workbookName = OneDriveHelper.ConvertToLocalPath(workbookName);
-                            }
                             return workbookName;
                         } 
                         else

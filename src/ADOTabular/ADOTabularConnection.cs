@@ -707,7 +707,15 @@ namespace ADOTabular
         public string FileName { get { return _powerBIFileName; }
             set {
                 _powerBIFileName = value;
-                ShortFileName = new FileInfo(_powerBIFileName).Name;
+                if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                  || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                {
+                    ShortFileName = _powerBIFileName.Split('/').Last();
+                }
+                else
+                {
+                    ShortFileName = new FileInfo(_powerBIFileName).Name;
+                }
             }
         }
 

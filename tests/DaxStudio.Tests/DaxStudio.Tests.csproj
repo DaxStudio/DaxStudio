@@ -131,7 +131,6 @@
     <Compile Include="Mocks\MockInsightProvider.cs" />
     <Compile Include="Mocks\MockWindowManager.cs" />
     <Compile Include="OleDbTests.cs" />
-    <Compile Include="OneDriveHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ADOTabularTests.cs" />
     <Compile Include="DaxParameterTests.cs" />
@@ -143,6 +142,7 @@
     <Compile Include="TraceEventTests.cs" />
     <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="QueryBuilderTests.cs" />
+    <Compile Include="ServerNameConverterTests.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />

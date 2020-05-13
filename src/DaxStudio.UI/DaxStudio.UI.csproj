@@ -377,6 +377,7 @@
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
@@ -575,7 +576,6 @@
     <Compile Include="Utils\JsonSettingProviderPortable.cs" />
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
-    <Compile Include="Utils\OneDriveHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
