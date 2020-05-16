@@ -9,7 +9,8 @@
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="400">
+             d:DesignHeight="100" d:DesignWidth="400"
+             cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

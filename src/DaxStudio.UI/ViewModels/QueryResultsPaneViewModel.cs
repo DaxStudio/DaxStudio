@@ -418,5 +418,10 @@ namespace DaxStudio.UI.ViewModels
                 FontFamily = _options.ResultFontFamily;
             }
         }
+
+        public void PreviewMouseWheel(System.Windows.Controls.UserControl sender, System.Windows.Input.MouseWheelEventArgs args)
+        {
+            DaxStudio.UI.Utils.ZoomHelper.PreviewMouseWheel(sender, args);
+        }
     }
 }

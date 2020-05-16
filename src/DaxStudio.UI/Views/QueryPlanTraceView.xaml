@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="600" BorderThickness="1" BorderBrush="DimGray">
+             d:DesignHeight="300" d:DesignWidth="600" BorderThickness="1" BorderBrush="DimGray"
+             cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

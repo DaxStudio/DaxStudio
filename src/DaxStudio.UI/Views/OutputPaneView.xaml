@@ -9,7 +9,8 @@
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="300">
+             d:DesignHeight="100" d:DesignWidth="300"
+             cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
         <conv:ResourceLookupConverter x:Key="Icons">
