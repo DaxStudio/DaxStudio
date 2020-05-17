@@ -170,7 +170,7 @@ namespace DaxStudio.UI.ViewModels
 
         // TODO: we might add the database name here
         public override string Title {
-            get { return "VertiPaq Analyzer Preview"; }
+            get { return "VertiPaq Analyzer Metrics"; }
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)

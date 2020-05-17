@@ -17,6 +17,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class QueryHistoryPaneViewModel : ToolWindowBase
         , IHandle<DocumentConnectionUpdateEvent>
+        , IHandle<DatabaseChangedEvent>
         , IHandle<UpdateGlobalOptions>
     {
         private bool _isFilteredByServer = true;
@@ -102,6 +103,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DocumentConnectionUpdateEvent message)
         {
+            UpdateHistoryFilters();
+        }
+
+        private void UpdateHistoryFilters()
+        {
             QueryHistory.Filter = HistoryFilter;
             QueryHistory.Refresh();
             NotifyOfPropertyChange(() => CurrentServer);
@@ -118,6 +124,11 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(() => ShowTraceColumns);
+        }
+
+        public void Handle(DatabaseChangedEvent message)
+        {
+            UpdateHistoryFilters();
         }
     }
 }

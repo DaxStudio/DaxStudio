@@ -175,7 +175,7 @@ namespace DaxStudio.UI.Model
                                 runner.SetResultsMessage("Query results written to file", OutputTarget.File);
                                 runner.ActivateOutput();
                             } else
-                                runner.OutputError("Query Batch Completed with errors", durationMs);
+                                runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
                         }
                         finally
                         {

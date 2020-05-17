@@ -80,17 +80,17 @@ namespace DaxStudio.UI.Model
                                 runner.OutputMessage("Query Batch Completed", durationMs);
                             }
                             else
-                                runner.OutputError("Query Batch Completed with errors", durationMs);
+                                runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
 
                         }
                         
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("{class} {method} {message} {stacktrace}", "ResultsTargetGrid","OutputQueryResultsAsync",ex.Message, ex.StackTrace);
+                        Log.Error("{class} {method} {message} {stacktrace}", nameof(ResultsTargetGrid),nameof(OutputResultsAsync),ex.Message, ex.StackTrace);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
-                        runner.OutputError("Query Batch Completed with errors", durationMs);
+                        runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
                     }
                     finally
                     {

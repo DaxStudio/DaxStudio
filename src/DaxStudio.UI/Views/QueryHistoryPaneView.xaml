@@ -193,9 +193,9 @@
         
         <controls:DataGridNoContextMenu x:Name="QueryHistory" 
                 CanUserSortColumns="True"
-                ClipboardCopyMode="IncludeHeader"
+                ClipboardCopyMode="ExcludeHeader"
                 SelectionMode="Single"   
-                SelectionUnit="FullRow"
+                SelectionUnit="Cell"
                 CanUserAddRows="False"
                 CanUserDeleteRows="False"
                 VerticalGridLinesBrush="WhiteSmoke" 
@@ -329,7 +329,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn  HeaderStyle="{StaticResource DataGridColumnHeaderWithButtonStyle }">
+                <DataGridTemplateColumn  HeaderStyle="{StaticResource DataGridColumnHeaderWithButtonStyle }" ClipboardContentBinding="{Binding ServerName}">
                     
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
@@ -346,7 +346,8 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]"
+                                          >
                                 <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
@@ -356,7 +357,8 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 
-                <DataGridTemplateColumn  HeaderStyle="{StaticResource DataGridColumnHeaderWithDatabaseFilter }" >
+                <DataGridTemplateColumn  HeaderStyle="{StaticResource DataGridColumnHeaderWithDatabaseFilter }" 
+                                         ClipboardContentBinding="{Binding DatabaseName}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
                             <Grid Width="{Binding Width, 
@@ -383,7 +385,9 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" />
+                <DataGridTemplateColumn Header="Query" Width="*" 
+                                        ClipboardContentBinding="{Binding QueryText}"
+                                        CellTemplate="{StaticResource QueryTextCell}" />
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
 

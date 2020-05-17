@@ -931,21 +931,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showPreviewDatabaseIDStatus = false;
-        [DataMember, DefaultValue(false)]
-        public bool ShowPreviewDatabaseIDStatus {
+        private bool _showDatabaseIdStatus = true;
+        [DataMember, DefaultValue(true)]
+        public bool ShowDatabaseIdStatus {
 
             get
             {
-                return _showPreviewDatabaseIDStatus;
+                return _showDatabaseIdStatus;
             }
 
             set
             {
-                _showPreviewDatabaseIDStatus = value;
+                _showDatabaseIdStatus = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync(nameof(ShowPreviewDatabaseIDStatus), value, _isInitializing);
-                NotifyOfPropertyChange(() => ShowPreviewDatabaseIDStatus);
+                SettingProvider.SetValueAsync(nameof(ShowDatabaseIdStatus), value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowDatabaseIdStatus);
             }
 
         }

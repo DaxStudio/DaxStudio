@@ -257,7 +257,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "Tables", ex.Message, ex.StackTrace);
+                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.Task", ex.Message, ex.StackTrace);
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
                     }
                     finally
@@ -266,8 +266,16 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }).ContinueWith((taskStatus) =>
                 {
-                    Tables = _treeViewTables;
-                    EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    try
+                    {
+                        Tables = _treeViewTables;
+                        EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    }
+                    catch(Exception ex)
+                    {
+                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
+                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                    }
                 });
             }
 
@@ -412,15 +420,18 @@ namespace DaxStudio.UI.ViewModels
             
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name ) //!Connection.Database.Equals(_selectedDatabase))
+                    if (Connection.State == ConnectionState.Open)
                     {
-                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
-                        Connection.ChangeDatabase(value.Name);
+                        if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name) //!Connection.Database.Equals(_selectedDatabase))
+                        {
+                            Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
+                            Connection.ChangeDatabase(value.Name);
 
-                    }
-                    if (Connection.Database != null)
-                    {
-                        ModelList = Connection.Database.Models;
+                        }
+                        if (Connection.Database != null)
+                        {
+                            ModelList = Connection.Database.Models;
+                        }
                     }
                 }
 

@@ -203,7 +203,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool ShowDatabaseID { get => Options.ShowPreviewDatabaseIDStatus; }
+        public bool ShowDatabaseID { get => Options.ShowDatabaseIdStatus; }
 
         public bool CanCopyDatabaseIDToClipboard { get => !string.IsNullOrWhiteSpace(DatabaseID); }
         public void CopyDatabaseIdToClipboard()

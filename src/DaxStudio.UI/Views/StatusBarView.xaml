@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:Fluent="urn:fluent-ribbon"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="400">
@@ -28,7 +29,8 @@
                            From="0" To="360" Duration="00:00:01"
                            RepeatBehavior="Forever"/>
             </Storyboard>-->
-        
+            <conv:ServerNameConverter x:Key="ServerNameConverter"/>
+
             <Color x:Key="DisabledForegroundColor">#FF888888</Color>
 
             <Style x:Key="{x:Static StatusBar.SeparatorStyleKey}"
@@ -165,7 +167,7 @@
                                    but we would probably want to trim the start of the name as it's the end bit that will
                                    contain key information like org/workspace...
                         -->
-                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" MaxWidth="150">powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]</TextBlock>
+                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" MaxWidth="150" Text="{Binding ServerName, Converter={StaticResource ServerNameConverter}}">powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]</TextBlock>
                         
                         <StackPanel.ToolTip>
                             <TextBlock>Server name</TextBlock>
