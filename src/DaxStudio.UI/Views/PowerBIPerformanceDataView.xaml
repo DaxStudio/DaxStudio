@@ -15,7 +15,8 @@
        xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             BorderBrush="DimGray" BorderThickness="1"
+             cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
     <UserControl.Resources>
         
         
