@@ -678,13 +678,10 @@ namespace ADOTabular
         }
 
 
-        public bool IsMultiDimensional { get {
-                return ServerMode == "Multidimensional";
-            }
-        }
+        public bool IsMultiDimensional => ServerMode == "Multidimensional";
 
         public bool IsPowerPivot {get; set;}
-        public bool IsPowerBIorSSDT { get { return !IsPowerPivot && FileName.Length > 0; } }
+        public bool IsPowerBIorSSDT => ServerType == ServerType.PowerBIDesktop || ServerType == ServerType.SSDT;
 
         // BeginQueryAsync
         /*
