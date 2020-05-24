@@ -367,6 +367,7 @@
                 </DataGrid>
             </Border>
         </TabItem>
+        
         <TabItem Header="Partitions">
             <Border BorderBrush="Gray" BorderThickness="1">
                 <DataGrid ItemsSource="{Binding GroupedPartitions, UpdateSourceTrigger=PropertyChanged}" 
@@ -414,7 +415,7 @@
                     </DataGrid.GroupStyle>
 
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Table / Partition" x:Name="colPartitionName" MinWidth="300">
+                        <DataGridTemplateColumn Header="Table / Partition" x:Name="colPartitionName" MinWidth="300" SortMemberPath="TableAndPartitionName">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0"/>

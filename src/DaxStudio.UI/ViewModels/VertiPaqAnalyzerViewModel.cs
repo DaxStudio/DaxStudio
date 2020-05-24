@@ -369,6 +369,8 @@ namespace DaxStudio.UI.ViewModels
         public VpaTableViewModel Table { get; }
         public string PartitionName => _partition.PartitionName;
 
+        public string TableAndPartitionName => Table.TableName + "~" + _partition.PartitionName; 
+
         public long RowsCount => _partition.RowsCount;
         public long DataSize => _partition.DataSize;
         public long PartitionsNumber => 1;
