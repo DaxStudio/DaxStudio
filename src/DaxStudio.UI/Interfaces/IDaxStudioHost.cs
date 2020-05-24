@@ -1,12 +1,13 @@
-﻿using System;
+﻿using DaxStudio.Common.Enums;
+using System;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Interfaces
 {
     public interface IDaxStudioHost : IDisposable
     {
         IDaxStudioProxy Proxy { get; }
         bool IsExcel { get; }
-        ADOTabular.AdomdClientWrappers.AdomdType ConnectionType { get; }
+        AdomdType ConnectionType { get; }
 
         string CommandLineFileName { get; }
         int Port { get;  }

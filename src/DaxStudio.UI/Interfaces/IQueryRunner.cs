@@ -1,8 +1,9 @@
 ﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Interfaces;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Interfaces
 {
     public enum OutputTarget
     {

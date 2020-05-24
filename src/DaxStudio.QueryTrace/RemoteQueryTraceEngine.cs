@@ -1,4 +1,5 @@
 ﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AspNet.SignalR.Client;
@@ -18,7 +19,7 @@ namespace DaxStudio.QueryTrace
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
         private readonly string _powerBIFileName = string.Empty;
-        public RemoteQueryTraceEngine(string connectionString, ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
+        public RemoteQueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub

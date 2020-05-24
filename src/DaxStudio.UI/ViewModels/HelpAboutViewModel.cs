@@ -11,6 +11,7 @@ using System.Windows;
 using System.Diagnostics;
 using DaxStudio.Common;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

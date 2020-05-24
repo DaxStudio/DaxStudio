@@ -44,6 +44,7 @@ using Xceed.Wpf.AvalonDock;
 using System.Windows.Media;
 using Dax.ViewModel;
 using System.Reflection;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -144,7 +145,7 @@ namespace DaxStudio.UI.ViewModels
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
 
             SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
-            SizeUnitLabel.PropertyChanged += SizeUnitLabelChanged;
+            SizeUnitLabel.PropertyChanged += SizeUnitPropertyChanged;
 
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
@@ -177,9 +178,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ShowQueryBuilder));
         }
 
-        private void SizeUnitLabelChanged(object sender, PropertyChangedEventArgs e)
+        private void SizeUnitPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            _eventAggregator.PublishOnUIThreadAsync(new SizeUnitsUpdatedEvent((UnitViewModel)sender));
+            if (e.PropertyName == "ScreenPoints")
+                _eventAggregator.PublishOnUIThreadAsync(new SizeUnitsUpdatedEvent((UnitViewModel)sender));
         }
 
         internal void LoadAutoSaveFile(Guid autoSaveId)
@@ -760,9 +762,10 @@ namespace DaxStudio.UI.ViewModels
             base.OnActivate();
 
             _eventAggregator.Unsubscribe(this);
-
+            
             _eventAggregator.Subscribe(this);
             _eventAggregator.Subscribe(QueryResultsPane);
+            //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Subscribe(tw);
@@ -991,6 +994,8 @@ namespace DaxStudio.UI.ViewModels
                                             { "Background", System.Windows.Media.Brushes.Transparent},
                                             { "AllowsTransparency",true}
                                         });
+
+                        this.IsFocused = true;
                     });
 
                 }
@@ -1435,7 +1440,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ElapsedQueryTime
         {
-            get { return _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(Constants.StatusBarTimerFormat); }
+            get { return _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(DaxStudio.Common.Constants.StatusBarTimerFormat); }
 
         }
 
@@ -2583,7 +2588,7 @@ namespace DaxStudio.UI.ViewModels
 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
-                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+                await ExecuteDataTableQueryAsync(DaxStudio.Common.Constants.RefreshSessionQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
@@ -2608,10 +2613,8 @@ namespace DaxStudio.UI.ViewModels
 
         public IResult GetShutdownTask()
         {
-            //if (!IsDirty)
-            //{
             ShutDownTraces();
-            //}
+            
             return IsDirty ? new ApplicationCloseCheck(this, DoCloseCheck) : null;
         }
 
@@ -3098,7 +3101,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         private bool _isFocused;
-        public bool IsFocused { get { return _isFocused; } set { _isFocused = value; NotifyOfPropertyChange(() => IsFocused); } }
+        public bool IsFocused { 
+            get => _isFocused;  
+            set { 
+                _isFocused = value;
+                // Attempt to set the keyboard focus into the DaxEditor control
+                var e = GetEditor();
+                if (e != null)
+                {
+                    Dispatcher.CurrentDispatcher.BeginInvoke(
+                        new System.Action(delegate () { e.Focus(); })
+                        , DispatcherPriority.ContextIdle
+                        , null
+                    );
+                }
+
+                NotifyOfPropertyChange(() => IsFocused); } }
 
         public void Handle(SetSelectedWorksheetEvent message)
         {
@@ -3654,9 +3672,5 @@ namespace DaxStudio.UI.ViewModels
 
         //public ILayoutRoot Root => LayoutElement.Root;
 
-        public void Deactivate(bool close)
-        {
-            Debug.WriteLine("In Deactivate");
-        }
     }
 }

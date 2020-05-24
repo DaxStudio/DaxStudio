@@ -1,4 +1,4 @@
-<UserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
+<ctrl:ZoomableUserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -16,7 +16,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
-    <UserControl.Resources>
+    <ctrl:ZoomableUserControl.Resources>
 
         <ResourceDictionary>
             <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
@@ -57,13 +57,23 @@
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Foreground" Value="#FF575757" />
                 <Setter Property="Background" Value="#FFFFFFFF" />
+                <Setter Property="LayoutTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}" 
+                                        ScaleY="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}"/>
+                    </Setter.Value>
+                </Setter>
                 <Setter Property="Padding" Value="5,1,6,2" />
                 <Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
+                
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
                             <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
                                 <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                    <!--<Border.RenderTransform>
+                                        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
+                                    </Border.RenderTransform>-->
                                     <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                                 </Border>
                             </themes:SystemDropShadowChrome>
@@ -143,7 +153,7 @@
 
         </ResourceDictionary>
 
-    </UserControl.Resources>
+    </ctrl:ZoomableUserControl.Resources>
 
     <Grid Margin="2 2 2 0" >
 
@@ -152,11 +162,11 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <!-- database Dropdown -->
+        <!-- database Dropdown MinWidth="160"  -->
         <ComboBox Grid.Row="0" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
-            MinWidth="160" 
+            
             Template="{DynamicResource MetroComboBoxControlTemplate}"
             IsEditable="False"
             IsSynchronizedWithCurrentItem="True" 
@@ -164,6 +174,7 @@
             Margin="0,0,0,2" 
             Style="{StaticResource DatabaseComboStyle}"      >
             <ComboBox.ToolTip>
+                <Grid>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -187,6 +198,7 @@
                     <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
                     <TextBlock Text="Last Updated: " Grid.Row="4"/>
                     <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
+                </Grid>
                 </Grid>
             </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
@@ -302,7 +314,7 @@
                                         </Grid>
                                         <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
-                                                        <StackPanel Orientation="Vertical" MaxWidth="250">
+                                                        <StackPanel Orientation="Vertical" MaxWidth="450">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                                                 <TextBlock Text="{Binding Caption}"></TextBlock>
@@ -590,4 +602,4 @@
         </ContentControl>
     </Grid>
 
-</UserControl>
+</ctrl:ZoomableUserControl>

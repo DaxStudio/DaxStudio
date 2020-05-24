@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Data;
-using System.Threading.Tasks;
 using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
@@ -10,22 +9,10 @@ using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.Enums;
+using DaxStudio.Common.Enums;
 
 namespace ADOTabular
 {
-
-    public enum MdschemaVisibility
-    {
-        Visible = 0x01,
-        NonVisible = 0x02 
-    }
-
-    public enum ADOTabularMetadataDiscovery
-    {
-        Adomd
-        ,Csdl
-    }
-
     public class ADOTabularConnection : IDisposable, IADOTabularConnection
     {
         private AdomdCommand _runningCommand;

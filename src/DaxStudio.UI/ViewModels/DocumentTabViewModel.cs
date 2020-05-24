@@ -55,7 +55,13 @@ namespace DaxStudio.UI.ViewModels
             _app = Application.Current;
         }
 
-        
+        public void ActiveDocumentChanged()
+        {
+            if (ActiveDocument == null) return;
+            Log.Debug("{class} {method} {message}",nameof(DocumentTabViewModel),nameof(ActiveDocumentChanged), $"ActiveDocument changed: {ActiveDocument?.DisplayName}");
+            ActiveDocument.IsFocused = true;
+        }
+
         public DocumentViewModel ActiveDocument
         {
             get { return _activeDocument; }

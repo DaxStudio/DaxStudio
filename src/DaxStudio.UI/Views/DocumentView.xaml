@@ -252,6 +252,8 @@
                                    beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True"
                                    Theme="{Binding AvalonDockTheme}"
                                    KeyboardNavigation.ControlTabNavigation="None"
+                                   FocusManager.FocusedElement="{Binding ElementName=daxEditor}"
+                                   Focusable="False"
                                    >
             <i:Interaction.Behaviors>
                 <beh:AvalonDockLayoutSerializerBehaviour />
@@ -626,7 +628,9 @@
                     <avalondock:LayoutPanel Orientation="Vertical">
 
                         <avalondock:LayoutDocumentPane DockHeight="Auto" >
-                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="Document">
+                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="myDocument" 
+                                                       attached:InitialFocusExtentions.SelectWhenFocused="False"
+                                                       FocusManager.FocusedElement="{Binding ElementName=daxEditor}">
 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -648,7 +652,7 @@
                                                    MinHeight="60"
                                                    FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   
+                                                   TabIndex="0"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorCaretOffset="{Binding CaretOffset}" 

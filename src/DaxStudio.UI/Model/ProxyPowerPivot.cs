@@ -14,6 +14,8 @@ using System.IO;
 using System.Diagnostics.Contracts;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Utils;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -236,7 +238,7 @@ namespace DaxStudio.UI.Model
         public ADOTabular.ADOTabularConnection GetPowerPivotConnection(string applicationName, string additionalproperties)
         {
             var connstr = string.Format("Data Source=http://localhost:{0}/xmla;{1};{2}", _port,applicationName,additionalproperties);
-            return new ADOTabular.ADOTabularConnection(connstr, ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices);
+            return new ADOTabular.ADOTabularConnection(connstr, AdomdType.AnalysisServices);
         }
 
         public int Port { get { return _port; } }

@@ -19,6 +19,7 @@ namespace DaxStudio.UI.ViewModels
         : Screen
         , IToolWindow
         , ITraceWatcher
+        , IZoomable
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<QueryStartedEvent>
         , IHandle<CancelQueryEvent>
@@ -309,6 +310,7 @@ namespace DaxStudio.UI.ViewModels
         public virtual void ClearFilters() { }
 
         private bool _showFilters = false;
+
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
 
 #endregion
@@ -319,6 +321,19 @@ namespace DaxStudio.UI.ViewModels
                 if (!IsAdminConnection) return "You must have Admin rights on the server to enable traces";
                 if (IsChecked && IsEnabled) return "Trace is already running";
                 return "You cannot have both session traces and all queries traces enabled at the same time";
+            }
+        }
+
+        public event EventHandler OnScaleChanged;
+        private double _scale = 1;
+        public double Scale
+        {
+            get => _scale;
+            set
+            {
+                _scale = value;
+                NotifyOfPropertyChange();
+                OnScaleChanged(this, null);
             }
         }
 

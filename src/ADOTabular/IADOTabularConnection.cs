@@ -1,4 +1,5 @@
 ﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Data;

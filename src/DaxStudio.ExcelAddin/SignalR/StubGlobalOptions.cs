@@ -109,7 +109,6 @@ namespace DaxStudio.SignalR
         public bool SkipSpaceAfterFunctionName { get; set; }
         public bool ShowPreviewQueryBuilder { get; set; }
         public bool ShowPreviewBenchmark { get; set; }
-        public bool ShowDatabaseIdStatus { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

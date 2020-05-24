@@ -334,9 +334,11 @@
                                 <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">This option affects the default run style that is selected when DAX Studio starts up. Any change will take effect next time DAX Studio starts up.</TextBlock>
                                 <Label Grid.Row="3">Title Bar:</Label>
                                 <CheckBox Grid.Row="3"  Grid.Column="1" Margin="0,5,0,0" x:Name="ShowUserInTitlebar" Content="Show Username in Title bar" />
+                                <!--
                                 <Label Grid.Row="4">Status Bar:</Label>
                                 <CheckBox Grid.Row="4" Grid.Column="1" x:Name="ShowDatabaseIdStatus" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Database ID in Status Bar" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows the ID of the currently selected database in the status bar along with a button to copy this value to the clipboard</TextBlock>
+                                -->
                             </Grid>
                         </GroupBox>
 

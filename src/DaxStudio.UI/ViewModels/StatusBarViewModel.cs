@@ -15,7 +15,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<EditorPositionChangedMessage>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<ConnectionClosedEvent>
-        , IHandle<UpdateGlobalOptions>
         , IHandle<ActivateDocumentEvent>
     {
         
@@ -203,22 +202,22 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool ShowDatabaseID { get => Options.ShowDatabaseIdStatus; }
+        //public bool ShowDatabaseID { get => Options.ShowDatabaseIdStatus; }
 
-        public bool CanCopyDatabaseIDToClipboard { get => !string.IsNullOrWhiteSpace(DatabaseID); }
-        public void CopyDatabaseIdToClipboard()
-        {
-            try
-            {
-                System.Windows.Clipboard.SetText(DatabaseID);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "{class} {method} {message}", nameof(StatusBarViewModel), nameof(CopyDatabaseIdToClipboard), "Error copying DatabaseID to clipboard: " + ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
-            }
-        }
+        //public bool CanCopyDatabaseIDToClipboard { get => !string.IsNullOrWhiteSpace(DatabaseID); }
+        //public void CopyDatabaseIdToClipboard()
+        //{
+        //    try
+        //    {
+        //        System.Windows.Clipboard.SetText(DatabaseID);
+        //        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error(ex, "{class} {method} {message}", nameof(StatusBarViewModel), nameof(CopyDatabaseIdToClipboard), "Error copying DatabaseID to clipboard: " + ex.Message);
+        //        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
+        //    }
+        //}
 
         public DocumentViewModel ActiveDocument { get; set; }
         public IGlobalOptions Options { get; }
@@ -228,9 +227,5 @@ namespace DaxStudio.UI.ViewModels
             ServerName = string.Empty;
         }
 
-        public void Handle(UpdateGlobalOptions message)
-        {
-            NotifyOfPropertyChange(nameof(ShowDatabaseID));
-        }
     }
 }

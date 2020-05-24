@@ -202,11 +202,6 @@ namespace DaxStudio.UI.ViewModels
         public int SortDirection { get; set; }
         public DocumentViewModel CurrentDocument { get; }
 
-        public void PreviewMouseWheel(System.Windows.Controls.UserControl sender, System.Windows.Input.MouseWheelEventArgs args)
-        {
-            DaxStudio.UI.Utils.ZoomHelper.PreviewMouseWheel(sender, args);
-        }
-
     }
 
     public class VpaColumnViewModel 

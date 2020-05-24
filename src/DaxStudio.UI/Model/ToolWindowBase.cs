@@ -6,7 +6,7 @@ using System;
 
 namespace DaxStudio.UI.Model
 {
-    public class ToolWindowBase:Screen , IToolWindow
+    public class ToolWindowBase:Screen , IToolWindow, IZoomable
     {
         public event EventHandler VisibilityChanged;
         public virtual string Title { get; set; }
@@ -63,5 +63,22 @@ namespace DaxStudio.UI.Model
             //DockAsDocumentCommand.RaiseCanExecuteChanged();
             IsSelected = true;
         }
+
+        #region IZoomable
+
+        public event EventHandler OnScaleChanged;
+
+        private double _scale = 1;
+        public double Scale
+        {
+            get => _scale;
+            set
+            {
+                _scale = value;
+                NotifyOfPropertyChange();
+                OnScaleChanged?.Invoke(this, null);
+            }
+        }
+        #endregion
     }
 }

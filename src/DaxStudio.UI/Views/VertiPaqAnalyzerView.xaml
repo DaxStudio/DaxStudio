@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.VertiPaqAnalyzerView"
+﻿<controls:ZoomableUserControl x:Class="DaxStudio.UI.Views.VertiPaqAnalyzerView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,8 +11,7 @@
         xmlns:clr="clr-namespace:System;assembly=mscorlib"
         xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
         mc:Ignorable="d"
-        d:DesignHeight="450" d:DesignWidth="800"
-        cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
+        d:DesignHeight="450" d:DesignWidth="800">
     <!-- Resources -->
     <UserControl.Resources>
         <ResourceDictionary>
@@ -422,4 +421,4 @@
 
     </TabControl>
 
-</UserControl>
+</controls:ZoomableUserControl>

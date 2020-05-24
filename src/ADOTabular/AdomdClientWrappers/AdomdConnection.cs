@@ -1,4 +1,6 @@
 ﻿extern alias ExcelAdomdClientReference;
+
+using DaxStudio.Common.Enums;
 using System;
 using System.Data;
 using System.Threading;
@@ -391,8 +393,5 @@ namespace ADOTabular.AdomdClientWrappers
         }
     }
 
-    public enum AdomdType {
-        AnalysisServices = 1,
-        Excel = 2
-    }
+
 }

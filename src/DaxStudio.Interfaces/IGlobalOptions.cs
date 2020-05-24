@@ -100,8 +100,6 @@ namespace DaxStudio.Interfaces
 
         bool ShowPreviewQueryBuilder { get; set; }
         bool ShowPreviewBenchmark { get; set; }
-        bool ShowDatabaseIdStatus { get; set; }
-
 
         #region Methods
         // Methods

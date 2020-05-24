@@ -131,9 +131,5 @@ namespace DaxStudio.UI.ViewModels
             UpdateHistoryFilters();
         }
         
-        public void PreviewMouseWheel(System.Windows.Controls.UserControl sender, System.Windows.Input.MouseWheelEventArgs args)
-        {
-            DaxStudio.UI.Utils.ZoomHelper.PreviewMouseWheel(sender, args);
-        }
     }
 }

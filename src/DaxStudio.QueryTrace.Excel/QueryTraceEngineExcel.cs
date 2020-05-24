@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 using System.Xml;
 using System.Timers;
-using ADOTabular.AdomdClientWrappers;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.QueryTrace
 {

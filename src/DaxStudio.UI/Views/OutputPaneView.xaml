@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.OutputPaneView"
+﻿<controls:ZoomableUserControl  x:Class="DaxStudio.UI.Views.OutputPaneView"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -9,8 +10,7 @@
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="300"
-             cal:Message.Attach="[Event PreviewMouseWheel] = [Action PreviewMouseWheel($view,$eventArgs)]">
+             d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
         <conv:ResourceLookupConverter x:Key="Icons">
@@ -108,4 +108,4 @@
             </i:Interaction.Behaviors>
         </ListView>           
     </Grid>
-</UserControl>
+</controls:ZoomableUserControl>

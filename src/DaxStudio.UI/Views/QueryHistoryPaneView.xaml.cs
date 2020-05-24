@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for QueryHistoryPaneView.xaml
     /// </summary>
-    public partial class QueryHistoryPaneView : UserControl
+    public partial class QueryHistoryPaneView : ZoomableUserControl
     {
         public QueryHistoryPaneView()
         {

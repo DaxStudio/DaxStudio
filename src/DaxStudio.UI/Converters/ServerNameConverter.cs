@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.Converters
 {
@@ -31,5 +33,8 @@ namespace DaxStudio.UI.Converters
         {
             throw new NotImplementedException();
         }
+
+        
+
     }
 }

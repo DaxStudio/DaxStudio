@@ -344,11 +344,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Brush TabItemBrush
+        public System.Windows.Media.Brush TabItemBrush
         {
             get
             {
-                return  (Brush)GetValueFromStyle(typeof(TabItem), Control.BackgroundProperty) ?? Brushes.LightSkyBlue;
+                return  (System.Windows.Media.Brush)GetValueFromStyle(typeof(TabItem), Control.BackgroundProperty) ?? System.Windows.Media.Brushes.LightSkyBlue;
             }
         }
 
@@ -383,8 +383,9 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_options.ScaleResultsFontWithEditor)
             {
-                SizeUnits.Value = message.Units.Value;
-                NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
+                this.Scale = message.Units.Value / 100.0;
+                //SizeUnits.Value = message.Units.Value;
+                //NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
             }
         }
 
@@ -419,9 +420,5 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void PreviewMouseWheel(System.Windows.Controls.UserControl sender, System.Windows.Input.MouseWheelEventArgs args)
-        {
-            DaxStudio.UI.Utils.ZoomHelper.PreviewMouseWheel(sender, args);
-        }
     }
 }

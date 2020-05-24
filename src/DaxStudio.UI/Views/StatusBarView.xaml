@@ -8,7 +8,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:Fluent="urn:fluent-ribbon"
              mc:Ignorable="d" 
-             d:DesignHeight="24" d:DesignWidth="400">
+             d:DesignHeight="24" d:DesignWidth="700">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -30,7 +30,8 @@
                            RepeatBehavior="Forever"/>
             </Storyboard>-->
             <conv:ServerNameConverter x:Key="ServerNameConverter"/>
-
+            <conv:ServerNameTrimmingConverter x:Key="ServerNameTrimmingConverter"/>
+            
             <Color x:Key="DisabledForegroundColor">#FF888888</Color>
 
             <Style x:Key="{x:Static StatusBar.SeparatorStyleKey}"
@@ -126,15 +127,12 @@
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="5"/>
-
+<!--
             <Fluent:StatusBarItem Grid.Column="6" Title="Database Details" Visibility="{Binding ShowDatabaseID, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{StaticResource StatusDatabase}"></Image>
-                        <!-- TODO: we could look at text trimming the server name now that we have the copy button 
-                                   but we would probably want to trim the start of the name as it's the end bit that will
-                                   contain key information like org/workspace...
-                        -->
+
                         <TextBlock x:Name="DatabaseID" VerticalAlignment="Center" MaxWidth="150">DatabaseID</TextBlock>
 
                         <StackPanel.ToolTip>
@@ -157,8 +155,9 @@
                     
                 </StackPanel>
             </Fluent:StatusBarItem>
+            
             <Separator Grid.Column="7"/>
-
+-->
             <Fluent:StatusBarItem Grid.Column="8" Title="Server Details">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
@@ -167,10 +166,22 @@
                                    but we would probably want to trim the start of the name as it's the end bit that will
                                    contain key information like org/workspace...
                         -->
-                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" MaxWidth="150" Text="{Binding ServerName, Converter={StaticResource ServerNameConverter}}">powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]</TextBlock>
-                        
+                        <!--<TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource ServerNameTrimmingConverter}">
+                                    <Binding Path="DataContext.ServerName" RelativeSource="{RelativeSource AncestorType=UserControl, Mode=FindAncestor}"/>
+                                    <Binding Path="DesiredSize" RelativeSource="{RelativeSource AncestorType=TextBlock, Mode=Self}"/>
+                                </MultiBinding>
+                            </TextBlock.Text>-->
+
+                        <!-- powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]  -->
+                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" Text="{Binding Path=ServerName, Converter={StaticResource ServerNameConverter}}" MaxWidth="250" >
+                            </TextBlock>
                         <StackPanel.ToolTip>
-                            <TextBlock>Server name</TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,0,5,0">Server:</TextBlock>
+                                <TextBlock Text="{Binding ServerName}" />
+                            </StackPanel>
+                            
                         </StackPanel.ToolTip>
                     </StackPanel>
 
