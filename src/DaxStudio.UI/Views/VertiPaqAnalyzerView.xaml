@@ -185,7 +185,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                         
+
                         <DataGridTemplateColumn  Header="Table" x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" CellTemplate="{StaticResource DashTemplate}"/>
 
                         <DataGridTemplateColumn x:Name="colColumns" Header="Col Size" HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending" >
@@ -367,6 +367,91 @@
                 </DataGrid>
             </Border>
         </TabItem>
+        <TabItem Header="Partitions">
+            <Border BorderBrush="Gray" BorderThickness="1">
+                <DataGrid ItemsSource="{Binding GroupedPartitions, UpdateSourceTrigger=PropertyChanged}" 
+                          AutoGenerateColumns="False" 
+                          RowHeaderWidth="0" 
+                          BorderBrush="LightGray"
+                          BorderThickness="1"
+                          HorizontalGridLinesBrush="LightGray"
+                          VerticalGridLinesBrush="Transparent"
+                          CanUserSortColumns="True" 
+                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.IsContainerVirtualizable="True" 
+                          CanUserAddRows="False"
+                          IsReadOnly="True"
+                          cal:Message.Attach="[Event Sorting] = [Action SortTableColumn($eventArgs)]">
+                    <DataGrid.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.ContainerStyle>
+                                <Style TargetType="{x:Type GroupItem}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                <Expander IsExpanded="{Binding Name.IsExpanded}" Style="{StaticResource ArrowGroupExpander}">
+                                                    <Expander.Header>
+
+                                                        <StackPanel Orientation="Horizontal" >
+                                                            <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colPartitionName, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
+                                                            <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRowsCount}" Style="{StaticResource NumBlockBoldStyle}"/>
+                                                            <TextBlock Text="{Binding Name.ColumnsDataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDataSize}"/>
+                                                            <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitions}" />
+                                                            <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegments}" />
+                                                        </StackPanel>
+
+                                                    </Expander.Header>
+
+                                                    <ItemsPresenter />
+                                                </Expander>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </GroupStyle.ContainerStyle>
+                        </GroupStyle>
+                    </DataGrid.GroupStyle>
+
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Table / Partition" x:Name="colPartitionName" MinWidth="300">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn  Header="Rows" x:Name="colRowsCount"  HeaderStyle="{StaticResource RightHeader}"
+                                                 SortMemberPath="RowsCount"
+                                                 SortDirection="Descending"
+                                                 MinWidth="80">
+
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid x:Name="gridCardinality"  >
+                                        <!--<Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle.Width>
+                                                <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
+                                                    <Binding Path="PercentOfMaxCardinality"/>
+                                                    <Binding Path="ActualWidth" ElementName="gridCardinality"/>
+                                                </MultiBinding>
+                                            </Rectangle.Width>
+                                        </Rectangle>-->
+                                        <TextBlock Text="{Binding RowsCount, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" Header="Data" x:Name="colDataSize" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" MinWidth="100" Width="Auto"/>
+                        <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" Header="Partitions" x:Name="colPartitions" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
+                        <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" Header="Segments" x:Name="colSegments" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </TabItem>
+
         <TabItem Header="Summary">
             <Border  BorderBrush="Gray" BorderThickness="1">
                 <Grid>
@@ -387,7 +472,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <!-- Header Rows -->
                     <Image Source="{StaticResource modelIcon}" Grid.RowSpan="2" VerticalAlignment="Top"/>
                     <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource SummaryHeader}"/>
@@ -401,7 +486,7 @@
 
                     <TextBlock Text="Analysis Date" Grid.Column="4" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
                     <TextBlock Text="{Binding SummaryViewModel.ExtractionDate}" Grid.Column="4" Grid.Row="2" Style="{StaticResource SummaryValue}" />
-                    
+
                     <!-- Row 2 -->
                     <TextBlock Text="Compatibility" Grid.Column="1" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
                     <TextBlock Text="{Binding SummaryViewModel.CompatibilityLevel}" Grid.Column="1" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
