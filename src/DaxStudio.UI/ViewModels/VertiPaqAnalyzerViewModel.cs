@@ -33,7 +33,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var col = item as VpaColumnViewModel;
             var rel = item as VpaRelationshipViewModel;
-            return col != null?  col.Table:rel.Table ;
+            return col != null ? col.Table : rel.Table;
         }
 
         public int CompareTo(object obj)
@@ -56,6 +56,25 @@ namespace DaxStudio.UI.ViewModels
         {
             var rel = item as VpaRelationshipViewModel;
             return rel.Table;
+        }
+
+    }
+
+
+    public class PartitionGroupDescription : PropertyGroupDescription
+    {
+        public PartitionGroupDescription(string propertyName) : base(propertyName) { }
+
+        public override bool NamesMatch(object groupName, object itemName)
+        {
+            var groupTable = (VpaTableViewModel)groupName;
+            var itemTable = (VpaTableViewModel)itemName;
+            return base.NamesMatch(groupTable.TableName, itemTable.TableName);
+        }
+        public override object GroupNameFromItem(object item, int level, CultureInfo culture)
+        {
+            var partition = item as VpaPartitionViewModel;
+            return partition.Table;
         }
 
     }
@@ -92,14 +111,14 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private VpaModel _viewModel;
-        public Dax.ViewModel.VpaModel ViewModel
-        {
-            get {return _viewModel; }
+        public Dax.ViewModel.VpaModel ViewModel {
+            get { return _viewModel; }
             set {
                 _viewModel = value;
                 _groupedColumns = null;
                 _sortedColumns = null;
                 _groupedRelationships = null;
+                _groupedPartitions = null;
                 SummaryViewModel = new VpaSummaryViewModel(this);
                 NotifyOfPropertyChange(() => ViewModel);
                 NotifyOfPropertyChange(() => GroupedColumns);
@@ -107,15 +126,14 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedRelationships);
                 NotifyOfPropertyChange(() => TreeviewColumns);
                 NotifyOfPropertyChange(() => TreeviewRelationships);
+                NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
             }
         }
 
         private ICollectionView _groupedColumns;
-        public ICollectionView GroupedColumns
-        {
-            get
-            {
+        public ICollectionView GroupedColumns {
+            get {
                 if (_groupedColumns == null)
                 {
                     var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.Columns);
@@ -131,10 +149,8 @@ namespace DaxStudio.UI.ViewModels
 
         public VpaSummaryViewModel SummaryViewModel { get; private set; }
 
-        public ICollectionView GroupedRelationships
-        {
-            get
-            {
+        public ICollectionView GroupedRelationships {
+            get {
                 if (_groupedRelationships == null)
                 {
                     var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.RelationshipsFrom);
@@ -146,16 +162,31 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private ICollectionView _groupedPartitions;
+        public ICollectionView GroupedPartitions {
+            get {
+                if (_groupedPartitions == null)
+                {
+                    var partitions = from t in ViewModel.Tables
+                                     from p in t.Partitions
+                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this), this);
+
+                    _groupedPartitions = CollectionViewSource.GetDefaultView(partitions);
+                    _groupedPartitions.GroupDescriptions.Add(new PartitionGroupDescription("Table"));
+                    _groupedPartitions.SortDescriptions.Add(new SortDescription("RowsCount", ListSortDirection.Descending));
+                }
+                return _groupedPartitions;
+            }
+        }
+
         private ICollectionView _sortedColumns;
-        public ICollectionView SortedColumns
-        {
-            get
-            {
+        public ICollectionView SortedColumns {
+            get {
                 if (_sortedColumns == null)
                 {
                     long maxSize = ViewModel.Columns.Max(c => c.TotalSize);
-                    var cols = ViewModel.Columns.Select(c => new VpaColumnViewModel(c) { MaxColumnTotalSize = maxSize});
-                    
+                    var cols = ViewModel.Columns.Select(c => new VpaColumnViewModel(c) { MaxColumnTotalSize = maxSize });
+
                     _sortedColumns = CollectionViewSource.GetDefaultView(cols);
                     _sortedColumns.SortDescriptions.Add(new SortDescription(nameof(VpaColumn.TotalSize), ListSortDirection.Descending));
                 }
@@ -209,7 +240,7 @@ namespace DaxStudio.UI.ViewModels
 
     }
 
-    public class VpaColumnViewModel 
+    public class VpaColumnViewModel
     {
         readonly VpaColumn _col;
 
@@ -241,15 +272,16 @@ namespace DaxStudio.UI.ViewModels
         public long ColumnsNumber => 1;
         //public long MaxColumnCardinality { get; set; }
         public long MaxColumnTotalSize { get; set; }
-        public double PercentOfMaxTotalSize => Table==null ? 0 : TotalSize / (double)Table.ColumnMaxTotalSize;
-        public double PercentOfMaxCardinality =>Table==null ? 0 : ColumnCardinality / (double)Table.ColumnsMaxCardinality;
+        public double PercentOfMaxTotalSize => Table == null ? 0 : TotalSize / (double)Table.ColumnMaxTotalSize;
+        public double PercentOfMaxCardinality => Table == null ? 0 : ColumnCardinality / (double)Table.ColumnsMaxCardinality;
         public double PercentOfMaxTotalDBSize => MaxColumnTotalSize == 0 ? 0 : TotalSize / (double)MaxColumnTotalSize;
     }
 
     public class VpaRelationshipViewModel
     {
         VpaRelationship _rel;
-        public VpaRelationshipViewModel(VpaRelationship rel, VpaTableViewModel table) {
+        public VpaRelationshipViewModel(VpaRelationship rel, VpaTableViewModel table)
+        {
             Table = table;
             _rel = rel;
         }
@@ -320,14 +352,50 @@ namespace DaxStudio.UI.ViewModels
                 default:
                     return TableName.CompareTo(objTable.TableName) * _parentViewModel.SortDirection;
             }
-            
+
         }
 
-        public bool IsExpanded {get;set;}
+        public bool IsExpanded { get; set; }
         public long RelationshipMaxToCardinality { get; }
 
     }
-   
+
+    public class VpaPartitionViewModel : IComparable
+    {
+        private readonly VpaPartition _partition;
+        private readonly VertiPaqAnalyzerViewModel _parentViewModel;
+        public VpaPartitionViewModel(VpaPartition partition, VpaTableViewModel table, VertiPaqAnalyzerViewModel parentViewModel)
+        {
+            _partition = partition;
+            _parentViewModel = parentViewModel;
+            Table = table;
+        }
+
+        public VpaTableViewModel Table { get; }
+        public string PartitionName => _partition.PartitionName;
+
+        public long RowsCount => _partition.RowsCount;
+        public long DataSize => _partition.DataSize;
+        public long PartitionsNumber => 1;
+        public long SegmentsNumber => _partition.SegmentsNumber;
+
+        public int CompareTo(object obj)
+        {
+            var objPartition = (VpaPartitionViewModel)obj;
+            switch (_parentViewModel.SortColumn)
+            {
+                case "ColumnCardinality":
+                    return RowsCount.CompareTo(objPartition.RowsCount) * _parentViewModel.SortDirection;
+                case "DataSize":
+                    return DataSize.CompareTo(objPartition.DataSize) * _parentViewModel.SortDirection;
+                default:
+                    return PartitionName.CompareTo(objPartition.PartitionName) * _parentViewModel.SortDirection;
+            }
+        }
+
+        public bool IsExpanded { get; set; }
+    }
+
     public class VpaSummaryViewModel
     {
         public VpaSummaryViewModel(VertiPaqAnalyzerViewModel parent)
@@ -337,7 +405,7 @@ namespace DaxStudio.UI.ViewModels
             ColumnCount = parent.ViewModel.Columns.Count();
             CompatibilityLevel = parent.ViewModel.Model.CompatibilityLevel;
             TotalSize = parent.ViewModel.Tables.Sum(t => t.TableSize);
-            DataSource = parent.ViewModel.Model.ServerName?.Name??"<Unknown>"; 
+            DataSource = parent.ViewModel.Model.ServerName?.Name ?? "<Unknown>";
             ModelName = parent.ViewModel.Model.ModelName.Name;
             LastDataRefresh = parent.ViewModel.Model.LastDataRefresh;
             ExtractionDate = parent.ViewModel.Model.ExtractionDate;
@@ -348,12 +416,13 @@ namespace DaxStudio.UI.ViewModels
         public int ColumnCount { get; }
         public int CompatibilityLevel { get; }
         public long TotalSize { get; }
-        public string FormattedTotalSize { get {
+        public string FormattedTotalSize {
+            get {
                 switch (TotalSize)
                 {
                     case long size when size < 1024: return TotalSize.ToString("N0") + " b";
-                    case long size when size < (Math.Pow(1024,2)): return (TotalSize / (double)(1024)).ToString("N2") + " Kb";
-                    case long size when size < (Math.Pow(1024,3)): return (TotalSize / (double)(Math.Pow(1024, 2))).ToString("N2") + " Mb";
+                    case long size when size < (Math.Pow(1024, 2)): return (TotalSize / (double)(1024)).ToString("N2") + " Kb";
+                    case long size when size < (Math.Pow(1024, 3)): return (TotalSize / (double)(Math.Pow(1024, 2))).ToString("N2") + " Mb";
                     default: return (TotalSize / (double)(Math.Pow(1024, 3))).ToString("N2") + " Gb";
                 }
             }
