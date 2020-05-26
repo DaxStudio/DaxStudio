@@ -430,21 +430,39 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid x:Name="gridCardinality"  >
-                                        <!--<Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                        <Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                             <Rectangle.Width>
                                                 <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
-                                                    <Binding Path="PercentOfMaxCardinality"/>
+                                                    <Binding Path="PercentOfTableRows"/>
                                                     <Binding Path="ActualWidth" ElementName="gridCardinality"/>
                                                 </MultiBinding>
                                             </Rectangle.Width>
-                                        </Rectangle>-->
+                                        </Rectangle>
                                         <TextBlock Text="{Binding RowsCount, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
-                        <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" Header="Data" x:Name="colDataSize" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" MinWidth="100" Width="Auto"/>
+                        <DataGridTemplateColumn  Header="Data" x:Name="colDataSize"  HeaderStyle="{StaticResource RightHeader}"
+                                                 SortMemberPath="DataSize"
+                                                 SortDirection="Descending"
+                                                 MinWidth="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                        <Grid x:Name="gridDataSize"  >
+                                            <Rectangle Margin="0,0,0,-2" Fill="RoyalBlue" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                                <Rectangle.Width>
+                                                    <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
+                                                    <Binding Path="PercentOfTableSize"/>
+                                                        <Binding Path="ActualWidth" ElementName="gridDataSize"/>
+                                                    </MultiBinding>
+                                                </Rectangle.Width>
+                                            </Rectangle>
+                                        <TextBlock Text="{Binding DataSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" Header="Partitions" x:Name="colPartitions" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" Header="Segments" x:Name="colSegments" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
 
