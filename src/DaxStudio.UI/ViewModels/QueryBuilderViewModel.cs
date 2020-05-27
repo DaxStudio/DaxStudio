@@ -21,7 +21,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
-        , IDisposable
+        ,IDisposable
     { 
         [ImportingConstructor]
         public QueryBuilderViewModel(IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base()
@@ -31,8 +31,9 @@ namespace DaxStudio.UI.ViewModels
             Options = globalOptions;
             Title = "Builder";
             DefaultDockingPane = "DockMidLeft";
-            Columns.PropertyChanged += OnColumnsPropertyChanged;
             IsVisible = false;
+            Columns = new QueryBuilderFieldList(EventAggregator);
+            Columns.PropertyChanged += OnColumnsPropertyChanged;
         }
 
         private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -44,12 +45,37 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanHide => true;      
 
-        public QueryBuilderFieldList Columns { get; } = new QueryBuilderFieldList();
+        public QueryBuilderFieldList Columns { get; } 
         public QueryBuilderFilterList Filters { get; } = new QueryBuilderFilterList();
-
+        private bool _isEnabled = true;
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                _isEnabled = value;
+                NotifyOfPropertyChange();
+            }
+        }
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
         public IGlobalOptions Options { get; }
+
+        private QueryBuilderColumn _selectedColumn;
+        public QueryBuilderColumn SelectedColumn { get => _selectedColumn;
+            set {
+                _selectedColumn = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private int _selectedIndex;
+        public int SelectedIndex { get => _selectedIndex;
+            set {
+                _selectedIndex = value;
+                NotifyOfPropertyChange();
+            }
+        }
 
         public string QueryText => QueryBuilder.BuildQuery(Columns.Items, Filters.Items);
 
@@ -66,6 +92,20 @@ namespace DaxStudio.UI.ViewModels
         public bool CanRunQuery => Columns.Items.Count > 0;
 
         public bool CanSendTextToEditor => Columns.Items.Count > 0;
+
+        public void AddNewMeasure()
+        {
+            var firstTable = Document.Connection.Database.Models[Document.SelectedModel].Tables.First();
+            var newMeasure = new QueryBuilderColumn("MyMeasure",firstTable);
+            Columns.Add(newMeasure);
+            //newMeasure.IsModelItem = false;
+            SelectedColumn = newMeasure;
+            SelectedIndex = Columns.Count - 1;
+            Columns.EditMeasure(newMeasure);
+            IsEnabled = false;
+            //EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(newMeasure));
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -91,6 +131,8 @@ namespace DaxStudio.UI.ViewModels
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
+
+
         #endregion
     }
 }

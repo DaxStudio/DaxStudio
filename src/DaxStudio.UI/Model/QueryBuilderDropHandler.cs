@@ -76,6 +76,10 @@ namespace DaxStudio.UI.Model
             {
                 col = objTreeViewCol.Column as IADOTabularColumn;
             }
+            if (col == null && objTreeViewCol == null)
+            {
+                col = dropInfo.DragInfo.Data as IADOTabularColumn;
+            }
 
             // check if we are moving within list
             if (dropInfo.TargetCollection == dropInfo.DragInfo.SourceCollection)

@@ -9,19 +9,32 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800" IsEnabled="{Binding IsEnabled}">
     <UserControl.Resources>
         <ResourceDictionary>
-        <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
-        <conv:MinWidthOrientationConverter x:Key="MinWidthOrientationConverter" />
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+            <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
+            <conv:MinWidthOrientationConverter x:Key="MinWidthOrientationConverter" />
+            <conv:IsMeasureVisibilityConverter x:Key="IsMeasureToVisibilityConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+            <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
 
+            <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Foreground" Value="Gray"/>
+                <Setter Property="Margin" Value="0,0,5,0"/>
+                <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="Green"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
         <Style x:Key="RemoveButton" TargetType="{x:Type fa:ImageAwesome}">
             <Setter Property="Width" Value="10"/>
             <Setter Property="Height" Value="10"/>
-            <Setter Property="Foreground" Value="Gray"/>
-            <Style.Triggers>
+                <Setter Property="Foreground" Value="Gray"/>
+                <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Foreground" Value="Red"/>
                 </Trigger>
@@ -39,13 +52,11 @@
                             <ControlTemplate>
                                 <Border BorderBrush="Gray" BorderThickness="0.5">
                                     <TextBlock 
-                                           
                                            TextWrapping="Wrap" 
                                            Padding="10"
                                            FontWeight ="Bold"
                                            FontSize="28"
                                            Margin="0"
-                                    
                                            Foreground="LightGray"
                                            TextAlignment="Center">Drag output Columns / Measures Here</TextBlock>
                                 </Border>
@@ -67,7 +78,6 @@
                             <ControlTemplate>
                                 <Border BorderBrush="Gray" BorderThickness="0.5">
                                     <TextBlock  
-                                           
                                            TextWrapping="Wrap" 
                                            Padding="10"
                                            FontWeight ="Bold"
@@ -96,16 +106,35 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Columns / Measures" Margin="10,0" FontSize="14"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Columns/Measures" TextTrimming="CharacterEllipsis" Margin="10,0" FontSize="14"  />
+            
+                
+            <Button x:Name="AddNewMeasure" Grid.Column="1" MaxWidth="80" Margin="0,0,10,0"
+                    ToolTip="Create a new measure for this query">
+                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                    <fa:FontAwesome Icon="PlusSquare" Margin="2" Foreground="Green"/>
+                    <TextBlock>New</TextBlock>
+                </StackPanel>
+            </Button>
+            
+        </Grid>
         <!--                    -->
         <ListBox Name="Columns" ItemsSource="{Binding Columns.Items}" 
+                 SelectedItem="{Binding SelectedColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  dd:DragDrop.IsDropTarget="True" 
                  dd:DragDrop.IsDragSource="True"
                  dd:DragDrop.UseDefaultDragAdorner="True"
                  dd:DragDrop.DropTargetAdornerBrush="Coral"
                  dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
                  dd:DragDrop.DropHandler="{Binding Columns.DropHandler}"
-                  HorizontalContentAlignment="Stretch"
+                 HorizontalContentAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  Margin="10,5"
                  Grid.Row="1"
                  Style="{StaticResource EmptyColumnListStyle}">
@@ -113,31 +142,32 @@
                 <DataTemplate>
                     <Grid >
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
-                            <TextBlock Text="{Binding Caption}" />
-                            <StackPanel.ToolTip>
-                                <TextBlock Text="{Binding DaxName}"/>
-                            </StackPanel.ToolTip>
+                   
+                        <Grid>
+                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" Grid.Column="0" />
+                            <fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding DaxName}" Grid.Column="1"/>
+   
+                        <!-- Edit Controls -->
+                        <StackPanel Orientation="Horizontal" Grid.Column="2">
+                            <fa:ImageAwesome Icon="Pencil" 
+                                         Style="{StaticResource EditButton}"
+                                         Visibility="{Binding ObjectType, Converter={StaticResource IsMeasureToVisibilityConverter}}"
+                                         ToolTip="Edit Measure Expression"
+                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action EditMeasure($dataContext)]"/>
+                            <fa:ImageAwesome Icon="TimesCircle" 
+                                         ToolTip="Remove from query"
+                                         Style="{StaticResource RemoveButton}"  
+                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"/>
                         </StackPanel>
-                        <!--<Button fa:Awesome.Content="TimesRectangle" Foreground="LightGray" Grid.Column="1"
-                                TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"
-                                cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                cal:Message.Attach="Remove($dataContext)"
-                               
-                                ></Button>-->
-                        <!--<fa:ImageAwesome Icon="TimesCircle" Width="10" Height="10" Foreground="LightGray" Grid.Column="1" Style="{StaticResource RemoveButton}"  
-                                />-->
-                        
-                        <fa:ImageAwesome Icon="TimesCircle"  Grid.Column="1" Style="{StaticResource RemoveButton}"  
-                                         
-                                cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"/>
-
+               
                     </Grid>
 
                 </DataTemplate>
@@ -186,6 +216,7 @@
                             <fa:ImageAwesome Grid.Column="1"  
                                          Grid.Row ="1"
                                          x:Name="RemoveFilter" 
+                                         ToolTip="Remove Filter"    
                                          cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"
                                          cal:Action.TargetWithoutContext="{Binding Path=DataContext.Filters, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                          Icon="TimesCircle"

@@ -1,0 +1,89 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
+    <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
+
+    
+    <!-- Storyboards -->
+    <Storyboard x:Key="SlideIn">
+        <DoubleAnimation Storyboard.TargetProperty="(Tag)" 
+                                     EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
+                                     From="1.0"
+                                     To="0.0"
+                                     Duration="0:0:1.0"/>
+    </Storyboard>
+
+    <Storyboard x:Key="SlideOut">
+        <DoubleAnimation Storyboard.TargetProperty="(Tag)" 
+                         EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
+                         To="1.0" 
+                         Duration="0:0:0.2"/>
+    </Storyboard>
+
+    <Storyboard x:Key="FadeIn">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                                     EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
+                                     From="0.0"
+                                     To="0.7"
+                                     Duration="0:0:1.0"/>
+        <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.0" Duration="0">
+            <DiscreteObjectKeyFrame Value="{x:Static Visibility.Visible}" />
+        </ObjectAnimationUsingKeyFrames>
+    </Storyboard>
+
+    <Storyboard x:Key="FadeOut">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                         EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
+                         To="0.0" 
+                         Duration="0:0:0.2"/>
+        <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.2" Duration="0">
+            <DiscreteObjectKeyFrame Value="{x:Static Visibility.Collapsed}" />
+        </ObjectAnimationUsingKeyFrames>
+
+    </Storyboard>
+
+    <!-- Styles -->
+    <Style x:Key="FadeInOut" TargetType="Border">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ShowMeasureExpressionEditor}" Value="True" >
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Storyboard="{StaticResource FadeIn}" x:Name="In"/>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="In"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ShowMeasureExpressionEditor}" Value="False">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Storyboard="{StaticResource FadeOut}" x:Name="Out"/>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="Out"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SlideInOut" TargetType="Border">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ShowMeasureExpressionEditor}" Value="True" >
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Storyboard="{StaticResource SlideIn}" x:Name="In"/>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="In"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ShowMeasureExpressionEditor}" Value="False">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard Storyboard="{StaticResource SlideOut}" x:Name="Out"/>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="Out"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+
+    </Style>
+</ResourceDictionary>

@@ -33,7 +33,7 @@
             x:Name="Items"
      
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}" 
-            cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]"
+            cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]" 
             >
             <!-- Theme="{Binding AvalonDockTheme}"-->
             

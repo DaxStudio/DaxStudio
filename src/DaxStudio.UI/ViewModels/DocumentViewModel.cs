@@ -74,12 +74,14 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
         , IHandle<SetSelectedWorksheetEvent>
+        , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateConnectionEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<SetFocusEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -157,6 +159,8 @@ namespace DaxStudio.UI.ViewModels
 
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
+
+            MeasureExpressionEditor = new MeasureExpressionEditorViewModel(this, _eventAggregator, Options);
 
             var globalHistory = IoC.Get<GlobalQueryHistory>();
             //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
@@ -619,8 +623,17 @@ namespace DaxStudio.UI.ViewModels
 
         private DAXEditorControl.DAXEditor GetEditor()
         {
-            DocumentView v = (DocumentView)GetView();
-            return v?.daxEditor;
+            if (ShowMeasureExpressionEditor)
+            {
+                // If we are showing the Expression editor return that as the edit control
+                MeasureExpressionEditorView v = (MeasureExpressionEditorView)MeasureExpressionEditor.GetView();
+                return v?.daxExpressionEditor;
+            }
+            else
+            {
+                DocumentView v = (DocumentView)GetView();
+                return v?.daxEditor;
+            }
         }
 
         private DockingManager GetDockManager()
@@ -1059,7 +1072,7 @@ namespace DaxStudio.UI.ViewModels
         public OutputPaneViewModel OutputPane { get; set; }
 
         public QueryResultsPaneViewModel QueryResultsPane { get; set; }
-
+        public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
         private DialogResult PreProcessQuery(bool injectEvaluate, bool injectRowFunction)
@@ -1646,7 +1659,7 @@ namespace DaxStudio.UI.ViewModels
         public bool CanRunQuery
         {
             // todo - do we need to track query traces changing?
-            get { return !IsQueryRunning && !IsTraceChanging && IsConnected; }
+            get { return !IsQueryRunning && !IsTraceChanging && IsConnected && !ShowMeasureExpressionEditor; }
         }
 
         #region Output Messages
@@ -2884,12 +2897,14 @@ namespace DaxStudio.UI.ViewModels
                 int rowOffset = 1;
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Getting Query Text");
                 // todo - do I want to disable the editor control while formatting is in progress???
+
                 string qry;
+                var editor = GetEditor();
                 // if there is a selection send that to DocumentViewModel.com otherwise send all the text
-                qry = _editor.SelectionLength == 0 ? _editor.Text : _editor.SelectedText;
-                if (_editor.SelectionLength > 0)
+                qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
+                if (editor.SelectionLength > 0)
                 {
-                    var loc = _editor.Document.GetLocation(_editor.SelectionStart);
+                    var loc = editor.Document.GetLocation(editor.SelectionStart);
                     colOffset = loc.Column;
                     rowOffset = loc.Line;
                 }
@@ -2930,21 +2945,21 @@ namespace DaxStudio.UI.ViewModels
                        if ((res.Result.errors == null) || (res.Result.errors.Count == 0))
                        {
 
-                           _editor.Dispatcher.Invoke(() =>
+                           editor.Dispatcher.Invoke(() =>
                            {
-                               _editor.IsReadOnly = true;
-                               if (_editor.SelectionLength == 0)
+                               editor.IsReadOnly = true;
+                               if (editor.SelectionLength == 0)
                                {
-                                   _editor.IsEnabled = false;
-                                   _editor.Document.BeginUpdate();
-                                   _editor.Document.Text = res.Result.FormattedDax.TrimEnd();
-                                   _editor.Document.EndUpdate();
-                                   _editor.IsEnabled = true;
+                                   editor.IsEnabled = false;
+                                   editor.Document.BeginUpdate();
+                                   editor.Document.Text = res.Result.FormattedDax.TrimEnd();
+                                   editor.Document.EndUpdate();
+                                   editor.IsEnabled = true;
                                }
                                else
                                {
 
-                                   _editor.SelectedText = res.Result.FormattedDax.TrimEnd();
+                                   editor.SelectedText = res.Result.FormattedDax.TrimEnd();
                                }
                                Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "Query Text updated");
                                OutputMessage("Query Formatted via daxformatter.com");
@@ -2960,20 +2975,20 @@ namespace DaxStudio.UI.ViewModels
                                 int errLine = err.line + 1;
                                int errCol = err.column + 1;
 
-                               _editor.Dispatcher.Invoke(() =>
+                               editor.Dispatcher.Invoke(() =>
                                {
                                     // if the error is past the last line of the document
                                     // move back to the last character of the last line
-                                    if (errLine > _editor.LineCount)
+                                    if (errLine > editor.LineCount)
                                    {
-                                       errLine = _editor.LineCount;
-                                       errCol = _editor.Document.Lines[errLine - 1].TotalLength + 1;
+                                       errLine = editor.LineCount;
+                                       errCol = editor.Document.Lines[errLine - 1].TotalLength + 1;
                                    }
                                     // if the error is at the end of text then we need to move in 1 character
-                                    var errOffset = _editor.Document.GetOffset(errLine, errCol);
-                                   if (errOffset == _editor.Document.TextLength && !_editor.Text.EndsWith(" "))
+                                    var errOffset = editor.Document.GetOffset(errLine, errCol);
+                                   if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
                                    {
-                                       _editor.Document.Insert(errOffset, " ");
+                                       editor.Document.Insert(errOffset, " ");
                                    }
 
                                     // TODO - need to figure out if more than 1 character should be highlighted
@@ -3002,9 +3017,9 @@ namespace DaxStudio.UI.ViewModels
                    }
                    finally
                    {
-                       _editor.Dispatcher.Invoke(() =>
+                       editor.Dispatcher.Invoke(() =>
                        {
-                           _editor.IsReadOnly = false;
+                           editor.IsReadOnly = false;
                        });
                        msg.Dispose();
                        Log.Verbose("{class} {method} {end}", "DocumentViewModel", "FormatDax:End");
@@ -3107,13 +3122,14 @@ namespace DaxStudio.UI.ViewModels
                 _isFocused = value;
                 // Attempt to set the keyboard focus into the DaxEditor control
                 var e = GetEditor();
-                if (e != null)
+                if (e != null && _isFocused)
                 {
-                    Dispatcher.CurrentDispatcher.BeginInvoke(
-                        new System.Action(delegate () { e.Focus(); })
-                        , DispatcherPriority.ContextIdle
-                        , null
-                    );
+                    e.Focus();
+                    //Dispatcher.CurrentDispatcher.BeginInvoke(
+                    //    new System.Action(delegate () { e.Focus(); })
+                    //    , DispatcherPriority.Background
+                    //    , null
+                    //);
                 }
 
                 NotifyOfPropertyChange(() => IsFocused); } }
@@ -3653,6 +3669,20 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(SelectedDatabase));
         }
 
+        public void Handle(ShowMeasureExpressionEditor message)
+        {
+            MeasureExpressionEditor.Column = message.Column;
+            
+            ShowMeasureExpressionEditor = true;
+            QueryBuilder.IsEnabled = false;
+            // TODO - set measure name and expression
+        }
+
+        public void Handle(SetFocusEvent message)
+        {
+            IsFocused = true;
+        }
+
         public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
 
                 return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
@@ -3662,6 +3692,17 @@ namespace DaxStudio.UI.ViewModels
                 ////else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
                 ////else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
                 //else return new Theme.DaxStudioLightTheme();
+            }
+        }
+
+        private bool _showMeasureExpressionEditor = false;
+        public bool ShowMeasureExpressionEditor
+        {
+            get => _showMeasureExpressionEditor;
+            set { 
+                _showMeasureExpressionEditor = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(CanRunQuery));
             }
         }
 

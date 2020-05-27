@@ -16,6 +16,7 @@ using System.Linq;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -36,6 +37,7 @@ namespace DaxStudio.UI.ViewModels
         private DocumentViewModel _activeDocument;
         private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
         private readonly IGlobalOptions _options;
+        private object _activeDocumentLock = new object();
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
@@ -57,9 +59,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ActiveDocumentChanged()
         {
-            if (ActiveDocument == null) return;
-            Log.Debug("{class} {method} {message}",nameof(DocumentTabViewModel),nameof(ActiveDocumentChanged), $"ActiveDocument changed: {ActiveDocument?.DisplayName}");
-            ActiveDocument.IsFocused = true;
+
         }
 
         public DocumentViewModel ActiveDocument
@@ -75,9 +75,20 @@ namespace DaxStudio.UI.ViewModels
                     return;  // no items in collection usually means we are shutting down
                 }
                 Log.Debug("{Class} {Event} {Connection} {Document}", "DocumentTabViewModel", "ActiveDocument:Set", value.DisplayName);
-                _activeDocument = value;
-                this.ActivateItem(_activeDocument);
-                NotifyOfPropertyChange(()=>ActiveDocument);
+                lock (_activeDocumentLock)
+                {
+                    _activeDocument = value;
+                    this.ActivateItem(_activeDocument);
+                    NotifyOfPropertyChange(() => ActiveDocument);
+
+                    if (ActiveDocument == null) return;
+                    //Log.Debug("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ActiveDocumentChanged), $"ActiveDocument changed: {ActiveDocument?.DisplayName}");
+                    Items.Apply(i => ((DocumentViewModel)i).IsFocused = false);
+
+                    //ActiveDocument.IsFocused = true;
+
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                }
             }
         }
 
@@ -186,6 +197,7 @@ namespace DaxStudio.UI.ViewModels
                     var database = _app.Args().Database;
                     Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
                     _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server};Initial Catalog={database}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 }
                 else
                     new System.Action(ChangeConnection).BeginOnUIThread();

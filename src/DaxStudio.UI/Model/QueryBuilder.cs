@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.AdomdClientWrappers;
 using DaxStudio.UI.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,11 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ICollection<IADOTabularColumn> columns, ICollection<QueryBuilderFilter> filters)
+        public static string BuildQuery(ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
-            var defineStart = filters.Count > 0 ? "DEFINE\n    " : string.Empty;
+            var measureDefines = BuildMeasureDefines(columns);
+
+            var defineStart = measureDefines.Length > 0 ? "DEFINE\n    " : string.Empty;
 
             // using filter variables will not work against older data sources...
             //var filterDefines = BuildFilterDefines(filters);
@@ -28,15 +31,17 @@ namespace DaxStudio.UI.Model
                 : string.Empty;  
 
 
-            if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(filterList, measureList, filterStart, measureStart);
-            return BuildQueryWithColumns(columnList, filterList, measureList, filterStart, measureStart);
+            if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(measureDefines,filterList, measureList, filterStart, measureStart);
+            return BuildQueryWithColumns(measureDefines, columnList, filterList, measureList, filterStart, measureStart);
         }
 
-        private static string BuildQueryWithColumns(string columnList, string filterList, string measureList, string filterStart, string measureStart)
+        private static string BuildQueryWithColumns(string measureDefines, string columnList, string filterList, string measureList, string filterStart, string measureStart)
         {
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("// START QUERY BUILDER\n");
-            //sbQuery,Append(filterDefines);
+            sbQuery.Append(measureDefines.Length > 0 ? "DEFINE\n" : string.Empty);
+            sbQuery.Append(measureDefines);
+            sbQuery.Append(measureDefines.Length > 0 ? "\n" : string.Empty);
             sbQuery.Append("EVALUATE\n");
             sbQuery.Append("SUMMARIZECOLUMNS(\n    "); // table function start
             sbQuery.Append(columnList);
@@ -44,31 +49,33 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(filterList);
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
-            sbQuery.Append("\n)"); // query function end
+            sbQuery.Append("\n)");                     // query function end
             sbQuery.Append("\n// END QUERY BUILDER");
             return sbQuery.ToString();
         }
 
-        private static string BuildQueryWithOnlyMeasures(string filterList, string measureList, string filterStart, string measureStart)
+        private static string BuildQueryWithOnlyMeasures(string measureDefines, string filterList, string measureList, string filterStart, string measureStart)
         {
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("// START QUERY BUILDER\n");
-            //sbQuery,Append(filterDefines);
+            sbQuery.Append(measureDefines.Length > 0 ? "DEFINE\n" : string.Empty);
+            sbQuery.Append(measureDefines);
+            sbQuery.Append(measureDefines.Length > 0 ? "\n" : string.Empty);
             sbQuery.Append("EVALUATE\n");
-            sbQuery.Append("CALCULATETABLE(\n    "); // table function start
-            sbQuery.Append("ROW(");                // ROW function start
+            sbQuery.Append("CALCULATETABLE(\n    ");  // table function start
+            sbQuery.Append("ROW(");                   // ROW function start
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
-            sbQuery.Append("\n    )");                     // end of ROW() function
+            sbQuery.Append("\n    )");                // end of ROW() function
             sbQuery.Append(filterStart);
             sbQuery.Append(filterList);
 
-            sbQuery.Append("\n)"); // query function end
+            sbQuery.Append("\n)");                    // query function end
             sbQuery.Append("\n// END QUERY BUILDER");
             return sbQuery.ToString();
         }
 
-        private static string BuildMeasures(ICollection<IADOTabularColumn> columns)
+        private static string BuildMeasures(ICollection<QueryBuilderColumn> columns)
         {
             // TODO - should I get KPIs also??
             var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure);
@@ -77,8 +84,16 @@ namespace DaxStudio.UI.Model
             return meas.Select(c => $"\"{c.Caption}\", {c.DaxName}").Aggregate((i, j) => i + "\n    ," + j);
         }
 
+        private static string BuildMeasureDefines(ICollection<QueryBuilderColumn> columns)
+        {
+            // TODO - should I get KPIs also??
+            var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure && c.IsOverriden);
+            if (!meas.Any()) return string.Empty;
+            // build a comma separated list of "Caption", [DaxName] values
+            return meas.Select(c => $"MEASURE {c.SelectedTable.DaxName}[{c.Caption}] = {c.MeasureExpression}" ).Aggregate((i, j) => i + "\n" + j);
+        }
 
-        private static string BuildColumns(ICollection<IADOTabularColumn> columns)
+        private static string BuildColumns(ICollection<QueryBuilderColumn> columns)
         {
             // TODO - should I get Levels also??
             var cols = columns.Where(c => c.ObjectType == ADOTabularObjectType.Column);

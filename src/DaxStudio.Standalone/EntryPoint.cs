@@ -244,7 +244,7 @@ namespace DaxStudio.Standalone
                 // use CrashReporter.Net to send bug to DrDump
                 CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
                 e.Handled = true;
-                Application.Current.Shutdown(1);
+                Application.Current?.Shutdown(1);
             }
         }
 

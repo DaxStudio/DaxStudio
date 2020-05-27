@@ -239,6 +239,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 return !_queryRunning 
                     && (ActiveDocument != null && ActiveDocument.IsConnected) 
+                    && !ActiveDocument.ShowMeasureExpressionEditor
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }

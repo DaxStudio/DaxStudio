@@ -12,6 +12,5 @@ namespace DaxStudio.UI.Views
             InitializeComponent();
         }
 
-
     }
 }

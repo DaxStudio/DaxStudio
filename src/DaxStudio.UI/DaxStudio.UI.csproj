@@ -342,6 +342,7 @@
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
+    <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
@@ -377,10 +378,14 @@
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
+    <Compile Include="Events\SetFocusEvent.cs" />
+    <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
@@ -476,6 +481,7 @@
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder.cs" />
+    <Compile Include="Model\QueryBuilderColumn.cs" />
     <Compile Include="Model\QueryBuilderDropHandler.cs" />
     <Compile Include="Model\QueryBuilderFieldList.cs" />
     <Compile Include="Model\QueryBuilderFilterList.cs" />
@@ -642,6 +648,7 @@
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
+    <Compile Include="ViewModels\MeasureExpressionEditorViewModel.cs" />
     <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
     <Compile Include="ViewModels\GotoLineDialogViewModel.cs" />
@@ -689,6 +696,9 @@
     </Compile>
     <Compile Include="Views\GotoLineDialogView.xaml.cs">
       <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MeasureExpressionEditorView.xaml.cs">
+      <DependentUpon>MeasureExpressionEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OptionsView.xaml.cs">
       <DependentUpon>OptionsView.xaml</DependentUpon>
@@ -798,6 +808,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\MeasureExpressionEditorResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\MetadataIcons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -859,6 +873,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ExportDataWizard\ExportDataWizardView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MeasureExpressionEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

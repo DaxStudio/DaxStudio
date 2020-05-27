@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ADOTabular
 {
@@ -17,5 +14,6 @@ namespace ADOTabular
 
         MetadataImages MetadataImage { get; }
 
+        string MeasureExpression { get; }
     }
 }
