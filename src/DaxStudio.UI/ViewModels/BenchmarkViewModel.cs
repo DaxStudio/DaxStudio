@@ -213,9 +213,9 @@ namespace DaxStudio.UI.ViewModels
             summary.Columns.Add("Cache", typeof(string));
             summary.Columns.Add("Statistic", typeof(string));
             summary.Columns.Add("TotalDuration", typeof(double));
-            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
             summary.Columns.Add("StorageEngineDuration", typeof(double));
-            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
 
             BenchmarkDataSet.Tables.Add(summary);
         }
