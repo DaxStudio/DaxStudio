@@ -286,6 +286,10 @@ namespace DaxStudio.UI.ViewModels
         public long UsedSize => _rel.UsedSize;
         public long FromColumnCardinality => _rel.FromColumnCardinality;
         public long ToColumnCardinality => _rel.ToColumnCardinality;
+        public long MissingKeys => _rel.MissingKeys;
+        public long InvalidRows => _rel.InvalidRows;
+        public string SampleReferentialIntegrityViolations => _rel.SampleReferentialIntegrityViolations;
+
     }
 
     public class VpaTableViewModel : IComparable
@@ -304,6 +308,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 RelationshipMaxFromCardinality = RelationshipsFrom.Max(r => r.FromColumnCardinality);
                 RelationshipMaxToCardinality = RelationshipsFrom.Max(r => r.ToColumnCardinality);
+                RelationshipFromMissingKeys = RelationshipsFrom.Sum(r => r.MissingKeys);
             }
         }
 
@@ -324,9 +329,11 @@ namespace DaxStudio.UI.ViewModels
         public long PartitionsNumber => _table.PartitionsNumber;
         public long ReferentialIntegrityViolationCount => _table.ReferentialIntegrityViolationCount;
 
+
         public IEnumerable<VpaColumnViewModel> Columns { get; }
         public IEnumerable<VpaRelationshipViewModel> RelationshipsFrom { get; }
         public long RelationshipMaxFromCardinality { get; }
+        public long RelationshipFromMissingKeys { get; }
         public long ColumnMaxTotalSize { get; }
         public long ColumnsMaxCardinality { get; }
 
