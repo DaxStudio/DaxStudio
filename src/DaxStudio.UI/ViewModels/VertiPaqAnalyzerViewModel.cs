@@ -13,6 +13,7 @@ using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
+using System.Windows.Navigation;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -369,7 +370,7 @@ namespace DaxStudio.UI.ViewModels
         public VpaTableViewModel Table { get; }
         public string PartitionName => _partition.PartitionName;
 
-        public string TableAndPartitionName => Table.TableName + "~" + _partition.PartitionName; 
+        public string TableAndPartitionName => Table.TableName + "~" + _partition.PartitionName;
 
         public long RowsCount => _partition.RowsCount;
         public long DataSize => _partition.DataSize;
@@ -391,6 +392,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool IsExpanded { get; set; }
+
+        public double PercentOfTableRows => (Table == null ? 0 : RowsCount / (double)Table.RowsCount); 
+        public double PercentOfTableSize => Table == null ? 0 : DataSize / (double)Table.ColumnsDataSize;
+
     }
 
     public class VpaSummaryViewModel
