@@ -272,6 +272,8 @@ namespace DaxStudio.UI.ViewModels
                 { DatabaseName = cnn.Database.Name });
 
                 _sourceDocument = null;
+
+                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
 
         }
@@ -3484,10 +3486,10 @@ namespace DaxStudio.UI.ViewModels
         private void ImportAnalysisData(string path)
         {
 
-            VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
-
             try
             {
+                VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
+
                 // check if PerfData Window is already open and use that
                 var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
