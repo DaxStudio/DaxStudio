@@ -248,6 +248,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     try
                     {
+                        
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
@@ -261,13 +262,14 @@ namespace DaxStudio.UI.ViewModels
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
                     }
                     finally
-                    {
+                    {             
                         IsBusy = false;
                     }
                 }).ContinueWith((taskStatus) =>
                 {
                     try
                     {
+                        this.IsNotifying = false;
                         Tables = _treeViewTables;
                         EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                     }
@@ -275,6 +277,11 @@ namespace DaxStudio.UI.ViewModels
                     {
                         Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                    }
+                    finally
+                    {
+                        IsNotifying = true;
+                        Refresh(); // force all data bindings to update
                     }
                 });
             }
