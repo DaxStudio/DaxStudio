@@ -306,6 +306,21 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+
+        private int _vpaxSampleReferentialIntegrityViolations = 3;
+        [DataMember, DefaultValue(3)]
+        public int VpaxSampleReferentialIntegrityViolations {
+            get { return _vpaxSampleReferentialIntegrityViolations; }
+            set {
+                if (_vpaxSampleReferentialIntegrityViolations == value) return;
+                _vpaxSampleReferentialIntegrityViolations = value;
+                NotifyOfPropertyChange(() => VpaxSampleReferentialIntegrityViolations);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync<int>(nameof(VpaxSampleReferentialIntegrityViolations), value, _isInitializing);
+            }
+
+        }
+        
         [DataMember, DefaultValue(true)]
         public bool QueryHistoryShowTraceColumns
         {

@@ -97,7 +97,7 @@ namespace DaxStudio.Interfaces
         bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
-
+        int VpaxSampleReferentialIntegrityViolations { get; set; }
         bool ShowPreviewQueryBuilder { get; set; }
         bool ShowPreviewBenchmark { get; set; }
 

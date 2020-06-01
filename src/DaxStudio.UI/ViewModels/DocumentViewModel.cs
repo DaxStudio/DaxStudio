@@ -3362,7 +3362,11 @@ namespace DaxStudio.UI.ViewModels
 
                     // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                    Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(this.Connection.ServerName, this.SelectedDatabase, "DaxStudio", version.ToString());
+                    Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(
+                        this.Connection.ServerName, this.SelectedDatabase, 
+                        "DaxStudio", version.ToString(), 
+                        readStatisticsFromData: true, 
+                        sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });
