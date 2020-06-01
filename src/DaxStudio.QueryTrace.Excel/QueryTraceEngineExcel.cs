@@ -18,11 +18,11 @@ namespace DaxStudio.QueryTrace
     public class QueryTraceEngineExcel : IQueryTrace, IDisposable
     {
 #region public IQueryTrace interface
-        public Task StartAsync(int startTimeoutSecs)
+        public async Task StartAsync(int startTimeoutSecs)
         {
             Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "StartAsync", "entered");
             this.TraceStartTimeoutSecs = startTimeoutSecs;
-            return Task.Run(() => Start());
+            await Task.Run(() => Start());
         }
 
         public void Stop()

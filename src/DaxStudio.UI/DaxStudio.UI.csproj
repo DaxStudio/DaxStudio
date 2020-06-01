@@ -478,6 +478,7 @@
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\GlobalOptions.cs" />
     <Compile Include="Model\HotKey.cs" />
+    <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder.cs" />

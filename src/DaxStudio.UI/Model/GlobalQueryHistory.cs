@@ -15,7 +15,9 @@ using DaxStudio.Common;
 namespace DaxStudio.UI.Model
 {
     [Export]
-    public class GlobalQueryHistory : IHandle<QueryHistoryEvent>
+    public class GlobalQueryHistory : 
+        IHandleWithTask<QueryHistoryEvent>,
+        IHandleWithTask<LoadQueryHistoryAsyncEvent>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly string _queryHistoryPath;
@@ -53,12 +55,13 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private void LoadHistoryFilesAsync()
+        private async Task LoadHistoryFilesAsync()
         {
-            _ = Task.Run(() =>
+            await Task.Run(() =>
               {
                   Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
                   FileInfo[] fileList = null;
+                  int errorCnt = 0;
                   try
                   {
                       DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
@@ -66,11 +69,19 @@ namespace DaxStudio.UI.Model
                       List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
                       foreach (var fileInfo in fileList)
                       {
-                          using (StreamReader file = File.OpenText(fileInfo.FullName))
+                          try
                           {
-                              JsonSerializer serializer = new JsonSerializer();
-                              QueryHistoryEvent queryHistory = (QueryHistoryEvent)serializer.Deserialize(file, typeof(QueryHistoryEvent));
-                              tempHist.Add(queryHistory);
+                              using (StreamReader file = File.OpenText(fileInfo.FullName))
+                              {
+                                  JsonSerializer serializer = new JsonSerializer();
+                                  QueryHistoryEvent queryHistory = (QueryHistoryEvent)serializer.Deserialize(file, typeof(QueryHistoryEvent));
+                                  tempHist.Add(queryHistory);
+                              }
+                          }
+                          catch(Exception ex)
+                          {
+                              Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading History file: {fileInfo.FullName}, Message: {ex.Message}");
+                              errorCnt++;
                           }
                       }
                       QueryHistory.AddRange(tempHist);
@@ -79,21 +90,28 @@ namespace DaxStudio.UI.Model
                   {
                       Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
                   }
+                  if (errorCnt > 0) { _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {errorCnt} error{(errorCnt==1?" has":"s have")} been written to the log file")); }
                   Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList?.Length + " files)");
               });
         }
 
-        public void Handle(QueryHistoryEvent message)
+        public async Task Handle(QueryHistoryEvent message)
         {
+            // don't add a history record if the query text is empty
+            if (string.IsNullOrWhiteSpace(message.QueryText))
+            {
+                Log.Debug("{class} {method} {message}", nameof(GlobalQueryHistory), "Handle<QueryHistoryEvent>", "Skipping saving Query History as QueryText is empty");
+                return;
+            }
             QueryHistory.Add(message);
             while (QueryHistory.Count > _globalOptions.QueryHistoryMaxItems)
             {
                 QueryHistory.RemoveAt(0);
             }
-            SaveHistoryFile(message);
+            await SaveHistoryFileAsync(message);
         }
 
-        private void SaveHistoryFile(QueryHistoryEvent message)
+        private async Task SaveHistoryFileAsync(QueryHistoryEvent message)
         {
             try
             {
@@ -101,16 +119,16 @@ namespace DaxStudio.UI.Model
             }
             catch( Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(SaveHistoryFile), $"Error Saving History File: {ex.Message}");
+                Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(SaveHistoryFileAsync), $"Error Saving History File: {ex.Message}");
             }
             
-            EnsureFileLimitAsync();
+            await EnsureFileLimitAsync();
             
         }
 
-        private Task EnsureFileLimitAsync()
+        private async Task EnsureFileLimitAsync()
         {
-            var task = Task.Run(() =>
+            await Task.Run(() =>
                         {
                             try
                             {
@@ -125,7 +143,7 @@ namespace DaxStudio.UI.Model
                                 Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(EnsureFileLimitAsync), $"Error Removing Old History Files: {ex.Message}");
                             }
                         });
-            return task;
+            //return task;
         }
 
         private string UniqueFilePath(QueryHistoryEvent message)
@@ -134,6 +152,11 @@ namespace DaxStudio.UI.Model
             return Path.Combine(_queryHistoryPath,
                 string.Format(fmt,"{0}-query-history.json"
                 , message.StartTime.ToString("yyyyMMddHHmmssfff",fmt)));
+        }
+
+        public async Task Handle(LoadQueryHistoryAsyncEvent message)
+        {
+            await LoadHistoryFilesAsync();
         }
 
         public BindableCollection<QueryHistoryEvent> QueryHistory { get; }

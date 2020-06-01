@@ -942,14 +942,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private Task UpdateConnectionsAsync(ADOTabularConnection value, string selectedDatabase)
-        {
-            Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnectionsAsync", value.ConnectionString, selectedDatabase);
-            return Task.Run(() =>
-                {
-                    UpdateConnections(value, selectedDatabase);
-                });
-        }
+        //private Task UpdateConnectionsAsync(ADOTabularConnection value, string selectedDatabase)
+        //{
+        //    Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnectionsAsync", value.ConnectionString, selectedDatabase);
+        //    return Task.Run(() =>
+        //        {
+        //            UpdateConnections(value, selectedDatabase);
+        //        });
+        //}
 
         public void ContentRendered()
         {
@@ -977,7 +977,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void ChangeConnection()
+        public async void ChangeConnection()
         {
             _eventAggregator.PublishOnUIThread(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
@@ -985,7 +985,7 @@ namespace DaxStudio.UI.ViewModels
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to Excel");
 
-            Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
+            await Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
             {
                 // todo - should we be checking for exceptions in this continuation
                 try

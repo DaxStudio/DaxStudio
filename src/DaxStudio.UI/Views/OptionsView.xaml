@@ -7,7 +7,6 @@
             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-            xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -738,6 +737,9 @@
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
+            <!--<TabItem Header="Debug">
+                
+            </TabItem>-->
         </TabControl>
     </Grid>
 </UserControl>
