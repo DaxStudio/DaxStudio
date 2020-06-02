@@ -664,7 +664,15 @@
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Model\QueryBuilderFilter.cs" />
-    <Compile Include="ViewModels\VertiPaqAnalyzerViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\PartitionGroupDescription.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\RelationshipGroupDescription.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\TableGroupDescription.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VertiPaqAnalyzerViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VpaColumnViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VpaPartitionViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VpaRelationshipViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VpaSummaryViewModel.cs" />
+    <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>

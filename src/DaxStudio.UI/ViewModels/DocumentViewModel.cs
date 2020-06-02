@@ -2772,11 +2772,24 @@ namespace DaxStudio.UI.ViewModels
             }
             while (true)
             {
-                var idx = text.IndexOf(TextToHighlight, start, StringComparison.InvariantCultureIgnoreCase);
-                if (idx == -1) break;
+                var idx = -1;
+                try
+                {
+                    idx = text.IndexOf(TextToHighlight, start, StringComparison.InvariantCultureIgnoreCase);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(InternalDefaultHighlightFunction), $"Error: {ex.Message} /n while finding text to highlight while searching for '{TextToHighlight}' in '{text}'");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "An error occurred while trying to highlight search text"));
+                    break;
+                }
+                if (idx == -1) break;              // stop search if we did not find any more occurances
                 start = idx + 1;
                 if (idx == lineSelStart) continue; // skip the currently selected text
-                list.Add(new HighlightPosition() { Index = idx, Length = TextToHighlight.Length });
+
+                // check that the index and length are inside the bounds of the text
+                if (idx >=0 && idx + TextToHighlight.Length <= text.Length)
+                    list.Add(new HighlightPosition() { Index = idx, Length = TextToHighlight.Length });
             }
             return list;
         }

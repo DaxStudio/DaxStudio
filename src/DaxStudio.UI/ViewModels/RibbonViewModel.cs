@@ -518,14 +518,17 @@ namespace DaxStudio.UI.ViewModels
                 case nameof(ActiveDocument.IsQueryRunning):
                     _queryRunning = ActiveDocument.IsQueryRunning;
                     NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => CanRunBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
+                    NotifyOfPropertyChange(() => CanViewAnalysisData);
                     break;
                 case nameof(ActiveDocument.IsVertipaqAnalyzerRunning):
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    NotifyOfPropertyChange(() => CanRunBenchmark);
                     break;
                 case nameof(ActiveDocument.IsConnected):
                     NotifyOfPropertyChange(() => CanRunQuery);
@@ -887,7 +890,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ExportAnalysisData();
         }
 
-        public bool CanViewAnalysisData => IsActiveDocumentConnected;
+        public bool CanViewAnalysisData => IsActiveDocumentConnected && !_queryRunning;
 
         public void ViewAnalysisData()
         {

@@ -575,7 +575,6 @@ namespace DAXEditorControl
                 toolTip.IsOpen = false;
             completionWindow?.Close();
             completionWindow = null;
-            System.Diagnostics.Debug.WriteLine(">>> DisposeCompletionWindow");
         }
 
         public void DisableIntellisense()

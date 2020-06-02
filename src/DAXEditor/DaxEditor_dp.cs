@@ -343,7 +343,7 @@ namespace DAXEditorControl
         protected override void OnLostMouseCapture(MouseEventArgs e)
         {
             base.OnLostMouseCapture(e);
-            System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
+            //System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
         }
     }
 }

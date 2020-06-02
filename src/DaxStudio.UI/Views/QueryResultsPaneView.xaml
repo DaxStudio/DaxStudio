@@ -163,6 +163,7 @@
                             SelectionUnit="Cell"
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"
+                            IsReadOnly="True"
                             VerticalGridLinesBrush="WhiteSmoke" 
                             HorizontalGridLinesBrush="WhiteSmoke"
                             AutoGenerateColumns="False"
