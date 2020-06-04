@@ -365,7 +365,11 @@
                         <DataGridTextColumn Binding="{Binding ToColumnCardinality, StringFormat=N0}" Header="Max To Cardinality" x:Name="colRelToCardinality" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding MissingKeys, StringFormat=N0}" Header="Missing Keys" x:Name="colMissingKeys" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
                         <DataGridTextColumn Binding="{Binding InvalidRows, StringFormat=N0}" Header="Invalid Rows" x:Name="colRInvalidRows" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
-                        <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" Header="Sample Violations" x:Name="colSampleViolations" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}"/>
+                        <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" x:Name="colSampleViolations" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
+                            <DataGridTextColumn.Header>
+                                <TextBlock Text="Sample Violations*" ToolTip="Note: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported" />
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                     </DataGrid.Columns>
                 </DataGrid>

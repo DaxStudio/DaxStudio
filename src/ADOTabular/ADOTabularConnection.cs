@@ -369,22 +369,22 @@ namespace ADOTabular
 
         public AdomdDataReader ExecuteReader(string query)
         {
-            try
-            {
-                _runningCommand = _adomdConn.CreateCommand();
-                _runningCommand.CommandType = CommandType.Text;
-                _runningCommand.CommandText = query;
-
-                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-                AdomdDataReader rdr = _runningCommand.ExecuteReader();
-                rdr.Connection = this;
-                rdr.CommandText = query;
-                return rdr;
-            }
-            finally
+            if (_runningCommand != null)
             {
                 _runningCommand.Dispose();
+                _runningCommand = null;
             }
+
+            _runningCommand = _adomdConn.CreateCommand();
+            _runningCommand.CommandType = CommandType.Text;
+            _runningCommand.CommandText = query;
+
+            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+            AdomdDataReader rdr = _runningCommand.ExecuteReader();
+            rdr.Connection = this;
+            rdr.CommandText = query;
+            return rdr;
+
         }
 
         public DataTable ExecuteDaxQueryDataTable(string query)
