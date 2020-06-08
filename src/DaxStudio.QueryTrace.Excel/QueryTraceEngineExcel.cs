@@ -12,6 +12,8 @@ using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
 using DaxStudio.Common.Enums;
+using System.Linq;
+using System.IO;
 
 namespace DaxStudio.QueryTrace
 {
@@ -313,8 +315,7 @@ namespace DaxStudio.QueryTrace
                 Status = QueryTraceStatus.Started;
                 TraceStarted?.Invoke(this, null);
 
-                var f = new System.IO.FileInfo(_trace.Parent.Name);
-                _friendlyServerName = f.Name;
+                _friendlyServerName = GetShortFileName(_trace.Parent.Name);
             }
             else
             {
@@ -328,6 +329,21 @@ namespace DaxStudio.QueryTrace
                     // reset the captured events collection
                     _capturedEvents = new List<DaxStudioTraceEventArgs>();
                 }
+            }
+        }
+
+        private string GetShortFileName(string filename)
+        {
+          
+            if (filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                return filename.Split('/').Last();
+            }
+            else
+            {
+                var fi = new FileInfo(filename);
+                return fi.Name;
             }
         }
 
