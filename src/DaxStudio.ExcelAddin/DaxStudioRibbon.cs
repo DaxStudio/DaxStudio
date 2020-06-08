@@ -6,6 +6,7 @@ using Serilog;
 using System.Windows;
 using DaxStudio.Common;
 using System.IO;
+using System.Reflection;
 
 namespace DaxStudio.ExcelAddin
 {
@@ -18,8 +19,10 @@ namespace DaxStudio.ExcelAddin
 
         private void Ribbon1Load(object sender, RibbonUIEventArgs e)
         {
-            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Start");
-            try {
+            try
+            {
+                Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Start");
+                
                 // look for a running DaxStudio.exe instance and 
                 // if we find one try to start a WebHost for it
                 var client = DaxStudioStandalone.GetClient();
@@ -36,7 +39,10 @@ namespace DaxStudio.ExcelAddin
             {
                 Log.Error("{Class} {method} {exception} {stacktrace}", "DaxStudioRibbon", "RibbonLoad", ex.Message, ex.StackTrace);
             }
-            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Finish");
+            finally
+            {
+                Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "RibbonLoad", "Finish");
+            }
         }
         
         public bool DebugLoggingEnabled { get; set; }

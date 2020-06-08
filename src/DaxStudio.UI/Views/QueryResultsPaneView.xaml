@@ -172,7 +172,7 @@
                             cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
                                         , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
-                             CanUserSortColumns="True"
+                            CanUserSortColumns="True"
                              
                             >
 
@@ -184,8 +184,7 @@
                             </DataGrid.AlternatingRowBackground>
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
-                                    <Setter Property="FontWeight"
-                  Value="SemiBold" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.ContextMenu>

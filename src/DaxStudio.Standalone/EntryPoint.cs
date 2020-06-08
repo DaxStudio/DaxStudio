@@ -14,6 +14,8 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using System.Threading.Tasks;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DaxStudio.Standalone
 {
@@ -146,6 +148,10 @@ namespace DaxStudio.Standalone
                 //if (theme == "Dark") app.LoadDarkTheme();
                 //else app.LoadLightTheme();
 
+                // log startup switches
+                var args = app.Args().AsDictionaryForTelemetry();
+                Telemetry.TrackEvent("App.Startup", args );
+
                 // Launch the User Interface
                 app.Run();
             }
@@ -176,6 +182,17 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
             }
+        }
+
+        private static bool IsNotSet(object value)
+        {
+            switch (value)
+            {
+                case string s: return string.IsNullOrEmpty(s);
+                case bool b: return b == false;
+                case int i: return i == 0;
+            }
+            return false;
         }
 
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

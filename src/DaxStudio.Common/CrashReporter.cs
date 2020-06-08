@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Utils
         
         public static void ReportCrash(Exception exception, string developerMessage)
         {
-            Telemetry.TrackException(exception);
+            Telemetry.TrackException(exception,developerMessage);
 
             var reportCrash = new ReportCrash("daxstudiocrash@gmail.com")
             {

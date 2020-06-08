@@ -109,7 +109,7 @@ namespace DaxStudio.UI.ViewModels
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
             
-            Telemetry.TrackEvent("App.Startup", new Dictionary<string, string> { });
+            
             
         }
 

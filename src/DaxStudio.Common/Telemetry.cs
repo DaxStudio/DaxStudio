@@ -54,7 +54,7 @@ namespace DaxStudio.UI.Utils
         }
     }
 
-    public static void TrackException(Exception ex)
+    public static void TrackException(Exception ex,string source)
     {
 
         if (ex != null && Enabled)
@@ -62,6 +62,7 @@ namespace DaxStudio.UI.Utils
                 try
                 {
                     var telex = new Microsoft.ApplicationInsights.DataContracts.ExceptionTelemetry(ex);
+                    telex.Properties.Add("Source", source);
                     _telemetry.TrackException(telex);
                     Flush();
                 }
