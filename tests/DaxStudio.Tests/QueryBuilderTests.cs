@@ -26,8 +26,8 @@ namespace DaxStudio.Tests
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
+    'Product Category'[Category],
+    'Product'[Color]
 )
 // END QUERY BUILDER".Replace("\r","");
 
@@ -52,10 +52,36 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Gender] )), 'Customer'[Gender] = ""M"")
-    ,FILTER(KEEPFILTERS(VALUES( 'Product'[Color] )), 'Product'[Color] = ""Red"")
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Gender] )), 'Customer'[Gender] = ""M""),
+    FILTER(KEEPFILTERS(VALUES( 'Product'[Color] )), 'Product'[Color] = ""Red"")
+)
+// END QUERY BUILDER".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
+        public void TestColumnsIsNotFilterQuery()
+        {
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> fils = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+
+            fils.Add(new QueryBuilderFilter(MockColumn.Create("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.IsNot, FilterValue = "M" });
+            
+
+            var qry = QueryBuilder.BuildQuery(cols, fils);
+            var expectedQry = @"// START QUERY BUILDER
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Gender] )), 'Customer'[Gender] <> ""M"")
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -80,11 +106,11 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Gender] )), 'Customer'[Gender] = ""M"")
-    ,FILTER(KEEPFILTERS(VALUES( 'Product'[Color] )), 'Product'[Color] = ""Red"")
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Gender] )), 'Customer'[Gender] = ""M""),
+    FILTER(KEEPFILTERS(VALUES( 'Product'[Color] )), 'Product'[Color] = ""Red""),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -108,10 +134,10 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2)
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -138,13 +164,13 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number1] )), 'Customer'[Number1] > 1)
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number2] )), 'Customer'[Number2] >= 2)
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number3] )), 'Customer'[Number3] < 3)
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number4] )), 'Customer'[Number4] <= 4)
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number1] )), 'Customer'[Number1] > 1),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number2] )), 'Customer'[Number2] >= 2),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number3] )), 'Customer'[Number3] < 3),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number4] )), 'Customer'[Number4] <= 4),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -171,13 +197,13 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String1] )), SEARCH(""ABC"", 'Customer'[String1], 1, 0) >= 1)
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String2] )), NOT(SEARCH(""DEF"", 'Customer'[String2], 1, 0) >= 1))
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String3] )), SEARCH(""GHI"", 'Customer'[String3], 1, 0) = 1)
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String4] )), NOT(SEARCH(""JKL"", 'Customer'[String4], 1, 0) = 1))
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String1] )), SEARCH(""ABC"", 'Customer'[String1], 1, 0) >= 1),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String2] )), NOT(SEARCH(""DEF"", 'Customer'[String2], 1, 0) >= 1)),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String3] )), SEARCH(""GHI"", 'Customer'[String3], 1, 0) = 1),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String4] )), NOT(SEARCH(""JKL"", 'Customer'[String4], 1, 0) = 1)),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -202,11 +228,11 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String1] )), ISBLANK('Customer'[String1]))
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[String2] )), NOT(ISBLANK('Customer'[String2])))
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String1] )), ISBLANK('Customer'[String1])),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[String2] )), NOT(ISBLANK('Customer'[String2]))),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -230,10 +256,10 @@ SUMMARIZECOLUMNS(
             var expectedQry = @"// START QUERY BUILDER
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24))
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24)),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -275,10 +301,10 @@ SUMMARIZECOLUMNS(
 EVALUATE
 CALCULATETABLE(
     ROW(
-    ""Total Sales"", [Total Sales]
-    ,""Total Freight"", [Total Freight]
-    )
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24))
+    ""Total Sales"", [Total Sales],
+    ""Total Freight"", [Total Freight]
+    ),
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Birth Date] )), 'Customer'[Birth Date] = DATE(2019,11,24))
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -309,10 +335,10 @@ DEFINE
 MEASURE 'Internet Sales'[Total Sales] = 123
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product Category'[Category]
-    ,'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2)
-    ,""Total Sales"", [Total Sales]
+    'Product Category'[Category],
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2),
+    ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -344,9 +370,9 @@ DEFINE
 MEASURE 'Internet Sales'[Test Measure] = 123
 EVALUATE
 SUMMARIZECOLUMNS(
-    'Product'[Color]
-    ,FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2)
-    ,""Test Measure"", [Test Measure]
+    'Product'[Color],
+    FILTER(KEEPFILTERS(VALUES( 'Customer'[Number of Children] )), 'Customer'[Number of Children] = 2),
+    ""Test Measure"", [Test Measure]
 )
 // END QUERY BUILDER".Replace("\r", "");
 

@@ -23,10 +23,10 @@ namespace DaxStudio.UI.Model
             var columnList = BuildColumns(columns);
             var filterList = BuildFilters(filters);
             var measureList = BuildMeasures(columns);
-            var filterStart = filters.Count > 0 ? "\n    ," : string.Empty;
+            var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
                 ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
-                ? "\n    ," 
+                ? ",\n    " 
                 : "\n    "
                 : string.Empty;  
 
@@ -81,7 +81,7 @@ namespace DaxStudio.UI.Model
             var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure);
             if (!meas.Any()) return string.Empty;
             // build a comma separated list of "Caption", [DaxName] values
-            return meas.Select(c => $"\"{c.Caption}\", {c.DaxName}").Aggregate((i, j) => i + "\n    ," + j);
+            return meas.Select(c => $"\"{c.Caption}\", {c.DaxName}").Aggregate((i, j) => i + ",\n    " + j);
         }
 
         private static string BuildMeasureDefines(ICollection<QueryBuilderColumn> columns)
@@ -90,7 +90,7 @@ namespace DaxStudio.UI.Model
             var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure && c.IsOverriden);
             if (!meas.Any()) return string.Empty;
             // build a comma separated list of "Caption", [DaxName] values
-            return meas.Select(c => $"MEASURE {c.SelectedTable.DaxName}[{c.Caption}] = {c.MeasureExpression}" ).Aggregate((i, j) => i + "\n" + j);
+            return meas.Select(c => $"MEASURE {c.SelectedTable.DaxName}[{c.Caption}] = {c.MeasureExpression}" ).Aggregate((current, next) => current + "\n" + next);
         }
 
         private static string BuildColumns(ICollection<QueryBuilderColumn> columns)
@@ -100,7 +100,7 @@ namespace DaxStudio.UI.Model
             if (!cols.Any()) return string.Empty;
 
             // build a comma separated list of [DaxName] values
-            return cols.Select(c => c.DaxName).Aggregate((i, j) => i + "\n    ," + j);
+            return cols.Select(c => c.DaxName).Aggregate((current, next) => current + ",\n    " + next);
         }
 
         private static string BuildFilters(ICollection<QueryBuilderFilter> filters)
@@ -111,7 +111,7 @@ namespace DaxStudio.UI.Model
             //  'DimCustomer'[EnglishEducation] = "Bachelors"
             //)
             if (filters.Count == 0) return string.Empty;
-            return (string)filters.Select(f => FilterExpression(f)).Aggregate((i, j) => i + "\n    ," + j);
+            return (string)filters.Select(f => FilterExpression(f)).Aggregate((i, j) => i + ",\n    " + j);
         }
 
         public static string FilterExpression(QueryBuilderFilter filter)
@@ -124,7 +124,7 @@ namespace DaxStudio.UI.Model
                 case FilterType.Is:
                     return $"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} = {formattedVal})";
                 case Enums.FilterType.IsNot:
-                    return $@"FILTER(KEEPFLTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
+                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
                 case FilterType.StartsWith:
                     return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) = 1)";
                 case FilterType.Contains:
