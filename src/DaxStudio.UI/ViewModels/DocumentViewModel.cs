@@ -830,15 +830,16 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                if (_editor.SelectionLength > 0)
+                var editor = GetEditor();
+                if (editor.SelectionLength > 0)
                 {
-                    _editor.SelectedText = SwapDelimiters(_editor.SelectedText);
+                    editor.SelectedText = SwapDelimiters(editor.SelectedText);
                 }
                 else
                 {
-                    _editor.Document.BeginUpdate();
-                    _editor.Document.Text = SwapDelimiters(_editor.Text);
-                    _editor.Document.EndUpdate();
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = SwapDelimiters(editor.Text);
+                    editor.Document.EndUpdate();
                 }
             }
             catch (Exception ex)
@@ -1336,12 +1337,13 @@ namespace DaxStudio.UI.ViewModels
             int col = 0;
             try
             {
-                await this._editor.Dispatcher.InvokeAsync(async () =>
+                var editor = GetEditor();
+                await editor.Dispatcher.InvokeAsync(async () =>
                     {
                         // capture the row and column location for error reporting (if needed)
-                        if (_editor.SelectionLength > 0)
+                        if (editor.SelectionLength > 0)
                         {
-                            var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                            var loc = editor.Document.GetLocation(editor.SelectionStart);
                             row = loc.Line;
                             col = loc.Column;
                         }
@@ -1402,11 +1404,12 @@ namespace DaxStudio.UI.ViewModels
         {
             int row = 0;
             int col = 0;
-            this._editor.Dispatcher.Invoke(() =>
+            var editor = GetEditor();
+            editor.Dispatcher.Invoke(() =>
             {
-                if (_editor.SelectionLength > 0)
+                if (editor.SelectionLength > 0)
                 {
-                    var loc = this._editor.Document.GetLocation(this._editor.SelectionStart);
+                    var loc = editor.Document.GetLocation(editor.SelectionStart);
                     row = loc.Line;
                     col = loc.Column;
                 }
@@ -1717,9 +1720,10 @@ namespace DaxStudio.UI.ViewModels
                 msgCol += column > 0 ? column - 1 : 0;
                 msgRow += row > 0 ? row - 1 : 0;
             }
-            _editor.Dispatcher.Invoke(() =>
+            var editor = GetEditor();
+            editor.Dispatcher.Invoke(() =>
             {
-                _editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
+                editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
             });
 
             OutputPane.AddError(error, msgRow, msgCol);
@@ -1891,8 +1895,9 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget));
 
             // un-select text
-            _editor.SelectionLength = 0;
-            _editor.SelectionStart = _editor.Text.Length;
+            var editor = GetEditor();
+            editor.SelectionLength = 0;
+            editor.SelectionStart = editor.Text.Length;
 
         }
 
@@ -2762,9 +2767,10 @@ namespace DaxStudio.UI.ViewModels
         private List<HighlightPosition> InternalDefaultHighlightFunction(string text, int startOffset, int endOffset)
         {
             if (string.IsNullOrWhiteSpace(TextToHighlight)) return null; ;
+            var editor = GetEditor();
             var list = new List<HighlightPosition>();
             var start = 0;
-            var selStart = _editor.SelectionStart;
+            var selStart = editor.SelectionStart;
             var lineSelStart = -1;
             if (selStart >= startOffset && selStart <= endOffset)
             {
@@ -2801,11 +2807,17 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetHighlightFunction(HighlightDelegate highlightFunction)
         {
-            _editor.HighlightFunction = highlightFunction;
+            var editor = GetEditor();
+            editor.HighlightFunction = highlightFunction;
         }
         #endregion
 
-        public string TextToHighlight { get { return _editor.SelectedText; } }
+        public string TextToHighlight { 
+            get {
+                var editor = GetEditor();
+                return editor.SelectedText; 
+            } 
+        }
 
         public void GotoLine()
         {
@@ -2815,7 +2827,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 // create a gotoLineDialog view model                     
-                var gotoLineDialog = new GotoLineDialogViewModel(this._editor);
+                var gotoLineDialog = new GotoLineDialogViewModel(this.GetEditor());
 
                 // show the dialog
                 _windowManager.ShowDialogBox(gotoLineDialog, settings: new Dictionary<string, object>
@@ -2950,6 +2962,10 @@ namespace DaxStudio.UI.ViewModels
 
                 if (qry.Trim().Length == 0) return; // no query text to format so exit here
 
+                // if we are showing the ExpressionEditor we need to inject an = sign at the start of the query
+                // so that DaxFormatter knows this is a scalar expression
+                if (ShowMeasureExpressionEditor) { qry = "=" + qry; }
+
                 DaxFormatterProxy.FormatDaxAsync(qry, info, Options, _eventAggregator, formatAlternateStyle).ContinueWith((res) =>
                {
                     // todo - should we be checking for exceptions in this continuation
@@ -2959,6 +2975,11 @@ namespace DaxStudio.UI.ViewModels
                    {
                        if ((res.Result.errors == null) || (res.Result.errors.Count == 0))
                        {
+                           var formattedText = res.Result.FormattedDax.TrimEnd();
+
+                           // if we are showing the ExpressionEditor we need to remove the = sign we injected at the start of the query
+                           // so that DaxFormatter would know this was a scalar expression
+                           if (ShowMeasureExpressionEditor) { formattedText = formattedText.TrimStart('=').Trim(); }
 
                            editor.Dispatcher.Invoke(() =>
                            {
@@ -2967,7 +2988,7 @@ namespace DaxStudio.UI.ViewModels
                                {
                                    editor.IsEnabled = false;
                                    editor.Document.BeginUpdate();
-                                   editor.Document.Text = res.Result.FormattedDax.TrimEnd();
+                                   editor.Document.Text = formattedText;
                                    editor.Document.EndUpdate();
                                    editor.IsEnabled = true;
                                }
@@ -2985,10 +3006,14 @@ namespace DaxStudio.UI.ViewModels
 
                            foreach (var err in res.Result.errors)
                            {
-                                // write error 
-                                // note: daxformatter.com returns 0 based coordinates so we add 1 to them
-                                int errLine = err.line + 1;
-                               int errCol = err.column + 1;
+                               // write error 
+                               // note: daxformatter.com returns 0 based coordinates so we add 1 to them
+                               int errLine = err.line + 1;
+
+                               // if we are showing the Expression Editor and the error is on Line 1 
+                               // we don't add 1 to the column as we strip out the leading = symbol
+                               int errColOffset = ShowMeasureExpressionEditor && errLine == 1 ? 0 : 1;
+                               int errCol = err.column + errColOffset;
 
                                editor.Dispatcher.Invoke(() =>
                                {
@@ -3302,7 +3327,8 @@ namespace DaxStudio.UI.ViewModels
         {
             // if it's open close the completion window when 
             // the left mouse button is clicked
-            _editor.DisposeCompletionWindow();
+            var editor = GetEditor();
+            editor.DisposeCompletionWindow();
         }
 
         #region ISaveable 
