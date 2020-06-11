@@ -91,6 +91,18 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => StatusMessage);
             }
         }
+
+        private long _totalRows = 0;
+        public long TotalRows
+        {
+            get { return _totalRows; }
+            set
+            {
+                _totalRows = value;
+                NotifyOfPropertyChange(() => TotalRows);
+                NotifyOfPropertyChange(() => StatusMessage);
+            }
+        }
         public string StatusMessage
         {
             get
@@ -98,8 +110,9 @@ namespace DaxStudio.UI.ViewModels
                 switch (Status)
                 {
                     case ExportStatus.Done:
-                    case ExportStatus.Exporting:
                         return $"{RowCount:N0} rows exported";
+                    case ExportStatus.Exporting:
+                        return $"{RowCount:N0} of {TotalRows:N0} rows exported";
                     case ExportStatus.Ready:
                         return "Waiting...";
                     case ExportStatus.Error:
