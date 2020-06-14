@@ -1518,7 +1518,7 @@ namespace DaxStudio.UI.ViewModels
             // if the query provider is not set use the current document
             message.QueryProvider = message.QueryProvider ?? this;
 
-            RunQueryInternal(message);
+            await RunQueryInternalAsync(message);
 
         }
 
@@ -1562,7 +1562,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void RunQueryInternal(RunQueryEvent message)
+        private async Task RunQueryInternalAsync(RunQueryEvent message)
         {
             using (var msg = NewStatusBarMessage("Running Query..."))
             {
@@ -1589,37 +1589,28 @@ namespace DaxStudio.UI.ViewModels
 
                         currentQueryDetails = CreateQueryHistoryEvent(QueryText);
 
-                        message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider).ContinueWith((antecendant) =>
+                        await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
+
+                        // todo - should we be checking for exceptions in this continuation
+                        IsQueryRunning = false;
+                        NotifyOfPropertyChange(() => CanRunQuery);
+
+                        // if the server times trace watcher is not active then just record client timings
+                        if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
                         {
-                            // todo - should we be checking for exceptions in this continuation
-                            IsQueryRunning = false;
-                            NotifyOfPropertyChange(() => CanRunQuery);
-
-                            // if the server times trace watcher is not active then just record client timings
-                            if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && currentQueryDetails != null)
-                            {
-                                currentQueryDetails.ClientDurationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
-                                currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
-                                _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
-                            }
-                            _queryStopWatch.Reset();
-                            _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
-                            msg.Dispose();
-
-                            if (antecendant.IsFaulted)
-                            {
-                                var ex = antecendant.Exception;
-
-                                Log.Error(antecendant.Exception, "", nameof(DocumentViewModel), nameof(RunQueryInternal), $"Error running query: {ex.GetAllMessages()}");
-                                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.GetAllMessages()}"));
-                            }
-
-                        }, TaskScheduler.Default);
+                            currentQueryDetails.ClientDurationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
+                            currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
+                            _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
+                        }
+                        _queryStopWatch.Reset();
+                        _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
+                        msg.Dispose();
+                       
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "RunQueryInternal", ex.Message);
+                    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
                     _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
 
                 }

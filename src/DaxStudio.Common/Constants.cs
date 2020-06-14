@@ -42,6 +42,9 @@ namespace DaxStudio.Common
         public const int MaxMruSize = 25;
         public const string DownloadUrl = "https://daxstudio.org/downloads";
         public const string LogMessageTemplate = "{class} {method} {message}";
+
+        public const string SessionsDmv = "$SYSTEM.DISCOVER_SESSIONS";
+        public const string SessionSpidColumn = "SESSION_SPID";
         //public const int TraceStartTimeoutSeconds = 30;
     }
 }

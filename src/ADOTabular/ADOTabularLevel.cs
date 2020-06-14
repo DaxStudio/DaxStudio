@@ -22,5 +22,6 @@
         public string DaxName => Column.DaxName;
         public ADOTabularObjectType ObjectType => Column.ObjectType;
         public bool IsVisible => true;
+        public string Description => Column.Description;
     }
 }

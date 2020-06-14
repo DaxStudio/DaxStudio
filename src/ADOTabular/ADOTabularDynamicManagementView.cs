@@ -28,5 +28,7 @@ namespace ADOTabular
         public string DefaultQuery => $"select * from $SYSTEM.{Caption}";
         public MetadataImages MetadataImage => MetadataImages.DmvTable;
         public bool IsVisible => true;
+
+        public string Description => string.Empty;
     }
 }

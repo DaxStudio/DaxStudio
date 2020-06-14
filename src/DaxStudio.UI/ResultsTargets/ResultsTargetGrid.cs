@@ -8,6 +8,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
+using System.Collections;
 
 namespace DaxStudio.UI.Model
 {
@@ -56,15 +57,23 @@ namespace DaxStudio.UI.Model
 
                         var dq = textProvider.QueryText;
                         //var res = runner.ExecuteDataTableQuery(dq);
+                        var isSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
+
+
                         using (var dataReader = runner.ExecuteDataReaderQuery(dq))
                         {
                             if (dataReader != null)
                             {
                                 Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat);
+                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat,isSessionsDmv);
                                 Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
 
                                 sw.Stop();
+
+                                // add extended properties to dataset
+                                runner.ResultsDataSet.ExtendedProperties.Add("QueryText", dq);
+                                runner.ResultsDataSet.ExtendedProperties.Add("IsDiscoverSessions", isSessionsDmv);
+
                                 durationMs = sw.ElapsedMilliseconds;
                                 var rowCnt = runner.ResultsDataSet.Tables[0].Rows.Count;
                                 foreach (DataTable tbl in runner.ResultsDataSet.Tables)

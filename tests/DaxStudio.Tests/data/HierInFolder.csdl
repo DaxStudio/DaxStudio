@@ -1,0 +1,114 @@
+<return xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxmla="http://schemas.microsoft.com/analysisservices/2003/xmla">
+    <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified">
+      <xsd:element name="root">
+        <xsd:complexType>
+          <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="row" type="row" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+          <xsd:pattern value="[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="xmlDocument">
+        <xsd:sequence>
+          <xsd:any />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="row">
+        <xsd:sequence>
+          <xsd:element sql:field="METADATA" name="METADATA" type="xmlDocument" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+    <row>
+      <xars:METADATA xmlns="http://schemas.microsoft.com/analysisservices/2003/engine" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100="http://schemas.microsoft.com/analysisservices/2008/engine/100" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl410="http://schemas.microsoft.com/analysisservices/2012/engine/410" xmlns:ddl410_410="http://schemas.microsoft.com/analysisservices/2012/engine/410/410" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:ddl600="http://schemas.microsoft.com/analysisservices/2013/engine/600" xmlns:ddl600_600="http://schemas.microsoft.com/analysisservices/2013/engine/600/600" xmlns:ddl700="http://schemas.microsoft.com/analysisservices/2018/engine/700" xmlns:ddl700_700="http://schemas.microsoft.com/analysisservices/2018/engine/700/700" xmlns:ddl800="http://schemas.microsoft.com/analysisservices/2018/engine/800" xmlns:ddl800_800="http://schemas.microsoft.com/analysisservices/2018/engine/800/800" xmlns:ddl900="http://schemas.microsoft.com/analysisservices/2019/engine/900" xmlns:ddl900_900="http://schemas.microsoft.com/analysisservices/2019/engine/900/900" xmlns:ddl910="http://schemas.microsoft.com/analysisservices/2020/engine/910" xmlns:ddl910_910="http://schemas.microsoft.com/analysisservices/2020/engine/910/910" xmlns:xars="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+          <EntityContainer Name="Sandbox">
+            <EntitySet Name="Date" EntityType="Sandbox.Date">
+              <bi:EntitySet />
+            </EntitySet>
+            <bi:EntityContainer Caption="2dd2dc96-ec48-4727-8219-5f27f4029e87" Culture="en-US" PreferOrdinalStringEquality="true">
+              <bi:CompareOptions IgnoreCase="true" />
+              <bi:ModelCapabilities>
+                <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+                <bi:QueryBatching>1</bi:QueryBatching>
+                <bi:Variables>1</bi:Variables>
+                <bi:InOperator>1</bi:InOperator>
+                <bi:TableConstructor>1</bi:TableConstructor>
+                <bi:ExecutionMetrics>1</bi:ExecutionMetrics>
+                <bi:VirtualColumns>1</bi:VirtualColumns>
+                <bi:DAXFunctions>
+                  <bi:SummarizeColumns>1</bi:SummarizeColumns>
+                  <bi:SubstituteWithIndex>1</bi:SubstituteWithIndex>
+                  <bi:LeftOuterJoin>1</bi:LeftOuterJoin>
+                  <bi:StringMinMax>1</bi:StringMinMax>
+                  <bi:BinaryMinMax>1</bi:BinaryMinMax>
+                  <bi:TreatAs>1</bi:TreatAs>
+                  <bi:Error>1</bi:Error>
+                  <bi:SampleAxisWithLocalMinMax>1</bi:SampleAxisWithLocalMinMax>
+                  <bi:SampleCartesianPointsByCover>1</bi:SampleCartesianPointsByCover>
+                  <bi:OptimizedNotInOperator>1</bi:OptimizedNotInOperator>
+                  <bi:NonVisual>1</bi:NonVisual>
+                  <bi:TopNPerLevel>1</bi:TopNPerLevel>
+                </bi:DAXFunctions>
+              </bi:ModelCapabilities>
+            </bi:EntityContainer>
+          </EntityContainer>
+          <EntityType Name="Date">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="4">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>3</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Year" Type="Int64">
+              <bi:Property FormatString="0" DefaultAggregateFunction="Sum">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2020</bi:MinValue>
+                  <bi:MaxValue>2020</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Quarter" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property DefaultAggregateFunction="None">
+                <bi:Statistics DistinctValueCount="4" StringValueMaxLength="2">
+                  <bi:MinValue>Q1</bi:MinValue>
+                  <bi:MaxValue>Q4</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Calendar">
+                <bi:Level Name="Year">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Quarter" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:DisplayFolders>
+                <bi:DisplayFolder Name="Calendar_Folder" Caption="Calendar Folder">
+                  <bi:HierarchyRef Name="Calendar" />
+                </bi:DisplayFolder>
+              </bi:DisplayFolders>
+              <bi:Statistics RowCount="4" />
+            </bi:EntityType>
+          </EntityType>
+        </Schema>
+      </xars:METADATA>
+    </row>
+  </root>
+</return>

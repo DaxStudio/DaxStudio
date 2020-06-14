@@ -29,7 +29,8 @@
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
             <conv:MultiplyWithMinConverter x:Key="multiplyWithMinConverter"/>
             <conv:StringFormatConverter x:Key="StringFormatConverter"/>
-
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            
             <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/clear.png" />
             <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
             <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
@@ -378,14 +379,16 @@
                                                 <ToolTip Background="{DynamicResource BaseBrush}">
                                                 <Grid>
                                                     <StackPanel Orientation="Vertical" Margin="5">
-                                                        <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                                        <StackPanel Orientation="Horizontal" >
                                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                                             <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                                        </StackPanel>
-                                                            <TextBlock Text="{Binding DaxName}" />
+                                                                <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding DaxName}" Visibility="{Binding Converter={StaticResource StringToVisibilityConverter},Path=DaxName}"/>
                                                             <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
 
                                                         <Grid>
@@ -399,7 +402,8 @@
                                                                 <RowDefinition/>
                                                                 <RowDefinition/>
                                                             </Grid.RowDefinitions>
-                                                            <TextBlock Style="{StaticResource ToolTipLabel}"> Format:</TextBlock>
+                                                            <TextBlock Style="{StaticResource ToolTipLabel}"
+                                                                       Visibility="{Binding ShowFormatString, Converter={StaticResource BoolToVisibilityConverter}}"> Format:</TextBlock>
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="1"
                                                                        Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}">Distinct Values:</TextBlock>
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="2"
@@ -407,7 +411,8 @@
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="3"
                                                                        Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}">Max:</TextBlock>
 
-                                                            <TextBlock Grid.Column="1" Text="{Binding FormatString}"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding FormatString}"
+                                                                       Visibility="{Binding ShowFormatString, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                             <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Path=DistinctValues, StringFormat={}{0:N0}}"
                                                                        Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"></TextBlock>
                                                             <TextBlock Grid.Column="1" Grid.Row="2" 

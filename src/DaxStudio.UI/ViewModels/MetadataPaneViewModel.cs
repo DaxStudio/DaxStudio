@@ -382,6 +382,11 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _databases = value;
+                if (value == null) {
+                    DatabasesView.Clear();
+                    NotifyOfPropertyChange(() => DatabasesView);
+                    return;
+                }
                 MergeDatabaseView();
             }
         }

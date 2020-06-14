@@ -39,5 +39,10 @@ namespace DaxStudio.UI.Extensions
             return input.All(c => Char.IsDigit(c));
         } 
 
+
+        public static bool Contains(this string input, string searchFor, StringComparison comparison)
+        {
+            return input.IndexOf(searchFor, comparison) >= 0;
+        }
     }
 }

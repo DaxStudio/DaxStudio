@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Extensions
 
 
 
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat = false)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
@@ -142,6 +142,10 @@ namespace DaxStudio.UI.Extensions
                         column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
                         reader.Connection.Columns.TryGetValue(columnName, out daxCol);
+                        if (IsSessionsDmv && columnName == Common.Constants.SessionSpidColumn)
+                        {
+                            column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
+                        }
                         if (daxCol != null) {
                             column.ExtendedProperties.Add(Constants.FormatString, daxCol.FormatString);
                             if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);

@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -89,8 +90,11 @@ namespace DaxStudio.UI.ViewModels
                 _rowCount = value;
                 NotifyOfPropertyChange(() => RowCount);
                 NotifyOfPropertyChange(() => StatusMessage);
+                NotifyOfPropertyChange(() => ProgressPercentage);
             }
         }
+
+        public double ProgressPercentage => TotalRows == 0 ? 0 : (Double)RowCount / TotalRows;
 
         private long _totalRows = 0;
         public long TotalRows

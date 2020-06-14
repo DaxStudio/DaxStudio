@@ -27,6 +27,7 @@ namespace ADOTabular
         public string Name => Column.Name;
         public string DaxName { get { return Column.DaxName;} }
         public string DataTypeName { get { return Column.DataTypeName; } }
+        public string Description => Column.Description;
         public ADOTabularObjectType ObjectType {
             get {
                 switch (ComponentType)
