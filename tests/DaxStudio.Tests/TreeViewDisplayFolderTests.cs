@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using ADOTabular.AdomdClientWrappers;
-using Measure = DaxStudio.Tests.Utils.Measure;
+using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using DaxStudio.UI.Model;
 using DaxStudio.Interfaces;
 using Caliburn.Micro;
@@ -60,13 +60,13 @@ namespace DaxStudio.Tests
 
             measureDataSet = new DataSet();
             measureDataSet.Tables.Add(
-                DmvHelpers.ListToTable(new List<Measure> {
-                    new Measure { MEASURE_NAME = "MyMeasure", MEASURE_CAPTION="MyMeasure",DESCRIPTION="My Description",EXPRESSION="1"}
+                DmvHelpers.ListToTable(new List<MeasureMD> {
+                    new MeasureMD { MEASURE_NAME = "MyMeasure", MEASURE_CAPTION="MyMeasure",DESCRIPTION="My Description",EXPRESSION="1"}
                 })
             );
 
             measureDataSetEmpty = new DataSet();
-            measureDataSetEmpty.Tables.Add(DmvHelpers.ListToTable(new List<Measure>()));
+            measureDataSetEmpty.Tables.Add(DmvHelpers.ListToTable(new List<MeasureMD>()));
 
             cubesDataSet = new DataSet();
             cubesDataSet.Tables.Add(

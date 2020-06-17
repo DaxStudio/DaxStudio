@@ -13,6 +13,7 @@ namespace ADOTabular
         Dictionary<string, ADOTabularColumn> Columns { get; }
         ADOTabularDatabase Database { get; }
         ADOTabularDatabaseCollection Databases { get; }
+        ADOTabularDynamicManagementViewCollection DynamicManagementViews { get; }
         bool IsPowerPivot { get; }
         ADOTabularKeywordCollection Keywords { get; }
         //IEnumerable<string> Keywords { get; }
@@ -29,6 +30,7 @@ namespace ADOTabular
         #region Methods
         int ExecuteCommand(string command);
         DataTable ExecuteDaxQueryDataTable(string query);
+        DataSet GetSchemaDataSet(string dataset);
         DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions);
         DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions, bool throwOnErrors);
 
