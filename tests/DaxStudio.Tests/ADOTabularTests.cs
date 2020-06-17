@@ -7,7 +7,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Extensions;
 using Moq;
 using DaxStudio.Tests.Utils;
-using Measure = DaxStudio.Tests.Utils.Measure;
+using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
+using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
 using System.Collections.Generic;
 using DaxStudio.UI.Model;
 
@@ -28,7 +29,10 @@ namespace DaxStudio.Tests
         private IADOTabularConnection connection;
         private static DataSet keywordDataSet;
         private static DataSet functionDataSet;
-        private static DataSet measureDataSet;
+        private static DataSet dmvDataSet;
+        private static DataSet measureDataSet_MD;
+        private static DataSet measureDataSet_TM;
+        private static DataSet tablesDataSet;
         private static DataSet measureDataSetEmpty;
         private static DataSet cubesDataSet;
         private static ADOTabularDatabase mockDatabase;
@@ -39,6 +43,18 @@ namespace DaxStudio.Tests
             foreach (AdomdRestriction r in res)
             {
                 if (r.Name == "MEASUREGROUP_NAME" && r.Value.ToString() == "Reseller Sales")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsResellerSalesTable(AdomdRestrictionCollection res)
+        {
+            foreach (AdomdRestriction r in res)
+            {
+                if (r.Name == "TableID" && r.Value.ToString() == "1")
                 {
                     return true;
                 }
@@ -76,15 +92,36 @@ namespace DaxStudio.Tests
                 })
             );
 
-            measureDataSet = new DataSet();
-            measureDataSet.Tables.Add(
-                DmvHelpers.ListToTable(new List<Measure> {
-                    new Measure { MEASURE_NAME = "MyMeasure", MEASURE_CAPTION="MyMeasure",DESCRIPTION="My Description",EXPRESSION="1"} 
+            dmvDataSet = new DataSet();
+            dmvDataSet.Tables.Add(
+                DmvHelpers.ListToTable(new List<Dmv> {
+                    new Dmv { SchemaName = "TMSCHEMA_MEASURES" },
+                })
+            );
+
+            measureDataSet_MD = new DataSet();
+            measureDataSet_MD.Tables.Add(
+                DmvHelpers.ListToTable(new List<MeasureMD> {
+                    new MeasureMD { MEASURE_NAME = "MyMeasure", MEASURE_CAPTION="MyMeasure",DESCRIPTION="My Description",EXPRESSION="1"} 
+                })
+            );
+
+            measureDataSet_TM = new DataSet();
+            measureDataSet_TM.Tables.Add(
+                DmvHelpers.ListToTable(new List<MeasureTM> {
+                    new MeasureTM { TableID = 1, Name = "MyMeasure", Description="My Description",Expression="1"}
+                })
+            );
+
+            tablesDataSet= new DataSet();
+            tablesDataSet.Tables.Add(
+                DmvHelpers.ListToTable(new List<TableTM> {
+                    new TableTM { ID = 1, Name = "Reseller Sales"}
                 })
             );
 
             measureDataSetEmpty = new DataSet();
-            measureDataSetEmpty.Tables.Add( DmvHelpers.ListToTable(new List<Measure>() ) );
+            measureDataSetEmpty.Tables.Add( DmvHelpers.ListToTable(new List<MeasureMD>() ) );
 
             cubesDataSet = new DataSet();
             cubesDataSet.Tables.Add(
@@ -108,6 +145,7 @@ namespace DaxStudio.Tests
             mockConn.SetupGet(x => x.Columns).Returns(columnCollection);
             mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false)).Returns(keywordDataSet);
             mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false)).Returns(functionDataSet);
+            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS")).Returns(dmvDataSet);
             mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_CUBES", It.IsAny<AdomdRestrictionCollection>())).Returns(cubesDataSet);
             mockConn.Setup(x => x.ShowHiddenObjects).Returns(true);
             var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*");
@@ -117,28 +155,29 @@ namespace DaxStudio.Tests
                 "MDSCHEMA_MEASURES", 
                 It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)), 
                 false))
-                .Returns(measureDataSet);
+                .Returns(measureDataSet_MD);
             mockConn.Setup(x => x.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
                 It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
                 false))
                 .Returns(measureDataSetEmpty);
             mockConn.Setup(x => x.GetSchemaDataSet(
-                "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res))
+                "TMSCHEMA_MEASURES",
+                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesTable(res))
                 ))
-                .Returns(measureDataSet);
+                .Returns(measureDataSet_TM);
             mockConn.Setup(x => x.GetSchemaDataSet(
-                "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res))
+                "TMSCHEMA_MEASURES",
+                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesTable(res))
                 ))
                 .Returns(measureDataSetEmpty);
+            mockConn.Setup(x => x.GetSchemaDataSet("TMSCHEMA_TABLES", It.IsAny<AdomdRestrictionCollection>())).Returns(tablesDataSet);
             mockConn.Setup(x => x.ServerVersion).Returns("15.0.0");
             mockConn.SetupGet(x => x.Visitor).Returns(new MetaDataVisitorCSDL(mockConn.Object));
 
             mockConn.SetupGet(x => x.Keywords).Returns(new ADOTabularKeywordCollection(mockConn.Object));
             mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
-            
+            mockConn.SetupGet(x => x.DynamicManagementViews).Returns( new ADOTabularDynamicManagementViewCollection(mockConn.Object));
             connection = mockConn.Object;
         }
         //
@@ -659,12 +698,12 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
 
 
-            foreach (var table in tabs)
-            {
-                var measures = table.Measures;
+            //foreach (var table in tabs)
+            //{
+            //    var measures = table.Measures;
+            //}
 
-
-            }
+            Assert.AreEqual(1, tabs["Reseller Sales"].Measures.Count,"There should be 1 measure populated by the mocks");
         }
 
         [TestMethod]

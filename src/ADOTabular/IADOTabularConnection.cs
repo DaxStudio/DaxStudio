@@ -30,6 +30,7 @@ namespace ADOTabular
         #region Methods
         int ExecuteCommand(string command);
         DataTable ExecuteDaxQueryDataTable(string query);
+        DataSet GetSchemaDataSet(string dataset);
         DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions);
         DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions, bool throwOnErrors);
 

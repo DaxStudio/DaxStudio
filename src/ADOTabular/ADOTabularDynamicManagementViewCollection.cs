@@ -8,8 +8,8 @@ namespace ADOTabular
     public class ADOTabularDynamicManagementViewCollection : IEnumerable<ADOTabularDynamicManagementView>
     {
         private DataSet _dsDmvs;
-        private readonly ADOTabularConnection _adoTabConn;
-        public ADOTabularDynamicManagementViewCollection(ADOTabularConnection adoTabConn)
+        private readonly IADOTabularConnection _adoTabConn;
+        public ADOTabularDynamicManagementViewCollection(IADOTabularConnection adoTabConn)
         {
             _adoTabConn = adoTabConn;
 
