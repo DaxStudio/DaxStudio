@@ -525,7 +525,9 @@ namespace DaxStudio.UI.Model
             }
             catch (Exception ex)
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip sample data: {ex.Message}"));
+                var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(TreeViewColumn), nameof(GetSampleDataAsync), errorMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
             }
             finally
             {

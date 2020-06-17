@@ -11,7 +11,8 @@ namespace DaxStudio.UI.Interfaces
         Timer,
         Linked,
         Static,
-        File
+        File,
+        Clipboard
     }
     public interface IQueryRunner
     {

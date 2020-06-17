@@ -1,7 +1,10 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -200,6 +203,75 @@ namespace DaxStudio.UI.Extensions
             }
             return ds;
 
+        }
+
+        /// <summary>
+        /// Writes a DataTable object to a StreamWriter
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="textWriter"></param>
+        /// <param name="sep"></param>
+        /// <param name="shouldQuoteStrings"></param>
+        /// <param name="isoDateFormat"></param>
+        /// <param name="statusProgress"></param>
+        /// <returns></returns>
+        public static int WriteToStream(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, TextWriter textWriter, string sep, bool shouldQuoteStrings, string isoDateFormat, IStatusBarMessage statusProgress)
+        {
+
+            int iMaxCol = reader.FieldCount - 1;
+            int iRowCnt = 0;
+
+            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+            {
+                // CSV Writer config
+
+                csvWriter.Configuration.Delimiter = sep;
+
+                // Datetime as ISOFormat
+
+                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                    typeof(DateTime),
+                    new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+
+                // write out clean column names
+
+                foreach (var colName in reader.CleanColumnNames())
+                {
+                    csvWriter.WriteField(colName);
+                }
+
+                csvWriter.NextRecord();
+
+                while (reader.Read())
+                {
+                    iRowCnt++;
+
+                    for (int iCol = 0; iCol < reader.FieldCount; iCol++)
+                    {
+                        var fieldValue = reader[iCol];
+
+                        // quote all string fields
+                        if (reader.GetFieldType(iCol) == typeof(string))
+                            if (reader.IsDBNull(iCol))
+                                csvWriter.WriteField("", shouldQuoteStrings);
+                            else
+                                csvWriter.WriteField(fieldValue.ToString(), shouldQuoteStrings);
+                        else
+                            csvWriter.WriteField(fieldValue);
+                    }
+
+                    csvWriter.NextRecord();
+
+                    if (iRowCnt % 1000 == 0)
+                    {
+                        statusProgress.Update($"Written {iRowCnt:n0} rows to the file output");
+                    }
+
+                }
+
+            }
+
+            return iRowCnt;
         }
     }
 }
