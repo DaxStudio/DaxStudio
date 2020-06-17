@@ -100,6 +100,10 @@ namespace DaxStudio.UI.ViewModels
                 case "ModelList":
                     try
                     {
+                        if (ModelList == null) return;
+                        if (Connection == null) return;
+                        if (Connection?.Database?.Models == null) return;
+
                         if (ModelList.Count > 0)
                         {
                             SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
@@ -177,6 +181,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument, SelectedModelName));
                         NotifyOfPropertyChange(() => SelectedModel);
+                        // TODO - should we run the table refresh async
                         RefreshTables();
 
                     }
@@ -382,6 +387,11 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _databases = value;
+                if (value == null) {
+                    DatabasesView.Clear();
+                    NotifyOfPropertyChange(() => DatabasesView);
+                    return;
+                }
                 MergeDatabaseView();
             }
         }
@@ -392,8 +402,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
-                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.FileName.Length > 0 ? Connection.FileName : ""
+                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.ShortFileName?.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.FileName?.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases

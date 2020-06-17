@@ -81,6 +81,12 @@ namespace DaxStudio.UI.Converters
                         var colBinding = new Binding(bindingPath);
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
 
+                        // TODO - this might work if I pass thru the data context as a parameter
+                        // then I could call a method on the viewModel
+                        //Button btn = new Button();
+                        //btn.Click += (s, e) => CancelSpid(0);
+
+
                         // Bind FormatString if it exists
                         if (item.ExtendedProperties[Constants.FormatString] != null)
                             colBinding.StringFormat = item.ExtendedProperties[Constants.FormatString].ToString();

@@ -130,6 +130,5 @@ namespace DaxStudio.UI.Extensions
             }
         }
 
-
     }
 }

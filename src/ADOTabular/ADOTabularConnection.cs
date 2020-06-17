@@ -105,9 +105,11 @@ namespace ADOTabular
                     }
                     return _db;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    return null;
+                    System.Diagnostics.Debug.WriteLine($"Error in Database property: {ex.Message}");
+                    throw;
+                    //return null;
                 }
             }
         }

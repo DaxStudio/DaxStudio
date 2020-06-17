@@ -81,5 +81,7 @@ namespace DaxStudio.UI.Model
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize) => throw new NotImplementedException();
 
         public void UpdateBasicStats(ADOTabularConnection connection) => throw new NotImplementedException();
+
+        public string Description => TabularObject.Description;
     }
 }

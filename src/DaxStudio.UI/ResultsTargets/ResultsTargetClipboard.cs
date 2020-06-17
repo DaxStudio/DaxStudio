@@ -1,87 +1,71 @@
-﻿using DaxStudio.Common;
-using DaxStudio.Interfaces;
-using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
-using System;
+﻿using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces;
+using System.Diagnostics;
+using Caliburn.Micro;
+using DaxStudio.UI.Interfaces;
+using Serilog;
+using DaxStudio.UI.Extensions;
+using System.Data;
+using System.Collections;
+using System.Text;
+using DaxStudio.Common;
+using System.IO;
+using DaxStudio.UI.Events;
+using System.Windows;
 
 namespace DaxStudio.UI.Model
 {
+    // This is the default target which writes the results out to
+    // the built-in grid
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetTextFile : IResultsTarget
+    public class ResultsTargetClipboard: IResultsTarget 
     {
+        private readonly IEventAggregator _eventAggregator;
+        private readonly IGlobalOptions _options;
+
+        [ImportingConstructor]
+        public ResultsTargetClipboard(IEventAggregator eventAggregator, IGlobalOptions options)
+        {
+            _eventAggregator = eventAggregator;
+            _options = options;
+        }
+
         #region Standard Properties
-        public string Name => "File";
+        public string Name => "Clipboard";
         public string Group => "Standard";
+        public int DisplayOrder => 400;
         public bool IsDefault => false;
         public bool IsAvailable => true;
-        public int DisplayOrder => 300;
-        public string Message => "Results will be sent to a Text File";
-        public OutputTarget Icon => OutputTarget.File;
+        public string Message => "Query output sent to Clipboard";
+        public OutputTarget Icon => OutputTarget.Clipboard;
 
         public bool IsEnabled => true;
 
         public string DisabledReason => "";
         #endregion
 
+        // This is the core method that handles the output of the results
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
+            StringBuilder sb = new StringBuilder();
 
-            var dlg = new Microsoft.Win32.SaveFileDialog
-            {
-                DefaultExt = ".txt",
-                Filter = "Tab separated text file|*.txt|Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Custom Export Format (Configure in Options)|*.csv"
-            };
-
-            string fileName = "";
-            long durationMs = 0;
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
-
-            // Process save file dialog box results 
-            if (result == true)
-            {
-                // Save document 
-                fileName = dlg.FileName;
-                await Task.Run(() =>
+            await Task.Run(() =>
                 {
-
+                    long durationMs = 0;
                     try
                     {
                         runner.OutputMessage("Query Started");
 
                         var sw = Stopwatch.StartNew();
-
+                        
                         string sep = "\t";
                         bool shouldQuoteStrings = true; //default to quoting all string fields
                         string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
                         string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
                         Encoding enc = new UTF8Encoding(false);
-
-                        switch (dlg.FilterIndex)
-                        {
-                            case 1: // tab separated
-                                sep = "\t";
-                                break;
-                            case 2: // utf-8 csv
-                                sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
-                                break;
-                            case 3: //unicode csv
-                                enc = new UnicodeEncoding();
-                                sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
-                                break;
-                            case 4:
-                                // TODO - custom export format
-                                sep = runner.Options.GetCustomCsvDelimiter();
-                                shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
-                                break;
-                        }
-
+                           
                         var daxQuery = textProvider.QueryText;
                         var reader = runner.ExecuteDataReaderQuery(daxQuery);
 
@@ -92,33 +76,42 @@ namespace DaxStudio.UI.Model
                             {
                                 if (reader != null)
                                 {
-                                    int iFileCnt = 1;
-                                    
 
-                                    runner.OutputMessage("Command Complete, writing output file");
+
+                                    runner.OutputMessage("Command Complete, writing output to clipboard");
 
                                     bool moreResults = true;
 
                                     while (moreResults)
                                     {
-                                        var outputFilename = fileName;
+
                                         int iRowCnt = 0;
-                                        using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
+                                        
+                                        
+                                        using (StringWriter textWriter = new StringWriter(sb))
+                                        //using (var textWriter = new System.IO.StreamWriter( stringWriter, false, enc))
                                         {
-                                            if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
-                                            iRowCnt = reader.WriteToStream( textWriter, sep, shouldQuoteStrings, isoDateFormat,  statusProgress);
+                                            iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
                                         }
+
                                         runner.OutputMessage(
-                                                string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                                string.Format("Query Completed ({0:N0} row{1} returned)"
                                                             , iRowCnt
-                                                            , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                                            , iRowCnt == 1 ? "" : "s")
                                                 );
 
                                         runner.RowCount = iRowCnt;
 
                                         moreResults = reader.NextResult();
 
-                                        iFileCnt++;
+                                        if (moreResults)
+                                        {
+                                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Output to Clipboard only copies the first table of results"));
+                                            while (reader.NextResult())
+                                            {
+                                                // loop thru 
+                                            }
+                                        }
                                     }
 
                                     sw.Stop();
@@ -155,18 +148,12 @@ namespace DaxStudio.UI.Model
 
                 });
 
-            }
-            // else dialog was cancelled so return an empty task.
-            await Task.Run(() => { });
+            // copy output to clipboard
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => {
+                System.Windows.Forms.Clipboard.SetText(sb.ToString());
+            }, System.Windows.Threading.DispatcherPriority.Normal);
         }
 
-       
-
-        private string AddFileCntSuffix(string fileName, int iFileCnt)
-        {
-            FileInfo fi = new FileInfo(fileName);
-            var newName = string.Format("{0}\\{1}_{2}{3}", fi.DirectoryName.TrimEnd('\\'), fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length), iFileCnt, fi.Extension);
-            return newName;
-        }
     }
+
 }

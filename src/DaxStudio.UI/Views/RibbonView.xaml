@@ -406,7 +406,7 @@
                         x:Name="OutputGallery2"
                                                
                         MinItemsInRow="1"
-                        MaxItemsInRow="4"
+                        MaxItemsInRow="3"
                         Orientation="Horizontal"
                         ItemWidth="80"
                         ItemHeight="80"

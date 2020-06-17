@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -89,6 +90,21 @@ namespace DaxStudio.UI.ViewModels
                 _rowCount = value;
                 NotifyOfPropertyChange(() => RowCount);
                 NotifyOfPropertyChange(() => StatusMessage);
+                NotifyOfPropertyChange(() => ProgressPercentage);
+            }
+        }
+
+        public double ProgressPercentage => TotalRows == 0 ? 0 : (Double)RowCount / TotalRows;
+
+        private long _totalRows = 0;
+        public long TotalRows
+        {
+            get { return _totalRows; }
+            set
+            {
+                _totalRows = value;
+                NotifyOfPropertyChange(() => TotalRows);
+                NotifyOfPropertyChange(() => StatusMessage);
             }
         }
         public string StatusMessage
@@ -98,8 +114,9 @@ namespace DaxStudio.UI.ViewModels
                 switch (Status)
                 {
                     case ExportStatus.Done:
-                    case ExportStatus.Exporting:
                         return $"{RowCount:N0} rows exported";
+                    case ExportStatus.Exporting:
+                        return $"{RowCount:N0} of {TotalRows:N0} rows exported";
                     case ExportStatus.Ready:
                         return "Waiting...";
                     case ExportStatus.Error:

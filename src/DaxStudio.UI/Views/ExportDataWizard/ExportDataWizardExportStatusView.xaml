@@ -6,9 +6,15 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <!-- Converters -->
+        <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
+        <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -22,14 +28,34 @@
             </i:Interaction.Behaviors>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <Grid HorizontalAlignment="Stretch" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
                         <fa:ImageAwesome Icon="{Binding Icon}" Spin="{Binding IconSpin}" Width="16" Height="16" Foreground="{Binding IconColor}" Margin="2" />
 
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock x:Name="TableName" Text="{Binding Caption}" Margin="5,0,0,0"/>
-                            <TextBlock x:Name="StatusMessage" Text="{Binding StatusMessage}" Margin="5,0,0,1" FontSize="12" Foreground="Gray" />
-                        </StackPanel>
-                    </StackPanel>
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock x:Name="TableName" Text="{Binding Caption}" Margin="5,0,0,0" Grid.Row="0" />
+                            <TextBlock x:Name="StatusMessage" Text="{Binding StatusMessage}" Margin="5,0,0,1" FontSize="12" Foreground="Gray" Grid.Row="1" />
+                            <Grid x:Name="gridProgress" Visibility="{Binding IconSpin, Converter={StaticResource BoolToCollapsedConverter}}" Grid.Row="2" Width="200">
+                                <Rectangle x:Name="ProgressBackground" Fill="LightGray" Height="3"></Rectangle>
+                                <Rectangle x:Name="ProgressRectangle" Fill="RoyalBlue" Height="3"  HorizontalAlignment="Left">
+                                    <Rectangle.Width>
+                                        <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
+                                            <Binding Path="ProgressPercentage"/>
+                                            <Binding Path="ActualWidth" ElementName="gridProgress"/>
+                                        </MultiBinding>
+                                    </Rectangle.Width>
+                                </Rectangle>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                     
                 </DataTemplate>
             </ListView.ItemTemplate>

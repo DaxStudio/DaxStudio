@@ -108,7 +108,30 @@ namespace DaxStudio.UI.Model
                 foreach (var folderItem in folder.FolderItems)
                 {
                     GetChildrenDelegate getChildren = null;
-                    if (folderItem is IADOTabularFolderReference) getChildren = ((IADOTabularObjectReference)folderItem).TreeViewFolderChildren;
+                    if (folderItem is IADOTabularFolderReference fi)
+                    {
+                        // if the current item is a sub-folder look for it's children 
+                        getChildren = fi.TreeViewFolderChildren;
+                    }
+                    else
+                    {
+                        var col = (table as ADOTabularTable).Columns.GetByPropertyRef(folderItem.InternalReference);
+                        switch (col)
+                        {
+                            // if this item is a KPI get it's child components
+                            case ADOTabularKpi k:
+                                getChildren = k.TreeViewColumnChildren;
+                                break;
+                            // if this item is a hierarchy get it's child levels
+                            case ADOTabularHierarchy h: 
+                                getChildren = h.TreeViewColumnChildren;
+                                break;
+                            default: 
+                                getChildren = null;
+                                break;
+                        };
+                    }
+
                     lst.Add(new TreeViewColumn(folderItem, getChildren, (table as ADOTabularTable), options, eventAggregator, metadataPane));
                 }
             }
@@ -354,7 +377,7 @@ namespace DaxStudio.UI.Model
             Options = options;
             Column = kpiComponent;
             DataTypeName = kpiComponent.DataTypeName;
-            
+            Description = kpiComponent.Column.Description;
             MetadataImage = MetadataImages.Measure;
         }
         public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
@@ -363,6 +386,7 @@ namespace DaxStudio.UI.Model
             Options = options;
             Column = kpi;
             DataTypeName = kpi.DataTypeName;
+            Description = kpi.Description;
             MetadataImage = MetadataImages.Kpi;
         }
         public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane):base(level.Column.Table, null, options,eventAggregator,metadataPane)
@@ -380,6 +404,7 @@ namespace DaxStudio.UI.Model
         {
             Options = options;
             Column = hier;
+            Description = hier.Description;
             MetadataImage = MetadataImages.Hierarchy;
         }
 
@@ -438,8 +463,10 @@ namespace DaxStudio.UI.Model
         public string DataTypeName { get; private set; }
         public string DaxName => Column?.DaxName??string.Empty;
 
-        public bool ShowDescription { get { return !string.IsNullOrEmpty(Description); } }
-        public bool ShowDataType { get { return !string.IsNullOrEmpty(DataTypeName); } }
+        public bool ShowDescription => !string.IsNullOrEmpty(Description); 
+        public bool ShowDataType =>!string.IsNullOrEmpty(DataTypeName); 
+
+        public bool ShowFormatString => !string.IsNullOrEmpty(FormatString);
         public string FormatString { get; private set; }
         public string MinValue { get { return _minValue; }
             private set { _minValue = value;
@@ -498,7 +525,9 @@ namespace DaxStudio.UI.Model
             }
             catch (Exception ex)
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip sample data: {ex.Message}"));
+                var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(TreeViewColumn), nameof(GetSampleDataAsync), errorMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
             }
             finally
             {

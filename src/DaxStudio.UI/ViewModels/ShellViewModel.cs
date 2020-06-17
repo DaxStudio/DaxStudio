@@ -250,10 +250,10 @@ namespace DaxStudio.UI.ViewModels
 
         void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            double sessionMin = -1;
+            double sessionMin = 0;
             try
             {
-                TimeSpan sessionSpan = utcSessionStart - DateTime.UtcNow;
+                TimeSpan sessionSpan = DateTime.UtcNow - utcSessionStart;
                 sessionMin = sessionSpan.TotalMinutes;
             }
             catch 

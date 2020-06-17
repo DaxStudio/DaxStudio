@@ -9,6 +9,7 @@ using Moq;
 using DaxStudio.Tests.Utils;
 using Measure = DaxStudio.Tests.Utils.Measure;
 using System.Collections.Generic;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.Tests
 {
@@ -361,6 +362,31 @@ namespace DaxStudio.Tests
             Assert.AreEqual("Internet Sales", cmpyTab.Caption, "Table Name is correct");
             Assert.AreEqual("QTD Folder", cmpyTab.FolderItems[0].Name);
             Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
+
+        }
+
+
+        [TestMethod]
+        public void TestCSDLHierarchInDisplayFolders()
+        {
+
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\HierInFolder.csdl");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var tabDate = tabs["Date"];
+            //var cmpyCol = tabDate.FolderItems.Columns["Internet Current Quarter Sales"];
+
+            //var cmpyCol2 = cmpyTab.Columns["Internet Current Quarter Margin"];
+
+            Assert.AreEqual(1, tabDate.FolderItems.Count, "Table Name is correct");
+            Assert.AreEqual("Calendar Folder", tabDate.FolderItems[0].Name);
+            Assert.IsInstanceOfType(tabDate.Columns["Calendar"], typeof(ADOTabularHierarchy));
+            Assert.AreEqual(true, tabDate.Columns["Calendar"].IsInDisplayFolder);
+            //Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
 
         }
 

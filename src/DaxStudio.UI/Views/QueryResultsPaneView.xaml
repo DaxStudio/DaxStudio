@@ -7,6 +7,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+                              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
@@ -23,7 +24,7 @@
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-
+            <sel:ResultsGridCellTemplateSelector x:Key="ResultsGridCellTemplateSelector"/>
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
 
             <Style TargetType="FrameworkElement" x:Key="FadeInAnimation">
@@ -173,7 +174,7 @@
                                         , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                             CanUserSortColumns="True"
-                             
+ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"                            
                             >
 
                             <DataGrid.AlternatingRowBackground>

@@ -5,6 +5,7 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -77,7 +78,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string QueryText => QueryBuilder.BuildQuery(Columns.Items, Filters.Items);
+        public string QueryText { 
+            get { 
+                try { 
+                    return QueryBuilder.BuildQuery(Columns.Items, Filters.Items); 
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(QueryText), ex.Message);
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
+                }
+                return string.Empty;
+            } 
+        
+        }
 
 
         public void RunQuery() {
