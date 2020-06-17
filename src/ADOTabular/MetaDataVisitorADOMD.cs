@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using ADOTabular.AdomdClientWrappers;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -118,6 +120,12 @@ namespace ADOTabular
 
         internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
         {
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES")) return GetTmSchemaMeasures(measures, conn);
+            return GetMdSchemaMeasures(measures, conn);
+        }
+
+        private static SortedDictionary<string, ADOTabularMeasure> GetMdSchemaMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
+        {
             var ret = new SortedDictionary<string, ADOTabularMeasure>();
 
             var resCollMeasures = new AdomdRestrictionCollection
@@ -145,6 +153,46 @@ namespace ADOTabular
                         , dr["DESCRIPTION"].ToString()
                         , bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
                         , dr["EXPRESSION"].ToString()
+                        )
+                        );
+            }
+
+            return ret;
+        }
+
+        private static SortedDictionary<string, ADOTabularMeasure> GetTmSchemaMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
+        {
+            var resCollTables = new AdomdRestrictionCollection
+                {
+                    {"Name",  measures.Table.Caption},
+                };
+
+            // need to look up the TableID in TMSCHEMA_TABLES
+            DataTable dtTables = conn.GetSchemaDataSet("TMSCHEMA_TABLES", resCollTables).Tables[0];
+            var tableId = dtTables.Rows[0].Field<System.UInt64>("ID");
+
+            var ret = new SortedDictionary<string, ADOTabularMeasure>();
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"DatabaseName", conn.Database.Name},
+                    {"TableID",  tableId},
+                };
+
+            if (!conn.ShowHiddenObjects) resCollMeasures.Add(new AdomdRestriction("IsHidden", false));
+
+            // then get all the measures for the current table
+            DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                ret.Add(dr["Name"].ToString()
+                    , new ADOTabularMeasure(measures.Table
+                        , dr["Name"].ToString()
+                        , dr["Name"].ToString()
+                        , dr["Name"].ToString() // TODO - TMSCHEMA_MEASURES does not have a caption property
+                        , dr["Description"].ToString()
+                        , !bool.Parse(dr["IsHidden"].ToString())
+                        , dr["Expression"].ToString()
                         )
                         );
             }

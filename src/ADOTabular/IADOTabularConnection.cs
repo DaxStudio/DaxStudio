@@ -13,6 +13,7 @@ namespace ADOTabular
         Dictionary<string, ADOTabularColumn> Columns { get; }
         ADOTabularDatabase Database { get; }
         ADOTabularDatabaseCollection Databases { get; }
+        ADOTabularDynamicManagementViewCollection DynamicManagementViews { get; }
         bool IsPowerPivot { get; }
         ADOTabularKeywordCollection Keywords { get; }
         //IEnumerable<string> Keywords { get; }
