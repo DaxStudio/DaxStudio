@@ -84,6 +84,8 @@ namespace DaxStudio.SignalR
         public Version DismissedVersion { get; set; }
         public DateTime LastVersionCheckUTC { get;set; }
         public bool VpaxIncludeTom { get;set; }
+        public int VpaxSampleReferentialIntegrityViolations { get; set; }
+
         public bool CustomCsvQuoteStringFields { get; set; }
         public CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
         public ObservableCollection<IDaxFile> RecentFiles { get; set; }

@@ -9,6 +9,7 @@ using DaxStudio.ExcelAddin;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using DaxStudio.SignalR;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio
 {
@@ -27,7 +28,7 @@ namespace DaxStudio
             //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
             //}
 
-            public void ConstructQueryTraceEngine(ADOTabular.AdomdClientWrappers.AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName) //, IGlobalOptions globalOptions)
+            public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName) //, IGlobalOptions globalOptions)
             {
                 try
                 {
@@ -39,7 +40,7 @@ namespace DaxStudio
                         // override command type if this is Excel 2013 or later
                         if (xl.IsExcel2013OrLater)
                         {
-                            connectionType = ADOTabular.AdomdClientWrappers.AdomdType.Excel;
+                            connectionType = AdomdType.Excel;
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngineExcel");
                             // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
                             VoidDelegate f = delegate
@@ -55,7 +56,7 @@ namespace DaxStudio
                         }
                         else
                         {
-                            connectionType = ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices;
+                            connectionType = AdomdType.AnalysisServices;
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
                             _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });

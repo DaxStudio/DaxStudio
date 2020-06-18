@@ -11,7 +11,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using DaxStudio.Common;
 using Polly;
-
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.QueryTrace
 {

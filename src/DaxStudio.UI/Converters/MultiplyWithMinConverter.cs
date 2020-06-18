@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            double result = 1.0;
+           double result = 1.0;
             for (int i = 0; i < values.Length; i++)
             {
                 if (values[i] is double)

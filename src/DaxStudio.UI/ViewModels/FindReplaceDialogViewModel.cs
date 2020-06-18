@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using DaxStudio.UI.Extensions;
 using Serilog;
 using DaxStudio.UI.Events;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -127,12 +128,19 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _isVisible; }
             set {
-                _isVisible = value;
-                NotifyOfPropertyChange(() => IsVisible);
-                if (value == true)
+                try
                 {
-                    //FocusOnFindBox();
-                    this.SetFocus(() => TextToFind);
+                    _isVisible = value;
+                    NotifyOfPropertyChange(() => IsVisible);
+                    if (value == true)
+                    {
+                        //FocusOnFindBox();
+                        this.SetFocus(() => TextToFind);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(IsVisible), $"Error setting IsVisible: {ex.Message}");
                 }
             }
         }
@@ -177,7 +185,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "FindReplaceDialogViewModel", "FindText", ex.Message);
+                Log.Error(ex, Constants.LogMessageTemplate, "FindReplaceDialogViewModel", "FindText", ex.Message);
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
             }
         }
@@ -219,7 +227,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex,"{class} {method} {message}","FindReplaceDialogViewModel","ReplaceText",ex.Message);
+                Log.Error(ex,Constants.LogMessageTemplate,"FindReplaceDialogViewModel","ReplaceText",ex.Message);
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
             }
         }

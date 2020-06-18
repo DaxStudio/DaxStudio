@@ -1,6 +1,7 @@
-﻿
-using DaxStudio.Interfaces.Enums;
-
+﻿using DaxStudio.Interfaces.Enums;
+/// <summary>
+/// This class takes care of swapping delimiters from US to NonUS styles
+/// </summary>
 namespace DaxStudio.UI.Utils.DelimiterTranslator
 {
     public class DelimiterStateMachine : StringStateMachine<DelimiterStateMachine>

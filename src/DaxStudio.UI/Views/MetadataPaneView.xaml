@@ -1,4 +1,4 @@
-<UserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
+<ctrl:ZoomableUserControl x:Class="DaxStudio.UI.Views.MetadataPaneView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -16,7 +16,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
-    <UserControl.Resources>
+    <ctrl:ZoomableUserControl.Resources>
 
         <ResourceDictionary>
             <SolidColorBrush x:Key="DataTypeBrush" Color="DimGray" />
@@ -29,7 +29,8 @@
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
             <conv:MultiplyWithMinConverter x:Key="multiplyWithMinConverter"/>
             <conv:StringFormatConverter x:Key="StringFormatConverter"/>
-
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            
             <BitmapImage x:Key="Clear"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/clear.png" />
             <BitmapImage x:Key="Search"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/Search.png" />
             <BitmapImage x:Key="SearchActive"    UriSource="pack://application:,,,/DaxStudio.UI;component/Images/FindReplace/SearchActive.png" />
@@ -57,13 +58,23 @@
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Foreground" Value="#FF575757" />
                 <Setter Property="Background" Value="#FFFFFFFF" />
+                <Setter Property="LayoutTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}" 
+                                        ScaleY="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}"/>
+                    </Setter.Value>
+                </Setter>
                 <Setter Property="Padding" Value="5,1,6,2" />
                 <Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
+                
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
                             <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
                                 <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                    <!--<Border.RenderTransform>
+                                        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
+                                    </Border.RenderTransform>-->
                                     <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                                 </Border>
                             </themes:SystemDropShadowChrome>
@@ -143,7 +154,7 @@
 
         </ResourceDictionary>
 
-    </UserControl.Resources>
+    </ctrl:ZoomableUserControl.Resources>
 
     <Grid Margin="2 2 2 0" >
 
@@ -152,11 +163,11 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <!-- database Dropdown -->
+        <!-- database Dropdown MinWidth="160"  -->
         <ComboBox Grid.Row="0" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
-            MinWidth="160" 
+            
             Template="{DynamicResource MetroComboBoxControlTemplate}"
             IsEditable="False"
             IsSynchronizedWithCurrentItem="True" 
@@ -164,6 +175,7 @@
             Margin="0,0,0,2" 
             Style="{StaticResource DatabaseComboStyle}"      >
             <ComboBox.ToolTip>
+                <Grid>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -174,17 +186,20 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                         <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
                         <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                     </StackPanel>
-                    <TextBlock Text="Compatibility: " Grid.Row="1"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
-                    <TextBlock Text="Culture: " Grid.Row="2"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="2"/>
-                    <TextBlock Text="Last Updated: " Grid.Row="3"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="3" Grid.Column="1"/>
+                    <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
+                    <TextBlock Text="Compatibility: " Grid.Row="2"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
+                    <TextBlock Text="Culture: " Grid.Row="3"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
+                    <TextBlock Text="Last Updated: " Grid.Row="4"/>
+                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
+                </Grid>
                 </Grid>
             </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
@@ -243,6 +258,27 @@
                     </Style.Triggers>
                 </Style>
             </ComboBox.Style>
+            <ComboBox.ToolTip>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+                        <Image Source="{StaticResource ModelIcon}" Width="16" Height="16"></Image>
+                        <TextBlock Text="{Binding Path=SelectedModel.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                    </StackPanel>
+
+                    <TextBlock Text="Tables: " Grid.Row="1"/>
+                    <TextBlock Text="{Binding SelectedModel.Tables.Count, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
+
+                </Grid>
+            </ComboBox.ToolTip>
         </ComboBox>
         <ContentControl Grid.Row="2">
             <Control.Template>
@@ -279,7 +315,7 @@
                                         </Grid>
                                         <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
-                                                        <StackPanel Orientation="Vertical" MaxWidth="250">
+                                                        <StackPanel Orientation="Vertical" MaxWidth="450">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                                                 <TextBlock Text="{Binding Caption}"></TextBlock>
@@ -343,14 +379,16 @@
                                                 <ToolTip Background="{DynamicResource BaseBrush}">
                                                 <Grid>
                                                     <StackPanel Orientation="Vertical" Margin="5">
-                                                        <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                                        <StackPanel Orientation="Horizontal" >
                                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                                             <TextBlock FontWeight="Bold" Text="{Binding Caption}"/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
-                                                            <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
-                                                        </StackPanel>
-                                                            <TextBlock Text="{Binding DaxName}" />
+                                                                <StackPanel Orientation="Horizontal" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDataType}">
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text=" ["/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="{Binding DataTypeName}"/>
+                                                                    <TextBlock Foreground="{StaticResource DataTypeBrush}" Text="]"/>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding DaxName}" Visibility="{Binding Converter={StaticResource StringToVisibilityConverter},Path=DaxName}"/>
                                                             <TextBlock FontStyle="Italic" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowDescription}" Text="{Binding Description}"></TextBlock>
 
                                                         <Grid>
@@ -364,7 +402,8 @@
                                                                 <RowDefinition/>
                                                                 <RowDefinition/>
                                                             </Grid.RowDefinitions>
-                                                            <TextBlock Style="{StaticResource ToolTipLabel}"> Format:</TextBlock>
+                                                            <TextBlock Style="{StaticResource ToolTipLabel}"
+                                                                       Visibility="{Binding ShowFormatString, Converter={StaticResource BoolToVisibilityConverter}}"> Format:</TextBlock>
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="1"
                                                                        Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}">Distinct Values:</TextBlock>
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="2"
@@ -372,7 +411,8 @@
                                                             <TextBlock Style="{StaticResource ToolTipLabel}" Grid.Row="3"
                                                                        Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}">Max:</TextBlock>
 
-                                                            <TextBlock Grid.Column="1" Text="{Binding FormatString}"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding FormatString}"
+                                                                       Visibility="{Binding ShowFormatString, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                             <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Path=DistinctValues, StringFormat={}{0:N0}}"
                                                                        Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"></TextBlock>
                                                             <TextBlock Grid.Column="1" Grid.Row="2" 
@@ -567,4 +607,4 @@
         </ContentControl>
     </Grid>
 
-</UserControl>
+</ctrl:ZoomableUserControl>

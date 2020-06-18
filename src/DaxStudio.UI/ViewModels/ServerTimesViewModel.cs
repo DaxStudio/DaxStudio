@@ -15,12 +15,15 @@ using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using DaxStudio.UI.JsonConverters;
+using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.ViewModels
 {
 
     public class TraceStorageEngineEvent {
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventClass Class;
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventSubclass Subclass;
         [JsonIgnore]
         public DaxStudioTraceEventClassSubclass ClassSubclass {
@@ -652,5 +655,6 @@ namespace DaxStudio.UI.ViewModels
         {
             File.WriteAllText(filePath, GetJsonString());
         }
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.UI.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for VertiPaqAnalyzerView.xaml
     /// </summary>
-    public partial class VertiPaqAnalyzerView : UserControl
+    public partial class VertiPaqAnalyzerView : ZoomableUserControl
     {
         public VertiPaqAnalyzerView()
         {

@@ -7,6 +7,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -76,9 +77,17 @@ namespace DaxStudio.UI.ViewModels
 
         private void ApplyFilter()
         {
-            if (FunctionGroups == null) return;
-            foreach (var node in FunctionGroups)
-                node.ApplyCriteria(SearchCriteria, new Stack<FilterableTreeViewItem>());
+            try
+            {
+                if (FunctionGroups == null) return;
+                foreach (var node in FunctionGroups)
+                    node.ApplyCriteria(SearchCriteria, new Stack<FilterableTreeViewItem>());
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FunctionPaneViewModel), nameof(ApplyFilter), ex.Message);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
+            }
         }
 
         public bool HasSearchCriteria => !string.IsNullOrEmpty(SearchCriteria);

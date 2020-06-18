@@ -110,7 +110,13 @@
                                         </Image.ToolTip>
                                     </Image>
                                 </StackPanel>
-                                <Label Content="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  Margin="0,12,5,5" Padding="0" x:Name="lblWorkBook" VerticalAlignment="Top" Grid.Column="1" Foreground="#3571AD"/>
+                                <TextBlock  
+                                    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
+                                    Margin="0,12,5,5" Padding="0" 
+                                    x:Name="lblWorkBook" 
+                                    VerticalAlignment="Top" 
+                                    Grid.Column="1" 
+                                    Foreground="#3571AD"/>
                             </Grid>
                             <StackPanel Margin="18 0 0 0" Orientation="Horizontal"  Visibility="{Binding ShowMissingModelWarning, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Image x:Name="WarningImage" Source="{StaticResource ResourceKey=Warning}" Width="16" Margin="5 2 0 0" IsEnabled="True" />

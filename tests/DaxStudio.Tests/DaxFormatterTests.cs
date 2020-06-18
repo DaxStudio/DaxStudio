@@ -14,7 +14,7 @@ namespace DaxStudio.Tests
     {
         
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestValidDax()
         {
             var uri = "http://www.daxformatter.com/api/daxformatter/DaxFormat";

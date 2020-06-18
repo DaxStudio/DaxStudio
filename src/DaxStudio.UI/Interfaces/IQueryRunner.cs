@@ -1,8 +1,9 @@
 ﻿using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Interfaces;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Interfaces
 {
     public enum OutputTarget
     {
@@ -10,7 +11,8 @@ namespace DaxStudio.Interfaces
         Timer,
         Linked,
         Static,
-        File
+        File,
+        Clipboard
     }
     public interface IQueryRunner
     {

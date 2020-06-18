@@ -63,13 +63,17 @@ namespace DaxStudio.UI.Utils {
                 else
                 {
                     _eventAggregator.PublishOnUIThread(new StopAutoSaveTimerEvent());
-                    Evaluate(finalResult); }
+                    Evaluate(finalResult); 
+                }
             }
             else
             {
-                callback(true, new List<IScreen>());
+                //    callback(true, new List<IScreen>());
+                _eventAggregator.PublishOnUIThread(new StopAutoSaveTimerEvent());
+                Evaluate(finalResult);
+
             }
-            
+
 
         }
 

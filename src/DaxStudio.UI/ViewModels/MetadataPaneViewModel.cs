@@ -100,6 +100,10 @@ namespace DaxStudio.UI.ViewModels
                 case "ModelList":
                     try
                     {
+                        if (ModelList == null) return;
+                        if (Connection == null) return;
+                        if (Connection?.Database?.Models == null) return;
+
                         if (ModelList.Count > 0)
                         {
                             SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
@@ -177,6 +181,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument, SelectedModelName));
                         NotifyOfPropertyChange(() => SelectedModel);
+                        // TODO - should we run the table refresh async
                         RefreshTables();
 
                     }
@@ -248,6 +253,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     try
                     {
+                        
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
@@ -257,17 +263,31 @@ namespace DaxStudio.UI.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "Tables", ex.Message, ex.StackTrace);
+                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.Task", ex.Message, ex.StackTrace);
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
                     }
                     finally
-                    {
+                    {             
                         IsBusy = false;
                     }
                 }).ContinueWith((taskStatus) =>
                 {
-                    Tables = _treeViewTables;
-                    EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    try
+                    {
+                        this.IsNotifying = false;
+                        Tables = _treeViewTables;
+                        EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    }
+                    catch(Exception ex)
+                    {
+                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
+                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                    }
+                    finally
+                    {
+                        IsNotifying = true;
+                        Refresh(); // force all data bindings to update
+                    }
                 });
             }
 
@@ -367,6 +387,11 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _databases = value;
+                if (value == null) {
+                    DatabasesView.Clear();
+                    NotifyOfPropertyChange(() => DatabasesView);
+                    return;
+                }
                 MergeDatabaseView();
             }
         }
@@ -377,8 +402,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.ShortFileName.Length > 0 ? Connection.ShortFileName : db,
-                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection.FileName.Length > 0 ? Connection.FileName : ""
+                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.ShortFileName?.Length > 0 ? Connection.ShortFileName : db,
+                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.FileName?.Length > 0 ? Connection.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -412,15 +437,18 @@ namespace DaxStudio.UI.ViewModels
             
                 if (Connection != null)
                 {
-                    if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name ) //!Connection.Database.Equals(_selectedDatabase))
+                    if (Connection.State == ConnectionState.Open)
                     {
-                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
-                        Connection.ChangeDatabase(value.Name);
+                        if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name) //!Connection.Database.Equals(_selectedDatabase))
+                        {
+                            Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
+                            Connection.ChangeDatabase(value.Name);
 
-                    }
-                    if (Connection.Database != null)
-                    {
-                        ModelList = Connection.Database.Models;
+                        }
+                        if (Connection.Database != null)
+                        {
+                            ModelList = Connection.Database.Models;
+                        }
                     }
                 }
 
@@ -429,6 +457,8 @@ namespace DaxStudio.UI.ViewModels
                     _selectedDatabase = value;
 
                     NotifyOfPropertyChange(() => SelectedDatabase);
+                    NotifyOfPropertyChange(() => ModelList);
+                    EventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
                 }
 
             }

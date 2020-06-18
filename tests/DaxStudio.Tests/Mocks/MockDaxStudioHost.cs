@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Tests.Mocks
 {

@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.DmvPaneView"
+﻿<controls:ZoomableUserControl  x:Class="DaxStudio.UI.Views.DmvPaneView"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -66,4 +67,4 @@
     
     
     </Grid>
-</UserControl>
+</controls:ZoomableUserControl>

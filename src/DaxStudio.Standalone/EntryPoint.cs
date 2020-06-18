@@ -14,6 +14,8 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using System.Threading.Tasks;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DaxStudio.Standalone
 {
@@ -119,6 +121,7 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
+
                 if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
                 if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
                 Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
@@ -144,6 +147,10 @@ namespace DaxStudio.Standalone
                 //var theme = options.Theme;// "Light"; 
                 //if (theme == "Dark") app.LoadDarkTheme();
                 //else app.LoadLightTheme();
+
+                // log startup switches
+                var args = app.Args().AsDictionaryForTelemetry();
+                Telemetry.TrackEvent("App.Startup", args );
 
                 // Launch the User Interface
                 app.Run();
@@ -175,6 +182,17 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
             }
+        }
+
+        private static bool IsNotSet(object value)
+        {
+            switch (value)
+            {
+                case string s: return string.IsNullOrEmpty(s);
+                case bool b: return b == false;
+                case int i: return i == 0;
+            }
+            return false;
         }
 
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
@@ -243,7 +261,7 @@ namespace DaxStudio.Standalone
                 // use CrashReporter.Net to send bug to DrDump
                 CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
                 e.Handled = true;
-                Application.Current.Shutdown(1);
+                Application.Current?.Shutdown(1);
             }
         }
 

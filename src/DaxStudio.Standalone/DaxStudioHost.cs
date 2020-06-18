@@ -5,6 +5,8 @@ using Caliburn.Micro;
 using Serilog;
 using System.Windows;
 using DaxStudio.Common;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Standalone
 {
@@ -67,9 +69,9 @@ namespace DaxStudio.Standalone
 
 
 
-        public ADOTabular.AdomdClientWrappers.AdomdType ConnectionType
+        public AdomdType ConnectionType
         {
-            get { return ADOTabular.AdomdClientWrappers.AdomdType.AnalysisServices; }
+            get { return AdomdType.AnalysisServices; }
         }
 
         public int Port { get; }

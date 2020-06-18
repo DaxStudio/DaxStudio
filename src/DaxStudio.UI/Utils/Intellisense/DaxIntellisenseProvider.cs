@@ -3,6 +3,7 @@ using Caliburn.Micro;
 using DAXEditorControl;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils.Intellisense;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;

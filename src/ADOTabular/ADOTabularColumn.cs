@@ -1,5 +1,4 @@
-﻿using DaxStudio.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Contracts;
@@ -70,7 +69,7 @@ namespace ADOTabular
         public string FormatString { get; internal set; }
         public string DefaultAggregateFunction { get; internal set; }
         public long StringValueMaxLength { get; internal set; }
-        public string DataTypeName { get { return DataType==null?"n/a":DataType.ToString().Replace("System.", ""); } }
+        public string DataTypeName { get { return DataType==null?string.Empty:DataType.ToString().Replace("System.", ""); } }
 
         //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
         public string MeasureExpression
@@ -123,7 +122,7 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
-            Contract.Requires(connection != null, "The connection parameter must not be null");
+            if (connection == null) return;
 
             string qry;
             switch (Type.GetTypeCode(DataType))
@@ -162,7 +161,8 @@ namespace ADOTabular
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            Contract.Requires(connection != null, "The connection parameter must not be null");
+            
+            if (connection == null) return new List<string>() { "<Not Connected>" };
 
             string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
             if (connection.AllFunctions.Contains("TOPNSKIP"))

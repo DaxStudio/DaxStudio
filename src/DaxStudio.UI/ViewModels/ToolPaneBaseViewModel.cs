@@ -12,6 +12,7 @@ using Serilog;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -19,6 +20,7 @@ namespace DaxStudio.UI.ViewModels
     public abstract class ToolPaneBaseViewModel : ToolWindowBase, IDragSource
     {
         private ADOTabularConnection _connection;
+
 
         public ToolPaneBaseViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator)
         {
@@ -56,11 +58,12 @@ namespace DaxStudio.UI.ViewModels
         public void MouseDoubleClick(IADOTabularObject item, MouseButtonEventArgs e)
         {
             // suppress the expand/collapse behaviour of the tree view if a shift key is held down
-            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) e.Handled = true;
-            if (e.ClickCount > 2) e.Handled = true;
+            //if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))  e.Handled = true;
+            //if (e.ClickCount > 2) e.Handled = true;
 
             if (item != null)
             {
+                e.Handled = true;
                 var txt = item.DaxName;
                 EventAggregator.PublishOnUIThread(new SendTextToEditor(txt));
             }
@@ -75,6 +78,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int SelectedIndex { get; set; }
+
+
 
         public virtual void StartDrag(IDragInfo dragInfo)
         {

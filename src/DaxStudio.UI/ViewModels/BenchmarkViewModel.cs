@@ -13,6 +13,7 @@ using DaxStudio.Interfaces;
 using System.Data;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -44,20 +45,30 @@ namespace DaxStudio.UI.ViewModels
         #region Public Methods
         public void Run()
         {
-            ProgressIcon = FontAwesomeIcon.Refresh;
-            ProgressSpin = true;
-            ProgressMessage = "Starting Server Timings trace...";
-            ProgressColor = "RoyalBlue";
+            try
+            {
+                ProgressIcon = FontAwesomeIcon.Refresh;
+                ProgressSpin = true;
+                ProgressMessage = "Starting Server Timings trace...";
+                ProgressColor = "RoyalBlue";
 
-            SetSelectedOutputTarget(OutputTarget.Timer);
+                SetSelectedOutputTarget(OutputTarget.Timer);
 
-            CreateSummaryOutputTable();
-            CreateDetailOutputTable();
-            
-            // start server timings
-            // once the server timings starts it will trigger the first query
-            StartServerTimings();
+                // clear out any existing benchmark tables
+                BenchmarkDataSet.Tables.Clear();
 
+                CreateSummaryOutputTable();
+                CreateDetailOutputTable();
+
+                // start server timings
+                // once the server timings starts it will trigger the first query
+                StartServerTimings();
+            }
+            catch( Exception ex)
+            {
+                Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+            }
         }
 
         public void Cancel()
@@ -213,9 +224,9 @@ namespace DaxStudio.UI.ViewModels
             summary.Columns.Add("Cache", typeof(string));
             summary.Columns.Add("Statistic", typeof(string));
             summary.Columns.Add("TotalDuration", typeof(double));
-            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
             summary.Columns.Add("StorageEngineDuration", typeof(double));
-            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.###";
+            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
 
             BenchmarkDataSet.Tables.Add(summary);
         }

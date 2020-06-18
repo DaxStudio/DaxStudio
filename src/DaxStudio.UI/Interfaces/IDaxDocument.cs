@@ -1,6 +1,6 @@
 ﻿using ADOTabular;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Interfaces
 {
     public interface IDaxDocument
     {

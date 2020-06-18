@@ -1,0 +1,91 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.MeasureExpressionEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:BoolNotConverter x:Key="BoolNotConverter"/>
+
+            
+
+
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+        <!-- Expression Editor control -->
+        <Grid x:Name="gridExpressionEditor"        
+            Background="AliceBlue"                                
+            Margin="2" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="150"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="Tables"
+                      ItemsSource="{Binding Tables, Mode=OneWay}"
+                      SelectedItem="{Binding SelectedTable}"
+                      IsEnabled="{Binding IsModelItem, Converter={StaticResource BoolNotConverter}}"
+                      MinWidth="150">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            
+                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                            <TextBlock Text="{Binding Path=Caption}" Margin="4,0" ></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBox x:Name="MeasureName" Margin="2" Grid.Column="1" IsEnabled="{Binding IsModelItem, Converter={StaticResource BoolNotConverter}}" />
+        </Grid>
+        <dax:DAXEditor x:Name="daxExpressionEditor" 
+                            Margin="2" 
+                            Padding="8,8,8,8"
+                                                   
+                            Grid.Column="0" 
+                            Grid.Row="1" 
+                            MinWidth="80"
+                            MinHeight="60"
+                            FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                            Document ="{Binding MeasureExpression, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            TabIndex="0"
+                            EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            EditorCaretOffset="{Binding CaretOffset}" 
+
+                            dd:DragDrop.IsDropTarget="True"
+                            dd:DragDrop.DropHandler="{Binding }"
+                            dd:DragDrop.DragHandler="{Binding}"
+                                                   
+                            WordWrap="{Binding WordWrap}"
+                            attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
+                            ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
+                            IndentationSize="{Binding IndentationSize}"
+                            />
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="2" HorizontalAlignment="Right">
+                <Button x:Name="SaveMeasureExpression" MinWidth="60" Margin="2" Content="OK" 
+                                                    cal:Message.Attach="[Event Click] = [SaveMeasureExpression]"/>
+                <Button x:Name="CancelMeasureExpression" MinWidth="60" Margin="2" Content="Cancel"/>
+            </StackPanel>
+        </Grid>
+
+</UserControl>

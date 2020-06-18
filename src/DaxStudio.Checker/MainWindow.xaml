@@ -10,6 +10,8 @@
         <Grid.RowDefinitions>
             <RowDefinition RowDefinition.Height="Auto" />
             <RowDefinition RowDefinition.Height="Auto" />
+            <RowDefinition RowDefinition.Height="Auto" />
+
             <RowDefinition RowDefinition.Height="*" />
             <RowDefinition RowDefinition.Height="Auto" />
         </Grid.RowDefinitions>
@@ -28,10 +30,16 @@
                 Dependency Checks:
             </Label>-->
         </StackPanel>
-        <ScrollViewer Grid.Row="2">
+        <Border Grid.Row="2">
+            <Border.Background>
+                <SolidColorBrush Color="#FFFFFFB9"/>
+            </Border.Background>
+            <TextBlock  Text="Please do not post this information to an Issue on GitHub unless asked to, it's only relevant for certain types of issues" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="5" Foreground="Red" FontSize="12" Width="Auto"/>
+        </Border>
+        <ScrollViewer Grid.Row="3">
             <RichTextBox x:Name="Output" Block.LineHeight="1" FontFamily="Consolas" />
         </ScrollViewer>
-        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="3" FrameworkElement.HorizontalAlignment="Right" Margin="8">
+        <StackPanel StackPanel.Orientation="Horizontal" Grid.Row="4" FrameworkElement.HorizontalAlignment="Right" Margin="8">
             <Button Margin="2" Padding="3" Click="CopyToClipboardClick">Copy to Clipboard</Button>
             <Button Margin="2" Padding="3" Button.IsDefault="True" Button.IsCancel="True"  Click="Ok_Click" MinWidth="50" VerticalAlignment="Top">
                 OK

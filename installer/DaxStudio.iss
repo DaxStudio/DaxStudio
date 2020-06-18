@@ -166,6 +166,10 @@ Root: "HKA"; Subkey: "Software\Classes\DAX file\DefaultIcon"; ValueType: string;
 ;Clean up unused registry values
 ;Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: deletevalue; ValueName: "ShowPreReleaseNotifications";
 
+; Remove all users settings on uninstall
+Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: uninsdeletekey
+
+
 [CustomMessages]
 win_sp_title=Windows %1 Service Pack %2
 

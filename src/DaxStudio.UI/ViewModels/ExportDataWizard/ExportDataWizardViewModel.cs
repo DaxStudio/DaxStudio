@@ -40,6 +40,12 @@ namespace DaxStudio.UI.ViewModels
     {
         #region Private Fields
         Stack<IScreen> _previousPages = new Stack<IScreen>();
+        private string sqlTableName = string.Empty;
+        private int currentTableIdx = 0;
+        private int totalTableCnt = 0;
+        private SelectedTable currentTable = null;
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private Regex _illegalFileCharsRegex = null;
         #endregion
 
         #region Constructor
@@ -231,7 +237,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var metadataPane = Document.MetadataPane;
             var exceptionFound = false;
-
+            currentTableIdx = 0;
 
             // TODO: Use async but to be well done need to apply async on the DBCommand & DBConnection
             // TODO: Show warning message?
@@ -260,6 +266,12 @@ namespace DaxStudio.UI.ViewModels
 
                 var rows = 0;
 
+                
+                currentTableIdx++;
+                              
+
+                
+
                 try
                 {
                     table.Status = ExportStatus.Exporting;
@@ -267,6 +279,13 @@ namespace DaxStudio.UI.ViewModels
                     
                     var csvFilePath = System.IO.Path.Combine(outputPath, $"{fileName}.csv");
                     var daxQuery = $"EVALUATE {table.DaxName}";
+                    var daxRowCount = $"EVALUATE ROW(\"RowCount\", COUNTROWS( {table.DaxName} ) )";
+
+                    // get a count of the total rows in the table
+                    var connRead = Document.Connection;
+                    DataTable dtRows = connRead.ExecuteDaxQueryDataTable(daxRowCount);
+                    var totalRows = dtRows.Rows[0].Field<long>(0);
+                    table.TotalRows = totalRows;
 
                     StreamWriter textWriter = null;
                     try { 
@@ -274,7 +293,7 @@ namespace DaxStudio.UI.ViewModels
 
                         using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
-                        using (var reader = Document.Connection.ExecuteReader(daxQuery))
+                        using (var reader = connRead.ExecuteReader(daxQuery))
                         {
                             rows = 0;
                             tableCnt++;
@@ -386,14 +405,8 @@ namespace DaxStudio.UI.ViewModels
             return newName;
         }
 
-        private Regex _illegalFileCharsRegex = null;
-        
 
-        private string sqlTableName = string.Empty;
-        private int currentTableIdx = 0;
-        private int totalTableCnt = 0;
-        private SelectedTable currentTable = null;
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private async Task ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
@@ -443,7 +456,8 @@ namespace DaxStudio.UI.ViewModels
 
                             // get a count of the total rows in the table
                             DataTable dtRows = connRead.ExecuteDaxQueryDataTable(daxRowCount);
-                            var totalRows = dtRows.Rows[0].Field<long>("RowCount");
+                            var totalRows = dtRows.Rows[0].Field<long>(0);
+                            currentTable.TotalRows = totalRows;
 
                             using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                             using (var reader = connRead.ExecuteReader(daxQuery))

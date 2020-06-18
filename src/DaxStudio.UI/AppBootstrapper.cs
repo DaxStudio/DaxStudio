@@ -202,7 +202,7 @@ namespace DaxStudio.UI
         // This override causes Caliburn Micro to pass this Assembly to MEF
         protected override IEnumerable<Assembly> SelectAssemblies()
         {
-            var type = typeof(DaxStudio.Interfaces.IDaxStudioHost);
+            var type = typeof(IDaxStudioHost);
             var hostType = AppDomain.CurrentDomain.GetAssemblies().ToList()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => type.IsAssignableFrom(p))

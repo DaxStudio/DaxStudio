@@ -261,5 +261,6 @@ namespace DaxStudio.UI.ViewModels
         {
             File.WriteAllText(filePath, GetJsonString());
         }
+
     }
 }

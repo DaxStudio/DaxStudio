@@ -11,6 +11,8 @@ using System.Windows;
 using System.Diagnostics;
 using DaxStudio.Common;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -37,7 +39,16 @@ namespace DaxStudio.UI.ViewModels
                     this.VersionChecker.Update(); 
                 })
                 .ContinueWith((previous)=> {
-                    // todo - should we be checking for exceptions in this continuation
+                    //  checking for exceptions and log them
+                    if (previous.IsFaulted)
+                    {
+                        Log.Error(previous.Exception, "{class} {method} {message}", nameof(HelpAboutViewModel), "ctor", $"Error updating version information: {previous.Exception.Message}");
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
+                        CheckingUpdateStatus = false;
+                        NotifyOfPropertyChange(() => CheckingUpdateStatus);
+                        return;
+                    }
+
                     CheckingUpdateStatus = false;
                     UpdateStatus = VersionChecker.VersionStatus;
                     VersionIsLatest = VersionChecker.VersionIsLatest;

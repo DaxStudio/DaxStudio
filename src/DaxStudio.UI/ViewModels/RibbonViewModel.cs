@@ -15,6 +15,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
 using System.ComponentModel;
+using ADOTabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -239,6 +240,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 return !_queryRunning 
                     && (ActiveDocument != null && ActiveDocument.IsConnected) 
+                    && !ActiveDocument.ShowMeasureExpressionEditor
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
@@ -411,28 +413,38 @@ namespace DaxStudio.UI.ViewModels
          
         public void Handle(ActivateDocumentEvent message)
         {
+            DocumentViewModel doc = null;
             Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
-            _isDocumentActivating = true;
-            ActiveDocument = message.Document;
-            var doc = ActiveDocument;
-            SelectedTarget = ActiveDocument.SelectedTarget;
-
-            _queryRunning = ActiveDocument.IsQueryRunning;
-            if (ActiveDocument.Tracer == null)
-                _traceStatus = QueryTraceStatus.Stopped;
-            else
-                _traceStatus = ActiveDocument.Tracer.Status;
-
-            RefreshRibbonButtonEnabledStatus();
-
-            if (!ActiveDocument.IsConnected)
+            try
             {
-                UpdateTraceWatchers();
-                NotifyOfPropertyChange(() => TraceWatchers);
-                NotifyOfPropertyChange(() => ServerTimingsChecked);
-                NotifyOfPropertyChange(() => ServerTimingDetails);
-                return;
+                _isDocumentActivating = true;
+                ActiveDocument = message.Document;
+                doc = ActiveDocument;
+                SelectedTarget = ActiveDocument.SelectedTarget;
+
+                _queryRunning = ActiveDocument.IsQueryRunning;
+                if (ActiveDocument.Tracer == null)
+                    _traceStatus = QueryTraceStatus.Stopped;
+                else
+                    _traceStatus = ActiveDocument.Tracer.Status;
+
+                RefreshRibbonButtonEnabledStatus();
+
+                if (!ActiveDocument.IsConnected)
+                {
+                    UpdateTraceWatchers();
+                    NotifyOfPropertyChange(() => TraceWatchers);
+                    NotifyOfPropertyChange(() => ServerTimingsChecked);
+                    NotifyOfPropertyChange(() => ServerTimingDetails);
+                    return;
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<ActivateDocumentEvent>", ex.Message);
+                doc?.OutputError($"Error Activating Document: {ex.Message}");
+            }
+   
             try
             {
                 RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
@@ -442,7 +454,7 @@ namespace DaxStudio.UI.ViewModels
             catch (AdomdConnectionException ex)
             {
                 Log.Error("{class} {method} {Exception}", "RibbonViewModel", "Handle(ActivateDocumentEvent)", ex);
-                doc.OutputError(ex.Message);
+                ActiveDocument?.OutputError(ex.Message);
             }
             finally
             {
@@ -451,6 +463,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => TraceWatchers);
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
+            
         }
 
         private void RefreshRibbonButtonEnabledStatus()
@@ -517,14 +530,17 @@ namespace DaxStudio.UI.ViewModels
                 case nameof(ActiveDocument.IsQueryRunning):
                     _queryRunning = ActiveDocument.IsQueryRunning;
                     NotifyOfPropertyChange(() => CanRunQuery);
+                    NotifyOfPropertyChange(() => CanRunBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
+                    NotifyOfPropertyChange(() => CanViewAnalysisData);
                     break;
                 case nameof(ActiveDocument.IsVertipaqAnalyzerRunning):
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
+                    NotifyOfPropertyChange(() => CanRunBenchmark);
                     break;
                 case nameof(ActiveDocument.IsConnected):
                     NotifyOfPropertyChange(() => CanRunQuery);
@@ -886,7 +902,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ExportAnalysisData();
         }
 
-        public bool CanViewAnalysisData => IsActiveDocumentConnected;
+        public bool CanViewAnalysisData => IsActiveDocumentConnected && !_queryRunning;
 
         public void ViewAnalysisData()
         {

@@ -7,7 +7,6 @@
             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-            xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -316,6 +315,7 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*"/>
 
                                 </Grid.RowDefinitions>
@@ -331,8 +331,13 @@
                                 <Label Grid.Row="1">Run Style:</Label>
                                 <CheckBox  Grid.Row="1" Grid.Column="1" Margin="0,5,0,0" x:Name="SetClearCacheAsDefaultRunStyle" Content="Set 'Clear Cache and Run' as the default"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">This option affects the default run style that is selected when DAX Studio starts up. Any change will take effect next time DAX Studio starts up.</TextBlock>
-                                <Label Grid.Row="3">Username:</Label>
+                                <Label Grid.Row="3">Title Bar:</Label>
                                 <CheckBox Grid.Row="3"  Grid.Column="1" Margin="0,5,0,0" x:Name="ShowUserInTitlebar" Content="Show Username in Title bar" />
+                                <!--
+                                <Label Grid.Row="4">Status Bar:</Label>
+                                <CheckBox Grid.Row="4" Grid.Column="1" x:Name="ShowDatabaseIdStatus" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Database ID in Status Bar" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows the ID of the currently selected database in the status bar along with a button to copy this value to the clipboard</TextBlock>
+                                -->
                             </Grid>
                         </GroupBox>
 
@@ -568,12 +573,12 @@
             <TabItem Header="Key Bindings" Visibility="{Binding ShowKeyBindings, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer2, Path=ViewportWidth}" Orientation="Horizontal" >
-                        <GroupBox Header="Hotkeys">
+                        <GroupBox Header="Hotkeys" Width="450">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -590,8 +595,11 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Text="Click on the key binding next to a command and type a new key combination or use Esc or backspace to clear a hotkey" Foreground="Black" TextWrapping="Wrap"/>
-                                <Button Content="Reset All" Grid.Column="1" x:Name="ResetKeyBindings" Height="22" Width="60"/>
+                                <TextBlock Text="Click on the key binding next to a command and type a new key combination or use Esc or backspace to clear a hotkey" 
+                                           Foreground="Black" TextWrapping="Wrap"  Grid.ColumnSpan="2" Margin="0,0,0,20"/>
+                                <Button Content="Reset All" 
+                                        Grid.Column="2" 
+                                        x:Name="ResetKeyBindings" Height="22" Width="60" Margin="0,0,0,20"/>
 
                                 <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
@@ -633,7 +641,7 @@
                                 <Label Content="New Document" Padding="2" Grid.Row="8" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="8" Padding="2" Hotkey="{Binding HotkeyNewDocument, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="New Document with current Connection" Padding="2" Grid.Row="9" />
+                                <Label Content="New Document (Current Connection)" Padding="2" Grid.Row="9" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="9" Padding="2" Hotkey="{Binding HotkeyNewDocumentWithCurrentConnection, Converter={StaticResource HotKeyConverter}}"/>
 
                                 <Label Content="Format Query" Padding="2" Grid.Row="10" />
@@ -678,6 +686,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 <!--
@@ -699,6 +709,8 @@
                                 <CheckBox Grid.Row="10" Grid.Column="0" x:Name="ShowPreviewBenchmark" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Benchmark Button" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="11" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a button on the advanced tab which will run a give query a number of times against both a cold and warm cache and collection the exection statistics</TextBlock>
 
+                                
+
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="VertiPaq Analyzer">
@@ -706,7 +718,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
-
+                                    <ColumnDefinition Width="80"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -719,12 +731,16 @@
 
                                 <CheckBox Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" Content="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
-
+                                <Label Grid.Row="2" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
+                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="100" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                             </Grid>
                         </GroupBox>
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
+            <!--<TabItem Header="Debug">
+                
+            </TabItem>-->
         </TabControl>
     </Grid>
 </UserControl>

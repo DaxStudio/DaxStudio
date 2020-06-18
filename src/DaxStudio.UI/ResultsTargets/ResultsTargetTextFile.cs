@@ -85,106 +85,59 @@ namespace DaxStudio.UI.Model
                         var daxQuery = textProvider.QueryText;
                         var reader = runner.ExecuteDataReaderQuery(daxQuery);
 
-                        try
+                        using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
                         {
-                            if (reader != null)
+
+                            try
                             {
-                                int iFileCnt = 1;
-                                var outputFilename = fileName;
-                                
-                                runner.OutputMessage("Command Complete, writing output file");
-
-                                bool moreResults = true;
-                                
-                                while (moreResults)
+                                if (reader != null)
                                 {
-                                    int iMaxCol = reader.FieldCount - 1;
-                                    int iRowCnt = 0;
-                                    if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+                                    int iFileCnt = 1;
                                     
-                                    using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
+
+                                    runner.OutputMessage("Command Complete, writing output file");
+
+                                    bool moreResults = true;
+
+                                    while (moreResults)
                                     {
-                                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+                                        var outputFilename = fileName;
+                                        int iRowCnt = 0;
+                                        using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                                         {
-                                            // CSV Writer config
-
-                                            csvWriter.Configuration.Delimiter = sep;
-                                            
-                                            // Datetime as ISOFormat
-
-                                            csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
-                                                typeof(DateTime), 
-                                                new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
-
-                                            // write out clean column names
-
-                                            foreach (var colName in reader.CleanColumnNames())
-                                            {
-                                                csvWriter.WriteField(colName);
-                                            }
-
-                                            csvWriter.NextRecord();
-
-                                            while (reader.Read())
-                                            {
-                                                iRowCnt++;
-
-                                                for (int iCol = 0; iCol < reader.FieldCount; iCol++)
-                                                {
-                                                    var fieldValue = reader[iCol];
-                                                    
-                                                    // quote all string fields
-                                                    if (reader.GetFieldType(iCol) == typeof(string))
-                                                        if (reader.IsDBNull(iCol))
-                                                            csvWriter.WriteField("", shouldQuoteStrings);
-                                                        else
-                                                            csvWriter.WriteField(fieldValue.ToString(), shouldQuoteStrings);
-                                                    else
-                                                        csvWriter.WriteField(fieldValue);
-                                                }
-
-                                                csvWriter.NextRecord();                                              
-                                                
-                                                if (iRowCnt % 1000 == 0)
-                                                {
-                                                    runner.NewStatusBarMessage(string.Format("Written {0:n0} rows to the file output", iRowCnt));
-                                                }
-                                            
-                                            }
-
+                                            if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+                                            iRowCnt = reader.WriteToStream( textWriter, sep, shouldQuoteStrings, isoDateFormat,  statusProgress);
                                         }
+                                        runner.OutputMessage(
+                                                string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                                            , iRowCnt
+                                                            , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                                );
 
+                                        runner.RowCount = iRowCnt;
+
+                                        moreResults = reader.NextResult();
+
+                                        iFileCnt++;
                                     }
 
-                                    runner.OutputMessage(
-                                            string.Format("Query {2} Completed ({0:N0} row{1} returned)"
-                                                        , iRowCnt
-                                                        , iRowCnt == 1 ? "" : "s", iFileCnt)
-                                            );
+                                    sw.Stop();
+                                    durationMs = sw.ElapsedMilliseconds;
 
-                                    runner.RowCount = iRowCnt;
-
-                                    moreResults = reader.NextResult();
-
-                                    iFileCnt++;
+                                    runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                                    runner.ActivateOutput();
                                 }
-
-                                sw.Stop();
-                                durationMs = sw.ElapsedMilliseconds;
-
-                                runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                                runner.ActivateOutput();
-                            } else
-                                runner.OutputError("Query Batch Completed with errors", durationMs);
-                        }
-                        finally
-                        {
-                            if (reader != null)
+                                else
+                                    runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+                            }
+                            finally
                             {
-                                reader.Dispose();
+                                if (reader != null)
+                                {
+                                    reader.Dispose();
+                                }
                             }
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -206,6 +159,8 @@ namespace DaxStudio.UI.Model
             // else dialog was cancelled so return an empty task.
             await Task.Run(() => { });
         }
+
+       
 
         private string AddFileCntSuffix(string fileName, int iFileCnt)
         {

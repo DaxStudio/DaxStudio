@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.OutputPaneView"
+﻿<controls:ZoomableUserControl  x:Class="DaxStudio.UI.Views.OutputPaneView"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -107,4 +108,4 @@
             </i:Interaction.Behaviors>
         </ListView>           
     </Grid>
-</UserControl>
+</controls:ZoomableUserControl>
