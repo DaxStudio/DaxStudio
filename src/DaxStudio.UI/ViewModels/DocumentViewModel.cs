@@ -3310,6 +3310,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<DockManagerSaveLayout>", ex.Message);
                 OutputError($"Error Saving Window Layout: {ex.Message}");
             }
         }
