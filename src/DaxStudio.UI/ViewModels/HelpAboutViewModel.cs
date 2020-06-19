@@ -13,6 +13,8 @@ using DaxStudio.Common;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using DaxStudio.UI.Extensions;
+using Humanizer;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -22,65 +24,83 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
 
+        public IGlobalOptions Options { get; }
+
         [ImportingConstructor]
-        public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker, IDaxStudioHost host) {
+        public HelpAboutViewModel(IEventAggregator eventAggregator, IVersionCheck checker, IDaxStudioHost host, IGlobalOptions options) {
             _eventAggregator = eventAggregator;
             _host = host;
+            Options = options;
             DisplayName = "About DaxStudio";
             CheckingUpdateStatus = true;
-            UpdateStatus = "Checking for Updates...";
+          
             NotifyOfPropertyChange(() => UpdateStatus);
 
             // start version check async
             VersionChecker = checker;
-            VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
-            Task.Run(() => 
-                {
-                    this.VersionChecker.Update(); 
-                })
-                .ContinueWith((previous)=> {
-                    //  checking for exceptions and log them
-                    if (previous.IsFaulted)
-                    {
-                        Log.Error(previous.Exception, "{class} {method} {message}", nameof(HelpAboutViewModel), "ctor", $"Error updating version information: {previous.Exception.Message}");
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
-                        CheckingUpdateStatus = false;
-                        NotifyOfPropertyChange(() => CheckingUpdateStatus);
-                        return;
-                    }
+            VersionChecker.UpdateStartingCallback = this.VersionUpdateStarting;
+            VersionChecker.UpdateCompleteCallback = this.VersionUpdateComplete;
 
-                    CheckingUpdateStatus = false;
-                    UpdateStatus = VersionChecker.VersionStatus;
-                    VersionIsLatest = VersionChecker.VersionIsLatest;
-                    DownloadUrl = VersionChecker.DownloadUrl;
-                    NotifyOfPropertyChange(() => VersionIsLatest);
-                    NotifyOfPropertyChange(() => DownloadUrl);
-                    NotifyOfPropertyChange(() => UpdateStatus);
-                    NotifyOfPropertyChange(() => CheckingUpdateStatus);
-                },TaskScheduler.Default);
+            VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
+            //Task.Run(() => 
+            //    {
+            //        this.VersionChecker.Update(); 
+            //    })
+            //    .ContinueWith((previous)=> {
+            //        //  checking for exceptions and log them
+            //        if (previous.IsFaulted)
+            //        {
+            //            Log.Error(previous.Exception, "{class} {method} {message}", nameof(HelpAboutViewModel), "ctor", $"Error updating version information: {previous.Exception.Message}");
+            //            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
+            //            CheckingUpdateStatus = false;
+            //            NotifyOfPropertyChange(() => CheckingUpdateStatus);
+            //            return;
+            //        }
+
+            //        CheckingUpdateStatus = false;
+            //        UpdateStatus = VersionChecker.VersionStatus;
+            //        VersionIsLatest = VersionChecker.VersionIsLatest;
+            //        DownloadUrl = VersionChecker.DownloadUrl;
+            //        NotifyOfPropertyChange(() => VersionIsLatest);
+            //        NotifyOfPropertyChange(() => DownloadUrl);
+            //        NotifyOfPropertyChange(() => UpdateStatus);
+            //        NotifyOfPropertyChange(() => CheckingUpdateStatus);
+            //    },TaskScheduler.Default);
+        }
+
+        public void VersionUpdateStarting()
+        {
+            IsCheckRunning = true;
+        }
+
+        public void VersionUpdateComplete()
+        {
+            IsCheckRunning = false;
+
+            NotifyOfPropertyChange(() => UpdateStatus);
+            NotifyOfPropertyChange(() => LastChecked);
+            VersionIsLatest = VersionChecker.VersionIsLatest;
+            DownloadUrl = VersionChecker.DownloadUrl;
+            NotifyOfPropertyChange(() => VersionIsLatest);
+            NotifyOfPropertyChange(() => DownloadUrl);
         }
 
         void VersionChecker_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "VersionStatus")
             {
-                UpdateStatus = VersionChecker.VersionStatus;
-                NotifyOfPropertyChange(() => UpdateStatus);
+
+                VersionUpdateComplete();
             }
         }
 
-        public string FullVersionNumber
-        {
-            get { return System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(3); }
-        }
-
-        public string BuildNumber
-        {
-            get { return System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(); }
-        }
+        public string FullVersionNumber => System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(3); 
+        
+        public string BuildNumber => System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(); 
+        
 
         //[Import(typeof(IVersionCheck))]
-        public IVersionCheck VersionChecker { get; set; }
+        public IVersionCheck VersionChecker { get; private set; }
 
         public SortedList<string,string> ReferencedAssemblies
         {
@@ -109,11 +129,38 @@ namespace DaxStudio.UI.ViewModels
             set;
         }
 
+        private bool _isCheckRunning = false;
+        public bool IsCheckRunning { get => _isCheckRunning;
+            set {
+                _isCheckRunning = value;
+                NotifyOfPropertyChange(() => IsCheckRunning);
+            } 
+        }
+
         public string UpdateStatus
         {
-            get;
-            set;
+            get { 
+                if (IsCheckRunning)
+                {
+                    return "Checking for updates...";
+                }
+                else
+                {
+                    if (VersionChecker.ServerVersion.IsNotSet()) return "(Unable to get version information)"; 
+
+                    var versionComparison = VersionChecker.LocalVersion.CompareTo(VersionChecker.ServerVersion);
+                    if (versionComparison > 0)  return $"(Ahead of Latest Version - {VersionChecker.ServerVersion.ToString(3)} )"; 
+                    if (versionComparison == 0) return "You have the lastest Version"; 
+                    
+                    return $"(New Version available - {VersionChecker.ServerVersion})"; 
+
+                }
+
+            }
+
         }
+
+        public string LastChecked => $"Last checked {Options.LastVersionCheckUTC.Humanize()}";
         public Uri DownloadUrl { get; private set; }
         public bool VersionIsLatest { get; private set; }
 

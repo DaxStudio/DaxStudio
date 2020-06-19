@@ -62,6 +62,8 @@ namespace DaxStudio.Interfaces
 
         bool ShowUserInTitlebar { get; set; }
 
+        Version CurrentDownloadVersion { get; set; }
+
         #region Hotkeys
         // Hotkeys
         [Hotkey]

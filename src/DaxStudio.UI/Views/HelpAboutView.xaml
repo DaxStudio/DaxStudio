@@ -3,14 +3,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
     xmlns:local="clr-namespace:DaxStudio.UI.Views" x:Class="DaxStudio.UI.Views.HelpAboutView"
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     mc:Ignorable="d" 
     d:DesignHeight="300" d:DesignWidth="400"
-    Height="215"
+    Height="225"
     MaxHeight="450"
-    MinWidth="480"
+    MinWidth="500"
     DataContext="{Binding}"
     x:Name="dlgHelpAbout"
     >
@@ -42,6 +43,7 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -51,11 +53,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
                     
                     <TextBlock Style="{StaticResource VersionText}" x:Name="FullVersionNumber" />
-                    <local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>
-                                <TextBlock Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus}" /></Hyperlink></TextBlock>
-                                <TextBlock x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"></TextBlock>
+                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="10" Foreground="Gray" Visibility="{Binding IsCheckRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <!--<local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>-->
+                    <TextBlock Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus, Mode=OneWay}" /></Hyperlink></TextBlock>
+                                <TextBlock x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
-                            
+                            <TextBlock Text="{Binding LastChecked}" Grid.Row="1" Grid.Column="1" Foreground="Gray"/>
                         </Grid>
                         <StackPanel Orientation="Horizontal" >
                     <CheckBox x:Name="showDetails" Width="110" IsChecked="False" Content="Show Details" Margin="5,5,0,0" Padding="5,0,0,0" >
@@ -86,7 +89,7 @@
                                     <Storyboard  AutoReverse="False">
                                         <DoubleAnimation  Storyboard.TargetName="dlgHelpAbout"
 											Storyboard.TargetProperty = "(FrameworkElement.Height)"
-											To="215" Duration="0:0:1"/>
+											To="225" Duration="0:0:1"/>
                                         <Storyboard AutoReverse="False">
                                             <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
 												Storyboard.TargetProperty="(UIElement.Opacity)"

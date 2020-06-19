@@ -447,7 +447,7 @@ namespace DaxStudio.UI.ViewModels
    
             try
             {
-                RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
+                RefreshConnectionDetails(ActiveDocument, ActiveDocument?.SelectedDatabase??"");
                 // TODO - do we still need to check trace watchers if we are not connected??
                 UpdateTraceWatchers();
             }
@@ -625,7 +625,7 @@ namespace DaxStudio.UI.ViewModels
                     ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
                     
                 }
-                RefreshConnectionDetails(ActiveDocument, ActiveDocument.SelectedDatabase);
+                RefreshConnectionDetails(ActiveDocument, ActiveDocument?.SelectedDatabase??"");
             }
            
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
@@ -653,7 +653,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DocumentConnectionUpdateEvent message)
         {
-            RefreshConnectionDetails(message.Connection, message.Connection.SelectedDatabase);
+            RefreshConnectionDetails(message.Connection, message.Connection?.SelectedDatabase??"");
         }
         
         public bool CanCut { get; set; }

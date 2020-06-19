@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using Moq;
 
 namespace DaxStudio.Tests
 {
@@ -17,7 +18,8 @@ namespace DaxStudio.Tests
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
             var stubHost = new Mocks.MockDaxStudioHost();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost );
+            var mockOptions = new Mock<IGlobalOptions>().Object;
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost, mockOptions  );
             var ra = hlp.ReferencedAssemblies;
             Assert.IsTrue(ra.Count >= 32);
         }
@@ -27,7 +29,8 @@ namespace DaxStudio.Tests
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
             var stubHost = new Mocks.MockDaxStudioHost();
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost);
+            var mockOptions = new Mock<IGlobalOptions>().Object;
+            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost, mockOptions);
             var ra = hlp.ReferencedAssemblies;
             foreach (var a in ra)
             {
@@ -96,6 +99,9 @@ namespace DaxStudio.Tests
                 throw new NotImplementedException();
             }
         }
+
+        public Action UpdateCompleteCallback { get;set; }
+        public Action UpdateStartingCallback { get;set; }
 
         public void Update()
         {
