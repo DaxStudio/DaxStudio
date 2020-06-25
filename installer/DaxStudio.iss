@@ -91,7 +91,7 @@ Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ig
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json"
 
 ; PBI Desktop integration
-Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core\PBI ; 
+Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; 
 
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
@@ -176,7 +176,7 @@ win_sp_title=Windows %1 Service Pack %2
 [Components]
 Name: "Excel"; Description: "Excel Addin"; Types: full
 Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabular)"; Types: full standalone custom; Flags: fixed
-Name: "Core\PBI"; Description: "Power BI Desktop External Tools integration"; Types: full standalone custom; Check: IsAdminInstallMode;
+;Name: "Core\PBI"; Description: "Power BI Desktop External Tools integration"; Types: full standalone custom; Check: IsAdminInstallMode;
 ;Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
 ; Make sure that local copies of the Excel files do not exist
@@ -650,13 +650,13 @@ begin
   if (CurStep=ssPostInstall) then begin
     
     //if (IsTaskSelected('pbiintegration')) then 
-    if (IsComponentSelected('Core\PBI')) then
-      begin
-        Log('Writing Power BI Desktop External Tools File');
-        WriteExternalToolsFile();
-      end
-    else
-      Log('SKIPPING - Power BI Desktop External Tools integration');
+//     if (IsComponentSelected('Core\PBI')) then
+//       begin
+//         Log('Writing Power BI Desktop External Tools File');
+//         WriteExternalToolsFile();
+//       end
+//     else
+//       Log('SKIPPING - Power BI Desktop External Tools integration');
     
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
