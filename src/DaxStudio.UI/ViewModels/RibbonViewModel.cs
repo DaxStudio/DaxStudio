@@ -147,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string CommentSelectionTitle => $"Comment ({Options.HotkeyCommentSelection})";
 
+        public bool CanMergeParameters => ActiveDocument != null;
         public void MergeParameters()
         {
             ActiveDocument?.MergeParameters();
@@ -182,12 +183,14 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
         public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
+        public bool CanToUpper { get => ActiveDocument != null; }
         public void ToUpper()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
         public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
+        public bool CanToLower { get => ActiveDocument != null; }
         public void ToLower()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
@@ -354,7 +357,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
-                TraceWatchers.DisableAll();
+                TraceWatchers?.DisableAll();
                 return;
             }
 
@@ -468,24 +471,30 @@ namespace DaxStudio.UI.ViewModels
 
         private void RefreshRibbonButtonEnabledStatus()
         {
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanCancelQuery);
-            NotifyOfPropertyChange(() => CanClearCache);
-            NotifyOfPropertyChange(() => CanRefreshMetadata);
-            NotifyOfPropertyChange(() => CanFormatQueryStandard);
-            NotifyOfPropertyChange(() => CanCommentSelection);
-            NotifyOfPropertyChange(() => CanUncommentSelection);
-            NotifyOfPropertyChange(() => CanUndo);
-            NotifyOfPropertyChange(() => CanRedo);
-            NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => CanLaunchSqlProfiler);
-            NotifyOfPropertyChange(() => CanLaunchExcel);
-            NotifyOfPropertyChange(() => CanExportAllData);
-            NotifyOfPropertyChange(() => CanExportAnalysisData);
+            NotifyOfPropertyChange(nameof(CanRunQuery));
+            NotifyOfPropertyChange(nameof(CanCancelQuery));
+            NotifyOfPropertyChange(nameof(CanClearCache));
+            NotifyOfPropertyChange(nameof(CanRefreshMetadata));
+            NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
+            NotifyOfPropertyChange(nameof(CanCommentSelection));
+            NotifyOfPropertyChange(nameof(CanUncommentSelection));
+            NotifyOfPropertyChange(nameof(CanToUpper));
+            NotifyOfPropertyChange(nameof(CanToLower));
+            NotifyOfPropertyChange(nameof(CanSwapDelimiters));
+            NotifyOfPropertyChange(nameof(CanMergeParameters));
+            NotifyOfPropertyChange(nameof(CanUndo));
+            NotifyOfPropertyChange(nameof(CanRedo));
+            NotifyOfPropertyChange(nameof(CanConnect));
+            NotifyOfPropertyChange(nameof(CanLaunchSqlProfiler));
+            NotifyOfPropertyChange(nameof(CanLaunchExcel));
+            NotifyOfPropertyChange(nameof(CanExportAllData));
+            NotifyOfPropertyChange(nameof(CanExportAnalysisData));
+            NotifyOfPropertyChange(nameof(CanViewAnalysisData));
             NotifyOfPropertyChange(nameof(CanLoadPowerBIPerformanceData));
             NotifyOfPropertyChange(nameof(CanDisplayQueryBuilder));
             NotifyOfPropertyChange(nameof(CanRunBenchmark));
             NotifyOfPropertyChange(nameof(CanNewQueryWithCurrentConnection));
+            NotifyOfPropertyChange(nameof(TraceWatchers));
             UpdateTraceWatchers();
         }
 
@@ -627,7 +636,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 RefreshConnectionDetails(ActiveDocument, ActiveDocument?.SelectedDatabase??"");
             }
-           
+            
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
         }
 
@@ -809,6 +818,7 @@ namespace DaxStudio.UI.ViewModels
             SettingProvider.SaveFileMRUList(file, this.RecentFiles);
         }
 
+        public bool CanSwapDelimiters => ActiveDocument != null;
         public void SwapDelimiters()
         {
             ActiveDocument?.SwapDelimiters();

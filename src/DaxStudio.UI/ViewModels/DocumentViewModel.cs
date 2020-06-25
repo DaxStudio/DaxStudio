@@ -709,6 +709,7 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedModel { get; set; }
 
         public string SelectedDatabase { get {
+                if (!IsConnected) return string.Empty;
                 return Connection?.Database?.Name;
                 //if (_selectedDatabase == null && IsConnected)
                 //{
