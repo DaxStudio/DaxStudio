@@ -617,7 +617,10 @@ begin
   fileName := ExpandConstant('{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools\daxstudio.pbitool.json');
 Log('pbitool FileName = ' + fileName);
   exeName := ExpandConstant('{app}\DaxStudio.exe');
+  // escape a single backslash \  with double back slashes \\
   StringChangeEx(exeName, '\', '\\', True);
+  // escape any double quotes " with backslash double quote \"
+  StringChangeEx(exeName, '"', '\"', True);
 Log('pbitool exeName = ' + exeName );
 
   SetArrayLength(lines, 8);
