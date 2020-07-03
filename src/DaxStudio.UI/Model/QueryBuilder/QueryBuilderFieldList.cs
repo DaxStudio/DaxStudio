@@ -4,6 +4,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using GongSolutions.Wpf.DragDrop;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,7 +16,8 @@ namespace DaxStudio.UI.Model
 {
     public class QueryBuilderFieldList : 
         PropertyChangedBase,
-        IQueryBuilderFieldList
+        IQueryBuilderFieldList,
+        IEnumerable<IADOTabularColumn>
     {
         public QueryBuilderFieldList(IEventAggregator eventAggregator)
         {
@@ -76,8 +78,13 @@ namespace DaxStudio.UI.Model
         {
             EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(measure));
         }
+
+
         #endregion
 
-
+        #region IEnumerable Support
+        public IEnumerator<IADOTabularColumn> GetEnumerator() => Items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
+        #endregion
     }
 }

@@ -40,6 +40,7 @@
             this.btnTest = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
+            this.SuspendLayout();
             // 
             // tab1
             // 
@@ -64,6 +65,11 @@
             this.btnDax.ShowImage = true;
             this.btnDax.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.BtnDaxClick);
             // 
+            // btnTest
+            // 
+            this.btnTest.Label = "";
+            this.btnTest.Name = "btnTest";
+            // 
             // DaxStudioRibbon
             // 
             this.Name = "DaxStudioRibbon";
@@ -75,6 +81,7 @@
             this.tab1.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
+            this.ResumeLayout(false);
 
         }
 

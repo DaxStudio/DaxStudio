@@ -709,6 +709,7 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedModel { get; set; }
 
         public string SelectedDatabase { get {
+                if (!IsConnected) return string.Empty;
                 return Connection?.Database?.Name;
                 //if (_selectedDatabase == null && IsConnected)
                 //{
@@ -2755,38 +2756,53 @@ namespace DaxStudio.UI.ViewModels
 
         //private HighlightDelegate _defaultHighlightFunction;
 
+        /// <summary>
+        /// This function highlights all other occurances of the currently selected text in the editor
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="startOffset"></param>
+        /// <param name="endOffset"></param>
+        /// <returns></returns>
         private List<HighlightPosition> InternalDefaultHighlightFunction(string text, int startOffset, int endOffset)
         {
-            if (string.IsNullOrWhiteSpace(TextToHighlight)) return null; ;
-            var editor = GetEditor();
             var list = new List<HighlightPosition>();
-            var start = 0;
-            var selStart = editor.SelectionStart;
-            var lineSelStart = -1;
-            if (selStart >= startOffset && selStart <= endOffset)
+            try
             {
-                lineSelStart = selStart - startOffset;
-            }
-            while (true)
-            {
-                var idx = -1;
-                try
-                {
-                    idx = text.IndexOf(TextToHighlight, start, StringComparison.InvariantCultureIgnoreCase);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(InternalDefaultHighlightFunction), $"Error: {ex.Message} /n while finding text to highlight while searching for '{TextToHighlight}' in '{text}'");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "An error occurred while trying to highlight search text"));
-                    break;
-                }
-                if (idx == -1) break;              // stop search if we did not find any more occurances
-                start = idx + 1;
-                if (idx == lineSelStart) continue; // skip the currently selected text
+                if (string.IsNullOrWhiteSpace(TextToHighlight)) return null; ;
+                var editor = GetEditor();
 
-                // check that the index and length are inside the bounds of the text
-                if (idx >=0 && idx + TextToHighlight.Length <= text.Length)
-                    list.Add(new HighlightPosition() { Index = idx, Length = TextToHighlight.Length });
+                var start = 0;
+                var selStart = editor.SelectionStart;
+                var lineSelStart = -1;
+                if (selStart >= startOffset && selStart <= endOffset)
+                {
+                    lineSelStart = selStart - startOffset;
+                }
+                while (true)
+                {
+                    var idx = -1;
+                    try
+                    {
+                        idx = text.IndexOf(TextToHighlight, start, StringComparison.InvariantCultureIgnoreCase);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(InternalDefaultHighlightFunction), $"Error: {ex.Message} /n while finding text to highlight while searching for '{TextToHighlight}' in '{text}'");
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "An error occurred while trying to highlight search text"));
+                        break;
+                    }
+                    if (idx == -1) break;              // stop search if we did not find any more occurances
+                    start = idx + 1;
+                    if (idx == lineSelStart) continue; // skip the currently selected text
+
+                    // check that the index and length are inside the bounds of the text
+                    if (idx >= 0 && idx + TextToHighlight.Length <= text.Length)
+                        list.Add(new HighlightPosition() { Index = idx, Length = TextToHighlight.Length });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(InternalDefaultHighlightFunction), ex.Message);
             }
             return list;
         }
@@ -3310,6 +3326,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<DockManagerSaveLayout>", ex.Message);
                 OutputError($"Error Saving Window Layout: {ex.Message}");
             }
         }

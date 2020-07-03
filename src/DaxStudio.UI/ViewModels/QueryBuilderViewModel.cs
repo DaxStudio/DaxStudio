@@ -18,12 +18,16 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
+    
+
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
     public class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
         ,IDisposable
-    { 
+    {
+        const string NewMeasurePrefix = "MyMeasure";
+
         [ImportingConstructor]
         public QueryBuilderViewModel(IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base()
         {
@@ -110,7 +114,9 @@ namespace DaxStudio.UI.ViewModels
         public void AddNewMeasure()
         {
             var firstTable = Document.Connection.Database.Models[Document.SelectedModel].Tables.First();
-            var newMeasure = new QueryBuilderColumn("MyMeasure",firstTable);
+            // TODO - need to make sure key is unique
+            var newMeasureName = GetCustomMeasureName();
+            var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable);
             Columns.Add(newMeasure);
             //newMeasure.IsModelItem = false;
             SelectedColumn = newMeasure;
@@ -120,6 +126,21 @@ namespace DaxStudio.UI.ViewModels
             //EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(newMeasure));
         }
 
+        // Finds a unique name for the new measure
+        public string GetCustomMeasureName()
+        {
+            var suffix = string.Empty;
+            int customMeasureCnt = Columns.Count(c => c.Caption.StartsWith(NewMeasurePrefix));
+            if (customMeasureCnt == 0) return NewMeasurePrefix;
+            // if the user has deleted some ealier custom measure numbers we need to loop and keep
+            // searching until we find an unused one
+            while (Columns.Any(c => c.Caption == $"{NewMeasurePrefix}{customMeasureCnt}" ))
+            {
+                customMeasureCnt++;
+            }
+            return $"{NewMeasurePrefix}{customMeasureCnt}";
+
+        }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

@@ -1149,6 +1149,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private Version _currentDownloadVersion = new Version(0,0,0,0);
+        [DataMember, DefaultValue("0.0.0.0")]
+        public Version CurrentDownloadVersion
+        {
+            get { return _currentDownloadVersion; }
+            set
+            {
+                _currentDownloadVersion = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValueAsync(nameof(CurrentDownloadVersion), value, _isInitializing);
+                NotifyOfPropertyChange(() => CurrentDownloadVersion);
+            }
+        }
+
         private ObservableCollection<IDaxFile> _recentFiles;
         [DataMember]
         //[JsonConverter(typeof(DaxFileConverter))]
