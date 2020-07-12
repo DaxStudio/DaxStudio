@@ -307,6 +307,7 @@ namespace DAXEditorControl
             if (e == null) return;
 
             var indentSize = e.NewValue as int?;
+            if (indentSize < 1) indentSize = 1;
 
             view.Options.IndentationSize = indentSize ?? 4;
         }
