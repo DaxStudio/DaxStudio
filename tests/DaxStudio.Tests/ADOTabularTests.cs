@@ -178,6 +178,7 @@ namespace DaxStudio.Tests
             mockConn.SetupGet(x => x.Keywords).Returns(new ADOTabularKeywordCollection(mockConn.Object));
             mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
             mockConn.SetupGet(x => x.DynamicManagementViews).Returns( new ADOTabularDynamicManagementViewCollection(mockConn.Object));
+            mockConn.SetupGet(x => x.IsAdminConnection).Returns(true);
             connection = mockConn.Object;
         }
         //
