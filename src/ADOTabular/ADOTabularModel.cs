@@ -70,5 +70,7 @@ namespace ADOTabular
             col.Role = roleId;
             Roles.Add(roleId, col);
         }
+
+        public ADOTabularModelCapabilities Capabilities { get; set; } = new ADOTabularModelCapabilities();
     }
 }

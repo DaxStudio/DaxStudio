@@ -120,7 +120,7 @@ namespace ADOTabular
 
         internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
         {
-            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES")) return GetTmSchemaMeasures(measures, conn);
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection) return GetTmSchemaMeasures(measures, conn);
             return GetMdSchemaMeasures(measures, conn);
         }
 
