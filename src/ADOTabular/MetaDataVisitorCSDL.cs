@@ -166,10 +166,25 @@ namespace ADOTabular
                     while (!(rdr.NodeType == XmlNodeType.EndElement 
                           && rdr.LocalName == eEntityContainer))
                     {
+                        if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "DAXFunctions") PopulateDAXFunctionsFromXml(tabs.Model, rdr);
                         rdr.Read();
                     }
                     
                 }
+                rdr.Read();
+            }
+        }
+
+        private static void PopulateDAXFunctionsFromXml(ADOTabularModel model, XmlReader rdr)
+        {
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                          && rdr.LocalName == "DAXFunctions"))
+            {
+                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "SummarizeColumns") {
+                    var enabled = rdr.ReadElementContentAsBoolean();
+                    model.Capabilities.DAXFunctions.SummarizeColumns = enabled;
+                }
+                
                 rdr.Read();
             }
         }

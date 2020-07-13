@@ -629,6 +629,8 @@ namespace ADOTabular
         }
 
         private int _spid;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public int SPID
         {
             get
@@ -772,6 +774,8 @@ namespace ADOTabular
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
         public string ShortFileName { get; private set; }
 
+        public bool IsAdminConnection => SPID != -1 || Properties.ContainsKey("roles") || Properties.ContainsKey("EffectiveUserName") || IsPowerBIXmla;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
         {
@@ -819,6 +823,8 @@ namespace ADOTabular
                 _keywords = this._keywords,
                 _serverMode = this._serverMode,
                 _dmvCollection = this._dmvCollection,
+                _db = this._db,
+                _adoTabDatabaseColl = this._adoTabDatabaseColl,
                 ServerType = this.ServerType
             };
             return cnn;

@@ -2713,7 +2713,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection => Spid != -1 || Connection.Properties.ContainsKey("roles") || Connection.Properties.ContainsKey("EffectiveUserName") || Connection.IsPowerBIXmla;
+        public bool IsAdminConnection => Connection.IsAdminConnection;
         public bool IsPowerPivot { get; private set; }
 
         private bool _canCopy = true;

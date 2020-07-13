@@ -1214,6 +1214,7 @@ namespace DaxStudio.UI.ViewModels
         public int EditorIndentationSize { 
             get => _editorIndentationSize; 
             set {
+                if (value < 1) value = 1; // the value cannot be less than 1
                 _editorIndentationSize = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValueAsync<int>(nameof(EditorIndentationSize), value, _isInitializing);

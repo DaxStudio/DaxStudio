@@ -163,6 +163,7 @@
     <Compile Include="ADOTabularKpi.cs" />
     <Compile Include="ADOTabularMetadataImages.cs" />
     <Compile Include="ADOTabularModel.cs" />
+    <Compile Include="ADOTabularModelCapabilities.cs" />
     <Compile Include="ADOTabularModelCollection.cs" />
     <Compile Include="ADOTabularObjectReference.cs" />
     <Compile Include="ADOTabularParameter.cs" />

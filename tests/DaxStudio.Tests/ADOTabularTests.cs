@@ -352,6 +352,25 @@ namespace DaxStudio.Tests
             
         }
 
+
+        [TestMethod]
+        public void TestPowerBIModelCapabilities()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\powerbi-csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.AreEqual(false, m.Capabilities.DAXFunctions.SubstituteWithIndex);
+            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
+        }
+
         [TestMethod]
         public void TestADOTabularGetDatabaseID()
         {
