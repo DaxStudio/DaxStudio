@@ -409,12 +409,22 @@ namespace DaxStudio.UI.ViewModels
         
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        private async Task ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
+        private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var builder = new SqlConnectionStringBuilder(connStr);
+            SqlConnectionStringBuilder builder;
+            try
+            {
+                builder = new SqlConnectionStringBuilder(connStr);
+            }
+            catch (ArgumentException ex)
+            {
+                // wrap this exception and include the connection string that we could not parse
+                throw new ArgumentException($"Error parsing connections string: {connStr} - {ex.Message}" , ex);
+            }
+            
             builder.ApplicationName = "DAX Studio Table Export";
 
             currentTableIdx = 0;
