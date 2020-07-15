@@ -48,6 +48,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularTable table)
         {
+            if (table == null) return;
             if (_tables == null)
             {
                 _tables = new SortedDictionary<string, ADOTabularTable>();

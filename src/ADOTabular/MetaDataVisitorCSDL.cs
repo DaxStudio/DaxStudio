@@ -1001,6 +1001,36 @@ namespace ADOTabular
             {
                 functionGroups.AddFunction(dr);
             }
+            AddUndocumentedFunctions(_conn, functionGroups);
+        }
+
+        private void AddUndocumentedFunctions(IADOTabularConnection conn, ADOTabularFunctionGroupCollection functionGroups)
+        {
+            var ssas2016 = new Version(13,0,0,0);
+            if (Version.Parse(_conn.ServerVersion) >= ssas2016)
+            {
+                using (DataTable paramTable = CreateParameterTable())
+                {
+
+                    paramTable.Rows.Add(new[] { "Rows", "FALSE", "FALSE", "FALSE" });
+                    paramTable.Rows.Add(new[] { "Skip", "FALSE", "FALSE", "FALSE" });
+                    paramTable.Rows.Add(new[] { "Table", "FALSE", "FALSE", "FALSE" });
+                    paramTable.Rows.Add(new[] { "OrderByExpression", "TRUE", "FALSE", "FALSE" });
+                    paramTable.Rows.Add(new[] { "Order", "FALSE", "TRUE", "FALSE" });
+
+                    functionGroups.AddFunction("FILTER", "TOPNSKIP", "Retrieves a number of rows from a table efficiently, skipping a number of rows. Compared to TOPN, the TOPNSKIP function is less flexible, but much faster.", paramTable.Select());
+                }
+            }
+        }
+
+        private static DataTable CreateParameterTable()
+        {
+            var paramTable = new DataTable();
+            paramTable.Columns.Add("NAME", typeof(string));
+            paramTable.Columns.Add("OPTIONAL", typeof(string));
+            paramTable.Columns.Add("REPEATING", typeof(string));
+            paramTable.Columns.Add("REPEATABLE", typeof(string));
+            return paramTable;
         }
 
         public void Visit(ADOTabularKeywordCollection keywords)

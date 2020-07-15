@@ -74,7 +74,7 @@ namespace ADOTabular
                         this.Open();
                     }
                     var dd = Databases.GetDatabaseDictionary(this.SPID);
-
+                    
                     if (string.IsNullOrWhiteSpace(_currentDatabase) && _adomdConn.State == ConnectionState.Open) _currentDatabase = _adomdConn.Database;
 
                     if (!dd.ContainsKey(_currentDatabase))
@@ -660,6 +660,7 @@ namespace ADOTabular
 
         public void Cancel()
         {
+            
             if (_runningCommand == null)
             {
                 return;
