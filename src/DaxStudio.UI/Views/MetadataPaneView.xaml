@@ -176,30 +176,36 @@
             Style="{StaticResource DatabaseComboStyle}"      >
             <ComboBox.ToolTip>
                 <Grid>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
-                        <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                        <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
-                    </StackPanel>
-                    <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
-                    <TextBlock Text="Compatibility: " Grid.Row="2"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
-                    <TextBlock Text="Culture: " Grid.Row="3"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
-                    <TextBlock Text="Last Updated: " Grid.Row="4"/>
-                    <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+                            <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
+                            <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                        </StackPanel>
+                        <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
+                        <TextBlock Text="Compatibility: " Grid.Row="2"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
+                        <TextBlock Text="Culture: " Grid.Row="3"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
+                        <TextBlock Text="Last Updated: " Grid.Row="4"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
+                        <TextBlock Text="Is Admin: " Grid.Row="5"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay, StringFormat=g}" Grid.Row="5" Grid.Column="1"/>
+                        <TextBlock Text="Roles: " Grid.Row="6"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay, StringFormat=g}" Grid.Row="6" Grid.Column="1"/>
+                    </Grid>
                 </Grid>
             </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
