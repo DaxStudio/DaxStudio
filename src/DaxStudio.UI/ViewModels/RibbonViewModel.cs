@@ -1169,5 +1169,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(FormatQueryTitle));
             NotifyOfPropertyChange(nameof(RunQueryTitle));
         }
+
+        public void CrashTest()
+        {
+            throw new Exception("This is a fake exception to test the crash reporting");
+        }
     }
 }

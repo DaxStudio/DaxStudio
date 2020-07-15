@@ -23,6 +23,8 @@ namespace DaxStudio.Standalone
     {
         private static ILogger log;
         private static  IEventAggregator _eventAggregator;
+        // need to create application first
+        private static Application app = new Application();
 
         static EntryPoint()
         {
@@ -54,8 +56,7 @@ namespace DaxStudio.Standalone
         {
             try
             {
-                // need to create application first
-                var app = new Application();
+
 
                 // add unhandled exception handler
                 app.DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -200,6 +201,7 @@ namespace DaxStudio.Standalone
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
             LogFatalCrash(e.Exception, msg);
+            app.Shutdown(1);
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -207,11 +209,15 @@ namespace DaxStudio.Standalone
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
             LogFatalCrash(ex, msg);
+            app.Shutdown(2);
         }
 
         private static void LogFatalCrash(Exception ex, string msg)
         {
-            Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(CurrentDomainOnUnhandledException), msg);
+            // add a property to the application indicating that we have crashed
+            app.Properties.Add("HasCrashed", true);
+
+            Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 CrashReporter.ReportCrash(ex, msg);
@@ -220,6 +226,7 @@ namespace DaxStudio.Standalone
             {
                 Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
             }
+
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -250,6 +257,7 @@ namespace DaxStudio.Standalone
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                         CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
                         e.Handled = true;
+                        
                         Application.Current.Shutdown(1);
                         break;
                 }
@@ -257,11 +265,9 @@ namespace DaxStudio.Standalone
             }
             else
             {
-                Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
-                // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException crash");
+                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash");
                 e.Handled = true;
-                Application.Current?.Shutdown(1);
+                app?.Shutdown(3);
             }
         }
 

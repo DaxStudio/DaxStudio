@@ -919,8 +919,23 @@
         <!-- DEBUG Ribbon -->
 
         <Fluent:RibbonTabItem Header="Debug" Visibility="{Binding IsDebugBuild, Converter={StaticResource BoolToVisibilityConverter}}">
-            
-            <Fluent:RibbonGroupBox Header="Window Layout">
+
+            <Fluent:RibbonGroupBox Header="Crash Reporting">
+                <Fluent:Button Name="CrashTest"
+                               Header="Crash Test"
+                               cal:Message.Attach="[Event Click] = [Action CrashTest()]"
+
+                                   Margin="4,0"
+                                   SizeDefinition="Large,Large,Large">
+                    <Fluent:Button.LargeIcon>
+
+                        <fa:FontAwesome  Icon="Warning" Foreground="OrangeRed" FontSize="32" />
+
+                    </Fluent:Button.LargeIcon>
+                </Fluent:Button>
+
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox Header="Window Layout">
                     <Fluent:Button Name="SaveLayout"
                                Header="Save Layout"
                                cal:Message.Attach="[Event Click] = [Action SaveLayout()]"

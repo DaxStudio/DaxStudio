@@ -177,7 +177,8 @@ namespace DaxStudio.UI.ViewModels
                 Ribbon.OnClose();
                 notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
-                AutoSaver.RemoveAll();
+                if (!Application.Current.Properties.Contains("HasCrashed") )
+                    AutoSaver.RemoveAll();
             }
         }
         //public override void TryClose()
