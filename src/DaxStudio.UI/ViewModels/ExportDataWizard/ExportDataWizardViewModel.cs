@@ -284,7 +284,7 @@ namespace DaxStudio.UI.ViewModels
                     // get a count of the total rows in the table
                     var connRead = Document.Connection;
                     DataTable dtRows = connRead.ExecuteDaxQueryDataTable(daxRowCount);
-                    var totalRows = dtRows.Rows[0].Field<long>(0);
+                    var totalRows = dtRows.Rows[0].Field<long?>(0)??0;
                     table.TotalRows = totalRows;
 
                     StreamWriter textWriter = null;
