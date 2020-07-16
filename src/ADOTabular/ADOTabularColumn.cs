@@ -164,9 +164,9 @@ namespace ADOTabular
             
             if (connection == null) return new List<string>() { "<Not Connected>" };
 
-            string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), RAND()) ORDER BY {{1}}";
+            string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
             if (connection.AllFunctions.Contains("TOPNSKIP"))
-                qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), RAND()) ORDER BY {{1}}";
+                qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), 1) ORDER BY {{1}}";
 
             var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName);
             using (var dt = connection.ExecuteDaxQueryDataTable(qry))

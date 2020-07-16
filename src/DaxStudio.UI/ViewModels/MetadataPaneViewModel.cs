@@ -257,9 +257,10 @@ namespace DaxStudio.UI.ViewModels
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTables), $"Starting Refresh of Tables (session: {Connection.SessionId})");
                         _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
                         sw.Stop();
-                        Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Metadata Refreshed (duration: {sw.ElapsedMilliseconds}ms)");
+                        Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
                     }
                     catch (Exception ex)
                     {
