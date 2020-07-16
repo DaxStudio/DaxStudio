@@ -186,7 +186,8 @@
 
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>
+    <!--<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>-->
+	<Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true" />
     <!-- <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudioPerUser_$(OutVersion)_setup.exe' IgnoreExitCode="true"/> -->
   </Target>
 
