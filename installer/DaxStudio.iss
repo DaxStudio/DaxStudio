@@ -652,15 +652,9 @@ begin
   end;
   if (CurStep=ssPostInstall) then begin
     
-    //if (IsTaskSelected('pbiintegration')) then 
-//     if (IsComponentSelected('Core\PBI')) then
-//       begin
-//         Log('Writing Power BI Desktop External Tools File');
-//         WriteExternalToolsFile();
-//       end
-//     else
-//       Log('SKIPPING - Power BI Desktop External Tools integration');
-    
+    Log('Writing Power BI Desktop External Tools File');
+    WriteExternalToolsFile();
+  
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
   end;
