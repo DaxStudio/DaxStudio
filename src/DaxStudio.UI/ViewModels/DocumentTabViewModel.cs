@@ -191,12 +191,14 @@ namespace DaxStudio.UI.ViewModels
                 || sourceDocument.Connection == null
                 || sourceDocument.Connection.State != System.Data.ConnectionState.Open)
             {
-                if (!string.IsNullOrEmpty(_app.Args().Server) && !string.IsNullOrEmpty(_app.Args().Database))
+                if (!string.IsNullOrEmpty(_app.Args().Server) )
                 {
                     var server = _app.Args().Server;
                     var database = _app.Args().Database;
+                    var initialCatalog = string.Empty;
+                    if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                     Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
-                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server};Initial Catalog={database}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
                     _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 }
                 else
