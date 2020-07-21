@@ -166,6 +166,20 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.FormatQuery( true );
         }
 
+        public string FormatQueryStandardTitle => Options.DefaultDaxFormatStyle.GetDescription() + " (Default) (" + Options.HotkeyFormatQueryStandard + ")";
+
+        public string FormatQueryAlternateTitle { get 
+            {
+                var title = string.Empty;
+                if (Options.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine) { title = DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine.GetDescription(); }
+                else
+                {
+                    title = DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine.GetDescription();
+                }
+                return title + " (" + Options.HotkeyFormatQueryAlternate + ")";
+            } 
+        }
+
         public bool CanUndo { get => ActiveDocument != null; }
         public void Undo()
         {
@@ -959,6 +973,9 @@ namespace DaxStudio.UI.ViewModels
             ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
             ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
+            NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
+            NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
+
         }
 
         public void LaunchSqlProfiler()

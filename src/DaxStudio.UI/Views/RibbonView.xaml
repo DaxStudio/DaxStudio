@@ -614,20 +614,39 @@
 
 
             <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{StaticResource ToUpperIcon}">
-                <Fluent:Button Name="FormatQuery"
+                <Fluent:SplitButton Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]"
                                Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
                                Margin="0,0,10,0"
-                               FocusManager.IsFocusScope="True">
-                    <Fluent:Button.ToolTip>
+                               FocusManager.IsFocusScope="True"
+                               >
+                    <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="{Binding FormatQueryTitle}"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
                                            ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
+                    </Fluent:SplitButton.ToolTip>
+                    <Fluent:MenuItem Header="{Binding FormatQueryStandardTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]" />
+                    <Fluent:MenuItem Header="{Binding FormatQueryAlternateTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryAlternate()]"  />
+                    <!--<Fluent:Gallery ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                        Orientation="Vertical"
+                                        GroupBy="Tag"
+                                        Selectable="False"
+ >
+                        <Fluent:GalleryItem cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]" >
+                            <TextBlock Text="{Binding FormatQueryStandardTitle}" Margin="2"
+                                       
+                                       />
+                        </Fluent:GalleryItem>
+                        <Fluent:GalleryItem cal:Message.Attach="[Event Click] = [Action FormatQueryAlternate()]" >
+                            <TextBlock Text="{Binding FormatQueryAlternateTitle}" Margin="2"
+                                       
+                                       />
+                        </Fluent:GalleryItem>
+                    </Fluent:Gallery>-->
+                </Fluent:SplitButton>
                 
 
                 <Fluent:Button Name="ToUpper"
