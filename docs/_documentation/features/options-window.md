@@ -79,7 +79,7 @@ These settings change settings for the Results window
 | Font Size | This is the default size for the results font | 11pt |
 | Scale Font with Editor | When this option is selected increasing the zoom factor on the editor will also increase the zoom for the results pane | true |
 | Exclude Headers when Copying data | This setting controls whether column headers are included when copying data from the results pane | true |
-| Automatic Format Results | This setting controls whether the results pane attempts to auotmaticlly format numbers and percentages | false |
+| Automatic Format Results | This setting controls whether the results pane attempts to automatically format numbers and percentages | false |
 
 ## Metadata Pane
 

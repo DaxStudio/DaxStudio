@@ -5,7 +5,7 @@ title: Metadata Panes
 DAX Studio has 3 different metadata panes. With all the metadata panes you can either double click on an item to insert it into the current position of the editor or you can drag the item and drop it in a selected position in the query pane.
 
 ### Model Metadata
-The model metadata pane shows information about the currently connected data source. You can use the database and model drop downs at the top of the pane to select which metadata to display (note that for some datasources like Excel and Power BI Desktop the database dropdown is disabled as these data sources can only have a single database). The [Model Metadata](../model-metadata) pane can display information about a number of different objects in the model
+The model metadata pane shows information about the currently connected data source. You can use the database and model drop downs at the top of the pane to select which metadata to display (note that for some data sources like Excel and Power BI Desktop the database dropdown is disabled as these data sources can only have a single database). The [Model Metadata](../model-metadata) pane can display information about a number of different objects in the model
 ![](Metadata Panes_ModelMetadata.png)
 
 ### Function Metadata

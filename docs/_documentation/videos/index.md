@@ -3,7 +3,7 @@ title: Documentation
 permalink: /:collection/videos/index.html
 ---
 
-The following 4 videos are from a series produced by [PowerBi.tips](https://powerbi.tips) you can checkout these videos and more great Power BI content on their [youtube channel] (https://www.youtube.com/channel/UCPwPrIpZwlfIKcoUpRwl9OQ).
+The following 4 videos are from a series produced by [PowerBi.tips](https://powerbi.tips) you can checkout these videos and more great Power BI content on their [youtube channel](https://www.youtube.com/channel/UCPwPrIpZwlfIKcoUpRwl9OQ).
 
 ## 1 of 4 PowerBI.Tips - Tutorial - Introduction to DAX Studio - Darren Gosbell
 An introduction to DAX Studio, from downloading and installing to running basic queries

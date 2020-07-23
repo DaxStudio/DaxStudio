@@ -13,7 +13,7 @@ title: What's New
 * Comment / Uncomment selected text
 * Uppercase / Lowercase selected text
 * Ability to run queries with an xml parameter block (as captured from SQL Profiler)
-* Abilty to merge xml parameter blocks into a query
+* Ability to merge xml parameter blocks into a query
 * a single integrated installer for Excel 2010 / 2013 / standalone and  x86 / x64 which will download missing pre-requisites
 * version update notifications
 * ability to dynamic change the font size of the query text

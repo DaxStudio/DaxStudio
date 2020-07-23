@@ -10,7 +10,7 @@ The connection dialog in DAX Studio provides the ability to connect to:
 The dialog box only presents connection options that are currently valid.
 
 ## Connect to PowerPivot
-This option is only available when DAX Studio is launched from the Add-ins ribbon in Excel. If you lauch DAX Studio outside of excel it cannot connect to PowerPivot
+This option is only available when DAX Studio is launched from the Add-ins ribbon in Excel. If you launch DAX Studio outside of excel it cannot connect to PowerPivot
 
 ![](ConnectPowerPivot.png)
 

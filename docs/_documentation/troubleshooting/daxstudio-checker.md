@@ -14,7 +14,7 @@ When you run ```DaxStudio.Checker.exe``` it will produce output similar to the f
 
 ![](daxstudio-checker.png)
 
-This can then be copied and pasted into an [issue](/issues) on GitHub if required to assist with troublshooting.
+This can then be copied and pasted into an [issue](/issues) on GitHub if required to assist with troubleshooting.
 
 In some cases additional, deeper levels of logging may be required. **DAX Studio Checker** includes some menu items to assist in switching on this logging. This is usually not required, but in some rare cases the developers may request that you enable one or more of these options to assist in finding issues.
 

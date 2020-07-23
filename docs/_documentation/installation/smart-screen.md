@@ -52,7 +52,7 @@ The installer is now downloaded and you can click on the exe to start the instal
 
 ![](run-installer.png)
 
-You may now see another Smart Screen message syaing “Windows protected your PC”
+You may now see another Smart Screen message saying “Windows protected your PC”
 
 ![](windows-protected-your-pc.png)
 

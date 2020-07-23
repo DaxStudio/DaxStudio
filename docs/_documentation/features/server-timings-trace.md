@@ -4,7 +4,7 @@ title: Server Timing Trace
 
 > _Note: Tracing requires server admin rights, if you do not have these the trace buttons will be disabled_
 
-The standard timings reported in the output window is the elapsed time for the query recorded by Dax Studio, but that can be impacted by network speeds and the size of the resultset. If you want to see the query timing from the server perspective you can do this with the server timing trace button.
+The standard timings reported in the output window is the elapsed time for the query recorded by Dax Studio, but that can be impacted by network speeds and the size of the result set. If you want to see the query timing from the server perspective you can do this with the server timing trace button.
 
 ![](server-timings-tab.png)
 

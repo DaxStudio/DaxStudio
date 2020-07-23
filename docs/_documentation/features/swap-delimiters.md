@@ -7,7 +7,7 @@ title: Swap Delimiters
 In Excel and Power BI DAX supports 2 styles of delimiters:
 - US 
     - comma (,) for list items
-    - fullstop (.) for the decimal separator
+    - period (.) for the decimal separator
 - "European"
     - semicolon (;) for list items
     - comma (,) for the decimal separator
