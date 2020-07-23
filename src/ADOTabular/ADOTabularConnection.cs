@@ -741,6 +741,7 @@ namespace ADOTabular
             _adomdConn.RefreshMetadata();
         }
 
+        // This method forces in the Initial Catalog and Cube settings to the connection string 
         public string ConnectionStringWithInitialCatalog {
             get {
                 var builder = new OleDbConnectionStringBuilder(ConnectionString)

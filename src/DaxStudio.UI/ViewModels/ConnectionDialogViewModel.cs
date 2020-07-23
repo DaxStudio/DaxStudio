@@ -175,6 +175,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value != _serverModeSelected)
                 {
                     _serverModeSelected = value;
+                    InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
@@ -191,6 +192,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value != _powerPivotModeSelected)
                 {
                     _powerPivotModeSelected = value;
+                    InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
                     NotifyOfPropertyChange(nameof(CanConnect));
@@ -252,6 +254,9 @@ namespace DaxStudio.UI.ViewModels
                                 break;
                             case "show hidden cubes":
                                 // do nothing
+                                break;
+                            case "initial catalog":
+                                InitialCatalog = p.Value;
                                 break;
                             default:
                                 AdditionalOptions += string.Format("{0}={1};", p.Key, p.Value);
@@ -463,19 +468,29 @@ namespace DaxStudio.UI.ViewModels
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6};{7}", DataSource
+            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6}{7}{8}", DataSource
                                  , GetMdxCompatibilityMode()     //1
                                  , GetDirectQueryMode()          //2
                                  , GetRolesProperty()            //3
                                  , GetLocaleIdentifier()         //4
                                  , GetEffectiveUserName()        //5
-                                 , AdditionalOptions             //6
-                                 , GetApplicationName("SSAS"));  //7
+                                 , GetApplicationName("SSAS")    //6
+                                 , GetInitialCatalog()           //7
+                                 , AdditionalOptions             //8
+                                 );  
+        }
+
+        private string GetInitialCatalog()
+        {
+            if (string.IsNullOrEmpty(InitialCatalog)) return string.Empty;
+            if (InitialCatalog == "<default>") return string.Empty;
+            if (InitialCatalog == "<not connected>") return string.Empty;
+            return $"Initial Catalog={InitialCatalog};";
         }
 
         private string GetApplicationName(string connectionType)
         {
-            return string.Format("Application Name=DAX Studio ({0}) - {1}", connectionType, _activeDocument.UniqueID);
+            return string.Format("Application Name=DAX Studio ({0}) - {1};", connectionType, _activeDocument.UniqueID);
         }
 
         /*
@@ -594,6 +609,8 @@ namespace DaxStudio.UI.ViewModels
         public List<PowerBIInstance> PowerBIDesignerInstances { get { return _powerBIInstances; } }
         public bool PowerBIModeSelected { get => _powerBIModeSelected; set {
                 _powerBIModeSelected = value;
+                // clear any previously set InitialCatalog
+                InitialCatalog = string.Empty;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
                 NotifyOfPropertyChange(nameof(CanConnect));
@@ -673,7 +690,46 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => HasPowerPivotModel);
             }
         }
-    }
+
+
+        public void ClearDatabases()
+        {
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
+            Databases.Clear();
+            Databases.Add("<default>");
+        }
+
+        public void RefreshDatabases()
+        {
+            // exit here if the database collection is already populated
+            if (Databases.Count > 1) return;
+
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), "Refreshing Databases");
+      
+            using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, Common.Enums.AdomdType.AnalysisServices))
+            {
+                conn.Open();
+                if (conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Databases.Apply(db => Databases.Add(db));
+                }
+                else
+                {
+                    Databases.Remove("<default>");
+                    Databases.Add("<not connected>");
+                }
+            }
+            NotifyOfPropertyChange(nameof(Databases));
+        }
+        private string _initialCatalog = string.Empty;//= "<default>";
+        public string InitialCatalog { get => _initialCatalog;
+            set {
+                _initialCatalog = value;
+                NotifyOfPropertyChange(nameof(InitialCatalog));
+            } 
+        } 
+        public ObservableCollection<string> Databases { get; set; } = new ObservableCollection<string>();
+    } 
      
     public class LocaleIdentifier
     {

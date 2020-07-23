@@ -453,10 +453,11 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                if (_selectedDatabase != value)
+                if (_selectedDatabase != value )
                 {
                     _selectedDatabase = value;
-
+                    if (_selectedDatabase != null) Connection.ChangeDatabase(_selectedDatabase.Name);
+                    ModelList = Connection.Database.Models;
                     NotifyOfPropertyChange(() => SelectedDatabase);
                     NotifyOfPropertyChange(() => ModelList);
                     EventAggregator.PublishOnUIThread(new DatabaseChangedEvent());

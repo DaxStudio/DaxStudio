@@ -156,16 +156,16 @@ namespace DaxStudio.Standalone
                 // Launch the User Interface
                 app.Run();
             }
-            catch (ArgumentOutOfRangeException argEx)
-            {
-                var st = new System.Diagnostics.StackTrace(argEx);
-                var sf = st.GetFrame(0);
-                if (sf.GetMethod().Name == "GetLineByOffset")
-                {
-                    if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
-                    Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
-                }
-            }
+            //catch (ArgumentOutOfRangeException argEx)
+            //{
+            //    var st = new System.Diagnostics.StackTrace(argEx);
+            //    var sf = st.GetFrame(0);
+            //    if (sf.GetMethod().Name == "GetLineByOffset")
+            //    {
+            //        if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan beyond the end of the current line"));
+            //        Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
+            //    }
+            //}
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);

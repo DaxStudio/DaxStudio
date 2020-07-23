@@ -201,6 +201,7 @@ namespace DaxStudio.UI.Utils
                 foreach (var f in indexFiles)
                 {
                     var idx = LoadAutoSaveIndex(f);
+                    if (idx == null) continue;
                     _masterAutoSaveIndex.Add(idx.ProcessId, idx);
                 }
                 UpdateMasterIndexForRunningInstances();

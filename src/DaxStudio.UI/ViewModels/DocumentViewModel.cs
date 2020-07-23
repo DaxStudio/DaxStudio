@@ -878,25 +878,20 @@ namespace DaxStudio.UI.ViewModels
             get { return _connection; }
             internal set
             {
-                if (_connection == value)
+                if (value != null && _connection == value)
                     return;
-
-                UpdateConnections(value, "");
-                Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection == null ? "<null>" : _connection.ConnectionString);
-                NotifyOfPropertyChange(() => IsConnected);
-                NotifyOfPropertyChange(() => IsAdminConnection);
-                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this));
+                _connection = value;
             }
         }
 
 
-        private void UpdateConnections(ADOTabularConnection value, string selectedDatabase)
+        private void UpdateConnections(ADOTabularConnection value)
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
-            Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnections"
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections"
                 , value == null ? "<null>" : value.ConnectionString
-                , selectedDatabase);
+                );
             if (value != null && value.State != ConnectionState.Open)
             {
                 OutputPane.AddWarning(string.Format("Connection for server {0} is not open", value.ServerName));
@@ -1977,9 +1972,9 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(UpdateConnectionEvent message)
         {
             _logger.Info("In Handle<UpdateConnectionEvent>");
-            Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null ? "<null>" : message.Connection.ConnectionString, message.DatabaseName);
+            Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null ? "<null>" : message.Connection.ConnectionString);
 
-            UpdateConnections(message.Connection, message.DatabaseName);
+            UpdateConnections(message.Connection);
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));
         }
@@ -2530,12 +2525,19 @@ namespace DaxStudio.UI.ViewModels
             if (Connection != null && Connection.State == ConnectionState.Open)
             {
                 Connection.Close();
-                Connection.Dispose();
+                //Connection.Dispose();
             }
 
             if (cnn != null && cnn.State != ConnectionState.Open) cnn.Open();
 
             Connection = cnn;
+            
+            UpdateConnections(Connection);
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection == null ? "<null>" : _connection.ConnectionString);
+            NotifyOfPropertyChange(() => IsConnected);
+            NotifyOfPropertyChange(() => IsAdminConnection);
+            _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this));
+
             this.IsPowerPivot = message.PowerPivotModeSelected;
             this.Spid = cnn.SPID;
             //this.SelectedDatabase = cnn.Database.Name;
@@ -3112,7 +3114,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
 
                 var conn = Connection.Clone();
-                bool hasChanged = await Task<bool>.Run(() => conn?.Database?.HasSchemaChanged() ?? false);
+                bool hasChanged = await Task<bool>.Run(() => {
+                    conn.Open();
+                    return conn?.Database?.HasSchemaChanged() ?? false;
+                });
                 conn.Close();
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");

@@ -6,8 +6,8 @@
         xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
         xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-        xmlns:fluent="urn:fluent-ribbon" 
-        x:Class="DaxStudio.UI.Views.ConnectionDialogView"
+        xmlns:fluent="urn:fluent-ribbon" xmlns:cal="http://www.caliburnproject.org"
+    x:Class="DaxStudio.UI.Views.ConnectionDialogView"
         DataContext="{Binding}" 
         Loaded="UserControl_Loaded" 
         Width="500">
@@ -100,6 +100,7 @@
                                 </Grid.RowDefinitions>
                                 <StackPanel Orientation="Horizontal" Grid.Column="0">
                                     <RadioButton  Height="16" HorizontalAlignment="Left" Margin="5,12,0,0" x:Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType"  IsEnabled="{Binding HasPowerPivotModel}">
+                                        
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock IsEnabled="{Binding PowerPivotEnabled}" Style="{StaticResource disabledText}" Text="PowerPivot Model" />
                                         </StackPanel>
@@ -181,13 +182,24 @@
                                     <!--<Image Source="{StaticResource Database}" Margin="0,0,5,0" />-->
                                     <TextBlock Text="Tabular Server" Style="{StaticResource disabledText}" />
                                 </StackPanel>
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                        <cal:ActionMessage MethodName="ClearDatabases"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
                             </RadioButton>
                             <ComboBox Height="23" Margin="0,6,5,0" x:Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  
 								ItemsSource="{Binding RecentServers}" 
 								Text="{Binding DataSource}" 
 								IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Column="1"
 								ap:InitialFocusExtentions.SelectWhenFocused="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
+                                      
                                       >
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="KeyUp">
+                                        <cal:ActionMessage MethodName="ClearDatabases"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
                                 <ComboBox.Resources>
                                     <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
                                         <VisualBrush.Visual>
@@ -238,47 +250,59 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Label Content="Direct Query Mode: " Height="27" Grid.Column="0" Grid.Row="0" 
-							HorizontalAlignment="Left" x:Name="lblDirectQuery" VerticalAlignment="Top" Width="116" />
-                        <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboDirectQuery" 
+
+                        <Label Content="Initial Catalog: " Height="28" HorizontalAlignment="Left"  x:Name="lblCatalogs" VerticalAlignment="Top"  Grid.Row="0" Grid.Column="0" IsEnabled="{Binding ServerModeSelected}"/>
+                        <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboCatalogs" 
+							VerticalAlignment="Top" 
+							SelectedValue="{Binding Path=InitialCatalog}"
+                            Text="{Binding InitialCatalog, Mode=OneWay}"
+							ItemsSource="{Binding Path=Databases}"
+                            IsEnabled="{Binding ServerModeSelected}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="GotFocus">
+                                    <cal:ActionMessage MethodName="RefreshDatabases"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+
+                        <Label Content="Direct Query Mode: " Height="27" Grid.Column="0" Grid.Row="1" 
+							HorizontalAlignment="Left" x:Name="lblDirectQuery" VerticalAlignment="Top" Width="116"
+                            IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"/>
+                        <ComboBox Height="23" Grid.Column="1" Grid.Row="1" x:Name="cboDirectQuery" 
 							VerticalAlignment="Top" 
 							IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"
 							SelectedValue="{Binding DirectQueryMode}"
 							ItemsSource="{Binding DirectQueryModeOptions}"
                             Margin="0"/>
 
-                        <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  x:Name="lblMdxCompat" VerticalAlignment="Top" Width="116" Grid.Row="1" Grid.Column="0" />
+                        <Label Content="MDX Compatibility: " Height="27" HorizontalAlignment="Left"  x:Name="lblMdxCompat" VerticalAlignment="Top" Width="116" 
+                               IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"
+                               Grid.Row="2" Grid.Column="0" />
                         <ComboBox Height="23"  x:Name="cboMdxCompat" VerticalAlignment="Top" 
 							IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" 
-                                  
 							SelectedItem="{Binding MdxCompatibility}"
-							Grid.Column="1" Grid.Row="1" 
+							Grid.Column="1" Grid.Row="2" 
 							ItemsSource="{Binding MdxCompatibilityOptions}">
-                            <!--  
-                            Text="{Binding Path=MdxCompatibility}" 
-                            <ComboBoxItem Name="type_0" Tag="0" Content="0 - Equivalent to 1"  />
-                            <ComboBoxItem Name="type_1" Tag="1" Content="1 - Placeholder members are exposed" />
-                            <ComboBoxItem Name="type_2" Tag="2" Content="2 - Placeholder members are not exposed" />
-                            <ComboBoxItem Name="type_3" Tag="3" Content="3- (Default) Placeholder members are not exposed" IsSelected="True" /> 
-                        -->
                         </ComboBox>
 
-                        <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  x:Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" />
-                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsEffectiveUserNameEnabled}"  Grid.Column="1" Grid.Row="2" Width="298"/>
-                        <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0" />
-                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsRolesEnabled}" Grid.Row="3" Grid.Column="1" Width="298" />
-                        <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="4" Grid.Column="0"/>
-                        <ComboBox Height="23" Grid.Column="1" Grid.Row="4" x:Name="cboLocales" 
+                        <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  x:Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="3" />
+                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsEffectiveUserNameEnabled}"  Grid.Column="1" Grid.Row="3" Width="298"/>
+                        
+                        <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="4" Grid.Column="0" />
+                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsRolesEnabled}" Grid.Row="4" Grid.Column="1" Width="298" />
+                        
+                        <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
+                        <ComboBox Height="23" Grid.Column="1" Grid.Row="5" x:Name="cboLocales" 
 							VerticalAlignment="Top" 
-							
                             DisplayMemberPath="DisplayName"
 							SelectedItem="{Binding Path=Locale}"
 							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
-
-                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
-                        <ScrollViewer Grid.Row="5" Grid.Column="1" Height="85" Width="298" >
+                        
+                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="6" Grid.Column="0"/>
+                        <ScrollViewer Grid.Row="6" Grid.Column="1" Height="85" Width="298" >
                             <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         </ScrollViewer>
