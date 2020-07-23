@@ -508,8 +508,6 @@ namespace ADOTabular
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == "DisplayFolder")
                 {
-                    Debug.WriteLine("FoundFolder");
-                    
                     ProcessDisplayFolder(rdr,tab,tab);
                 }
 
@@ -613,7 +611,7 @@ namespace ADOTabular
                             col.Variations.AddRange(_variations);
                             tables.Model.AddRole(col);
                             tab.Columns.Add(col);
-                            _conn.Columns.Add(col.OutputColumnName, col);
+                            _conn.Columns.Add(col.DaxName, col);
                         }
                         else
                         {
@@ -623,7 +621,7 @@ namespace ADOTabular
                                 DataType = Type.GetType($"System.{dataType}")
                             };
                             tab.Columns.Add(kpiCol);
-                            _conn.Columns.Add(kpiCol.OutputColumnName, kpiCol);
+                            _conn.Columns.Add(kpiCol.DaxName, kpiCol);
                         }
                     }
 
