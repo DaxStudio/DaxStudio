@@ -3,7 +3,9 @@ title: Windows 10 Smartscreen
 ---
 ## What is SmartScreen?
 
-SmartScreen is a set of technologies from Microsoft that is designed to protect your pc from malicious software. Unfortunately for specialty products like DAX Studio, one of the criteria that Smart Screen uses to determine if a given download is safe:
+> **Note:** With the release of version 2.12 the DAX Studio installer is now signed with an EV certificate kindly donated by SQLBI Corp so Windows Smart Screen should no longer falsely flag it as potentially harmful.  
+
+[SmartScreen](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-smartscreen/microsoft-defender-smartscreen-overview) is a set of technologies from Microsoft that is designed to protect your pc from malicious software. Unfortunately for specialty products like DAX Studio, one of the criteria that Smart Screen uses to determine if a given download is safe:
 * is the download is digitally signed and 
 * has been "frequently dowloaded". 
 
