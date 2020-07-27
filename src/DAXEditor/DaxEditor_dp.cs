@@ -338,7 +338,6 @@ namespace DAXEditorControl
         {
             base.OnLostKeyboardFocus(e);
             DisposeCompletionWindow();
-            System.Diagnostics.Debug.WriteLine("OnLostKeyboardFocus");
         }
 
         protected override void OnLostMouseCapture(MouseEventArgs e)

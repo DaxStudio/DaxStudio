@@ -53,18 +53,18 @@ namespace ADOTabular
             return _dsDatabases.Tables[0];
         }
 
-        private Dictionary<string, DatabaseDetails> _databaseDictionary;
+        private IDictionary<string, DatabaseDetails> _databaseDictionary;
 
-        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid)
+        public IDictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid)
         {
             return GetDatabaseDictionary(spid, false);
         }
-        public Dictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
+        public IDictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
             //if (refresh) _databaseDictionary = null;
             if (_databaseDictionary != null && !refresh) return _databaseDictionary;
 
-            Dictionary<string,DatabaseDetails> tmpDatabaseDict;
+            IDictionary<string,DatabaseDetails> tmpDatabaseDict;
             if (spid != -1)
             {
                 tmpDatabaseDict = GetDatabaseDictionaryFromXML();
@@ -84,7 +84,7 @@ namespace ADOTabular
             return _databaseDictionary;
         }
 
-        private void MergeDatabaseDictionaries(Dictionary<string, DatabaseDetails> tmpDatabaseDict)
+        private void MergeDatabaseDictionaries(IDictionary<string, DatabaseDetails> tmpDatabaseDict)
         {
             // Update the lastUpdated datetime
             foreach (var dbName in tmpDatabaseDict.Keys)
@@ -113,9 +113,9 @@ namespace ADOTabular
             }
         }
 
-        private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
+        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-            var databaseDictionary = new Dictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
@@ -131,10 +131,10 @@ namespace ADOTabular
             return databaseDictionary;
         }
 
-        private Dictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXML()
+        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXML()
         {
             
-            var databaseDictionary = new Dictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection
