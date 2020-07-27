@@ -14,7 +14,7 @@ js-footer: "/js/index-footer.js"
 {% assign zip_assets = download.assets | where_exp: "item", "item.browser_download_url contains '.zip'" %}
 {% assign portable = zip_assets[0] %}
 
-
+<!-- Installer Download link -->
 <div class="main-explain-area jumbotron center">
   <div class="centered">
     <div style="padding-bottom:10px">Download the latest release of DAX Studio here:</div>
@@ -34,6 +34,8 @@ js-footer: "/js/index-footer.js"
     </div>
   </div>
 </div>
+
+<!-- Portable Version download link -->
 
   {% if portable != nil  %}  
   <div class="centered">
@@ -166,4 +168,4 @@ js-footer: "/js/index-footer.js"
 </div>
 
 {% endif %}
-<!-- 2.11.2.316 -->
+<!-- 2.12.0.330 -->
