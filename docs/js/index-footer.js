@@ -36,19 +36,21 @@ $(document).ready(function() {
 
             });
 
+            localData = {
+                refreshDate: new Date(),
+                downloadCnt: exeCnt,
+                downloadCntZip: zipCnt,
+                tagName: data.tag_name
+            }
+
             if (typeof(Storage) !== "undefined") {
-                localData = {
-                    refreshDate: new Date(),
-                    downloadCnt: exeCnt,
-                    downloadCntZip: zipCnt,
-                    tagName: data.tag_name
-                }
+                
                 localStorage.release = JSON.stringify(localData);
             }
             
             //console.log('downloads: ' + data.assets[0].download_count);
-            $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCnt + "</span>");
-            $('#download_cnt_zip').html('<span> | downloads: </span><span class="badge badge-info">' + release.downloadCntZip + "</span>");
+            $('#download_cnt').html('<span> | downloads: </span><span class="badge badge-info">' + localData.downloadCnt + "</span>");
+            $('#download_cnt_zip').html('<span> | downloads: </span><span class="badge badge-info">' + localData.downloadCntZip + "</span>");
         });
     }
   });
