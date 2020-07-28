@@ -3,8 +3,10 @@ title: Downloads
 layout: page
 ---
 
+{% assign idx = 0 %}
+
 {% for release in  site.github.releases %} 
-  {% if release.draft != true and release.prerelease != true %}
+  {% if release.draft != true and release.prerelease != true and idx > 0 %}
 ### {{ release.name }}
     {% for asset in release.assets %}
       {% assign download_count = asset.download_count  %}
@@ -15,7 +17,11 @@ layout: page
       {% endif %}
 - [{{ release.name }} ({{ download_type}})]({{ asset.browser_download_url }}) <br/>
   Size: {% include filesize.html number=download_size %} \| Date: {% if asset.created_at  %}{{ asset.created_at | date_to_string }} {% else %} N/A {% endif %} \| Downloads: {% include intcomma.html number=download_count %}
-    {% endfor %}
+     {% endfor %}      
+
+ 
+
+
 
 {% comment %}
 
@@ -26,4 +32,6 @@ layout: page
 {% endcomment %}
 
   {% endif %}
+  {% assign idx = 1 %}
+
 {% endfor %}
