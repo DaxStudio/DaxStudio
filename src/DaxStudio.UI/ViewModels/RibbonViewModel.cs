@@ -359,13 +359,13 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void RefreshConnectionDetails(IConnection connection, string databaseName)
+        private void RefreshConnectionDetails(IConnection connection)
         {
             var doc = ActiveDocument;
             
             if (connection == null)
             {
-                Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", "<null>", "<null>");
+                Log.Debug(Common.Constants.LogMessageTemplate, "RibbonViewModel", "RefreshConnectionDetails", "connection == null");
                 _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
@@ -377,7 +377,7 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
-                Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName, databaseName);                
+                Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName);                
             }
             catch (Exception ex)
             {
@@ -464,7 +464,7 @@ namespace DaxStudio.UI.ViewModels
    
             try
             {
-                RefreshConnectionDetails(ActiveDocument, ActiveDocument?.SelectedDatabase??"");
+                RefreshConnectionDetails(ActiveDocument);
                 // TODO - do we still need to check trace watchers if we are not connected??
                 UpdateTraceWatchers();
             }
@@ -648,7 +648,7 @@ namespace DaxStudio.UI.ViewModels
                     ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
                     
                 }
-                RefreshConnectionDetails(ActiveDocument, ActiveDocument?.SelectedDatabase??"");
+                RefreshConnectionDetails(ActiveDocument);
             }
             
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
@@ -676,7 +676,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DocumentConnectionUpdateEvent message)
         {
-            RefreshConnectionDetails(message.Connection, message.Connection?.SelectedDatabase??"");
+            RefreshConnectionDetails(message.Connection);
         }
         
         public bool CanCut { get; set; }
