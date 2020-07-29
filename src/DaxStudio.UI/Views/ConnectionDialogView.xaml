@@ -7,7 +7,8 @@
         xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:fluent="urn:fluent-ribbon" xmlns:cal="http://www.caliburnproject.org"
-    x:Class="DaxStudio.UI.Views.ConnectionDialogView"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        x:Class="DaxStudio.UI.Views.ConnectionDialogView"
         DataContext="{Binding}" 
         Loaded="UserControl_Loaded" 
         Width="500">
@@ -181,9 +182,13 @@
                                 <StackPanel Orientation="Horizontal">
                                     <!--<Image Source="{StaticResource Database}" Margin="0,0,5,0" />-->
                                     <TextBlock Text="Tabular Server" Style="{StaticResource disabledText}" />
+                                    <fa:FontAwesome Icon="Warning" Foreground="Goldenrod" Margin="5,2,0,0" Visibility="{Binding ShowConnectionWarning, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="Unable to connect to server"/>
                                 </StackPanel>
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Checked">
+                                        <cal:ActionMessage MethodName="ClearDatabases"/>
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="SelectionChanged">
                                         <cal:ActionMessage MethodName="ClearDatabases"/>
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
@@ -196,6 +201,9 @@
                                       
                                       >
                                 <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <cal:ActionMessage MethodName="ClearDatabases"/>
+                                    </i:EventTrigger>
                                     <i:EventTrigger EventName="KeyUp">
                                         <cal:ActionMessage MethodName="ClearDatabases"/>
                                     </i:EventTrigger>
@@ -254,15 +262,23 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Label Content="Initial Catalog: " Height="28" HorizontalAlignment="Left"  x:Name="lblCatalogs" VerticalAlignment="Top"  Grid.Row="0" Grid.Column="0" IsEnabled="{Binding ServerModeSelected}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Initial Catalog: " Height="28" HorizontalAlignment="Left"  x:Name="lblCatalogs" VerticalAlignment="Top"  Grid.Row="0" Grid.Column="0" IsEnabled="{Binding ServerModeSelected}"/>
+                            <fa:ImageAwesome Icon="Refresh" Width="14" Margin="0,0,5,0" Foreground="DarkGray" Spin="True" Grid.Column="1" Visibility="{Binding IsLoadingDatabases, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+                        
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboCatalogs" 
 							VerticalAlignment="Top" 
-							SelectedValue="{Binding Path=InitialCatalog}"
+							SelectedItem="{Binding Path=InitialCatalog}"
                             Text="{Binding InitialCatalog, Mode=OneWay}"
 							ItemsSource="{Binding Path=Databases}"
                             IsEnabled="{Binding ServerModeSelected}">
                             <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="GotFocus">
+                                <i:EventTrigger EventName="DropDownOpened">
                                     <cal:ActionMessage MethodName="RefreshDatabases"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>

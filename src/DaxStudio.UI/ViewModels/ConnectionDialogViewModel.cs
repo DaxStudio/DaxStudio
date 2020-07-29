@@ -14,6 +14,7 @@ using System.Globalization;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using ADOTabular.Enums;
+using ADOTabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -485,6 +486,7 @@ namespace DaxStudio.UI.ViewModels
             if (string.IsNullOrEmpty(InitialCatalog)) return string.Empty;
             if (InitialCatalog == "<default>") return string.Empty;
             if (InitialCatalog == "<not connected>") return string.Empty;
+            if (InitialCatalog == "<loading...>") return string.Empty;
             return $"Initial Catalog={InitialCatalog};";
         }
 
@@ -694,40 +696,116 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearDatabases()
         {
+            ShowConnectionWarning = false;
             Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
             Databases.Clear();
             Databases.Add("<default>");
         }
 
-        public void RefreshDatabases()
+        public async void RefreshDatabases()
         {
             // exit here if the database collection is already populated
             if (Databases.Count > 1) return;
 
-            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), "Refreshing Databases");
-      
-            using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, Common.Enums.AdomdType.AnalysisServices))
+            // exit here if no server name is specified
+            if (DataSource.Trim().Length == 0)
             {
-                conn.Open();
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Databases.Apply(db => Databases.Add(db));
+                ShowConnectionWarning = true;
+                return;
+            }
+
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), $"Refreshing Databases for: {ConnectionString}");
+
+            try
+            {
+                IsLoadingDatabases = true;
+                if(!Databases.Contains("<loading...>")) Databases.Add("<loading...>");
+                NotifyOfPropertyChange(() => Databases);
+                InitialCatalog = "<loading...>";
+                
+                // populate temporary database list async
+                SortedSet<string> tmpDatabases = await GetDatabasesFromConnectionAsync();
+                
+                if (tmpDatabases.Count > 0) { 
+                    //Databases.Clear();
+                    InitialCatalog = "";
+                    tmpDatabases.Apply(db => Databases.Add(db));
+                    Databases.Remove("<loading...>");
+                    NotifyOfPropertyChange(() => Databases);
+                    Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), $"Finished Loading Databases");
                 }
                 else
                 {
                     Databases.Remove("<default>");
                     Databases.Add("<not connected>");
                 }
+                //}
+                NotifyOfPropertyChange(nameof(Databases));
             }
-            NotifyOfPropertyChange(nameof(Databases));
+            catch (Exception ex)
+            {
+                Databases.Remove("<loading...>");
+                InitialCatalog = "";
+                ShowConnectionWarning = true;
+                var msg = $"Error refreshing database list for Initial Catalog: {ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), msg);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+            } finally
+            {
+                IsLoadingDatabases = false;
+            }
         }
+
+        private async Task<SortedSet<string>> GetDatabasesFromConnectionAsync()
+        {
+            return await Task.Factory.StartNew<SortedSet<string>>(() =>
+            {
+                SortedSet<string> tmpDatabases = new SortedSet<string>();
+
+                using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, Common.Enums.AdomdType.AnalysisServices))
+                {
+
+                    conn.Open();
+                    if (conn.State == System.Data.ConnectionState.Open)
+                    {
+                        conn.Databases.Apply(db => tmpDatabases.Add(db));
+                    }
+                }
+                return tmpDatabases;
+
+            });
+        }
+
         private string _initialCatalog = string.Empty;//= "<default>";
         public string InitialCatalog { get => _initialCatalog;
             set {
                 _initialCatalog = value;
                 NotifyOfPropertyChange(nameof(InitialCatalog));
             } 
-        } 
+        }
+
+        private bool _showConnectionWarning = false;
+        public bool ShowConnectionWarning
+        {
+            get => _showConnectionWarning;
+            set
+            {
+                _showConnectionWarning = value;
+                NotifyOfPropertyChange(nameof(ShowConnectionWarning));
+            }
+        }
+
+        private bool _isLoadingDatabases = false;
+        public bool IsLoadingDatabases
+        {
+            get => _isLoadingDatabases;
+            set
+            {
+                _isLoadingDatabases = value;
+                NotifyOfPropertyChange(nameof(IsLoadingDatabases));
+            }
+        }
+
         public ObservableCollection<string> Databases { get; set; } = new ObservableCollection<string>();
     } 
      
