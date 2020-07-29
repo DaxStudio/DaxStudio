@@ -36,5 +36,13 @@ namespace DaxStudio.UI.Model
         }
         public double TotalDuration => (QueryEndTime.HasValue && RenderEndTime.HasValue) ? QueryDuration + RenderDuration : -1;
 
+        // copy/paste from the data grid converts the data to tab delimited format
+        // so we replace any embedded tabs with 4 spaces 
+        public string QueryTextQuoted { 
+            get { 
+                return QueryText.Replace("\t","    ");
+            } 
+        }
+
     }
 }
