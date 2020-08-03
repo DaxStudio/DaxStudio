@@ -289,7 +289,7 @@ namespace DaxStudio.UI.ViewModels
             set { _additionalOptions = value; }
         }
 
-        private string _dataSource;
+        private string _dataSource = string.Empty;
         public string DataSource { 
             get { 
                 if (RecentServers.Count > 0 && String.IsNullOrWhiteSpace(_dataSource))
