@@ -294,7 +294,7 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool IsCopyAllVisible { get { return false; } }
         public abstract void CopyAll();
 
-        public virtual bool CanExport { get { return true; }  }  // TOD - should this be conditional on whether we have data?
+        public virtual bool CanExport { get { return true; }  }  // TODO - should this be conditional on whether we have data?
 
         public void Export() {
             var dialog = new System.Windows.Forms.SaveFileDialog();

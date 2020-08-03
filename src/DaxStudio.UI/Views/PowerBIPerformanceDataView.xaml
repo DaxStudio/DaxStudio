@@ -80,16 +80,16 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
 
 
-        <controls:DataGridNoContextMenu x:Name="PerformanceData" 
+        <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"--> 
+        <controls:DataGridCustomCopy x:Name="PerformanceData" 
                     Grid.Row="1"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		                ResourceId=DataGridHeaderFilterControlStyle}}"
+		            ResourceId=DataGridHeaderFilterControlStyle}}"
                        
                     SelectedItem="{Binding SelectedPerfData}" 
                     HorizontalAlignment="Stretch" 
@@ -101,7 +101,7 @@
                     SelectionMode="Extended"
                     SelectionUnit="FullRow"
                     HeadersVisibility="Column"
-                    ClipboardCopyMode="ExcludeHeader"
+                    ClipboardCopyMode="IncludeHeader"
                     ScrollViewer.CanContentScroll="True"
                     FrozenColumnCount="1"
                     GridLinesVisibility="None" 
@@ -116,12 +116,16 @@
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>
-            <!--<DataGrid.ColumnHeaderStyle>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
-                    <Setter Property="FontWeight"
-                  Value="SemiBold" />
-                </Style>
-            </DataGrid.ColumnHeaderStyle>-->
+
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="Copy" >
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
@@ -209,27 +213,14 @@
                                     filter:DataGridColumnExtensions.CustomBindingPath="TotalDuration"
                                     />
 
-
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
-                                            filter:DataGridColumnExtensions.CustomBindingPath="QueryText"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True"
-                                            />
+                                        filter:DataGridColumnExtensions.CustomBindingPath="QueryText"
+                                        filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                                        ClipboardContentBinding="{Binding QueryTextQuoted}"
+                                        />
 
-                <!--<DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
-                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="{x:Type TextBlock}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
--->
             </DataGrid.Columns>
-        </controls:DataGridNoContextMenu>
+        </controls:DataGridCustomCopy>
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 

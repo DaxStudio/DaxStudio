@@ -370,6 +370,7 @@ namespace DaxStudio.QueryTrace
             {
                 cpuTime = 0;
             }
+
             // not all events have a duration
             try
             {

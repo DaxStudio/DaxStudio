@@ -103,9 +103,9 @@ namespace DaxStudio.UI.Model
                                     {
                                         var outputFilename = fileName;
                                         int iRowCnt = 0;
+                                        if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
                                         using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                                         {
-                                            if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
                                             iRowCnt = reader.WriteToStream( textWriter, sep, shouldQuoteStrings, isoDateFormat,  statusProgress);
                                         }
                                         runner.OutputMessage(

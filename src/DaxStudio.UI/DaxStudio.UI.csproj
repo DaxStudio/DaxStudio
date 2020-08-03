@@ -348,6 +348,7 @@
     <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
+    <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />
@@ -358,6 +359,7 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\DataGridCustomCopy.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>

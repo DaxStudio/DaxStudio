@@ -2715,7 +2715,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public int Spid { get; private set; }
-        public bool IsAdminConnection => Connection.IsAdminConnection;
+        public bool IsAdminConnection => Connection?.IsAdminConnection??false;
         public bool IsPowerPivot { get; private set; }
 
         private bool _canCopy = true;

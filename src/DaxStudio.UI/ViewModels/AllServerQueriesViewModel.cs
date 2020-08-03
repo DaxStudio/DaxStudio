@@ -85,7 +85,7 @@ namespace DaxStudio.UI.ViewModels
                             if (newEvent.Query == Constants.RefreshSessionQuery) continue;
 
                             // look for any cached rewrite events
-                            if (_rewriteEventCache.ContainsKey(traceEvent.RequestID))
+                            if (traceEvent.RequestID != null && _rewriteEventCache.ContainsKey(traceEvent.RequestID))
                             {
                                 var summary = _rewriteEventCache[traceEvent.RequestID];
                                 newEvent.AggregationMatchCount = summary.MatchCount;
@@ -96,7 +96,7 @@ namespace DaxStudio.UI.ViewModels
                             // TODO - update newEvent with queryBegin
                             QueryBeginEvent beginEvent = null;
 
-                            _queryBeginCache.TryGetValue(traceEvent.RequestID, out beginEvent);
+                            _queryBeginCache.TryGetValue(traceEvent.RequestID??"", out beginEvent);
                             if (beginEvent != null)
                             {
 
@@ -110,10 +110,12 @@ namespace DaxStudio.UI.ViewModels
                                 // overwrite the username with the effective user if it's present
                                 var effectiveUser = beginEvent.ParseEffectiveUsername();
                                 if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
+
+                                _queryBeginCache.Remove(traceEvent.RequestID);
                             }
 
 
-                            _queryBeginCache.Remove(traceEvent.RequestID);
+                            
 
                             QueryEvents.Insert(0, newEvent);
                             break;
@@ -134,8 +136,12 @@ namespace DaxStudio.UI.ViewModels
                             break;
 
                         case DaxStudioTraceEventClass.QueryBegin:
-                            // cache rewrite events
                             
+                            // if the requestID is null we are running against PowerPivot which does
+                            // not seem to expose the RequestID property
+                            if (traceEvent.RequestID == null) break;
+
+                            // cache rewrite events
                             if (_queryBeginCache.ContainsKey(traceEvent.RequestID))
                             {
                                 // TODO - this should not happen
