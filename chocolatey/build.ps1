@@ -8,7 +8,7 @@ $url = "https://github.com/DaxStudio/DaxStudio/releases/download/$($version)/Dax
 
 $installFile = "$($env:APPVEYOR_BUILD_FOLDER)\chocolatey\tools\chocolateyInstall.ps1"
 
-$checksum = Get-FileHash -Path "$($env:APPVEYOR_BUILD_FOLDER)\releases\DaxStudio_$($setupVersion)_setup.exe" -Algorithm SHA256
+$checksum = Get-FileHash -Path "$($env:APPVEYOR_BUILD_FOLDER)\package\DaxStudio_$($setupVersion)_setup.exe" -Algorithm SHA256
 
 $script = Get-Content $installFile
 
