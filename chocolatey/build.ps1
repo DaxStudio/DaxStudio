@@ -4,7 +4,7 @@ $version = $env:ShortVersion
 write-host "packing $version"
 
 $setupVersion = $version -replace '\.', '_'
-$url = "https://github.com/DaxStudio/DaxStudio/releases/download/$($version)/DaxStudio_$($setupVersion)_setup.exe"
+$url = "https://github.com/DaxStudio/DaxStudio/releases/download/v$($version)/DaxStudio_$($setupVersion)_setup.exe"
 
 $installFile = "$($env:APPVEYOR_BUILD_FOLDER)\chocolatey\tools\chocolateyInstall.ps1"
 
@@ -15,7 +15,7 @@ $script = Get-Content $installFile
 write-host $script
 
 $script = $script -replace  '(?<=url\s*=\s*'')([^'']*)(?='')', $url
-$script = $script -replace  '(?<=checksum\s*=\s*'')([^'']*)(?='')', $checksum
+$script = $script -replace  '(?<=checksum\s*=\s*'')([^'']*)(?='')', $checksum.Hash
 
 $script | Set-Content -Path $installFile
 
