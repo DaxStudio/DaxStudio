@@ -3,7 +3,7 @@ $version = $env:ShortVersion
 
 write-host "packing $version"
 
-$setupVersion = $version -replace '.', '_'
+$setupVersion = $version -replace '\.', '_'
 $url = "https://github.com/DaxStudio/DaxStudio/releases/download/$($version)/DaxStudio_$($setupVersion)_setup.exe"
 
 $installFile = "$($env:APPVEYOR_BUILD_FOLDER)\chocolatey\tools\chocolateyInstall.ps1"
