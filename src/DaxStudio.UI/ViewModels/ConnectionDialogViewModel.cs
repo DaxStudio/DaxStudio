@@ -15,6 +15,8 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using ADOTabular.Enums;
 using ADOTabular;
+using System.Windows.Input;
+using System.Linq.Expressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -294,7 +296,8 @@ namespace DaxStudio.UI.ViewModels
                 { _dataSource = RecentServers[0]; }
                 return  _dataSource; } 
             set{ _dataSource=value;
-                NotifyOfPropertyChange(()=> DataSource);
+                NotifyOfPropertyChange(nameof( DataSource));
+                NotifyOfPropertyChange(nameof(ShowConnectionWarning));
                 SelectedServerSetFocus = true;
             }
         }
@@ -334,7 +337,7 @@ namespace DaxStudio.UI.ViewModels
 
         private Dictionary<string, string> SplitConnectionString(string connectionString)
         {
-            var props = new Dictionary<string, string>();
+            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var prop in connectionString.Split(';'))
             {
                 if (prop.Trim().Length == 0) continue;
@@ -519,6 +522,8 @@ namespace DaxStudio.UI.ViewModels
                     return false;
                 }
 
+                if (ShowConnectionWarning) return false;
+
                 return true;
             }
         }
@@ -696,10 +701,79 @@ namespace DaxStudio.UI.ViewModels
 
         public void ClearDatabases()
         {
-            ShowConnectionWarning = false;
+            CheckDataSource();
             Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
             Databases.Clear();
             Databases.Add("<default>");
+        }
+
+        public void PasteDataSource(object sender, DataObjectPastingEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("pasting data source");
+
+        }
+
+
+        public DataObjectPastingEventHandler DataSourcePasted => OnDataSourcePasted;
+
+        public void OnDataSourcePasted(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.Text))
+            {
+                try {
+                    string text = Convert.ToString(e.DataObject.GetData(DataFormats.Text));
+
+                    if (text.Contains(";")) {
+                        var msg = "Detected paste of a string with semi-colons, attempting to parse out the 'Data Source' property";
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
+                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, msg));
+
+                        var props = SplitConnectionString(text);
+
+                        // update the DataSource property if we found a "Data Source=" in the pasted string
+                        if (props.ContainsKey("Data Source"))
+                        {
+                            DataSource = props["Data Source"];
+                            e.CancelCommand();
+                        }
+                        // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
+                        if (props.ContainsKey("Initial Catalog"))
+                        {
+                            InitialCatalog = props["Initial Catalog"];
+                            e.CancelCommand();
+                        }
+                        //ParseConnectionString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"Error processing paste into DataSource: {ex.Message}";
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted),msg);
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
+                }
+            }
+            else
+                e.CancelCommand(); // invalid clipboard format
+        }
+
+        private void CheckDataSource()
+        {
+            if (DataSource.Trim().Length == 0)
+            {
+                ShowConnectionWarning = true;
+                ConnectionWarning = "Server Name is blank";
+                return;
+            }
+
+            if (DataSource.Contains(";"))
+            {
+                ShowConnectionWarning = true;
+                ConnectionWarning = "The Server Name cannot contain semi-colon(;) characters";
+                return;
+            }
+
+            ShowConnectionWarning = false;
+            ConnectionWarning = string.Empty;
         }
 
         public async void RefreshDatabases()
@@ -708,11 +782,8 @@ namespace DaxStudio.UI.ViewModels
             if (Databases.Count > 1) return;
 
             // exit here if no server name is specified
-            if (DataSource.Trim().Length == 0)
-            {
-                ShowConnectionWarning = true;
-                return;
-            }
+            CheckDataSource();
+            if (ShowConnectionWarning) return;
 
             Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), $"Refreshing Databases for: {ConnectionString}");
 
@@ -721,14 +792,14 @@ namespace DaxStudio.UI.ViewModels
                 IsLoadingDatabases = true;
                 if(!Databases.Contains("<loading...>")) Databases.Add("<loading...>");
                 NotifyOfPropertyChange(() => Databases);
-                InitialCatalog = "<loading...>";
+                //InitialCatalog = "<loading...>";
                 
                 // populate temporary database list async
                 SortedSet<string> tmpDatabases = await GetDatabasesFromConnectionAsync();
                 
                 if (tmpDatabases.Count > 0) { 
                     //Databases.Clear();
-                    InitialCatalog = "";
+                    //InitialCatalog = "";
                     tmpDatabases.Apply(db => Databases.Add(db));
                     Databases.Remove("<loading...>");
                     NotifyOfPropertyChange(() => Databases);
@@ -747,10 +818,12 @@ namespace DaxStudio.UI.ViewModels
                 Databases.Remove("<loading...>");
                 InitialCatalog = "";
                 ShowConnectionWarning = true;
+                ConnectionWarning = $"Error connecting to server: {ex.Message}";
                 var msg = $"Error refreshing database list for Initial Catalog: {ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), msg);
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
-            } finally
+            } 
+            finally
             {
                 IsLoadingDatabases = false;
             }
@@ -792,6 +865,18 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showConnectionWarning = value;
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
+                NotifyOfPropertyChange(nameof(CanConnect));
+            }
+        }
+
+        private string _connectionWarning = string.Empty;
+        public string ConnectionWarning
+        {
+            get => _connectionWarning;
+            set
+            {
+                _connectionWarning = value;
+                NotifyOfPropertyChange(nameof(ConnectionWarning));
             }
         }
 
