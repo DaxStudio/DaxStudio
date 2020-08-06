@@ -9,6 +9,7 @@
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
+             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
              xmlns:val="clr-namespace:DaxStudio.UI.Validation"
@@ -109,6 +110,246 @@
                 </Setter>
             </Style>
 
+            
+            
+            <!-- PropertyList Styles Start -->
+
+            <pg:PropertyTemplateSelector x:Key="PropertyTemplateSelector"/>
+            <pg:DescriptionAttributeConverter x:Key="DescriptionAttributeConverter"/>
+
+            <Style x:Key="DescriptionStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FontStyle" Value="Italic"/>
+                <Setter Property="Text" Value="{Binding Description}"/>
+                <Setter Property="Visibility" Value="{Binding ShowDescription}"/>
+                <Setter Property="Margin" Value="0,0,0,15"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Grid.Row" Value="1"/>
+                <Setter Property="Foreground" Value="Gray"/>
+            </Style>
+
+
+            <DataTemplate x:Key="GenericTemplate">
+                <StackPanel>
+                    <TextBox Text="{Binding Value}"/>
+                    <TextBlock Style="{StaticResource DescriptionStyle}"/>
+                </StackPanel>
+            </DataTemplate>
+            
+            <DataTemplate x:Key="BoolTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <CheckBox IsChecked="{Binding Value}" Grid.Row="0"/>
+                    <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="DoubleTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <nud:NumericUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="{Binding MinValue, Mode=OneTime}" MaxValue="{Binding MaxValue, Mode=OneTime}" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
+
+                    <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="FontFamilyTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
+			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			                        ItemTemplate="{DynamicResource FontTemplate}"
+                                    SelectedItem="{Binding Path=Value, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                                    IsSynchronizedWithCurrentItem="True"
+                                    VerticalContentAlignment="Center"      >
+                        <ComboBox.Resources>
+
+                            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                                <CollectionViewSource.SortDescriptions>
+                                    <ComponentModel:SortDescription PropertyName="Source" />
+                                </CollectionViewSource.SortDescriptions>
+                            </CollectionViewSource>
+
+                            <Style x:Key="FontStyle">
+                                <Setter Property="Control.FontFamily" Value="{Binding Source}" />
+                                <Setter Property="Control.FontSize" Value="14" />
+                            </Style>
+
+                            <DataTemplate x:Key="FontTemplate">
+                                <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
+                                    <TextBlock Style="{StaticResource FontStyle}"
+                                           Text="{Binding Source}"
+                                           ToolTip="{Binding Source}" />
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </ComboBox.Resources>
+
+                        <ComboBox.ItemsSource>
+                            <Binding Source="{StaticResource myFonts}" />
+                        </ComboBox.ItemsSource>
+                    </ComboBox>
+                    <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+
+            <DataTemplate x:Key="EnumTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ComboBox ItemsSource="{pg:EnumerateBinding Value}" SelectedValue="{Binding Value}"  Grid.Row="0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock 
+                                    Text="{Binding Converter={StaticResource DescriptionAttributeConverter}, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+            <Style TargetType="{x:Type pg:PropertyList}">
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="VerticalContentAlignment" Value="Top"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="ItemStyle" TargetType="{x:Type ListViewItem}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="VerticalContentAlignment" Value="Top"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListViewItem}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <Border Name="Selection" Visibility="Collapsed" />
+                                <!-- This is used when GridView is put inside the ListView -->
+                                <GridViewRowPresenter Grid.RowSpan="1"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
+            <Style TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </Style>
+
+
+            <GroupStyle x:Key="PropertyGroup">
+                <GroupStyle.HeaderTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="Red" BorderThickness="1">
+                            <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="20,20,20,20"/>
+                        </Border>
+                    </DataTemplate>
+                </GroupStyle.HeaderTemplate>
+            </GroupStyle>
+            <Style x:Key="FocusVisual">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!--<SolidColorBrush x:Key="Item.MouseOver.Background" Color="#1F26A0DA"/>
+        <SolidColorBrush x:Key="Item.MouseOver.Border" Color="#a826A0Da"/>
+        <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA"/>
+        <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA"/>
+        <SolidColorBrush x:Key="Item.SelectedActive.Background" Color="#3D26A0DA"/>
+        <SolidColorBrush x:Key="Item.SelectedActive.Border" Color="#FF26A0DA"/>-->
+            <SolidColorBrush x:Key="Item.MouseOver.Background" Color="#3DDADADA"/>
+            <SolidColorBrush x:Key="Item.MouseOver.Border" Color="#a826A0Da"/>
+            <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA"/>
+            <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA"/>
+            <SolidColorBrush x:Key="Item.SelectedActive.Background" Color="#3DDADADA"/>
+            <SolidColorBrush x:Key="Item.SelectedActive.Border" Color="#FF26A0DA"/>
+            <SolidColorBrush x:Key="Item.Selected.Bar" Color="#FF26A0DA"/>
+            
+            <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Padding" Value="4,1"/>
+                <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+                <Setter Property="Padding" Value="2,5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                                <StackPanel Orientation="Horizontal" >
+                                    <Rectangle x:Name="Hl" Width="3"  Margin="2,0" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" TargetName="Bd" Value="{StaticResource Item.MouseOver.Background}"/>
+                                    <!--<Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.MouseOver.Border}"/>-->
+                                </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" TargetName="Bd" Value="{StaticResource Item.SelectedInactive.Background}"/>
+                                    <Setter Property="Fill" TargetName="Hl" Value="{StaticResource Item.Selected.Bar}"/>
+                                    <!--<Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedInactive.Border}"/>-->
+                                </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" TargetName="Bd" Value="{StaticResource Item.SelectedActive.Background}"/>
+                                    <Setter Property="Fill" TargetName="Hl" Value="{StaticResource Item.Selected.Bar}"/>
+                                    <!--<Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedActive.Border}"/>-->
+                                </MultiTrigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
+            <!-- PropertyList Styles End -->
+            
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
@@ -135,7 +376,81 @@
         <!-- Editor -->
         <TabControl Grid.ColumnSpan="2" Margin="0,84,0,0" Grid.RowSpan="2">
             <TabItem Header="Standard">
-                <ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
+                    <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" MinWidth="100" Grid.Row="1" Margin="5"/>
+
+                    <ListBox x:Name="Categories" Grid.Row="2" 
+                        ItemsSource="{Binding Categories}" 
+                        SelectedValue="{Binding SelectedCategory}" 
+                        MinWidth="50" 
+                             ItemContainerStyle="{DynamicResource ListBoxItemStyle1}"
+                             BorderThickness="0"
+                             Margin="5"/>
+
+                    <pg:PropertyList Source="{Binding .}" 
+                        Grid.RowSpan="3"
+                        CategoryFilter="{Binding SelectedCategory}"
+                        SearchText="{Binding ElementName=Search, Path=Text}"
+                        ItemTemplateSelector="{StaticResource PropertyTemplateSelector}"
+                        Grid.Column="1" 
+                        ItemContainerStyle="{StaticResource ItemStyle}"
+                        pg:ListViewBehaviors.IsAutoUpdatingColumnWidths="true"
+                        BorderThickness="1,0,0,0"
+                        Padding="15">
+                        <pg:PropertyList.Resources>
+                            <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>-->
+
+
+                        </pg:PropertyList.Resources>
+                        <pg:PropertyList.View >
+                            <GridView >
+                                <GridViewColumn Width="250" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid VerticalAlignment="Top">
+
+                                                <TextBlock Text="{Binding DisplayName}" 
+                                               pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
+                                               pg:TextBlockHighlighter.HighlightColor="Yellow"
+                                               VerticalAlignment="Top" TextWrapping="Wrap"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn CellTemplateSelector="{StaticResource PropertyTemplateSelector}"
+                                    Width="Auto">
+
+                                </GridViewColumn>
+                            </GridView>
+
+                        </pg:PropertyList.View>
+                        <pg:PropertyList.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"/>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </pg:PropertyList.GroupStyle>
+                    </pg:PropertyList>
+                </Grid>
+
+                <!--<ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
                     <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Editor">
                             <Grid Margin="5,5,0,0">
@@ -190,7 +505,7 @@
                                     </ComboBox.ItemsSource>
                                 </ComboBox>
                                 <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                <!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>-->
+                                --><!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>--><!--
                                 <nud:DoubleUpDown x:Name="ctlEditorFontSize" Value="{Binding EditorFontSize,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  MinValue="6" MaxValue="120" IsReadOnly="False" FormatString="0.0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" Padding="0" />
                                 <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
                                 <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
@@ -234,7 +549,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 <Label Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Right" Content="Use System Proxy:"/>
-                                <!-- Style="{StaticResource checkboxLeftSideText}" -->
+                                --><!-- Style="{StaticResource checkboxLeftSideText}" --><!--
                                 <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center" >
 
                                 </CheckBox>
@@ -250,7 +565,7 @@
                                 </PasswordBox>
                             </Grid>
                         </GroupBox>
-                        <!-- Query History -->
+                        --><!-- Query History --><!--
                         <GroupBox Header="Query History">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -297,7 +612,7 @@
                                 <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
 
                                 <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
-                                <!-- x:Name="ctrlTraceStartupTimeout" -->
+                                --><!-- x:Name="ctrlTraceStartupTimeout" --><!--
                                 <nud:NumericUpDown  Value="{Binding TraceStartupTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
                                 <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
                             </Grid>
@@ -333,11 +648,11 @@
                                 <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">This option affects the default run style that is selected when DAX Studio starts up. Any change will take effect next time DAX Studio starts up.</TextBlock>
                                 <Label Grid.Row="3">Title Bar:</Label>
                                 <CheckBox Grid.Row="3"  Grid.Column="1" Margin="0,5,0,0" x:Name="ShowUserInTitlebar" Content="Show Username in Title bar" />
-                                <!--
+                                --><!--
                                 <Label Grid.Row="4">Status Bar:</Label>
                                 <CheckBox Grid.Row="4" Grid.Column="1" x:Name="ShowDatabaseIdStatus" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Database ID in Status Bar" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows the ID of the currently selected database in the status bar along with a button to copy this value to the clipboard</TextBlock>
-                                -->
+                                --><!--
                             </Grid>
                         </GroupBox>
 
@@ -370,7 +685,7 @@
 
                                     </Image>
                                 </StackPanel>
-                                <!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>-->
+                                --><!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>--><!--
                             </Grid>
                         </GroupBox>
                         <GroupBox Header="Results">
@@ -456,7 +771,7 @@
                                 </Grid>
                             </StackPanel>
                         </GroupBox>
-                        <!--<GroupBox Header="Excel Addin">
+                        --><!--<GroupBox Header="Excel Addin">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="20"/>
@@ -474,7 +789,7 @@
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0" Text="{Binding ToggleExcelAddinDescription}"></TextBlock>
 
                             </Grid>
-                        </GroupBox>-->
+                        </GroupBox>--><!--
                         <GroupBox Header="Metadata Pane">
                             <Grid Margin="5,5,0,0">
                                 <Grid.ColumnDefinitions>
@@ -565,10 +880,10 @@
                                 <CheckBox Content="Quote String Fields" x:Name="CustomCsvQuoteStringFields" Grid.Row="1" Grid.ColumnSpan="2"/>
                             </Grid>
                         </GroupBox>
-                        <!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
-                        </GroupBox>-->
+                        --><!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
+                        </GroupBox>--><!--
                     </WrapPanel>
-                </ScrollViewer>
+                </ScrollViewer>-->
             </TabItem>
             <TabItem Header="Key Bindings" Visibility="{Binding ShowKeyBindings, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">

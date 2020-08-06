@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Common", "DaxStud
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Controls.DataGridFilter", "DaxStudio.Controls.DataGridFilter\DaxStudio.Controls.DataGridFilter.csproj", "{512FD53F-9AD1-46A1-A961-9FABDFAD50C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Controls.PropertyGrid", "DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj", "{CD71EBC4-7CD8-47E9-854F-D295805EFADD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,22 @@ Global
 		{512FD53F-9AD1-46A1-A961-9FABDFAD50C5}.Release|x64.Build.0 = Release|Any CPU
 		{512FD53F-9AD1-46A1-A961-9FABDFAD50C5}.Release|x86.ActiveCfg = Release|Any CPU
 		{512FD53F-9AD1-46A1-A961-9FABDFAD50C5}.Release|x86.Build.0 = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|x64.Build.0 = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Debug|x86.Build.0 = Debug|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|x64.ActiveCfg = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|x64.Build.0 = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|x86.ActiveCfg = Release|Any CPU
+		{CD71EBC4-7CD8-47E9-854F-D295805EFADD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

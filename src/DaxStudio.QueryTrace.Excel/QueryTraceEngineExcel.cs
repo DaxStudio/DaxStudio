@@ -332,7 +332,7 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        private string GetShortFileName(string filename)
+        private static string GetShortFileName(string filename)
         {
           
             if (filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
@@ -356,7 +356,7 @@ namespace DaxStudio.QueryTrace
         }
 
 #endregion
-        private DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent, string xlsxFile)
+        private static DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent, string xlsxFile)
         {
             long cpuTime;
             long duration;

@@ -23,6 +23,9 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.IO;
 using DaxStudio.Interfaces.Attributes;
+using DaxStudio.Controls.PropertyGrid;
+using System.Reflection;
+using System.Drawing;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -84,6 +87,8 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public ISettingProvider SettingProvider { get; }
 
+        [Category("Editor")]
+        [DisplayName("Editor Font Family")]
         [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
         public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
@@ -100,6 +105,10 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public double EditorFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
 
+        [Category("Editor")]
+        [DisplayName("Editor Font Size")]
+        [MinValue(6)]
+        [MaxValue(120)]
         [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
         public double EditorFontSize { get { return _editorFontSize; } 
@@ -125,6 +134,8 @@ namespace DaxStudio.UI.ViewModels
             ResultFontSize = DefaultResultsFontSize;
         }
 
+        [Category("Results")]
+        [DisplayName("Results Font Family")]
         [DataMember]
         [DefaultValue(DefaultResultsFontFamily)]
         public string ResultFontFamily {
@@ -142,6 +153,8 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public double ResultFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
 
+        [Category("Results")]
+        [DisplayName("Results Font Size")]
         [DataMember]
         [DefaultValue(DefaultResultsFontSize)]
         public double ResultFontSize {
@@ -156,6 +169,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Editor")]
+        [DisplayName("Show Line Numbers")]
         [DataMember]
         [DefaultValue(true)]
         public bool EditorShowLineNumbers { get { return _showLineNumbers; }
@@ -169,6 +184,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Editor")]
+        [DisplayName("Enable Intellisense")]
         [DataMember]
         [DefaultValue(true)]
         public bool EditorEnableIntellisense
@@ -184,6 +201,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [DisplayName("Legacy DirectQuery Trace")]
+        [Category("Trace")]
+        [Description("On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible")]
         [DataMember,DefaultValue(false)]
         public bool TraceDirectQuery {
             get { return _traceDirectQuery; }
@@ -197,6 +217,9 @@ namespace DaxStudio.UI.ViewModels
         }
         #region Http Proxy properties
 
+        [Category("Proxy")]
+        [DisplayName("Use System Proxy")]
+        [SortOrder(1)]
         [DataMember,DefaultValue(true)]
         public bool ProxyUseSystem
         {
@@ -219,6 +242,9 @@ namespace DaxStudio.UI.ViewModels
             get { return !_proxyUseSystem; }
         }
 
+        [Category("Proxy")]
+        [DisplayName("Proxy Address")]
+        [SortOrder(2)]
         [DataMember,DefaultValue("")]
         public string ProxyAddress
         {
@@ -234,6 +260,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Proxy")]
+        [DisplayName("Proxy User")]
+        [SortOrder(3)]
         [DataMember, DefaultValue("")]
         public string ProxyUser
         {
@@ -249,6 +278,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Proxy")]
+        [DisplayName("Proxy Password")]
+        [SortOrder(4)]
         [DefaultValue("")]
         [JsonIgnore]
         public string ProxyPassword
@@ -291,8 +323,8 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-
-
+        [Category("Query History")]
+        [DisplayName("History items to keep")]
         [DataMember, DefaultValue(200)]
         public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
             set
@@ -321,6 +353,8 @@ namespace DaxStudio.UI.ViewModels
 
         }
         
+        [Category("Query History")]
+        [DisplayName("Show Trace Timings (SE/FE)")]
         [DataMember, DefaultValue(true)]
         public bool QueryHistoryShowTraceColumns
         {
@@ -336,6 +370,8 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        [Category("Timeouts")]
+        [DisplayName("Server Timings End Event Timeout (sec)")]
         [DataMember, DefaultValue(30)]
         public int QueryEndEventTimeout
         {
@@ -354,6 +390,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Timeouts")]
+        [DisplayName("DaxFormatter Request timeout (sec)")]
         [DataMember, DefaultValue(10)]
         public int DaxFormatterRequestTimeout
         {
@@ -372,6 +410,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Defaults")]
+        [DisplayName("Separators")]
         [DataMember, DefaultValue(DelimiterType.Comma)]
         public DelimiterType DefaultSeparator
         {
@@ -390,6 +430,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Dax Formatter")]
+        [DisplayName("Default Format Style")]
         [DataMember, DefaultValue(DaxFormatStyle.LongLine)]
         public DaxFormatStyle DefaultDaxFormatStyle {
             get {
@@ -422,7 +464,8 @@ namespace DaxStudio.UI.ViewModels
                 return items;
             }
         }
-
+        [Category("Dax Formatter")]
+        [DisplayName("Skip space after function name")]
         [DataMember, DefaultValue(false)]
         public bool SkipSpaceAfterFunctionName {
             get { return _skipSpaceAfterFunctionName; }
@@ -448,6 +491,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [DisplayName("Show Basic Statistics")]
+        [Category("Metadata Pane")]
+        [Subcategory("Tooltips")]
+        [Description("Shows basic information like a count of distinct values and the min and max value")]
         [DataMember, DefaultValue(true)]
         public bool ShowTooltipBasicStats
         {
@@ -462,6 +509,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [DisplayName("Show Sample Data")]
+        [Category("Metadata Pane")]
+        [Subcategory("Tooltips")]
+        [Description("Shows the top 10 values for the column")]
         [DataMember, DefaultValue(true)]
         public bool ShowTooltipSampleData
         {
@@ -493,6 +544,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _excludeHeadersWhenCopyingResults = false;
+        [Category("Results")]
+        [DisplayName("Exclude Headers when Copying Data")]
+        [Description("Setting this option will just copy the raw data from the results pane")]
         [DataMember, DefaultValue(true)]
         public bool ExcludeHeadersWhenCopyingResults
         {
@@ -512,6 +566,8 @@ namespace DaxStudio.UI.ViewModels
 
 
         private string _csvDelimiter = ",";
+        [Category("Custom Export Format")]
+        [DisplayName("'Other' Delimiter")]
         [DataMember, DefaultValue(",")]
         public string CustomCsvDelimiter
         {
@@ -530,6 +586,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _csvQuoteStringFields = true;
+        [Category("Custom Export Format")]
+        [DisplayName("Quote String Fields")]
         [DataMember, DefaultValue(true)]
         public bool CustomCsvQuoteStringFields
         {
@@ -548,6 +606,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private int _traceStartupTimeout = 30;
+        [Category("Timeouts")]
+        [DisplayName("Trace Startup Timeout (secs)")]
         [DataMember, DefaultValue(30)]
         public int TraceStartupTimeout { get => _traceStartupTimeout; set {
                 _traceStartupTimeout = value;
@@ -558,6 +618,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private CustomCsvDelimiterType _csvCustomDelimiterType = CustomCsvDelimiterType.CultureDefault;
+        [Category("Custom Export Format")]
+        [DisplayName("CSV Delimiter")]
         [DataMember, DefaultValue(CustomCsvDelimiterType.CultureDefault)]
         public CustomCsvDelimiterType CustomCsvDelimiterType
         {
@@ -987,6 +1049,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _ResultAutoFormat = false;
+        [Category("Results")]
+        [DisplayName("Automatic Format Results")]
+        [Description("Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name as the column in the output")]
         [DataMember, DefaultValue(false)]
         public bool ResultAutoFormat {
             get => _ResultAutoFormat;
@@ -999,6 +1064,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _scaleResultsFontWithEditor = true;
+        [Category("Results")]
+        [DisplayName("Scale Results Font with Editor")]
+        [Description("Setting this option will cause the results font to scale when you change the zoom percentage on the editor")]
         [DataMember, DefaultValue(true)]
         public bool ScaleResultsFontWithEditor { 
             get => _scaleResultsFontWithEditor;
@@ -1010,6 +1078,11 @@ namespace DaxStudio.UI.ViewModels
             } }
 
         private int _codeCompletionWindowWidthIncrease;
+        [Category("Editor")]
+        [DisplayName("Intellisense Width %")]
+        [Description("100%-300%")]
+        [MinValue(100)]
+        [MaxValue(300)]
         [DataMember, DefaultValue(100)]
         public int CodeCompletionWindowWidthIncrease { 
             get => _codeCompletionWindowWidthIncrease;
@@ -1024,6 +1097,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _keepMetadataSearchOpen;
+        [Category("Metadata Pane")]
+        [Subcategory("Search")]
+        [DisplayName("Keep Metadata Search Open")]
         [DataMember, DefaultValue(false)]
         public bool KeepMetadataSearchOpen { 
             get => _keepMetadataSearchOpen;
@@ -1036,6 +1112,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataLocalMachine = true;
+        [Category("Metadata Pane")]
+        [Subcategory("Automatic Metadata Refresh")]
+        [DisplayName("Local Connections (PBI Desktop / SSDT)")]
+        [SortOrder(1)]
         [DataMember, DefaultValue(true)]
         public bool AutoRefreshMetadataLocalMachine { 
             get => _autoRefreshMetadataLocalMachine;
@@ -1048,6 +1128,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataLocalNetwork = true;
+        [Category("Metadata Pane")]
+        [Subcategory("Automatic Metadata Refresh")]
+        [DisplayName("Network Connections (SSAS on-prem)")]
+        [SortOrder(2)]
         [DataMember, DefaultValue(true)]
         public bool AutoRefreshMetadataLocalNetwork { 
             get => _autoRefreshMetadataLocalNetwork;
@@ -1060,6 +1144,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoRefreshMetadataCloud = true;
+        [Category("Metadata Pane")]
+        [Subcategory("Automatic Metadata Refresh")]
+        [DisplayName("Cloud Connections (asazure:// or powerbi://)")]
+        [SortOrder(3)]
         [DataMember, DefaultValue(false)]
         public bool AutoRefreshMetadataCloud { 
             get => _autoRefreshMetadataCloud;
@@ -1072,6 +1160,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showHiddenMetadata = true;
+        [Category("Metadata Pane")]
+        [Subcategory("Hidden Objects")]
+        [DisplayName("Show Hidden Columns, Tables and Measures")]
         [DataMember, DefaultValue(true)]
         public bool ShowHiddenMetadata { 
             get => _showHiddenMetadata;
@@ -1084,6 +1175,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _setClearCacheAndRunAsDefaultRunStyle = false;
+        [Category("Defaults")]
+        [DisplayName("Set 'Clear Cache and Run' as default")]
+        [Description("This option affects the default run style that is selected when DAX Studio starts up. Any changes will take effect the next time DAX Studio starts up.")]
         [DataMember, DefaultValue(false)]
         public bool SetClearCacheAsDefaultRunStyle { get => _setClearCacheAndRunAsDefaultRunStyle;
             set
@@ -1096,6 +1190,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _sortFoldersFirstInMetadata = false;
+        [Category("Metadata Pane")]
+        [Subcategory("Sorting")]
+        [DisplayName("Sort Folders first in metadata pane")]
         [DataMember, DefaultValue(true)]
         public bool SortFoldersFirstInMetadata { 
             get => _sortFoldersFirstInMetadata;
@@ -1210,6 +1307,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private int _editorIndentationSize = 4;
+        [Category("Editor")]
+        [DisplayName("Indentation Size")]
+        [MinValue(1)]
+        [MaxValue(25)]
         [DataMember,DefaultValue(4)]
         public int EditorIndentationSize { 
             get => _editorIndentationSize; 
@@ -1223,6 +1324,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _editorWordWrap = false;
+        [Category("Editor")]
+        [DisplayName("Enable Word Wrappng")]
         [DataMember, DefaultValue(false)]
         public bool EditorWordWrap
         {
@@ -1236,6 +1339,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showUserInTitlebar = false;
+        [Category("Defaults")]
+        [DisplayName("Show Username in Titlebar")]
         [DataMember, DefaultValue(false)]
         public bool ShowUserInTitlebar
         {
@@ -1368,6 +1473,69 @@ namespace DaxStudio.UI.ViewModels
             //if (key == null) return false;
             //return (string)(key?.GetValue("ExcelBitness", "32Bit")??"32Bit") == "64Bit";
         }
+
+
+        #region PropertyList support properties
+
+        private IEnumerable<string> _categories;
+        public IEnumerable<string> Categories
+        {
+            get
+            {
+                if (_categories == null) _categories = GetCategories();
+                return _categories;
+            }
+        }
+
+        private string _selectedCategory;
+
+        //public event PropertyChangedEventHandler PropertyChanged;
+
+        public string SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                _selectedCategory = value;
+                NotifyOfPropertyChange(nameof(SelectedCategory));
+                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SelectedCategory)));
+                if (_selectedCategory != null) SearchText = string.Empty;
+            }
+        }
+
+        private string _searchText = string.Empty;
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (value == _searchText) return;
+                _searchText = value;
+                NotifyOfPropertyChange(nameof(SearchText));
+                //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SearchText)));
+                if (!string.IsNullOrEmpty(_searchText)) SelectedCategory = null;
+                else SelectedCategory = Categories.FirstOrDefault();
+            }
+        }
+
+        private IEnumerable<string> GetCategories()
+        {
+            var lst = new SortedList<string, string>();
+
+            foreach (var prop in this.GetType().GetProperties())
+            {
+                var catAttrib = prop.GetCustomAttribute<CategoryAttribute>();
+                var cat = catAttrib?.Category;
+                if (cat == null) continue;
+                if (lst.ContainsKey(cat)) continue;
+                lst.Add(cat, cat);
+            }
+            SelectedCategory = lst.Keys.FirstOrDefault();
+            return lst.Keys;
+        }
+
+        #endregion
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

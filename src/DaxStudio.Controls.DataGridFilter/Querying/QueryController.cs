@@ -114,7 +114,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
         private bool isRefresh
         {
-            get { return (from f in filtersForColumns where f.Value.IsRefresh == true select f).Count() > 0; }
+            get { return (from f in filtersForColumns where f.Value.IsRefresh == true select f).Any(); }
         }
 
         private bool filteringNeeded
@@ -142,9 +142,9 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
             queryCreator.CreateFilter(ref query);
 
-            filterChanged = (query.IsQueryChanged || (query.FilterString != String.Empty && isRefresh));
+            filterChanged = (query.IsQueryChanged || (!string.IsNullOrEmpty(query.FilterString) && isRefresh));
 
-            if ((force && query.FilterString != String.Empty) || (query.FilterString != String.Empty && filterChanged))
+            if ((force && !string.IsNullOrEmpty(query.FilterString)) || (!string.IsNullOrEmpty(query.FilterString) && filterChanged))
             {
                 IEnumerable collection = ItemsSource as IEnumerable;
 
@@ -176,7 +176,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                 #endif
                 #endregion
 
-                if (query.FilterString != String.Empty)
+                if (!string.IsNullOrEmpty(query.FilterString))
                 {
                     var result = collection.AsQueryable().Where(query.FilterString, query.QueryParameters.ToArray<object>());
 

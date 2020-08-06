@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
-    public class DataGridColumnExtensions//:DependencyObject
+    public sealed class DataGridColumnExtensions//:DependencyObject
     {
         public DataGridColumnExtensions() { }
 

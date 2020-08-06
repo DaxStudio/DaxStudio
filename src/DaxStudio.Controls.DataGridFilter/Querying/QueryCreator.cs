@@ -39,7 +39,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
                     foreach (string p in paths)
                     {
-                        if (valuePropertyBindingPath != String.Empty)
+                        if (!string.IsNullOrEmpty(valuePropertyBindingPath))
                         {
                             valuePropertyBindingPath += ".";
                         }
@@ -65,10 +65,10 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             if (
                 (filterData.Type == FilterType.NumericBetween || filterData.Type == FilterType.DateTimeBetween)
                 &&
-                (filterData.QueryString != String.Empty || filterData.QueryStringTo != String.Empty)
+                (!string.IsNullOrEmpty(filterData.QueryString) || !string.IsNullOrEmpty(filterData.QueryStringTo))
                 )
             {
-                if (filterData.QueryString != String.Empty)
+                if (!string.IsNullOrEmpty(filterData.QueryString))
                 {
                     createFilterExpression(
                         filterData, 
@@ -76,7 +76,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                         filter,
                         getOperatorString(FilterOperator.GreaterThanOrEqual));
                 }
-                if (filterData.QueryStringTo != String.Empty)
+                if (!string.IsNullOrEmpty(filterData.QueryStringTo))
                 {
                     if (filter.Length > 0) filter.Append(" AND ");
 
@@ -87,7 +87,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                         getOperatorString(FilterOperator.LessThanOrEqual));
                 }
             }
-            else if (filterData.QueryString != String.Empty
+            else if (!string.IsNullOrEmpty(filterData.QueryString)
                 &&
                 filterData.Operator != FilterOperator.Undefined)
             {

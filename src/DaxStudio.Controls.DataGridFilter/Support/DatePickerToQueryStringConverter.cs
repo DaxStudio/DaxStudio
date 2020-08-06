@@ -14,7 +14,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             object convertedValue;
 
-            if (value != null && value.ToString() == String.Empty)
+            if (value != null && string.IsNullOrEmpty(value.ToString() ))
             {
                 convertedValue = null;
             }

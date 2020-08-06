@@ -12,7 +12,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return value != null && value.ToString() == String.Empty ? null : value;
+            return value != null && string.IsNullOrEmpty(value.ToString() ) ? null : value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

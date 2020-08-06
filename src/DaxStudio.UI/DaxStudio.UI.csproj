@@ -1099,6 +1099,10 @@
       <Project>{512fd53f-9ad1-46a1-a961-9fabdfad50c5}</Project>
       <Name>DaxStudio.Controls.DataGridFilter</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj">
+      <Project>{CD71EBC4-7CD8-47E9-854F-D295805EFADD}</Project>
+      <Name>DaxStudio.Controls.PropertyGrid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
       <Name>DaxStudio.Interfaces</Name>
