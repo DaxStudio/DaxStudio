@@ -135,7 +135,7 @@
             </Fluent:QuickAccessMenuItem>
 
             <Fluent:QuickAccessMenuItem IsChecked="True">
-                <Fluent:Button Header="New" Icon="{StaticResource NewConnectedIconSmall}" 
+                <Fluent:Button Header="New (Existing Connection)" Icon="{StaticResource NewConnectedIconSmall}" 
                                Name="qatNewConnected" 
                                Click="NewConnectedQuery_Click" 
                                ToolTip="Open a new query window using the current connection"
