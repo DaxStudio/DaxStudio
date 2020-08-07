@@ -652,10 +652,13 @@ begin
   end;
   if (CurStep=ssPostInstall) then begin
     
-    if (not IsAdminInstallMode()) then begin
+    if ( IsAdminInstallMode()) then 
+    begin
       Log('Writing Power BI Desktop External Tools File');
       WriteExternalToolsFile();
+    end
     else
+    begin
         Log('Skipping Power BI Desktop External Tools File - Current User install');
     end;
   
