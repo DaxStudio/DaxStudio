@@ -645,22 +645,22 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if (CurStep=ssInstall) then
   begin
-    if (IsUpgrade()) then
+    if IsUpgrade() then
     begin
       UnInstallOldVersion();
     end;
   end;
   if (CurStep=ssPostInstall) then begin
     
-    if ( IsAdminInstallMode()) then 
-    begin
-      Log('Writing Power BI Desktop External Tools File');
-      WriteExternalToolsFile();
-    end
+    if IsAdminInstallMode() then 
+      begin
+        Log('Writing Power BI Desktop External Tools File');
+        WriteExternalToolsFile();
+      end
     else
-    begin
-        Log('Skipping Power BI Desktop External Tools File - Current User install');
-    end;
+      begin
+          Log('Skipping Power BI Desktop External Tools File - Current User install');
+      end;
   
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
