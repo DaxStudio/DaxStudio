@@ -66,6 +66,9 @@
 			<bi:Measure Caption="Company Filter Sales" ReferenceName="Company Filter Sales" />
 		</Property>
 		<Property Name="Sector_Sales" Type="Int64">
+			<Documentation>
+				<Summary>Sector Sales Description</Summary>
+			</Documentation>
 			<bi:Measure Caption="Sector Sales" ReferenceName="Sector Sales" />
 		</Property>
 		<NavigationProperty Name="Company_CompanyID" Relationship="Sandbox.Sales_Company_Company_CompanyID" FromRole="Sales_CompanyID" ToRole="Company_CompanyID">

@@ -248,6 +248,25 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestADOTabularCSDLVisitorMeasureDescriptions()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            var measure = tabs["Sales"].Columns["Sector Sales"];
+
+            Assert.AreEqual("Sector Sales Description", measure.Description);
+            
+        }
+
+        [TestMethod]
         public void TestADOTabularCSDLVisitTwice()
         {
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
