@@ -233,7 +233,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryStartedEvent message)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
-            if (!IsPaused)
+            if (!IsPaused && IsChecked)
             {
                 IsBusy = true;
                 Reset();
@@ -243,8 +243,11 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(CancelQueryEvent message)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
-            IsBusy = false;
-            Reset();
+            if (!IsPaused && !IsChecked)
+            {
+                IsBusy = false;
+                Reset();
+            }
         }
 
         Timer _timeout;
