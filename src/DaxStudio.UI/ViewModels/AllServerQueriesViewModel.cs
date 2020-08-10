@@ -264,6 +264,11 @@ namespace DaxStudio.UI.ViewModels
             controller.ClearFilter();
         }
 
+        public void QueryDoubleClick()
+        {
+            QueryDoubleClick(SelectedQuery);
+        }
+
         public void QueryDoubleClick(QueryEvent query)
         {
             if (query == null) return; // it the user clicked on an empty query exit here

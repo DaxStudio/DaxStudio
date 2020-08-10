@@ -71,7 +71,7 @@
             
             <DataTemplate x:Key="QueryTextCell">
                 <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
-                    <DataGridCell Margin="0" Padding="0" 
+                    <Border Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
                             Text="{Binding Path=Query,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
@@ -81,7 +81,7 @@
                             ToolTip="{Binding Query}">
                         </TextBlock>
 
-                    </DataGridCell>
+                    </Border>
                 <!--</ScrollViewer>-->
             </DataTemplate>
 
@@ -116,6 +116,7 @@
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
                     VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
+                    cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
@@ -239,7 +240,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 
-                                <DataGridCell Margin="0" Padding="0" 
+                                <Border Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                                         <TextBlock x:Name="Username"   
                                             Text="{Binding Path=Username,Mode=OneWay}"  
@@ -248,7 +249,7 @@
                                             TextTrimming="CharacterEllipsis"
                                             ToolTip="{Binding Username}">
                                         </TextBlock>
-                                </DataGridCell>
+                                </Border>
                                 
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -259,7 +260,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
-                                <DataGridCell Margin="0" Padding="0" 
+                                <Border Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                                         <TextBlock x:Name="Query"
                             Text="{Binding Path=DatabaseName,Mode=OneWay}"  
@@ -268,7 +269,7 @@
                             TextTrimming="CharacterEllipsis"
                             ToolTip="{Binding DatabaseName}">
                                         </TextBlock>
-                                    </DataGridCell>
+                                    </Border>
                             </ScrollViewer>
                         </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

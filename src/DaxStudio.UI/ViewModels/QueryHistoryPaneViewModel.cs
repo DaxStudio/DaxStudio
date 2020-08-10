@@ -94,6 +94,12 @@ namespace DaxStudio.UI.ViewModels
             get { return _queryHistory; }
         }
 
+        public QueryHistoryEvent SelectedHistoryItem { get; set; }
+
+        public void QueryHistoryDoubleClick()
+        {
+            QueryHistoryDoubleClick(SelectedHistoryItem);
+        }
 
         public void QueryHistoryDoubleClick(QueryHistoryEvent queryHistoryEvent)
         {

@@ -24,5 +24,17 @@ namespace DaxStudio.UI.Views
         {
             InitializeComponent();
         }
+
+        private void OnSorting(object sender, DataGridSortingEventArgs e)
+        {
+            DataGrid dg = sender as DataGrid;
+            dg.Items.SortDescriptions.Clear();
+            var sortDir = e.Column.SortDirection?? System.ComponentModel.ListSortDirection.Descending;
+            sortDir = sortDir == System.ComponentModel.ListSortDirection.Descending?System.ComponentModel.ListSortDirection.Ascending:System.ComponentModel.ListSortDirection.Descending;
+            dg.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription(e.Column.SortMemberPath, sortDir));
+            e.Column.SortDirection = sortDir;
+            e.Handled = true;
+            System.Diagnostics.Debug.WriteLine("Sorting");
+        }
     }
 }

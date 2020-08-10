@@ -193,6 +193,13 @@ namespace DaxStudio.UI.ViewModels
             this.PerformanceData.Clear();
         }
 
+        public void QueryDoubleClick()
+        {
+            QueryDoubleClick(SelectedPerfData);
+        }
+
+        public PowerBIPerformanceData SelectedPerfData { get; set; }
+
         public void QueryDoubleClick(PowerBIPerformanceData perfData)
         {
             if (perfData == null) return; // it the user clicked on an empty query exit here

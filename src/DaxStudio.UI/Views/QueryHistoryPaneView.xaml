@@ -167,7 +167,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                               Margin="0">
                 <!--   Height="{Binding ElementName=QueryText ,Path=ActualHeight,Converter={StaticResource CappedHeightConverter}, ConverterParameter='55'}"-->
-                <DataGridCell Margin="0" Padding="0" 
+                <Border Margin="0" Padding="0" 
                               cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                     <TextBlock x:Name="QueryText"
                         Text="{Binding Path=QueryText,Mode=OneWay}"  
@@ -177,7 +177,7 @@
                         ToolTip="{Binding QueryText}">
                     </TextBlock>
                     
-                </DataGridCell>
+                </Border>
             </ScrollViewer>
                 
         </DataTemplate>
@@ -195,7 +195,9 @@
                 CanUserSortColumns="True"
                 ClipboardCopyMode="ExcludeHeader"
                 SelectionMode="Single"   
-                SelectionUnit="Cell"
+                SelectionUnit="FullRow"
+                SelectedItem="{Binding SelectedHistoryItem}"
+                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick()]"
                 CanUserAddRows="False"
                 CanUserDeleteRows="False"
                 VerticalGridLinesBrush="WhiteSmoke" 
@@ -228,15 +230,15 @@
                 <DataGridTemplateColumn SortMemberPath="StartTime" Header="Start Time" SortDirection="Descending">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <DataGridCell.ContextMenu>
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Hello"/>
                                     </ContextMenu>
-                                </DataGridCell.ContextMenu>
+                                </Border.ContextMenu>
                                 <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  VerticalAlignment="Top" HorizontalAlignment="Left"
                                            TextTrimming="CharacterEllipsis" IsEnabled="False" />
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                     
@@ -245,7 +247,7 @@
                 <DataGridTemplateColumn SortMemberPath="RowCount" Header="Rows" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock
                                     Text="{Binding Path=RowCount,Mode=OneWay,StringFormat=\{0:#\,###;n/a;0\}}"  
                                     VerticalAlignment="Top" 
@@ -253,7 +255,7 @@
                                     TextTrimming="CharacterEllipsis"
                                     TextAlignment="Right"
                                 />
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -266,9 +268,9 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right" TextTrimming="CharacterEllipsis" />
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -282,11 +284,11 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
                                        Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
                                            TextTrimming="CharacterEllipsis"/>
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -300,12 +302,12 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
                                        VerticalAlignment="Top" HorizontalAlignment="right"
                                        Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
                                            TextTrimming="CharacterEllipsis"/>
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -320,11 +322,11 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
                                        Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
                                            TextTrimming="CharacterEllipsis"/>
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -346,13 +348,13 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]"
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]"
                                           >
                                 <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
                                            TextTrimming="CharacterEllipsis"/>
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -374,13 +376,13 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DataGridCell 
+                            <Border 
                                 cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=DatabaseName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
                                            TextTrimming="CharacterEllipsis"/>
-                            </DataGridCell>
+                            </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
