@@ -3394,6 +3394,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private VertiPaqAnalyzerViewModel vpaView;
+
         public void ViewAnalysisData()
         {
             if (!IsConnected)
@@ -3403,16 +3405,31 @@ namespace DaxStudio.UI.ViewModels
             }
             try
             {
-
+                IsVertipaqAnalyzerRunning = true;
 
                 var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
+
+                // check if PerfData Window is already open and use that
+                //vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
+
+                // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                if (vpaView != null)
+                {
+                    ToolWindows.Remove(vpaView);
+                    vpaView = null;
+                }
+
+                vpaView = new VertiPaqAnalyzerViewModel( _eventAggregator, this, Options);
+                ToolWindows.Add(vpaView);
+                
+                vpaView.IsBusy = true;
+                vpaView.Activate();
 
                 VpaModel viewModel = null;
 
                 var task = new Task(() => {
                     // run Vertipaq Analyzer Async
 
-                    // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(
                         this.Connection.ServerName, this.SelectedDatabase, 
@@ -3429,26 +3446,16 @@ namespace DaxStudio.UI.ViewModels
                     if (!prevTask.IsFaulted) {
                         try
                         {
-                            // check if PerfData Window is already open and use that
-                            var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
-
-                            // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                            if (vpaView == null)
-                            {
-                                vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                                ToolWindows.Add(vpaView);
-                            }
-                            else
-                            {
-                                // update view model
-                                vpaView.ViewModel = viewModel;
-                            }
-                            vpaView.Activate();
+                            
+                            // update view model
+                            vpaView.ViewModel = viewModel;
+                            
                         }
                         catch (Exception ex)
                         {
                             Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view: {ex.Message}");
-                            OutputError($"Error viewing metrics: {ex.Message}");
+                            OutputError($"Error viewing metrics : {ex.Message}");
+                            ActivateOutput();
                         }
 
                     } else
@@ -3457,8 +3464,11 @@ namespace DaxStudio.UI.ViewModels
                         Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
                         var exMsg = ex.GetAllMessages();
                         OutputError($"Error viewing metrics: {exMsg}");
+                        ActivateOutput();
                     }
 
+                    vpaView.IsBusy = false;
+                    IsVertipaqAnalyzerRunning = false;
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
@@ -3470,11 +3480,9 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
                 var exMsg = ex.GetAllMessages();
                 OutputError("Error viewing metrics: " + exMsg);
+                ActivateOutput();
             }
-            finally
-            {
-                IsVertipaqAnalyzerRunning = false;
-            }
+
         }
 
 
@@ -3550,16 +3558,18 @@ namespace DaxStudio.UI.ViewModels
                 var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
                 // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                if (vpaView == null)
+                if (vpaView != null)
                 {
-                    vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                    ToolWindows.Add(vpaView);
+                    ToolWindows.Remove(vpaView);
+                    vpaView = null;
                 }
-                else
-                {
-                    // update view model
-                    vpaView.ViewModel = viewModel;
-                }
+
+                vpaView = new VertiPaqAnalyzerViewModel( _eventAggregator, this, Options);
+                ToolWindows.Add(vpaView);
+                
+                // update view model
+                vpaView.ViewModel = viewModel;
+                
                 vpaView.Activate();
             }
             catch (Exception ex)

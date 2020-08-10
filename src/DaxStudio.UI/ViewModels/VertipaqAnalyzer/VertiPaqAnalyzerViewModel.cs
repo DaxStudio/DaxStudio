@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.Windows.Navigation;
+using System.Web.UI.WebControls;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -30,11 +31,13 @@ namespace DaxStudio.UI.ViewModels
         private readonly IEventAggregator _eventAggregator;
         private readonly IGlobalOptions _globalOptions;
 
+        //Dax.ViewModel.VpaModel viewModel,
         [ImportingConstructor]
-        public VertiPaqAnalyzerViewModel(Dax.ViewModel.VpaModel viewModel, IEventAggregator eventAggregator, DocumentViewModel currentDocument, IGlobalOptions options)
+        public VertiPaqAnalyzerViewModel(IEventAggregator eventAggregator, DocumentViewModel currentDocument, IGlobalOptions options)
         {
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "start");
-            this.ViewModel = viewModel;
+            //this.ViewModel = viewModel;
+            IsBusy = true;
             _globalOptions = options;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
@@ -50,9 +53,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private VpaModel _viewModel;
-        public Dax.ViewModel.VpaModel ViewModel {
+        public Dax.ViewModel.VpaModel ViewModel
+        {
             get { return _viewModel; }
-            set {
+            set
+            {
                 _viewModel = value;
                 _groupedColumns = null;
                 _sortedColumns = null;
@@ -67,17 +72,22 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => TreeviewRelationships);
                 NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
+                IsBusy = false;
             }
         }
 
         private ICollectionView _groupedColumns;
-        public ICollectionView GroupedColumns {
-            get {
-                if (_groupedColumns == null)
+        public ICollectionView GroupedColumns
+        {
+            get
+            {
+                if (_groupedColumns == null && ViewModel != null)
                 {
                     var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.Columns);
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
+                    // sort by TableSize then by TotalSize
+                    _groupedColumns.SortDescriptions.Add(new SortDescription("TableSize", ListSortDirection.Descending));
                     _groupedColumns.SortDescriptions.Add(new SortDescription("TotalSize", ListSortDirection.Descending));
                 }
                 return _groupedColumns;
@@ -88,9 +98,11 @@ namespace DaxStudio.UI.ViewModels
 
         public VpaSummaryViewModel SummaryViewModel { get; private set; }
 
-        public ICollectionView GroupedRelationships {
-            get {
-                if (_groupedRelationships == null)
+        public ICollectionView GroupedRelationships
+        {
+            get
+            {
+                if (_groupedRelationships == null && ViewModel != null)
                 {
                     var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.RelationshipsFrom);
                     _groupedRelationships = CollectionViewSource.GetDefaultView(rels);
@@ -102,9 +114,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private ICollectionView _groupedPartitions;
-        public ICollectionView GroupedPartitions {
-            get {
-                if (_groupedPartitions == null)
+        public ICollectionView GroupedPartitions
+        {
+            get
+            {
+                if (_groupedPartitions == null && ViewModel != null)
                 {
                     var partitions = from t in ViewModel.Tables
                                      from p in t.Partitions
@@ -119,9 +133,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private ICollectionView _sortedColumns;
-        public ICollectionView SortedColumns {
-            get {
-                if (_sortedColumns == null)
+        public ICollectionView SortedColumns
+        {
+            get
+            {
+                if (_sortedColumns == null && ViewModel != null)
                 {
                     long maxSize = ViewModel.Columns.Max(c => c.TotalSize);
                     var cols = ViewModel.Columns.Select(c => new VpaColumnViewModel(c) { MaxColumnTotalSize = maxSize });
@@ -139,7 +155,8 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
 
         // TODO: we might add the database name here
-        public override string Title {
+        public override string Title
+        {
             get { return "VertiPaq Analyzer Metrics"; }
         }
 
@@ -171,6 +188,21 @@ namespace DaxStudio.UI.ViewModels
         public string SortColumn { get; set; }
         public int SortDirection { get; set; }
         public DocumentViewModel CurrentDocument { get; }
+
+        private bool _isBusy = false;
+        
+
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set
+            {
+                _isBusy = value;
+                NotifyOfPropertyChange(nameof(IsBusy));
+            }
+        }
+
+        public string BusyMessage => "Loading Model Metrics";
 
     }
 }
