@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 300;
         public string Message => "Results will be sent to a Text File";
         public OutputTarget Icon => OutputTarget.File;
-
+        public string Tooltip => "Exports Query results to csv or tab delimited files";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";
@@ -34,8 +34,8 @@ namespace DaxStudio.UI.Model
 
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                DefaultExt = ".txt",
-                Filter = "Tab separated text file|*.txt|Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Custom Export Format (Configure in Options)|*.csv"
+                DefaultExt = ".csv",
+                Filter = "Comma separated text file - UTF8|*.csv|Tab separated text file|*.txt|Comma separated text file - Unicode|*.csv|Custom Export Format (Configure in Options)|*.csv"
             };
 
             string fileName = "";
