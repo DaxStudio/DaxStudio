@@ -112,6 +112,7 @@ namespace DaxStudio.Interfaces
         [JsonIgnore]
         bool IsRunningPortable { get; set; }
         bool EditorWordWrap { get; set; }
+        bool ShowMetadataRefreshPrompt { get; set; }
         #endregion
     }
 }

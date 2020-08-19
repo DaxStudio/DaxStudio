@@ -1071,6 +1071,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showMetadataRefreshPrompt = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowMetadataRefreshPrompt
+        {
+            get => _showMetadataRefreshPrompt;
+            set
+            {
+                _showMetadataRefreshPrompt = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValueAsync("ShowMetadataRefreshPrompt", value, _isInitializing);
+                NotifyOfPropertyChange(() => ShowMetadataRefreshPrompt);
+            }
+        }
+
         private bool _showHiddenMetadata = true;
         [DataMember, DefaultValue(true)]
         public bool ShowHiddenMetadata { 

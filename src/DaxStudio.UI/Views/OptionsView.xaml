@@ -491,6 +491,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -499,14 +500,15 @@
                                 <CheckBox Grid.Row="2" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
 
                                 <TextBlock Grid.Row="3" Margin="0 10 0 0">Automatic Metadata Refresh</TextBlock>
-                                <CheckBox Grid.Row="4" x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="5" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="6" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="4" x:Name="ShowMetadataRefreshPrompt" Content="Prompt before refreshing metadata" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="5" x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="6" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
+                                <CheckBox Grid.Row="7" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
 
-                                <TextBlock Grid.Row="7" Margin="0 10 0 0">Hidden Objects</TextBlock>
-                                <CheckBox Grid.Row="8" x:Name="ShowHiddenMetadata" Content="Show Hidden Columns, Tables and Measures" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="9" Margin="0 10 0 0">Sorting</TextBlock>
-                                <CheckBox Grid.Row="10" x:Name="SortFoldersFirstInMetadata" Content="Sort Folders first in metadata pane" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="8" Margin="0 10 0 0">Hidden Objects</TextBlock>
+                                <CheckBox Grid.Row="9" x:Name="ShowHiddenMetadata" Content="Show Hidden Columns, Tables and Measures" VerticalAlignment="Top" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="10" Margin="0 10 0 0">Sorting</TextBlock>
+                                <CheckBox Grid.Row="11" x:Name="SortFoldersFirstInMetadata" Content="Sort Folders first in metadata pane" VerticalAlignment="Top" Margin="2,7,2,0" />
 
                             </Grid>
                         </GroupBox>

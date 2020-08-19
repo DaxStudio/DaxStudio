@@ -641,13 +641,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
             {
-                if (await ActiveDocument.ShouldAutoRefreshMetadataAsync())
-                {
-                    
-                    ActiveDocument.RefreshMetadata();
-                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
-                    
-                }
+                await ActiveDocument.CheckForMetadataUpdatesAsync();
                 RefreshConnectionDetails(ActiveDocument);
             }
             
@@ -1151,23 +1145,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _displayBenchmarking = false;
-        public bool DisplayBenchmarking
-        {
-            get => _displayBenchmarking;
-            set
-            {
-                _displayBenchmarking = value;
-                //if (_displayBenchmarking)
-                //    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
-                //else
-                //{
-                //    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
-                //    if (benchmark != null) RunStyles.Remove(benchmark);
-                //}
-                //NotifyOfPropertyChange(nameof(RunStyles));
-            }
-        }
 
         public void RunBenchmark()
         {
@@ -1195,6 +1172,16 @@ namespace DaxStudio.UI.ViewModels
         public void CrashTest()
         {
             throw new Exception("This is a fake exception to test the crash reporting");
+        }
+
+        public void OpenConnection()
+        {
+            ActiveDocument?.OpenConnection();
+        }
+
+        public void CloseConnection()
+        {
+            ActiveDocument?.CloseConnection();
         }
     }
 }

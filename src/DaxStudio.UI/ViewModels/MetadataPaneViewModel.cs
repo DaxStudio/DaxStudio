@@ -136,12 +136,28 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
+            Connection.Refresh();
             var _tmpModel = _selectedModel;
-            _selectedModel = null;
-            SelectedModel = _tmpModel;
-
+            this.ModelList = Connection.Database.Models;
+            ShowMetadataRefreshPrompt = false;
+            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
         }
 
+        private bool _showMetadataRefreshPrompt = false;
+        public bool ShowMetadataRefreshPrompt
+        {
+            get => _showMetadataRefreshPrompt;
+            set
+            {
+                _showMetadataRefreshPrompt = value;
+                NotifyOfPropertyChange(nameof(ShowMetadataRefreshPrompt));
+            }
+        }
+
+        public void DismissRefreshMetadataPrompt()
+        {
+            ShowMetadataRefreshPrompt = false;
+        }
 
         public ADOTabularModel SelectedModel
         {
@@ -268,7 +284,8 @@ namespace DaxStudio.UI.ViewModels
                         EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
                     }
                     finally
-                    {             
+                    {
+                        ShowMetadataRefreshPrompt = false;
                         IsBusy = false;
                     }
                 }).ContinueWith((taskStatus) =>

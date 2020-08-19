@@ -773,53 +773,71 @@ namespace DaxStudio.UI.ViewModels
 
         protected override async void OnActivate()
         {
-            Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", this.DisplayName);
+            Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", $"Activating {this.DisplayName}");
             _logger.Info("In OnActivate");
             base.OnActivate();
-
-            _eventAggregator.Unsubscribe(this);
-            
-            _eventAggregator.Subscribe(this);
-            _eventAggregator.Subscribe(QueryResultsPane);
-            //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
-            foreach (var tw in this.TraceWatchers)
+            try
             {
-                _eventAggregator.Subscribe(tw);
-            }
-            _ribbon.SelectedTarget = SelectedTarget;
-            var loc = Document.GetLocation(0);
-            //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
+                _eventAggregator.Unsubscribe(this);
 
-            // exit here if we are not in a state to run a query
-            // means something is using the connection like
-            // either a query is running or a trace is starting
-            if (CanRunQuery)
-            {
+                _eventAggregator.Subscribe(this);
+                _eventAggregator.Subscribe(QueryResultsPane);
+                //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
+                foreach (var tw in this.TraceWatchers)
+                {
+                    _eventAggregator.Subscribe(tw);
+                }
+                _ribbon.SelectedTarget = SelectedTarget;
+                var loc = Document.GetLocation(0);
+                //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
+
+                // exit here if we are not in a state to run a query
+                // means something is using the connection like
+                // either a query is running or a trace is starting
+                if (CanRunQuery)
+                {
+                    await CheckForMetadataUpdatesAsync();
+                }
+
                 try
                 {
-                    if (await ShouldAutoRefreshMetadataAsync())
-                    {
-                        RefreshMetadata();
-                        OutputMessage("Model schema change detected - Metadata refreshed");
-                    }
+                    _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(loc.Column, loc.Line));
+                    _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
-                    OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+                    Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
                 }
-            }
-
-            try
-            {
-                _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(loc.Column, loc.Line));
-                _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
             }
             catch (Exception ex)
             {
-                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivate), ex.Message);
             }
 
+        }
+
+        public async Task CheckForMetadataUpdatesAsync()
+        {
+            try
+            {
+                if (await ShouldAutoRefreshMetadataAsync())
+                {
+                    OutputMessage("Updated Model Metadata detected");
+                    if (Options.ShowMetadataRefreshPrompt)
+                    {
+                        MetadataPane.ShowMetadataRefreshPrompt = true;
+                    }
+                    else
+                    {
+                        RefreshMetadata();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
+                OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+            }
         }
 
         public override void CanClose(Action<bool> callback)
@@ -980,17 +998,18 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
-            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to Excel");
+            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
 
             await Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
             {
+
                 // todo - should we be checking for exceptions in this continuation
                 try
                 {
-                    Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "recieved async result from Excel");
+                    
                     bool hasPpvtModel = x.Result;
 
-                    Log.Debug("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
+                    Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
                     msg.Dispose();
 
                     Execute.OnUIThread(() =>
@@ -1598,7 +1617,7 @@ namespace DaxStudio.UI.ViewModels
                             currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                             _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
                         }
-                        _queryStopWatch.Reset();
+                        _queryStopWatch?.Reset();
                         _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                         msg.Dispose();
                        
@@ -3081,7 +3100,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isCheckForSchemaUpdateRunning = false;
         private object _checkForSchemaUpdateLock = new object();
 
-        public async Task<bool> ShouldAutoRefreshMetadataAsync()
+        private async Task<bool> ShouldAutoRefreshMetadataAsync()
         {
             lock (_checkForSchemaUpdateLock)
             {
@@ -3780,6 +3799,14 @@ namespace DaxStudio.UI.ViewModels
         //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
 
         //public ILayoutRoot Root => LayoutElement.Root;
+        public void CloseConnection()
+        {
+            Connection.Close();
+        }
 
+        public void OpenConnection()
+        {
+            Connection.Open();
+        }
     }
 }

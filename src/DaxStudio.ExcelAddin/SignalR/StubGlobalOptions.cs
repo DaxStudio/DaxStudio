@@ -112,6 +112,7 @@ namespace DaxStudio.SignalR
         public bool ShowPreviewQueryBuilder { get; set; }
         public bool ShowPreviewBenchmark { get; set; }
         public Version CurrentDownloadVersion { get; set; }
+        public bool ShowMetadataRefreshPrompt { get; set; }
 
         public string GetCustomCsvDelimiter()
         {
