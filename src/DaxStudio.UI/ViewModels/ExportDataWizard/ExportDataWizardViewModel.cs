@@ -266,11 +266,7 @@ namespace DaxStudio.UI.ViewModels
 
                 var rows = 0;
 
-                
                 currentTableIdx++;
-                              
-
-                
 
                 try
                 {
@@ -320,8 +316,16 @@ namespace DaxStudio.UI.ViewModels
                                 for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
                                 {
                                     var fieldValue = reader[fieldOrdinal];
-                                    csvWriter.WriteField(fieldValue);
-                                    
+
+                                    // quote all string fields
+                                    if (reader.GetFieldType(fieldOrdinal) == typeof(string))
+                                        if (reader.IsDBNull(fieldOrdinal))
+                                            csvWriter.WriteField("", this.CsvQuoteStrings);
+                                        else
+                                            csvWriter.WriteField(fieldValue.ToString(), this.CsvQuoteStrings);
+                                    else
+                                        csvWriter.WriteField(fieldValue);
+
                                 }
 
                                 rows++;
