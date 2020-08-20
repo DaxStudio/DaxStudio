@@ -1126,6 +1126,11 @@ namespace DaxStudio.UI.ViewModels
                         // todo - get viewmodel from IoC container
                         perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
                         this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    } 
+                    else
+                    {
+                        // make sure the window is not hidden
+                        perfDataWindow.IsVisible = true;
                     }
 
                     // load the perfomance data

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <!-- == PACKAGE SPECIFIC SECTION == -->
+    <id>daxstudio</id>
+    <version>2.11.2</version>
+    <packageSourceUrl>https://github.com/teknowledgist/Chocolatey-packages/tree/master/automatic/daxstudio</packageSourceUrl>
+    <owners>Teknowledgist</owners>
+    <!-- == SOFTWARE SPECIFIC SECTION == -->
+    <title>DAX Studio</title>
+    <authors>DAXStudio.org</authors>
+    <projectUrl>https://daxstudio.org/</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/teknowledgist/Chocolatey-packages@7554f6e88c7b61b1c1ea56891814387dc50f399c/Icons/daxstudio_icon.png</iconUrl>
+    <copyright></copyright>
+    <licenseUrl>https://github.com/DaxStudio/DaxStudio/raw/master/license.rtf</licenseUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/DaxStudio/DaxStudio</projectSourceUrl>
+    <docsUrl>https://daxstudio.org/documentation/</docsUrl>
+    <bugTrackerUrl>https://github.com/DaxStudio/DaxStudio/issues</bugTrackerUrl>
+    <tags>daxstudio dax queries Microsoft tables PowerBI data OSS embedded</tags>
+    <summary>The ultimate tool for executing and analyzing DAX queries</summary>
+    <description>DAX (Data Analysis eXpressions) Studio is the ultimate tool for executing and analyzing DAX queries against Microsoft Tabular models.  
+    
+DAX Studio is a client tool for executing DAX queries against various data sources including:
+
+* PowerPivot in Excel
+* Power BI Desktop / SSDT Integrated Workspaces
+* Analysis Services Tabular
+* Azure Analysis Services
+
+DAX Studio will scan the local machine for any running instances of Power BI Desktop or SSDT Integrated Workspaces.
+    
+#### Features
+
+* All Queries Trace
+* Bracket Matching
+* Connection Dialog
+* DAX Studio Ribbon
+* DMV List
+* DaxFormatter.com Support
+* Excel - Linked Results
+* Excel - Static Results
+* File Menu
+* Find/Replace
+* Flexible Layout
+* Function Metadata
+* Intellisense Support
+* Load Power BI Performance Data
+* Metadata Panes
+* Model Metadata
+* Multiple Tabs
+* Options Winodw
+* Output Modes
+* Output Panes
+* Parameter Support
+* Query Editor
+* Query Plan Tracing
+* Run Modes
+* Server Timing Trace
+* Status Bar
+* Swap Delimiters
+* Timer Results
+* Version notifications
+
+    </description>
+    <releaseNotes>https://github.com/DaxStudio/DaxStudio/releases</releaseNotes>
+    <dependencies>
+      <dependency id="dotnet4.7.1" version="4.7.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

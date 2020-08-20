@@ -348,6 +348,7 @@
     <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
+    <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />

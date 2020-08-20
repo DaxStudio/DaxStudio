@@ -90,8 +90,8 @@ Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversi
 Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json"
 
-; PBI Desktop integration
-Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; 
+; PBI Desktop integration (If installing in ALL USERS mode)
+Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode; 
 
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
@@ -645,15 +645,22 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if (CurStep=ssInstall) then
   begin
-    if (IsUpgrade()) then
+    if IsUpgrade() then
     begin
       UnInstallOldVersion();
     end;
   end;
   if (CurStep=ssPostInstall) then begin
     
-    Log('Writing Power BI Desktop External Tools File');
-    WriteExternalToolsFile();
+    if IsAdminInstallMode() then 
+      begin
+        Log('Writing Power BI Desktop External Tools File');
+        WriteExternalToolsFile();
+      end
+    else
+      begin
+          Log('Skipping Power BI Desktop External Tools File - Current User install');
+      end;
   
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
