@@ -42,6 +42,20 @@ namespace DaxStudio.UI.ViewModels
         
         public new bool CanHide { get { return true; } }
 
+        //public bool CanCloseWindow { get { return true; } }
+
+        //public void CloseWindow()
+        //{
+
+        //    System.Diagnostics.Debug.WriteLine("Closing");
+        //}
+
+        public void Hide()
+        {
+
+            System.Diagnostics.Debug.WriteLine("Hiding");
+        }
+
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; } 
        
 
