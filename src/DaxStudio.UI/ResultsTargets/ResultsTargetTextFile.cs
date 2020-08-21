@@ -65,18 +65,18 @@ namespace DaxStudio.UI.Model
 
                         switch (dlg.FilterIndex)
                         {
-                            case 1: // tab separated
-                                sep = "\t";
-                                break;
-                            case 2: // utf-8 csv
+                            
+                            case 1: // utf-8 csv
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
-                            case 3: //unicode csv
+                            case 2: // tab separated
+                                sep = "\t";
+                                break;
+                            case 3: // unicode csv
                                 enc = new UnicodeEncoding();
                                 sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                                 break;
-                            case 4:
-                                // TODO - custom export format
+                            case 4:// custom export format
                                 sep = runner.Options.GetCustomCsvDelimiter();
                                 shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
                                 break;

@@ -29,7 +29,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 110;
         public string Message => "Static Results will be sent to Excel";
         public OutputTarget Icon => OutputTarget.Static;
-
+        public string Tooltip => "Sends a copy of the results to Excel";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";

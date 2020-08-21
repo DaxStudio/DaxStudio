@@ -257,7 +257,6 @@
   <ItemGroup>
     <SplashScreen Include="daxstudio-logo_250x250.png" />
     <Content Include="DaxStudio.ico" />
-    <None Include="Loggly.user.config" />
     <None Include="packages.config" />
     <None Include="daxstudio.pbitool.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

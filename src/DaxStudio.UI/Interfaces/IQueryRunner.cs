@@ -41,5 +41,6 @@ namespace DaxStudio.UI.Interfaces
         int RowCount { get; set; }
 
         IGlobalOptions Options { get; }
+        ADOTabular.ADOTabularConnection Connection { get; }
     }
 }

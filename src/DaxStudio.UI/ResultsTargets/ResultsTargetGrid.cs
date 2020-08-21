@@ -35,7 +35,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public string Message => string.Empty;
         public OutputTarget Icon => OutputTarget.Grid;
-
+        public string Tooltip => "Displays the Query results in a data grid";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";

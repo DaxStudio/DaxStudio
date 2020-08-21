@@ -51,6 +51,9 @@
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Center" />
                 </StackPanel>
+                    <Border.ToolTip>
+                        <Fluent:ScreenTip Text="{Binding Tooltip}" Title="{Binding Name}"/>
+                    </Border.ToolTip>
             </Border>
         </DataTemplate>
         
@@ -399,7 +402,8 @@
                                        >
 
                     <!--Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"-->
-
+<!--                        ItemWidth="80"
+                        ItemHeight="80" -->
                     <Fluent:Gallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
                         GroupBy="Group"
@@ -408,8 +412,7 @@
                         MinItemsInRow="1"
                         MaxItemsInRow="3"
                         Orientation="Horizontal"
-                        ItemWidth="80"
-                        ItemHeight="80"
+
                         ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}">
@@ -487,16 +490,14 @@
                     IsChecked="{Binding DisplayQueryBuilder}"
                     SizeDefinition="Large">
                     <Fluent:ToggleButton.Icon>
-
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
                     </Fluent:ToggleButton.Icon>
                     <Fluent:ToggleButton.LargeIcon>
-
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
                     </Fluent:ToggleButton.LargeIcon>
-
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
+                    </Fluent:ToggleButton.ToolTip> 
                 </Fluent:ToggleButton>
             </Fluent:RibbonGroupBox>
             
@@ -918,7 +919,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 <Fluent:Button Name="LaunchExcel"
-                                   Header="Excel"
+                                   Header="Analyze in Excel"
                                    cal:Message.Attach="[Event Click] = [Action LaunchExcel()]"
                                    
                                    LargeIcon="{StaticResource LaunchExcelIconLarger}"
@@ -926,7 +927,7 @@
                                    SizeDefinition="Large,Large,Small"
                                    >
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Excel"
+                        <Fluent:ScreenTip Title="Analyze in Excel"
                                    Text="Launches Excel and creates a Pivot Table connected to the current data source."
                                    ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -988,11 +989,24 @@
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Experimental Features">
-                
-                
+                <Fluent:Button Header="Open Connection" x:Name="OpenConnection" Size="Middle"
+                               cal:Message.Attach="[Event Click] = [Action OpenConnection()]">
 
+                    <Fluent:Button.Icon>
 
-                <CheckBox Content="Show Benchmark Run Style" IsChecked="{Binding DisplayBenchmarking}"/>
+                        <fa:FontAwesome  Icon="Plug" FontSize="16" Foreground="Green"/>
+
+                    </Fluent:Button.Icon>
+                </Fluent:Button>
+                <Fluent:Button Header="Close Connection" x:Name="CloseConnection" Size="Middle"
+                               cal:Message.Attach="[Event Click] = [Action CloseConnection()]">
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="Plug" Foreground="OrangeRed" FontSize="16" />
+
+                    </Fluent:Button.Icon>
+                </Fluent:Button>
+
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           

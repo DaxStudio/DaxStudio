@@ -6,13 +6,14 @@ using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ResultsTargets
 {
     // This is the target which writes the static results out to
     // a range in Excel
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetExcelLinked: PropertyChangedBase, 
+    public class ResultsTargetExcelLinkedOdc: PropertyChangedBase, 
         IResultsTarget, 
         IActivateResults, 
         IHandle<ConnectionChangedEvent>,
@@ -23,7 +24,7 @@ namespace DaxStudio.UI.ResultsTargets
         private bool _isPowerBIOrSSDTConnection = false;
 
         [ImportingConstructor]
-        public ResultsTargetExcelLinked(IDaxStudioHost host, IEventAggregator eventAggregator)
+        public ResultsTargetExcelLinkedOdc(IDaxStudioHost host, IEventAggregator eventAggregator)
         {
             _host = host;
             _eventAggregator = eventAggregator;
@@ -34,7 +35,7 @@ namespace DaxStudio.UI.ResultsTargets
         public string Name => "Linked";
         public string Group => "Excel";
         public bool IsDefault => false;
-        public bool IsAvailable => _host.IsExcel && !_isPowerBIOrSSDTConnection;
+        public bool IsAvailable => !_host.IsExcel;
         public int DisplayOrder => 100;
         public string Message => "Query will be sent to Excel for execution";
         public OutputTarget Icon => OutputTarget.Linked;
@@ -64,24 +65,31 @@ namespace DaxStudio.UI.ResultsTargets
                 {
                     try
                     {
-                        runner.OutputMessage("Query Started");
+                        runner.OutputMessage("Opening .odc file in Excel");
                         var sw = Stopwatch.StartNew();
                         var dq = textProvider.QueryText;
-                        
+
+                        // odc queries require 'mdx compatibility=1'
+                        var fixedConnStr = runner.ConnectionStringWithInitialCatalog.Replace("mdx compatibility=3", "mdx compatibility=1");
+
+                        // create odc file
+                        var odcFile = OdcHelper.CreateOdcQueryFile(fixedConnStr, runner.QueryText );
+
+
+                        System.Diagnostics.Process.Start(odcFile);
                         //  write results to Excel
-                        runner.Host.Proxy.OutputLinkedResultAsync(dq
-                            , runner.SelectedWorksheet
-                            , runner.ConnectedToPowerPivot?"":runner.ConnectionStringWithInitialCatalog).ContinueWith((ascendant) => {
+                 
 
-                                sw.Stop();
-                                var durationMs = sw.ElapsedMilliseconds;
+                        sw.Stop();
+                        var durationMs = sw.ElapsedMilliseconds;
                      
-                                runner.OutputMessage(
-                                    string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
-                                runner.ActivateOutput();
-                                runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
+                        runner.OutputMessage(
+                            string.Format("Query Completed - Query sent to Excel for execution"), durationMs);
+                        runner.OutputMessage("Note: odc files can only handle a query that returns a single result set. If you see an error try using one of the other output types to ensure your query is valid.");
+                        
+                        runner.ActivateOutput();
+                        runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
 
-                            },TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {
