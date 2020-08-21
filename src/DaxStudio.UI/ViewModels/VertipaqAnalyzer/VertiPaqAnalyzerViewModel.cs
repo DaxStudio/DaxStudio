@@ -15,6 +15,8 @@ using System.Linq;
 using System.Globalization;
 using System.Windows.Navigation;
 using System.Web.UI.WebControls;
+using System.Windows.Controls;
+using DataGrid = System.Windows.Controls.DataGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -42,6 +44,13 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
             CurrentDocument = currentDocument;
+
+            // configure default sort columns
+            RelationshipSortColumn = "UsedSize";
+            TableSortColumn = "TotalSize";
+            PartitionSortColumn = "RowsCount";
+            ColumnSortColumn = "TotalSize";
+
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "end");
         }
 
@@ -83,7 +92,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedColumns == null && ViewModel != null)
                 {
-                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.Columns);
+                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns);
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
                     // sort by TableSize then by TotalSize
@@ -92,6 +101,20 @@ namespace DaxStudio.UI.ViewModels
                 }
                 return _groupedColumns;
             }
+        }
+
+        // we customize the table sorting as we want to do a nested sort 
+        public void SortTables(object sender, DataGridSortingEventArgs e)
+        {
+            //DataGrid dg = sender as DataGrid;
+            //dg.Items.SortDescriptions.Clear();
+            //var sortDir = e.Column.SortDirection ?? System.ComponentModel.ListSortDirection.Descending;
+            //sortDir = sortDir == System.ComponentModel.ListSortDirection.Descending ? System.ComponentModel.ListSortDirection.Ascending : System.ComponentModel.ListSortDirection.Descending;
+            //dg.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Table." + e.Column.SortMemberPath, sortDir));
+            //dg.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription(e.Column.SortMemberPath, sortDir));
+            //e.Column.SortDirection = sortDir;
+            //e.Handled = true;
+            //System.Diagnostics.Debug.WriteLine("Sorting");
         }
 
         private ICollectionView _groupedRelationships;
@@ -104,7 +127,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedRelationships == null && ViewModel != null)
                 {
-                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this)).SelectMany(t => t.RelationshipsFrom);
+                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this, VpaSort.Relationship)).SelectMany(t => t.RelationshipsFrom);
                     _groupedRelationships = CollectionViewSource.GetDefaultView(rels);
                     _groupedRelationships.GroupDescriptions.Add(new RelationshipGroupDescription("Table"));
                     _groupedRelationships.SortDescriptions.Add(new SortDescription("UsedSize", ListSortDirection.Descending));
@@ -122,7 +145,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var partitions = from t in ViewModel.Tables
                                      from p in t.Partitions
-                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this), this);
+                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this, VpaSort.Partition), this);
 
                     _groupedPartitions = CollectionViewSource.GetDefaultView(partitions);
                     _groupedPartitions.GroupDescriptions.Add(new PartitionGroupDescription("Table"));
@@ -178,15 +201,50 @@ namespace DaxStudio.UI.ViewModels
             Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
         }
 
-        public void SortTableColumn(System.Windows.Controls.DataGridSortingEventArgs e)
+        public void OnTableSorting(System.Windows.Controls.DataGridSortingEventArgs e)
         {
-            if (SortColumn == e.Column.SortMemberPath) { SortDirection = SortDirection * -1; }
-            else { SortDirection = 1; }
-            SortColumn = e.Column.SortMemberPath;
+            if (e.Column.SortDirection == null) e.Column.SortDirection = ListSortDirection.Ascending;
+            if (TableSortColumn == e.Column.SortMemberPath) { TableSortDirection = TableSortDirection * -1; }
+            else { TableSortDirection = -1; } 
+            TableSortColumn = e.Column.SortMemberPath;
         }
 
-        public string SortColumn { get; set; }
-        public int SortDirection { get; set; }
+        public string TableSortColumn { get; set; }
+        public int TableSortDirection { get; set; } = -1;
+
+        public void OnColumnSorting(System.Windows.Controls.DataGridSortingEventArgs e)
+        {
+            if (e.Column.SortDirection == null) e.Column.SortDirection = ListSortDirection.Ascending;
+            if (ColumnSortColumn == e.Column.SortMemberPath) { ColumnSortDirection = ColumnSortDirection * -1; }
+            else { ColumnSortDirection = -1; } 
+            ColumnSortColumn = e.Column.SortMemberPath;
+        }
+
+        public string ColumnSortColumn { get; set; }
+        public int ColumnSortDirection { get; set; } = -1;
+
+        public void OnRelationshipSorting(System.Windows.Controls.DataGridSortingEventArgs e)
+        {
+            if (e.Column.SortDirection == null) e.Column.SortDirection = ListSortDirection.Ascending;
+            if (RelationshipSortColumn == e.Column.SortMemberPath) { RelationshipSortDirection = RelationshipSortDirection * -1; }
+            else { RelationshipSortDirection = -1; } 
+            RelationshipSortColumn = e.Column.SortMemberPath;
+        }
+
+        public string RelationshipSortColumn { get; set; }
+        public int RelationshipSortDirection { get; set; } = -1;
+
+        public void OnPartitionSorting(System.Windows.Controls.DataGridSortingEventArgs e)
+        {
+            if (e.Column.SortDirection == null) e.Column.SortDirection = ListSortDirection.Ascending;
+            if (PartitionSortColumn == e.Column.SortMemberPath) { PartitionSortDirection = PartitionSortDirection * -1; }
+            else { PartitionSortDirection = -1; }
+            PartitionSortColumn = e.Column.SortMemberPath;
+        }
+
+        public string PartitionSortColumn { get; set; }
+        public int PartitionSortDirection { get; set; } = -1;
+
         public DocumentViewModel CurrentDocument { get; }
 
         private bool _isBusy = false;
@@ -203,6 +261,36 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public string BusyMessage => "Loading Model Metrics";
+
+        public TooltipStruct Tooltips => new TooltipStruct();
+
+        public class TooltipStruct
+        {
+            public string Cardinality => "The total number of distinct values in a column";
+            public string TableSize => "The total size of a table including all columns, relationships and hierarchies";
+            public string TotalSize => "The total size of the column = Data + Dictionary + Hierarchies";
+            public string DictionarySize => "The size of the dictionary";
+            public string DataSize => "The size of the data for the column";
+            public string HierarchySize => "The size of hierarchy structures";
+            public string DataType => "The data type for the column";
+            public string Encoding => "The encoding type for the column";
+            public string RIViolations => "Indicates the number of relationships where there are values on the 'many' side of a relationship that do not exist on the '1' side";
+            public string UserHierarchySize => "The size of user hierarchy structures";
+            public string RelationshipSize => "The size taken up by relationship structures";
+            public string PercentOfTable => "The space taken up as a percentage of the parent table";
+            public string PercentOfDatabase => "The space taken up as a percentage of the total size of the database";
+            public string Segments => "The number of segments";
+            public string Partitions => "The number of partitions";
+            public string Columns => "The number of columns in the table";
+            public string TableRows => "The total number of rows in the table";
+            public string MaxFromCardinality => "The maximum number of distinct values on the 'from' side of the relationship";
+            public string MaxToCardinality => "The maximum number of distinct values on the 'to' side of the relationship";
+            public string MissingKeys => "The number of distinct missing key values";
+            public string InvalidRows => "The number of rows with missing keys";
+            public string SampleViolations => "3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
+            public string TableColumn => "A combination of the table and column name in the form '<table>-<column>'";
+            public string TableRelationship => "The name of the relationship";
+        }
 
     }
 }

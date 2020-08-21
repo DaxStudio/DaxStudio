@@ -41,21 +41,21 @@ namespace DaxStudio.UI.ViewModels
         public int CompareTo(object obj)
         {
             var objPartition = (VpaPartitionViewModel)obj;
-            switch (_parentViewModel.SortColumn)
+            switch (_parentViewModel.PartitionSortColumn)
             {
                 case "ColumnCardinality":
-                    return RowsCount.CompareTo(objPartition.RowsCount) * _parentViewModel.SortDirection;
+                    return RowsCount.CompareTo(objPartition.RowsCount) * _parentViewModel.PartitionSortDirection;
                 case "DataSize":
-                    return DataSize.CompareTo(objPartition.DataSize) * _parentViewModel.SortDirection;
+                    return DataSize.CompareTo(objPartition.DataSize) * _parentViewModel.PartitionSortDirection;
                 default:
-                    return PartitionName.CompareTo(objPartition.PartitionName) * _parentViewModel.SortDirection;
+                    return PartitionName.CompareTo(objPartition.PartitionName) * _parentViewModel.PartitionSortDirection;
             }
         }
 
         public bool IsExpanded { get; set; }
 
         public double PercentOfTableRows => (Table == null ? 0 : RowsCount / (double)Table.RowsCount); 
-        public double PercentOfTableSize => Table == null ? 0 : DataSize / (double)Table.ColumnsDataSize;
+        public double PercentOfTableSize => Table == null ? 0 : DataSize / (double)Table.DataSize;
 
     }
 }
