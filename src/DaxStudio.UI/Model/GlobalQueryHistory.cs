@@ -34,8 +34,7 @@ namespace DaxStudio.UI.Model
 
             _queryHistoryPath = ApplicationPaths.QueryHistoryPath;
             Log.Debug("{class} {method} {message} {value}", "GlobalQueryHistory", "Constructor", "Setting Query History Path", _queryHistoryPath);
-            EnsureQueryHistoryFolderExists();
-            LoadHistoryFilesAsync();
+            
     
         }
 
@@ -66,6 +65,7 @@ namespace DaxStudio.UI.Model
                   {
                       DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
                       fileList = d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
+                      Log.Debug(Constants.LogMessageTemplate, nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Starting load of {fileList.Length} history files");
                       List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
                       foreach (var fileInfo in fileList)
                       {
@@ -94,6 +94,8 @@ namespace DaxStudio.UI.Model
                   Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList?.Length + " files)");
               });
         }
+
+
 
         public async Task Handle(QueryHistoryEvent message)
         {
@@ -156,6 +158,12 @@ namespace DaxStudio.UI.Model
 
         public async Task Handle(LoadQueryHistoryAsyncEvent message)
         {
+            await LoadQueryHistoryAsync();
+        }
+
+        public async Task LoadQueryHistoryAsync()
+        {
+            EnsureQueryHistoryFolderExists();
             await LoadHistoryFilesAsync();
         }
 

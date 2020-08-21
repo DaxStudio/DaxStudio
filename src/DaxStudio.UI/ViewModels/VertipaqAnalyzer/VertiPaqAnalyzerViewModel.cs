@@ -103,20 +103,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        // we customize the table sorting as we want to do a nested sort 
-        public void SortTables(object sender, DataGridSortingEventArgs e)
-        {
-            //DataGrid dg = sender as DataGrid;
-            //dg.Items.SortDescriptions.Clear();
-            //var sortDir = e.Column.SortDirection ?? System.ComponentModel.ListSortDirection.Descending;
-            //sortDir = sortDir == System.ComponentModel.ListSortDirection.Descending ? System.ComponentModel.ListSortDirection.Ascending : System.ComponentModel.ListSortDirection.Descending;
-            //dg.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Table." + e.Column.SortMemberPath, sortDir));
-            //dg.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription(e.Column.SortMemberPath, sortDir));
-            //e.Column.SortDirection = sortDir;
-            //e.Handled = true;
-            //System.Diagnostics.Debug.WriteLine("Sorting");
-        }
-
         private ICollectionView _groupedRelationships;
 
         public VpaSummaryViewModel SummaryViewModel { get; private set; }
