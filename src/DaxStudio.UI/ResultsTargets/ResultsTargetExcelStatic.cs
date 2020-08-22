@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Model
         public string Group => "Excel";
         public bool IsDefault => false;
         public bool IsAvailable => _host.IsExcel;
-        public int DisplayOrder => 110;
+        public int DisplayOrder => 310;
         public string Message => "Static Results will be sent to Excel";
         public OutputTarget Icon => OutputTarget.Static;
         public string Tooltip => "Sends a copy of the results to Excel";

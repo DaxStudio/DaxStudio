@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Model
         public string Group => "Excel";
         public bool IsDefault => false;
         public bool IsAvailable => !_host.IsExcel;
-        public int DisplayOrder => 300;
+        public int DisplayOrder => 410;
         public string Message => "Results will be sent to an XLSX File";
         public OutputTarget Icon => OutputTarget.File;
         public string Tooltip => "Query results will be written to an Excel file.";

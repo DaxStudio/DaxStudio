@@ -20,7 +20,7 @@ namespace DaxStudio.UI.Model
         public string Group => "Standard";
         public bool IsDefault => false;
         public bool IsAvailable => true;
-        public int DisplayOrder => 300;
+        public int DisplayOrder => 200;
         public string Message => "Results will be sent to a Text File";
         public OutputTarget Icon => OutputTarget.File;
         public string Tooltip => "Exports Query results to csv or tab delimited files";

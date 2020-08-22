@@ -860,19 +860,6 @@ namespace DaxStudio.UI.ViewModels
 
         #region "Preview Features"
 
-        private bool _showExternalTools;
-        public bool ShowExternalTools
-        {
-            get { return _showExternalTools; }
-            private set
-            {
-                _showExternalTools = value;
-                NotifyOfPropertyChange(() => ShowExternalTools);
-            }
-        }
-
-
-
 
         private bool _showPreviewQueryBuilder;
         public bool ShowPreviewQueryBuilder
@@ -963,7 +950,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowExternalTools = Options.ShowExternalTools;
             ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
             ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
@@ -1183,5 +1169,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument?.CloseConnection();
         }
+
+        Func<object,string> GroupByAdvanced = x => ((IResultsTarget) x).Name.Substring(0, 1);
     }
 }

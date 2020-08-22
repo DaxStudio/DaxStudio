@@ -7,6 +7,9 @@ using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
+using System.Threading;
+using System.IO;
+using System.Linq.Expressions;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -36,7 +39,7 @@ namespace DaxStudio.UI.ResultsTargets
         public string Group => "Excel";
         public bool IsDefault => false;
         public bool IsAvailable => !_host.IsExcel;
-        public int DisplayOrder => 100;
+        public int DisplayOrder => 410;
         public string Message => "Query will be sent to Excel for execution";
         public OutputTarget Icon => OutputTarget.Linked;
         public string Tooltip => "Sends the Query text to Excel for execution";
@@ -61,7 +64,7 @@ namespace DaxStudio.UI.ResultsTargets
 
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
                 {
                     try
                     {
@@ -90,6 +93,7 @@ namespace DaxStudio.UI.ResultsTargets
                         runner.ActivateOutput();
                         runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
 
+                        await CleanUpOdcAsync(odcFile);
                     }
                     catch (Exception ex)
                     {
@@ -103,6 +107,15 @@ namespace DaxStudio.UI.ResultsTargets
                 });
         }
 
+        private async Task CleanUpOdcAsync(string odcFile)
+        {
+            Thread.Sleep(2000);
+            try { 
+            File.Delete(odcFile);
+            System.Diagnostics.Debug.Write($"ODC file deleted - {odcFile}");
+            }
+            catch { }
+        }
     }
 
 
