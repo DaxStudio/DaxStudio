@@ -23,6 +23,7 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.IO;
 using DaxStudio.Interfaces.Attributes;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -576,6 +577,29 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #region Hotkeys
+        private string _hotkeyWarningMessage = string.Empty;
+        [JsonIgnore]
+        public string HotkeyWarningMessage { get => _hotkeyWarningMessage; 
+            set
+            {
+                _hotkeyWarningMessage = value;
+                NotifyOfPropertyChange(nameof(HotkeyWarningMessage));
+                NotifyOfPropertyChange(nameof(ShowHotkeyWarningMessage));
+                TimeoutHotkeyWarning();
+            }
+        }
+
+        public bool ShowHotkeyWarningMessage => !string.IsNullOrEmpty(HotkeyWarningMessage);
+
+        private void TimeoutHotkeyWarning()
+        {
+            if (string.IsNullOrEmpty(HotkeyWarningMessage)) return;
+            // if the warning message is not empty wait 5 sec then clear it
+            Task.Factory.StartNew(() => {
+                System.Threading.Thread.Sleep(5000);
+                HotkeyWarningMessage = string.Empty;
+            });
+        }
 
         private string _hotkeyCommentSelection;
         [DataMember, DefaultValue("Ctrl + Alt + C"),Hotkey]
@@ -855,16 +879,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showExternalTools = false;
-        [DataMember, DefaultValue(false)]
-        public bool ShowExternalTools { get => _showExternalTools;
-            set {
-                _showExternalTools = value;
-                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing);
-                NotifyOfPropertyChange(() => ShowExternalTools);
-            }
-        }
+        //private bool _showExternalTools = false;
+        //[DataMember, DefaultValue(false)]
+        //public bool ShowExternalTools { get => _showExternalTools;
+        //    set {
+        //        _showExternalTools = value;
+        //        _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+        //        SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing);
+        //        NotifyOfPropertyChange(() => ShowExternalTools);
+        //    }
+        //}
 
         private bool _showExportAllData = false;
         [DataMember, DefaultValue(false)]

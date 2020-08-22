@@ -38,18 +38,22 @@ namespace DaxStudio.UI.Validation
     {
         public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
         {
-            string hotkey = value.ToString();
-
+            string hotkey = value?.ToString()??string.Empty;
+            var msg = string.Empty;
             var props = this.Wrapper.Options.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             foreach (var prop in props)
             {
                 var att = prop.GetCustomAttributes(typeof(HotkeyAttribute),true);
                 if (att.Length == 0) continue;
                 if (prop.Name == this.Wrapper.PropertyName) continue;
-                if ((string)prop.GetValue(this.Wrapper.Options) == hotkey) return new ValidationResult(false, "Duplicate Hotkey");
+                if ((string)prop.GetValue(this.Wrapper.Options) == hotkey) {
+                    msg = $"Cannot add Duplicate Hotkey '{hotkey}'";
+                    this.Wrapper.Options.HotkeyWarningMessage = msg;
+                    return new ValidationResult(false, msg);
+                }
             }
-                
 
+            this.Wrapper.Options.HotkeyWarningMessage = msg;
 
             return ValidationResult.ValidResult;
         }

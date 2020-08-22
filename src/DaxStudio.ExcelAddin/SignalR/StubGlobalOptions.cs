@@ -65,7 +65,6 @@ namespace DaxStudio.SignalR
 
         public bool ShowExportMetrics { get; set; }
         public int TraceStartupTimeout { get; set; }
-        public bool ShowExternalTools { get ; set ; }
         public bool ShowExportAllData { get ; set ; }
         public bool ShowAggregationRewritesInAllQueries { get; set ; }
         public string Theme { get; set; }
@@ -113,6 +112,7 @@ namespace DaxStudio.SignalR
         public bool ShowPreviewBenchmark { get; set; }
         public Version CurrentDownloadVersion { get; set; }
         public bool ShowMetadataRefreshPrompt { get; set; }
+        public string HotkeyWarningMessage { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

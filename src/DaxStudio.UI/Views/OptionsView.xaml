@@ -7,6 +7,7 @@
             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+            xmlns:fa="http://schemas.fontawesome.io/icons/"
             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -22,8 +23,55 @@
             <conv:IntToDoubleConverter x:Key="IntToDoubleConverter" />
             <conv:HotKeyConverter x:Key="HotKeyConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
 
+            <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
+            <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
             
+            <Storyboard x:Key="FadeIn">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                                     EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
+                                     From="0.0"
+                                     To="1.0"
+                                     Duration="0:0:1.0"/>
+                <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.0" Duration="0">
+                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Visible}" />
+                </ObjectAnimationUsingKeyFrames>
+            </Storyboard>
+
+            <Storyboard x:Key="FadeOut">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity" 
+                         EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
+                         To="0.0" 
+                         Duration="0:0:0.3"/>
+                <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.2" Duration="0">
+                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Collapsed}" />
+                </ObjectAnimationUsingKeyFrames>
+
+            </Storyboard>
+
+            <!-- Styles -->
+            <Style x:Key="FadeInOut" TargetType="StackPanel">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ShowHotkeyWarningMessage}" Value="True" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource FadeIn}" x:Name="In"/>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="In"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ShowHotkeyWarningMessage}" Value="False">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource FadeOut}" x:Name="Out"/>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="Out"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
             <Style TargetType="{x:Type wmc:WatermarkTextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
@@ -594,6 +642,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
@@ -604,12 +654,12 @@
                                         x:Name="ResetKeyBindings" Height="22" Width="60" Margin="0,0,0,20"/>
 
                                 <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
+                                <!--<controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
                                     <controls:HotkeyEditorControl.Resources>
                                         <val:BindingProxy x:Key="proxy" Data="{Binding}"/>
                                     </controls:HotkeyEditorControl.Resources>
                                     <controls:HotkeyEditorControl.Hotkey>
-                                        <Binding Path="HotkeyCommentSelection" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" Converter="{StaticResource HotKeyConverter}">
+                                        <Binding Path="HotkeyCommentSelection" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" ValidatesOnNotifyDataErrors="True" NotifyOnValidationError="True" Converter="{StaticResource HotKeyConverter}">
                                             <Binding.ValidationRules>
                                                 <val:HotkeyValidationRule ValidationStep="ConvertedProposedValue">
                                                     <val:HotkeyValidationRule.Wrapper>
@@ -619,7 +669,8 @@
                                             </Binding.ValidationRules>
                                         </Binding>
                                     </controls:HotkeyEditorControl.Hotkey>
-                                </controls:HotkeyEditorControl>
+                                </controls:HotkeyEditorControl>-->
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" Hotkey="{Binding HotkeyCommentSelection, Converter={StaticResource HotKeyConverter}, NotifyOnValidationError=True, ValidatesOnNotifyDataErrors=True}"/>
 
                                 <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
@@ -651,6 +702,12 @@
 
                                 <Label Content="Format Query (alternate style)" Padding="2" Grid.Row="11" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeyFormatQueryAlternate, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="12" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}">
+                                    <fa:FontAwesome Icon="Warning" Foreground="GoldenRod" Margin="3"/>
+                                    <TextBlock x:Name="HotkeyWarningMessage"/>
+                                    
+                                </StackPanel>
                             </Grid>
                             
                             
@@ -698,9 +755,11 @@
 
                                 <CheckBox Grid.Row="2"  Grid.Column="0" x:Name="ShowExportAllData" VerticalAlignment="Top" Content="Show Export All Data button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export all data from the currently selected data model to a collection of csv files or SQL Server tables</TextBlock>
--->
+
                                 <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Launch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
+
+                                -->
 
                                 <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>

@@ -65,6 +65,8 @@ namespace DaxStudio.Interfaces
         Version CurrentDownloadVersion { get; set; }
 
         #region Hotkeys
+        [JsonIgnore]
+        string HotkeyWarningMessage { get; set; }
         // Hotkeys
         [Hotkey]
         string HotkeyCommentSelection { get; set; }
@@ -96,7 +98,6 @@ namespace DaxStudio.Interfaces
 
         // Preview Features
         bool ShowExportMetrics { get; set; }
-        bool ShowExternalTools { get; set; }
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }

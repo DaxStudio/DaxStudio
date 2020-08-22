@@ -1,5 +1,8 @@
-﻿using DaxStudio.UI.Extensions;
+﻿using Caliburn.Micro;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +26,33 @@ namespace DaxStudio.UI.Controls
     public partial class HotkeyEditorControl : UserControl
     {
 
+        
 
+        private void InitializeValidation()
+        {
+            Binding binding = BindingOperations.GetBinding(this, HotkeyEditorControl.HotkeyProperty);
+            //binding.NotifyOnValidationError = true;
+            //binding.ValidatesOnNotifyDataErrors = true;
+            binding.ValidationRules.Clear();
+            var rule = new HotkeyValidationRule();
+            rule.Wrapper = new Wrapper() { Options = (IGlobalOptions)this.DataContext };
+            rule.ValidationStep = ValidationStep.ConvertedProposedValue;
+            binding.ValidationRules.Add(rule);
+            //this.Validation.AddErrorHandler
+            System.Windows.Controls.Validation.AddErrorHandler(this, HotkeyTextBox_Error);
+
+            //    FrameworkElement SelectedObject = HotkeyTextBox;
+            //    SelectedObject.bin
+
+            //    DependencyProperty property =
+            //        GetDependencyPropertyByName(SelectedObject, "TextProperty");
+            //    Binding binding = new Binding("Model.Txt0");
+            //    binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            //    binding.ValidatesOnDataErrors = true;
+            //    RequiredValidate role = new RequiredValidate();
+            //    binding.ValidationRules.Add(role);
+            //    SelectedObject.SetBinding(property, binding);
+        }
 
         public static readonly DependencyProperty HotkeyProperty =
             DependencyProperty.Register(nameof(Hotkey), typeof(Hotkey), typeof(HotkeyEditorControl),
@@ -38,7 +67,31 @@ namespace DaxStudio.UI.Controls
         public HotkeyEditorControl()
         {
             InitializeComponent();
+            //this.DataContextChanged += HotkeyEditorControl_DataContextChanged;
         }
+
+        //private void HotkeyEditorControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        //{
+        //    if (HotkeyTextBox != null)
+        //    {
+        //        var binding = new Binding();
+        //        binding.Source = this.DataContext;
+        //        binding.ValidatesOnDataErrors = true;
+        //        binding.ValidatesOnExceptions = true;
+                
+        //        var rule = new HotkeyValidationRule();
+
+                
+        //        binding.ValidationRules.Add(rule);
+                
+
+
+        //        binding.Path = new PropertyPath("Hotkey");
+        //        HotkeyTextBox.SetBinding(TextBox.TextProperty, binding);
+                
+        //        //dpMain.Children.Add(_textBox);
+        //    }
+        //}
 
         private void HotkeyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -74,6 +127,49 @@ namespace DaxStudio.UI.Controls
 
             // Set values
             Hotkey = new Hotkey(key, modifiers);
+        }
+
+        private void HotkeyTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox txtBox = sender as TextBox;
+            //if (e.Action == ValidationErrorEventAction.Added)
+            //{
+                txtBox.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    var be = BindingOperations.GetBindingExpressionBase(txtBox, TextBox.TextProperty);
+                    be.UpdateTarget();
+                    txtBox.ToolTip = null;
+                }), System.Windows.Threading.DispatcherPriority.Render);
+
+            //}
+            //else
+            //{
+            //    txtBox.ToolTip = null;
+            //}
+        }
+
+        private void HotkeyTextBox_Error(object sender, ValidationErrorEventArgs e)
+        {
+            var txtBox = sender as HotkeyEditorControl;
+            if (e.Action == ValidationErrorEventAction.Added)
+            {
+                txtBox.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    var be = BindingOperations.GetBindingExpressionBase(txtBox, HotkeyEditorControl.HotkeyProperty);
+                    be.UpdateTarget();
+                    txtBox.ToolTip = e.Error.ErrorContent.ToString();
+                }), System.Windows.Threading.DispatcherPriority.Render);
+                
+            }
+            else
+            {
+                txtBox.ToolTip = null;
+            }
+        }
+
+        private void HotkeyTextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeValidation();
         }
     }
 
