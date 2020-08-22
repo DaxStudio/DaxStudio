@@ -569,12 +569,22 @@ namespace DAXEditorControl
                 toolTip.IsOpen = false;
             }
         }
+
+        private object disposeLock = new object();
         public void DisposeCompletionWindow()
         {
-            if (toolTip != null)
-                toolTip.IsOpen = false;
-            completionWindow?.Close();
-            completionWindow = null;
+            if (MouseOverCompletionWindow) return;
+            lock (disposeLock)
+            {
+                // close function tooltip if it is open
+                if (toolTip != null)
+                    toolTip.IsOpen = false;
+
+                // force completion window to close
+                if (completionWindow == null) return;
+                completionWindow?.Close();
+                completionWindow = null;
+            }
         }
 
         public void DisableIntellisense()
