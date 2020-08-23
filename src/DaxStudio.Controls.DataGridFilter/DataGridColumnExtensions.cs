@@ -40,7 +40,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #endregion
 
         #region IsCaseSensitiveSearch Dependency Property
-        public static DependencyProperty IsCaseSensitiveSearchProperty =
+        public static readonly DependencyProperty IsCaseSensitiveSearchProperty =
             DependencyProperty.RegisterAttached("IsCaseSensitiveSearch",
                 typeof(bool), typeof(DataGridColumn));
 
@@ -56,7 +56,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #endregion
 
         #region IsBetweenFilter Dependency Property
-        public static DependencyProperty IsBetweenFilterControlProperty =
+        public static readonly DependencyProperty IsBetweenFilterControlProperty =
             DependencyProperty.RegisterAttached("IsBetweenFilterControl",
                 typeof(bool), typeof(DataGridColumn));
 
@@ -72,7 +72,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #endregion
 
         #region DoNotGenerateFilter Dependency Property
-        public static DependencyProperty DoNotGenerateFilterControlProperty =
+        public static readonly DependencyProperty DoNotGenerateFilterControlProperty =
             DependencyProperty.RegisterAttached("DoNotGenerateFilterControl",
                 typeof(bool), typeof(DataGridColumn), new PropertyMetadata(false));
 

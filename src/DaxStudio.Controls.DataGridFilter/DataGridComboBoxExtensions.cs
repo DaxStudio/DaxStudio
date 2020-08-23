@@ -4,9 +4,9 @@ using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
-    public class DataGridComboBoxExtensions
+    public sealed class DataGridComboBoxExtensions
     {
-        public static DependencyProperty IsTextFilterProperty =
+        public static readonly DependencyProperty IsTextFilterProperty =
             DependencyProperty.RegisterAttached("IsTextFilter",
                 typeof(bool), typeof(DataGridComboBoxColumn));
 
@@ -27,7 +27,7 @@ namespace DaxStudio.Controls.DataGridFilter
         ///  otherwise
         ///  ComboBox.IsEditable is false and ComboBox.IsReadOnly is true
         /// </summary>
-        public static DependencyProperty UserCanEnterTextProperty =
+        public static readonly DependencyProperty UserCanEnterTextProperty =
             DependencyProperty.RegisterAttached("UserCanEnterText",
                 typeof(bool), typeof(DataGridComboBoxColumn));
 

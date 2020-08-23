@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
-    public class DataGridExtensions
+    public sealed class DataGridExtensions
     {
-        public static DependencyProperty DataGridFilterQueryControllerProperty =
+        public static readonly DependencyProperty DataGridFilterQueryControllerProperty =
             DependencyProperty.RegisterAttached("DataGridFilterQueryController",
                 typeof(QueryController), typeof(DataGridExtensions));
 
@@ -22,7 +22,7 @@ namespace DaxStudio.Controls.DataGridFilter
             target.SetValue(DataGridFilterQueryControllerProperty, value);
         }
 
-        public static DependencyProperty ClearFilterCommandProperty =
+        public static readonly DependencyProperty ClearFilterCommandProperty =
             DependencyProperty.RegisterAttached("ClearFilterCommand",
                 typeof(DataGridFilterCommand), typeof(DataGridExtensions));
 
@@ -53,7 +53,7 @@ namespace DaxStudio.Controls.DataGridFilter
             target.SetValue(IsFilterVisibleProperty, value);
         }
 
-        public static DependencyProperty UseBackgroundWorkerForFilteringProperty =
+        public static readonly DependencyProperty UseBackgroundWorkerForFilteringProperty =
             DependencyProperty.RegisterAttached("UseBackgroundWorkerForFiltering",
                 typeof(bool), typeof(DataGridExtensions),
                   new FrameworkPropertyMetadata(false));
@@ -70,7 +70,7 @@ namespace DaxStudio.Controls.DataGridFilter
             target.SetValue(UseBackgroundWorkerForFilteringProperty, value);
         }
 
-        public static DependencyProperty IsClearButtonVisibleProperty =
+        public static readonly DependencyProperty IsClearButtonVisibleProperty =
             DependencyProperty.RegisterAttached("IsClearButtonVisible",
                 typeof(bool), typeof(DataGridExtensions),
                   new FrameworkPropertyMetadata(true));
