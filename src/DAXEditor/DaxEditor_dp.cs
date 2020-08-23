@@ -261,7 +261,7 @@ namespace DAXEditorControl
         #endregion EditorStateProperties
         #endregion properties
 
-        public bool MouseOverCompletionWindow { get; set; }
+        public bool IsMouseOverCompletionWindow { get; set; }
 
         #region methods
         /// <summary>

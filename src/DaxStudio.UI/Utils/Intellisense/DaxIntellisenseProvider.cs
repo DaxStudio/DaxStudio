@@ -219,12 +219,12 @@ namespace DaxStudio.UI.Utils
 
         private void completionWindow_MouseLeave(object sender, MouseEventArgs e)
         {
-            _editor.MouseOverCompletionWindow = false;
+            _editor.IsMouseOverCompletionWindow = false;
         }
 
         private void completionWindow_MouseEnter(object sender, MouseEventArgs e)
         {
-            _editor.MouseOverCompletionWindow = true;
+            _editor.IsMouseOverCompletionWindow = true;
         }
 
         private void CompletionWindow_PreviewKeyUp(object sender, KeyEventArgs e)

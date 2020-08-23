@@ -20,7 +20,7 @@ namespace DAXEditorControl
         DocumentLine DocumentGetLineByOffset(int pos);
         string DocumentGetText(int offset, int length);
         string DocumentGetText(TextSegment segment);
-        bool MouseOverCompletionWindow { get; set; }
+        bool IsMouseOverCompletionWindow { get; set; }
         bool IsInComment();
 
         InsightWindow InsightWindow { get; set; }

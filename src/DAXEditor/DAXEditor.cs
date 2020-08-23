@@ -573,7 +573,7 @@ namespace DAXEditorControl
         private object disposeLock = new object();
         public void DisposeCompletionWindow()
         {
-            if (MouseOverCompletionWindow) return;
+            if (IsMouseOverCompletionWindow) return;
             lock (disposeLock)
             {
                 // close function tooltip if it is open
