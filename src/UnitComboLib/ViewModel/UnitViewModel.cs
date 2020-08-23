@@ -367,7 +367,7 @@
         /// <param name="unitToConvert"></param>
         /// <param name="message"></param>
         /// <returns>False if range is not acceptable, true otherwise</returns>
-        private bool IsDoubleWithinRange(double doubleValue,
+        private static bool IsDoubleWithinRange(double doubleValue,
                                          Itemkey unitToConvert,
                                          out string message)
         {

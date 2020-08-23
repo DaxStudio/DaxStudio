@@ -48,7 +48,6 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private IADOTabularObject _selectedTable;
         public IADOTabularObject SelectedTable { get => _column?.SelectedTable;
             set {
                 _column.SelectedTable = value;

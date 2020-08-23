@@ -101,7 +101,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             foreach (NamedSet d in this)
             {
-                if (string.Compare(d.Name, index, true) == 0)
+                if (string.Compare(d.Name, index, true, System.Globalization.CultureInfo.InvariantCulture) == 0)
                 {
                     return d;
                 }

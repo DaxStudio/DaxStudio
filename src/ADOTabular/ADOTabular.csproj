@@ -196,6 +196,9 @@
     <Compile Include="VersionComparisonExtension.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="app.config" />
     <Compile Include="IADOTabularFolderReference.cs" />
     <None Include="packages.config" />

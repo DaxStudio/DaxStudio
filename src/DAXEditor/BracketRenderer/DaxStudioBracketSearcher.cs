@@ -139,7 +139,7 @@ namespace DAXEditorControl.BracketRenderer
     #endregion
 
     #region SearchBracketBackward
-    private int SearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
+    private static int SearchBracketBackward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
 
 
@@ -272,7 +272,7 @@ namespace DAXEditorControl.BracketRenderer
     #endregion
 
     #region SearchBracketForward
-    private  int SearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
+    private static int SearchBracketForward(ICSharpCode.AvalonEdit.Document.ITextSource document, int offset, char openBracket, char closingBracket)
     {
       bool inString = false;
       bool inChar = false;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
+using System;
 
 //using Microsoft.AnalysisServices.AdomdClient;
 
@@ -13,7 +14,9 @@ namespace ADOTabular
         public ADOTabularMeasureCollection(IADOTabularConnection adoTabConn, ADOTabularTable table)
         {
             _table = table;
+            if (adoTabConn == null) throw new ArgumentNullException(nameof(adoTabConn));
             _adoTabConn = adoTabConn;
+
             if (_measures == null)
             {
                 _measures = _adoTabConn.Visitor.Visit(this);
@@ -26,6 +29,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularMeasure column)
         {
+            if (column == null) throw new ArgumentNullException(nameof(column));
             _measures.Add(column.Name,column);
         }
 

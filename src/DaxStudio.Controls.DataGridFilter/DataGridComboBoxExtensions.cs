@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
@@ -16,6 +17,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static void SetIsTextFilter(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsTextFilterProperty, value);
         }
 
@@ -31,11 +33,13 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetUserCanEnterText(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(UserCanEnterTextProperty);
         }
 
         public static void SetUserCanEnterText(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(UserCanEnterTextProperty, value);
         }
 

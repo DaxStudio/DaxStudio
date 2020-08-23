@@ -3,12 +3,12 @@ using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
-    public class DataGridColumnExtensions//:DependencyObject
+    public sealed class DataGridColumnExtensions//:DependencyObject
     {
         public DataGridColumnExtensions() { }
 
         #region CustomBindingPath Dependency Property
-        public static DependencyProperty CustomBindingPathProperty =
+        public static readonly DependencyProperty CustomBindingPathProperty =
             DependencyProperty.RegisterAttached("CustomBindingPath",
                 typeof(string), typeof(DataGridColumn), new PropertyMetadata(string.Empty));
 
@@ -24,7 +24,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #endregion
 
         #region IsContainsTextSearch Dependency Property
-        public static DependencyProperty IsContainsTextSearchProperty =
+        public static readonly DependencyProperty IsContainsTextSearchProperty =
             DependencyProperty.RegisterAttached("IsContainsTextSearch",
                 typeof(bool), typeof(DataGridColumn));
 
