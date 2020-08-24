@@ -12,6 +12,7 @@ namespace ADOTabular
         private readonly ADOTabularConnection _connection;
         public ADOTabularFunctionGroupCollection(ADOTabularConnection connection)
         {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
             _connection = connection;
             _funcGroups = new Dictionary<string, ADOTabularFunctionGroup>();
             _funcDict = new Dictionary<string, ADOTabularFunction>( StringComparer.OrdinalIgnoreCase);
@@ -25,6 +26,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularFunctionGroup group)
         {
+            if (group == null) throw new ArgumentNullException(nameof(group));
             if (_funcGroups.ContainsKey(group.Caption))
                 return;
             _funcGroups.Add(group.Caption,group);

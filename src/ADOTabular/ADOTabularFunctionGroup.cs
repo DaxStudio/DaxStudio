@@ -16,9 +16,7 @@ namespace ADOTabular
         }
         public string Caption { get; private set; }
         public ADOTabularFunctionCollection Functions { get; private set; }
-        public MetadataImages MetadataImage
-        {
-            get { return MetadataImages.Folder; }
-        }
+        public MetadataImages MetadataImage =>  MetadataImages.Folder;
+        
     }
 }

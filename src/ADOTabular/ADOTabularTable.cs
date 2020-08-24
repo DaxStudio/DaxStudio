@@ -35,8 +35,6 @@ namespace ADOTabular
             ShowAsVariationsOnly = showAsVariationsOnly;
         }
 
-        private static readonly string[] specialNames = { "DATE" };
-
         public string DaxName
         {
             get;
@@ -49,7 +47,7 @@ namespace ADOTabular
             const string STANDARD_NAME_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
 
             bool goodFirstCharacter = VALID_NAME_START.IndexOf(Name[0]) >= 0;
-            bool noSpecialCharacters = Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Count() == 0;
+            bool noSpecialCharacters = !Name.Where((c) => STANDARD_NAME_CHARS.IndexOf(c) < 0).Any();
             //string nameUpper = Name.ToUpper();
             //bool noSpecialName = specialNames.Where((s) => s == nameUpper).Count() == 0;
             bool noSpecialName = !(_adoTabConn.Keywords.Contains(Name, StringComparer.OrdinalIgnoreCase) || _adoTabConn.AllFunctions.Contains(Name, StringComparer.OrdinalIgnoreCase));
@@ -63,7 +61,7 @@ namespace ADOTabular
             else
             {
                 // need to double up any single quote characters
-                return string.Format("'{0}'", Name.Replace("'","''"));
+                return $"'{Name.Replace("'", "''")}'";
             }
         }
 
@@ -98,7 +96,7 @@ namespace ADOTabular
         public IList<ADOTabularRelationship> Relationships { get; private set; } 
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
 
-        public FolderReferenceType ReferenceType => throw new System.NotImplementedException();
+        public FolderReferenceType ReferenceType => FolderReferenceType.None;
 
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }

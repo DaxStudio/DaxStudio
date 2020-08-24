@@ -92,7 +92,7 @@ namespace ADOTabular
 
         //}
 
-        public MetadataImages MetadataImage => MetadataImages.Database;
+        public static MetadataImages MetadataImage => MetadataImages.Database;
 
 
     }
