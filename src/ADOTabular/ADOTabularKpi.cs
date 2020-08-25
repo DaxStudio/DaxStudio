@@ -5,7 +5,9 @@ using System.Text;
 
 namespace ADOTabular
 {
-    public struct KpiDetails 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
+    public struct KpiDetails
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public string Goal { get; set; }
         public string Status { get; set; }

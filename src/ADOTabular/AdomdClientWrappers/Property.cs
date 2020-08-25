@@ -19,6 +19,7 @@ namespace ADOTabular.AdomdClientWrappers
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "This is just wrapping the ADOMD PropertyCollection class")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2237:Mark ISerializable types with serializable", Justification = "<Pending>")]
     public class PropertyCollection : Dictionary<string, Property>
     {
     }

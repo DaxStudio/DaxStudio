@@ -10,3 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>", Scope = "member", Target = "~P:ADOTabular.AdomdClientWrappers.AdomdCommand.CommandText")]
 [assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>", Scope = "member", Target = "~P:ADOTabular.MetadataInfo.DaxFunction.SSAS_VERSION")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:ADOTabular.ADOTabularDynamicManagementViewCollection.GetDmvTable~System.Data.DataTable")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~P:ADOTabular.ADOTabularFunctionGroup.MetadataImage")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~P:ADOTabular.ADOTabularFunction.MetadataImage")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~P:ADOTabular.ADOTabularDynamicManagementView.MetadataImage")]
