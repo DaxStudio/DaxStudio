@@ -113,38 +113,22 @@ namespace DaxStudio.UI.Utils
             return (T)regDaxStudio.GetValue(subKey);
         }
 
-        public Task SetValueAsync(string subKey, DateTime value, bool isInitializing)
+        public void SetValue(string subKey, DateTime value, bool isInitializing)
         {
-            return Task.Run(() => {
                 if (isInitializing) return;
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
                 if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
                 
                 regDaxStudio.SetValue(subKey, value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
-                
-            }).ContinueWith(t => {
-                if (t.IsFaulted)
-                {
-                    throw new SaveSettingValueException($"Error Saving setting {subKey}",  t.Exception);
-                }
-            },TaskScheduler.Default);
         }
 
-        public Task SetValueAsync<T>(string subKey, T value, bool isInitializing)
+        public void SetValue<T>(string subKey, T value, bool isInitializing)
         {
-            return Task.Run(() => {
                 if (isInitializing) return;
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
                 if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
                 
                 regDaxStudio.SetValue(subKey, value);
-                
-            }).ContinueWith(t => {
-                if (t.IsFaulted)
-                {
-                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
-                }
-            }, TaskScheduler.Default);
         }
 
         public bool IsFileLoggingEnabled()

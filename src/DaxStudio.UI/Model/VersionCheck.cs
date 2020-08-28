@@ -98,6 +98,7 @@ namespace DaxStudio.UI.Model
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Error while checking for updates: {ex.Message}"));
             }
             finally
             {
