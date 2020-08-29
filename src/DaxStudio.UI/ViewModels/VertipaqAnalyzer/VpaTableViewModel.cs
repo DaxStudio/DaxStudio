@@ -34,8 +34,10 @@ namespace DaxStudio.UI.ViewModels
             _table = table;
             _parentViewModel = parentViewModel;
             Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this));
-            ColumnMaxTotalSize = Columns.Max(c => c.TotalSize);
-            ColumnsMaxCardinality = Columns.Max(c => c.ColumnCardinality);
+            if (Columns.Count() > 0) {
+                ColumnMaxTotalSize = Columns.Max(c => c.TotalSize);
+                ColumnsMaxCardinality = Columns.Max(c => c.ColumnCardinality);
+            }
             RelationshipsFrom = _table.RelationshipsFrom.Select(r => new VpaRelationshipViewModel(r, this));
             if (RelationshipsFrom.Count() > 0)
             {
