@@ -34,7 +34,9 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 return RetrieveAdomdAssemblyFolderInternal("msolap110_xl.dll");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return RetrieveAdomdAssemblyFolderInternal("msmdlocal_xl.dll");
             }
