@@ -199,3 +199,4 @@ pip-log.txt
 release.2.5.2.zip
 github.env
 /src/.vs/DaxStudio/v15/Server/sqlite3
+docs/.jekyll-metadata
