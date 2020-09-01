@@ -90,40 +90,20 @@ namespace DaxStudio.UI.Utils
             return ((T)_optionsDict[subKey]);
         }
         
-        public Task SetValueAsync<T>(string subKey, T value, bool isInitializing)
+        public void SetValue<T>(string subKey, T value, bool isInitializing)
         {
-            
-            return Task.Run(() =>
-            {
                 if (isInitializing) return;
                 _optionsDict[subKey] = value;
                 // write json file
                 SaveSettingsFile();
-            }).ContinueWith(t => {
-                if (t.IsFaulted)
-                {
-                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
-                }
-            }, TaskScheduler.Default);
-            
         }
 
-        public Task SetValueAsync(string subKey, DateTime value, bool isInitializing)
+        public void SetValue(string subKey, DateTime value, bool isInitializing)
         {
-
-            return Task.Run(() =>
-            {
                 if (isInitializing) return;
                 _optionsDict[subKey] = value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture);
                 // write json file
                 SaveSettingsFile();
-            }).ContinueWith(t => {
-                if (t.IsFaulted)
-                {
-                    throw new SaveSettingValueException($"Error Saving setting {subKey}", t.Exception);
-                }
-            }, TaskScheduler.Default);
-
         }
 
         private void SaveSettingsFile()

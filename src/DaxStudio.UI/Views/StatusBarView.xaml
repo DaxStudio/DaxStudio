@@ -127,37 +127,7 @@
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="5"/>
-<!--
-            <Fluent:StatusBarItem Grid.Column="6" Title="Database Details" Visibility="{Binding ShowDatabaseID, Converter={StaticResource BoolToVisibilityConverter}}">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource StatusDatabase}"></Image>
 
-                        <TextBlock x:Name="DatabaseID" VerticalAlignment="Center" MaxWidth="150">DatabaseID</TextBlock>
-
-                        <StackPanel.ToolTip>
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock>Database ID:</TextBlock>
-                                <TextBlock Text="{Binding DatabaseID}"/>
-                            </StackPanel>
-                        </StackPanel.ToolTip>
-                    </StackPanel>
-
-                    <Fluent:Button
-                                   x:Name="CopyDatabaseIdToClipboard" 
-                                   HorizontalContentAlignment="Left" 
-                                   Foreground="White"
-                                   Icon="{StaticResource StatusCopy}"
-                                   Size="Small" Margin="5,0,1,0">
-                        <Fluent:Button.ToolTip>Copy DatabaseID to Clipboard</Fluent:Button.ToolTip>
-                    </Fluent:Button>
-
-                    
-                </StackPanel>
-            </Fluent:StatusBarItem>
-            
-            <Separator Grid.Column="7"/>
--->
             <Fluent:StatusBarItem Grid.Column="8" Title="Server Details">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">

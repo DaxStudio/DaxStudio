@@ -2744,13 +2744,34 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanCopy);
             }
         }
-        public void Copy() { this.GetEditor().Copy(); }
+        public void Copy() { 
+            try
+            {
+                this.GetEditor().Copy();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Copy), ex.Message);
+                OutputError($"The following error occurred while copying: {ex.Message}");
+            }
+        }
+
         private bool _canCut = true;
         public bool CanCut { get { return _canCut; }
             set { _canCut = value;
                 NotifyOfPropertyChange(() => CanCut);
             } }
-        public void Cut() { this.GetEditor().Cut(); }
+        public void Cut() { 
+            try
+            {
+                this.GetEditor().Cut();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Cut), ex.Message);
+                OutputError($"The following error occurred while cutting: {ex.Message}");
+            }
+        }
         private bool _canPaste = true;
         private bool _isLoadingFile;
         public bool CanPaste
@@ -2762,7 +2783,17 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanPaste);
             }
         }
-        public void Paste() { this.GetEditor().Paste(); }
+        public void Paste() {
+            try
+            {
+                this.GetEditor().Paste();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Paste), ex.Message);
+                OutputError($"The following error occurred while pasting: {ex.Message}");
+            }
+        }
 
         public void SetResultsMessage(string message, OutputTarget icon)
         {
