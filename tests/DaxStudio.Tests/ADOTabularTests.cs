@@ -810,7 +810,7 @@ namespace DaxStudio.Tests
             var mockEventAgg = new Mock<IEventAggregator>().Object;
             var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=Dax Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
-            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Show Hidden Cubes=true;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\"", cnn.ConnectionString);
+            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";Show Hidden Cubes=true", cnn.ConnectionString);
         }
     }
 }
