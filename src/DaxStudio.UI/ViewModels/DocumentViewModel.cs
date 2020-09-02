@@ -45,6 +45,7 @@ using System.Windows.Media;
 using Dax.ViewModel;
 using System.Reflection;
 using DaxStudio.Common.Enums;
+using System.Windows.Interop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -907,9 +908,8 @@ namespace DaxStudio.UI.ViewModels
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
-            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections"
-                , value == null ? "<null>" : value.ConnectionString
-                );
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections", value?.ConnectionString??"<null>");
+
             if (value != null && value.State != ConnectionState.Open)
             {
                 OutputPane.AddWarning(string.Format("Connection for server {0} is not open", value.ServerName));
@@ -917,38 +917,47 @@ namespace DaxStudio.UI.ViewModels
             }
             using (NewStatusBarMessage("Refreshing Metadata..."))
             {
-                if (value == null) return;
-                _connection = value;
-                NotifyOfPropertyChange(() => IsAdminConnection);
-                NotifyOfPropertyChange(() => SelectedDatabase);
-                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                // enable/disable traces depending on the current connection
-                foreach (var traceWatcher in TraceWatchers)
+                try
                 {
-                    // on change of connection we need to disable traces as the will
-                    // be pointing to the old connection
-                    traceWatcher.IsChecked = false;
-                    // then we need to check if the new connection can be traced
-                    traceWatcher.CheckEnabled(this, activeTrace);
+                    if (value == null) return;
+                    _connection = value;
+                    NotifyOfPropertyChange(() => IsAdminConnection);
+                    NotifyOfPropertyChange(() => SelectedDatabase);
+                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                    // enable/disable traces depending on the current connection
+                    foreach (var traceWatcher in TraceWatchers)
+                    {
+                        // on change of connection we need to disable traces as the will
+                        // be pointing to the old connection
+                        traceWatcher.IsChecked = false;
+                        // then we need to check if the new connection can be traced
+                        traceWatcher.CheckEnabled(this, activeTrace);
+                    }
+                    MetadataPane.Connection = _connection;
+                    FunctionPane.Connection = _connection;
+                    DmvPane.Connection = _connection;
+                    Execute.OnUIThread(() =>
+                    {
+                        try
+                        {
+                            if (_editor == null) _editor = GetEditor();
+                        //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
+                        _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+                            Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
+                        }
+                    });
                 }
-                MetadataPane.Connection = _connection;
-                FunctionPane.Connection = _connection;
-                DmvPane.Connection = _connection;
-                Execute.OnUIThread(() =>
-               {
-                   try
-                   {
-                       if (_editor == null) _editor = GetEditor();
-                       //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
-                       _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
-                       Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
-                   }
-                   catch (Exception ex)
-                   {
-                       Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
-                   }
-               });
-
+                catch (Exception ex)
+                {
+                    var msg = $"The following error occured while updating the connection: {ex.Message}";
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
+                    OutputError(msg);
+                    ActivateOutput();
+                }
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -3450,9 +3459,18 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!IsConnected)
             {
-                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option");
+                ActivateOutput();
                 return;
             }
+
+            if (!Connection.IsAdminConnection)
+            {
+                OutputError("You do not have admin rights on the current data model. Admin rights are required to view the metrics");
+                ActivateOutput();
+                return;
+            }
+
             try
             {
                 IsVertipaqAnalyzerRunning = true;
@@ -3489,7 +3507,6 @@ namespace DaxStudio.UI.ViewModels
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });
-                task.Start(TaskScheduler.Default);
                 task.ContinueWith(prevTask =>
                 {
 
@@ -3523,7 +3540,7 @@ namespace DaxStudio.UI.ViewModels
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
                 }, TaskScheduler.Default);
-
+                task.Start(TaskScheduler.Default);
             }
             catch (Exception ex)
             {
