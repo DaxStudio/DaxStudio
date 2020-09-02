@@ -536,12 +536,16 @@ namespace DaxStudio.UI.Utils
 
         public bool MetadataIsCached { get { return Model != null && FunctionGroups != null && Dmvs != null; } }
 
+        private object _completionWindowCloseLock = new object();
         public void CloseCompletionWindow()
         {
-            if (_editor.InsightWindow != null)
+            lock (_completionWindowCloseLock)
             {
-                _editor.InsightWindow?.Close();
-                _editor.DisposeCompletionWindow();
+                if (_editor.InsightWindow != null)
+                {
+                    _editor.InsightWindow?.Close();
+                    _editor.DisposeCompletionWindow();
+                }
             }
         }
     }
