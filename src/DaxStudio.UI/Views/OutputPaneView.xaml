@@ -29,12 +29,15 @@
         </conv:ResourceLookupConverter>
     </UserControl.Resources>
     <Grid>
-        <ListView x:Name="Messages" HorizontalAlignment="Stretch"  
+        <ListView x:Name="Messages" 
+            HorizontalAlignment="Stretch"  
             behaviours:GridViewColumnResize.Enabled="True"
             extenders:ListViewExtenders.AutoScrollToEnd="True"
-            Focusable="False" Background="Transparent">
+            Focusable="False" 
+            Background="Transparent">
             <ListView.View>
                 <GridView>
+                    <!-- Icon -->
                     <GridViewColumn Header="" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -42,6 +45,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <!-- Time -->
                     <GridViewColumn Header="Start" 
                                     DisplayMemberBinding="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}" 
                                     Width="58"></GridViewColumn>
@@ -64,7 +68,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
-                                <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding DurationString}"></TextBlock>
+                                    <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
