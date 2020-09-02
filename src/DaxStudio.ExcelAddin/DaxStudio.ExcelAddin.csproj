@@ -181,10 +181,11 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>DaxStudio_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E375005932DFEC1B0E78E5E52DD8F6BAC99CBD26</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>7F2BEF6866A0329D2BD2E3D70D347E5AD79CB426</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
     <OutputPath>bin\Release64\</OutputPath>
