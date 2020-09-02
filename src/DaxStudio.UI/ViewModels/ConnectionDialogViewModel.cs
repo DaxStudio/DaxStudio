@@ -702,7 +702,7 @@ namespace DaxStudio.UI.ViewModels
         public void ClearDatabases()
         {
             CheckDataSource();
-            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
             Databases.Clear();
             Databases.Add("<default>");
         }
