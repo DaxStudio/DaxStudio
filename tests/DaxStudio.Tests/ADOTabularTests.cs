@@ -11,6 +11,7 @@ using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
 using System.Collections.Generic;
 using DaxStudio.UI.Model;
+using Caliburn.Micro;
 
 namespace DaxStudio.Tests
 {
@@ -792,6 +793,24 @@ namespace DaxStudio.Tests
             Assert.AreEqual("[blah].[blah]", dt.Columns[0].ColumnName);
             Assert.AreEqual("Test", dt.Columns[1].ColumnName);
             
+        }
+
+        [TestMethod]
+        public void CreatePowerPivotConnection()
+        {
+            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            var cnn = ppvt.GetPowerPivotConnection("Application Name=Dax Studio Test", "");
+            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Show Hidden Cubes=true", cnn.ConnectionString);
+        }
+
+        [TestMethod]
+        public void CreatePowerPivotConnectionWithFileName()
+        {
+            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            var cnn = ppvt.GetPowerPivotConnection("Application Name=Dax Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
+            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Show Hidden Cubes=true;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\"", cnn.ConnectionString);
         }
     }
 }

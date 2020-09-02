@@ -530,6 +530,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Connect()
         {
+            string connectionString = string.Empty;
             try
             {
                 ServerType serverType= ServerType.AnalysisServices;
@@ -563,13 +564,15 @@ namespace DaxStudio.UI.ViewModels
                             break;
                     }
                 }
-                var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
+                // we cache this to a local variable in case there are any exceptions thrown while building the ConnectionString
+                connectionString = ConnectionString;
+                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 _eventAggregator.PublishOnUIThread(connEvent);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", ConnectionString);
+                Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", connectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
                 _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }

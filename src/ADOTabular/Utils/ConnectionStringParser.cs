@@ -43,7 +43,9 @@ namespace ADOTabular.Utils
                                 value.Append(c);
                                 break;
                             default:
-                                throw new ArgumentException($"Unexpected character '{c}' at position {charIndex} while parsing connection string");
+                                System.Diagnostics.Debug.WriteLine("Duplicate ; char skipped");
+                                break;
+                                //throw new ArgumentException($"Unexpected character '{c}' at position {charIndex} while parsing connection string");
                                 
                         }
                         break;

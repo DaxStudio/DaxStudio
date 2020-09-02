@@ -10,6 +10,7 @@ using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.Enums;
 using DaxStudio.Common.Enums;
+using ADOTabular.Utils;
 
 namespace ADOTabular
 {
@@ -256,13 +257,15 @@ namespace ADOTabular
         private static Dictionary<string, string> SplitConnectionString(string connectionString)
         {
             var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in connectionString.Split(';'))
-            {
-                if (prop.Trim().Length == 0) continue;
-                var p = prop.Split('=');
+            props = ConnectionStringParser.Parse(connectionString);
 
-                props.Add(p[0].Trim(), p[1].Trim());
-            }
+            //foreach (var prop in connectionString.Split(';'))
+            //{
+            //    if (prop.Trim().Length == 0) continue;
+            //    var p = prop.Split('=');
+            //    if (p.Length==2)
+            //        props.Add(p[0].Trim(), p[1].Trim());
+            //}
             return props;
         }
 
