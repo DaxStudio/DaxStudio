@@ -179,16 +179,20 @@ Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabula
 ;Name: "Core\PBI"; Description: "Power BI Desktop External Tools integration"; Types: full standalone custom; Check: IsAdminInstallMode;
 ;Name: "ASAzureSupport"; Description: "Ensures that the pre-requisites for Analysis Services Azure are installed"
 
-; Make sure that local copies of the Excel files do not exist
+
 [InstallDelete]
+; Make sure that local copies of the Excel files do not exist
 Type: files; Name: "{app}\Microsoft.Excel.Amo.dll"
 Type: files; Name: "{app}\Microsoft.Excel.AdomdClient.dll"
+; Make sure the .portable file does not exist 
+Type: files; Name: "{app}\bin\.portable"
 Type: filesandordirs; Name: "{app}\*.dll"
 Type: filesandordirs; Name: "{app}\*.exe"
 Type: filesandordirs; Name: "{app}\*.vsto"
 Type: filesandordirs; Name: "{app}\*.manifest"
 Type: filesandordirs; Name: "{app}\*.config"
-
+; remove any resource folders from the application root folder
+; these should be in the /bin subfolder
 Type: filesandordirs; Name: "{app}\ar"
 Type: filesandordirs; Name: "{app}\bg"
 Type: filesandordirs; Name: "{app}\ca"

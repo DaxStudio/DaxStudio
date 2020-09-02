@@ -187,17 +187,17 @@
     <Reference Include="CsvHelper, Version=15.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CsvHelper.15.0.5\lib\net47\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Metadata, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Metadata.1.0.24\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
+    <Reference Include="Dax.Metadata, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Metadata.1.0.25\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Model.Extractor, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.24\lib\net471\Dax.Model.Extractor.dll</HintPath>
+    <Reference Include="Dax.Model.Extractor, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.25\lib\net471\Dax.Model.Extractor.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewModel, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewModel.1.0.24\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
+    <Reference Include="Dax.ViewModel, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewModel.1.0.25\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewVpaExport, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.24\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
+    <Reference Include="Dax.ViewVpaExport, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.25\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
     </Reference>
     <Reference Include="Dax.Vpax, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dax.Vpax.1.0.24\lib\net471\Dax.Vpax.dll</HintPath>
@@ -673,7 +673,6 @@
     <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryBuilderViewModel.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataDialogViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
@@ -795,9 +794,6 @@
     </Compile>
     <Compile Include="Views\RibbonView.xaml.cs">
       <DependentUpon>RibbonView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataDialogView.xaml.cs">
-      <DependentUpon>ExportDataDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\QueryParametersDialogView.xaml.cs">
       <DependentUpon>QueryParametersDialogView.xaml</DependentUpon>
@@ -984,10 +980,6 @@
     <Page Include="Views\QueryHistoryPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\QueryParametersDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
