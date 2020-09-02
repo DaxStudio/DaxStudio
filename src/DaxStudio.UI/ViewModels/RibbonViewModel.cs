@@ -1170,6 +1170,5 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.CloseConnection();
         }
 
-        Func<object,string> GroupByAdvanced = x => ((IResultsTarget) x).Name.Substring(0, 1);
     }
 }
