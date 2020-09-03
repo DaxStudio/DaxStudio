@@ -249,7 +249,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _isBusy = false;
+        private bool _isBusy;
         public bool IsBusy
         {
             get { return _isBusy; }

@@ -43,6 +43,7 @@ namespace ADOTabular
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
             _adomdConn = new AdomdConnection(ConnectionString, connectionType);
+
             _connectionType = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
 

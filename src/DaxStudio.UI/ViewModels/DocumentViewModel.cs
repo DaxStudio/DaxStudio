@@ -1525,7 +1525,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
-            if (!CanRunQuery) return;
+            if (!CanRunQuery)
+            {
+
+                return;
+            }
 
             // the benchmark run style will pop up it's own dialog
             if (message.IsBenchmark)
@@ -3137,7 +3141,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private bool _isCheckForSchemaUpdateRunning = false;
+        private bool _isCheckForSchemaUpdateRunning;
         private object _checkForSchemaUpdateLock = new object();
 
         private async Task<bool> ShouldAutoRefreshMetadataAsync()
@@ -3445,7 +3449,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
         #region Export/View Analysis Data (VertiPaq Analyzer)
 
-        private bool _isVertipaqAnalyzerRunning = false;
+        private bool _isVertipaqAnalyzerRunning;
         public bool IsVertipaqAnalyzerRunning { get { return _isVertipaqAnalyzerRunning; }
             private set {
                 _isVertipaqAnalyzerRunning = value;
@@ -3830,7 +3834,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showMeasureExpressionEditor = false;
+        private bool _showMeasureExpressionEditor;
         public bool ShowMeasureExpressionEditor
         {
             get => _showMeasureExpressionEditor;

@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Utils
         // private variables
         private static IGlobalOptions _globalOptions;
         private static IWebProxy _proxy;
-        private static bool _proxySet = false;
+        private static bool _proxySet;
         private static readonly object _proxyLock = new object();
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
@@ -43,7 +43,7 @@ namespace DaxStudio.UI.Utils
 #endif
         //private const string DAXSTUDIO_RELEASE_URL = "https://daxstudio.org";
 
-        private static bool _isNetworkOnline = false;
+        private static bool _isNetworkOnline;
         private static IEventAggregator _eventAggregator;
 
         async public static Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)

@@ -65,7 +65,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IEnumerable<FilterableTreeViewItem> SelectedItems { get; } = new List<FilterableTreeViewItem>();
 
-        private bool _pinSearchOpen = false;
+        private bool _pinSearchOpen;
         public bool PinSearchOpen
         {
             get => _pinSearchOpen;
@@ -143,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
         }
 
-        private bool _showMetadataRefreshPrompt = false;
+        private bool _showMetadataRefreshPrompt;
         public bool ShowMetadataRefreshPrompt
         {
             get => _showMetadataRefreshPrompt;
@@ -554,7 +554,7 @@ namespace DaxStudio.UI.ViewModels
         public IObservableCollection<DatabaseReference> DatabasesView { get; } = new BindableCollection<DatabaseReference>();
 
         #region Busy Overlay
-        private bool _isBusy = false;
+        private bool _isBusy;
         public bool IsBusy
         {
             get { return _isBusy; }

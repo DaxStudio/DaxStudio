@@ -35,7 +35,7 @@ namespace DaxStudio.UI.Utils
                     sbParams.Append(line);
                 else {
                     sbQuery.Append(line);
-                    sbQuery.Append("\n");
+                    sbQuery.Append('\n');
                 }
 
                 if (line.Trim().EndsWith("</Parameters>")) inParams = false;

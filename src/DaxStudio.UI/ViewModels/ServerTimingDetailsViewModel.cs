@@ -26,7 +26,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         public bool LayoutRight { get { return !LayoutBottom; } set {LayoutBottom = !value; }}
-        private bool _layoutBottom = false;
+        private bool _layoutBottom;
         public bool LayoutBottom
         {
             get { return _layoutBottom; }

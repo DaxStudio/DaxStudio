@@ -213,7 +213,7 @@ namespace DaxStudio.UI.ViewModels
                 IsEnabled = (connection.IsAdminConnection && connection.IsConnected);
         }
 
-        private bool _isBusy = false;
+        private bool _isBusy;
         public bool IsBusy
         {
             get { return _isBusy; }
@@ -312,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool IsFilterVisible { get { return false; } }
         public virtual void ClearFilters() { }
 
-        private bool _showFilters = false;
+        private bool _showFilters;
 
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
 

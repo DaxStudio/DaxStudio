@@ -233,9 +233,7 @@ namespace DaxStudio.UI.ViewModels
 
         public DocumentViewModel CurrentDocument { get; }
 
-        private bool _isBusy = false;
-        
-
+        private bool _isBusy;
         public bool IsBusy
         {
             get => _isBusy;

@@ -41,9 +41,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
-        private bool _isDocumentActivating = false;
-        private bool _isConnecting = false;
-        private readonly string _sqlProfilerCommand = "";
+        private bool _isDocumentActivating;
+        private bool _isConnecting;
+        private readonly string _sqlProfilerCommand = string.Empty;
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";

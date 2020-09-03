@@ -64,7 +64,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showTooltipSampleData;
 
         //public event EventHandler OptionsUpdated;
-        private bool _isInitializing = false;
+        private bool _isInitializing;
 
 
         [ImportingConstructor]
@@ -493,7 +493,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _excludeHeadersWhenCopyingResults = false;
+        private bool _excludeHeadersWhenCopyingResults;
         [DataMember, DefaultValue(true)]
         public bool ExcludeHeadersWhenCopyingResults
         {
@@ -861,7 +861,7 @@ namespace DaxStudio.UI.ViewModels
 
         // Preview Feature Toggles
 
-        private bool _showExportMetrics = false;
+        private bool _showExportMetrics;
         [DataMember, DefaultValue(false)]
         public bool ShowExportMetrics
         {
@@ -890,7 +890,7 @@ namespace DaxStudio.UI.ViewModels
         //    }
         //}
 
-        private bool _showExportAllData = false;
+        private bool _showExportAllData;
         [DataMember, DefaultValue(false)]
         public bool ShowExportAllData { get => _showExportAllData;
             set {
@@ -901,7 +901,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _vpaxIncludeTom = false;
+        private bool _vpaxIncludeTom;
         [DataMember, DefaultValue(false)]
         public bool VpaxIncludeTom {
             get => _vpaxIncludeTom;
@@ -916,7 +916,7 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        private bool _showKeyBindings = false;
+        private bool _showKeyBindings;
         [DataMember, DefaultValue(false)]
         public bool ShowKeyBindings
         {
@@ -934,7 +934,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showPreviewQueryBuilder = false;
+        private bool _showPreviewQueryBuilder;
         [DataMember, DefaultValue(false)]
         public bool ShowPreviewQueryBuilder
         {
@@ -952,7 +952,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showPreviewBenchmark = false;
+        private bool _showPreviewBenchmark;
         [DataMember, DefaultValue(false)]
         public bool ShowPreviewBenchmark
         {
@@ -1010,7 +1010,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _ResultAutoFormat = false;
+        private bool _ResultAutoFormat;
         [DataMember, DefaultValue(false)]
         public bool ResultAutoFormat {
             get => _ResultAutoFormat;
@@ -1095,7 +1095,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showMetadataRefreshPrompt = false;
+        private bool _showMetadataRefreshPrompt;
         [DataMember, DefaultValue(false)]
         public bool ShowMetadataRefreshPrompt
         {
@@ -1121,7 +1121,7 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private bool _setClearCacheAndRunAsDefaultRunStyle = false;
+        private bool _setClearCacheAndRunAsDefaultRunStyle;
         [DataMember, DefaultValue(false)]
         public bool SetClearCacheAsDefaultRunStyle { get => _setClearCacheAndRunAsDefaultRunStyle;
             set
@@ -1133,7 +1133,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _sortFoldersFirstInMetadata = false;
+        private bool _sortFoldersFirstInMetadata;
         [DataMember, DefaultValue(true)]
         public bool SortFoldersFirstInMetadata { 
             get => _sortFoldersFirstInMetadata;
@@ -1237,7 +1237,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _editorConvertTabsToSpaces = false;
+        private bool _editorConvertTabsToSpaces;
         [DataMember,DefaultValue(false)]
         public bool EditorConvertTabsToSpaces { get => _editorConvertTabsToSpaces; set {
                 _editorConvertTabsToSpaces = value;
@@ -1260,7 +1260,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _editorWordWrap = false;
+        private bool _editorWordWrap;
         [DataMember, DefaultValue(false)]
         public bool EditorWordWrap
         {
@@ -1273,7 +1273,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showUserInTitlebar = false;
+        private bool _showUserInTitlebar;
         [DataMember, DefaultValue(false)]
         public bool ShowUserInTitlebar
         {
@@ -1301,7 +1301,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        private bool? _isExcelAddinEnabledForAllUsers = null;
+        private bool? _isExcelAddinEnabledForAllUsers;
         public bool CanToggleExcelAddin
         {
             get {
@@ -1357,7 +1357,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool IsRunningPortable { get; set; } = false;
+        public bool IsRunningPortable { get; set; }
 
         public void ToggleExcelAddin()
         {
@@ -1408,7 +1408,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

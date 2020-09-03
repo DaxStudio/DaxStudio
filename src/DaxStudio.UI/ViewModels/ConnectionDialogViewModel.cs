@@ -860,7 +860,7 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private bool _showConnectionWarning = false;
+        private bool _showConnectionWarning;
         public bool ShowConnectionWarning
         {
             get => _showConnectionWarning;
@@ -883,7 +883,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _isLoadingDatabases = false;
+        private bool _isLoadingDatabases;
         public bool IsLoadingDatabases
         {
             get => _isLoadingDatabases;
