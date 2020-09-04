@@ -364,7 +364,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(ProgressIcon));
             } 
         }
-        private bool _progressSpin = false;
+        private bool _progressSpin;
         private RunStyle _currentRunStyle;
 
         public bool ProgressSpin { get => _progressSpin;

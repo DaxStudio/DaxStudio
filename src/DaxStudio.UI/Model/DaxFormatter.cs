@@ -94,8 +94,8 @@ namespace DaxStudio.UI.Model
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
         }
 
-        private static string redirectUrl = null;  // cache the redirected URL
-        private static string redirectHost = null;
+        private static string redirectUrl;  // cache the redirected URL
+        private static string redirectHost;
         //public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
         //{
         //    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");

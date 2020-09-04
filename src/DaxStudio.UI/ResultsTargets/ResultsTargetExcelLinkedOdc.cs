@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ResultsTargets
     {
         private IDaxStudioHost _host;
         private IEventAggregator _eventAggregator;
-        private bool _isPowerBIOrSSDTConnection = false;
+        private bool _isPowerBIOrSSDTConnection;
 
         [ImportingConstructor]
         public ResultsTargetExcelLinkedOdc(IDaxStudioHost host, IEventAggregator eventAggregator)

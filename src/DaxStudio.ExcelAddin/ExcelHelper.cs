@@ -462,6 +462,7 @@ namespace DaxStudio.ExcelAddin
 
         public static void DaxQueryTable2013(Worksheet excelSheet, string daxQuery)//, IOutputWindow output)
         {
+            if (excelSheet == null) throw new ArgumentNullException(nameof(excelSheet));
 
             Worksheet ws = excelSheet;
             Workbook wb = excelSheet.Parent;

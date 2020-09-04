@@ -29,10 +29,10 @@ namespace DaxStudio.UI.Utils
 
     public class DaxLineState
     {
-        private int _endOffset=0;
-        private int _startOffset=0;
+        private int _endOffset;
+        private int _startOffset;
         private int _caretOffset;
-        private int _startOfLineOffset = 0;
+        private int _startOfLineOffset;
         private LineState _state;
         private LineState _endState;
         private string _tableName;

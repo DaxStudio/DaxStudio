@@ -22,7 +22,6 @@ namespace DaxStudio.UI.ViewModels
 {
 
     class PowerBIPerformanceDataViewModel: ToolWindowBase,
-    //    ISaveState, 
         IViewAware ,
         IDataGridWindow
         
@@ -208,52 +207,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHeader + "\n"));
         }
 
-        #region ISaveState methods
-        //void ISaveState.Save(string filename)
-        //{
-        //    var json = JsonConvert.SerializeObject(QueryEvents, Formatting.Indented);
-        //    File.WriteAllText(filename + ".allQueries", json);
-        //}
-
-        //void ISaveState.Load(string filename)
-        //{
-        //    filename = filename + ".allQueries";
-        //    if (!File.Exists(filename)) return;
-
-        //    _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
-        //    string data = File.ReadAllText(filename);
-        //    List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
-
-        //    _performanceData.Clear();
-        //    _performanceData.AddRange(qe);
-        //    NotifyOfPropertyChange(() => QueryEvents);
-        //}
-
-
-
-        //public void SetDefaultFilter(string column, string value)
-        //{
-        //    var vw = this.GetView() as Views.PowerBIPerformanceDataView;
-        //    var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.PerformanceData);
-        //    var filters = controller.GetFiltersForColumns();
-
-        //    var columnFilter = filters.FirstOrDefault(w => w.Key == column);
-        //    if (columnFilter.Key != null)
-        //    {
-        //        columnFilter.Value.QueryString = value;
-
-        //        controller.SetFiltersForColumns(filters);
-        //    }
-        //}
-
-        //public virtual bool IsFilterVisible { get { return true; } }
-
-
-        private bool _showFilters = false;
+        private bool _showFilters;
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value; NotifyOfPropertyChange(() => ShowFilters); } } }
-
-
-        #endregion
 
     }
 }

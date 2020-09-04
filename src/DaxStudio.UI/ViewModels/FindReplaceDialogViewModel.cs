@@ -26,10 +26,10 @@ namespace DaxStudio.UI.ViewModels
 
         private static string _textToFind = "";
         private static string _textToReplace = "";
-        private static bool _caseSensitive = false;
-        private static bool _useRegex = false;
-        private static bool _useWildcards = false;
-        private static bool _searchUp = false;
+        private static bool _caseSensitive;
+        private static bool _useRegex;
+        private static bool _useWildcards;
+        private static bool _searchUp;
         private static bool _useWholeWord;
         private readonly IEventAggregator _eventAggregator;
 

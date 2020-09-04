@@ -260,13 +260,6 @@ namespace ADOTabular
             var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             props = ConnectionStringParser.Parse(connectionString);
 
-            //foreach (var prop in connectionString.Split(';'))
-            //{
-            //    if (prop.Trim().Length == 0) continue;
-            //    var p = prop.Split('=');
-            //    if (p.Length==2)
-            //        props.Add(p[0].Trim(), p[1].Trim());
-            //}
             return props;
         }
 

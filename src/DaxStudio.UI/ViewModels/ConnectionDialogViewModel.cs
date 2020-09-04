@@ -279,6 +279,11 @@ namespace DaxStudio.UI.ViewModels
             }           
         }
 
+        private Dictionary<string, string> SplitConnectionString(string connectionString)
+        {
+            return ADOTabular.Utils.ConnectionStringParser.Parse(connectionString);
+        }
+
         private string _additionalOptions = string.Empty;
         public string AdditionalOptions {
             get { if (_additionalOptions.Trim().EndsWith(";"))
@@ -332,21 +337,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //StringBuilder _additionalProperties = new StringBuilder();
-        //public StringBuilder AdditionalProperties { get {return _additionalProperties;  }}
-
-        private Dictionary<string, string> SplitConnectionString(string connectionString)
-        {
-            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in connectionString.Split(';'))
-            {
-                if (prop.Trim().Length == 0) continue;
-                var p = prop.Split('=');
-
-                props.Add(p[0], p[1]);
-            }
-            return props;
-        }
 
         private List<string> _directQueryModeOptions;
         public List<string> DirectQueryModeOptions
@@ -745,7 +735,7 @@ namespace DaxStudio.UI.ViewModels
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
-                        //ParseConnectionString();
+                        //TODO - should we attempt to assign other properties?
                     }
                 }
                 catch (Exception ex)

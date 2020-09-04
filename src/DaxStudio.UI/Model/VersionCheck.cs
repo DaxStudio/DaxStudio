@@ -33,8 +33,8 @@ namespace DaxStudio.UI.Model
         private Version _productionVersion;
         private Uri _productionDownloadUrl;
         private string _serverVersionType;
-        private bool _isCheckRunning = false;
-        private bool _isAutomaticCheck = false;
+        private bool _isCheckRunning;
+        private bool _isAutomaticCheck;
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
         /// </summary>

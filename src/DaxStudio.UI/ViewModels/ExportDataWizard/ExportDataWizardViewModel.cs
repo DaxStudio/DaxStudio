@@ -42,11 +42,11 @@ namespace DaxStudio.UI.ViewModels
         Stack<IScreen> _previousPages = new Stack<IScreen>();
         private string sqlTableName = string.Empty;
         private long sqlBatchRows;
-        private int currentTableIdx = 0;
-        private int totalTableCnt = 0;
-        private SelectedTable currentTable = null;
+        private int currentTableIdx;
+        private int totalTableCnt;
+        private SelectedTable currentTable;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private Regex _illegalFileCharsRegex = null;
+        private Regex _illegalFileCharsRegex;
         const long maxBatchSize = 10000;
 
         private const string exportCompleteMsg = "Model Export Complete: {0} tables exported";
