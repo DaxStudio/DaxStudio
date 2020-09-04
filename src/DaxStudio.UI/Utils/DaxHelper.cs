@@ -19,7 +19,7 @@ namespace DaxStudio.UI.Utils
         private static Regex rexParams = new Regex(paramRegex, RegexOptions.Compiled);
 
         const string startRegex = "@";//(?<=@)";
-        const string endRegex = @"(?=[\s|,|\)|$])";
+        const string endRegex = @"(?=[\s,\),;,\,,//,--,\\\\}]|$)";
         
         public static void PreProcessQuery(QueryInfo queryInfo, string query, IEventAggregator eventAggregator)
         {
