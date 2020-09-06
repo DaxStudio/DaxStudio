@@ -255,8 +255,7 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
         [TestMethod]
         public void TestParamInTableConstructor()
         {
-            string testQuery = @"evaluate
-{@tmp}
+            string testQuery = @"evaluate {@tmp}
 <Parameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:schemas-microsoft-com:xml-analysis"">  <Parameter>
     <Name>tmp</Name>
     <Value xsi:type=""xsd:string"">1</Value>
@@ -269,7 +268,7 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             var finalQuery = qi.ProcessedQuery;
 
             Assert.AreEqual(false, qi.NeedsParameterValues);
-            Assert.AreEqual("evaluate\r\n{\"1\"}", finalQuery);
+            Assert.AreEqual("evaluate {\"1\"}", finalQuery);
             
         }
     }
