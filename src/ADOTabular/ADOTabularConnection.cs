@@ -377,11 +377,13 @@ namespace ADOTabular
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = query;
+            // TOOO - add parameters to connection
 
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             rdr.Connection = this;
             rdr.CommandText = query;
+     
             return rdr;
 
         }

@@ -110,7 +110,6 @@
     <Compile Include="IGlobalOptions.cs" />
     <Compile Include="IOpenable.cs" />
     <Compile Include="ILinkedQueryResult.cs" />
-    <Compile Include="IQueryTextProvider.cs" />
     <Compile Include="ISaveable.cs" />
     <Compile Include="IServerTimes.cs" />
     <Compile Include="IStatusBarMessage.cs" />

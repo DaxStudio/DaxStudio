@@ -1128,12 +1128,9 @@ namespace DaxStudio.UI.ViewModels
             return paramDialogResult;
         }
 
-        public string QueryText
-        {
-            get {
-                return QueryInfo?.ProcessedQuery ?? string.Empty;
-            }
-        }
+        public string QueryText=> QueryInfo?.ProcessedQuery ?? string.Empty;
+
+        public Dictionary<string, QueryParameter> QueryParameters => QueryInfo?.Parameters ?? new Dictionary<string, QueryParameter>();
 
         public string EditorText
         {

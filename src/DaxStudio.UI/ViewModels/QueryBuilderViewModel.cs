@@ -3,6 +3,7 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using GongSolutions.Wpf.DragDrop;
 using Serilog;
@@ -97,6 +98,10 @@ namespace DaxStudio.UI.ViewModels
         
         }
 
+        public Dictionary<string, QueryParameter> QueryParameters
+        {
+            get;
+        } = new Dictionary<string, QueryParameter>();
 
         public void RunQuery() {
             EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget) { QueryProvider = this });
