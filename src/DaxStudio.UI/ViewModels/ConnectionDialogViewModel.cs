@@ -279,6 +279,11 @@ namespace DaxStudio.UI.ViewModels
             }           
         }
 
+        private Dictionary<string, string> SplitConnectionString(string connectionString)
+        {
+            return ADOTabular.Utils.ConnectionStringParser.Parse(connectionString);
+        }
+
         private string _additionalOptions = string.Empty;
         public string AdditionalOptions {
             get { if (_additionalOptions.Trim().EndsWith(";"))
@@ -332,21 +337,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //StringBuilder _additionalProperties = new StringBuilder();
-        //public StringBuilder AdditionalProperties { get {return _additionalProperties;  }}
-
-        private Dictionary<string, string> SplitConnectionString(string connectionString)
-        {
-            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in connectionString.Split(';'))
-            {
-                if (prop.Trim().Length == 0) continue;
-                var p = prop.Split('=');
-
-                props.Add(p[0], p[1]);
-            }
-            return props;
-        }
 
         private List<string> _directQueryModeOptions;
         public List<string> DirectQueryModeOptions
@@ -530,6 +520,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Connect()
         {
+            string connectionString = string.Empty;
             try
             {
                 ServerType serverType= ServerType.AnalysisServices;
@@ -563,13 +554,15 @@ namespace DaxStudio.UI.ViewModels
                             break;
                     }
                 }
-                var connEvent = new ConnectEvent(ConnectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
+                // we cache this to a local variable in case there are any exceptions thrown while building the ConnectionString
+                connectionString = ConnectionString;
+                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 _eventAggregator.PublishOnUIThread(connEvent);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", ConnectionString);
+                Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", connectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
                 _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
             }
@@ -702,7 +695,7 @@ namespace DaxStudio.UI.ViewModels
         public void ClearDatabases()
         {
             CheckDataSource();
-            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(ClearDatabases), "Clearing Database Collection");
             Databases.Clear();
             Databases.Add("<default>");
         }
@@ -742,7 +735,7 @@ namespace DaxStudio.UI.ViewModels
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
-                        //ParseConnectionString();
+                        //TODO - should we attempt to assign other properties?
                     }
                 }
                 catch (Exception ex)
@@ -857,7 +850,7 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private bool _showConnectionWarning = false;
+        private bool _showConnectionWarning;
         public bool ShowConnectionWarning
         {
             get => _showConnectionWarning;
@@ -880,7 +873,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _isLoadingDatabases = false;
+        private bool _isLoadingDatabases;
         public bool IsLoadingDatabases
         {
             get => _isLoadingDatabases;

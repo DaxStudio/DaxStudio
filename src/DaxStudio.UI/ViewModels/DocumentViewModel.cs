@@ -45,6 +45,7 @@ using System.Windows.Media;
 using Dax.ViewModel;
 using System.Reflection;
 using DaxStudio.Common.Enums;
+using System.Windows.Interop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -773,53 +774,71 @@ namespace DaxStudio.UI.ViewModels
 
         protected override async void OnActivate()
         {
-            Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", this.DisplayName);
+            Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", $"Activating {this.DisplayName}");
             _logger.Info("In OnActivate");
             base.OnActivate();
-
-            _eventAggregator.Unsubscribe(this);
-            
-            _eventAggregator.Subscribe(this);
-            _eventAggregator.Subscribe(QueryResultsPane);
-            //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
-            foreach (var tw in this.TraceWatchers)
+            try
             {
-                _eventAggregator.Subscribe(tw);
-            }
-            _ribbon.SelectedTarget = SelectedTarget;
-            var loc = Document.GetLocation(0);
-            //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
+                _eventAggregator.Unsubscribe(this);
 
-            // exit here if we are not in a state to run a query
-            // means something is using the connection like
-            // either a query is running or a trace is starting
-            if (CanRunQuery)
-            {
+                _eventAggregator.Subscribe(this);
+                _eventAggregator.Subscribe(QueryResultsPane);
+                //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
+                foreach (var tw in this.TraceWatchers)
+                {
+                    _eventAggregator.Subscribe(tw);
+                }
+                _ribbon.SelectedTarget = SelectedTarget;
+                var loc = Document.GetLocation(0);
+                //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
+
+                // exit here if we are not in a state to run a query
+                // means something is using the connection like
+                // either a query is running or a trace is starting
+                if (CanRunQuery)
+                {
+                    await CheckForMetadataUpdatesAsync();
+                }
+
                 try
                 {
-                    if (await ShouldAutoRefreshMetadataAsync())
-                    {
-                        RefreshMetadata();
-                        OutputMessage("Model schema change detected - Metadata refreshed");
-                    }
+                    _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(loc.Column, loc.Line));
+                    _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
-                    OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+                    Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
                 }
-            }
-
-            try
-            {
-                _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(loc.Column, loc.Line));
-                _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
             }
             catch (Exception ex)
             {
-                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivate), ex.Message);
             }
 
+        }
+
+        public async Task CheckForMetadataUpdatesAsync()
+        {
+            try
+            {
+                if (await ShouldAutoRefreshMetadataAsync())
+                {
+                    OutputMessage("Updated Model Metadata detected");
+                    if (Options.ShowMetadataRefreshPrompt)
+                    {
+                        MetadataPane.ShowMetadataRefreshPrompt = true;
+                    }
+                    else
+                    {
+                        RefreshMetadata();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate [Updating Metadata]", ex);
+                OutputError(string.Format("Error Refreshing Metadata - {0}", ex.Message));
+            }
         }
 
         public override void CanClose(Action<bool> callback)
@@ -889,9 +908,8 @@ namespace DaxStudio.UI.ViewModels
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
-            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections"
-                , value == null ? "<null>" : value.ConnectionString
-                );
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections", value?.ConnectionString??"<null>");
+
             if (value != null && value.State != ConnectionState.Open)
             {
                 OutputPane.AddWarning(string.Format("Connection for server {0} is not open", value.ServerName));
@@ -899,38 +917,47 @@ namespace DaxStudio.UI.ViewModels
             }
             using (NewStatusBarMessage("Refreshing Metadata..."))
             {
-                if (value == null) return;
-                _connection = value;
-                NotifyOfPropertyChange(() => IsAdminConnection);
-                NotifyOfPropertyChange(() => SelectedDatabase);
-                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                // enable/disable traces depending on the current connection
-                foreach (var traceWatcher in TraceWatchers)
+                try
                 {
-                    // on change of connection we need to disable traces as the will
-                    // be pointing to the old connection
-                    traceWatcher.IsChecked = false;
-                    // then we need to check if the new connection can be traced
-                    traceWatcher.CheckEnabled(this, activeTrace);
+                    if (value == null) return;
+                    _connection = value;
+                    NotifyOfPropertyChange(() => IsAdminConnection);
+                    NotifyOfPropertyChange(() => SelectedDatabase);
+                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                    // enable/disable traces depending on the current connection
+                    foreach (var traceWatcher in TraceWatchers)
+                    {
+                        // on change of connection we need to disable traces as the will
+                        // be pointing to the old connection
+                        traceWatcher.IsChecked = false;
+                        // then we need to check if the new connection can be traced
+                        traceWatcher.CheckEnabled(this, activeTrace);
+                    }
+                    MetadataPane.Connection = _connection;
+                    FunctionPane.Connection = _connection;
+                    DmvPane.Connection = _connection;
+                    Execute.OnUIThread(() =>
+                    {
+                        try
+                        {
+                            if (_editor == null) _editor = GetEditor();
+                        //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
+                        _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+                            Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
+                        }
+                    });
                 }
-                MetadataPane.Connection = _connection;
-                FunctionPane.Connection = _connection;
-                DmvPane.Connection = _connection;
-                Execute.OnUIThread(() =>
-               {
-                   try
-                   {
-                       if (_editor == null) _editor = GetEditor();
-                       //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
-                       _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
-                       Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
-                   }
-                   catch (Exception ex)
-                   {
-                       Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
-                   }
-               });
-
+                catch (Exception ex)
+                {
+                    var msg = $"The following error occured while updating the connection: {ex.Message}";
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
+                    OutputError(msg);
+                    ActivateOutput();
+                }
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -980,17 +1007,18 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
-            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to Excel");
+            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
 
             await Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith((x) =>
             {
+
                 // todo - should we be checking for exceptions in this continuation
                 try
                 {
-                    Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "recieved async result from Excel");
+                    
                     bool hasPpvtModel = x.Result;
 
-                    Log.Debug("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
+                    Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
                     msg.Dispose();
 
                     Execute.OnUIThread(() =>
@@ -1100,12 +1128,9 @@ namespace DaxStudio.UI.ViewModels
             return paramDialogResult;
         }
 
-        public string QueryText
-        {
-            get {
-                return QueryInfo?.ProcessedQuery ?? string.Empty;
-            }
-        }
+        public string QueryText=> QueryInfo?.ProcessedQuery ?? string.Empty;
+
+        public Dictionary<string, QueryParameter> QueryParameters => QueryInfo?.Parameters ?? new Dictionary<string, QueryParameter>();
 
         public string EditorText
         {
@@ -1497,7 +1522,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
-            if (!CanRunQuery) return;
+            if (!CanRunQuery)
+            {
+
+                return;
+            }
 
             // the benchmark run style will pop up it's own dialog
             if (message.IsBenchmark)
@@ -1598,7 +1627,7 @@ namespace DaxStudio.UI.ViewModels
                             currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                             _eventAggregator.PublishOnUIThreadAsync(currentQueryDetails);
                         }
-                        _queryStopWatch.Reset();
+                        _queryStopWatch?.Reset();
                         _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
                         msg.Dispose();
                        
@@ -2725,13 +2754,34 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanCopy);
             }
         }
-        public void Copy() { this.GetEditor().Copy(); }
+        public void Copy() { 
+            try
+            {
+                this.GetEditor().Copy();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Copy), ex.Message);
+                OutputError($"The following error occurred while copying: {ex.Message}");
+            }
+        }
+
         private bool _canCut = true;
         public bool CanCut { get { return _canCut; }
             set { _canCut = value;
                 NotifyOfPropertyChange(() => CanCut);
             } }
-        public void Cut() { this.GetEditor().Cut(); }
+        public void Cut() { 
+            try
+            {
+                this.GetEditor().Cut();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Cut), ex.Message);
+                OutputError($"The following error occurred while cutting: {ex.Message}");
+            }
+        }
         private bool _canPaste = true;
         private bool _isLoadingFile;
         public bool CanPaste
@@ -2743,7 +2793,17 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanPaste);
             }
         }
-        public void Paste() { this.GetEditor().Paste(); }
+        public void Paste() {
+            try
+            {
+                this.GetEditor().Paste();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Paste), ex.Message);
+                OutputError($"The following error occurred while pasting: {ex.Message}");
+            }
+        }
 
         public void SetResultsMessage(string message, OutputTarget icon)
         {
@@ -3078,10 +3138,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private bool _isCheckForSchemaUpdateRunning = false;
+        private bool _isCheckForSchemaUpdateRunning;
         private object _checkForSchemaUpdateLock = new object();
 
-        public async Task<bool> ShouldAutoRefreshMetadataAsync()
+        private async Task<bool> ShouldAutoRefreshMetadataAsync()
         {
             lock (_checkForSchemaUpdateLock)
             {
@@ -3386,7 +3446,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
         #region Export/View Analysis Data (VertiPaq Analyzer)
 
-        private bool _isVertipaqAnalyzerRunning = false;
+        private bool _isVertipaqAnalyzerRunning;
         public bool IsVertipaqAnalyzerRunning { get { return _isVertipaqAnalyzerRunning; }
             private set {
                 _isVertipaqAnalyzerRunning = value;
@@ -3394,25 +3454,51 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private VertiPaqAnalyzerViewModel vpaView;
+
         public void ViewAnalysisData()
         {
             if (!IsConnected)
             {
-                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option");
+                ActivateOutput();
                 return;
             }
+
+            if (!Connection.IsAdminConnection)
+            {
+                OutputError("You do not have admin rights on the current data model. Admin rights are required to view the metrics");
+                ActivateOutput();
+                return;
+            }
+
             try
             {
-
+                IsVertipaqAnalyzerRunning = true;
 
                 var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
+
+                // check if PerfData Window is already open and use that
+                //vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
+
+                // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                if (vpaView != null)
+                {
+                    ToolWindows.Remove(vpaView);
+                    vpaView = null;
+                }
+
+                vpaView = new VertiPaqAnalyzerViewModel( _eventAggregator, this, Options);
+                ToolWindows.Add(vpaView);
+                
+                vpaView.IsBusy = true;
+                vpaView.Activate();
 
                 VpaModel viewModel = null;
 
                 var task = new Task(() => {
                     // run Vertipaq Analyzer Async
 
-                    // TODO - replace DAX Studio version in second argument (temporary 0.1)
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(
                         this.Connection.ServerName, this.SelectedDatabase, 
@@ -3422,33 +3508,22 @@ namespace DaxStudio.UI.ViewModels
 
                     viewModel = new Dax.ViewModel.VpaModel(model);
                 });
-                task.Start(TaskScheduler.Default);
                 task.ContinueWith(prevTask =>
                 {
 
                     if (!prevTask.IsFaulted) {
                         try
                         {
-                            // check if PerfData Window is already open and use that
-                            var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
-
-                            // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                            if (vpaView == null)
-                            {
-                                vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                                ToolWindows.Add(vpaView);
-                            }
-                            else
-                            {
-                                // update view model
-                                vpaView.ViewModel = viewModel;
-                            }
-                            vpaView.Activate();
+                            
+                            // update view model
+                            vpaView.ViewModel = viewModel;
+                            
                         }
                         catch (Exception ex)
                         {
                             Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view: {ex.Message}");
-                            OutputError($"Error viewing metrics: {ex.Message}");
+                            OutputError($"Error viewing metrics : {ex.Message}");
+                            ActivateOutput();
                         }
 
                     } else
@@ -3457,24 +3532,25 @@ namespace DaxStudio.UI.ViewModels
                         Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
                         var exMsg = ex.GetAllMessages();
                         OutputError($"Error viewing metrics: {exMsg}");
+                        ActivateOutput();
                     }
 
+                    vpaView.IsBusy = false;
+                    IsVertipaqAnalyzerRunning = false;
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
                 }, TaskScheduler.Default);
-
+                task.Start(TaskScheduler.Default);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
                 var exMsg = ex.GetAllMessages();
                 OutputError("Error viewing metrics: " + exMsg);
+                ActivateOutput();
             }
-            finally
-            {
-                IsVertipaqAnalyzerRunning = false;
-            }
+
         }
 
 
@@ -3550,16 +3626,18 @@ namespace DaxStudio.UI.ViewModels
                 var vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
                 // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                if (vpaView == null)
+                if (vpaView != null)
                 {
-                    vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                    ToolWindows.Add(vpaView);
+                    ToolWindows.Remove(vpaView);
+                    vpaView = null;
                 }
-                else
-                {
-                    // update view model
-                    vpaView.ViewModel = viewModel;
-                }
+
+                vpaView = new VertiPaqAnalyzerViewModel( _eventAggregator, this, Options);
+                ToolWindows.Add(vpaView);
+                
+                // update view model
+                vpaView.ViewModel = viewModel;
+                
                 vpaView.Activate();
             }
             catch (Exception ex)
@@ -3753,7 +3831,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showMeasureExpressionEditor = false;
+        private bool _showMeasureExpressionEditor;
         public bool ShowMeasureExpressionEditor
         {
             get => _showMeasureExpressionEditor;
@@ -3770,6 +3848,14 @@ namespace DaxStudio.UI.ViewModels
         //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
 
         //public ILayoutRoot Root => LayoutElement.Root;
+        public void CloseConnection()
+        {
+            Connection.Close();
+        }
 
+        public void OpenConnection()
+        {
+            Connection.Open();
+        }
     }
 }

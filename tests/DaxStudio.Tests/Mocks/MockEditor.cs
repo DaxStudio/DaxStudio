@@ -65,6 +65,7 @@ namespace DaxStudio.Tests.Mocks
         public TextDocument Document { get;set; }
 
         public int CaretOffset { get;set; }
+        public bool IsMouseOverCompletionWindow { get => false; set { } }
 
         public ICSharpCode.AvalonEdit.Document.TextLocation DocumentGetLocation(int offset)
         {

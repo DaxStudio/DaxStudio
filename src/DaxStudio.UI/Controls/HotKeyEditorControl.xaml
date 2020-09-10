@@ -4,13 +4,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:val="clr-namespace:DaxStudio.UI.Validation"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              x:Name="UserControl"
              d:DesignHeight="300"
              d:DesignWidth="300"
              mc:Ignorable="d">
     <UserControl.Resources>
+        <val:BindingProxy x:Key="proxy" Data="{Binding}"/>
         <Style TargetType="TextBox">
+
             <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
@@ -29,7 +32,11 @@
                                 <Setter Property="Background" TargetName="border" Value="#FFFFE646"/>
                             </Trigger>
                     </ControlTemplate.Triggers>
-                </ControlTemplate>
+
+
+                        
+
+                    </ControlTemplate>
             </Setter.Value>
         </Setter>
         </Style>
@@ -41,6 +48,9 @@
              IsReadOnlyCaretVisible="False"
              IsUndoEnabled="False"
              PreviewKeyDown="HotkeyTextBox_PreviewKeyDown"
+             LostFocus="HotkeyTextBox_LostFocus"
+             Validation.Error="HotkeyTextBox_Error" 
+             Loaded="HotkeyTextBox_Loaded"
              Text="{Binding Hotkey, ElementName=UserControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}"
              Background="{Binding Path=Background, RelativeSource={RelativeSource AncestorType=UserControl}}">
         <TextBox.ContextMenu>
@@ -57,7 +67,7 @@
                     <ItemsControl ItemsSource="{Binding}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ErrorContent}" Foreground="Red"/>
+                                <TextBlock Text="{Binding ErrorContent}" Foreground="Red" ToolTip="Duplicate Hotkey"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

@@ -20,7 +20,7 @@ namespace DaxStudio.UI.ResultsTargets
     {
         private IDaxStudioHost _host;
         private IEventAggregator _eventAggregator;
-        private bool _isPowerBIOrSSDTConnection = false;
+        private bool _isPowerBIOrSSDTConnection;
 
         [ImportingConstructor]
         public ResultsTargetExcelLinked(IDaxStudioHost host, IEventAggregator eventAggregator)
@@ -35,10 +35,10 @@ namespace DaxStudio.UI.ResultsTargets
         public string Group => "Excel";
         public bool IsDefault => false;
         public bool IsAvailable => _host.IsExcel && !_isPowerBIOrSSDTConnection;
-        public int DisplayOrder => 100;
+        public int DisplayOrder => 300;
         public string Message => "Query will be sent to Excel for execution";
         public OutputTarget Icon => OutputTarget.Linked;
-
+        public string Tooltip => "Sends the Query text to Excel for execution";
         public bool IsEnabled => !_isPowerBIOrSSDTConnection;
 
         public string DisabledReason => "Linked Excel output is not supported against Power BI Desktop or SSDT based connections";

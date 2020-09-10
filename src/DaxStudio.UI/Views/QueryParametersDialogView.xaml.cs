@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Views
     /// </summary>
     public partial class QueryParametersDialogView : UserControl
     {
-        bool focusSet = false;
+        bool focusSet;
         public QueryParametersDialogView()
         {
             InitializeComponent();

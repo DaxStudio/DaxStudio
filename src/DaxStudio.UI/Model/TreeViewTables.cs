@@ -337,11 +337,11 @@ namespace DaxStudio.UI.Model
 
         private IADOTabularColumn _column;
         private List<string> _sampleData;
-        private bool _updatingBasicStats = false;
-        private bool _updatingSampleData = false;
+        private bool _updatingBasicStats;
+        private bool _updatingSampleData;
         private string _minValue = string.Empty;
         private string _maxValue = string.Empty;
-        private long _distinctValues = 0;
+        private long _distinctValues;
 
         #region Constructors
         public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane):base(column.Table, getChildren, options,eventAggregator,metadataPane)

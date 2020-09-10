@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,6 +44,11 @@ namespace DaxStudio.UI.Extensions
         public static bool Contains(this string input, string searchFor, StringComparison comparison)
         {
             return input.IndexOf(searchFor, comparison) >= 0;
+        }
+
+        public static string Format(this string input, params object[] args)
+        {
+            return string.Format(input, args);
         }
     }
 }

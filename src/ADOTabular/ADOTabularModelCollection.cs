@@ -32,6 +32,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularModel model)
         {
+            if (model == null) throw new ArgumentNullException(nameof(model));
             if (_models == null)
                 _models = new SortedDictionary<string, ADOTabularModel>();
             _models.Add(model.Name, model);
@@ -68,8 +69,8 @@ namespace ADOTabular
                     }
                     i++;
                 }
-                    
-                throw new IndexOutOfRangeException();
+
+                throw new ArgumentException($"Index of {index} is outside the range of this collection");
 
                 //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
                 // todo - should we return a model not found exception instead of null?

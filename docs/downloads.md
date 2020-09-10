@@ -9,12 +9,13 @@ layout: page
     {% for asset in release.assets %}
       {% assign download_count = asset.download_count  %}
       {% assign download_size = asset.size %}
+      {% assign dl_ext = asset.browser_download_url | slice: -4, 4%}
       {% assign download_type = "installer" %}
-      {% if asset.content_type == "application/x-zip-compressed" %}
+      {% if dl_ext == ".zip" %}
         {% assign download_type = "portable" %}
       {% endif %}
 - [{{ release.name }} ({{ download_type}})]({{ asset.browser_download_url }}) <br/>
-  Size: {% include filesize.html number=download_size %} \| Date: {% if asset.created_at  %}{{ asset.created_at | date_to_string }} {% else %} N/A {% endif %} \| Downloads: {% include intcomma.html number=download_count %}
+  Size: {% include filesize.html number=download_size %} \| Date: {% if asset.created_at  %}{{ asset.created_at | date_to_string }} {% else %} N/A {% endif %} 
     {% endfor %}
 
 {% comment %}

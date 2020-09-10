@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace DaxStudio.Controls.DataGridFilter.Querying
 {
-    public class QueryControllerFactory
+    public static class QueryControllerFactory
     {
         public static QueryController 
             GetQueryController(

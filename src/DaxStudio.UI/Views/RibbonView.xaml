@@ -51,6 +51,9 @@
                         VerticalAlignment="Bottom"
                         HorizontalAlignment="Center" />
                 </StackPanel>
+                    <Border.ToolTip>
+                        <Fluent:ScreenTip Text="{Binding Tooltip}" Title="{Binding Name}"/>
+                    </Border.ToolTip>
             </Border>
         </DataTemplate>
         
@@ -135,7 +138,7 @@
             </Fluent:QuickAccessMenuItem>
 
             <Fluent:QuickAccessMenuItem IsChecked="True">
-                <Fluent:Button Header="New" Icon="{StaticResource NewConnectedIconSmall}" 
+                <Fluent:Button Header="New (Existing Connection)" Icon="{StaticResource NewConnectedIconSmall}" 
                                Name="qatNewConnected" 
                                Click="NewConnectedQuery_Click" 
                                ToolTip="Open a new query window using the current connection"
@@ -389,32 +392,42 @@
         
                 <!-- Output Targets -->
 
-                <Fluent:DropDownButton x:Name="OutputTargets"
+                <!--<Fluent:DropDownButton x:Name="OutputTargets"
                                            Header="Output"
                                            Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
                                            SizeDefinition="Large,Large,Small"
                                            IsEnabled="True"
                                            VerticalAlignment="Top"  Margin="4,0"
-                                       >
+                                       
+                                       >-->
 
                     <!--Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"-->
+<!--                        ItemWidth="80"
+                        ItemHeight="80" -->
 
-                    <Fluent:Gallery 
+                    <!--                         ItemWidth="64"
+                        ItemHeight="74" -->
+                    <Fluent:InRibbonGallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
-                        GroupBy="Group"
                         x:Name="OutputGallery2"
-                                               
                         MinItemsInRow="1"
-                        MaxItemsInRow="3"
+                        MaxItemsInRow="2"
                         Orientation="Horizontal"
-                        ItemWidth="80"
-                        ItemHeight="80"
+IsCollapsed="True"
+                        Header="Output"
+                        Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
+                        LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
+                        SizeDefinition="Large,Large,Small"
+                        CanCollapseToButton="True"
                         ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
-                        ItemTemplate="{DynamicResource ResultsTargetTemplate}">
+                        ItemTemplate="{DynamicResource ResultsTargetTemplate}"
+                        
+                        GroupBy="Group" 
+                        >
 
-                        <Fluent:Gallery.Filters>
+                        <Fluent:InRibbonGallery.Filters>
                             <Fluent:GalleryGroupFilter Title="All"
                                                        Groups="Standard,Excel,Undefined"
                                                        x:Name="galleryFilterAll3" />
@@ -424,14 +437,17 @@
                             <Fluent:GalleryGroupFilter Title="Excel"
                                                        Groups="Excel"
                                                        x:Name="galleryFilterExcel"/>
-                        </Fluent:Gallery.Filters>
+                        </Fluent:InRibbonGallery.Filters>
 
-                    </Fluent:Gallery>
+                        <Fluent:InRibbonGallery.ToolTip>
+                            <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
+                        </Fluent:InRibbonGallery.ToolTip>
+                    </Fluent:InRibbonGallery>
 
-                    <Fluent:DropDownButton.ToolTip>
-                        <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
+                    <!--<Fluent:DropDownButton.ToolTip>
+                        
                     </Fluent:DropDownButton.ToolTip>
-                </Fluent:DropDownButton>
+                </Fluent:DropDownButton>-->
 
             </Fluent:RibbonGroupBox>
 
@@ -487,16 +503,14 @@
                     IsChecked="{Binding DisplayQueryBuilder}"
                     SizeDefinition="Large">
                     <Fluent:ToggleButton.Icon>
-
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
                     </Fluent:ToggleButton.Icon>
                     <Fluent:ToggleButton.LargeIcon>
-
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-
                     </Fluent:ToggleButton.LargeIcon>
-
+                    <Fluent:ToggleButton.ToolTip>
+                        <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
+                    </Fluent:ToggleButton.ToolTip> 
                 </Fluent:ToggleButton>
             </Fluent:RibbonGroupBox>
             
@@ -901,8 +915,7 @@
                                    SizeDefinition="Large,Middel,Small"
                     />
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="External Tools" Visibility="{Binding ShowExternalTools, Converter={StaticResource BoolToVisibilityConverter}}"
-                                   >
+            <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"
                                    Header="SQL Profiler"
                                    cal:Message.Attach="[Event Click] = [Action LaunchSqlProfiler()]"
@@ -918,15 +931,14 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 <Fluent:Button Name="LaunchExcel"
-                                   Header="Excel"
+                                   Header="Analyze in Excel"
                                    cal:Message.Attach="[Event Click] = [Action LaunchExcel()]"
-                                   
                                    LargeIcon="{StaticResource LaunchExcelIconLarger}"
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Small"
                                    >
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Excel"
+                        <Fluent:ScreenTip Title="Analyze in Excel"
                                    Text="Launches Excel and creates a Pivot Table connected to the current data source."
                                    ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -988,11 +1000,24 @@
                 </Fluent:ComboBox>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Experimental Features">
-                
-                
+                <Fluent:Button Header="Open Connection" x:Name="OpenConnection" Size="Middle"
+                               cal:Message.Attach="[Event Click] = [Action OpenConnection()]">
 
+                    <Fluent:Button.Icon>
 
-                <CheckBox Content="Show Benchmark Run Style" IsChecked="{Binding DisplayBenchmarking}"/>
+                        <fa:FontAwesome  Icon="Plug" FontSize="16" Foreground="Green"/>
+
+                    </Fluent:Button.Icon>
+                </Fluent:Button>
+                <Fluent:Button Header="Close Connection" x:Name="CloseConnection" Size="Middle"
+                               cal:Message.Attach="[Event Click] = [Action CloseConnection()]">
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="Plug" Foreground="OrangeRed" FontSize="16" />
+
+                    </Fluent:Button.Icon>
+                </Fluent:Button>
+
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           

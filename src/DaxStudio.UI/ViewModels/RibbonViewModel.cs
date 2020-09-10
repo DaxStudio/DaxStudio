@@ -41,9 +41,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
-        private bool _isDocumentActivating = false;
-        private bool _isConnecting = false;
-        private readonly string _sqlProfilerCommand = "";
+        private bool _isDocumentActivating;
+        private bool _isConnecting;
+        private readonly string _sqlProfilerCommand = string.Empty;
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -641,13 +641,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
             {
-                if (await ActiveDocument.ShouldAutoRefreshMetadataAsync())
-                {
-                    
-                    ActiveDocument.RefreshMetadata();
-                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
-                    
-                }
+                await ActiveDocument.CheckForMetadataUpdatesAsync();
                 RefreshConnectionDetails(ActiveDocument);
             }
             
@@ -866,19 +860,6 @@ namespace DaxStudio.UI.ViewModels
 
         #region "Preview Features"
 
-        private bool _showExternalTools;
-        public bool ShowExternalTools
-        {
-            get { return _showExternalTools; }
-            private set
-            {
-                _showExternalTools = value;
-                NotifyOfPropertyChange(() => ShowExternalTools);
-            }
-        }
-
-
-
 
         private bool _showPreviewQueryBuilder;
         public bool ShowPreviewQueryBuilder
@@ -969,7 +950,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowExternalTools = Options.ShowExternalTools;
             ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
             ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
@@ -1126,6 +1106,11 @@ namespace DaxStudio.UI.ViewModels
                         // todo - get viewmodel from IoC container
                         perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
                         this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    } 
+                    else
+                    {
+                        // make sure the window is not hidden
+                        perfDataWindow.IsVisible = true;
                     }
 
                     // load the perfomance data
@@ -1146,23 +1131,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _displayBenchmarking = false;
-        public bool DisplayBenchmarking
-        {
-            get => _displayBenchmarking;
-            set
-            {
-                _displayBenchmarking = value;
-                //if (_displayBenchmarking)
-                //    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
-                //else
-                //{
-                //    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
-                //    if (benchmark != null) RunStyles.Remove(benchmark);
-                //}
-                //NotifyOfPropertyChange(nameof(RunStyles));
-            }
-        }
 
         public void RunBenchmark()
         {
@@ -1191,5 +1159,16 @@ namespace DaxStudio.UI.ViewModels
         {
             throw new Exception("This is a fake exception to test the crash reporting");
         }
+
+        public void OpenConnection()
+        {
+            ActiveDocument?.OpenConnection();
+        }
+
+        public void CloseConnection()
+        {
+            ActiveDocument?.CloseConnection();
+        }
+
     }
 }

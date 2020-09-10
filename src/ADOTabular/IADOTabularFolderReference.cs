@@ -5,6 +5,7 @@ namespace ADOTabular
 
 	public enum FolderReferenceType
     {
+        None,
 		Folder,
 		Column
     }

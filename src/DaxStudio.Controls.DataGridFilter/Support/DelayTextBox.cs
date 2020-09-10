@@ -11,7 +11,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
     /// <summary>
     /// WPF port of windows forms version: http://www.codeproject.com/KB/miscctrl/CustomTextBox.aspx
     /// </summary>
-    public class DelayTextBox : TextBox
+    public class DelayTextBox : TextBox, IDisposable
     {
         #region private globals
 
@@ -107,6 +107,11 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             if (previousTextChangedEventArgs != null)
                 OnTextChanged(previousTextChangedEventArgs);
+        }
+
+        public void Dispose()
+        {
+            DelayTimer.Dispose();
         }
 
         #endregion

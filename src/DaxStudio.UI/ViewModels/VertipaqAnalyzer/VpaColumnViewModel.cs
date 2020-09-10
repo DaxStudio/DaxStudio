@@ -36,6 +36,10 @@ namespace DaxStudio.UI.ViewModels
         public double PercentageTable => _col.PercentageTable;
         public long SegmentsNumber => _col.SegmentsNumber;
         public long PartitionsNumber => _col.PartitionsNumber;
+        public long ReferentialIntegrityViolationCount => Table.ReferentialIntegrityViolationCount;
+        public long UserHierarchiesSize => Table.UserHierarchiesSize;
+        public long RelationshipsSize => Table.RelationshipSize;
+
         public long ColumnsNumber => 1;
         //public long MaxColumnCardinality { get; set; }
         public long MaxColumnTotalSize { get; set; }

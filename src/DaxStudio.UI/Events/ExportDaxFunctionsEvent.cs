@@ -8,7 +8,7 @@ namespace DaxStudio.UI.Events
 {
     public class ExportDaxFunctionsEvent
     {
-        public readonly bool _autoDelete = false;
+        public readonly bool _autoDelete;
         public ExportDaxFunctionsEvent(bool autoDelete)
         {
             _autoDelete = autoDelete;

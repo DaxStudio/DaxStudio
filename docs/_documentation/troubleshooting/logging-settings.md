@@ -2,14 +2,20 @@
 title: Logging Settings
 ---
 
-## Enabling Diagnostic Logging
+## Enabling Diagnostic Logging - Standalone
 As of v2.7.0 you can enable diagnostic logging in DAX Studio by holding down the left SHIFT key while starting the application. If you are having issues with the Excel addin you need to hold down the SHIFT key while Excel is starting up. 
 
+## Enabling Diagnostic Logging - Excel Addin
+The Excel addin can create it's own separate log file. If you are having issues with the Excel addin you need to hold down the SHIFT key while Excel is starting up. So if you have any Excel windows open you need to close all of those then hold the SHIFT key down while Excel starts up until you see the main Excel window open. If you watch the Excel splash screen carefully you should see a message as it loads the DAX Studio addin - it is at this point that the addin checks to see if the SHIFT key is being held down.  
+
+## Log Folder Location
 Logs are stored in the ```%LOCALAPPDATA%\DaxStudio\log``` folder. You can either paste this address into the Windows Explorer address bar or the Help - About window also has a link to this location.
 
 ![](Help-About.png)
 
 > **Note:** the following sections are included for completeness, but holding the ```SHIFT``` key at startup and the functionality now available in [DAX Studio Checker](../daxstudio-checker) supercedes the need to manually enable logging or check dependencies
+
+
 
 ## Manually Enabling Diagnostic Logging
 You can manually enable detailed application logging by enabling serilog in the daxstudio.exe.config file.
@@ -36,7 +42,10 @@ To capture a detailed application log perform the following steps:
 1. repeat the steps that trigger the error
 1. add the <code>&lt;!--</code> start and end <code>--&gt;</code> comment tags back to switch off the logging
 
-## Excel add-in logging
+#
+
+# Manually enabling Excel add-in logging
+
 _Same as above except the config file is called Daxstudio.**dll**.config_
 
 > **Note:** The start-up *fusion* logging detailed below can now be more easily enabled and disabled using the [DAX Studio Checker](../daxstudio-checker) tool

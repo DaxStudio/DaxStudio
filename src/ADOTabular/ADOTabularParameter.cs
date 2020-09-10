@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
+using System.Globalization;
 
 namespace ADOTabular
 {
@@ -7,11 +9,12 @@ namespace ADOTabular
         
         public ADOTabularParameter(DataRow dr)
         {
+            if (dr == null) throw new ArgumentNullException(nameof(dr));
             Name = dr["NAME"].ToString();
             Description = dr["DESCRIPTION"].ToString();
             Optional = bool.Parse(dr["OPTIONAL"].ToString());
             Repeatable = bool.Parse(dr["REAPEATABLE"].ToString());
-            RepeatGroup = int.Parse(dr["REPEATGROUP"].ToString());
+            RepeatGroup = int.Parse(dr["REPEATGROUP"].ToString() , CultureInfo.InvariantCulture);
         }
 
         public ADOTabularParameter(string name, string description, bool optional, bool repeatable, int repeatGroup)

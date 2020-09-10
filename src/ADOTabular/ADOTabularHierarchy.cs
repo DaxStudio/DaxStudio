@@ -15,6 +15,7 @@ namespace ADOTabular
                                 bool isVisible, ADOTabularObjectType columnType, string contents, string structure)
         :base(table,internalName,name, caption,description,isVisible,columnType,contents)
         {
+            if (description == null) throw new ArgumentNullException(nameof(description));
             _levels = new List<ADOTabularLevel>();
             _structure = structure;
             if (structure == "Unnatural")

@@ -81,7 +81,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IconSpin => StatusIcons.Icons[Status].Spin;
 
-        private long _rowCount = 0;
+        private long _rowCount;
         public long RowCount
         {
             get { return _rowCount; }
@@ -96,7 +96,7 @@ namespace DaxStudio.UI.ViewModels
 
         public double ProgressPercentage => TotalRows == 0 ? 0 : (Double)RowCount / TotalRows;
 
-        private long _totalRows = 0;
+        private long _totalRows;
         public long TotalRows
         {
             get { return _totalRows; }
@@ -196,7 +196,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _includeInternalTables = false;
+        private bool _includeInternalTables;
         public bool IncludeInternalTables { get { return _includeInternalTables; }
             set {
                 _includeInternalTables = value;

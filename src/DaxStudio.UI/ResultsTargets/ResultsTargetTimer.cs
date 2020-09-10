@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 20;
         public string Message => "Query timings sent to output tab";
         public OutputTarget Icon => OutputTarget.Timer;
-
+        public string Tooltip => "Runs the query and discards the results recording the time taken";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";

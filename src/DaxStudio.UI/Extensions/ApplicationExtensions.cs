@@ -1,4 +1,5 @@
-﻿using Fluent;
+﻿using ControlzEx.Theming;
+using Fluent;
 using MLib.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -102,11 +103,17 @@ namespace DaxStudio.UI.Extensions
 
             // add custom accent and theme resource dictionaries to the ThemeManager
 
-            ThemeManager.AddTheme( new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml"));
-            ThemeManager.AddTheme( new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml"));
+            var source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml");
+            var lightTheme = new ControlzEx.Theming.Theme(new LibraryTheme(source, null));
+
+            ThemeManager.Current.AddTheme( lightTheme);
+
+            source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml");
+            var darkTheme = new ControlzEx.Theming.Theme(new LibraryTheme(source, null));
+            ThemeManager.Current.AddTheme( darkTheme);
             
             // get the current theme from the application
-            var theme = ThemeManager.DetectTheme(Application.Current);
+            var theme = ThemeManager.Current.DetectTheme(Application.Current);
 
         }
 
@@ -119,12 +126,12 @@ namespace DaxStudio.UI.Extensions
         public static void ChangeRibbonTheme(this Application app, string theme)
         {
             
-            var appTheme = ThemeManager.GetTheme("Light.DaxStudio");
-            if (theme == "Dark") appTheme = ThemeManager.GetTheme("Dark.DaxStudio");
+            var appTheme = ThemeManager.Current.GetTheme("Light.DaxStudio");
+            if (theme == "Dark") appTheme = ThemeManager.Current.GetTheme("Dark.DaxStudio");
 
 
             // now change app style to the custom accent and current theme
-            ThemeManager.ChangeTheme(app,
+            ThemeManager.Current.ChangeTheme(app,
                                      appTheme);
 
             //if (app.MainWindow != null)

@@ -74,7 +74,7 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 foreach (MemberProperty prop in this)
                 {
-                    if (string.Compare(prop.Name, index, true) == 0)
+                    if (string.Compare(prop.Name, index, true, System.Globalization.CultureInfo.InvariantCulture) == 0)
                     {
                         return prop;
                     }

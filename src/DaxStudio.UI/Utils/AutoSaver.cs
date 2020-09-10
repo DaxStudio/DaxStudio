@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -26,11 +27,13 @@ namespace DaxStudio.UI.Utils
         [ImportingConstructor]
         public AutoSaver(IGlobalOptions options)
         {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(AutoSaver), "ctor", "Starting AutoSaver Constructor");
             Options = options;
             CreateAutoSaveFolder();
             _masterAutoSaveIndex = new Dictionary<int, AutoSaveIndex>();
             //LoadAutoSaveMasterIndex();
             GetCurrentAutoSaveIndex();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(AutoSaver), "ctor", "Finished AutoSaver Constructor");
         }
 
         public IGlobalOptions Options { get; }

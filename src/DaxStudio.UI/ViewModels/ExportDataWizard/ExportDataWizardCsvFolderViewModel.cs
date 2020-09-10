@@ -46,7 +46,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _useCommaDelimiter = false;
+        private bool _useCommaDelimiter;
         public bool UseCommaDelimiter { get => _useCommaDelimiter;
             set {
                 _useCommaDelimiter = value;
@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _useTabDelimiter = false;
+        private bool _useTabDelimiter;
         public bool UseTabDelimiter { get => _useTabDelimiter;
             set { _useTabDelimiter = value;
                 if (_useTabDelimiter)
@@ -68,7 +68,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private bool _useOtherDelimiter = false;
+        private bool _useOtherDelimiter;
         public bool UseOtherDelimiter { get => _useOtherDelimiter;
             set { _useOtherDelimiter = value;
                 

@@ -76,13 +76,16 @@ namespace DaxStudio.Standalone
                 log = config.CreateLogger();
                 Log.Logger = log;
 
+                Log.Information("============ DaxStudio Startup =============");
+
                 // add the custom DAX Studio accent color theme
                 app.AddDaxStudioAccentColor();
 
                 // TODO - do we need to customize the navigator window to fix the styling?
                 //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
-                
+
                 // then load Caliburn Micro bootstrapper
+                Log.Debug("Loading Caliburn.Micro bootstrapper");
                 AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
 
                 _eventAggregator = bootstrapper.GetEventAggregator();
@@ -119,13 +122,13 @@ namespace DaxStudio.Standalone
                 Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
 
-                Log.Information("============ DaxStudio Startup =============");
+
                 //SsasAssemblyResolver.Instance.BuildAssemblyCache();
                 SystemInfo.WriteToLog();
 
                 if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
                 if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
-                Log.Information("Startup Parameters Port: {Port} File: {FileName} LoggingEnabled: {LoggingEnabled}", app.Args().Port, app.Args().FileName, app.Args().LoggingEnabled);
+                Log.Information("CommandLine Args: {args}", Environment.GetCommandLineArgs());
                 Log.Information($"Portable Mode: {ApplicationPaths.IsInPortableMode}");
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
@@ -140,11 +143,12 @@ namespace DaxStudio.Standalone
                 // get the global options
                 var options = bootstrapper.GetOptions(); 
                 options.Initialize();
-
+                Log.Information("User Options initialized");
 
                 // load selected theme
                 var themeManager = bootstrapper.GetThemeManager();
                 themeManager.SetTheme(options.Theme);
+                Log.Information("ThemeManager configured");
 
                 //var theme = options.Theme;// "Light"; 
                 //if (theme == "Dark") app.LoadDarkTheme();
@@ -155,6 +159,7 @@ namespace DaxStudio.Standalone
                 Telemetry.TrackEvent("App.Startup", args );
 
                 // Launch the User Interface
+                Log.Information("Launching User Interface");
                 app.Run();
             }
             //catch (ArgumentOutOfRangeException argEx)

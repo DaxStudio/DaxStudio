@@ -19,5 +19,6 @@ namespace DaxStudio.UI.Interfaces
 
         string Message { get; }
         OutputTarget Icon { get; }
+        string Tooltip { get; }
     }
 }

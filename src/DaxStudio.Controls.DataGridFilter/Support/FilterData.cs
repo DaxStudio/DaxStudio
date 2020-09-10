@@ -42,7 +42,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                     case FilterType.Numeric:
                     case FilterType.DateTime:
 
-                        filterChanged = (Operator != FilterOperator.Undefined || !string.IsNullOrEmpty(QueryString) );
+                        filterChanged = (Operator != FilterOperator.Undefined || !string.IsNullOrEmpty(QueryString));
                         break;
 
                     case FilterType.NumericBetween:
@@ -89,7 +89,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
             isClearData = true;
 
             Operator           = FilterOperator.Undefined;
-            if (!string.IsNullOrEmpty(QueryString))   QueryString = null;
+            if (!string.IsNullOrEmpty(QueryString)) QueryString = null;
             if (!string.IsNullOrEmpty(QueryStringTo)) QueryStringTo = null;
             OnFilterClearedEvent();
 

@@ -46,11 +46,11 @@ namespace DaxStudio.UI.Behaviours
                 {
                     var msg = item as OutputMessage;
                     sb.Append(msg.Start);
-                    sb.Append("\t");
+                    sb.Append('\t');
                     sb.Append(msg.DurationString);
-                    sb.Append("\t");
+                    sb.Append('\t');
                     sb.Append(msg.Text);
-                    sb.Append("\n");
+                    sb.Append('\n');
                 }
                 System.Windows.Clipboard.SetText(sb.ToString());
                 e.Handled = true;

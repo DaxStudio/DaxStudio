@@ -48,7 +48,6 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private IADOTabularObject _selectedTable;
         public IADOTabularObject SelectedTable { get => _column?.SelectedTable;
             set {
                 _column.SelectedTable = value;
@@ -59,7 +58,7 @@ namespace DaxStudio.UI.ViewModels
         public ADOTabularConnection Connection => Document.Connection;
         public ADOTabularTableCollection Tables => Document?.SelectedModel != null ? Document?.Connection.Database.Models[Document?.SelectedModel].Tables : null;
 
-        private bool _isModelItem = false;
+        private bool _isModelItem;
         public bool IsModelItem { get => _isModelItem;
             internal set {
                 _isModelItem = value;

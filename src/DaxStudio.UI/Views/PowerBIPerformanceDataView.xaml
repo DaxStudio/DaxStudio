@@ -52,7 +52,7 @@
             
             <DataTemplate x:Key="QueryTextCell">
                 <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
-                    <DataGridCell Margin="0" Padding="0" 
+                    <Border Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="QueryText"
                             Text="{Binding Path=QueryText, Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
@@ -62,7 +62,7 @@
                             ToolTip="{Binding QueryText}">
                         </TextBlock>
 
-                    </DataGridCell>
+                    </Border>
                 <!--</ScrollViewer>-->
             </DataTemplate>
 
@@ -92,6 +92,7 @@
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
                        
                     SelectedItem="{Binding SelectedPerfData}" 
+                    cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 

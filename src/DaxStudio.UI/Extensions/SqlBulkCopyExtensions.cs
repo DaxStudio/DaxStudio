@@ -5,7 +5,7 @@
     public static class SqlBulkCopyExtensions
     {
         const String _rowsCopiedFieldName = "_rowsCopied";
-        static FieldInfo _rowsCopiedField = null;
+        static FieldInfo _rowsCopiedField;
 
         public static int RowsCopiedCount(this SqlBulkCopy bulkCopy)
         {

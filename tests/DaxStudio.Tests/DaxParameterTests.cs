@@ -251,6 +251,26 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", finalQuery);
             Assert.AreEqual(false, qi.NeedsParameterValues);
         }
+
+        [TestMethod]
+        public void TestParamInTableConstructor()
+        {
+            string testQuery = @"evaluate {@tmp}
+<Parameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:schemas-microsoft-com:xml-analysis"">  <Parameter>
+    <Name>tmp</Name>
+    <Value xsi:type=""xsd:string"">1</Value>
+    </Parameter>
+  </Parameters>";
+            var qi = new QueryInfo(testQuery , false, false, new Mocks.MockEventAggregator());
+
+            //var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
+            //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
+            var finalQuery = qi.ProcessedQuery;
+
+            Assert.AreEqual(false, qi.NeedsParameterValues);
+            Assert.AreEqual("evaluate {\"1\"}", finalQuery);
+            
+        }
     }
 }
 

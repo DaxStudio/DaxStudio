@@ -409,6 +409,7 @@
     <Compile Include="Interfaces\IDaxStudioProxy.cs" />
     <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
     <Compile Include="Interfaces\IQueryRunner.cs" />
+    <Compile Include="Interfaces\IQueryTextProvider.cs" />
     <Compile Include="Interfaces\IZoomable.cs" />
     <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
@@ -506,6 +507,8 @@
     <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
     <Compile Include="ResultsTargets\ResultsTargetClipboard.cs" />
+    <Compile Include="ResultsTargets\ResultsTargetExcelLinkedOdc.cs" />
+    <Compile Include="ResultsTargets\ResultsTargetExcelFile.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />

@@ -999,10 +999,10 @@ namespace ADOTabular
             {
                 functionGroups.AddFunction(dr);
             }
-            AddUndocumentedFunctions(_conn, functionGroups);
+            AddUndocumentedFunctions(functionGroups);
         }
 
-        private void AddUndocumentedFunctions(IADOTabularConnection conn, ADOTabularFunctionGroupCollection functionGroups)
+        private void AddUndocumentedFunctions(ADOTabularFunctionGroupCollection functionGroups)
         {
             var ssas2016 = new Version(13,0,0,0);
             if (Version.Parse(_conn.ServerVersion) >= ssas2016)

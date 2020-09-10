@@ -10,6 +10,7 @@ using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.Enums;
 using DaxStudio.Common.Enums;
+using ADOTabular.Utils;
 
 namespace ADOTabular
 {
@@ -42,6 +43,7 @@ namespace ADOTabular
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
             _adomdConn = new AdomdConnection(ConnectionString, connectionType);
+
             _connectionType = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
 
@@ -256,13 +258,8 @@ namespace ADOTabular
         private static Dictionary<string, string> SplitConnectionString(string connectionString)
         {
             var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in connectionString.Split(';'))
-            {
-                if (prop.Trim().Length == 0) continue;
-                var p = prop.Split('=');
+            props = ConnectionStringParser.Parse(connectionString);
 
-                props.Add(p[0].Trim(), p[1].Trim());
-            }
             return props;
         }
 
@@ -380,11 +377,13 @@ namespace ADOTabular
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = query;
+            // TOOO - add parameters to connection
 
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             rdr.Connection = this;
             rdr.CommandText = query;
+     
             return rdr;
 
         }
@@ -695,6 +694,7 @@ namespace ADOTabular
 
         public string FileName { get { return _powerBIFileName; }
             set {
+                if (value == null) throw new ArgumentNullException(nameof(FileName));
                 _powerBIFileName = value;
                 if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                   || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))

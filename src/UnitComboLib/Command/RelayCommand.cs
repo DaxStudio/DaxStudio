@@ -16,8 +16,8 @@
   internal class RelayCommand<T> : ICommand
   {
     #region Fields
-    private readonly Action<T> mExecute = null;
-    private readonly Predicate<T> mCanExecute = null;
+    private readonly Action<T> mExecute;
+    private readonly Predicate<T> mCanExecute;
     #endregion // Fields
 
     #region Constructors

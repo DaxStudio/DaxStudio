@@ -245,11 +245,11 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 // Only show the worksheets option if the output is one of the Excel Targets
-                return ResultsIcon == OutputTarget.Linked || ResultsIcon == OutputTarget.Static;
+                return  _host.IsExcel && (ResultsIcon == OutputTarget.Linked || ResultsIcon == OutputTarget.Static);
             }
         }
 
-        private bool _isBusy = false;
+        private bool _isBusy;
         public bool IsBusy
         {
             get { return _isBusy; }
