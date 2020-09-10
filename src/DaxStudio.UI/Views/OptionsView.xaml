@@ -9,11 +9,11 @@
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
             xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
-             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
+            xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-             xmlns:val="clr-namespace:DaxStudio.UI.Validation"
-             mc:Ignorable="d" 
+            xmlns:val="clr-namespace:DaxStudio.UI.Validation"
+            mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
