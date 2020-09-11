@@ -324,6 +324,7 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("Proxy Password")]
         [SortOrder(4)]
         [DefaultValue(null)]
+        [JsonConverter(typeof(SecureStringConverter))]
         [DataMember]
         public SecureString ProxySecurePassword
         {
@@ -1205,7 +1206,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showMetadataRefreshPrompt;
-        [DataMember, DefaultValue(false)]
+        [DataMember, DefaultValue(false),DisplayName("Prompt before refreshing Metadata"),
+            Category("Metadata Pane"), Subcategory("Automatic Metadata Refresh"), SortOrder(0)]
         public bool ShowMetadataRefreshPrompt
         {
             get => _showMetadataRefreshPrompt;

@@ -411,6 +411,7 @@
     <Compile Include="Interfaces\IQueryRunner.cs" />
     <Compile Include="Interfaces\IQueryTextProvider.cs" />
     <Compile Include="Interfaces\IZoomable.cs" />
+    <Compile Include="JsonConverters\SecureStringConverter.cs" />
     <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
