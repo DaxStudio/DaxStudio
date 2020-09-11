@@ -31,8 +31,8 @@ using System.Threading.Tasks;
 namespace DaxStudio.UI.ViewModels
 {
     [DataContract]
-    [Export(typeof(IGlobalOptions))]   
-    public class OptionsViewModel:Screen, IGlobalOptions, IDisposable
+    [Export(typeof(IGlobalOptions))]
+    public class OptionsViewModel : Screen, IGlobalOptions, IDisposable
     {
         private const string DefaultEditorFontFamily = "Lucida Console";
         private const double DefaultEditorFontSize = 11.0;
@@ -58,7 +58,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _traceDirectQuery;
 
         private readonly IEventAggregator _eventAggregator;
-        
+
         private DelimiterType _defaultSeparator;
         private DaxFormatStyle _defaultDaxFormatStyle;
         private bool _skipSpaceAfterFunctionName;
@@ -75,7 +75,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator = eventAggregator;
             SettingProvider = settingProvider;
-            
+
         }
 
         public void Initialize()
@@ -92,15 +92,15 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("Editor Font Family")]
         [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
-        public string EditorFontFamily { get { return _selectedEditorFontFamily; } 
-            set{
+        public string EditorFontFamily { get { return _selectedEditorFontFamily; }
+            set {
                 if (_selectedEditorFontFamily == value) return;
                 _selectedEditorFontFamily = value;
                 NotifyOfPropertyChange(() => EditorFontFamily);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValue<string>(nameof(EditorFontFamily), value , _isInitializing);
+                SettingProvider.SetValue<string>(nameof(EditorFontFamily), value, _isInitializing);
 
-            } 
+            }
         }
 
         [JsonIgnore]
@@ -112,7 +112,7 @@ namespace DaxStudio.UI.ViewModels
         [MaxValue(120)]
         [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
-        public double EditorFontSize { get { return _editorFontSize; } 
+        public double EditorFontSize { get { return _editorFontSize; }
             set {
                 if (_editorFontSize == value) return;
                 _editorFontSize = value;
@@ -120,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => EditorFontSizePx);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<double>(nameof(EditorFontSize), value, _isInitializing);
-            } 
+            }
         }
 
         public void ResetEditorFont()
@@ -158,6 +158,8 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("Results Font Size")]
         [DataMember]
         [DefaultValue(DefaultResultsFontSize)]
+        [MinValue(4.0)]
+        [MaxValue(256.0)]
         public double ResultFontSize {
             get { return _resultFontSize; }
             set {
@@ -205,7 +207,7 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("Legacy DirectQuery Trace")]
         [Category("Trace")]
         [Description("On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible")]
-        [DataMember,DefaultValue(false)]
+        [DataMember, DefaultValue(false)]
         public bool TraceDirectQuery {
             get { return _traceDirectQuery; }
             set {
@@ -221,7 +223,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("Proxy")]
         [DisplayName("Use System Proxy")]
         [SortOrder(1)]
-        [DataMember,DefaultValue(true)]
+        [DataMember, DefaultValue(true)]
         public bool ProxyUseSystem
         {
             get { return _proxyUseSystem; }
@@ -231,6 +233,9 @@ namespace DaxStudio.UI.ViewModels
                 _proxyUseSystem = value;
                 NotifyOfPropertyChange(() => ProxyUseSystem);
                 NotifyOfPropertyChange(() => ProxyDontUseSystem);
+                NotifyOfPropertyChange(() => ProxySecurePasswordEnabled);
+                NotifyOfPropertyChange(() => ProxyUserEnabled);
+                NotifyOfPropertyChange(() => ProxyAddressEnabled);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<bool>(nameof(ProxyUseSystem), value, _isInitializing);
                 WebRequestFactory.ResetProxy();
@@ -245,8 +250,9 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Proxy")]
         [DisplayName("Proxy Address")]
+        [Description("eg. http://myproxy.com:8080")]
         [SortOrder(2)]
-        [DataMember,DefaultValue("")]
+        [DataMember, DefaultValue("")]
         public string ProxyAddress
         {
             get { return _proxyAddress; }
@@ -260,6 +266,9 @@ namespace DaxStudio.UI.ViewModels
                 WebRequestFactory.ResetProxy();
             }
         }
+
+        [JsonIgnore]
+        public bool ProxyAddressEnabled => !ProxyUseSystem;
 
         [Category("Proxy")]
         [DisplayName("Proxy User")]
@@ -279,10 +288,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [Category("Proxy")]
-        [DisplayName("Proxy Password")]
-        [SortOrder(4)]
-        [DefaultValue("")]
+        [JsonIgnore]
+        public bool ProxyUserEnabled => !ProxyUseSystem;
+
+
         [JsonIgnore]
         public string ProxyPassword
         {
@@ -299,6 +308,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [JsonIgnore]
+        public bool ProxySecurePasswordEnabled { get => !ProxyUseSystem; }
+
         private void SetProxySecurePassword(string value)
         {
             foreach (char c in value)
@@ -308,6 +320,10 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        [Category("Proxy")]
+        [DisplayName("Proxy Password")]
+        [SortOrder(4)]
+        [DefaultValue(null)]
         [DataMember]
         public SecureString ProxySecurePassword
         {
@@ -326,7 +342,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Query History")]
         [DisplayName("History items to keep")]
-        [DataMember, DefaultValue(200)]
+        [DataMember, DefaultValue(200), MinValue(0), MaxValue(500)]
         public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
             set
             {
@@ -353,7 +369,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
-        
+
         [Category("Query History")]
         [DisplayName("Show Trace Timings (SE/FE)")]
         [DataMember, DefaultValue(true)]
@@ -373,7 +389,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Timeouts")]
         [DisplayName("Server Timings End Event Timeout (sec)")]
-        [DataMember, DefaultValue(30)]
+        [DataMember, DefaultValue(30), MinValue(0), MaxValue(999)]
         public int QueryEndEventTimeout
         {
             get
@@ -394,6 +410,8 @@ namespace DaxStudio.UI.ViewModels
         [Category("Timeouts")]
         [DisplayName("DaxFormatter Request timeout (sec)")]
         [DataMember, DefaultValue(10)]
+        [MinValue(0)]
+        [MaxValue(999)]
         public int DaxFormatterRequestTimeout
         {
             get
@@ -586,6 +604,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool CustomCsvDelimiterEnabled {get => CustomCsvDelimiterType == CustomCsvDelimiterType.Other; }
+
         private bool _csvQuoteStringFields = true;
         [Category("Custom Export Format")]
         [DisplayName("Quote String Fields")]
@@ -609,7 +629,7 @@ namespace DaxStudio.UI.ViewModels
         private int _traceStartupTimeout = 30;
         [Category("Timeouts")]
         [DisplayName("Trace Startup Timeout (secs)")]
-        [DataMember, DefaultValue(30)]
+        [DataMember, DefaultValue(30), MinValue(0),MaxValue(999)]
         public int TraceStartupTimeout { get => _traceStartupTimeout; set {
                 _traceStartupTimeout = value;
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
@@ -635,6 +655,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => UseCultureDefaultDelimiter);
                 NotifyOfPropertyChange(() => UseTabDelimiter);
                 NotifyOfPropertyChange(() => UseOtherDelimiter);
+                NotifyOfPropertyChange(() => CustomCsvDelimiterEnabled);
             }
         }
 
@@ -1336,6 +1357,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _editorConvertTabsToSpaces;
         [DataMember,DefaultValue(false)]
+        [DisplayName("Convert tabs to spaces"), Category("Editor")]
         public bool EditorConvertTabsToSpaces { get => _editorConvertTabsToSpaces; set {
                 _editorConvertTabsToSpaces = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
@@ -1548,6 +1570,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 if (value == _searchText) return;
+                System.Diagnostics.Debug.WriteLine($"OptionsViewModel.SearchText = {value}");
                 _searchText = value;
                 NotifyOfPropertyChange(nameof(SearchText));
                 //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SearchText)));

@@ -4,13 +4,13 @@ namespace DaxStudio.Interfaces.Enums
 {
     public enum CustomCsvDelimiterType
     {
-        [Description("Uses the default list separator character for the current culture")]
+        [Description("Default list separator character")]
         CultureDefault,
-        [Description("Uses comma as a delimiter")]
+        [Description("Comma")]
         Comma,
-        [Description("Uses tab as a delimiter ")]
+        [Description("Tab")]
         Tab,
-        [Description("Uses the specified other delimiter")]
+        [Description("Other")]
         Other
     }
 }

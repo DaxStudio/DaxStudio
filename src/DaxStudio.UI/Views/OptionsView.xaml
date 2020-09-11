@@ -13,6 +13,7 @@
             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+            xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation"
             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
@@ -25,7 +26,8 @@
             <conv:HotKeyConverter x:Key="HotKeyConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
-
+            <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
+            
             <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
             <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
             
@@ -83,6 +85,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            
             <Style TargetType="{x:Type TextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
@@ -93,6 +96,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            
             <Style TargetType="{x:Type PasswordBox}">
                 <Style.Triggers>
                     <Trigger Property="Focusable" Value="False">
@@ -158,8 +162,37 @@
                 </Setter>
             </Style>
 
-            
-            
+            <!-- Category Icons -->
+            <conv:ResourceLookupConverter x:Key="CategoryIcons">
+                <ResourceDictionary>
+                    <fa:ImageAwesome x:Key="Custom Export Format"  Icon="Download" Width="16"/>
+                    <fa:ImageAwesome x:Key="Dax Formatter" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Defaults" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Editor" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Metadata Pane" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Proxy" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Query History" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Results" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Timeouts" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Trace" Icon="Pencil" Width="16"/>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
+
+            <conv:ResourceLookupConverter x:Key="CategoryIconNames">
+                <ResourceDictionary>
+                    <sys:String x:Key="Custom Export Format">Download</sys:String>
+                    <sys:String x:Key="Dax Formatter">AlignLeft</sys:String>
+                    <sys:String x:Key="Defaults">Sliders</sys:String>
+                    <sys:String x:Key="Editor">Pencil</sys:String>
+                    <sys:String x:Key="Metadata Pane">Sitemap</sys:String>
+                    <sys:String x:Key="Proxy">Wifi</sys:String>
+                    <sys:String x:Key="Query History">History</sys:String>
+                    <sys:String x:Key="Results">Table</sys:String>
+                    <sys:String x:Key="Timeouts">ClockOutline</sys:String>
+                    <sys:String x:Key="Trace">Search</sys:String>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
+
             <!-- PropertyList Styles Start -->
 
             <pg:PropertyTemplateSelector x:Key="PropertyTemplateSelector"/>
@@ -178,12 +211,26 @@
 
             <DataTemplate x:Key="GenericTemplate">
                 <StackPanel>
-                    <TextBox Text="{Binding Value}"/>
+                    <TextBox Text="{Binding Value}" MinWidth="250" IsEnabled="{Binding ValueEnabled}"/>
                     <TextBlock Style="{StaticResource DescriptionStyle}"/>
                 </StackPanel>
             </DataTemplate>
-            
-            <DataTemplate x:Key="BoolTemplate">
+
+
+            <DataTemplate x:Key="PasswordTemplate">
+                <StackPanel>
+                    <PasswordBox MinWidth="250" IsEnabled="{Binding ValueEnabled}" >
+                        
+                            <i:Interaction.Behaviors>
+                                <beh:PasswordBoxBindingBehavior SecurePassword="{Binding Value}"/>
+                            </i:Interaction.Behaviors>
+
+                    </PasswordBox>
+                    <TextBlock Style="{StaticResource DescriptionStyle}"/>
+                </StackPanel>
+            </DataTemplate>
+
+                <DataTemplate x:Key="BoolTemplate">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -195,6 +242,18 @@
             </DataTemplate>
 
             <DataTemplate x:Key="DoubleTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <nud:DoubleUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="{Binding MinValue, Mode=OneTime}" MaxValue="{Binding MaxValue, Mode=OneTime}" Margin="2"  HorizontalAlignment="Left"></nud:DoubleUpDown>
+
+                    <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="IntegerTemplate">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -355,7 +414,10 @@
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
                             <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
                                 <StackPanel Orientation="Horizontal" >
-                                    <Rectangle x:Name="Hl" Width="3"  Margin="2,0" Fill="Transparent"/>
+                                    <Rectangle x:Name="Hl" Width="3"  Margin="0,0,1,0" Fill="Transparent"/>
+                                    <fa:FontAwesome Icon="{Binding Converter={StaticResource CategoryIconNames}}" Width="20" FontSize="14" Margin="5,0" />
+
+                                    <!--<Image Source="{Binding  Converter={StaticResource CategoryIcons}}"/>-->
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </StackPanel>
                             </Border>
@@ -422,7 +484,7 @@
 			Grid.Row="0"
 			Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0.5"/>
         <!-- Editor -->
-        <TabControl Grid.ColumnSpan="2" Margin="0,84,0,0" Grid.RowSpan="2">
+        <TabControl Grid.ColumnSpan="2" Margin="0,84,20,10" Grid.RowSpan="2">
             <TabItem Header="Standard">
 
                 <Grid>
@@ -437,26 +499,30 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
-                    <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" MinWidth="100" Grid.Row="1" Margin="5"/>
+                    <!-- -->
+                    <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" MinWidth="100" Grid.Row="1" Margin="5" Padding="2"/>
 
                     <ListBox x:Name="Categories" Grid.Row="2" 
                         ItemsSource="{Binding Categories}" 
                         SelectedValue="{Binding SelectedCategory}" 
                         MinWidth="50" 
-                             ItemContainerStyle="{DynamicResource ListBoxItemStyle1}"
-                             BorderThickness="0"
-                             Margin="5"/>
-
+                        ItemContainerStyle="{DynamicResource ListBoxItemStyle1}"
+                        BorderThickness="0"
+                        Margin="5"/>
+                    <!-- SearchText="{Binding ElementName=Search, Path=Text}" -->
+                    <Border Grid.Column="1" Grid.RowSpan="3" Padding="15,0" Margin="10,5" BorderThickness="1,0,0,0" BorderBrush="Black">
                     <pg:PropertyList Source="{Binding .}" 
                         Grid.RowSpan="3"
                         CategoryFilter="{Binding SelectedCategory}"
-                        SearchText="{Binding ElementName=Search, Path=Text}"
+                        SearchText="{Binding SearchText}"
                         ItemTemplateSelector="{StaticResource PropertyTemplateSelector}"
                         Grid.Column="1" 
                         ItemContainerStyle="{StaticResource ItemStyle}"
                         pg:ListViewBehaviors.IsAutoUpdatingColumnWidths="true"
-                        BorderThickness="1,0,0,0"
-                        Padding="15">
+                        BorderThickness="0"
+                        Margin="0"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        Padding="0" beh:GridViewColumnResize.Enabled="True">
                         <pg:PropertyList.Resources>
                             <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                     <Setter Property="Background" Value="Transparent"/>
@@ -471,16 +537,16 @@
                                         <DataTemplate>
                                             <Grid VerticalAlignment="Top">
 
-                                                <TextBlock Text="{Binding DisplayName}" 
-                                               pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
-                                               pg:TextBlockHighlighter.HighlightColor="Yellow"
-                                               VerticalAlignment="Top" TextWrapping="Wrap"/>
+                                               <TextBlock Text="{Binding DisplayName}" 
+                                                          pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
+                                                          pg:TextBlockHighlighter.HighlightColor="Yellow"
+                                                          VerticalAlignment="Top" TextWrapping="Wrap"/>    
                                             </Grid>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn CellTemplateSelector="{StaticResource PropertyTemplateSelector}"
-                                    Width="Auto">
+                                     beh:GridViewColumnResize.Width="2*">
 
                                 </GridViewColumn>
                             </GridView>
@@ -490,12 +556,15 @@
                             <GroupStyle>
                                 <GroupStyle.HeaderTemplate>
                                     <DataTemplate>
-                                        <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"/>
+                                        <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"
+                                                   pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
+                                                   pg:TextBlockHighlighter.HighlightColor="Yellow"/>
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
                             </GroupStyle>
                         </pg:PropertyList.GroupStyle>
                     </pg:PropertyList>
+                    </Border>
                 </Grid>
 
                 <!--<ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >

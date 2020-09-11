@@ -21,8 +21,9 @@ namespace DaxStudio.Controls.PropertyGrid
                 if (prop.PropertyType.IsEnum) return element.FindResource("EnumTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(bool)) return  element.FindResource("BoolTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(double)) return element.FindResource("DoubleTemplate") as DataTemplate;
+                if (prop.PropertyType == typeof(int)) return element.FindResource("IntegerTemplate") as DataTemplate;
                 if (prop.DisplayName.EndsWith("Font Family")) return element.FindResource("FontFamilyTemplate") as DataTemplate;
-
+                if (prop.DisplayName.EndsWith("Password")) return element.FindResource("PasswordTemplate") as DataTemplate;
                 return element.FindResource("GenericTemplate") as DataTemplate;
                 
             }

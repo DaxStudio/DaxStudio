@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -55,7 +53,9 @@ namespace DaxStudio.Controls.PropertyGrid
         public string SearchText
         {
             get => (string)GetValue(SearchTextProperty);
-            set => SetValue(SearchTextProperty, value);
+            set {
+                System.Diagnostics.Debug.WriteLine($"PropertyList.SearchText = {value}");
+                SetValue(SearchTextProperty, value); }
         }
 
         private static void OnSearchTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -76,7 +76,7 @@ namespace DaxStudio.Controls.PropertyGrid
             var cat = ((PropertyList)d).CategoryFilter;
             if (!string.IsNullOrWhiteSpace(text))
             {
-                return p.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase);
+                return p.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) || p.Subcategory.Contains(text, StringComparison.OrdinalIgnoreCase);
             }
 
             if (!string.IsNullOrEmpty(cat)) 
@@ -95,59 +95,89 @@ namespace DaxStudio.Controls.PropertyGrid
                 return view;
             }
         }
+
+        private Dictionary<string, Action> onEnabledChangedFuncs = new Dictionary<string, Action>();
         protected virtual async Task UpdateSource(object newSource)
         {
-            await Task.Delay(100);
+            //await Task.Delay(100);
             //var cvs = new System.Windows.Data.CollectionViewSource();
-            var props = new List<PropertyBindingBase>();
 
-            foreach (var prop in newSource.GetType().GetProperties( ))
+            // TODO - may need to hook into newSource.PropertyChanged event
+
+            await Task.Run(() =>
             {
-                var dispName = prop.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                var catName = prop.GetCustomAttribute(typeof(CategoryAttribute)) as CategoryAttribute;
-                var subCatName = prop.GetCustomAttribute(typeof(SubcategoryAttribute)) as SubcategoryAttribute;
-                var sortOrder = prop.GetCustomAttribute<SortOrderAttribute>();
-                var desc = prop.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute;
-                var minValue = prop.GetCustomAttribute(typeof(MinValueAttribute)) as MinValueAttribute;
-                var maxValue = prop.GetCustomAttribute(typeof(MaxValueAttribute)) as MaxValueAttribute;
-                var t = prop.GetType();
+                var props = new System.Collections.ObjectModel.ObservableCollection<PropertyBindingBase>();
 
-                //Type[] typeArgs = { prop.PropertyType };
-                //Type d1 = typeof(PropertyBinding<>);
-                //Type constructed = d1.MakeGenericType(typeArgs);
-                //var o = Activator.CreateInstance(constructed);
-                //var binding = (PropertyBindingBase)o;
+                var npc = newSource as INotifyPropertyChanged;
+                if ( npc != null){
+                    npc.PropertyChanged += OnSourcePropertyChanged;
+                }
 
-                var binding = new PropertyBinding<object>();
+                foreach (var prop in newSource.GetType().GetProperties())
+                {
+                    var dispName = prop.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                    var catName = prop.GetCustomAttribute(typeof(CategoryAttribute)) as CategoryAttribute;
+                    var subCatName = prop.GetCustomAttribute(typeof(SubcategoryAttribute)) as SubcategoryAttribute;
+                    var sortOrder = prop.GetCustomAttribute<SortOrderAttribute>();
+                    var desc = prop.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute;
+                    var minValue = prop.GetCustomAttribute(typeof(MinValueAttribute)) as MinValueAttribute;
+                    var maxValue = prop.GetCustomAttribute(typeof(MaxValueAttribute)) as MaxValueAttribute;
+                    var t = prop.GetType();
 
-                //skip properties that do not have a display name defined
-                if (dispName == null) continue; 
-                    
-                binding.DisplayName = dispName.DisplayName;
-                
-                if (catName != null) binding.Category = catName?.Category;
+                    //Type[] typeArgs = { prop.PropertyType };
+                    //Type d1 = typeof(PropertyBinding<>);
+                    //Type constructed = d1.MakeGenericType(typeArgs);
+                    //var o = Activator.CreateInstance(constructed);
+                    //var binding = (PropertyBindingBase)o;
 
-                binding.Description = desc?.Description;
-                binding.Subcategory = subCatName?.Subcategory;
-                binding.SortOrder = sortOrder?.SortOrder ?? int.MaxValue;
-                binding.MinValue = minValue?.MinValue ?? 0;
-                binding.MaxValue = maxValue?.MaxValue ?? 0;
-                binding.PropertyType = prop.PropertyType;
-                //var setProp = constructed.GetProperty("SetValue");
-                //setProp.SetValue(o, (Action)((value) => prop.SetValue(newSource,value));
-                //var getProp = o.GetType().GetProperty("GetValue");
+                    var binding = new PropertyBinding<object>();
 
-                binding.SetValue = (value) => prop.SetValue(newSource, value);
-                binding.GetValue = () => prop.GetValue(newSource);
+                    //skip properties that do not have a display name defined
+                    if (dispName == null) continue;
 
-                props.Add(binding);
-            }
-            _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView( props);
-            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Subcategory");
-            _cvs.GroupDescriptions.Add(groupDescription);
-            _cvs.CustomSort = new GenericComparer<PropertyBindingBase>();
+                    binding.DisplayName = dispName.DisplayName;
+
+                    if (catName != null) binding.Category = catName?.Category;
+
+                    binding.Description = desc?.Description;
+                    binding.Subcategory = subCatName?.Subcategory;
+                    binding.SortOrder = sortOrder?.SortOrder ?? int.MaxValue;
+                    binding.MinValue = minValue?.MinValue ?? 0;
+                    binding.MaxValue = maxValue?.MaxValue ?? 0;
+                    binding.PropertyType = prop.PropertyType;
+                    //var setProp = constructed.GetProperty("SetValue");
+                    //setProp.SetValue(o, (Action)((value) => prop.SetValue(newSource,value));
+                    //var getProp = o.GetType().GetProperty("GetValue");
+
+                    binding.SetValue = (value) => prop.SetValue(newSource, value);
+                    binding.GetValue = () => prop.GetValue(newSource);
+
+                    var enabledProp = newSource.GetType().GetProperty($"{prop.Name}Enabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (enabledProp != null)
+                    {
+                        binding.GetValueEnabled = () => Convert.ToBoolean( enabledProp.GetValue(newSource) );
+                        onEnabledChangedFuncs.Add(enabledProp.Name, binding.OnEnabledChanged);
+
+                    }
+
+                    props.Add(binding);
+                }
+                _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView(props);
+                PropertyGroupDescription groupDescription = new PropertyGroupDescription("Subcategory");
+                _cvs.GroupDescriptions.Add(groupDescription);
+                _cvs.CustomSort = new GenericComparer<PropertyBindingBase>();
+            });
+
             SetCategoryFilter(this);
+
             this.ItemsSource = PropertyView;
+        }
+
+        private void OnSourcePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Action onEnabledChanged;
+            onEnabledChangedFuncs.TryGetValue(e.PropertyName, out onEnabledChanged);
+            onEnabledChanged?.Invoke();
         }
     }
 
