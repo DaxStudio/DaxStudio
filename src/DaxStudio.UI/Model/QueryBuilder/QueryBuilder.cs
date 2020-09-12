@@ -122,29 +122,29 @@ namespace DaxStudio.UI.Model
             switch (filter.FilterType)
             {
                 case FilterType.Is:
-                    return $"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} = {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} = {formattedVal} ))";
                 case Enums.FilterType.IsNot:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <> {formattedVal} ))";
                 case FilterType.StartsWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) = 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 ))";
                 case FilterType.Contains:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) >= 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 ))";
                 case FilterType.DoesNotStartWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) = 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 )))";
                 case FilterType.DoesNotContain:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) >= 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 )))";
                 case FilterType.IsBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), ISBLANK({colName}))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), ISBLANK( {colName} )))";
                 case FilterType.IsNotBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(ISBLANK({colName})))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( ISBLANK( {colName} ))))";
                 case FilterType.GreaterThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} > {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} > {formattedVal} ))";
                 case FilterType.GreaterThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} >= {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} ))";
                 case FilterType.LessThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} < {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} < {formattedVal} ))";
                 case FilterType.LessThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <= {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
                     break;
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
