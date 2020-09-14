@@ -1575,10 +1575,17 @@ namespace DaxStudio.UI.ViewModels
                 System.Diagnostics.Debug.WriteLine($"OptionsViewModel.SearchText = {value}");
                 _searchText = value;
                 NotifyOfPropertyChange(nameof(SearchText));
+                NotifyOfPropertyChange(nameof(HasSearchText));
                 //PropertyChanged(this, new PropertyChangedEventArgs(nameof(SearchText)));
                 if (!string.IsNullOrEmpty(_searchText)) SelectedCategory = null;
                 else SelectedCategory = Categories.FirstOrDefault();
             }
+        }
+
+        public bool HasSearchText => !string.IsNullOrWhiteSpace(SearchText);
+
+        public void ClearSearchText() {
+            SearchText = string.Empty;
         }
 
         private IEnumerable<string> GetCategories()

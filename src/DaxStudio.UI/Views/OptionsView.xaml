@@ -14,8 +14,8 @@
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-            xmlns:val="clr-namespace:DaxStudio.UI.Validation"
-            mc:Ignorable="d" 
+            xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
+             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -247,7 +247,15 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <nud:DoubleUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="{Binding MinValue, Mode=OneTime}" MaxValue="{Binding MaxValue, Mode=OneTime}" Margin="2"  HorizontalAlignment="Left"></nud:DoubleUpDown>
+                    <nud:DoubleUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                                       IsReadOnly="False" 
+                                       MinValue="{Binding MinValue, Mode=OneTime}" 
+                                       MaxValue="{Binding MaxValue, Mode=OneTime}" 
+                                       FormatString="#,#.0"
+                                       DisplayLength="5"
+                                       Width="140"
+                                       Margin="2"  
+                                       HorizontalAlignment="Left"></nud:DoubleUpDown>
 
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
@@ -259,7 +267,14 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <nud:NumericUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="{Binding MinValue, Mode=OneTime}" MaxValue="{Binding MaxValue, Mode=OneTime}" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
+                    <nud:NumericUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                                        IsReadOnly="False" 
+                                        MinValue="{Binding MinValue, Mode=OneTime}" 
+                                        MaxValue="{Binding MaxValue, Mode=OneTime}" 
+                                        MinWidth="120"
+                                        DisplayLength="5"
+                                        Margin="2"  
+                                        HorizontalAlignment="Left"/>
 
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
@@ -500,8 +515,24 @@
 
                     <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
                     <!-- -->
-                    <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" MinWidth="100" Grid.Row="1" Margin="5" Padding="2"/>
-
+                    <Grid>
+                        <wmc:WatermarkTextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
+                             MinWidth="100" 
+                             Grid.Row="1" 
+                             Margin="5" 
+                             Padding="5" Watermark="Search"/>
+                        <Button Margin="10" Grid.Column="1" HorizontalAlignment="Right" Padding="5"
+                                                Visibility="{Binding Path=HasSearchText, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                BorderThickness="0"
+                                                Background="Transparent">
+                            <fa:ImageAwesome Icon="Times" Width="8" Margin="0" />
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="ClearSearchText" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Button>
+                    </Grid>
                     <ListBox x:Name="Categories" Grid.Row="2" 
                         ItemsSource="{Binding Categories}" 
                         SelectedValue="{Binding SelectedCategory}" 
@@ -510,7 +541,7 @@
                         BorderThickness="0"
                         Margin="5"/>
                     <!-- SearchText="{Binding ElementName=Search, Path=Text}" -->
-                    <Border Grid.Column="1" Grid.RowSpan="3" Padding="15,0" Margin="10,5" BorderThickness="1,0,0,0" BorderBrush="Black">
+                    <Border Grid.Column="1" Grid.RowSpan="3" Padding="15,0" Margin="10,5" BorderThickness="1,0,0,0" BorderBrush="DarkGray">
                     <pg:PropertyList Source="{Binding .}" 
                         Grid.RowSpan="3"
                         CategoryFilter="{Binding SelectedCategory}"

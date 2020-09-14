@@ -16,12 +16,12 @@ namespace DaxStudio.UI.Behaviours
             AssociatedObject.PasswordChanged += OnPasswordBoxValueChanged;
 
             // using _value saved before in OnPropertyChanged
-            if (_value != null)
+            if (CachedValue != null)
             {
-                if (_value.Length == 0)
+                if (CachedValue.Length == 0)
                     AssociatedObject.Password = string.Empty;
                 else
-                    AssociatedObject.Password = _value.ConvertToUnsecureString();
+                    AssociatedObject.Password = CachedValue.ConvertToUnsecureString();
             }
         }
 
@@ -39,8 +39,29 @@ namespace DaxStudio.UI.Behaviours
 
         public static readonly DependencyProperty PasswordProperty =
             DependencyProperty.Register("SecurePassword", typeof(SecureString),
-               typeof(PasswordBoxBindingBehavior), new FrameworkPropertyMetadata( OnBoundPasswordChanged));
-        private SecureString _value;
+               typeof(PasswordBoxBindingBehavior), new FrameworkPropertyMetadata(OnBoundPasswordChanged));
+
+        private SecureString _cachedValue;
+        private bool _valueSet;
+        private SecureString CachedValue {
+            get => _valueSet? _cachedValue:null; 
+            set 
+            { 
+                if (value != null) _valueSet = true;
+                var lengthSet = false;
+                try
+                {
+                    lengthSet = value.Length > 0;
+                }
+                catch (System.ObjectDisposedException )
+                {
+                    _valueSet = false;
+                }
+
+                _cachedValue = value;
+            }
+        } 
+        
         private bool _skipUpdate;
 
         private void OnPasswordBoxValueChanged(object sender, RoutedEventArgs e)
@@ -77,7 +98,7 @@ namespace DaxStudio.UI.Behaviours
             if (AssociatedObject == null)
             {
                 // so, let'save the value and then reuse it when OnAttached() called
-                _value = e.NewValue as SecureString;
+                CachedValue = e.NewValue as SecureString;
                 return;
             }
 
@@ -86,10 +107,17 @@ namespace DaxStudio.UI.Behaviours
                 if (!_skipUpdate)
                 {
                     _skipUpdate = true;
-                    if (((SecureString)e.NewValue).Length == 0)
+                    if (e.NewValue == null)
+                    {
                         AssociatedObject.Password = string.Empty;
+                    }
                     else
-                        AssociatedObject.Password = ((SecureString)e.NewValue).ConvertToUnsecureString();
+                    {
+                        if (((SecureString)e.NewValue).Length == 0)
+                            AssociatedObject.Password = string.Empty;
+                        else
+                            AssociatedObject.Password = ((SecureString)e.NewValue).ConvertToUnsecureString();
+                    }
                     _skipUpdate = false;
                 }
             }
