@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
@@ -85,8 +86,9 @@ namespace DaxStudio.UI.ViewModels
 
         public string QueryText { 
             get { 
-                try { 
-                    return QueryBuilder.BuildQuery(Columns.Items, Filters.Items); 
+                try {
+                    var modelCaps = GetModelCapabilities();
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items); 
                 }
                 catch (Exception ex)
                 {
@@ -96,6 +98,13 @@ namespace DaxStudio.UI.ViewModels
                 return string.Empty;
             } 
         
+        }
+
+        private IModelCapabilities GetModelCapabilities()
+        {
+            var db = Document.Connection.Database;
+            var model = db.Models[Document.SelectedModel];
+            return model.Capabilities;
         }
 
         public Dictionary<string, QueryParameter> QueryParameters

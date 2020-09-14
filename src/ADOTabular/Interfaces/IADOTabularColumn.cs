@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ADOTabular
+namespace ADOTabular.Interfaces
 {
     public interface IADOTabularColumn:IADOTabularObject
     {

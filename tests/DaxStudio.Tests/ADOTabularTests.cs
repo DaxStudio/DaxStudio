@@ -12,6 +12,7 @@ using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
 using System.Collections.Generic;
 using DaxStudio.UI.Model;
 using Caliburn.Micro;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests
 {
@@ -388,8 +389,11 @@ namespace DaxStudio.Tests
 
             v.GenerateTablesFromXmlReader(tabs, xr);
 
-            Assert.AreEqual(false, m.Capabilities.DAXFunctions.SubstituteWithIndex);
+            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SubstituteWithIndex);
             Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
+            Assert.AreEqual(true, m.Capabilities.DAXFunctions.TreatAs);
+            Assert.AreEqual(true, m.Capabilities.Variables);
+            Assert.AreEqual(true, m.Capabilities.TableConstructor);
         }
 
         [TestMethod]

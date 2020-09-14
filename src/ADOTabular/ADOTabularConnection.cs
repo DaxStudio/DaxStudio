@@ -11,6 +11,7 @@ using System.Globalization;
 using ADOTabular.Enums;
 using DaxStudio.Common.Enums;
 using ADOTabular.Utils;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {

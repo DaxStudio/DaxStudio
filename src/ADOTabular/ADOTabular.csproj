@@ -178,15 +178,17 @@
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="IADOTabularColumn.cs" />
-    <Compile Include="IADOTabularConnection.cs" />
-    <Compile Include="IADOTabularObject.cs" />
-    <Compile Include="IADOTabularReference.cs" />
+    <Compile Include="Interfaces\IADOTabularColumn.cs" />
+    <Compile Include="Interfaces\IADOTabularConnection.cs" />
+    <Compile Include="Interfaces\IADOTabularObject.cs" />
+    <Compile Include="Interfaces\IADOTabularReference.cs" />
+    <Compile Include="Interfaces\IDAXFunctions.cs" />
+    <Compile Include="Interfaces\IModelCapabilities.cs" />
     <Compile Include="MetadataInfo\DaxFunction.cs" />
     <Compile Include="MetadataInfo\DaxMetadata.cs" />
     <Compile Include="MetadataInfo\SsasVersion.cs" />
     <Compile Include="MetaDataVisitorCSDL.cs" />
-    <Compile Include="IMetaDataVisitor.cs" />
+    <Compile Include="Interfaces\IMetaDataVisitor.cs" />
     <Compile Include="MetaDataVisitorADOMD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ConnectionStringParser.cs" />
@@ -200,7 +202,7 @@
       <Link>.editorconfig</Link>
     </None>
     <None Include="app.config" />
-    <Compile Include="IADOTabularFolderReference.cs" />
+    <Compile Include="Interfaces\IADOTabularFolderReference.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

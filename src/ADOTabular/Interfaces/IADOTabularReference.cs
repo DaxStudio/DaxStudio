@@ -1,4 +1,4 @@
-﻿namespace ADOTabular
+﻿namespace ADOTabular.Interfaces
 {
     public interface IADOTabularObjectReference
     {

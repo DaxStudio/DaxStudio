@@ -16,17 +16,17 @@
     public class UnitViewModel : BaseViewModel, IDataErrorInfo
     {
         #region fields
-        private ListItem mSelectedItem = null;
+        private ListItem mSelectedItem;
 
-        private readonly ObservableCollection<ListItem> mUnitList = null;
+        private readonly ObservableCollection<ListItem> mUnitList;
 
         private string mValueTip = string.Empty;
-        private double mValue = 0;
+        private double mValue;
         private string mstrValue = "0.0";
 
-        private ScreenConverter mUnitConverter = null;
+        private ScreenConverter mUnitConverter;
 
-        private RelayCommand<Itemkey> mSetSelectedItemCommand = null;
+        private RelayCommand<Itemkey> mSetSelectedItemCommand;
 
         /// <summary>
         /// Minimum value to be converted for both percentage and pixels

@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
 using System;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 using System;
+using ADOTabular.Interfaces;
 
 //using Microsoft.AnalysisServices.AdomdClient;
 

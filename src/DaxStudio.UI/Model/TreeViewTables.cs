@@ -11,6 +11,7 @@ using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Utils;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

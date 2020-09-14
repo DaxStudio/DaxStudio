@@ -13,6 +13,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

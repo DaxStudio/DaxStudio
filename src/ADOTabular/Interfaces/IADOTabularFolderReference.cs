@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ADOTabular
+namespace ADOTabular.Interfaces
 {
 
 	public enum FolderReferenceType

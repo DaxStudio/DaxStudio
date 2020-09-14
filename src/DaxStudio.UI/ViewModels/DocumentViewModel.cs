@@ -46,6 +46,7 @@ using Dax.ViewModel;
 using System.Reflection;
 using DaxStudio.Common.Enums;
 using System.Windows.Interop;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

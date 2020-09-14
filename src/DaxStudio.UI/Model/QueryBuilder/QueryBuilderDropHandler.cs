@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using DaxStudio.UI.Interfaces;
 using GongSolutions.Wpf.DragDrop;
 using System;

@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using System;
 using System.Collections.Generic;

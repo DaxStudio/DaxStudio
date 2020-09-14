@@ -2,6 +2,7 @@
 using DaxStudio.UI.Model;
 using Moq;
 using System;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests.Mocks
 {
