@@ -2,6 +2,7 @@
 using System.Data;
 using System.Collections;
 using System;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {

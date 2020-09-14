@@ -18,6 +18,7 @@ using System.Windows;
 using System.Text.RegularExpressions;
 using DaxStudio.UI.Interfaces;
 using System.Diagnostics;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

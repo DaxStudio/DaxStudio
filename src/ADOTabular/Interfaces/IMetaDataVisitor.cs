@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace ADOTabular {
+namespace ADOTabular.Interfaces 
+{
     public interface IMetaDataVisitor {
         SortedDictionary<string, ADOTabularModel> Visit(ADOTabularModelCollection models);
         void Visit(ADOTabularTableCollection tables);

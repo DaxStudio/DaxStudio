@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

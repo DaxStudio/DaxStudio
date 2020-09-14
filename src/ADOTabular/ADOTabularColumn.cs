@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADOTabular.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Contracts;

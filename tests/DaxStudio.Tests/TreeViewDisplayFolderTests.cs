@@ -13,6 +13,7 @@ using Caliburn.Micro;
 using System.IO;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests
 {

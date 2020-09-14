@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
+        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
             var measureDefines = BuildMeasureDefines(columns);
 
@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Model
             //var filterDefines = BuildFilterDefines(filters);
 
             var columnList = BuildColumns(columns);
-            var filterList = BuildFilters(filters);
+            var filterList = BuildFilters(modelCaps, filters);
             var measureList = BuildMeasures(columns);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
@@ -103,18 +103,22 @@ namespace DaxStudio.UI.Model
             return cols.Select(c => c.DaxName).Aggregate((current, next) => current + ",\n    " + next);
         }
 
-        private static string BuildFilters(ICollection<QueryBuilderFilter> filters)
+        private static string BuildFilters(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderFilter> filters)
         {
             //DEFINE VAR __DS0FilterTable =
             //FILTER(
             //  KEEPFILTERS(VALUES('DimCustomer'[EnglishEducation])),
             //  'DimCustomer'[EnglishEducation] = "Bachelors"
             //)
+
+            Func<QueryBuilderFilter,string> filterExpressionFunc = FilterExpressionBasic;
+            if (modelCaps.DAXFunctions.TreatAs) filterExpressionFunc = FilterExpressionTreatAs;
+
             if (filters.Count == 0) return string.Empty;
-            return (string)filters.Select(f => FilterExpression(f)).Aggregate((i, j) => i + ",\n    " + j);
+            return (string)filters.Select(f => filterExpressionFunc(f)).Aggregate((i, j) => i + ",\n    " + j);
         }
 
-        public static string FilterExpression(QueryBuilderFilter filter)
+        public static string FilterExpressionTreatAs(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
             var formattedVal = FormattedValue(filter);
@@ -122,29 +126,43 @@ namespace DaxStudio.UI.Model
             switch (filter.FilterType)
             {
                 case FilterType.Is:
-                    return $"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} = {formattedVal})";
+                    return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
+                default:
+                    return FilterExpressionBasic(filter);
+            }
+        }
+
+        public static string FilterExpressionBasic(QueryBuilderFilter filter)
+        {
+            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
+            var formattedVal = FormattedValue(filter);
+            var colName = filter.TabularObject.DaxName;
+            switch (filter.FilterType)
+            {
+                case FilterType.Is:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} = {formattedVal} ))";
                 case Enums.FilterType.IsNot:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <> {formattedVal} ))";
                 case FilterType.StartsWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) = 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 ))";
                 case FilterType.Contains:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) >= 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 ))";
                 case FilterType.DoesNotStartWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) = 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 )))";
                 case FilterType.DoesNotContain:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) >= 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 )))";
                 case FilterType.IsBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), ISBLANK({colName}))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), ISBLANK( {colName} )))";
                 case FilterType.IsNotBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(ISBLANK({colName})))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( ISBLANK( {colName} ))))";
                 case FilterType.GreaterThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} > {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} > {formattedVal} ))";
                 case FilterType.GreaterThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} >= {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} ))";
                 case FilterType.LessThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} < {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} < {formattedVal} ))";
                 case FilterType.LessThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <= {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
                     break;
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");

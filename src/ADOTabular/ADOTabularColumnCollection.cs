@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics.Contracts;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {

@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using ADOTabular.Interfaces;
+using System.Data;
 using System.Diagnostics.Contracts;
 
 namespace ADOTabular

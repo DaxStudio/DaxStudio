@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using DaxStudio.UI.Model;
 using System;
 using System.Collections.Generic;

@@ -10,6 +10,7 @@ using DaxStudio.UI.Events;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
