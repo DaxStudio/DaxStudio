@@ -20,8 +20,10 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-        
-        <conv:ResourceLookupConverter x:Key="TraceIcons">
+
+            <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
+
+            <conv:ResourceLookupConverter x:Key="TraceIcons">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
@@ -299,8 +301,8 @@
 
                     </Fluent:Button>
 
-                    <Fluent:BackstageTabItem Header="Options"  >
-                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}" />
+                    <Fluent:BackstageTabItem Header="Options" Icon="{StaticResource OptionsIcon}" >
+                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}"  />
                     </Fluent:BackstageTabItem>
                     
                     <Fluent:Button Name="btnExit" Header="Exit" Foreground="White">
