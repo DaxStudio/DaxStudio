@@ -90,6 +90,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Editor Font Family")]
+        [SortOrder(10)]
         [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
         public string EditorFontFamily { get { return _selectedEditorFontFamily; }
@@ -108,8 +109,8 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Editor Font Size")]
-        [MinValue(6)]
-        [MaxValue(120)]
+        [SortOrder(20)]
+        [MinValue(6),MaxValue(120)]
         [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
         public double EditorFontSize { get { return _editorFontSize; }
@@ -174,6 +175,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Show Line Numbers")]
+        [SortOrder(30)]
         [DataMember]
         [DefaultValue(true)]
         public bool EditorShowLineNumbers { get { return _showLineNumbers; }
@@ -189,6 +191,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Enable Intellisense")]
+        [SortOrder(40)]
         [DataMember]
         [DefaultValue(true)]
         public bool EditorEnableIntellisense
@@ -1127,8 +1130,8 @@ namespace DaxStudio.UI.ViewModels
         [Category("Editor")]
         [DisplayName("Intellisense Width %")]
         [Description("100%-300%")]
-        [MinValue(100)]
-        [MaxValue(300)]
+        [MinValue(100), MaxValue(300)]
+        [SortOrder(80)]
         [DataMember, DefaultValue(100)]
         public int CodeCompletionWindowWidthIncrease { 
             get => _codeCompletionWindowWidthIncrease;
@@ -1159,7 +1162,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataLocalMachine = true;
         [Category("Metadata Pane")]
-        [Subcategory("Automatic Metadata Refresh")]
+        [Subcategory("Detect Metadata Changes")]
         [DisplayName("Local Connections (PBI Desktop / SSDT)")]
         [SortOrder(1)]
         [DataMember, DefaultValue(true)]
@@ -1175,7 +1178,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataLocalNetwork = true;
         [Category("Metadata Pane")]
-        [Subcategory("Automatic Metadata Refresh")]
+        [Subcategory("Detect Metadata Changes")]
         [DisplayName("Network Connections (SSAS on-prem)")]
         [SortOrder(2)]
         [DataMember, DefaultValue(true)]
@@ -1191,7 +1194,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _autoRefreshMetadataCloud = true;
         [Category("Metadata Pane")]
-        [Subcategory("Automatic Metadata Refresh")]
+        [Subcategory("Detect Metadata Changes")]
         [DisplayName("Cloud Connections (asazure:// or powerbi://)")]
         [SortOrder(3)]
         [DataMember, DefaultValue(false)]
@@ -1360,6 +1363,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _editorConvertTabsToSpaces;
         [DataMember,DefaultValue(false)]
         [DisplayName("Convert tabs to spaces"), Category("Editor")]
+        [SortOrder(60)]
         public bool EditorConvertTabsToSpaces { get => _editorConvertTabsToSpaces; set {
                 _editorConvertTabsToSpaces = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
@@ -1371,8 +1375,8 @@ namespace DaxStudio.UI.ViewModels
         private int _editorIndentationSize = 4;
         [Category("Editor")]
         [DisplayName("Indentation Size")]
-        [MinValue(1)]
-        [MaxValue(25)]
+        [SortOrder(70)]
+        [MinValue(1), MaxValue(25)]
         [DataMember,DefaultValue(4)]
         public int EditorIndentationSize { 
             get => _editorIndentationSize; 
@@ -1388,6 +1392,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _editorWordWrap;
         [Category("Editor")]
         [DisplayName("Enable Word Wrapping")]
+        [SortOrder(40)]
         [DataMember, DefaultValue(false)]
         public bool EditorWordWrap
         {
