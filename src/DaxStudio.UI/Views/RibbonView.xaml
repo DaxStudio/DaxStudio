@@ -21,7 +21,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <fa:ImageAwesome Icon="Cog" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
+            <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
 
             <conv:ResourceLookupConverter x:Key="TraceIcons">
             <ResourceDictionary>

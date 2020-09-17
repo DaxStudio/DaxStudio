@@ -8,7 +8,7 @@
 #define myAppBuild
 #define MyAppVersionFull ParseVersion('..\release\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
 #define MyAppVersion GetFileVersion('..\release\DaxStudio.exe')
-#define MyAppPublisher "Dax Studio"
+#define MyAppPublisher "DAX Studio"
 #define MyAppURL "https://daxstudio.org"
 #define MyAppExeName "DaxStudio.exe"
 ; Calculated Constants
@@ -96,8 +96,8 @@ Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsof
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
 ;Excel Addin configs
-Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Excel; Check: IsExcel2010Installed
-Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Excel; Check: Not IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Core; Check: IsExcel2010Installed
+Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core; Check: Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -112,6 +112,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"
+Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {app}\bin\DaxStudio.cer"; StatusMsg: "Adding trusted publisher..."; Components: Excel 
 ;Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO DaxStudio /D ""DaxStudio Installed"""; WorkingDir: "{sys}"; Flags: runascurrentuser runhidden; StatusMsg: "Registering DaxStudio Eventlog Source"; Components: Core
 ;Filename: {code:GetV4NetDir}ngen.exe; Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; 
 ;Check: CheckFramework;
@@ -142,14 +143,14 @@ Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelB
 
 ;Excel x86 Addin Keys - All Users
 Root: "HKA32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
-Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "DAX Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "DAX Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\bin\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 Root: "HKA32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
 ;Excel x64 Addin keys - All Users
 Root: "HKA64"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
-Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "Dax Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Description"; ValueData: "DAX Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
+Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "FriendlyName"; ValueData: "DAX Studio Excel Add-In"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
 Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: string; ValueName: "Manifest"; ValueData: "{code:SwapSlashes|file:///{app}\bin\DaxStudio.vsto|vstolocal}"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
 Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAddIn"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"; Flags: uninsdeletekey; Components: Excel; Check: Is64BitExcelFromRegisteredExe
 
