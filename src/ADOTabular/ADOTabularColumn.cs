@@ -179,6 +179,6 @@ namespace ADOTabular
         // used for relationship links
         public string Role { get; internal set; }
         public List<ADOTabularVariation> Variations { get; internal set; }
-        public bool IsKey { get; internal set; } = false;
+        public bool IsKey { get; internal set; }
     }
 }

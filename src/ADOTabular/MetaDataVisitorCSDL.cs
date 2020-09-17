@@ -8,8 +8,8 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Diagnostics;
 using ADOTabular.Utils;
-using DaxStudio.Common.Enums;
 using ADOTabular.Interfaces;
+using ADOTabular.Enums;
 
 namespace ADOTabular
 {

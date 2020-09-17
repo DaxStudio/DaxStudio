@@ -828,7 +828,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 SortedSet<string> tmpDatabases = new SortedSet<string>();
 
-                using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, Common.Enums.AdomdType.AnalysisServices))
+                using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
                 {
 
                     conn.Open();

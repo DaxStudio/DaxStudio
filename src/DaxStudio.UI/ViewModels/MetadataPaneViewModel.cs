@@ -27,42 +27,39 @@ namespace DaxStudio.UI.ViewModels
     public class MetadataPaneViewModel : 
         ToolPaneBaseViewModel
         , IHandle<UpdateGlobalOptions>
+        , IHandle<SelectedDatabaseChangedEvent>
+        , IHandle<QueryStartedEvent>
+        , IHandle<QueryFinishedEvent>
+        , IHandle<ConnectionChangedEvent>
+        , IHandle<ConnectionOpenedEvent>
+        , IHandle<ConnectFailedEvent>
+        , IHandle<TablesRefreshedEvent>
         //, IDragSource
         , IMetadataPane
     {
         private string _modelName;
         private readonly IGlobalOptions _options;
+        private IMetadataProvider _metadataProvider;
         //private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
-        public MetadataPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base(connection, eventAggregator)
+        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base( eventAggregator)
         {
+            _metadataProvider = metadataProvider;
             ActiveDocument = document;
-            ActiveDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             //    _eventAggregator = eventAggregator;
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
-            eventAggregator.Subscribe(this);  
+            //eventAggregator.Subscribe(this);  
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
         }
 
-        private void ActiveDocumentPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "IsQueryRunning")
-            {
-                NotifyOfPropertyChange(() => CanSelectDatabase);
-                NotifyOfPropertyChange(() => CanSelectModel);
-            }
-            if (e.PropertyName == "SelectedDatabase")
-            {
-                var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == ActiveDocument.SelectedDatabase);
-                if (selectedDB != null) SelectedDatabase = selectedDB;
-                // TODO - should we log a warning here?
-            }
-        }
+
+
+
 
         public IEnumerable<FilterableTreeViewItem> SelectedItems { get; } = new List<FilterableTreeViewItem>();
 
@@ -94,31 +91,7 @@ namespace DaxStudio.UI.ViewModels
         public DocumentViewModel ActiveDocument { get; }
 
 
-        public override void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
-            switch (propertyChangedEventArgs.PropertyName)
-            {
-                case "ModelList":
-                    try
-                    {
-                        if (ModelList == null) return;
-                        if (Connection == null) return;
-                        if (Connection?.Database?.Models == null) return;
 
-                        if (ModelList.Count > 0)
-                        {
-                            SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
-                        }
-                        Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message));
-                    }
-                    break;
-            }
-        }
 
         public string ModelName
         {
@@ -137,9 +110,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
-            Connection.Refresh();
+            _metadataProvider.Refresh();
             var _tmpModel = _selectedModel;
-            this.ModelList = Connection.Database.Models;
+            ModelList = _metadataProvider.GetModels();
+            // TODO - should we get tables, databases and reset selected database??
+
             ShowMetadataRefreshPrompt = false;
             EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
         }
@@ -169,39 +144,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_selectedModel != value)
                 {
-                    try
-                    {
-                        _selectedModel = value;
-                        _treeViewTables = null;
-                        if (_selectedModel != null)
-                        {
-                            if (Connection.IsMultiDimensional)
-                            {
-                                if (Connection.Is2012SP1OrLater)
-                                {
-                                    Connection.SetCube(_selectedModel.Name);
-                                }
-                                else
-                                {
-                                    ActiveDocument.OutputError(string.Format("DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {0}"
-                                        , Connection.ServerVersion));
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "SelectModel", ex.Message, ex.StackTrace);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
-                    }
-                    finally
-                    {
-                        EventAggregator.PublishOnUIThread(new SelectedModelChangedEvent(ActiveDocument, SelectedModelName));
-                        NotifyOfPropertyChange(() => SelectedModel);
-                        // TODO - should we run the table refresh async
-                        RefreshTables();
-
-                    }
+                    _selectedModel = value;
+                    NotifyOfPropertyChange(nameof(SelectedModel));
+                    //EventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent( SelectedModelName));
+                    _metadataProvider.SetSelectedModel(SelectedModel);
                 }
             }
         }
@@ -212,33 +158,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 return SelectedModel == null ? "--" : SelectedModel.Name;
             }
-        }
-
-        protected override void OnConnectionChanged()
-        {
-            base.OnConnectionChanged();
-            if (Connection == null) return;
-            if (ModelList == Connection.Database.Models) return;
-
-            Execute.OnUIThread(() =>
-            {
-                Databases = Connection.Databases.ToBindableCollection();
-            });
-            var ml = Connection.Database.Models;
-            Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
-            if (Dispatcher.CurrentDispatcher.CheckAccess())
-            {
-                Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
-            }
-            else
-            {
-                ModelList = ml;
-            }
-
-            NotifyOfPropertyChange(() => IsConnected);
-            NotifyOfPropertyChange(() => Connection);
-            NotifyOfPropertyChange(() => CanSelectDatabase);
-            NotifyOfPropertyChange(() => CanSelectModel);
         }
 
         private IEnumerable<FilterableTreeViewItem> _treeViewTables;
@@ -274,7 +193,7 @@ namespace DaxStudio.UI.ViewModels
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
-                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTables), $"Starting Refresh of Tables (session: {Connection.SessionId})");
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTables), $"Starting Refresh of Tables ");
                         _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
                         sw.Stop();
                         Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
@@ -421,8 +340,8 @@ namespace DaxStudio.UI.ViewModels
                                 db => new DatabaseReference()
                                 {
                                     Name = db,
-                                    Caption = (Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.ShortFileName?.Length > 0 ? Connection.ShortFileName : db,
-                                    Description = ( Connection.IsPowerPivot || Connection.IsPowerBIorSSDT) && Connection?.FileName?.Length > 0 ? Connection.FileName : ""
+                                    Caption = (_metadataProvider.IsPowerPivot || _metadataProvider.IsPowerBIorSSDT) && _metadataProvider?.ShortFileName?.Length > 0 ? _metadataProvider.ShortFileName : db,
+                                    Description = ( _metadataProvider.IsPowerPivot || _metadataProvider.IsPowerBIorSSDT) && _metadataProvider?.FileName?.Length > 0 ? _metadataProvider.FileName : ""
                                 }).OrderBy(db => db.Name);
 
             // remove deleted databases
@@ -441,8 +360,8 @@ namespace DaxStudio.UI.ViewModels
 
             NotifyOfPropertyChange(() => DatabasesView);
             if (SelectedDatabase == null)
-                if (Connection?.Database != null )
-                    SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == Connection.Database.Name);
+                if (!string.IsNullOrEmpty(_metadataProvider.SelectedDatabaseName))
+                    SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == _metadataProvider.SelectedDatabaseName);
                 else
                     SelectedDatabase = DatabasesView.FirstOrDefault();
         }
@@ -453,33 +372,14 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedDatabase; }
             set
             {
-            
-                if (Connection != null)
-                {
-                    if (Connection.State == ConnectionState.Open)
-                    {
-                        if (_selectedDatabase != null && value != null && Connection.Database.Name != value.Name) //!Connection.Database.Equals(_selectedDatabase))
-                        {
-                            Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", value.Name);
-                            Connection.ChangeDatabase(value.Name);
-
-                        }
-                        if (Connection.Database != null)
-                        {
-                            ModelList = Connection.Database.Models;
-                        }
-                    }
-                }
-
-                if (_selectedDatabase != value )
+                if (_selectedDatabase != value)
                 {
                     _selectedDatabase = value;
-                    if (_selectedDatabase != null) Connection.ChangeDatabase(_selectedDatabase.Name);
-                    ModelList = Connection.Database.Models;
-                    NotifyOfPropertyChange(() => SelectedDatabase);
-                    NotifyOfPropertyChange(() => ModelList);
-                    EventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
+                    NotifyOfPropertyChange(nameof(SelectedDatabase));
+                    _metadataProvider.SetSelectedDatabase(_selectedDatabase);
+                    ModelList = _metadataProvider.GetModels();
                 }
+                
 
             }
         }
@@ -488,7 +388,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return this.Connection?.Database;
+                return _metadataProvider.SelectedDatabase;
             }
         }
 
@@ -496,7 +396,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return Connection != null && !(Connection.IsPowerPivot) && !ActiveDocument.IsQueryRunning;
+                return  !_metadataProvider.IsPowerPivot && !ActiveDocument.IsQueryRunning;
             }
         }
 
@@ -504,7 +404,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return Connection != null && !ActiveDocument.IsQueryRunning;
+                return _metadataProvider.IsConnected && !ActiveDocument.IsQueryRunning;
             }
         }
 
@@ -513,8 +413,8 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
-                this.Connection.Refresh();
-                var sourceSet = this.Connection.Databases.ToBindableCollection();
+                _metadataProvider.Refresh();
+                var sourceSet = _metadataProvider.GetDatabases().ToBindableCollection();
 
                 var deletedItems = this.Databases.Except(sourceSet);
                 var newItems = sourceSet.Except(this.Databases);
@@ -635,8 +535,8 @@ namespace DaxStudio.UI.ViewModels
             if (col.ObjectType != ADOTabularObjectType.Column) return;
             // TODO - make an option for the sample size
             if (_options == null) return;
-            if (_options.ShowTooltipSampleData && !column.HasSampleData) column.GetSampleDataAsync(Connection, 10);
-            if (_options.ShowTooltipBasicStats && !column.HasBasicStats) column.UpdateBasicStatsAsync(Connection);
+            if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,10) ;
+            if (_options.ShowTooltipBasicStats && !column.HasBasicStats) _metadataProvider.UpdateColumnBasicStats(column); 
         }
 
         internal void ChangeDatabase(string databaseName)
@@ -648,68 +548,17 @@ namespace DaxStudio.UI.ViewModels
 
         private string ExpandDependentMeasure(ADOTabularColumn column)
         {
-            return ExpandDependentMeasure(column, false);
+            return _metadataProvider.ExpandDependentMeasure(column.Name, false);
         }
+
         private string ExpandDependentMeasure(ADOTabularColumn column, bool ignoreNonUniqueMeasureNames)
         {
-            string measureName = column.Name;
-            var model = Connection.Database.Models.BaseModel;
-            var modelMeasures = (from t in model.Tables
-                                 from m in t.Measures
-                                 select m).ToList();
-            var distinctColumns = (from t in model.Tables
-                                   from c in t.Columns
-                                   where c.ObjectType == ADOTabularObjectType.Column
-                                   select c.Name).Distinct().ToList();
-
-            var finalMeasure = modelMeasures.First(m => m.Name == measureName);
-
-            var resultExpression = finalMeasure.Expression;
-
-            bool foundDependentMeasures;
-
-            do
-            {
-                foundDependentMeasures = false;
-                foreach (var modelMeasure in modelMeasures)
-                {
-                    //string daxMeasureName = "[" + modelMeasure.Name + "]";
-                    //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
-                    Regex daxMeasureRegex = new Regex(@"[^\w']?\[" + modelMeasure.Name + "]");
-
-                    string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
-
-                    if (newExpression != resultExpression)
-                    {
-                        resultExpression = newExpression;
-                        foundDependentMeasures = true;
-                        if (!ignoreNonUniqueMeasureNames)
-                        {
-                            if (distinctColumns.Contains(modelMeasure.Name))
-                            {
-                                // todo - prompt user to see whether to continue
-                                var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
-                                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
-                                throw new InvalidOperationException(msg);
-                            }
-                        }
-                    }
-
-                }
-            } while (foundDependentMeasures);
-
-            return resultExpression;
+            return _metadataProvider.ExpandDependentMeasure(column.Name, ignoreNonUniqueMeasureNames);
         }
 
         private List<ADOTabularMeasure> GetAllMeasures(string filterTable = null)
         {
-            bool allTables = (string.IsNullOrEmpty(filterTable));
-            var model = Connection.Database.Models.BaseModel;
-            var modelMeasures = (from t in model.Tables
-                                 from m in t.Measures
-                                 where (allTables || t.Caption == filterTable)
-                                 select m).ToList();
-            return modelMeasures;
+            return _metadataProvider.GetAllMeasures(filterTable);
         }
 
         private List<ADOTabularMeasure> FindDependentMeasures(string measureName)
@@ -837,42 +686,19 @@ namespace DaxStudio.UI.ViewModels
 
         public void DefineFilterDumpMeasure(TreeViewTable item, bool allTables)
         {
-            if (item == null)
+            if (item == null) return;
+            
+            try 
             {
-                return;
-            }
-            string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption));
-            try
-            {
-                var model = Connection.Database.Models.BaseModel;
-                var distinctColumns = (from t in model.Tables
-                                       from c in t.Columns
-                                       where c.ObjectType == ADOTabularObjectType.Column
-                                           && (allTables || t.Caption == item.Caption)
-                                       select c).Distinct().ToList();
-                string measureExpression = "\r\nVAR MaxFilters = 3\r\nRETURN\r\n";
-                bool firstMeasure = true;
-                foreach (var c in distinctColumns)
-                {
-                    if (!firstMeasure) measureExpression += "\r\n & ";
-                    measureExpression += string.Format(@"IF ( 
-    ISFILTERED ( {0}[{1}] ), 
-    VAR ___f = FILTERS ( {0}[{1}] ) 
-    VAR ___r = COUNTROWS ( ___f ) 
-    VAR ___t = TOPN ( MaxFilters, ___f, {0}[{1}] )
-    VAR ___d = CONCATENATEX ( ___t, {0}[{1}], "", "" )
-    VAR ___x = ""{0}[{1}] = "" & ___d & IF(___r > MaxFilters, "", ... ["" & ___r & "" items selected]"") & "" "" 
-    RETURN ___x & UNICHAR(13) & UNICHAR(10)
-)", c.Table.DaxName, c.Name);
-                    firstMeasure = false;
-                }
+                string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption));
+                string measureExpression = _metadataProvider.DefineFilterDumpMeasureExpression(item.Caption, allTables);
 
                 EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
             }
             catch (System.Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineFilterDumpMeasure", ex.Message, ex.StackTrace);
-
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error defining filter dump measure: {ex.Message}"));
             }
         }
 
@@ -880,10 +706,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                if (item == null)
-                {
-                    return;
-                }
+                if (item == null) return;
 
                 ADOTabularColumn column; string measureExpression = null, measureName = null;
 
@@ -1031,6 +854,82 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public void Handle(QueryStartedEvent message)
+        {
+            NotifyOfPropertyChange(() => CanSelectDatabase);
+            NotifyOfPropertyChange(() => CanSelectModel);
+        }
+
+        public void Handle(QueryFinishedEvent message)
+        {
+            NotifyOfPropertyChange(() => CanSelectDatabase);
+            NotifyOfPropertyChange(() => CanSelectModel);
+        }
+
+        public void Handle(SelectedDatabaseChangedEvent message)
+        {
+            var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
+            if (selectedDB != null) SelectedDatabase = selectedDB;
+            // TODO - should we log a warning here?
+
+            // refresh model list
+            try
+            {
+                //if (ModelList == null) return;
+                //if (Connection == null) return;
+                //if (Connection?.Database?.Models == null) return;
+
+                //if (ModelList.Count > 0)
+                //{
+                //    SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
+                //}
+                //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message));
+            }
+
+        }
+
+        public void Handle(ConnectionChangedEvent message)
+        {
+
+            Execute.OnUIThread(() =>
+            {
+                Databases = _metadataProvider.GetDatabases().ToBindableCollection();
+            });
+            var ml = _metadataProvider.GetModels();
+            //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
+            if (Dispatcher.CurrentDispatcher.CheckAccess())
+            {
+                Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
+            }
+            else
+            {
+                ModelList = ml;
+            }
+
+            NotifyOfPropertyChange(() => CanSelectDatabase);
+            NotifyOfPropertyChange(() => CanSelectModel);
+        }
+
+        public void Handle(ConnectionOpenedEvent message)
+        {
+            IsBusy = true;
+            NotifyOfPropertyChange(nameof(Databases));
+        }
+
+        public void Handle(ConnectFailedEvent message)
+        {
+            IsBusy = false;
+        }
+
+        public void Handle(TablesRefreshedEvent message)
+        {
+            RefreshTables();
+        }
     }
 
 
@@ -1045,7 +944,7 @@ namespace DaxStudio.UI.ViewModels
     //}
 
 
-    public class DatabaseReference
+    public class DatabaseReference : IDatabaseReference
     {
         public string Name { get; set; }
         public string Caption { get; set; }

@@ -1007,8 +1007,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get {
                 if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+                if (!ActiveDocument.Connection.IsConnected) return false;
 
                 return true;
             }

@@ -67,7 +67,7 @@ namespace DaxStudio.UI.ViewModels
                 throw new ArgumentException("The current document is not connected to a data source", "Document");
             }
 
-            if (Document.Connection.State != ConnectionState.Open)
+            if (!Document.Connection.IsConnected)
             {
                 throw new ArgumentException("The connection for the current document is not in an open state", "Document");
             }
@@ -457,7 +457,7 @@ namespace DaxStudio.UI.ViewModels
             var selectedTables = Tables.Where(t => t.IsSelected);
             totalTableCnt = selectedTables.Count();
 
-            var connRead = Document.Connection.Clone();
+            var connRead = Document.Connection;
 
             // no tables were selected so exit here
             if (totalTableCnt == 0)

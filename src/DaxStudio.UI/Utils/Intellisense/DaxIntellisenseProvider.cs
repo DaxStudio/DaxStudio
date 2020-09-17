@@ -48,18 +48,16 @@ namespace DaxStudio.UI.Utils
         private IEventAggregator _eventAggregator;
         private IGlobalOptions _options;
 
-        public DaxIntellisenseProvider (IDaxDocument activeDocument, IEditor editor, IEventAggregator eventAggregator, IGlobalOptions options)
+        public DaxIntellisenseProvider (IDaxDocument activeDocument, IEventAggregator eventAggregator, IGlobalOptions options)
         {
             Document = activeDocument;
-            _editor = editor;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
             _options = options;
         }
 
         #region Properties
         public ADOTabularModel Model { get; private set; }
-
+        public IEditor Editor { get => _editor; set { _editor = value; } }
         #endregion
 
         #region Public IIntellisenseProvider Interface
@@ -503,26 +501,17 @@ namespace DaxStudio.UI.Utils
 
         public void Handle(SelectedModelChangedEvent message)
         {
-            if (Document == message.Document)
-            {
-                Model = null;
-            }
+            Model = null;
         }
 
         public void Handle(DmvsLoadedEvent message)
         {
-            if (Document == message.Document)
-            {
-                Dmvs = message.DmvCollection;
-            }
+            Dmvs = message.DmvCollection;
         }
 
         public void Handle(FunctionsLoadedEvent message)
         {
-            if (Document == message.Document)
-            {
-                FunctionGroups = message.FunctionGroups;
-            }
+            FunctionGroups = message.FunctionGroups;
         }
 
         public void Handle(ConnectionPendingEvent message)

@@ -25,16 +25,16 @@ namespace ADOTabular
         
         public IDAXFunctions DAXFunctions { get;  } = new DaxFunctions();
 
-        public bool Variables { get; set; } = false;
+        public bool Variables { get; set; }
 
-        public bool TableConstructor { get; set; } = false;
+        public bool TableConstructor { get; set; }
       
     }
     public class DaxFunctions : IDAXFunctions
     {
-        bool IDAXFunctions.SummarizeColumns { get; set; } = false;
-        bool IDAXFunctions.SubstituteWithIndex { get; set; } = false;
+        bool IDAXFunctions.SummarizeColumns { get; set; }
+        bool IDAXFunctions.SubstituteWithIndex { get; set; }
 
-        bool IDAXFunctions.TreatAs { get; set; } = false;
+        bool IDAXFunctions.TreatAs { get; set; }
     }
 }

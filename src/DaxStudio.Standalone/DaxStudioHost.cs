@@ -5,7 +5,6 @@ using Caliburn.Micro;
 using Serilog;
 using System.Windows;
 using DaxStudio.Common;
-using DaxStudio.Common.Enums;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Standalone
@@ -65,13 +64,6 @@ namespace DaxStudio.Standalone
         public string CommandLineFileName
         {
             get { return  _app.Args().FileName; }
-        }
-
-
-
-        public AdomdType ConnectionType
-        {
-            get { return AdomdType.AnalysisServices; }
         }
 
         public int Port { get; }

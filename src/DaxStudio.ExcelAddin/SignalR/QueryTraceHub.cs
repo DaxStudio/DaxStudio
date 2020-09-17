@@ -9,7 +9,7 @@ using DaxStudio.ExcelAddin;
 using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using DaxStudio.SignalR;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 
 namespace DaxStudio
 {

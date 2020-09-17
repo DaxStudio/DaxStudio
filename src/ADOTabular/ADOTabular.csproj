@@ -177,12 +177,14 @@
     <Compile Include="Constants.cs" />
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Enums\AdomdType.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IADOTabularColumn.cs" />
     <Compile Include="Interfaces\IADOTabularConnection.cs" />
     <Compile Include="Interfaces\IADOTabularObject.cs" />
     <Compile Include="Interfaces\IADOTabularReference.cs" />
     <Compile Include="Interfaces\IDAXFunctions.cs" />
+    <Compile Include="Interfaces\IDmv.cs" />
     <Compile Include="Interfaces\IModelCapabilities.cs" />
     <Compile Include="MetadataInfo\DaxFunction.cs" />
     <Compile Include="MetadataInfo\DaxMetadata.cs" />
@@ -204,12 +206,6 @@
     <None Include="app.config" />
     <Compile Include="Interfaces\IADOTabularFolderReference.cs" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />

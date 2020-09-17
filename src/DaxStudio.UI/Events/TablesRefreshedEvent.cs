@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Common.Enums
+namespace DaxStudio.UI.Events
 {
-
-    public enum AdomdType
+    public class TablesRefreshedEvent
     {
-        AnalysisServices = 1,
-        Excel = 2
     }
 }

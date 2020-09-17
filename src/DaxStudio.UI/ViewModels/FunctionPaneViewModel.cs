@@ -13,13 +13,14 @@ namespace DaxStudio.UI.ViewModels
 {
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof(FunctionPaneViewModel))]
-    public class FunctionPaneViewModel:ToolPaneBaseViewModel, IMetadataPane
+    public class FunctionPaneViewModel:ToolPaneBaseViewModel, IMetadataPane, IHandle<ConnectionChangedEvent>
     {
+        private IFunctionProvider _functionProvider;
         [ImportingConstructor]
-        public FunctionPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions options) : base(connection, eventAggregator)
+        public FunctionPaneViewModel(IFunctionProvider functionProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions options) : base( eventAggregator)
         {
             Document = document;
-            Connection = connection;
+            _functionProvider = functionProvider;
             EventAggregator = eventAggregator;
             Options = options;
         }
@@ -32,22 +33,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_functionGroups == null)
                 {
-                    _functionGroups = Connection.TreeViewFunctions(Options, EventAggregator, this);
+                    _functionGroups = _functionProvider.TreeViewFunctions(Options, EventAggregator, this);
                 }
                 return _functionGroups;
             }
-        }
-
-        //public ADOTabularFunctionGroupCollection FunctionGroups{
-        //    get { return Connection == null ? null : Connection.FunctionGroups; }  
-        //}
-
-        protected override void OnConnectionChanged()//bool isSameServer)
-        {
-            base.OnConnectionChanged();//isSameServer);
-            //if (isSameServer) return;
-            NotifyOfPropertyChange(()=> FunctionGroups);
-            EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, Connection.FunctionGroups));
         }
 
         public override string DefaultDockingPane
@@ -94,6 +83,12 @@ namespace DaxStudio.UI.ViewModels
         public void ClearSearchCriteria()
         {
             SearchCriteria = string.Empty;
+        }
+
+        public void Handle(ConnectionChangedEvent message)
+        {
+            NotifyOfPropertyChange(() => FunctionGroups);
+            //EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
         }
     }
 }

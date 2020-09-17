@@ -11,7 +11,7 @@ using Serilog;
 using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
 

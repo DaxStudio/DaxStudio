@@ -223,6 +223,7 @@ namespace ADOTabular
             }
         }
 
+
         public IEnumerator<string> GetEnumerator()
         {
             foreach (DataRow dr in GetDatabaseTable().Rows)

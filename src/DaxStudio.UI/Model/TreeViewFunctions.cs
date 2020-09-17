@@ -18,10 +18,10 @@ namespace DaxStudio.UI.Model
     public static class ADOTabularFunctionsExtensions
     {
 
-        public static List<FilterableTreeViewItem> TreeViewFunctions(this ADOTabularConnection conn, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
+        public static List<FilterableTreeViewItem> TreeViewFunctions(this IFunctionProvider funcProvider, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             var lst = new List<FilterableTreeViewItem>();
-            foreach (var fg in conn.FunctionGroups)
+            foreach (var fg in funcProvider.FunctionGroups)
             {
                 
                 lst.Add(new TreeViewFunctionGroup(fg, fg.TreeViewFunctions, options, eventAggregator, metadataPane));

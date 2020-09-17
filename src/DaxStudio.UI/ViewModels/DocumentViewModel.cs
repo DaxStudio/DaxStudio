@@ -44,9 +44,10 @@ using Xceed.Wpf.AvalonDock;
 using System.Windows.Media;
 using Dax.ViewModel;
 using System.Reflection;
-using DaxStudio.Common.Enums;
+
 using System.Windows.Interop;
 using ADOTabular.Interfaces;
+using ADOTabular.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -79,7 +80,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
-        , IHandle<UpdateConnectionEvent>
+        //, IHandle<UpdateConnectionEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
@@ -96,7 +97,6 @@ namespace DaxStudio.UI.ViewModels
         // but UTF8 seems to be the most sensible default going forward
         private readonly Encoding DefaultFileEncoding = Encoding.UTF8;
 
-        private ADOTabularConnection _connection;
         private IWindowManager _windowManager;
         private IEventAggregator _eventAggregator;
         private MetadataPaneViewModel _metadataPane;
@@ -138,6 +138,8 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             AutoSaver = autoSaver;
             IconSource = ISC.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
+            Connection = new ConnectionManager(_eventAggregator);
+            IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
             Init(_ribbon);
         }
 
@@ -153,9 +155,9 @@ namespace DaxStudio.UI.ViewModels
 
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
-            MetadataPane = new MetadataPaneViewModel(_connection, _eventAggregator, this, Options);
-            FunctionPane = new FunctionPaneViewModel(_connection, _eventAggregator, this, Options);
-            DmvPane = new DmvPaneViewModel(_connection, _eventAggregator, this);
+            MetadataPane = new MetadataPaneViewModel(Connection, _eventAggregator, this, Options);
+            FunctionPane = new FunctionPaneViewModel(Connection, _eventAggregator, this, Options);
+            DmvPane = new DmvPaneViewModel(Connection, _eventAggregator, this);
             QueryBuilder = new QueryBuilderViewModel(_eventAggregator, this, Options);
             QueryBuilder.VisibilityChanged += QueryBuilder_VisibilityChanged;
 
@@ -237,7 +239,7 @@ namespace DaxStudio.UI.ViewModels
             //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(Options.Theme);
 
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _editor, _eventAggregator, Options);
+            IntellisenseProvider.Editor = _editor;
             UpdateSettings();
             if (_editor != null)
             {
@@ -431,18 +433,18 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                if (_connection == null) return;
+                if (Connection == null) return;
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
-                    if (_connection.IsPowerPivot)
+                    if (Connection.IsPowerPivot)
                     {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", _connection.ConnectionString, _connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(_connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, Options, ShouldFilterForCurrentSession(TraceWatchers));
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", Connection.ConnectionString, Connection.Type.ToString(), Host.Proxy.Port);
+                        _tracer = QueryTraceEngineFactory.CreateRemote(Connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, Options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     else
                     {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", _connection.ConnectionString, _connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(_connection, GetTraceEvents(TraceWatchers), Options, ShouldFilterForCurrentSession(TraceWatchers));
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionstring} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", Connection.ConnectionString, Connection.Type.ToString());
+                        _tracer = QueryTraceEngineFactory.CreateLocal(Connection, GetTraceEvents(TraceWatchers), Options, ShouldFilterForCurrentSession(TraceWatchers));
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
                     _tracer.TraceStarted += TracerOnTraceStarted;
@@ -516,10 +518,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // Don't add DirectQueryEvent if the server does not support direct query session filters 
                     // and the options has not been enabled in the options screen
-                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !Options.TraceDirectQuery && !_connection.ServerVersion.SupportsDirectQueryFilters()) continue;
+                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !Options.TraceDirectQuery && !Connection.ServerVersion.SupportsDirectQueryFilters()) continue;
 
                     // if the server version does not support Aggregate Table Events do not add them
-                    if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !_connection.ServerVersion.SupportsAggregateTables()) continue;
+                    if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !Connection.ServerVersion.SupportsAggregateTables()) continue;
 
                     // Add the even to the collection if we don't already have it
                     if (!events.Contains(e))
@@ -761,6 +763,9 @@ namespace DaxStudio.UI.ViewModels
             base.OnDeactivate(close);
             _eventAggregator.Unsubscribe(this);
             _eventAggregator.Unsubscribe(QueryResultsPane);
+            _eventAggregator.Unsubscribe(MetadataPane);
+            _eventAggregator.Unsubscribe(Connection);
+            _eventAggregator.Unsubscribe(IntellisenseProvider);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
@@ -784,6 +789,9 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.Subscribe(this);
                 _eventAggregator.Subscribe(QueryResultsPane);
+                _eventAggregator.Subscribe(MetadataPane);
+                _eventAggregator.Subscribe(Connection);
+                _eventAggregator.Subscribe(IntellisenseProvider);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in this.TraceWatchers)
                 {
@@ -879,13 +887,7 @@ namespace DaxStudio.UI.ViewModels
         public bool Close()
         {
             // Close the document's connection 
-            if (Connection != null)
-            {
-                if (Connection.State != ConnectionState.Closed && Connection.State != ConnectionState.Broken)
-                {
-                    Connection.Close();
-                }
-            }
+            Connection.Close();
 
             var docTab = Parent as DocumentTabViewModel;
             docTab.CloseItem(this);
@@ -893,35 +895,22 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        public ADOTabularConnection Connection
-        {
-            get { return _connection; }
-            internal set
-            {
-                if (value != null && _connection == value)
-                    return;
-                _connection = value;
-            }
-        }
+        public ConnectionManager Connection { get; } 
+        
 
 
-        private void UpdateConnections(ADOTabularConnection value)
+        private void UpdateConnections(ConnectEvent message)
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
-            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections", value?.ConnectionString??"<null>");
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "UpdateConnections", message?.ConnectionString??"<null>");
 
-            if (value != null && value.State != ConnectionState.Open)
-            {
-                OutputPane.AddWarning(string.Format("Connection for server {0} is not open", value.ServerName));
-                return;
-            }
             using (NewStatusBarMessage("Refreshing Metadata..."))
             {
                 try
                 {
-                    if (value == null) return;
-                    _connection = value;
+                    if (message == null) return;
+                    Connection.Connect(message) ;
                     NotifyOfPropertyChange(() => IsAdminConnection);
                     NotifyOfPropertyChange(() => SelectedDatabase);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
@@ -934,16 +923,14 @@ namespace DaxStudio.UI.ViewModels
                         // then we need to check if the new connection can be traced
                         traceWatcher.CheckEnabled(this, activeTrace);
                     }
-                    MetadataPane.Connection = _connection;
-                    FunctionPane.Connection = _connection;
-                    DmvPane.Connection = _connection;
+
                     Execute.OnUIThread(() =>
                     {
                         try
                         {
                             if (_editor == null) _editor = GetEditor();
                         //    _editor.UpdateKeywordHighlighting(_connection.Keywords);
-                        _editor.UpdateFunctionHighlighting(_connection.AllFunctions);
+                        _editor.UpdateFunctionHighlighting(Connection.AllFunctions);
                             Log.Information("{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "SyntaxHighlighting updated");
                         }
                         catch (Exception ex)
@@ -954,6 +941,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    _eventAggregator.PublishOnUIThread(new ConnectFailedEvent());
                     var msg = $"The following error occured while updating the connection: {ex.Message}";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
                     OutputError(msg);
@@ -1066,13 +1054,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ConnectionError { get; set; }
 
-        public bool IsConnected
-        {
-            get {
-                if (Connection == null) return false;
-                return Connection.State == ConnectionState.Open;
-            }
-        }
+        public bool IsConnected => Connection.IsConnected;
 
         public bool IsQueryRunning
         {
@@ -1594,13 +1576,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 // somehow people are getting into this method while the connection is not open
                 // even though the CanRun state should be false so this is a double check
-                if (Connection.State != ConnectionState.Open)
-                {
-                    Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
-                    _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
-                    return;
-                }
+                //if (Connection.State != ConnectionState.Open)
+                //{
+                //    Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
+                //    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
+                //    _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
+                //    return;
+                //}
 
 
                 try {
@@ -1999,15 +1981,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateConnectionEvent message)
-        {
-            _logger.Info("In Handle<UpdateConnectionEvent>");
-            Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null ? "<null>" : message.Connection.ConnectionString);
+        //public void Handle(UpdateConnectionEvent message)
+        //{
+        //    _logger.Info("In Handle<UpdateConnectionEvent>");
+        //    Log.Debug("{Class} {Event} {ConnectionString} DB: {Database}", "DocumentViewModel", "Handle:UpdateConnectionEvent", message.Connection == null ? "<null>" : message.Connection.ConnectionString);
 
-            UpdateConnections(message.Connection);
-            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));
-        }
+        //    UpdateConnections(message.Connection);
+        //    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+        //    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));
+        //}
 
 
         public void Handle(TraceWatcherToggleEvent message)
@@ -2552,24 +2534,15 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
         {
-            if (Connection != null && Connection.State == ConnectionState.Open)
-            {
-                Connection.Close();
-                //Connection.Dispose();
-            }
-
-            if (cnn != null && cnn.State != ConnectionState.Open) cnn.Open();
-
-            Connection = cnn;
             
-            UpdateConnections(Connection);
-            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", _connection == null ? "<null>" : _connection.ConnectionString);
+            UpdateConnections(message);
+            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", Connection == null ? "<null>" : Connection.ConnectionString);
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
-            _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(_connection, this));
+            _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
             this.IsPowerPivot = message.PowerPivotModeSelected;
-            this.Spid = cnn.SPID;
+            this.Spid = Connection.SPID;
             //this.SelectedDatabase = cnn.Database.Name;
             CurrentWorkbookName = message.WorkbookName;
 
@@ -2583,10 +2556,9 @@ namespace DaxStudio.UI.ViewModels
             else
             {
 
-                if (Connection.State == ConnectionState.Broken || Connection.State == ConnectionState.Closed)
+                if (!Connection.IsConnected)
                 {
                     ServerName = "<Not Connected>";
-                    Connection = null;
                 }
                 else
                 {
@@ -2650,9 +2622,6 @@ namespace DaxStudio.UI.ViewModels
             // make sure any other view models know that this document is the active one
             _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
 
-            if (Connection == null) return;
-            // refresh the other views with the existing connection details
-            if (Connection.State == ConnectionState.Open) _eventAggregator.PublishOnUIThread(new UpdateConnectionEvent(Connection));
         }
 
         public IResult GetShutdownTask()
@@ -3009,20 +2978,20 @@ namespace DaxStudio.UI.ViewModels
 
 
                 ServerDatabaseInfo info = new Model.ServerDatabaseInfo();
-                if (_connection != null && _connection.State == ConnectionState.Open)
+                if (Connection.IsConnected)
                 {
-                    var serverName = _connection.IsPowerPivot | _connection.IsPowerBIorSSDT ? _connection.FileName : _connection.ServerName;
-                    var databaseName = _connection.IsPowerPivot | _connection.IsPowerBIorSSDT ? _connection.FileName : _connection.Database?.Name;
+                    var serverName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.ServerName;
+                    var databaseName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.Database?.Name;
                     try
                     {
                         info.ServerName = serverName ?? "";
-                        info.ServerEdition = _connection.ServerEdition ?? "";
-                        info.ServerType = _connection.ServerType.GetDescription() ?? "";
-                        info.ServerMode = _connection.ServerMode ?? "";
-                        info.ServerLocation = _connection.ServerLocation ?? "";
-                        info.ServerVersion = _connection.ServerVersion ?? "";
+                        info.ServerEdition = Connection.ServerEdition ?? "";
+                        info.ServerType = Connection.ServerType.GetDescription() ?? "";
+                        info.ServerMode = Connection.ServerMode ?? "";
+                        info.ServerLocation = Connection.ServerLocation ?? "";
+                        info.ServerVersion = Connection.ServerVersion ?? "";
                         info.DatabaseName = databaseName ?? "";
-                        info.DatabaseCompatibilityLevel = _connection.Database?.CompatibilityLevel ?? "";
+                        info.DatabaseCompatibilityLevel = Connection.Database?.CompatibilityLevel ?? "";
                     }
                     catch (Exception ex)
                     {
@@ -3174,12 +3143,8 @@ namespace DaxStudio.UI.ViewModels
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Starting call to HasSchemaChangedAsync");
 
-                var conn = Connection.Clone();
-                bool hasChanged = await Task<bool>.Run(() => {
-                    conn.Open();
-                    return conn?.Database?.HasSchemaChanged() ?? false;
-                });
-                conn.Close();
+                
+                bool hasChanged = await Connection.HasSchemaChangedAsync();
 
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
 
@@ -3340,7 +3305,7 @@ namespace DaxStudio.UI.ViewModels
         public ADOTabular.MetadataInfo.DaxMetadata DaxMetadataInfo
         {
             get {
-                return _connection?.DaxMetadataInfo;
+                return Connection?.DaxMetadataInfo;
             }
         }
 
@@ -3789,8 +3754,8 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 IsTraceChanging = true;
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Reconfiguring trace for database: {message.Document.SelectedDatabase}"));
-                _tracer.Update(message.Document.SelectedDatabase);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Reconfiguring trace for database: {Connection.SelectedDatabaseName}"));
+                _tracer.Update(Connection.SelectedDatabaseName);
             }
             finally
             {
@@ -3845,6 +3810,8 @@ namespace DaxStudio.UI.ViewModels
 
         public IGlobalOptions Options { get; set; }
         public IAutoSaver AutoSaver { get; }
+
+        IModelIntellisenseProvider IDaxDocument.Connection => (IModelIntellisenseProvider)Connection;
 
         //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
 

@@ -1,5 +1,5 @@
 ﻿using ADOTabular.AdomdClientWrappers;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AspNet.SignalR.Client;

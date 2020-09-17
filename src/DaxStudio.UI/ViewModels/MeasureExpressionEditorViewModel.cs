@@ -56,7 +56,6 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public ADOTabularConnection Connection => Document.Connection;
         public ADOTabularTableCollection Tables => Document?.SelectedModel != null ? Document?.Connection.Database.Models[Document?.SelectedModel].Tables : null;
 
         private bool _isModelItem;
@@ -87,7 +86,8 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = options;
-            
+            IntellisenseProvider = new DaxIntellisenseProvider(Document, EventAggregator, Options);
+
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
             SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
         }
@@ -101,7 +101,7 @@ namespace DaxStudio.UI.ViewModels
             //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(Options.Theme);
 
-            IntellisenseProvider = new DaxIntellisenseProvider(Document, _editor, EventAggregator, Options);
+            IntellisenseProvider.Editor = _editor;
             UpdateSettings();
             if (_editor != null)
             {

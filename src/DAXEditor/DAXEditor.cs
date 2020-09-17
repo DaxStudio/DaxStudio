@@ -157,7 +157,7 @@ namespace DAXEditorControl
             foreach (var word in sortedWordList)
             {
                 pattern.Append(word.Replace(".", @"\."));
-                pattern.Append("|");
+                pattern.Append('|');
             }
             pattern.Remove(pattern.Length - 1, 1);
             pattern.Append(@")\b");
@@ -582,7 +582,7 @@ namespace DAXEditorControl
 
                 // force completion window to close
                 if (completionWindow == null) return;
-                completionWindow?.Close();
+                if (completionWindow.IsVisible) completionWindow?.Close();
                 completionWindow = null;
             }
         }

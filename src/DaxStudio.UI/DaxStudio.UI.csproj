@@ -397,9 +397,14 @@
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
+    <Compile Include="Events\ConnectFailedEvent.cs" />
+    <Compile Include="Events\ConnectionOpenedEvent.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
+    <Compile Include="Events\RefreshTablesEvent.cs" />
+    <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
     <Compile Include="Events\SetFocusEvent.cs" />
     <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
+    <Compile Include="Events\TablesRefreshedEvent.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
@@ -467,7 +472,6 @@
     <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
     <Compile Include="Events\UpdateHotkeys.cs" />
     <Compile Include="Extensions\ApplicationExtensions.cs" />
-    <Compile Include="Extensions\ADOTabularConnectionExtensions.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
     <Compile Include="Extensions\DataReaderExtensions.cs" />
     <Compile Include="Extensions\DataSetExtensions.cs" />
@@ -493,6 +497,7 @@
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />

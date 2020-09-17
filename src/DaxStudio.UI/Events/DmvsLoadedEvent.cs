@@ -10,13 +10,12 @@ namespace DaxStudio.UI.Events
 {
     public class DmvsLoadedEvent
     {
-        public DmvsLoadedEvent(DocumentViewModel document, ADOTabularDynamicManagementViewCollection dmvs)
+        public DmvsLoadedEvent(ADOTabularDynamicManagementViewCollection dmvs)
         {
-            Document = document;
             DmvCollection = dmvs;
         }
 
         public ADOTabularDynamicManagementViewCollection DmvCollection { get; private set; }
-        public DocumentViewModel Document { get; private set; }
+        
     }
 }

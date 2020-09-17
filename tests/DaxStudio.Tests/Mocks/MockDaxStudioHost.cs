@@ -1,11 +1,5 @@
-﻿using DaxStudio.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ADOTabular.AdomdClientWrappers;
-using DaxStudio.Common.Enums;
+﻿using System;
+using ADOTabular.Enums;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Tests.Mocks
