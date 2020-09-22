@@ -388,7 +388,7 @@ namespace DaxStudio.CheckerApp
                 }
                 finally
                 {
-                    xlKey.Dispose();
+                    xlKey?.Dispose();
                 }
             }
             finally {
