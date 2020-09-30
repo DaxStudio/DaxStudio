@@ -237,12 +237,18 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <TextBox Grid.Row="3" Grid.ColumnSpan="2" 
+                                <TextBox 
                                  x:Name="FilterValue" 
                                  Text="{Binding FilterValue}" 
                                  Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
                                  MinWidth="150"
                                  Margin="3"/>
+                                <TextBox 
+                                    x:Name="FilterValue2"
+                                    Text="{Binding FilterValue2}"
+                                    Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
+                                    MinWidth="150"
+                                    Margin="3"/>
                             </WrapPanel>
                         </Grid>
                     </Border>

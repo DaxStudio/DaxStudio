@@ -37,7 +37,8 @@ namespace DaxStudio.UI.Model
                 _fitlerType = value;
                 NotifyOfPropertyChange(nameof(FilterType));
                 NotifyOfPropertyChange(nameof(ShowFilterValue));
-            } 
+                NotifyOfPropertyChange(nameof(ShowFilterValue2));
+            }
         }
 
         public IEnumerable<FilterType> FilterTypes
@@ -65,6 +66,7 @@ namespace DaxStudio.UI.Model
                         case FilterType.GreaterThanOrEqual:
                         case FilterType.LessThan:
                         case FilterType.LessThanOrEqual:
+                        case FilterType.Between:
                             // these filters only apply non-strings
                             if (TabularObject.DataType != typeof(string)) yield return ft;
                             break;
@@ -86,7 +88,8 @@ namespace DaxStudio.UI.Model
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
 
-        
+        public string FilterValue2 { get; set; }
+        public bool ShowFilterValue2 => FilterType == FilterType.Between;
 
     }
 }

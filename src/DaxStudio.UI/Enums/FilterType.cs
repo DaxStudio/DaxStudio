@@ -35,5 +35,8 @@ namespace DaxStudio.UI.Enums
         LessThan,
         [Description("<=")]
         LessThanOrEqual,
+        [Description("Between")]
+        Between
+
     }
 }

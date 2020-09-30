@@ -121,7 +121,7 @@ namespace DaxStudio.UI.Model
         public static string FilterExpressionTreatAs(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter);
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
@@ -135,7 +135,8 @@ namespace DaxStudio.UI.Model
         public static string FilterExpressionBasic(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter);
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
+            var formattedVal2 = FormattedValue(filter, () => { return filter.FilterValue2; });
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
@@ -164,6 +165,9 @@ namespace DaxStudio.UI.Model
                 case FilterType.LessThanOrEqual:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
                     break;
+                case FilterType.Between:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
+                    break;
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
             }
@@ -172,22 +176,22 @@ namespace DaxStudio.UI.Model
             
         }
 
-        public static string FormattedValue(QueryBuilderFilter filter)
+        public static string FormattedValue(QueryBuilderFilter filter, Func<string> valueFunc)
         {
             if (filter.TabularObject.DataType == typeof(DateTime)) {
                 DateTime parsedDate = DateTime.MinValue;
-                DateTime.TryParse(filter.FilterValue, out parsedDate);
+                DateTime.TryParse(valueFunc(), out parsedDate);
                 if (parsedDate > DateTime.MinValue)
                 {
                     return $"DATE({parsedDate.Year},{parsedDate.Month},{parsedDate.Day})";
                 }
                 else
                 {
-                    throw new ArgumentException($"Unable to parse the value '{filter.FilterValue}' as a DateTime value");
+                    throw new ArgumentException($"Unable to parse the value '{valueFunc()}' as a DateTime value");
                 }
             }
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            return $"{quotes}{filter.FilterValue}{quotes}";
+            return $"{quotes}{valueFunc()}{quotes}";
         }
     }
 }

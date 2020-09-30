@@ -231,6 +231,34 @@ SUMMARIZECOLUMNS(
         }
 
         [TestMethod]
+        public void TestBetweenNumbersFilterTypesQuery()
+        {
+
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> fils = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            fils.Add(new QueryBuilderFilter(MockColumn.Create("Number 1", "'Customer'[Number1]", typeof(long), ADOTabularObjectType.Column)) { FilterType = UI.Enums.FilterType.Between, FilterValue = "2", FilterValue2 = "5" });
+            
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, fils);
+            var expectedQry = @"// START QUERY BUILDER
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    KEEPFILTERS( FILTER( ALL( 'Customer'[Number1] ), 'Customer'[Number1] >= 2 && 'Customer'[Number1] <= 5 )),
+    ""Total Sales"", [Total Sales]
+)
+// END QUERY BUILDER".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
         public void TestBlankFilterTypesQuery()
         {
 
