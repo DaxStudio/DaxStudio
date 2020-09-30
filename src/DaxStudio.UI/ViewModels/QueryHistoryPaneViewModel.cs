@@ -25,7 +25,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly GlobalQueryHistory _globalHistory;
         private readonly ListCollectionView _queryHistory;
         private readonly IEventAggregator _eventAggregator;
-        private readonly DocumentViewModel _currentDocument;
+        private readonly IConnection _currentConnection;
         private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
@@ -38,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Subscribe(this);            
             _queryHistory = new ListCollectionView(globalHistory.QueryHistory);
             //_queryHistory.PageSize = 50;
-            _currentDocument = currentDocument;
+            _currentConnection = currentDocument.Connection;
             _queryHistory.Filter = HistoryFilter;
             // sort by StartTime Desc by default
             _queryHistory.SortDescriptions.Add(new SortDescription("StartTime", ListSortDirection.Descending));
@@ -56,8 +56,8 @@ namespace DaxStudio.UI.ViewModels
             get { return "Query History"; }
         }
 
-        public string CurrentServer { get { return _currentDocument.ServerName; } }
-        public string CurrentDatabase { get { return _currentDocument.SelectedDatabase; } }
+        public string CurrentServer { get { return _currentConnection.ServerName; } }
+        public string CurrentDatabase { get { return _currentConnection.SelectedDatabaseName; } }
         public bool IsFilteredByServer
         {
             get { return _isFilteredByServer; }
@@ -85,8 +85,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
             return qhe != null 
-                && (string.Compare( qhe.ServerName, _currentDocument?.ServerName??string.Empty, true)==0 || !IsFilteredByServer)
-                && (string.Compare(qhe.DatabaseName,  _currentDocument?.SelectedDatabase??string.Empty, true) == 0 || !IsFilteredByDatabase);
+                && (string.Compare( qhe.ServerName, _currentConnection?.ServerName??string.Empty, true)==0 || !IsFilteredByServer)
+                && (string.Compare(qhe.DatabaseName,  _currentConnection?.SelectedDatabaseName??string.Empty, true) == 0 || !IsFilteredByDatabase);
         }
 
         public ICollectionView QueryHistory

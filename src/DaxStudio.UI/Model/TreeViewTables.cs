@@ -19,9 +19,9 @@ namespace DaxStudio.UI.Model
     public static class ADOTabularModelExtensions
     {
 
-        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
+        public static List<IFilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
         {
-            var lst = new List<FilterableTreeViewItem>();
+            var lst = new List<IFilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
                 if (t.Private && !metadataPane.ShowHiddenObjects) continue; // skip Private tables
@@ -152,7 +152,7 @@ namespace DaxStudio.UI.Model
     //public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
     public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IADOTabularObject tabularObject, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane);
     
-    public abstract class FilterableTreeViewItem : PropertyChangedBase
+    public abstract class FilterableTreeViewItem : PropertyChangedBase, IFilterableTreeViewItem
     {
         protected GetChildrenDelegate _getChildren;
         protected IGlobalOptions _options;
@@ -186,8 +186,8 @@ namespace DaxStudio.UI.Model
             MetadataPane = metadataPane;
         }
 
-        private IEnumerable<FilterableTreeViewItem> _children;
-        public IEnumerable<FilterableTreeViewItem> Children  {
+        private IEnumerable<IFilterableTreeViewItem> _children;
+        public IEnumerable<IFilterableTreeViewItem> Children  {
             get
             {
                 if (_children == null && _getChildren != null)
@@ -235,7 +235,7 @@ namespace DaxStudio.UI.Model
             set { _options = value; }
         }
 
-        public void ApplyCriteria(string criteria, Stack<FilterableTreeViewItem> ancestors)
+        public void ApplyCriteria(string criteria, Stack<IFilterableTreeViewItem> ancestors)
         {
             if (IsCriteriaMatched(criteria))
             {

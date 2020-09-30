@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
         private void PopulateTablesList()
         {
             
-            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
+            var tables = Document.Connection.Database.Models[Document.Connection.SelectedModelName].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
             if (!tables.Any()) throw new ArgumentException("There are no visible tables to export in the current data model");
 
             foreach ( var t in tables)
@@ -240,12 +240,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void ExportDataToCSV(string outputPath)
         {
-            var metadataPane = Document.MetadataPane;
+
             var exceptionFound = false;
 
             // TODO: Use async but to be well done need to apply async on the DBCommand & DBConnection
             // TODO: Show warning message?
-            if (metadataPane.SelectedModel == null)
+            if (string.IsNullOrEmpty(Document.Connection.SelectedModelName))
             {
                 return;
             }

@@ -63,6 +63,8 @@ namespace DaxStudio.UI.Utils
         #region Public IIntellisenseProvider Interface
         public void ProcessTextEntered(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
         {
+            //System.Diagnostics.Debug.WriteLine($"ProcessTextEntered: {e.Text}");
+
             if (HasThrownException) return; // exit here if intellisense has previous thrown and exception
 
             try
@@ -209,7 +211,7 @@ namespace DaxStudio.UI.Utils
             }
             catch(Exception ex)
             {
-                HasThrownException = true;
+                //HasThrownException = true;
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
                 Document.OutputError(string.Format("Intellisense Disabled for this window - {0}", ex.Message));
             }
@@ -235,6 +237,7 @@ namespace DaxStudio.UI.Utils
                 case Key.OemCloseBrackets:
                     _editor.DisposeCompletionWindow();
                     break;
+
             }
             
         }
@@ -251,7 +254,7 @@ namespace DaxStudio.UI.Utils
                 try
                 {
                     Log.Verbose("Showing InsightWindow for {function}", f.Caption);
-
+                    //_editor.InsightWindow?.Close();
                     _editor.InsightWindow = null;
                     _editor.InsightWindow = new InsightWindow(_editor.TextArea);
                     
@@ -303,7 +306,7 @@ namespace DaxStudio.UI.Utils
         void completionWindow_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             var completionWindow = (CompletionWindow)sender;
-            var segmentLength = completionWindow.EndOffset - completionWindow.StartOffset;
+            
             SpacePressed = e.Key == Key.Space;
             // close window if F5 or F6 are pressed
             var keyStr = e.Key.ToString();
@@ -325,10 +328,10 @@ namespace DaxStudio.UI.Utils
             var lineState = ParseLine();
             if (SpacePressed && (lineState.LineState == LineState.Column || lineState.LineState == LineState.Table)) e.Cancel = true;
             var line = GetCurrentLine();
-            if (line.EndsWith("(")) {
-                var funcName = DaxLineParser.GetPreceedingWord(line.TrimEnd('('));
-                ShowInsight(funcName);
-            }
+            //if (line.EndsWith("(")) {
+            //    var funcName = DaxLineParser.GetPreceedingWord(line.TrimEnd('('));
+            //    ShowInsight(funcName);
+            //}
         }
 
         public void ProcessTextEntering(object sender, System.Windows.Input.TextCompositionEventArgs e, ref CompletionWindow completionWindow)

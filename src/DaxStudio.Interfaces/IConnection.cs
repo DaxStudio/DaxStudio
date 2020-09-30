@@ -2,11 +2,11 @@
 {
     public interface IConnection
     {
-        int Spid { get; }
+        int SPID { get; }
         bool IsAdminConnection { get; }
         bool IsPowerPivot { get; }
         bool IsConnected { get;  }
-        string SelectedDatabase { get; }
+        string SelectedDatabaseName { get; }
         string ServerName { get; }
     }
 }

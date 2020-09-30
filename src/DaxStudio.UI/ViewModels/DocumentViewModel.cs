@@ -59,6 +59,7 @@ namespace DaxStudio.UI.ViewModels
     public class DocumentViewModel : Screen
         , IDaxDocument
         //, Xceed.Wpf.AvalonDock.Layout.ILayoutElement
+        , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
@@ -72,6 +73,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<NavigateToLocationEvent>
         , IHandle<OutputMessage>
         , IHandle<QueryResultsPaneMessageEvent>
+        , IHandle<ReconnectEvent>
         , IHandle<RunQueryEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
@@ -89,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
         , IQueryRunner
         , IQueryTextProvider
         , IHaveShutdownTask
-        , IConnection
+        //, IConnection
         , ISaveable
 
     {
@@ -433,7 +435,14 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                if (Connection == null) return;
+                if (!Connection.IsConnected)
+                {
+                    var msg = "Cannot start trace, the current window is not connected";
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    Log.Error(Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CreateTracer), msg);
+                    return;
+                }
+
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
                     if (Connection.IsPowerPivot)
@@ -764,6 +773,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(this);
             _eventAggregator.Unsubscribe(QueryResultsPane);
             _eventAggregator.Unsubscribe(MetadataPane);
+            _eventAggregator.Unsubscribe(DmvPane);
+            _eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
             foreach (var tw in this.TraceWatchers)
@@ -790,6 +801,8 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(this);
                 _eventAggregator.Subscribe(QueryResultsPane);
                 _eventAggregator.Subscribe(MetadataPane);
+                _eventAggregator.Subscribe(DmvPane);
+                _eventAggregator.Subscribe(FunctionPane);
                 _eventAggregator.Subscribe(Connection);
                 _eventAggregator.Subscribe(IntellisenseProvider);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
@@ -807,6 +820,7 @@ namespace DaxStudio.UI.ViewModels
                 if (CanRunQuery)
                 {
                     await CheckForMetadataUpdatesAsync();
+                    Connection.Ping();
                 }
 
                 try
@@ -887,7 +901,7 @@ namespace DaxStudio.UI.ViewModels
         public bool Close()
         {
             // Close the document's connection 
-            Connection.Close();
+            Connection.Close(true);
 
             var docTab = Parent as DocumentTabViewModel;
             docTab.CloseItem(this);
@@ -921,7 +935,7 @@ namespace DaxStudio.UI.ViewModels
                         // be pointing to the old connection
                         traceWatcher.IsChecked = false;
                         // then we need to check if the new connection can be traced
-                        traceWatcher.CheckEnabled(this, activeTrace);
+                        traceWatcher.CheckEnabled(this.Connection, activeTrace);
                     }
 
                     Execute.OnUIThread(() =>
@@ -1046,13 +1060,6 @@ namespace DaxStudio.UI.ViewModels
             }, TaskScheduler.Default);
 
         }
-
-        public async Task<bool> HasPowerPivotModelAsync()
-        {
-            return await Task.Run(() => Host.Proxy.HasPowerPivotModel);
-        }
-
-        public string ConnectionError { get; set; }
 
         public bool IsConnected => Connection.IsConnected;
 
@@ -2076,7 +2083,7 @@ namespace DaxStudio.UI.ViewModels
                 var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 foreach (var tw in TraceWatchers)
                 {
-                    tw.CheckEnabled(this, activeTrace);
+                    tw.CheckEnabled(this.Connection, activeTrace);
                 }
             }
             catch (Exception ex)
@@ -2522,7 +2529,7 @@ namespace DaxStudio.UI.ViewModels
                         {
                             // todo - should we be checking for exceptions in this continuation
                             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));//,IsPowerPivotConnection));
+                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this.Connection, Databases, activeTrace));//,IsPowerPivotConnection));
                             _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                             //LoadState();
                         }
@@ -2541,7 +2548,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsAdminConnection);
             _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
-            this.IsPowerPivot = message.PowerPivotModeSelected;
+            
+
             this.Spid = Connection.SPID;
             //this.SelectedDatabase = cnn.Database.Name;
             CurrentWorkbookName = message.WorkbookName;
@@ -2713,9 +2721,15 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => StatusBarMessage);
         }
 
-        public int Spid { get; private set; }
+        private int _spid = -1;
+        public int Spid { get => _spid; 
+            private set { 
+                _spid = value;
+                NotifyOfPropertyChange(nameof(Spid));
+            } 
+        }
         public bool IsAdminConnection => Connection?.IsAdminConnection??false;
-        public bool IsPowerPivot { get; private set; }
+
 
         private bool _canCopy = true;
         public bool CanCopy {
@@ -3125,7 +3139,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Connection == null) return false;
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName))
                 {
-                    Log.Error("{class} {method} {message} ", "DocumentViewModel", "HasDatabaseSchemaChanged", "Connection is not open");
+                    Log.Error("{class} {method} {message} ", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Connection is not open");
                     OutputError(string.Format("Error Connecting to server: {0}", ServerName));
                     ServerName = string.Empty; // clear the server name so that we don't throw this error again
                     ActivateOutput();
@@ -3152,7 +3166,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "HasDatabaseSchemaChanged", ex.Message, ex.StackTrace);
+                Log.Error("{class} {method} {message} {stacktrace}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), ex.Message, ex.StackTrace);
                 OutputError(string.Format("Error Connecting to server: {0}", ex.Message));
                 ServerName = string.Empty; // clear the server name so that we don't throw this error again
                 ActivateOutput();
@@ -3746,6 +3760,17 @@ namespace DaxStudio.UI.ViewModels
         {
             SelectedModel = message.SelectedModel;
 
+            UpdateRunningTraces();
+        }
+
+        public void Handle(ReconnectEvent message)
+        {
+            UpdateRunningTraces();
+            Spid = Connection.SPID;
+        }
+
+        private void UpdateRunningTraces()
+        {
             // if there is not a running trace exit here
             if (_tracer == null) return;
             if (_tracer.Status != QueryTraceStatus.Started) return;
@@ -3753,9 +3778,10 @@ namespace DaxStudio.UI.ViewModels
             // reconnect any running traces to pick up the initial catalog property
             try
             {
+                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
                 IsTraceChanging = true;
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Reconfiguring trace for database: {Connection.SelectedDatabaseName}"));
-                _tracer.Update(Connection.SelectedDatabaseName);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Reconfiguring trace due to connection changes"));
+                _tracer.Update(Connection.SelectedDatabaseName, Connection.SessionId);
             }
             finally
             {
@@ -3824,6 +3850,19 @@ namespace DaxStudio.UI.ViewModels
         public void OpenConnection()
         {
             Connection.Open();
+        }
+
+        public void Handle(ApplicationActivatedEvent message)
+        {
+            try
+            {
+                if (Connection.IsConnected) Connection.Ping();
+            }
+            catch (Exception ex)
+            {
+                OutputError(ex.Message);
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ApplicationActivatedEvent>", ex.Message);
+            }
         }
     }
 }

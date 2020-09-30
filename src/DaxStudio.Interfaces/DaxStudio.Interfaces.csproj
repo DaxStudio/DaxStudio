@@ -104,7 +104,9 @@
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IDatabaseReference.cs" />
+    <Compile Include="IFilterableTreeViewItem.cs" />
     <Compile Include="IFunctionProvider.cs" />
+    <Compile Include="IMetadataPane.cs" />
     <Compile Include="IMetadataProvider.cs" />
     <Compile Include="IModelIntellisenseProvider.cs" />
     <Compile Include="ITabularConnection.cs" />

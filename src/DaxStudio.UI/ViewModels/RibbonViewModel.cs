@@ -464,7 +464,7 @@ namespace DaxStudio.UI.ViewModels
    
             try
             {
-                RefreshConnectionDetails(ActiveDocument);
+                RefreshConnectionDetails(ActiveDocument.Connection);
                 // TODO - do we still need to check trace watchers if we are not connected??
                 UpdateTraceWatchers();
             }
@@ -519,7 +519,7 @@ namespace DaxStudio.UI.ViewModels
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
-                tw.CheckEnabled(ActiveDocument, activeTrace);
+                tw.CheckEnabled(ActiveDocument.Connection, activeTrace);
             }
             NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
@@ -642,7 +642,7 @@ namespace DaxStudio.UI.ViewModels
             if (ActiveDocument != null)
             {
                 await ActiveDocument.CheckForMetadataUpdatesAsync();
-                RefreshConnectionDetails(ActiveDocument);
+                RefreshConnectionDetails(ActiveDocument.Connection);
             }
             
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");

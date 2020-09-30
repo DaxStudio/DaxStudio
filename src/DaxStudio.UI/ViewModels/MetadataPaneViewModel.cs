@@ -33,7 +33,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectionChangedEvent>
         , IHandle<ConnectionOpenedEvent>
         , IHandle<ConnectFailedEvent>
-        , IHandle<TablesRefreshedEvent>
+        , IHandleWithTask<TablesRefreshedEvent>
         //, IDragSource
         , IMetadataPane
     {
@@ -147,6 +147,8 @@ namespace DaxStudio.UI.ViewModels
                     _selectedModel = value;
                     NotifyOfPropertyChange(nameof(SelectedModel));
                     //EventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent( SelectedModelName));
+                    // clear table list
+                    _treeViewTables = null;
                     _metadataProvider.SetSelectedModel(SelectedModel);
                 }
             }
@@ -160,8 +162,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private IEnumerable<FilterableTreeViewItem> _treeViewTables;
-        public IEnumerable<FilterableTreeViewItem> Tables
+        private IEnumerable<IFilterableTreeViewItem> _treeViewTables;
+        public IEnumerable<IFilterableTreeViewItem> Tables
         {
             get
             {
@@ -174,7 +176,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void RefreshTables()
+        private async Task RefreshTablesAsync()
         {
             if (SelectedModel == null)
             {
@@ -185,16 +187,16 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 // Load tables async
-                Task.Run(() =>
+                await Task.Run(() =>
                 {
                     try
                     {
-                        
+
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
-                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTables), $"Starting Refresh of Tables ");
-                        _treeViewTables = SelectedModel.TreeViewTables(_options, EventAggregator, this);
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), $"Starting Refresh of Tables ");
+                        _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
                         sw.Stop();
                         Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
                     }
@@ -208,25 +210,25 @@ namespace DaxStudio.UI.ViewModels
                         ShowMetadataRefreshPrompt = false;
                         IsBusy = false;
                     }
-                }).ContinueWith((taskStatus) =>
-                {
-                    try
-                    {
-                        this.IsNotifying = false;
-                        Tables = _treeViewTables;
-                        EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
-                    }
-                    catch(Exception ex)
-                    {
-                        Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
-                    }
-                    finally
-                    {
-                        IsNotifying = true;
-                        Refresh(); // force all data bindings to update
-                    }
                 });
+
+                try
+                {
+                    this.IsNotifying = false;
+                    Tables = _treeViewTables;
+                    EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                }
+                catch(Exception ex)
+                {
+                    Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
+                    EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                }
+                finally
+                {
+                    IsNotifying = true;
+                    Refresh(); // force all data bindings to update
+                }
+                
             }
 
         }
@@ -314,7 +316,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tables == null) return;
             foreach (var node in Tables)
-                node.ApplyCriteria(CurrentCriteria, new Stack<FilterableTreeViewItem>());
+                node.ApplyCriteria(CurrentCriteria, new Stack<IFilterableTreeViewItem>());
         }
 
         // Database Dropdown Properties
@@ -870,6 +872,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
             if (selectedDB != null) SelectedDatabase = selectedDB;
+            else { IsBusy = false; }
+            
             // TODO - should we log a warning here?
 
             // refresh model list
@@ -926,9 +930,9 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = false;
         }
 
-        public void Handle(TablesRefreshedEvent message)
+        public async Task Handle(TablesRefreshedEvent message)
         {
-            RefreshTables();
+            await RefreshTablesAsync();
         }
     }
 

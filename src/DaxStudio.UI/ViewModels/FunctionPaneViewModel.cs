@@ -70,7 +70,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (FunctionGroups == null) return;
                 foreach (var node in FunctionGroups)
-                    node.ApplyCriteria(SearchCriteria, new Stack<FilterableTreeViewItem>());
+                    node.ApplyCriteria(SearchCriteria, new Stack<IFilterableTreeViewItem>());
             }
             catch (Exception ex)
             {

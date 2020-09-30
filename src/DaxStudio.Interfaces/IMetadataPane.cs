@@ -1,5 +1,5 @@
 ﻿
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Interfaces
 {
     public interface IMetadataPane
     {

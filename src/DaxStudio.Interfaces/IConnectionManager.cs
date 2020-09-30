@@ -10,5 +10,7 @@ namespace DaxStudio.Interfaces
         string FileName { get; }
         string SessionId { get; }
         AdomdType Type { get; }
+
+        void Ping();
     }
 }

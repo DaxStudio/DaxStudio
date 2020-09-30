@@ -103,7 +103,7 @@ namespace DaxStudio.UI.ViewModels
         private IModelCapabilities GetModelCapabilities()
         {
             var db = Document.Connection.Database;
-            var model = db.Models[Document.SelectedModel];
+            var model = Document.Connection.SelectedModel;
             return model.Capabilities;
         }
 

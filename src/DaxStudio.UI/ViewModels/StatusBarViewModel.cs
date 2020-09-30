@@ -93,7 +93,7 @@ namespace DaxStudio.UI.ViewModels
                 if (message.Connection != null)
                 {
                     ServerName = message.Connection.IsPowerPivot?"<Power Pivot>": message.Connection.ServerName;
-                    Spid = message.Connection.Spid.ToString(CultureInfo.InvariantCulture);
+                    Spid = message.Connection.SPID.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -214,6 +214,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ServerName = string.Empty;
         }
+
 
     }
 }

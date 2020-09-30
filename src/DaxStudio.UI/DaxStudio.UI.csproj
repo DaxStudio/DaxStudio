@@ -400,11 +400,13 @@
     <Compile Include="Events\ConnectFailedEvent.cs" />
     <Compile Include="Events\ConnectionOpenedEvent.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
+    <Compile Include="Events\ReconnectEvent.cs" />
     <Compile Include="Events\RefreshTablesEvent.cs" />
     <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
     <Compile Include="Events\SetFocusEvent.cs" />
     <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
     <Compile Include="Events\TablesRefreshedEvent.cs" />
+    <Compile Include="Extensions\ContextExtensions.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
@@ -488,7 +490,6 @@
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Interfaces\IAutoSaver.cs" />
-    <Compile Include="Interfaces\IMetadataPane.cs" />
     <Compile Include="Interfaces\IDataGridWindow.cs" />
     <Compile Include="Interfaces\ISettingProvider.cs" />
     <Compile Include="JsonConverters\DaxFileConverter.cs" />
@@ -500,6 +501,7 @@
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
+    <Compile Include="Model\Output.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilder.cs" />
