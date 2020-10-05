@@ -521,7 +521,7 @@ namespace ADOTabular
                 {
                     if (prop.Trim().Length ==0) continue;
                     var p = prop.Split('=');
-                    if (p[0] == "Data Source") return p[1];
+                    if (p[0] == "Data Source") return p[1].TrimStart('"').TrimEnd('"');
                 }
                 return "Not Connected";
             }
