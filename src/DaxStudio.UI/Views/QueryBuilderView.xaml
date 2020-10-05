@@ -18,6 +18,7 @@
             <conv:IsMeasureVisibilityConverter x:Key="IsMeasureToVisibilityConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
+            <conv:QueryBuilderFilterOrientationConverter x:Key="QueryBuilderFilterOrientationConverter" />
 
             <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
             <Setter Property="Width" Value="10"/>
@@ -205,10 +206,11 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-
+                            <StackPanel Orientation="Horizontal">
                             <TextBlock FontWeight="SemiBold" 
                                        Text="{Binding Caption}"
                                        Foreground="Blue"
+                                       TextTrimming="CharacterEllipsis"
                                    Grid.Row="1">
                                 <TextBlock.ToolTip>
                                     <TextBlock Text="{Binding TabularObject.DaxName}"/>
@@ -224,9 +226,16 @@
                                          Style="{StaticResource RemoveButton}">
 
                             </fa:ImageAwesome>
-
-                            <WrapPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="{Binding Path=ActualWidth, ElementName=Filters, Converter={StaticResource MinWidthOrientationConverter}, ConverterParameter=250}" >
-
+                            </StackPanel>
+                            <!-- Orientation="{Binding Path=ActualWidth, ElementName=Filters, Converter={StaticResource MinWidthOrientationConverter}, ConverterParameter=250}"-->
+                            <WrapPanel Grid.Row="2" Grid.ColumnSpan="2"  >
+                                <WrapPanel.Orientation>
+                                    <MultiBinding Converter="{StaticResource QueryBuilderFilterOrientationConverter }">
+                                        <Binding ElementName="Filters" Path="ActualWidth" />
+                                        <Binding Path="FilterType" />
+                                        
+                                    </MultiBinding>
+                                </WrapPanel.Orientation>
                                 <ComboBox Grid.Row="2" Grid.ColumnSpan="2" 
                                   x:Name="FilterType" ItemsSource="{Binding FilterTypes}" 
                                   SelectedItem="{Binding FilterType}"
@@ -241,13 +250,13 @@
                                  x:Name="FilterValue" 
                                  Text="{Binding FilterValue}" 
                                  Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
-                                 MinWidth="150"
+                                 MinWidth="120"
                                  Margin="3"/>
                                 <TextBox 
                                     x:Name="FilterValue2"
                                     Text="{Binding FilterValue2}"
                                     Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
-                                    MinWidth="150"
+                                    MinWidth="120"
                                     Margin="3"/>
                             </WrapPanel>
                         </Grid>

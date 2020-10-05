@@ -42,6 +42,8 @@ namespace DaxStudio.UI.Model
         , IHandleWithTask<RefreshTablesEvent>
         , IHandle<SelectedModelChangedEvent>
     {
+        public bool IsConnecting { get; private set; }
+
         private ADOTabularConnection _connection;
         private IEventAggregator _eventAggregator;
         private RetryPolicy retry;
@@ -307,7 +309,7 @@ namespace DaxStudio.UI.Model
                     }
                 }
             }
-            //_eventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent(SelectedModelName));
+            // This allows us to move the loading of the table/column metadata onto a background thread
             _eventAggregator.PublishOnBackgroundThread(new RefreshTablesEvent());
         }
 
@@ -447,6 +449,8 @@ namespace DaxStudio.UI.Model
 
         internal void Connect(ConnectEvent message)
         {
+            IsConnecting = true;
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
             _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
             ServerType = message.ServerType;
             IsPowerPivot = message.PowerPivotModeSelected;
@@ -464,6 +468,7 @@ namespace DaxStudio.UI.Model
                 retry.Execute(() =>
                 {
                     GetTables();
+                    IsConnecting = false;
                     _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
                 });
             });
@@ -472,7 +477,8 @@ namespace DaxStudio.UI.Model
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
         {
             return retry.Execute(() => {
-                return SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
+                var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
+                return tvt;
             });
         }
 

@@ -3151,7 +3151,9 @@ namespace DaxStudio.UI.ViewModels
                     _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
                     return false;
                 }
+
                 if (!IsConnected) return false;
+                if (Connection.IsConnecting) return false;
                 if (Connection.Database == null) return false;
                 if (!Connection.ShouldAutoRefreshMetadata(Options)) return false;
 
@@ -3164,6 +3166,7 @@ namespace DaxStudio.UI.ViewModels
 
                 return hasChanged;
             }
+            // AdomdConnectionException
             catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), ex.Message, ex.StackTrace);
@@ -3856,6 +3859,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // ping the connection to make sure we are connected and the session is active
                 if (Connection.IsConnected) Connection.Ping();
             }
             catch (Exception ex)
