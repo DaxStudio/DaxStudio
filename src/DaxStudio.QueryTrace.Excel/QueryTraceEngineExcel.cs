@@ -11,7 +11,7 @@ using Serilog;
 using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
 
@@ -403,9 +403,9 @@ namespace DaxStudio.QueryTrace
             return dsEvent;
         }
 
-        public void Update(string databaseName)
+        public void Update(string databaseName, string sessionId)
         {
-            // Note: Excel Query Trace does not use the database name parameter
+            // Note: Excel Query Trace does not use the database name or sessions parameters
             Update();
         }
 

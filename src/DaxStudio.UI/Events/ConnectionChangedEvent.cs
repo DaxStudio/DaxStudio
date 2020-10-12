@@ -5,13 +5,12 @@ namespace DaxStudio.UI.Events
 {
     public class ConnectionChangedEvent
     { 
-        public ConnectionChangedEvent(ADOTabularConnection connection, DocumentViewModel document)
+        public ConnectionChangedEvent( DocumentViewModel document, bool isPowerBIorSSDT)
         {
             Document = document;
-            Connection = connection;
+            IsPowerBIorSSDT = isPowerBIorSSDT;
         }
-
-        public ADOTabularConnection Connection { get; set; }
-        public DocumentViewModel Document { get; private set; }
+        public DocumentViewModel Document { get; }
+        public bool IsPowerBIorSSDT { get; }
     }
 }

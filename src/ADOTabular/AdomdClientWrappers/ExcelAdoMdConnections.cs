@@ -12,10 +12,10 @@ namespace ADOTabular.AdomdClientWrappers
     public static class ExcelAdoMdConnections
     {
         internal delegate void VoidDelegate();
-        internal delegate T ReturnDelegate<T>();
+        internal delegate T ReturnDelegate<out T>();
 
-        private static Assembly m_excelAdomdClientAssembly;
-        private static string m_excelAdomdClientAssemblyPath;
+        private static Assembly _excelAdomdClientAssembly;
+        private static string _excelAdomdClientAssemblyPath;
 
         [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
         private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] StringBuilder lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
@@ -65,25 +65,15 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (m_excelAdomdClientAssembly == null)
+                if (_excelAdomdClientAssembly == null)
                 {
-                    m_excelAdomdClientAssembly = Assembly.LoadFrom(ExcelAdomdClientAssemblyPath);
+                    _excelAdomdClientAssembly = Assembly.LoadFrom(ExcelAdomdClientAssemblyPath);
                 }
-                return m_excelAdomdClientAssembly;
+                return _excelAdomdClientAssembly;
             }
         }
 
-        private static string ExcelAdomdClientAssemblyPath
-        {
-            get
-            {
-                if (m_excelAdomdClientAssemblyPath == null)
-                {
-                    m_excelAdomdClientAssemblyPath = RetrieveAdomdClientAssemblyPath();
-                }
-                return m_excelAdomdClientAssemblyPath;
-            }
-        }
-
+        private static string ExcelAdomdClientAssemblyPath =>
+            _excelAdomdClientAssemblyPath ??= RetrieveAdomdClientAssemblyPath();
     }
 }

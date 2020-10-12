@@ -11,20 +11,25 @@ using System.Collections;
 using System.Windows.Data;
 using System.Windows.Threading;
 using System.Collections.ObjectModel;
+using DaxStudio.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
-    public class DmvPaneViewModel : ToolPaneBaseViewModel
+    public class DmvPaneViewModel : ToolPaneBaseViewModel 
+        , IHandle<ConnectionChangedEvent>
     {
+        private IDmvProvider _dmvProvider;
         private object _lock = new object();
         [ImportingConstructor]
-        public DmvPaneViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator, DocumentViewModel document)
-            : base(connection, eventAggregator)
+        public DmvPaneViewModel(IDmvProvider dmvProvider, IEventAggregator eventAggregator, DocumentViewModel document)
+            : base(eventAggregator)
         {
+            _dmvProvider = dmvProvider;
             Document = document;
-            DmvQueries = new ObservableCollection<ADOTabularDynamicManagementView>();
+            DmvQueries = new ObservableCollection<IDmv>();
             // this makes sure the collection can be updated on a background thread
             BindingOperations.EnableCollectionSynchronization(DmvQueries, _lock);
             SetupDmvs();
@@ -34,34 +39,29 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetupDmvs()
         {
-            if (Document.Connection == null) return;
+            if (!Document.Connection.IsConnected) return;
             DmvQueries.Clear();
 
-            foreach (var dmv in Document.Connection?.DynamicManagementViews)
+            foreach (var dmv in _dmvProvider.DynamicManagementViews)
             {
                 DmvQueries.Add(dmv);
             }
         }
 
-        public ObservableCollection<ADOTabularDynamicManagementView> DmvQueries {get;}
+        public ObservableCollection<IDmv> DmvQueries {get;}
 
         //public ADOTabularDynamicManagementViewCollection DmvQueries
         //{
         //    get { return Connection == null ? null: Connection.DynamicManagementViews; }
         //}
 
-        protected override void OnConnectionChanged()//bool isSameServer)
+        public void Handle(ConnectionChangedEvent message)
         {
-            base.OnConnectionChanged();//isSameServer);
-            //if (isSameServer) return;
-            if (Connection == null) return;
-
             SetupDmvs();
-
-            NotifyOfPropertyChange(()=> DmvQueries);
+            NotifyOfPropertyChange(() => DmvQueries);
 
             // notify the intellisense provider that the dmv list may need updating
-            EventAggregator.PublishOnUIThread(new DmvsLoadedEvent(Document, Connection.DynamicManagementViews));
+            //EventAggregator.PublishOnUIThread(new DmvsLoadedEvent(Document, _dmvProvider.DynamicManagementViews));
         }
 
         public bool UserFilter(object dmv)

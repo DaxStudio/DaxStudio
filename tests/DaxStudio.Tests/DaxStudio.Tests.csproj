@@ -83,7 +83,7 @@
       <HintPath>..\..\packages\Mono.Cecil.0.10.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="Moq, Version=4.14.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Moq.4.14.5\lib\net45\Moq.dll</HintPath>
+      <HintPath>..\..\packages\Moq.4.14.6\lib\net45\Moq.dll</HintPath>
     </Reference>
     <Reference Include="MSTestHacks, Version=2.3.20.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MSTestHacks.2.3.20\lib\net45\MSTestHacks.dll</HintPath>

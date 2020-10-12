@@ -47,7 +47,7 @@ namespace ADOTabular
 
         public string Culture { get; internal set; } = string.Empty;
         public string Id { get; }
-        public DateTime LastUpdate { get; private set; } = DateTime.MinValue;
+        public DateTime LastUpdate { get; internal set; } = DateTime.MinValue;
         public string Name { get;
         //get { return _adoTabConn.PowerBIFileName == string.Empty? _databaseName: _adoTabConn.PowerBIFileName; }
         }

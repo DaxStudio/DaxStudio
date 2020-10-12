@@ -4,24 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-        xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
         xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-        xmlns:daxviewmodel="clr-namespace:Dax.ViewModel;assembly=Dax.ViewModel"
-        xmlns:clr="clr-namespace:System;assembly=mscorlib"
-        xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
     <!-- Resources -->
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
-            <conv:MaxMultiConverter x:Key="MaxMultiConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:MinusConverter x:Key="MinusConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             
-            <BitmapImage x:Key="modelIcon" UriSource="..\Images\Metadata\model.png"/>
+            <BitmapImage x:Key="ModelIcon" UriSource="..\Images\Metadata\model.png"/>
 
 
             <Style x:Key="SummaryHeader" TargetType="{x:Type TextBlock}">
@@ -137,7 +132,7 @@
                                                                 <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRows}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colTableSize}" Style="{StaticResource NumBlockBoldStyle}"/>
 
-                                                                <TextBlock Text="{Binding Name.TotalSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextAlignment="Right" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
+                                                                <TextBlock Text="{Binding Name.TotalSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
                                                                 <TextBlock Text="{Binding Name.DataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colData}"/>
                                                                 <TextBlock Text="{Binding Name.DictionarySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDictionary}" />
                                                                 <TextBlock Text="{Binding Name.HierarchiesSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colHierarchies}" />
@@ -461,9 +456,9 @@
                                                                 <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colRelName, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelSize}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxFromCardinality, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelFromCardinality}" Style="{StaticResource NumBlockBoldStyle}"/>
-                                                                <TextBlock Text="{Binding Name.RelationshipMaxToCardinality, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextAlignment="Right" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelToCardinality}"/>
-                                                                <TextBlock Text="{Binding Name.RelationshipFromMissingKeys, StringFormat=N0}" x:Name="hdrMissingKeys" Style="{StaticResource NumBlockBoldStyle}" TextAlignment="Right" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colMissingKeys}"/>
-                                                                <TextBlock Text="{Binding Name.RelationshipInvalidRows, StringFormat=N0}" x:Name="hdrInvalidRows" Style="{StaticResource NumBlockBoldStyle}" TextAlignment="Right" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colInvalidRows}"/>
+                                                                <TextBlock Text="{Binding Name.RelationshipMaxToCardinality, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelToCardinality}"/>
+                                                                <TextBlock Text="{Binding Name.RelationshipFromMissingKeys, StringFormat=N0}" x:Name="hdrMissingKeys" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colMissingKeys}"/>
+                                                                <TextBlock Text="{Binding Name.RelationshipInvalidRows, StringFormat=N0}" x:Name="hdrInvalidRows" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colInvalidRows}"/>
                                                             </StackPanel>
 
                                                         </Expander.Header>
@@ -692,7 +687,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Header Rows -->
-                        <Image Source="{StaticResource modelIcon}" Grid.RowSpan="2" VerticalAlignment="Top"/>
+                        <Image Source="{StaticResource ModelIcon}" Grid.RowSpan="2" VerticalAlignment="Top"/>
                         <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource SummaryHeader}"/>
 
                         <!-- Row 1 -->

@@ -121,10 +121,14 @@ namespace DaxStudio.UI.Model
         public static string FilterExpressionTreatAs(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter);
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
+                case FilterType.NotIn:
+                    return $@"KEEPFILTERS( EXCEPT( ALL( {colName} ), TREATAS( {{{formattedVal}}}, {colName} )))";
+                case FilterType.In:
+                    return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
                 case FilterType.Is:
                     return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
                 default:
@@ -135,7 +139,8 @@ namespace DaxStudio.UI.Model
         public static string FilterExpressionBasic(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter);
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
+            var formattedVal2 = FormattedValue(filter, () => { return filter.FilterValue2; });
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
@@ -163,7 +168,8 @@ namespace DaxStudio.UI.Model
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} < {formattedVal} ))";
                 case FilterType.LessThanOrEqual:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
-                    break;
+                case FilterType.Between:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
             }
@@ -172,22 +178,36 @@ namespace DaxStudio.UI.Model
             
         }
 
-        public static string FormattedValue(QueryBuilderFilter filter)
+        public static string FormattedValue(QueryBuilderFilter filter, Func<string> valueFunc)
         {
-            if (filter.TabularObject.DataType == typeof(DateTime)) {
+            var val = valueFunc();
+            if (filter.FilterType == FilterType.In || filter.FilterType == FilterType.NotIn)
+            {
+                // strip out \r and break on \n
+                string[] valArray = val.Replace("\r","").Split('\n');
+                return valArray.Aggregate("", (prev, current) => { return prev + "," + FormatValueInternal(filter.TabularObject.DataType, current); }).TrimStart(',');
+            }
+
+            return FormatValueInternal(filter.TabularObject.DataType, val);
+        }
+
+        private static string FormatValueInternal(Type dataType, string val)
+        {
+            if (dataType == typeof(DateTime))
+            {
                 DateTime parsedDate = DateTime.MinValue;
-                DateTime.TryParse(filter.FilterValue, out parsedDate);
+                DateTime.TryParse(val, out parsedDate);
                 if (parsedDate > DateTime.MinValue)
                 {
                     return $"DATE({parsedDate.Year},{parsedDate.Month},{parsedDate.Day})";
                 }
                 else
                 {
-                    throw new ArgumentException($"Unable to parse the value '{filter.FilterValue}' as a DateTime value");
+                    throw new ArgumentException($"Unable to parse the value '{val}' as a DateTime value");
                 }
             }
-            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            return $"{quotes}{filter.FilterValue}{quotes}";
+            var quotes = dataType == typeof(string) ? "\"" : string.Empty;
+            return $"{quotes}{val}{quotes}";
         }
     }
 }

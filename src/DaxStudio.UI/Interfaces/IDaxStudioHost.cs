@@ -1,5 +1,4 @@
-﻿using DaxStudio.Common.Enums;
-using System;
+﻿using System;
 
 namespace DaxStudio.UI.Interfaces
 {
@@ -7,7 +6,6 @@ namespace DaxStudio.UI.Interfaces
     {
         IDaxStudioProxy Proxy { get; }
         bool IsExcel { get; }
-        AdomdType ConnectionType { get; }
 
         string CommandLineFileName { get; }
         int Port { get;  }

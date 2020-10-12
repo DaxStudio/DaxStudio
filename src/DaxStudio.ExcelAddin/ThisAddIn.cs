@@ -43,7 +43,7 @@ namespace DaxStudio.ExcelAddin
                     // force logging to rolling log file (in case the app settings has switched this off)
                     var logPath = Path.Combine(ApplicationPaths.LogPath
                                                 , Constants.ExcelLogFileName);
-                    config.WriteTo.RollingFile(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
+                    config.WriteTo.File(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
                     
                 }
                 log = config.CreateLogger();

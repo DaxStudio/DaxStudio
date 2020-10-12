@@ -49,7 +49,7 @@ namespace DaxStudio.UI.ResultsTargets
 
         public void Handle(ConnectionChangedEvent message)
         {
-            _isPowerBIOrSSDTConnection = message.Connection?.IsPowerBIorSSDT ?? false;
+            _isPowerBIOrSSDTConnection = message.IsPowerBIorSSDT;
             NotifyOfPropertyChange(() => IsEnabled);
             _eventAggregator.PublishOnUIThread(new RefreshOutputTargetsEvent());
         }
@@ -109,12 +109,18 @@ namespace DaxStudio.UI.ResultsTargets
 
         private async Task CleanUpOdcAsync(string odcFile)
         {
-            Thread.Sleep(2000);
-            try { 
-            File.Delete(odcFile);
-            System.Diagnostics.Debug.Write($"ODC file deleted - {odcFile}");
-            }
-            catch { }
+            await Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(2000);
+                try
+                {
+                    File.Delete(odcFile);
+                    Debug.Write($"ODC file deleted - {odcFile}");
+                }
+                catch
+                {
+                }
+            });
         }
     }
 

@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.Enums;
-using DaxStudio.Common.Enums;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 
@@ -522,13 +521,13 @@ namespace ADOTabular
                 {
                     if (prop.Trim().Length ==0) continue;
                     var p = prop.Split('=');
-                    if (p[0] == "Data Source") return p[1];
+                    if (p[0] == "Data Source") return p[1].TrimStart('"').TrimEnd('"');
                 }
                 return "Not Connected";
             }
         }
 
-        private string _svrVersion = null;
+        private string _svrVersion;
         public string ServerVersion
         {
             get {
@@ -761,8 +760,8 @@ namespace ADOTabular
         public Dictionary<string, ADOTabularColumn> Columns { get; } = new Dictionary<string, ADOTabularColumn>();
 
         public ServerType ServerType { get; set; }
-        public string ServerLocation { get; private set; } = null;
-        public string ServerEdition { get; private set; } = null;
+        public string ServerLocation { get; private set; }
+        public string ServerEdition { get; private set; }
 
         public int LocaleIdentifier { get {
                 if (_adomdConn == null) return 0;

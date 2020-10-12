@@ -98,6 +98,10 @@ namespace ADOTabular
 
             }   
         }
-        
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

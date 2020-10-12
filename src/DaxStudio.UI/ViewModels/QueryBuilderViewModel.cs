@@ -17,6 +17,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -36,6 +37,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = globalOptions;
+            Filters = new QueryBuilderFilterList(GetModelCapabilities);
             Title = "Builder";
             DefaultDockingPane = "DockMidLeft";
             IsVisible = false;
@@ -50,12 +52,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public bool CanHide => true;      
+        public new bool CanHide => true;      
 
         public QueryBuilderFieldList Columns { get; } 
-        public QueryBuilderFilterList Filters { get; } = new QueryBuilderFilterList();
+        public QueryBuilderFilterList Filters { get; } 
         private bool _isEnabled = true;
-        public bool IsEnabled
+        public new bool IsEnabled
         {
             get => _isEnabled;
             set
@@ -103,7 +105,7 @@ namespace DaxStudio.UI.ViewModels
         private IModelCapabilities GetModelCapabilities()
         {
             var db = Document.Connection.Database;
-            var model = db.Models[Document.SelectedModel];
+            var model = Document.Connection.SelectedModel;
             return model.Capabilities;
         }
 
@@ -113,7 +115,19 @@ namespace DaxStudio.UI.ViewModels
         } = new Dictionary<string, QueryParameter>();
 
         public void RunQuery() {
-            EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget) { QueryProvider = this });
+            if (! CheckForCrossjoins() )
+                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget) { QueryProvider = this });
+        }
+
+        private bool CheckForCrossjoins()
+        {
+            bool hasMeasures = this.Columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure).Any();
+            if (hasMeasures) return false;  // we have a measure so that should prevent a large crossjoin
+            
+            var cols = this.Columns.GroupBy(c => c.TableName);
+            if (cols.Count() == 1) return false;  // if all the columns are from one table it will not produce a crossjoin
+
+            return MessageBox.Show("Including columns from multiple tables without a measure is likely to result in a large crossjoin which could use a lot of memory.\n\nAre you sure you want to proceed?", "Potential Crossjoin Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No;
         }
 
         public void SendTextToEditor()

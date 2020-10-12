@@ -15,5 +15,7 @@ namespace ADOTabular.Interfaces
         MetadataImages MetadataImage { get; }
 
         string MeasureExpression { get; }
+
+        string TableName { get; }
     }
 }

@@ -197,8 +197,7 @@ namespace DaxStudio.UI.ViewModels
             new System.Action(CleanActiveDocument).BeginOnUIThread();
 
             if (sourceDocument == null
-                || sourceDocument.Connection == null
-                || sourceDocument.Connection.State != System.Data.ConnectionState.Open)
+                || sourceDocument.Connection.IsConnected == false)
             {
                 if (!string.IsNullOrEmpty(_app.Args().Server) )
                 {

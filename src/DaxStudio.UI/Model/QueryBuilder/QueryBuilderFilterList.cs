@@ -13,9 +13,10 @@ namespace DaxStudio.UI.Model
 {
     public class QueryBuilderFilterList :  IQueryBuilderFieldList
     {
-        public QueryBuilderFilterList()
+        public QueryBuilderFilterList(Func<IModelCapabilities> modelCapabilities)
         {
             DropHandler = new QueryBuilderDropHandler(this);
+            GetModelCapabilities = modelCapabilities;
         }
 
         public void Remove(QueryBuilderFilter item)
@@ -24,6 +25,7 @@ namespace DaxStudio.UI.Model
         }
         public ObservableCollection<QueryBuilderFilter> Items { get; } = new ObservableCollection<QueryBuilderFilter>();
         public QueryBuilderDropHandler DropHandler { get; }
+        public Func<IModelCapabilities> GetModelCapabilities { get; }
 
         public IEnumerable<FilterType> FilterTypes
         {
@@ -39,7 +41,7 @@ namespace DaxStudio.UI.Model
         #region IQueryBuilderFieldList
         public void Add(IADOTabularColumn item)
         {
-            var filter = new QueryBuilderFilter(item);
+            var filter = new QueryBuilderFilter(item, GetModelCapabilities());
             Items.Add(filter);
         }
 
@@ -56,7 +58,7 @@ namespace DaxStudio.UI.Model
         }
         public void Insert(int index, IADOTabularColumn item)
         {
-            var filter = new QueryBuilderFilter(item);
+            var filter = new QueryBuilderFilter(item, GetModelCapabilities());
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(filter);
             Items.Insert(index, filter);

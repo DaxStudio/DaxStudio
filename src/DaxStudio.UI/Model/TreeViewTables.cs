@@ -19,9 +19,9 @@ namespace DaxStudio.UI.Model
     public static class ADOTabularModelExtensions
     {
 
-        public static List<FilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
+        public static List<IFilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
         {
-            var lst = new List<FilterableTreeViewItem>();
+            var lst = new List<IFilterableTreeViewItem>();
             foreach (var t in model.Tables)
             {
                 if (t.Private && !metadataPane.ShowHiddenObjects) continue; // skip Private tables
@@ -152,7 +152,7 @@ namespace DaxStudio.UI.Model
     //public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
     public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IADOTabularObject tabularObject, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane);
     
-    public abstract class FilterableTreeViewItem : PropertyChangedBase
+    public abstract class FilterableTreeViewItem : PropertyChangedBase, IFilterableTreeViewItem
     {
         protected GetChildrenDelegate _getChildren;
         protected IGlobalOptions _options;
@@ -186,8 +186,8 @@ namespace DaxStudio.UI.Model
             MetadataPane = metadataPane;
         }
 
-        private IEnumerable<FilterableTreeViewItem> _children;
-        public IEnumerable<FilterableTreeViewItem> Children  {
+        private IEnumerable<IFilterableTreeViewItem> _children;
+        public IEnumerable<IFilterableTreeViewItem> Children  {
             get
             {
                 if (_children == null && _getChildren != null)
@@ -235,7 +235,7 @@ namespace DaxStudio.UI.Model
             set { _options = value; }
         }
 
-        public void ApplyCriteria(string criteria, Stack<FilterableTreeViewItem> ancestors)
+        public void ApplyCriteria(string criteria, Stack<IFilterableTreeViewItem> ancestors)
         {
             if (IsCriteriaMatched(criteria))
             {
@@ -313,7 +313,7 @@ namespace DaxStudio.UI.Model
         }
     }
 
-    public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject
+    public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject, ITreeviewColumn
     {
         /*
         Folder
@@ -470,18 +470,18 @@ namespace DaxStudio.UI.Model
         public bool ShowFormatString => !string.IsNullOrEmpty(FormatString);
         public string FormatString { get; private set; }
         public string MinValue { get { return _minValue; }
-            private set { _minValue = value;
+            set { _minValue = value;
                 NotifyOfPropertyChange(() => MinValue);
             }
         }
         public string MaxValue { get { return _maxValue; }
-            private set { _maxValue = value;
+            set { _maxValue = value;
                 NotifyOfPropertyChange(() => MaxValue);
             }
         }
 
         public long DistinctValues { get { return _distinctValues; }
-            private set { _distinctValues = value;
+            set { _distinctValues = value;
                 NotifyOfPropertyChange(() => DistinctValues);
             }
         }
@@ -506,71 +506,27 @@ namespace DaxStudio.UI.Model
 
         public IADOTabularObject Column { get; }
 
+        public IADOTabularColumn InternalColumn => Column as IADOTabularColumn;
+
         public override bool IsCriteriaMatched(string criteria)
         {
             if (!this.MetadataPane.ShowHiddenObjects && !this.IsVisible) return false;
             return String.IsNullOrEmpty(criteria) || Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        public async void GetSampleDataAsync(ADOTabularConnection connection, int sampleSize)
-        {
-            UpdatingSampleData = true;
-            try
-            {
-                await Task.Run(() => {                    
-                    using (var newConn = connection.Clone())
-                    {
-                        SampleData = _column.GetSampleData(newConn, sampleSize);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
-                Log.Warning(Common.Constants.LogMessageTemplate, nameof(TreeViewColumn), nameof(GetSampleDataAsync), errorMsg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
-            }
-            finally
-            {
-                UpdatingSampleData = false;
-            }
-        }
-
         public List<string> SampleData
         {
             get { return _sampleData; }
-            set { _sampleData = value;
+            set
+            {
+                _sampleData = value;
                 NotifyOfPropertyChange(() => SampleData);
-            }
-        }
-
-        public async void UpdateBasicStatsAsync(ADOTabularConnection connection )
-        {
-            UpdatingBasicStats = true;
-            try {
-                await Task.Run(() => {
-                    using (var newConn = connection.Clone())
-                    {
-                        _column.UpdateBasicStats(newConn);
-                        MinValue = _column.MinValue;
-                        MaxValue = _column.MaxValue;
-                        DistinctValues = _column.DistinctValues;   
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
-            }
-            finally
-            {
-                UpdatingBasicStats = false;
             }
         }
         public bool UpdatingSampleData
         {
             get { return _updatingSampleData; }
-            private set
+            set
             {
                 _updatingSampleData = value;
                 NotifyOfPropertyChange(() => UpdatingSampleData);
@@ -580,7 +536,7 @@ namespace DaxStudio.UI.Model
 
         public bool UpdatingBasicStats {
             get { return _updatingBasicStats; }
-            private set {
+            set {
                 _updatingBasicStats = value;
                 NotifyOfPropertyChange(() => UpdatingBasicStats);
                 NotifyOfPropertyChange(() => ShowDistinctValues);

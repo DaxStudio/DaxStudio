@@ -67,7 +67,7 @@ namespace DaxStudio.UI.ViewModels
                 throw new ArgumentException("The current document is not connected to a data source", "Document");
             }
 
-            if (Document.Connection.State != ConnectionState.Open)
+            if (!Document.Connection.IsConnected)
             {
                 throw new ArgumentException("The connection for the current document is not in an open state", "Document");
             }
@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
         private void PopulateTablesList()
         {
             
-            var tables = Document.Connection.Database.Models[Document.SelectedModel].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
+            var tables = Document.Connection.Database.Models[Document.Connection.SelectedModelName].Tables.Where(t=>t.Private == false); //exclude Private (eg Date Template) tables
             if (!tables.Any()) throw new ArgumentException("There are no visible tables to export in the current data model");
 
             foreach ( var t in tables)
@@ -240,12 +240,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void ExportDataToCSV(string outputPath)
         {
-            var metadataPane = Document.MetadataPane;
+
             var exceptionFound = false;
 
             // TODO: Use async but to be well done need to apply async on the DBCommand & DBConnection
             // TODO: Show warning message?
-            if (metadataPane.SelectedModel == null)
+            if (string.IsNullOrEmpty(Document.Connection.SelectedModelName))
             {
                 return;
             }
@@ -457,7 +457,7 @@ namespace DaxStudio.UI.ViewModels
             var selectedTables = Tables.Where(t => t.IsSelected);
             totalTableCnt = selectedTables.Count();
 
-            var connRead = Document.Connection.Clone();
+            var connRead = Document.Connection;
 
             // no tables were selected so exit here
             if (totalTableCnt == 0)

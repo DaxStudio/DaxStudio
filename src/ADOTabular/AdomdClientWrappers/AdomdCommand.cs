@@ -1,6 +1,8 @@
 ﻿extern alias ExcelAdomdClientReference;
 
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
+
+//using DaxStudio.Common.Enums;
 using System;
 using System.Data;
 
@@ -276,7 +278,7 @@ namespace ADOTabular.AdomdClientWrappers
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

@@ -57,7 +57,7 @@
 
       if (element != null)
       {
-        element.MouseLeftButtonUp += new System.Windows.Input.MouseButtonEventHandler(element_MouseLeftButtonUp);
+        element.MouseLeftButtonUp += element_MouseLeftButtonUp;
       }
       else
         element.MouseLeftButtonUp -= element_MouseLeftButtonUp;
@@ -74,7 +74,7 @@
     {
       var element = sender as FrameworkElement;
 
-      var target = ContextMenuBehaviour.GetMenuList(element) as ContextMenu;
+      var target = GetMenuList(element);
 
       if (target != null)
       {

@@ -582,7 +582,7 @@ namespace DAXEditorControl
 
                 // force completion window to close
                 if (completionWindow == null) return;
-                completionWindow?.Close();
+                if (completionWindow.IsVisible) try { completionWindow?.Close(); } catch { }
                 completionWindow = null;
             }
         }

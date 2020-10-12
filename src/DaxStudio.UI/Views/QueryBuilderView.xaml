@@ -10,7 +10,8 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" IsEnabled="{Binding IsEnabled}">
+             d:DesignHeight="450" d:DesignWidth="800" 
+             IsEnabled="{Binding IsEnabled}">
     <ctrl:ZoomableUserControl.Resources>
         <ResourceDictionary>
             <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
@@ -18,7 +19,9 @@
             <conv:IsMeasureVisibilityConverter x:Key="IsMeasureToVisibilityConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
-
+            <conv:FilterValueHeightConverter x:Key="FilterValueHeightConverter" />
+            <conv:IsMultiLineFilterTypeConverter x:Key="IsMultiLineFilterTypeConverter"/>
+            
             <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
             <Setter Property="Width" Value="10"/>
             <Setter Property="Height" Value="10"/>
@@ -102,12 +105,17 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="100"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="100"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -138,6 +146,7 @@
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  Margin="10,5"
                  Grid.Row="1"
+                 Grid.ColumnSpan="3"
                  Style="{StaticResource EmptyColumnListStyle}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -175,8 +184,13 @@
             </ListBox.ItemTemplate>
             
         </ListBox>
-        <TextBlock Grid.Row="2" Text="Filters" Margin="10,0" FontSize="14"/>
+        <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" ResizeDirection="Rows" VerticalAlignment="Top"
+                      ShowsPreview="True" Grid.ColumnSpan="3"
+                      Height="5" ResizeBehavior="PreviousAndNext"/>
+        <TextBlock Grid.Row="2" Text="Filters" Margin="10,5,0,0" FontSize="14" Grid.ColumnSpan="3"/>
+        
         <ListView Name="Filters"
+                  Grid.ColumnSpan="3"
                  ItemsSource="{Binding Filters.Items}" 
                  dd:DragDrop.IsDropTarget="True" 
                  dd:DragDrop.IsDragSource="True"
@@ -186,70 +200,81 @@
                  dd:DragDrop.DropHandler="{Binding Filters.DropHandler}"
                  Grid.Row="3" Margin="10"
                  HorizontalContentAlignment="Stretch"
-                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                  Style="{StaticResource EmptyFilterListStyle}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Style="{StaticResource EmptyFilterListStyle}"
                  >
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="LightGray"  
-                            BorderThickness="0,0,0,1"
-                            Padding="0,0,0,3">
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
 
-                            <TextBlock FontWeight="SemiBold" 
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock FontWeight="SemiBold" 
                                        Text="{Binding Caption}"
                                        Foreground="Blue"
-                                   Grid.Row="1">
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap"
+                                       HorizontalAlignment="Left"
+                                       Margin="0,0,5,0">
                                 <TextBlock.ToolTip>
                                     <TextBlock Text="{Binding TabularObject.DaxName}"/>
                                 </TextBlock.ToolTip>
                             </TextBlock>
-                            <fa:ImageAwesome Grid.Column="1"  
-                                         Grid.Row ="1"
+                        <fa:ImageAwesome  
+                                         Grid.Column="1"
                                          x:Name="RemoveFilter" 
-                                         ToolTip="Remove Filter"    
+                                         ToolTip="Remove Filter"  
+                                         HorizontalAlignment="Right"
                                          cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"
                                          cal:Action.TargetWithoutContext="{Binding Path=DataContext.Filters, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                          Icon="TimesCircle"
                                          Style="{StaticResource RemoveButton}">
+                        </fa:ImageAwesome>
 
-                            </fa:ImageAwesome>
-
-                            <WrapPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="{Binding Path=ActualWidth, ElementName=Filters, Converter={StaticResource MinWidthOrientationConverter}, ConverterParameter=250}" >
-
-                                <ComboBox Grid.Row="2" Grid.ColumnSpan="2" 
-                                  x:Name="FilterType" ItemsSource="{Binding FilterTypes}" 
-                                  SelectedItem="{Binding FilterType}"
-                                  Margin="3">
-                                    <ComboBox.ItemTemplate>
+                        <WrapPanel  Grid.ColumnSpan="2" Orientation="Horizontal" Grid.Row="1" >
+                            <ComboBox Grid.Row="2" 
+                                      Grid.ColumnSpan="2" 
+                                      x:Name="FilterType" ItemsSource="{Binding FilterTypes}" 
+                                      SelectedItem="{Binding FilterType}"
+                                      Margin="3">
+                                <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <TextBox Grid.Row="3" Grid.ColumnSpan="2" 
-                                 x:Name="FilterValue" 
-                                 Text="{Binding FilterValue}" 
-                                 Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
-                                 MinWidth="150"
-                                 Margin="3"/>
+                            <WrapPanel Orientation="Horizontal">
+                                <TextBox 
+                                     x:Name="FilterValue" 
+                                     Text="{Binding FilterValue}" 
+                                     Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
+                                     AcceptsReturn="{Binding FilterType, Converter={StaticResource IsMultiLineFilterTypeConverter}}"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter=100}"
+                                     MinWidth="120"
+                                     Margin="3"/>
+                                <TextBox 
+                                    x:Name="FilterValue2"
+                                    Text="{Binding FilterValue2}"
+                                    Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
+                                    MinWidth="120"
+                                    Margin="3"/>
                             </WrapPanel>
-                        </Grid>
-                    </Border>
+                        </WrapPanel>
+                    </Grid>
+                    <!--</Border>-->
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="3"
+                    HorizontalAlignment="Right">
             <Button x:Name="SendTextToEditor" Margin="5" Padding="5,3">
                 <StackPanel Orientation="Vertical">
                     <fa:FontAwesome Icon="Edit" 

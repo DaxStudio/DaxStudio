@@ -10,13 +10,11 @@ namespace DaxStudio.UI.Events
 {
     public class FunctionsLoadedEvent
     {
-        public FunctionsLoadedEvent(DocumentViewModel document, ADOTabularFunctionGroupCollection functionGroups)
+        public FunctionsLoadedEvent( ADOTabularFunctionGroupCollection functionGroups)
         {
-            Document = document;
+
             FunctionGroups = functionGroups;
         }
-
-        public DocumentViewModel Document { get; private set; }
         public ADOTabularFunctionGroupCollection FunctionGroups { get; private set; }
     }
 }

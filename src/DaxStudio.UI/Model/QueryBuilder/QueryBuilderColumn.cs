@@ -44,7 +44,7 @@ namespace DaxStudio.UI.Model
         public long DistinctValues => TabularObject?.DistinctValues??0;
 
         public Type DataType => TabularObject?.DataType;
-
+        public string TableName => TabularObject.TableName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
 
         private string _overridenMeasureExpression = string.Empty;

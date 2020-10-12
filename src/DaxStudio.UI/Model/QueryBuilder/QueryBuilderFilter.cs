@@ -20,12 +20,14 @@ namespace DaxStudio.UI.Model
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
-        public QueryBuilderFilter(IADOTabularColumn obj)
+        public QueryBuilderFilter(IADOTabularColumn obj, IModelCapabilities modelCapabilities)
         {
             TabularObject = obj;
+            ModelCapabilities = modelCapabilities;
         }
 
         public IADOTabularColumn TabularObject { get; }
+        public IModelCapabilities ModelCapabilities { get; }
 
         public string Caption => TabularObject.Caption;
 
@@ -37,7 +39,8 @@ namespace DaxStudio.UI.Model
                 _fitlerType = value;
                 NotifyOfPropertyChange(nameof(FilterType));
                 NotifyOfPropertyChange(nameof(ShowFilterValue));
-            } 
+                NotifyOfPropertyChange(nameof(ShowFilterValue2));
+            }
         }
 
         public IEnumerable<FilterType> FilterTypes
@@ -61,17 +64,23 @@ namespace DaxStudio.UI.Model
                             // these filters only apply to strings
                             if (TabularObject.DataType == typeof(string)) yield return ft;
                             break;
+                        case FilterType.In:
+                        case FilterType.NotIn:
+                            // if the data type is string and the model supports TREATAS
+                            if (TabularObject.DataType == typeof(string) && ModelCapabilities.DAXFunctions.TreatAs ) yield return ft;
+                            break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
                         case FilterType.LessThan:
                         case FilterType.LessThanOrEqual:
+                        case FilterType.Between:
                             // these filters only apply non-strings
                             if (TabularObject.DataType != typeof(string)) yield return ft;
                             break;
                         default:
                             throw new NotSupportedException($"Unknown FilterType '{ft.ToString()}'");
-                            break;
-                }
+
+                    }
                 }
 
                 //var items = Enum.GetValues(typeof(FilterType)).Cast<FilterType>();
@@ -86,7 +95,8 @@ namespace DaxStudio.UI.Model
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
 
-        
+        public string FilterValue2 { get; set; }
+        public bool ShowFilterValue2 => FilterType == FilterType.Between;
 
     }
 }

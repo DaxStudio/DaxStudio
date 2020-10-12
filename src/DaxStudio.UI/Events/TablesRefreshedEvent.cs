@@ -4,13 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Events
 {
-    public interface ITabularConnection
+    public class TablesRefreshedEvent
     {
-        void Open();
-        void Ping();
-        void Close();
-
     }
 }

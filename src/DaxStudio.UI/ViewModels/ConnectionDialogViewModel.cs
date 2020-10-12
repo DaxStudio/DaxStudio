@@ -300,7 +300,7 @@ namespace DaxStudio.UI.ViewModels
                 if (RecentServers.Count > 0 && String.IsNullOrWhiteSpace(_dataSource))
                 { _dataSource = RecentServers[0]; }
                 return  _dataSource; } 
-            set{ _dataSource=value;
+            set{ _dataSource=CleanDataSourceName(value);
                 NotifyOfPropertyChange(nameof( DataSource));
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
                 SelectedServerSetFocus = true;
@@ -319,7 +319,7 @@ namespace DaxStudio.UI.ViewModels
             set { _roles = value; }
         }
 
-        public bool IsRolesEnabled { get { return true; } }
+        public bool IsRolesEnabled { get { return true;} }
         public string EffectiveUserName { get; set; }
         public bool IsEffectiveUserNameEnabled { get { return true; } }
         public string ApplicationName { get; set; }
@@ -462,7 +462,7 @@ namespace DaxStudio.UI.ViewModels
         private string BuildServerConnection()
         {
             //OLEDB;Provider=MSOLAP.5;Persist Security Info=True;Data Source=.\SQL2012TABULAR;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue
-            return string.Format("Data Source={0};{1}{2}{3}{4}{5}{6}{7}{8}", DataSource
+            return string.Format("Data Source=\"{0}\";{1}{2}{3}{4}{5}{6}{7}{8}", DataSource
                                  , GetMdxCompatibilityMode()     //1
                                  , GetDirectQueryMode()          //2
                                  , GetRolesProperty()            //3
@@ -828,7 +828,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 SortedSet<string> tmpDatabases = new SortedSet<string>();
 
-                using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, Common.Enums.AdomdType.AnalysisServices))
+                using (var conn = new ADOTabular.ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices))
                 {
 
                     conn.Open();
@@ -885,6 +885,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public ObservableCollection<string> Databases { get; set; } = new ObservableCollection<string>();
+
+        private string CleanDataSourceName(string datasource)
+        {
+            var trimmedName = datasource.Trim().TrimStart('"').TrimEnd('"');
+            return trimmedName;
+        }
     } 
      
     public class LocaleIdentifier
@@ -892,5 +898,7 @@ namespace DaxStudio.UI.ViewModels
         public string DisplayName {get;set;}
         public int LCID { get; set; }
         public override string ToString() { return DisplayName; }
+
+
     }
 }

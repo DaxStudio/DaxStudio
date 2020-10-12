@@ -166,7 +166,7 @@ namespace DaxStudio.UI.ViewModels
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
-            _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
+            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
             System.Diagnostics.Debug.WriteLine("OnApplicationActivated");
         }
 

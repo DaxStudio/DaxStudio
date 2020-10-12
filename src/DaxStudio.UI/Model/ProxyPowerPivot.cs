@@ -14,7 +14,7 @@ using System.IO;
 using System.Diagnostics.Contracts;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Utils;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model

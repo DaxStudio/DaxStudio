@@ -291,12 +291,12 @@ namespace DaxStudio.UI.Model
 
                     // default to short datetime
                     return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);
-                    break;
+
                 case "string":
                     var stringAlignment = new XlsxAlignment(vertical : XlsxAlignment.Vertical.Top, wrapText : true);
                     var stringStyle = XlsxStyle.Default.With(stringAlignment).With(XlsxNumberFormat.Text);
                     return stringStyle;
-                    break;
+
             }
             // if nothing else matches return the default style
             return XlsxStyle.Default;

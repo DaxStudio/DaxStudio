@@ -45,7 +45,7 @@ namespace DaxStudio.UI.ResultsTargets
 
         public void Handle(ConnectionChangedEvent message)
         {
-            _isPowerBIOrSSDTConnection = message.Connection?.IsPowerBIorSSDT ?? false;
+            _isPowerBIOrSSDTConnection = message.IsPowerBIorSSDT;
             NotifyOfPropertyChange(() => IsEnabled);
             _eventAggregator.PublishOnUIThread(new RefreshOutputTargetsEvent());
         }
