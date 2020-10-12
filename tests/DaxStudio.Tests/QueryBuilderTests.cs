@@ -71,8 +71,8 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Gender] ), 'Customer'[Gender] = ""M"" )),
-    KEEPFILTERS( FILTER( ALL( 'Product'[Color] ), 'Product'[Color] = ""Red"" ))
+    KEEPFILTERS( TREATAS( {""M""}, 'Customer'[Gender] )),
+    KEEPFILTERS( TREATAS( {""Red""}, 'Product'[Color] ))
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -127,8 +127,8 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Gender] ), 'Customer'[Gender] = ""M"" )),
-    KEEPFILTERS( FILTER( ALL( 'Product'[Color] ), 'Product'[Color] = ""Red"" )),
+    KEEPFILTERS( TREATAS( {""M""}, 'Customer'[Gender] )),
+    KEEPFILTERS( TREATAS( {""Red""}, 'Product'[Color] )),
     ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
@@ -156,7 +156,7 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Number of Children] ), 'Customer'[Number of Children] = 2 )),
+    KEEPFILTERS( TREATAS( {2}, 'Customer'[Number of Children] )),
     ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
@@ -310,7 +310,7 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Birth Date] ), 'Customer'[Birth Date] = DATE(2019,11,24) )),
+    KEEPFILTERS( TREATAS( {DATE(2019,11,24)}, 'Customer'[Birth Date] )),
     ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
@@ -358,7 +358,7 @@ CALCULATETABLE(
     ""Total Sales"", [Total Sales],
     ""Total Freight"", [Total Freight]
     ),
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Birth Date] ), 'Customer'[Birth Date] = DATE(2019,11,24) ))
+    KEEPFILTERS( TREATAS( {DATE(2019,11,24)}, 'Customer'[Birth Date] ))
 )
 // END QUERY BUILDER".Replace("\r", "");
 
@@ -392,7 +392,7 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Number of Children] ), 'Customer'[Number of Children] = 2 )),
+    KEEPFILTERS( TREATAS( {2}, 'Customer'[Number of Children] )),
     ""Total Sales"", [Total Sales]
 )
 // END QUERY BUILDER".Replace("\r", "");
@@ -427,7 +427,7 @@ MEASURE 'Internet Sales'[Test Measure] = 123
 EVALUATE
 SUMMARIZECOLUMNS(
     'Product'[Color],
-    KEEPFILTERS( FILTER( ALL( 'Customer'[Number of Children] ), 'Customer'[Number of Children] = 2 )),
+    KEEPFILTERS( TREATAS( {2}, 'Customer'[Number of Children] )),
     ""Test Measure"", [Test Measure]
 )
 // END QUERY BUILDER".Replace("\r", "");
