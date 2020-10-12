@@ -405,7 +405,7 @@ namespace DaxStudio.UI.ViewModels
         } }
 
         private IResultsTarget _selectedTarget;
-        private bool QueryRunning => ActiveDocument.IsQueryRunning;
+        private bool QueryRunning => ActiveDocument?.IsQueryRunning??false;
         private QueryTraceStatus _traceStatus = QueryTraceStatus.Stopped;
         private StatusBarMessage _traceMessage;
         // default to first target if none currently selected
