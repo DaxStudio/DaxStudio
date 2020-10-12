@@ -36,6 +36,7 @@ namespace ADOTabular
 
         public ADOTabularTable Table { get; private set; }
 
+        public string TableName => Table?.Caption;
         public string Caption { get; private set; }
         public string Name { get; private set; }
         public string Contents { get; private set; }

@@ -19,6 +19,10 @@ namespace DaxStudio.UI.Enums
         StartsWith,
         [Description("Does not start with")]
         DoesNotStartWith,
+        [Description("In")]
+        In,
+        [Description("Not In")]
+        NotIn,
         [Description("Is")]
         Is,
         [Description("Is not")]
@@ -37,6 +41,6 @@ namespace DaxStudio.UI.Enums
         LessThanOrEqual,
         [Description("Between")]
         Between
-
+        
     }
 }

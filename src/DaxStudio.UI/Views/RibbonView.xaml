@@ -909,13 +909,21 @@ IsCollapsed="True"
             <Fluent:RibbonGroupBox Header="Performance" Visibility="{Binding ShowPreviewBenchmark, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button
                     Name="RunBenchmark"
-                               Header="Run Benchmark"
-                               cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
-                                   Icon="{StaticResource RunBenchmark}"
-                                   LargeIcon="{StaticResource RunBenchmarkLarger}"
-                                   Margin="4,0"
-                                   SizeDefinition="Large,Middel,Small"
-                    />
+                    Header="Run Benchmark"
+                    cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
+                    Icon="{StaticResource RunBenchmark}"
+                    LargeIcon="{StaticResource RunBenchmarkLarger}"
+                    Margin="4,0"
+                    SizeDefinition="Large,Middel,Small"
+                    
+                    >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Run Benchmark"
+                                          Text="Runs the given query a number of times against a cold and warm cache and reports the timing details"
+                                          DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
+                            />
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"

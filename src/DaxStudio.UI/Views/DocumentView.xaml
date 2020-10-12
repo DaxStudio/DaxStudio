@@ -600,7 +600,7 @@
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
                         <avalondock:LayoutAnchorablePane Name="DockLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="185" DockWidth="200">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <!-- Main Document Pane -->

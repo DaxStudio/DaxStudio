@@ -6,8 +6,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Hierarchy
     {
-        private Microsoft.AnalysisServices.AdomdClient.Hierarchy _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Hierarchy _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Hierarchy _objExcel;
 
         public Hierarchy(Microsoft.AnalysisServices.AdomdClient.Hierarchy hierarchy)
         {

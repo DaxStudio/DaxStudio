@@ -20,12 +20,14 @@ namespace DaxStudio.UI.Model
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
-        public QueryBuilderFilter(IADOTabularColumn obj)
+        public QueryBuilderFilter(IADOTabularColumn obj, IModelCapabilities modelCapabilities)
         {
             TabularObject = obj;
+            ModelCapabilities = modelCapabilities;
         }
 
         public IADOTabularColumn TabularObject { get; }
+        public IModelCapabilities ModelCapabilities { get; }
 
         public string Caption => TabularObject.Caption;
 
@@ -62,6 +64,11 @@ namespace DaxStudio.UI.Model
                             // these filters only apply to strings
                             if (TabularObject.DataType == typeof(string)) yield return ft;
                             break;
+                        case FilterType.In:
+                        case FilterType.NotIn:
+                            // if the data type is string and the model supports TREATAS
+                            if (TabularObject.DataType == typeof(string) && ModelCapabilities.DAXFunctions.TreatAs ) yield return ft;
+                            break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
                         case FilterType.LessThan:
@@ -72,8 +79,8 @@ namespace DaxStudio.UI.Model
                             break;
                         default:
                             throw new NotSupportedException($"Unknown FilterType '{ft.ToString()}'");
-                            break;
-                }
+
+                    }
                 }
 
                 //var items = Enum.GetValues(typeof(FilterType)).Cast<FilterType>();

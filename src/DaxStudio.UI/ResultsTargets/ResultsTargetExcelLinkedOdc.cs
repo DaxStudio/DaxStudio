@@ -109,12 +109,18 @@ namespace DaxStudio.UI.ResultsTargets
 
         private async Task CleanUpOdcAsync(string odcFile)
         {
-            Thread.Sleep(2000);
-            try { 
-            File.Delete(odcFile);
-            System.Diagnostics.Debug.Write($"ODC file deleted - {odcFile}");
-            }
-            catch { }
+            await Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(2000);
+                try
+                {
+                    File.Delete(odcFile);
+                    Debug.Write($"ODC file deleted - {odcFile}");
+                }
+                catch
+                {
+                }
+            });
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿namespace UnitComboLib.ViewModel
 {
   using System.Collections.ObjectModel;
-  using UnitComboLib.Unit;
+  using Unit;
 
   /// <summary>
   /// One item in the list of unit definition items

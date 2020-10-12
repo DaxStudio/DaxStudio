@@ -76,10 +76,6 @@
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Caliburn.Micro.3.2.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -98,15 +94,6 @@
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
-      <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
-      <Name>DaxStudio.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>

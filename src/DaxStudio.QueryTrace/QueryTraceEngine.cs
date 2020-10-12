@@ -170,9 +170,10 @@ namespace DaxStudio.QueryTrace
             connStrBuilder.Remove("EffectiveUsername");
             connStrBuilder["SessionId"] = _sessionId;
             if (_databaseName.Length > 0) connStrBuilder["Initial Catalog"] = _databaseName;
+            Log.Verbose("{class} {method} {event} ", nameof(QueryTraceEngine), nameof(AdjustConnectionString), "End");
+
             return connStrBuilder.ToString();
 
-            Log.Verbose("{class} {method} {event} ", nameof(QueryTraceEngine), nameof(AdjustConnectionString), "End");
         }
         private void SetupTraceEvents(Trace trace, List<DaxStudioTraceEventClass> events)
         {

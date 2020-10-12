@@ -4,8 +4,8 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public class Kpi
     {
-        private Microsoft.AnalysisServices.AdomdClient.Kpi _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Kpi _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Kpi _objExcel;
 
         public Kpi(Microsoft.AnalysisServices.AdomdClient.Kpi kpi)
         {

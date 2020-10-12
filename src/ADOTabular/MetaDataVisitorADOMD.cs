@@ -3,7 +3,6 @@ using System.Data;
 using System.Linq;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Interfaces;
-using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {

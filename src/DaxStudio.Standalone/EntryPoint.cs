@@ -15,7 +15,6 @@ using DaxStudio.UI.ViewModels;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DaxStudio.Standalone
 {
@@ -70,7 +69,7 @@ namespace DaxStudio.Standalone
                     .MinimumLevel.ControlledBy(levelSwitch);
 
                 var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.StandaloneLogFileName);
-                config.WriteTo.RollingFile(logPath
+                config.WriteTo.File(logPath
                         , retainedFileCountLimit: 10);
 
                 log = config.CreateLogger();
@@ -221,7 +220,8 @@ namespace DaxStudio.Standalone
         private static void LogFatalCrash(Exception ex, string msg)
         {
             // add a property to the application indicating that we have crashed
-            app.Properties.Add("HasCrashed", true);
+            if (!app.Properties.Contains("HasCrashed"))
+                app.Properties.Add("HasCrashed", true);
 
             Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
             if (Application.Current.Dispatcher.CheckAccess())

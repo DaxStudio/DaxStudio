@@ -2,12 +2,10 @@
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
 using System.Windows.Data;
 using System;
 using System.ComponentModel;
 using Serilog;
-using System.Windows.Input;
 using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
@@ -45,22 +43,16 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {message}", "QueryHistoryPaneViewModel", "ctor", "end");
         }
 
-        public BindableCollection<QueryHistoryEvent> QueryHistoryList { 
-            get {
-                return _globalHistory.QueryHistory; 
-            } 
-        }
+        public BindableCollection<QueryHistoryEvent> QueryHistoryList => _globalHistory.QueryHistory;
 
-        public override string Title
-        {
-            get { return "Query History"; }
-        }
+        public override string Title => "Query History";
 
-        public string CurrentServer { get { return _currentConnection.ServerName; } }
-        public string CurrentDatabase { get { return _currentConnection.SelectedDatabaseName; } }
+        public string CurrentServer => _currentConnection.ServerName;
+        public string CurrentDatabase => _currentConnection.SelectedDatabaseName;
+
         public bool IsFilteredByServer
         {
-            get { return _isFilteredByServer; }
+            get => _isFilteredByServer;
             set
             {
                 _isFilteredByServer = value;
@@ -85,14 +77,11 @@ namespace DaxStudio.UI.ViewModels
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
             return qhe != null 
-                && (string.Compare( qhe.ServerName, _currentConnection?.ServerName??string.Empty, true)==0 || !IsFilteredByServer)
-                && (string.Compare(qhe.DatabaseName,  _currentConnection?.SelectedDatabaseName??string.Empty, true) == 0 || !IsFilteredByDatabase);
+                && (String.Compare( qhe.ServerName, _currentConnection?.ServerName??string.Empty, StringComparison.OrdinalIgnoreCase)==0 || !IsFilteredByServer)
+                && (String.Compare(qhe.DatabaseName,  _currentConnection?.SelectedDatabaseName??string.Empty, StringComparison.OrdinalIgnoreCase) == 0 || !IsFilteredByDatabase);
         }
 
-        public ICollectionView QueryHistory
-        {
-            get { return _queryHistory; }
-        }
+        public ICollectionView QueryHistory => _queryHistory;
 
         public QueryHistoryEvent SelectedHistoryItem { get; set; }
 
