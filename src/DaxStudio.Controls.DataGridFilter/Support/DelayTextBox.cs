@@ -8,7 +8,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
     /// <summary>
     /// WPF port of windows forms version: http://www.codeproject.com/KB/miscctrl/CustomTextBox.aspx
     /// </summary>
-    public class DelayTextBox : TextBox, IDisposable
+    public sealed class DelayTextBox : TextBox, IDisposable
     {
         #region private globals
 

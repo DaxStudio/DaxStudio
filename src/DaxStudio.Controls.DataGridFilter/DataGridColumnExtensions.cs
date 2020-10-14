@@ -19,6 +19,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static void SetCustomBindingPath(DependencyObject target, string value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(CustomBindingPathProperty, value);
         }
         #endregion
@@ -30,11 +31,13 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetIsContainsTextSearch(DependencyObject target)
         {
+            if (target == null) throw  new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsContainsTextSearchProperty);
         }
 
         public static void SetIsContainsTextSearch(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsContainsTextSearchProperty, value);
         }
         #endregion
@@ -46,11 +49,13 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetIsCaseSensitiveSearch(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsCaseSensitiveSearchProperty);
         }
 
         public static void SetIsCaseSensitiveSearch(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsCaseSensitiveSearchProperty, value);
         }
         #endregion
@@ -62,11 +67,13 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetIsBetweenFilterControl(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsBetweenFilterControlProperty);
         }
 
         public static void SetIsBetweenFilterControl(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsBetweenFilterControlProperty, value);
         }
         #endregion
@@ -78,11 +85,13 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetDoNotGenerateFilterControl(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(DoNotGenerateFilterControlProperty);
         }
 
         public static void SetDoNotGenerateFilterControl(DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(DoNotGenerateFilterControlProperty, value);
         }
         #endregion

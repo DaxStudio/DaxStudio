@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DaxStudio.Controls.DataGridFilter.Querying
 {
@@ -9,15 +7,15 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
     {
         public Query()
         {
-            lastFilterString    = String.Empty;
-            lastQueryParameters = new List<object>();
+            LastFilterString    = String.Empty;
+            LastQueryParameters = new List<object>();
         }
 
         public string        FilterString { get; set; }
         public List<object>  QueryParameters { get; set; }
 
-        private string       lastFilterString { get; set; }
-        private List<object> lastQueryParameters { get; set; }
+        private string       LastFilterString { get; set; }
+        private List<object> LastQueryParameters { get; set; }
 
         public bool IsQueryChanged
         {
@@ -25,13 +23,13 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             {
                 bool queryChanged = false;
 
-                if (FilterString != lastFilterString)
+                if (FilterString != LastFilterString)
                 {
                     queryChanged = true;
                 }
                 else
                 {
-                    if (QueryParameters.Count != lastQueryParameters.Count)
+                    if (QueryParameters.Count != LastQueryParameters.Count)
                     {
                         queryChanged = true;
                     }
@@ -39,7 +37,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                     {
                         for (int i = 0; i < QueryParameters.Count; i++)
                         {
-                            if (!QueryParameters[i].Equals(lastQueryParameters[i]))
+                            if (!QueryParameters[i].Equals(LastQueryParameters[i]))
                             {
                                 queryChanged = true;
                                 break;
@@ -54,8 +52,8 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
         public void StoreLastUsedValues()
         {
-            lastFilterString    = FilterString;
-            lastQueryParameters = QueryParameters;
+            LastFilterString    = FilterString;
+            LastQueryParameters = QueryParameters;
         }
     }
 }

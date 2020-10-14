@@ -12,6 +12,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static QueryController GetDataGridFilterQueryController(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (QueryController)target.GetValue(DataGridFilterQueryControllerProperty);
         }
 
@@ -27,6 +28,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static DataGridFilterCommand GetClearFilterCommand(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (DataGridFilterCommand)target.GetValue(ClearFilterCommandProperty);
         }
 
@@ -44,6 +46,7 @@ namespace DaxStudio.Controls.DataGridFilter
         public static bool? GetIsFilterVisible(
             DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsFilterVisibleProperty);
         }
 
@@ -62,12 +65,14 @@ namespace DaxStudio.Controls.DataGridFilter
         public static bool GetUseBackgroundWorkerForFiltering(
             DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(UseBackgroundWorkerForFilteringProperty);
         }
 
         public static void SetUseBackgroundWorkerForFiltering(
             DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(UseBackgroundWorkerForFilteringProperty, value);
         }
 
@@ -79,6 +84,7 @@ namespace DaxStudio.Controls.DataGridFilter
         public static bool GetIsClearButtonVisible(
             DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsClearButtonVisibleProperty);
         }
 

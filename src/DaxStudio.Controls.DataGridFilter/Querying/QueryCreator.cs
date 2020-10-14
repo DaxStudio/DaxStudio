@@ -23,6 +23,8 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
         public void CreateFilter(ref Query query)
         {
+            if (query == null) throw  new ArgumentNullException(nameof(query));
+
             StringBuilder filter = new StringBuilder();
 
             foreach (KeyValuePair<string, FilterData> kvp in _filtersForColumns)

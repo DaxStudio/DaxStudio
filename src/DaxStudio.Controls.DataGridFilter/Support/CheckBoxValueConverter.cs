@@ -14,9 +14,9 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             bool result = false;
 
-            if (value != null && value.GetType() == typeof(String))
+            if (value is string)
             {
-                Boolean.TryParse(value.ToString(), out result);
+                if( !bool.TryParse(value.ToString(), out result)) return false;
             }
             else if (value != null)
             {
