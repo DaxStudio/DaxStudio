@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,13 +11,10 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System.Text.RegularExpressions;
 using DAXEditorControl.BracketRenderer;
-using ICSharpCode.AvalonEdit.Search;
 using System.Windows.Media;
 using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
-using System.Reflection;
-using System.IO;
 using System.Text;
 
 namespace DAXEditorControl
@@ -82,7 +78,7 @@ namespace DAXEditorControl
 
         public override bool Equals(object obj)
         {
-            return obj is HighlightPosition && Equals((HighlightPosition)obj);
+            return obj is HighlightPosition position && Equals(position);
         }
     }
     public delegate List<HighlightPosition> HighlightDelegate(string text, int startOffset, int endOffset); 
@@ -570,7 +566,9 @@ namespace DAXEditorControl
             }
         }
 
-        private object disposeLock = new object();
+        private readonly object disposeLock = new object();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
             if (IsMouseOverCompletionWindow) return;

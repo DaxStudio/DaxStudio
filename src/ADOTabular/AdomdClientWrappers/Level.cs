@@ -25,11 +25,9 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     return _obj.Caption;
                 }
-                else
-                {
-                    string f() => _objExcel.Caption;
-                    return f();
-                }
+
+                string f() => _objExcel.Caption;
+                return f();
             }
         }
 
@@ -41,11 +39,9 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     return _obj.Description;
                 }
-                else
-                {
-                    string f() => _objExcel.Description;
-                    return f();
-                }
+
+                string f() => _objExcel.Description;
+                return f();
             }
         }
 
@@ -57,11 +53,9 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     return _obj.UniqueName;
                 }
-                else
-                {
-                    string f() => _objExcel.UniqueName;
-                    return f();
-                }
+
+                string f() => _objExcel.UniqueName;
+                return f();
             }
         }
 
@@ -73,11 +67,9 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     return new Hierarchy(_obj.ParentHierarchy);
                 }
-                else
-                {
-                    Hierarchy f() => new Hierarchy(_objExcel.ParentHierarchy);
-                    return f();
-                }
+
+                Hierarchy f() => new Hierarchy(_objExcel.ParentHierarchy);
+                return f();
             }
         }
 
@@ -87,13 +79,11 @@ namespace ADOTabular.AdomdClientWrappers
             {
                 if (_obj != null)
                 {
-                    return (LevelTypeEnum)_obj.LevelType;
+                    return _obj.LevelType;
                 }
-                else
-                {
-                    LevelTypeEnum f() => (LevelTypeEnum)_objExcel.LevelType;
-                    return f();
-                }
+
+                LevelTypeEnum f() => (LevelTypeEnum)_objExcel.LevelType;
+                return f();
             }
         }
 
@@ -102,25 +92,23 @@ namespace ADOTabular.AdomdClientWrappers
             if (_obj != null)
             {
                 MemberCollection coll = new MemberCollection();
-                foreach (Microsoft.AnalysisServices.AdomdClient.Member member in _obj.GetMembers(start, count, properties, new Microsoft.AnalysisServices.AdomdClient.MemberFilter[] { }))
+                foreach (Microsoft.AnalysisServices.AdomdClient.Member member in _obj.GetMembers(start, count, properties))
                 {
                     coll.Add(new Member(member));
                 }
                 return coll;
             }
-            else
+
+            MemberCollection f()
             {
-                MemberCollection f()
+                MemberCollection coll = new MemberCollection();
+                foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member member in _objExcel.GetMembers(start, count, properties))
                 {
-                    MemberCollection coll = new MemberCollection();
-                    foreach (ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member member in _objExcel.GetMembers(start, count, properties, new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.MemberFilter[] { }))
-                    {
-                        coll.Add(new Member(member));
-                    }
-                    return coll;
+                    coll.Add(new Member(member));
                 }
-                return f();
+                return coll;
             }
+            return f();
         }
 
     }

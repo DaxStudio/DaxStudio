@@ -44,7 +44,7 @@ namespace DaxStudio.UI.Utils
         private IEditor _editor;
         private DaxLineState _daxState;
         private bool SpacePressed;
-        private bool HasThrownException;
+        //private bool HasThrownException;
         private IEventAggregator _eventAggregator;
         private IGlobalOptions _options;
 
@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Utils
         {
             //System.Diagnostics.Debug.WriteLine($"ProcessTextEntered: {e.Text}");
 
-            if (HasThrownException) return; // exit here if intellisense has previous thrown and exception
+            //if (HasThrownException) return; // exit here if intellisense has previous thrown and exception
 
             try
             {
@@ -485,7 +485,7 @@ namespace DaxStudio.UI.Utils
         public void ProcessKeyDown(object sender, KeyEventArgs e)
         {
             
-            if (HasThrownException) return;
+            //if (HasThrownException) return;
             if (e.Key == Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control ))
             {
                 //TODO show intellisense on ctrl-space

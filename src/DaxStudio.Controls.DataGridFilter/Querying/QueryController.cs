@@ -208,10 +208,10 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
             if (filteredCollection != null)
             {
-                executeFilterAction(
+                ExecuteFilterAction(
                     new Action(() =>
                     {
-                        filteredCollectionHashSet = initLookupDictionary(filteredCollection);
+                        filteredCollectionHashSet = InitLookupDictionary(filteredCollection);
  
                         view.Filter = new Predicate<object>(itemPassesFilter);
 
@@ -221,7 +221,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             }
             else
             {
-                executeFilterAction(
+                ExecuteFilterAction(
                     new Action(() =>
                     {
                         if (view.Filter != null)
@@ -235,7 +235,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             }
         }
 
-        private void executeFilterAction(Action action)
+        private void ExecuteFilterAction(Action action)
         {
             if (UseBackgroundWorker)
             {
@@ -308,7 +308,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
         }
 
         #region Helpers
-        private HashSet<object> initLookupDictionary(IList collection)
+        private static HashSet<object> InitLookupDictionary(IList collection)
         {
             HashSet<object> dictionary;
 

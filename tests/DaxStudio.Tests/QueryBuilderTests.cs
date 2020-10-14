@@ -321,7 +321,7 @@ SUMMARIZECOLUMNS(
 
         [TestMethod]
         //[ExpectedException(typeof(ArgumentException))]
-        public void TestInvalideDateFilterQuery()
+        public void TestInvalidDateFilterQuery()
         {
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();

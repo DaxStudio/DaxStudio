@@ -12,6 +12,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static bool GetIsTextFilter(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (bool)target.GetValue(IsTextFilterProperty);
         }
 

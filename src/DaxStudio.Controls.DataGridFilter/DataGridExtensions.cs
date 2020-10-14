@@ -1,8 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using DaxStudio.Controls.DataGridFilter.Querying;
-using System.Collections.Generic;
-using DaxStudio.Controls.DataGridFilter.Support;
-using System.Linq;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
@@ -19,6 +17,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static void SetDataGridFilterQueryController(DependencyObject target, QueryController value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(DataGridFilterQueryControllerProperty, value);
         }
 
@@ -33,6 +32,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static void SetClearFilterCommand(DependencyObject target, DataGridFilterCommand value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(ClearFilterCommandProperty, value);
         }
 
@@ -50,6 +50,7 @@ namespace DaxStudio.Controls.DataGridFilter
         public static void SetIsFilterVisible(
             DependencyObject target, bool? value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsFilterVisibleProperty, value);
         }
 
@@ -84,6 +85,7 @@ namespace DaxStudio.Controls.DataGridFilter
         public static void SetIsClearButtonVisible(
             DependencyObject target, bool value)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             target.SetValue(IsClearButtonVisibleProperty, value);
         }
 

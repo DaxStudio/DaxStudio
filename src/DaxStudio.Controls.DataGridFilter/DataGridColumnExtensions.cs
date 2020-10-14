@@ -1,12 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace DaxStudio.Controls.DataGridFilter
 {
     public sealed class DataGridColumnExtensions//:DependencyObject
     {
-        public DataGridColumnExtensions() { }
-
         #region CustomBindingPath Dependency Property
         public static readonly DependencyProperty CustomBindingPathProperty =
             DependencyProperty.RegisterAttached("CustomBindingPath",
@@ -14,6 +13,7 @@ namespace DaxStudio.Controls.DataGridFilter
 
         public static string GetCustomBindingPath(DependencyObject target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
             return (string)target.GetValue(CustomBindingPathProperty);
         }
 

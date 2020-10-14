@@ -14,12 +14,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DaxStudio.QueryTrace.Excel</RootNamespace>
     <AssemblyName>DaxStudio.QueryTrace.Excel</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -95,10 +96,15 @@
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
+      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
+      <Name>DaxStudio.Interfaces</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>
       <Name>DaxStudio.QueryTrace</Name>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

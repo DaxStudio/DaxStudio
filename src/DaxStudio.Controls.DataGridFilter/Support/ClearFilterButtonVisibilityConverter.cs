@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Data;
 using System.Globalization;
 
@@ -11,6 +8,8 @@ namespace DaxStudio.Controls.DataGridFilter.Support
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values == null) throw new ArgumentNullException(nameof(values));
+
             if ((bool)values[0] && (bool)values[1])
             {
                 return System.Windows.Visibility.Visible;
