@@ -25,6 +25,7 @@ namespace DaxStudio.UI.Interfaces
         void Initialize(IGlobalOptions options);
 
         bool IsRunningPortable { get; }
+        string SettingsFile { get; }
     }
 }
 

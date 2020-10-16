@@ -28,6 +28,7 @@ namespace DaxStudio.UI.Utils
 
         public string LogPath => ApplicationPaths.LogPath;
         public bool IsRunningPortable => false;
+        public string SettingsFile => string.Empty;
 
         public ObservableCollection<string> GetServerMRUList()
         {
@@ -50,7 +51,7 @@ namespace DaxStudio.UI.Utils
             {
                 // server does not exist in list, so insert it as the first item
                 servers.Insert(0, currentServer);
-                while (servers.Count() > Constants.MaxMruSize)
+                while (servers.Count > Constants.MaxMruSize)
                 {
                     servers.RemoveAt(servers.Count() - 1);
                 }
@@ -77,20 +78,20 @@ namespace DaxStudio.UI.Utils
             if (existingItem == null)
             {
                 files.Insert(0, file);
-                while (files.Count() > Constants.MaxRecentFiles)
+                while (files.Count > Constants.MaxRecentFiles)
                 {
-                    files.RemoveAt(files.Count() - 1);
+                    files.RemoveAt(files.Count - 1);
                 }
                 SaveListToRegistry("File", file, files);
                 return;
             }
 
-            var exisingIndex = files.IndexOf(existingItem);
+            var existingIndex = files.IndexOf(existingItem);
             // file is already first in the list so do nothing
-            if (exisingIndex == 0) return;
+            if (existingIndex == 0) return;
 
             // otherwise move the file to first in the list
-            files.Move(exisingIndex, 0);
+            files.Move(existingIndex, 0);
 
 
 
@@ -107,19 +108,21 @@ namespace DaxStudio.UI.Utils
         }
 
 
-        private T GetValue<T>(string subKey)
+        private static T GetValue<T>(string subKey)
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
-            return (T)regDaxStudio.GetValue(subKey);
+            if (regDaxStudio != null) return (T) regDaxStudio.GetValue(subKey);
+            return default;
         }
 
         public void SetValue(string subKey, DateTime value, bool isInitializing)
         {
                 if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
-                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
-                
-                regDaxStudio.SetValue(subKey, value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true) 
+                                   ?? Registry.CurrentUser.CreateSubKey(registryRootKey);
+
+                regDaxStudio?.SetValue(subKey,
+                    value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
         }
 
         public void SetValue<T>(string subKey, T value, bool isInitializing)
@@ -150,7 +153,7 @@ namespace DaxStudio.UI.Utils
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
             if (regDaxStudio != null)
             {
-                var regListMRU = regDaxStudio.OpenSubKey(string.Format("{0}MRU",listName));
+                var regListMRU = regDaxStudio.OpenSubKey($"{listName}MRU");
                 if (regListMRU != null)
                     foreach (var svr in regListMRU.GetValueNames())
                     {
@@ -166,7 +169,7 @@ namespace DaxStudio.UI.Utils
 
         internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
-            var listKey = string.Format("{0}MRU", listName);
+            var listKey = $"{listName}MRU";
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
             if (regDaxStudio == null)
                 Registry.CurrentUser.CreateSubKey(registryRootKey);

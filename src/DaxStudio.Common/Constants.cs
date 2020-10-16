@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.Common
+﻿namespace DaxStudio.Common
 {
     public static class Constants
     {
         
         //public const string AppDataSettingsFolder = @"%APPDATA%\DaxStudio";
         //public const string LogFolder = @"%APPDATA%\DaxStudio\log\";
-        public const string ExcelLogFileName = "DaxStudioExcel-{Date}.log";
-        public const string StandaloneLogFileName = "DaxStudio-{Date}.log";
+        public const string ExcelLogFileName = "DaxStudioExcel-.log";
+        public const string StandaloneLogFileName = "DaxStudio-.log";
         //public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveMasterIndex.json";
         //public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
         //public const string AvalonDockLayoutFile = @"%APPDATA%\DaxStudio\WindowLayouts\Custom.xml";

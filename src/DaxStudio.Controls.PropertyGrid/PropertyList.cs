@@ -26,6 +26,7 @@ namespace DaxStudio.Controls.PropertyGrid
             await ((PropertyList)d).UpdateSource(e.NewValue);
         }
 
+
         /// <summary>
         /// 
         /// </summary>

@@ -226,7 +226,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), $"Error parsing CurrentVersion.json: {ex.Message}");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occured while checking if there is an updated release available: {ex.Message}"));
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
                 }
                 finally
                 {

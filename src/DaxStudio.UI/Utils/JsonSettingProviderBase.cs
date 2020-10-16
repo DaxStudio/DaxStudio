@@ -1,10 +1,8 @@
 ﻿using DaxStudio.Common;
-using DaxStudio.Common.Exceptions;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.JsonConverters;
-using DaxStudio.UI.Model;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -14,7 +12,6 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Utils
 {
@@ -23,11 +20,11 @@ namespace DaxStudio.UI.Utils
     {
         public abstract string SettingsPath { get; }
 
-        private readonly string settingsFile;
+        public string SettingsFile { get; }
 
         private IGlobalOptions _options;
         private IDictionary<string, object> _optionsDict;
-        private static object locker = new Object();
+        private static readonly object _locker = new Object();
 
         //[Import]
         public IGlobalOptions Options {
@@ -38,10 +35,10 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public JsonSettingProviderBase()
+        protected JsonSettingProviderBase()
         {
             // todo - if running portable use local path, otherwise use AppData
-            settingsFile = Path.Combine(SettingsPath, "settings.json");
+            SettingsFile = Path.Combine(SettingsPath, "settings.json");
             //ReadSettings();
         }
 
@@ -61,27 +58,24 @@ namespace DaxStudio.UI.Utils
         #region Static Members
         public bool SettingsFileExists()
         {
-            return File.Exists(settingsFile);
+            return File.Exists(SettingsFile);
         }
 
         public virtual bool IsRunningPortable => false;
 
         public string LogPath => Path.Combine(SettingsPath, "logs");
+
         #endregion
-        
+
 
         public ObservableCollection<IDaxFile> GetFileMRUList()
         {
-            // TODO - get real list
-            //return new ObservableCollection<DaxFile>();
             return Options.RecentFiles;
         }
         
 
         public ObservableCollection<string> GetServerMRUList()
         {
-            // TODO - get real list
-            //return new ObservableCollection<string>();
             return Options.RecentServers;
         }
 
@@ -108,15 +102,16 @@ namespace DaxStudio.UI.Utils
 
         private void SaveSettingsFile()
         {
-            lock (locker)
+            lock (_locker)
             {
-                using (StreamWriter file = File.CreateText(settingsFile))
+                using (StreamWriter file = File.CreateText(SettingsFile))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    //serializer.Converters.Add(new VersionConverter());
-                    serializer.Formatting = Formatting.Indented;
-                    serializer.NullValueHandling = NullValueHandling.Ignore;
-                    serializer.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+                    JsonSerializer serializer = new JsonSerializer
+                    {
+                        Formatting = Formatting.Indented,
+                        NullValueHandling = NullValueHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
+                    };
                     serializer.Serialize(file, Options);
                 }
             }
@@ -142,12 +137,12 @@ namespace DaxStudio.UI.Utils
                 return;
             }
 
-            var exisingIndex = Options.RecentFiles.IndexOf(existingItem);
+            var existingIndex = Options.RecentFiles.IndexOf(existingItem);
             // file is already first in the list so do nothing
-            if (exisingIndex == 0) return;
+            if (existingIndex == 0) return;
 
             // otherwise move the file to first in the list
-            Options.RecentFiles.Move(exisingIndex, 0);
+            Options.RecentFiles.Move(existingIndex, 0);
 
             SaveSettingsFile();
         }
@@ -181,10 +176,13 @@ namespace DaxStudio.UI.Utils
         {
             // load settings from settings.json
             var json = "{}";
-            if (SettingsFileExists()) { json = File.ReadAllText(settingsFile);  }
-            var settings = new JsonSerializerSettings();
-            settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
-            settings.NullValueHandling = NullValueHandling.Ignore;
+            if (SettingsFileExists()) { json = File.ReadAllText(SettingsFile);  }
+
+            var settings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                NullValueHandling = NullValueHandling.Ignore
+            };
             settings.Converters.Add(new DaxFileConverter());
             try
             {
