@@ -182,7 +182,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Updated Metadata" Margin="2"/>
+                <TextBlock Text="Updated Metadata" Margin="5"/>
                 <Button Grid.Column="1" Margin="2" x:Name="RefreshMetadata">
                     <StackPanel Orientation="Horizontal">
                     <fa:FontAwesome Icon="Refresh" VerticalAlignment="Center" Margin="2" Foreground="Green"/>

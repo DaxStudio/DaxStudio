@@ -129,22 +129,22 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
-            await retry.Execute<Task<bool>>(async () =>
+            return await retry.Execute<Task<bool>>(async () =>
             {
                 
-                bool hasChanged = await Task<bool>.Run(() =>
+                bool hasChanged = await Task.Run(() =>
                 {
                     var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
                     conn.ChangeDatabase(this.SelectedDatabaseName);
                     if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn?.Database?.HasSchemaChanged() ?? false;
+                    var dbChanges = conn?.Database?.LastUpdate > _lastSchemaUpdate;
                     conn.Close(true); // close and end the session
                     return dbChanges;
                 });
                 
-                return false;
+                return hasChanged;
             });
-            return false;
+
         }
 
         public ADOTabularDatabaseCollection Databases => _connection.Databases;
@@ -193,6 +193,9 @@ namespace DaxStudio.UI.Model
         }
 
         private ADOTabularFunctionGroupCollection _functionGroups;
+        private ADOTabularDatabase _selectedDatabase;
+        private DateTime _lastSchemaUpdate;
+
         public ADOTabularFunctionGroupCollection FunctionGroups
         {
             get
@@ -223,7 +226,16 @@ namespace DaxStudio.UI.Model
 
         public string SelectedModelName { get; set; }
 
-        public ADOTabularDatabase SelectedDatabase { get; set; }
+
+        public ADOTabularDatabase SelectedDatabase
+        {
+            get => _selectedDatabase;
+            set
+            {
+                _selectedDatabase = value;
+                _lastSchemaUpdate = _selectedDatabase.LastUpdate;
+            }
+        }
 
         public async Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize) 
         {
@@ -456,6 +468,7 @@ namespace DaxStudio.UI.Model
             IsPowerPivot = message.PowerPivotModeSelected;
             _connection.Open();
             SelectedDatabase = _connection.Database;
+            
             _eventAggregator.PublishOnUIThread(new ConnectionOpenedEvent());
             _eventAggregator.PublishOnUIThread(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
             _eventAggregator.PublishOnBackgroundThread(new DmvsLoadedEvent(DynamicManagementViews));

@@ -3166,7 +3166,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 bool hasChanged = await Connection.HasSchemaChangedAsync();
 
-                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Finished call to HasSchemaChangedAsync");
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), $"Finished call to HasSchemaChangedAsync: {hasChanged}");
 
                 return hasChanged;
             }
