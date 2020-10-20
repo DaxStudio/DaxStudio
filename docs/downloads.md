@@ -10,11 +10,13 @@ layout: page
 {% for release in  site.github.releases %} 
   {% if release.draft != true and release.prerelease != true and idx > 0 %}
 ### {{ release.name }}
-    {% for asset in release.assets %}
+    {% assign sorted = release.assets | sort: 'browser_download_url' | reverse %}
+    {% for asset in sorted %}
       {% assign download_count = asset.download_count  %}
       {% assign download_size = asset.size %}
+      {% assign dl_ext = asset.browser_download_url | slice: -4, 4%}
       {% assign download_type = "installer" %}
-      {% if asset.content_type == "application/x-zip-compressed" %}
+      {% if dl_ext == ".zip" %}
         {% assign download_type = "portable" %}
       {% endif %}
 - [{{ release.name }} ({{ download_type}})]({{ asset.browser_download_url }}) <br/>

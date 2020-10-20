@@ -11,7 +11,7 @@ using Serilog;
 using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
 
@@ -24,7 +24,7 @@ namespace DaxStudio.QueryTrace
         {
             Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "StartAsync", "entered");
             this.TraceStartTimeoutSecs = startTimeoutSecs;
-            await Task.Run(() => Start());
+            await Task.Run(() => Start()).ConfigureAwait(false);
         }
 
         public void Stop()
@@ -115,13 +115,13 @@ namespace DaxStudio.QueryTrace
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
             FilterForCurrentSession = filterForCurrentSession;
-            ConfigureTrace(connectionString, connectionType, sessionId, applicationName);
+            ConfigureTrace(connectionString, connectionType, applicationName);
             Events = events;
         }
 
         public bool FilterForCurrentSession { get; private set; }
 
-        private void ConfigureTrace(string connectionString, AdomdType connectionType, string sessionId, string applicationName) //, List<DaxStudioTraceEventClass> events)
+        private void ConfigureTrace(string connectionString, AdomdType connectionType, string applicationName) //, List<DaxStudioTraceEventClass> events)
         {
             //_connectionString = string.Format("{0};SessionId={1}",connectionString,sessionId);
             _connectionString = connectionString;
@@ -332,7 +332,7 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        private string GetShortFileName(string filename)
+        private static string GetShortFileName(string filename)
         {
           
             if (filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
@@ -356,7 +356,7 @@ namespace DaxStudio.QueryTrace
         }
 
 #endregion
-        private DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent, string xlsxFile)
+        private static DaxStudioTraceEventArgs CreateTraceEventArg(xlAmo.TraceEventArgs traceEvent, string xlsxFile)
         {
             long cpuTime;
             long duration;
@@ -403,9 +403,9 @@ namespace DaxStudio.QueryTrace
             return dsEvent;
         }
 
-        public void Update(string databaseName)
+        public void Update(string databaseName, string sessionId)
         {
-            // Note: Excel Query Trace does not use the database name parameter
+            // Note: Excel Query Trace does not use the database name or sessions parameters
             Update();
         }
 
@@ -416,7 +416,7 @@ namespace DaxStudio.QueryTrace
         }
 
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

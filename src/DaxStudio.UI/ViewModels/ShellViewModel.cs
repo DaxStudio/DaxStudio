@@ -55,8 +55,10 @@ namespace DaxStudio.UI.ViewModels
                             , IGlobalOptions options
                             , IAutoSaver autoSaver
                             , IThemeManager themeManager
+                            , GlobalQueryHistory queryHistory
                             )
         {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting Constructor");
             utcSessionStart = DateTime.UtcNow;
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
@@ -67,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
+            _queryHistory = queryHistory;
             Tabs = (DocumentTabViewModel)conductor;
             Tabs.ConductWith(this);
             //Tabs.CloseStrategy = new ApplicationCloseStrategy();
@@ -83,20 +86,30 @@ namespace DaxStudio.UI.ViewModels
             // check for auto-saved files and offer to recover them
             if (filesToRecover.Any())
             {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found autosave files, beginning recovery");
                 recoveringFiles = true;
                 RecoverAutoSavedFiles(autoSaveInfo);
             }
             else
             {
                 // if there are no auto-save files to recover, start the auto save timer
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting autosave timer");
                 eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
             }
 
             // if a filename was passed in on the command line open it
-            if (!string.IsNullOrEmpty(_host.CommandLineFileName)) Tabs.NewQueryDocument(_host.CommandLineFileName);
+            if (!string.IsNullOrEmpty(_host.CommandLineFileName))
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
+                Tabs.NewQueryDocument(_host.CommandLineFileName);
+            }
 
             // if no tabs are open at this point and we are not recovering autosave file then, open a blank document
-            if (Tabs.Items.Count == 0 && !recoveringFiles) NewDocument();
+            if (Tabs.Items.Count == 0 && !recoveringFiles)
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening a new blank query window");
+                NewDocument();
+            }
 
 
             VersionChecker = versionCheck;
@@ -104,12 +117,12 @@ namespace DaxStudio.UI.ViewModels
             DisplayName = AppTitle;
 
             Application.Current.Activated += OnApplicationActivated;
-            Log.Verbose("============ Shell Started - v{version} =============", Version.ToString());
+            
 
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
             
-            
+            Log.Debug("============ Shell Started - v{version} =============", Version.ToString());
             
         }
 
@@ -153,13 +166,16 @@ namespace DaxStudio.UI.ViewModels
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
-            _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
+            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
             System.Diagnostics.Debug.WriteLine("OnApplicationActivated");
         }
 
         
         public IAutoSaver AutoSaver { get; }
         public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+
+        private GlobalQueryHistory _queryHistory;
+
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
         public StatusBarViewModel StatusBar { get; set; }
@@ -199,14 +215,13 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-        protected override void OnViewLoaded(object view)
+        protected override  void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
             // load the saved window positions
             _window = view as Window;
             _window.Closing += windowClosing;
             // SetPlacement will adjust the position if it's outside of the visible boundaries
-            //_window.SetPlacement(Properties.Settings.Default.MainWindowPlacement);
             _window.SetPlacement(Options.WindowPosition);
             notifyIcon = new NotifyIcon(_window, _eventAggregator);
             if (_host.DebugLogging) ShowLoggingEnabledNotification();
@@ -214,12 +229,14 @@ namespace DaxStudio.UI.ViewModels
             //Application.Current.LoadRibbonTheme();
             _inputBindings = new InputBindings(_window);
             _inputBindings.RegisterCommands(GetInputBindingCommands());
+            //await _queryHistory.LoadHistoryFilesAsync();
+            _eventAggregator.PublishOnBackgroundThread(new LoadQueryHistoryAsyncEvent());
             
         }
 
         private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
-            // TODO - we should load custom key bindings from Options
+            // load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
             yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQuery);
             yield return new InputBindingCommand(this, nameof(RunQuery), Options.HotkeyRunQueryAlt);
@@ -267,8 +284,6 @@ namespace DaxStudio.UI.ViewModels
             Telemetry.Flush();
             // Store the current window position
             var w = sender as Window;
-            //Properties.Settings.Default.MainWindowPlacement = w.GetPlacement();
-            //Properties.Settings.Default.Save();
             Options.WindowPosition = w.GetPlacement();
             _window.Closing -= windowClosing;
 

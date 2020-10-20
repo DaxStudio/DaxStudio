@@ -11,6 +11,8 @@ using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
 using System.Collections.Generic;
 using DaxStudio.UI.Model;
+using Caliburn.Micro;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests
 {
@@ -248,6 +250,25 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestADOTabularCSDLVisitorMeasureDescriptions()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            var measure = tabs["Sales"].Columns["Sector Sales"];
+
+            Assert.AreEqual("Sector Sales Description", measure.Description);
+            
+        }
+
+        [TestMethod]
         public void TestADOTabularCSDLVisitTwice()
         {
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
@@ -368,8 +389,11 @@ namespace DaxStudio.Tests
 
             v.GenerateTablesFromXmlReader(tabs, xr);
 
-            Assert.AreEqual(false, m.Capabilities.DAXFunctions.SubstituteWithIndex);
+            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SubstituteWithIndex);
             Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
+            Assert.AreEqual(true, m.Capabilities.DAXFunctions.TreatAs);
+            Assert.AreEqual(true, m.Capabilities.Variables);
+            Assert.AreEqual(true, m.Capabilities.TableConstructor);
         }
 
         [TestMethod]
@@ -773,6 +797,24 @@ namespace DaxStudio.Tests
             Assert.AreEqual("[blah].[blah]", dt.Columns[0].ColumnName);
             Assert.AreEqual("Test", dt.Columns[1].ColumnName);
             
+        }
+
+        [TestMethod]
+        public void CreatePowerPivotConnection()
+        {
+            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            var cnn = ppvt.GetPowerPivotConnection("Application Name=Dax Studio Test", "");
+            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Show Hidden Cubes=true", cnn.ConnectionString);
+        }
+
+        [TestMethod]
+        public void CreatePowerPivotConnectionWithFileName()
+        {
+            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            var cnn = ppvt.GetPowerPivotConnection("Application Name=Dax Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
+            Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=Dax Studio Test;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";Show Hidden Cubes=true", cnn.ConnectionString);
         }
     }
 }

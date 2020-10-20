@@ -8,7 +8,6 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
-using System.Collections;
 
 namespace DaxStudio.UI.Model
 {
@@ -35,7 +34,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public string Message => string.Empty;
         public OutputTarget Icon => OutputTarget.Grid;
-
+        public string Tooltip => "Displays the Query results in a data grid";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";
@@ -70,7 +69,7 @@ namespace DaxStudio.UI.Model
 
                                 sw.Stop();
 
-                                // add extended properties to dataset
+                                // add extended properties to DataSet
                                 runner.ResultsDataSet.ExtendedProperties.Add("QueryText", dq);
                                 runner.ResultsDataSet.ExtendedProperties.Add("IsDiscoverSessions", isSessionsDmv);
 

@@ -39,19 +39,19 @@ namespace ADOTabular
             {
                 if (dr["OPTIONAL"].ToString() == "TRUE" && dr["REPEATING"].ToString() == "TRUE")
                 {
-                    arrParam.Add(string.Format("[«{0}»,...]", dr["NAME"]));
+                    arrParam.Add($"[«{dr["NAME"]}»,...]");
                 }
                 else if (dr["OPTIONAL"].ToString() == "TRUE")
                 {
-                    arrParam.Add(string.Format("[«{0}»]", dr["NAME"]));
+                    arrParam.Add($"[«{dr["NAME"]}»]");
                 }
                 else if (dr["REPEATABLE"].ToString() == "TRUE")
                 {
-                    arrParam.Add(string.Format("«{0}»,...", dr["NAME"]));
+                    arrParam.Add($"«{dr["NAME"]}»,...");
                 }
                 else
                 {
-                    arrParam.Add(string.Format("«{0}»", dr["NAME"]));
+                    arrParam.Add($"«{dr["NAME"]}»");
                 }
             }
             return string.Join(",", arrParam.ToArray());

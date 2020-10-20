@@ -1,4 +1,5 @@
 ﻿using ADOTabular;
+using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DAXEditorControl;
 using DaxStudio.Interfaces;
@@ -48,7 +49,6 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private IADOTabularObject _selectedTable;
         public IADOTabularObject SelectedTable { get => _column?.SelectedTable;
             set {
                 _column.SelectedTable = value;
@@ -56,10 +56,9 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public ADOTabularConnection Connection => Document.Connection;
         public ADOTabularTableCollection Tables => Document?.SelectedModel != null ? Document?.Connection.Database.Models[Document?.SelectedModel].Tables : null;
 
-        private bool _isModelItem = false;
+        private bool _isModelItem;
         public bool IsModelItem { get => _isModelItem;
             internal set {
                 _isModelItem = value;
@@ -87,7 +86,8 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = options;
-            
+            IntellisenseProvider = new DaxIntellisenseProvider(Document, EventAggregator, Options);
+
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
             SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
         }
@@ -101,7 +101,7 @@ namespace DaxStudio.UI.ViewModels
             //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(Options.Theme);
 
-            IntellisenseProvider = new DaxIntellisenseProvider(Document, _editor, EventAggregator, Options);
+            IntellisenseProvider.Editor = _editor;
             UpdateSettings();
             if (_editor != null)
             {

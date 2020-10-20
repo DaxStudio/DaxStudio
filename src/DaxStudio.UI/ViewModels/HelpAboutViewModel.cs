@@ -129,7 +129,7 @@ namespace DaxStudio.UI.ViewModels
             set;
         }
 
-        private bool _isCheckRunning = false;
+        private bool _isCheckRunning;
         public bool IsCheckRunning { get => _isCheckRunning;
             set {
                 _isCheckRunning = value;

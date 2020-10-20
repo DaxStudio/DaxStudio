@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
+        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
             var measureDefines = BuildMeasureDefines(columns);
 
@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Model
             //var filterDefines = BuildFilterDefines(filters);
 
             var columnList = BuildColumns(columns);
-            var filterList = BuildFilters(filters);
+            var filterList = BuildFilters(modelCaps, filters);
             var measureList = BuildMeasures(columns);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
@@ -103,49 +103,73 @@ namespace DaxStudio.UI.Model
             return cols.Select(c => c.DaxName).Aggregate((current, next) => current + ",\n    " + next);
         }
 
-        private static string BuildFilters(ICollection<QueryBuilderFilter> filters)
+        private static string BuildFilters(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderFilter> filters)
         {
             //DEFINE VAR __DS0FilterTable =
             //FILTER(
             //  KEEPFILTERS(VALUES('DimCustomer'[EnglishEducation])),
             //  'DimCustomer'[EnglishEducation] = "Bachelors"
             //)
+
+            Func<QueryBuilderFilter,string> filterExpressionFunc = FilterExpressionBasic;
+            if (modelCaps.DAXFunctions.TreatAs) filterExpressionFunc = FilterExpressionTreatAs;
+
             if (filters.Count == 0) return string.Empty;
-            return (string)filters.Select(f => FilterExpression(f)).Aggregate((i, j) => i + ",\n    " + j);
+            return (string)filters.Select(f => filterExpressionFunc(f)).Aggregate((i, j) => i + ",\n    " + j);
         }
 
-        public static string FilterExpression(QueryBuilderFilter filter)
+        public static string FilterExpressionTreatAs(QueryBuilderFilter filter)
         {
             var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter);
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
+            var colName = filter.TabularObject.DaxName;
+            switch (filter.FilterType)
+            {
+                case FilterType.NotIn:
+                    return $@"KEEPFILTERS( EXCEPT( ALL( {colName} ), TREATAS( {{{formattedVal}}}, {colName} )))";
+                case FilterType.In:
+                    return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
+                case FilterType.Is:
+                    return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
+                default:
+                    return FilterExpressionBasic(filter);
+            }
+        }
+
+        public static string FilterExpressionBasic(QueryBuilderFilter filter)
+        {
+            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
+            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
+            var formattedVal2 = FormattedValue(filter, () => { return filter.FilterValue2; });
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
                 case FilterType.Is:
-                    return $"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} = {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} = {formattedVal} ))";
                 case Enums.FilterType.IsNot:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <> {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <> {formattedVal} ))";
                 case FilterType.StartsWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) = 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 ))";
                 case FilterType.Contains:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), SEARCH({formattedVal}, {colName}, 1, 0) >= 1)";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 ))";
                 case FilterType.DoesNotStartWith:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) = 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 )))";
                 case FilterType.DoesNotContain:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(SEARCH({formattedVal}, {colName}, 1, 0) >= 1))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( SEARCH( {formattedVal}, {colName}, 1, 0 ) >= 1 )))";
                 case FilterType.IsBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), ISBLANK({colName}))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), ISBLANK( {colName} )))";
                 case FilterType.IsNotBlank:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), NOT(ISBLANK({colName})))";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( ISBLANK( {colName} ))))";
                 case FilterType.GreaterThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} > {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} > {formattedVal} ))";
                 case FilterType.GreaterThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} >= {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} ))";
                 case FilterType.LessThan:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} < {formattedVal})";
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} < {formattedVal} ))";
                 case FilterType.LessThanOrEqual:
-                    return $@"FILTER(KEEPFILTERS(VALUES( {colName} )), {colName} <= {formattedVal})";
-                    break;
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
+                case FilterType.Between:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
             }
@@ -154,22 +178,36 @@ namespace DaxStudio.UI.Model
             
         }
 
-        public static string FormattedValue(QueryBuilderFilter filter)
+        public static string FormattedValue(QueryBuilderFilter filter, Func<string> valueFunc)
         {
-            if (filter.TabularObject.DataType == typeof(DateTime)) {
+            var val = valueFunc();
+            if (filter.FilterType == FilterType.In || filter.FilterType == FilterType.NotIn)
+            {
+                // strip out \r and break on \n
+                string[] valArray = val.Replace("\r","").Split('\n');
+                return valArray.Aggregate("", (prev, current) => { return prev + "," + FormatValueInternal(filter.TabularObject.DataType, current); }).TrimStart(',');
+            }
+
+            return FormatValueInternal(filter.TabularObject.DataType, val);
+        }
+
+        private static string FormatValueInternal(Type dataType, string val)
+        {
+            if (dataType == typeof(DateTime))
+            {
                 DateTime parsedDate = DateTime.MinValue;
-                DateTime.TryParse(filter.FilterValue, out parsedDate);
+                DateTime.TryParse(val, out parsedDate);
                 if (parsedDate > DateTime.MinValue)
                 {
                     return $"DATE({parsedDate.Year},{parsedDate.Month},{parsedDate.Day})";
                 }
                 else
                 {
-                    throw new ArgumentException($"Unable to parse the value '{filter.FilterValue}' as a DateTime value");
+                    throw new ArgumentException($"Unable to parse the value '{val}' as a DateTime value");
                 }
             }
-            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            return $"{quotes}{filter.FilterValue}{quotes}";
+            var quotes = dataType == typeof(string) ? "\"" : string.Empty;
+            return $"{quotes}{val}{quotes}";
         }
     }
 }

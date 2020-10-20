@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Controls;
 using System.Timers;
 using System.Windows;
@@ -11,13 +8,13 @@ namespace DaxStudio.Controls.DataGridFilter.Support
     /// <summary>
     /// WPF port of windows forms version: http://www.codeproject.com/KB/miscctrl/CustomTextBox.aspx
     /// </summary>
-    public class DelayTextBox : TextBox
+    public sealed class DelayTextBox : TextBox, IDisposable
     {
         #region private globals
 
         private Timer DelayTimer; // used for the delay
-        private bool TimerElapsed = false; // if true OnTextChanged is fired.
-        private bool KeysPressed = false; // makes event fire immediately if it wasn't a keypress
+        private bool _timerElapsed; // if true OnTextChanged is fired.
+        private bool _keysPressed; // makes event fire immediately if it wasn't a keypress
         private int DELAY_TIME = 250;//for now best empiric value
 
         public static readonly DependencyProperty DelayTimeProperty =
@@ -51,7 +48,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                 DelayTimer.Enabled = true;
             }
 
-            KeysPressed = true;
+            _keysPressed = true;
         }
 
         #endregion
@@ -62,7 +59,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             DelayTimer.Enabled = false;// stop timer.
 
-            TimerElapsed = true;// set timer elapsed to true, so the OnTextChange knows to fire
+            _timerElapsed = true;// set timer elapsed to true, so the OnTextChange knows to fire
 
             this.Dispatcher.Invoke(new DelayOverHandler(DelayOver), null);// use invoke to get back on the UI thread.
         }
@@ -78,10 +75,10 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             // if the timer elapsed or text was changed by something besides a keystroke
             // fire base.OnTextChanged
-            if (TimerElapsed || !KeysPressed)
+            if (_timerElapsed || !_keysPressed)
             {
-                TimerElapsed = false;
-                KeysPressed = false;
+                _timerElapsed = false;
+                _keysPressed = false;
                 base.OnTextChanged(e);
 
                 System.Windows.Data.BindingExpression be = this.GetBindingExpression(TextBox.TextProperty);
@@ -107,6 +104,11 @@ namespace DaxStudio.Controls.DataGridFilter.Support
         {
             if (previousTextChangedEventArgs != null)
                 OnTextChanged(previousTextChangedEventArgs);
+        }
+
+        public void Dispose()
+        {
+            DelayTimer.Dispose();
         }
 
         #endregion

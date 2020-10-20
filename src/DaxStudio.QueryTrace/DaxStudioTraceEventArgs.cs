@@ -19,82 +19,112 @@ namespace DaxStudio.QueryTrace
             Enum.TryParse<DaxStudioTraceEventSubclass>(EventSubclassName, out _eventSubclass);
 
             TextData = e.TextData;
-            /*
+            RequestID = e[TraceColumn.RequestID];
+            DatabaseName = e.DatabaseName;
+            DatabaseFriendlyName = !string.IsNullOrEmpty(powerBIFileName)? powerBIFileName : DatabaseName;
+
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
                     // TODO
-
+                    RequestProperties = e.RequestProperties;
+                    RequestParameters = e.RequestParameters;
+                    NTUserName = e.NTUserName;
+                    StartTime = e.StartTime;
+                    break;
                 case TraceEventClass.QueryEnd:
                     Duration = e.Duration;
-                    DatabaseName = e.DatabaseName;
                     StartTime = e.StartTime;
                     NTUserName = e.NTUserName;
-                    
+                    EndTime = e.EndTime;
+                    StartTime = e.StartTime;
+                    CpuTime = e.CpuTime;
                     break;
-                case TraceEventClass.VertiPaqSEQueryCacheMatch:
+                case TraceEventClass.DirectQueryEnd:
+                    Duration = e.Duration;
+                    EndTime = e.EndTime;
+                    CpuTime = e.CpuTime;
                     StartTime = e.StartTime;
                     break;
+                case TraceEventClass.VertiPaqSEQueryEnd:
+                    StartTime = e.StartTime;
+                    CpuTime = e.CpuTime;
+                    Duration = e.Duration;
+                    //EndTime = e.EndTime;
+                    NTUserName = e.NTUserName;
+                    break;
+                case TraceEventClass.VertiPaqSEQueryCacheMatch:
+                    StartTime = e.CurrentTime;
+                    NTUserName = e.NTUserName;
+                    break;
                 case TraceEventClass.CommandBegin:
-
+                    DateTime startTime;
+                    string s = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s, out startTime);
+                    StartTime = startTime;
+                    NTUserName = e.NTUserName;
+                    break;
+                case TraceEventClass.DAXQueryPlan:
+                    // no additional properties captured, the plan is stored in the text field
+                    break;
                 default:
                     throw new ArgumentException($"No mapping for the event class {e.EventClass.ToString()} was found");
 
             }
-            */
-            if (e.EventClass != TraceEventClass.CommandBegin)
-            {
-                // not all events have CpuTime
-                try
-                {
-                    CpuTime = e.CpuTime;
-                }
-                catch (ArgumentNullException)
-                {
-                    CpuTime = 0;
-                }
-                // not all events have a duration
-                try
-                {
-                    Duration = e.Duration;
-                }
-                catch (ArgumentNullException)
-                {
-                    Duration = 0;
-                }
-            }
+            
+            //if (e.EventClass != TraceEventClass.CommandBegin)
+            //{
+            //    // not all events have CpuTime
+            //    try
+            //    {
+            //        CpuTime = e.CpuTime;
+            //    }
+            //    catch (ArgumentNullException)
+            //    {
+            //        CpuTime = 0;
+            //    }
+            //    // not all events have a duration
+            //    try
+            //    {
+            //        Duration = e.Duration;
+            //    }
+            //    catch (ArgumentNullException)
+            //    {
+            //        Duration = 0;
+            //    }
+            //}
 
-            if (e.EventClass == TraceEventClass.QueryBegin)
-            {
-                RequestParameters = e.RequestParameters;
-                RequestProperties = e.RequestProperties;
-            }
+            //if (e.EventClass == TraceEventClass.QueryBegin)
+            //{
+            //    RequestParameters = e.RequestParameters;
+            //    RequestProperties = e.RequestProperties;
+            //}
 
-            if (e.NTUserName != null)
-                NTUserName = e.NTUserName;
+            //if (e.NTUserName != null)
+            //    NTUserName = e.NTUserName;
 
-            if (e.DatabaseName != null)
-            {
-                DatabaseName = e.DatabaseName;
-                if (!string.IsNullOrEmpty(powerBIFileName)) DatabaseFriendlyName = powerBIFileName;
-                else DatabaseFriendlyName = DatabaseName;
-            }
-            try
-            {
-                StartTime = e.CurrentTime;
-                StartTime = e.StartTime;
-            }
-            catch (NullReferenceException)
-            {
+            //if (e.DatabaseName != null)
+            //{
+            //    DatabaseName = e.DatabaseName;
+            //    if (!string.IsNullOrEmpty(powerBIFileName)) DatabaseFriendlyName = powerBIFileName;
+            //    else DatabaseFriendlyName = DatabaseName;
+            //}
+            //try
+            //{
+            //    StartTime = e.CurrentTime;
+            //    StartTime = e.StartTime;
+            //}
+            //catch (NullReferenceException)
+            //{
                 
-            }
+            //}
 
-            try
-            {
-                RequestID = e[TraceColumn.RequestID];
-            }
-            catch 
-            { }
+            //try
+            //{
+            //    RequestID = e[TraceColumn.RequestID];
+            //}
+            //catch 
+            //{ }
         }
 
         // This default constructor is required to allow deserializeing from JSON when tracing PowerPivot

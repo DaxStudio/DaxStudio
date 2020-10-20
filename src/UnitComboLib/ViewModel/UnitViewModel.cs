@@ -1,14 +1,13 @@
 ﻿namespace UnitComboLib.ViewModel
 {
+    using Command;
+    using Local;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Linq;
     using System.Windows.Input;
-
-    using UnitComboLib.Command;
-    using UnitComboLib.Unit;
-    using System.ComponentModel;
-    using UnitComboLib.Local;
-    using UnitComboLib.Unit.Screen;
+    using Unit;
+    using Unit.Screen;
 
     /// <summary>
     /// Viewmodel class to manage unit conversion based on default values and typed values.
@@ -16,17 +15,17 @@
     public class UnitViewModel : BaseViewModel, IDataErrorInfo
     {
         #region fields
-        private ListItem mSelectedItem = null;
+        private ListItem mSelectedItem;
 
-        private readonly ObservableCollection<ListItem> mUnitList = null;
+        private readonly ObservableCollection<ListItem> mUnitList;
 
         private string mValueTip = string.Empty;
-        private double mValue = 0;
+        private double mValue;
         private string mstrValue = "0.0";
 
-        private ScreenConverter mUnitConverter = null;
+        private ScreenConverter mUnitConverter;
 
-        private RelayCommand<Itemkey> mSetSelectedItemCommand = null;
+        private RelayCommand<Itemkey> mSetSelectedItemCommand;
 
         /// <summary>
         /// Minimum value to be converted for both percentage and pixels
@@ -181,10 +180,10 @@
                     if (string.IsNullOrEmpty(this.mstrValue))
                         return SetToolTip(Strings.Integer_Contain_ErrorMessage);
 
-                    if (double.TryParse(this.mstrValue, out double dValue) == true)
+                    if (double.TryParse(this.mstrValue, out double dValue))
                     {
 
-                        if (IsDoubleWithinRange(dValue, this.SelectedItem.Key, out string message) == true)
+                        if (IsDoubleWithinRange(dValue, this.SelectedItem.Key, out string message) )
                         {
                             this.Value = dValue;
                             return SetToolTip(null);
@@ -331,7 +330,7 @@
             // Convert from current item to find the next selected item
             if (li != null)
             {
-                if (double.TryParse(this.mstrValue, out double dValue) == true)
+                if (double.TryParse(this.mstrValue, out double dValue))
                 {
                     double tempValue = this.mUnitConverter.Convert(this.SelectedItem.Key, dValue, li.Key);
 
@@ -367,7 +366,7 @@
         /// <param name="unitToConvert"></param>
         /// <param name="message"></param>
         /// <returns>False if range is not acceptable, true otherwise</returns>
-        private bool IsDoubleWithinRange(double doubleValue,
+        private static bool IsDoubleWithinRange(double doubleValue,
                                          Itemkey unitToConvert,
                                          out string message)
         {

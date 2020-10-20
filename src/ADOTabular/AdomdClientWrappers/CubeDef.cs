@@ -234,6 +234,7 @@ namespace ADOTabular.AdomdClientWrappers
     }
 
     [Serializable]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2229:Implement serialization constructors", Justification = "<Pending>")]
     public class AdomdConnectionException : Exception
     {
         public AdomdConnectionException(string message) : base(message)
@@ -241,6 +242,10 @@ namespace ADOTabular.AdomdClientWrappers
         }
 
         public AdomdConnectionException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public AdomdConnectionException()
         {
         }
     }

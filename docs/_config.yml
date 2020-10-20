@@ -35,6 +35,7 @@ navbar-links:
     - Installation: "documentation/installation"
     - Requirements: "documentation/requirements"
     - Troubleshooting: "documentation/troubleshooting"
+    - Change Log: "changelog"
     - License: "documentation/license"
   FAQ: "faq"
 #  Discussions: "https://gitter.im/daxstudio/Lobby"
@@ -177,7 +178,6 @@ link-tags: false
 
 # Exclude these files from production site
 exclude:
-  - CHANGELOG.md
   - CNAME
   - Dockerfile
   - Gemfile

@@ -213,7 +213,7 @@ namespace DaxStudio.UI.ViewModels
                 IsEnabled = (connection.IsAdminConnection && connection.IsConnected);
         }
 
-        private bool _isBusy = false;
+        private bool _isBusy;
         public bool IsBusy
         {
             get { return _isBusy; }
@@ -233,7 +233,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(QueryStartedEvent message)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
-            if (!IsPaused)
+            if (!IsPaused && IsChecked)
             {
                 IsBusy = true;
                 Reset();
@@ -243,8 +243,11 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(CancelQueryEvent message)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
-            IsBusy = false;
-            Reset();
+            if (!IsPaused && !IsChecked)
+            {
+                IsBusy = false;
+                Reset();
+            }
         }
 
         Timer _timeout;
@@ -309,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool IsFilterVisible { get { return false; } }
         public virtual void ClearFilters() { }
 
-        private bool _showFilters = false;
+        private bool _showFilters;
 
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
 

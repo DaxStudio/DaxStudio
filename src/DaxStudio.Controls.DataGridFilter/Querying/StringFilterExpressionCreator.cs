@@ -92,13 +92,13 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
                 if (expressionCompleted
                     && function != StringExpressionFunction.Undefined
-                    && expressionValue != String.Empty)
+                    && !string.IsNullOrEmpty(expressionValue))
                 {
                     string expressionValueCopy = String.Copy(expressionValue);
 
                     expressionValueCopy = expressionValueCopy.Replace(WildcardAnyString, String.Empty);
 
-                    if (expressionValueCopy != String.Empty)
+                    if (!string.IsNullOrEmpty(expressionValueCopy))
                     {
                         filter.Add(createFunction(function, expressionValueCopy));
                     }

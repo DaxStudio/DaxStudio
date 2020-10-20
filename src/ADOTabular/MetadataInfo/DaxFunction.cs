@@ -1,6 +1,8 @@
 ﻿namespace ADOTabular.MetadataInfo {
     public class DaxFunction {
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         public string SSAS_VERSION { get; set; }
+
 
         public string FUNCTION_NAME { get; set; }
 
@@ -29,5 +31,6 @@
         public string PARAMETERINFO { get; set; }
 
         public int? DIRECTQUERY_PUSHABLE { get; set; }
+#pragma warning restore CA1707 // Identifiers should not contain underscores
     }
 }

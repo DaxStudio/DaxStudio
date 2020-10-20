@@ -1,6 +1,6 @@
 ﻿extern alias ExcelAdomdClientReference;
 
-using DaxStudio.Common.Enums;
+using ADOTabular.Enums;
 using System;
 using System.Data;
 using System.Threading;

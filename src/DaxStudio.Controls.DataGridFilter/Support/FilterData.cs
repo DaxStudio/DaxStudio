@@ -42,7 +42,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                     case FilterType.Numeric:
                     case FilterType.DateTime:
 
-                        filterChanged = (Operator != FilterOperator.Undefined || QueryString != String.Empty);
+                        filterChanged = (Operator != FilterOperator.Undefined || !string.IsNullOrEmpty(QueryString));
                         break;
 
                     case FilterType.NumericBetween:
@@ -89,8 +89,8 @@ namespace DaxStudio.Controls.DataGridFilter.Support
             isClearData = true;
 
             Operator           = FilterOperator.Undefined;
-            if (QueryString   != String.Empty) QueryString = null;
-            if (QueryStringTo != String.Empty) QueryStringTo = null;
+            if (!string.IsNullOrEmpty(QueryString)) QueryString = null;
+            if (!string.IsNullOrEmpty(QueryStringTo)) QueryStringTo = null;
             OnFilterClearedEvent();
 
             isClearData = false;
@@ -105,7 +105,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                 if(_operator != value)
                 {
                     _operator = value;
-                    NotifyPropertyChanged("Operator");
+                    NotifyPropertyChanged(nameof(Operator));
                     OnFilterChangedEvent();
                 }
             }
@@ -123,7 +123,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                     
                     if (queryString == null) queryString = String.Empty;
 
-                    NotifyPropertyChanged("QueryString");
+                    NotifyPropertyChanged(nameof(QueryString));
                     OnFilterChangedEvent();
                 }
             }
@@ -141,7 +141,7 @@ namespace DaxStudio.Controls.DataGridFilter.Support
                     
                     if (queryStringTo == null) queryStringTo = String.Empty;
 
-                    NotifyPropertyChanged("QueryStringTo");
+                    NotifyPropertyChanged(nameof(QueryStringTo));
                     OnFilterChangedEvent();
                 }
             }

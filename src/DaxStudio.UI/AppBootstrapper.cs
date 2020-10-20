@@ -42,7 +42,12 @@ namespace DaxStudio.UI
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
             AssemblyLoader.PreJitControls();
-            base.DisplayRootViewFor<IShell>(null);
+            
+        }
+
+        public void DisplayShell()
+        {
+            Application.Dispatcher.Invoke(() => base.DisplayRootViewFor<IShell>(null));
         }
 
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -53,8 +58,8 @@ namespace DaxStudio.UI
                 var sf = st.GetFrame(0);
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
-                    var _eventAggregator = _container.GetExportedValue<IEventAggregator>();
-                    if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    var eventAggregator = _container.GetExportedValue<IEventAggregator>();
+                    if (eventAggregator != null) eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
                     Log.Warning(e.Exception, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                     e.Handled = true;
                     return;
@@ -95,18 +100,11 @@ namespace DaxStudio.UI
 
                 ConventionManager.AddElementConvention<Fluent.Spinner>(Fluent.Spinner.ValueProperty, "Value", "ValueChanged");
 
-                // TODO - do I need to replace these conventions ??
-                //ConventionManager.AddElementConvention<NumericUpDownLib.DoubleUpDown>(NumericUpDownLib.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
-
-                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.DoubleUpDown>(Xceed.Wpf.Toolkit.DoubleUpDown.ValueProperty, "Value", "ValueChanged");
-                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.IntegerUpDown>(Xceed.Wpf.Toolkit.IntegerUpDown.ValueProperty, "Value", "ValueChanged");
-                //ConventionManager.AddElementConvention<Xceed.Wpf.Toolkit.WatermarkTextBox>(Xceed.Wpf.Toolkit.WatermarkTextBox.TextProperty, "Text", "TextChanged");
-
-                // Add Fluent Ribbon resovler
+                // Add Fluent Ribbon resolver
                 BindingScope.AddChildResolver<Fluent.Ribbon>(FluentRibbonChildResolver);
 
 
-                // Fixes the default datetime format in the results listview
+                // Fixes the default datetime format in the results ListView
                 // from: https://stackoverflow.com/questions/1993046/datetime-region-specific-formatting-in-wpf-listview
                 FrameworkElement.LanguageProperty.OverrideMetadata(
                     typeof(FrameworkElement),
@@ -139,7 +137,7 @@ namespace DaxStudio.UI
 
                 _container.Compose(batch);
 
-	            // Add AvalonDock binding convetions
+	            // Add AvalonDock binding conventions
 	            AvalonDockConventions.Install();
 
                 //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
@@ -186,7 +184,7 @@ namespace DaxStudio.UI
 			if (exports.Any())
 				return exports.First();
 
-			throw new Exception(string.Format("Could not locate any instances of contract {0}.", contract));
+			throw new Exception($"Could not locate any instances of contract {contract}.");
 		}
 
 		protected override IEnumerable<object> GetAllInstances(Type serviceType)
@@ -203,10 +201,10 @@ namespace DaxStudio.UI
         protected override IEnumerable<Assembly> SelectAssemblies()
         {
             var type = typeof(IDaxStudioHost);
-            var hostType = AppDomain.CurrentDomain.GetAssemblies().ToList()
+            var hostType = AppDomain.CurrentDomain.GetAssemblies()
+                .ToList()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p))
-                .FirstOrDefault();
+                .FirstOrDefault(p => type.IsAssignableFrom(p));
             var hostAssembly = Assembly.GetAssembly(hostType);
 
             return AssemblySource.Instance.Any() ?

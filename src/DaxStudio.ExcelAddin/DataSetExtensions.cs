@@ -67,7 +67,7 @@ namespace DaxStudio.ExcelAddin
             foreach (var col in dataTable.Columns)
             {
                 if (col == null)
-                    sbData.Append(",");
+                    sbData.Append(',');
                 else
                     sbData.Append("\"" + col.ToString().Replace("\"", "\"\"") + "\",");
             }
@@ -79,7 +79,7 @@ namespace DaxStudio.ExcelAddin
                 foreach (var column in dr.ItemArray)
                 {
                     if (column == null)
-                        sbData.Append(",");
+                        sbData.Append(',');
                     else
                         sbData.Append("\"" + column.ToString().Replace("\"", "\"\"") + "\",");
                 }
@@ -100,9 +100,13 @@ namespace DaxStudio.ExcelAddin
             foreach (var col in dataTable.Columns)
             {
                 if (col == null)
-                    sbData.Append("\t");
+                    sbData.Append('\t');
                 else
-                    sbData.Append("\"" + col.ToString().Replace("\"", "\"\"") + "\",");
+                {
+                    sbData.Append('\"');
+                    sbData.Append(col.ToString().Replace("\"", "\"\""));
+                    sbData.Append("\",");
+                }
             }
 
             sbData.Replace("\t", System.Environment.NewLine, sbData.Length - 1, 1);
@@ -112,9 +116,13 @@ namespace DaxStudio.ExcelAddin
                 foreach (var column in dr.ItemArray)
                 {
                     if (column == null)
-                        sbData.Append("\t");
+                        sbData.Append('\t');
                     else
-                        sbData.Append("\"" + column.ToString().Replace("\"", "\"\"") + "\",");
+                    {
+                        sbData.Append('\"');
+                        sbData.Append(column.ToString().Replace("\"", "\"\""));
+                        sbData.Append( "\",");
+                    }
                 }
                 sbData.Replace("\t", System.Environment.NewLine, sbData.Length - 1, 1);
             }

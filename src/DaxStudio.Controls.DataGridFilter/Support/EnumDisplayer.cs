@@ -37,8 +37,8 @@ namespace DaxStudio.Controls.DataGridFilter.Support
             get { return type; }
             set
             {
-                if (!value.IsEnum)
-                    throw new ArgumentException("parameter is not an Enumermated type", "value");
+                if (value == null || !value.IsEnum)
+                    throw new ArgumentException("parameter is not an Enumermated type", nameof(value));
                 this.type = value;
             }
         }

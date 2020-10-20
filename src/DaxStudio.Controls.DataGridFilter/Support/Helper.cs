@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DaxStudio.Controls.DataGridFilter.Support
 {
@@ -6,6 +7,8 @@ namespace DaxStudio.Controls.DataGridFilter.Support
     {
         public static Dictionary<string, FilterData> CloneDictionaryHelper(Dictionary<string, FilterData> dictionary)
         {
+            if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
+
             var dictNew = new Dictionary<string, FilterData>();
 
             foreach (KeyValuePair<string, FilterData> kvp in dictionary)

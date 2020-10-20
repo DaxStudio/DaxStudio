@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADOTabular.Interfaces;
+using System;
 using System.Data;
 
 namespace ADOTabular
@@ -36,8 +37,8 @@ namespace ADOTabular
             {
                 // for measures we exclude the table name
                 return ObjectType == ADOTabularObjectType.Column  
-                    ? string.Format("{0}[{1}]", Table.DaxName, Name)
-                    : string.Format("[{0}]",Name);
+                    ? $"{Table.DaxName}[{Name}]"
+                    : $"[{Name}]";
             }
         }
 
@@ -51,13 +52,8 @@ namespace ADOTabular
 
         public string Expression { get; set; }
 
-        public MetadataImages MetadataImage
-        {
-            get
-            {
-                return MetadataImages.Measure;
-            }
-        }
+        public static MetadataImages MetadataImage => MetadataImages.Measure;
+
 
     }
 }

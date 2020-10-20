@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using DaxStudio.Controls.DataGridFilter.Support;
 
@@ -8,45 +7,47 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 {
     public class QueryCreator
     {
-        private List<object> Parameters { get; set; }
+        private List<object> Parameters { get; }
 
-        private readonly Dictionary<string, FilterData> filtersForColumns;
-        private ParameterCounter paramCounter;
+        private readonly Dictionary<string, FilterData> _filtersForColumns;
+        private readonly ParameterCounter _paramCounter;
 
         public QueryCreator(
             Dictionary<string, FilterData> filtersForColumns)
         {
-            this.filtersForColumns = filtersForColumns;
+            this._filtersForColumns = filtersForColumns;
 
-            paramCounter = new ParameterCounter(0);
+            _paramCounter = new ParameterCounter(0);
             Parameters = new List<object>();
         }
 
         public void CreateFilter(ref Query query)
         {
+            if (query == null) throw  new ArgumentNullException(nameof(query));
+
             StringBuilder filter = new StringBuilder();
 
-            foreach (KeyValuePair<string, FilterData> kvp in filtersForColumns)
+            foreach (KeyValuePair<string, FilterData> kvp in _filtersForColumns)
             {
-                StringBuilder partialFilter = createSingleFilter(kvp.Value);
+                StringBuilder partialFilter = CreateSingleFilter(kvp.Value);
 
                 if (filter.Length > 0 && partialFilter.Length > 0) filter.Append(" AND ");
 
                 if (partialFilter.Length > 0)
                 {
                     string valuePropertyBindingPath = String.Empty;
-                    string[] paths = kvp.Value.ValuePropertyBindingPath.Split(new Char[] { '.' });
+                    string[] paths = kvp.Value.ValuePropertyBindingPath.Split('.');
 
                     foreach (string p in paths)
                     {
-                        if (valuePropertyBindingPath != String.Empty)
+                        if (!string.IsNullOrEmpty(valuePropertyBindingPath))
                         {
                             valuePropertyBindingPath += ".";
                         }
 
                         valuePropertyBindingPath += p;
 
-                        filter.Append(valuePropertyBindingPath + " != null AND ");//eliminate: Nullable object must have a value and object fererence not set to an object                        
+                        filter.Append(valuePropertyBindingPath + " != null AND ");//eliminate: Nullable object must have a value and object reference not set to an object                        
                     }
                 }
 
@@ -58,70 +59,68 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             query.QueryParameters = Parameters;
         }
 
-        private StringBuilder createSingleFilter(FilterData filterData)
+        private StringBuilder CreateSingleFilter(FilterData filterData)
         {
             StringBuilder filter = new StringBuilder();
 
             if (
                 (filterData.Type == FilterType.NumericBetween || filterData.Type == FilterType.DateTimeBetween)
                 &&
-                (filterData.QueryString != String.Empty || filterData.QueryStringTo != String.Empty)
+                (!string.IsNullOrEmpty(filterData.QueryString) || !string.IsNullOrEmpty(filterData.QueryStringTo))
                 )
             {
-                if (filterData.QueryString != String.Empty)
+                if (!string.IsNullOrEmpty(filterData.QueryString))
                 {
-                    createFilterExpression(
+                    CreateFilterExpression(
                         filterData, 
                         filterData.QueryString,
                         filter,
-                        getOperatorString(FilterOperator.GreaterThanOrEqual));
+                        GetOperatorString(FilterOperator.GreaterThanOrEqual));
                 }
-                if (filterData.QueryStringTo != String.Empty)
+                if (!string.IsNullOrEmpty(filterData.QueryStringTo))
                 {
                     if (filter.Length > 0) filter.Append(" AND ");
 
-                    createFilterExpression(
+                    CreateFilterExpression(
                         filterData, 
                         filterData.QueryStringTo, 
                         filter, 
-                        getOperatorString(FilterOperator.LessThanOrEqual));
+                        GetOperatorString(FilterOperator.LessThanOrEqual));
                 }
             }
-            else if (filterData.QueryString != String.Empty
+            else if (!string.IsNullOrEmpty(filterData.QueryString)
                 &&
                 filterData.Operator != FilterOperator.Undefined)
             {
                 if (filterData.Type == FilterType.Text)
                 {
                     if (filterData.Operator == FilterOperator.Contains)
-                        createContainsStringFilterExpression(filterData,filter);
+                        CreateContainsStringFilterExpression(filterData,filter);
                     else
-                        createStringFilterExpression(filterData, filter);
+                        CreateStringFilterExpression(filterData, filter);
                 }
                 else
                 {
-                    createFilterExpression(
-                        filterData, filterData.QueryString, filter, getOperatorString(filterData.Operator));
+                    CreateFilterExpression(
+                        filterData, filterData.QueryString, filter, GetOperatorString(filterData.Operator));
                 }
             }
 
             return filter;
         }
 
-        private void createFilterExpression(
+        private void CreateFilterExpression(
             FilterData filterData, string queryString, StringBuilder filter, string operatorString)
         {
             filter.Append(filterData.ValuePropertyBindingPath);
 
-            object parameterValue = null;
-
-            if (trySetParameterValue(out parameterValue, queryString, filterData.ValuePropertyType))
+            if (TrySetParameterValue(out var parameterValue, queryString, filterData.ValuePropertyType))
             {
                 Parameters.Add(parameterValue);
 
-                paramCounter.Increment();
+                _paramCounter.Increment();
 
-                filter.Append(" " + operatorString + " @" + paramCounter.ParameterNumber);
+                filter.Append(" " + operatorString + " @" + _paramCounter.ParameterNumber);
             }
             else
             {
@@ -129,7 +128,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             }
         }
 
-        private bool trySetParameterValue(
+        private bool TrySetParameterValue(
             out object parameterValue, string stringValue, Type type)
         {
             parameterValue = null;
@@ -137,7 +136,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
             try
             {
-                if (type == typeof(Nullable<DateTime>) || type == typeof(DateTime))
+                if (type == typeof(DateTime?) || type == typeof(DateTime))
                 {
                     parameterValue = DateTime.Parse(stringValue);
                 }
@@ -160,7 +159,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
 
                 valueIsSet = true;
             }
-            catch (Exception)
+            catch 
             {
                 valueIsSet = false;
             }
@@ -168,31 +167,31 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             return valueIsSet;
         }
 
-        private void createStringFilterExpression(
+        private void CreateStringFilterExpression(
             FilterData filterData, StringBuilder filter)
         {
             StringFilterExpressionCreator
                 creator = new StringFilterExpressionCreator(
-                    paramCounter, filterData, Parameters);
+                    _paramCounter, filterData, Parameters);
 
             string filterExpression = creator.Create();
 
             filter.Append(filterExpression);
         }
 
-        private void createContainsStringFilterExpression(
+        private void CreateContainsStringFilterExpression(
             FilterData filterData, StringBuilder filter)
         {
             StringFilterExpressionCreator
                 creator = new StringFilterExpressionCreator(
-                    paramCounter, filterData, Parameters);
+                    _paramCounter, filterData, Parameters);
 
             string filterExpression = creator.CreateContainsFilter();
 
             filter.Append(filterExpression);
         }
 
-        private string getOperatorString(FilterOperator filterOperator)
+        private static string GetOperatorString(FilterOperator filterOperator)
         {
             string op;
 

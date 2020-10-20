@@ -25,15 +25,25 @@ namespace DaxStudio.ExcelAddin
                 currentDomain.AssemblyResolve += currentDomain_AssemblyResolve;
                 currentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-                var config = new LoggerConfiguration().ReadFrom.AppSettings();
+                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
+                var config = new LoggerConfiguration()
+                                    .ReadFrom.AppSettings()
+                                    .MinimumLevel.ControlledBy(levelSwitch); ;
+
                 if (System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey1)
                     || System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey2))
                 {
                     loggingKeyDown = true;
                     _debugLogEnabled = true;
+
+                    // increase the default log level when the logging hot key is held down
+                    levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
+                    Log.Debug("Debug Logging Enabled");
+
+                    // force logging to rolling log file (in case the app settings has switched this off)
                     var logPath = Path.Combine(ApplicationPaths.LogPath
                                                 , Constants.ExcelLogFileName);
-                    config.WriteTo.RollingFile(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
+                    config.WriteTo.File(logPath, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, retainedFileCountLimit: 10);
                     
                 }
                 log = config.CreateLogger();

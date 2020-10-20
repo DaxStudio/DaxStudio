@@ -31,5 +31,15 @@ namespace DaxStudio.Tests
             Assert.AreEqual("DAX Studio (Power Pivot) - 2ba50c5f-fef0-4142-a896-e53ca929899e", results["Application Name"]);
         }
 
+        [TestMethod]
+        public void parseComplicatedPath()
+        {
+            var connstr = "Data Source=http://localhost:9000/xmla;Application Name=DAX Studio (Power Pivot) - 37fad17f-7a7a-4f60-a758-4340f9e3b478;;Location=\"C:\\Users\\darren.gosbell\\Documents\\PowerPivot's Test\\PwrPvtTest =- 'ćopy.xlsx;.xlsx\";Extended Properties='Location=\"C:\\Users\\darren.gosbell\\Documents\\PowerPivot''s Test\\PwrPvtTest = -''ćopy.xlsx;.xlsx\"';Workstation ID=\"C:\\Users\\darren.gosbell\\Documents\\PowerPivot's Test\\PwrPvtTest =- 'ćopy.xlsx;.xlsx\"";
+            var results = ConnectionStringParser.Parse(connstr);
+            Assert.AreEqual(5, results.Count, "5 key value pairs");
+            Assert.AreEqual("http://localhost:9000/xmla", results["Data Source"]);
+            Assert.AreEqual("DAX Studio (Power Pivot) - 37fad17f-7a7a-4f60-a758-4340f9e3b478", results["Application Name"]);
+        }
+
     }
 }

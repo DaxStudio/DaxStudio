@@ -16,8 +16,8 @@ namespace DaxStudio.UI.Interfaces
         void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files);
 
         T GetValue<T>(string subKey, T defaultValue);
-        Task SetValueAsync<T>(string subKey, T value, bool isInitializing);
-        Task SetValueAsync(string subKey, DateTime value, bool isInitializing);
+        void SetValue<T>(string subKey, T value, bool isInitializing);
+        void SetValue(string subKey, DateTime value, bool isInitializing);
 
         bool IsFileLoggingEnabled();
         string LogPath { get; }
@@ -25,6 +25,7 @@ namespace DaxStudio.UI.Interfaces
         void Initialize(IGlobalOptions options);
 
         bool IsRunningPortable { get; }
+        string SettingsFile { get; }
     }
 }
 

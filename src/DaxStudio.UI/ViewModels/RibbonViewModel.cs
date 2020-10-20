@@ -41,9 +41,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
         private readonly IWindowManager _windowManager;
-        private bool _isDocumentActivating = false;
-        private bool _isConnecting = false;
-        private readonly string _sqlProfilerCommand = "";
+        private bool _isDocumentActivating;
+        private bool _isConnecting;
+        private readonly string _sqlProfilerCommand = string.Empty;
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
@@ -213,7 +213,6 @@ namespace DaxStudio.UI.ViewModels
         public void RunQuery()
         {
             
-            _queryRunning = true;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
@@ -230,7 +229,7 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 if (ActiveDocument == null) return "There is no active Query window";
-                if ( _queryRunning) return  "A query is currently executing";
+                if ( QueryRunning) return  "A query is currently executing";
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
                 if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
                 if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
@@ -246,7 +245,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
                 if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
                 if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
-                if (!_queryRunning) return "A query is not currently executing";
+                if (!QueryRunning) return "A query is not currently executing";
                 return "not disabled";
             }
         }
@@ -255,7 +254,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return !_queryRunning 
+                return !QueryRunning 
                     && (ActiveDocument != null && ActiveDocument.IsConnected) 
                     && !ActiveDocument.ShowMeasureExpressionEditor
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
@@ -266,7 +265,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return !_queryRunning
+                return !QueryRunning
                     && (ActiveDocument != null && ActiveDocument.IsConnected)
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
@@ -276,8 +275,8 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return !_queryRunning
-                    && (ActiveDocument != null && ActiveDocument.IsConnected)
+                return !QueryRunning
+                    && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
         }
@@ -302,7 +301,7 @@ namespace DaxStudio.UI.ViewModels
             get 
             { 
                 if (!ActiveDocument.IsAdminConnection) return "Only a server administrator can run the clear cache command";
-                if (_queryRunning) return "A query is currently executing";
+                if (QueryRunning) return "A query is currently executing";
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
                 if (_traceStatus == QueryTraceStatus.Starting) return "Waiting for Trace to start";
                 if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
@@ -340,7 +339,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get {
                 return ActiveDocument != null 
-                    && !_queryRunning 
+                    && !QueryRunning 
                     && !_isConnecting 
                     && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
             }
@@ -406,7 +405,7 @@ namespace DaxStudio.UI.ViewModels
         } }
 
         private IResultsTarget _selectedTarget;
-        private bool _queryRunning;
+        private bool QueryRunning => ActiveDocument?.IsQueryRunning??false;
         private QueryTraceStatus _traceStatus = QueryTraceStatus.Stopped;
         private StatusBarMessage _traceMessage;
         // default to first target if none currently selected
@@ -439,7 +438,6 @@ namespace DaxStudio.UI.ViewModels
                 doc = ActiveDocument;
                 SelectedTarget = ActiveDocument.SelectedTarget;
 
-                _queryRunning = ActiveDocument.IsQueryRunning;
                 if (ActiveDocument.Tracer == null)
                     _traceStatus = QueryTraceStatus.Stopped;
                 else
@@ -464,7 +462,7 @@ namespace DaxStudio.UI.ViewModels
    
             try
             {
-                RefreshConnectionDetails(ActiveDocument);
+                RefreshConnectionDetails(ActiveDocument.Connection);
                 // TODO - do we still need to check trace watchers if we are not connected??
                 UpdateTraceWatchers();
             }
@@ -519,7 +517,7 @@ namespace DaxStudio.UI.ViewModels
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
-                tw.CheckEnabled(ActiveDocument, activeTrace);
+                tw.CheckEnabled(ActiveDocument.Connection, activeTrace);
             }
             NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
@@ -551,7 +549,6 @@ namespace DaxStudio.UI.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(ActiveDocument.IsQueryRunning):
-                    _queryRunning = ActiveDocument.IsQueryRunning;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => CanRunBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
@@ -584,7 +581,6 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(QueryFinishedEvent message)
         {
-            _queryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
             NotifyOfPropertyChange(() => CanClearCache);
@@ -641,14 +637,8 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
             {
-                if (await ActiveDocument.ShouldAutoRefreshMetadataAsync())
-                {
-                    
-                    ActiveDocument.RefreshMetadata();
-                    ActiveDocument.OutputMessage("Model schema change detected - Metadata refreshed");
-                    
-                }
-                RefreshConnectionDetails(ActiveDocument);
+                await ActiveDocument.CheckForMetadataUpdatesAsync();
+                RefreshConnectionDetails(ActiveDocument.Connection);
             }
             
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
@@ -866,19 +856,6 @@ namespace DaxStudio.UI.ViewModels
 
         #region "Preview Features"
 
-        private bool _showExternalTools;
-        public bool ShowExternalTools
-        {
-            get { return _showExternalTools; }
-            private set
-            {
-                _showExternalTools = value;
-                NotifyOfPropertyChange(() => ShowExternalTools);
-            }
-        }
-
-
-
 
         private bool _showPreviewQueryBuilder;
         public bool ShowPreviewQueryBuilder
@@ -926,7 +903,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ExportAnalysisData();
         }
 
-        public bool CanViewAnalysisData => IsActiveDocumentConnected && !_queryRunning;
+        public bool CanViewAnalysisData => IsActiveDocumentConnected && !QueryRunning;
 
         public void ViewAnalysisData()
         {
@@ -969,7 +946,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowExternalTools = Options.ShowExternalTools;
             ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
             ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
@@ -1027,8 +1003,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get {
                 if (ActiveDocument == null) return false;
-                if (ActiveDocument.Connection == null) return false;
-                if (ActiveDocument.Connection.State != System.Data.ConnectionState.Open) return false;
+                if (!ActiveDocument.Connection.IsConnected) return false;
 
                 return true;
             }
@@ -1126,6 +1101,11 @@ namespace DaxStudio.UI.ViewModels
                         // todo - get viewmodel from IoC container
                         perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
                         this.ActiveDocument.ToolWindows.Add(perfDataWindow);
+                    } 
+                    else
+                    {
+                        // make sure the window is not hidden
+                        perfDataWindow.IsVisible = true;
                     }
 
                     // load the perfomance data
@@ -1146,23 +1126,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _displayBenchmarking = false;
-        public bool DisplayBenchmarking
-        {
-            get => _displayBenchmarking;
-            set
-            {
-                _displayBenchmarking = value;
-                //if (_displayBenchmarking)
-                //    RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
-                //else
-                //{
-                //    var benchmark = RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunBenchmark);
-                //    if (benchmark != null) RunStyles.Remove(benchmark);
-                //}
-                //NotifyOfPropertyChange(nameof(RunStyles));
-            }
-        }
 
         public void RunBenchmark()
         {
@@ -1191,5 +1154,16 @@ namespace DaxStudio.UI.ViewModels
         {
             throw new Exception("This is a fake exception to test the crash reporting");
         }
+
+        public void OpenConnection()
+        {
+            ActiveDocument?.OpenConnection();
+        }
+
+        public void CloseConnection()
+        {
+            ActiveDocument?.CloseConnection();
+        }
+
     }
 }

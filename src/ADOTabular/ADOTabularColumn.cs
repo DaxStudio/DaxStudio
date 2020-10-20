@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADOTabular.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Contracts;
@@ -35,6 +36,7 @@ namespace ADOTabular
 
         public ADOTabularTable Table { get; private set; }
 
+        public string TableName => Table?.Caption;
         public string Caption { get; private set; }
         public string Name { get; private set; }
         public string Contents { get; private set; }
@@ -178,6 +180,6 @@ namespace ADOTabular
         // used for relationship links
         public string Role { get; internal set; }
         public List<ADOTabularVariation> Variations { get; internal set; }
-        public bool IsKey { get; internal set; } = false;
+        public bool IsKey { get; internal set; }
     }
 }

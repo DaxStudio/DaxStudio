@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ADOTabular.Interfaces;
 using System.Data;
 using System.Diagnostics.Contracts;
 
 namespace ADOTabular
 {
-    public class ADOTabularDynamicManagementView:IADOTabularObject
+    public class ADOTabularDynamicManagementView: IADOTabularObject, IDmv
     {
         public ADOTabularDynamicManagementView(DataRow dr)
         {

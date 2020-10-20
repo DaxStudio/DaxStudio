@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using DaxStudio.Controls.DataGridFilter.Support;
 using System.Collections;
 
 namespace DaxStudio.Controls.DataGridFilter.Querying
 {
-    public class QueryControllerFactory
+    public static class QueryControllerFactory
     {
         public static QueryController 
             GetQueryController(
             System.Windows.Controls.DataGrid dataGrid,
             FilterData filterData, IEnumerable itemsSource)
         {
-            QueryController query;
+            if (dataGrid == null) throw new ArgumentNullException(nameof(dataGrid));
 
-            query = DataGridExtensions.GetDataGridFilterQueryController(dataGrid);
+            var query = DataGridExtensions.GetDataGridFilterQueryController(dataGrid);
 
             if (query == null)
             {
-                //clear the filter if exisits begin
+                //clear the filter if exists begin
                 System.ComponentModel.ICollectionView view
                     = System.Windows.Data.CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
                 if (view != null) view.Filter = null;
-                //clear the filter if exisits end
+                //clear the filter if exists end
 
                 query = new QueryController();
                 DataGridExtensions.SetDataGridFilterQueryController(dataGrid, query);

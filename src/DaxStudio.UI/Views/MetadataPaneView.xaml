@@ -24,6 +24,7 @@
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
             <conv:BoolToThicknessConverter x:Key="PaddingConverter"/>
             <conv:OffsetConverter x:Key="OffsetConverter" />
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
@@ -54,6 +55,15 @@
                 </Style.Triggers>
             </Style>
 
+            <Style TargetType="{x:Type Button}" x:Key="ImageButtonStyle">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <ContentPresenter/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Foreground" Value="#FF575757" />
@@ -161,10 +171,37 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
+
+        <Border Background="Cornsilk" Visibility="{Binding ShowMetadataRefreshPrompt, Converter={StaticResource BoolToCollapsedConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Updated Metadata" Margin="5"/>
+                <Button Grid.Column="1" Margin="2" x:Name="RefreshMetadata">
+                    <StackPanel Orientation="Horizontal">
+                    <fa:FontAwesome Icon="Refresh" VerticalAlignment="Center" Margin="2" Foreground="Green"/>
+                    <TextBlock>Refresh</TextBlock>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2" Style="{StaticResource ImageButtonStyle}" Margin="2"
+                        cal:Message.Attach="[Event Click] = [Action DismissRefreshMetadataPrompt()]">
+                <fa:ImageAwesome Icon="Close" Width="10" Margin="2" VerticalAlignment="Center" 
+                                ToolTip="Dismiss Update"
+                                />
+                </Button>
+            </Grid>
+            
+            
+        </Border>
         <!-- database Dropdown MinWidth="160"  -->
-        <ComboBox Grid.Row="0" x:Name="Database" 
+        <ComboBox Grid.Row="1" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
             
@@ -228,7 +265,7 @@
         </ComboBox>
         <!-- SelectedValuePath="Name" -->
         <!-- Model Dropdown -->
-        <ComboBox Grid.Row="1" 
+        <ComboBox Grid.Row="2" 
                   IsEditable="False"
                   IsEnabled="{Binding CanSelectModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
@@ -286,7 +323,8 @@
                 </Grid>
             </ComboBox.ToolTip>
         </ComboBox>
-        <ContentControl Grid.Row="2">
+        
+        <ContentControl Grid.Row="3">
             <Control.Template>
                 <ControlTemplate>
                     <Grid >

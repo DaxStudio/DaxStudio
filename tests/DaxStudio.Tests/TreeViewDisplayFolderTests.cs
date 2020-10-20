@@ -13,6 +13,7 @@ using Caliburn.Micro;
 using System.IO;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests
 {
@@ -184,7 +185,7 @@ namespace DaxStudio.Tests
 
             Assert.IsNotNull(tbl, "Could not find 'Sales' table");
  
-            var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "Amount Folder"));
+            var folder = (TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "Amount Folder");
             Assert.IsNotNull(folder, "Folder Object not found");
             Assert.AreEqual(folder.Name,"Amount Folder");
 

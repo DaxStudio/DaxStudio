@@ -1,9 +1,5 @@
-﻿using ADOTabular.AdomdClientWrappers;
-using Microsoft.AnalysisServices;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DaxStudio.QueryTrace.Interfaces
@@ -23,7 +19,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         Task StartAsync(int startTimeoutSec);
         void Stop();
         void Update();
-        void Update(string databaseName);
+        void Update(string databaseName, string sessionId);
 
         //event TraceEventHandler TraceEvent;
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;

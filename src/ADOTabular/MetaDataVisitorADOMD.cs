@@ -2,7 +2,7 @@
 using System.Data;
 using System.Linq;
 using ADOTabular.AdomdClientWrappers;
-using Microsoft.AnalysisServices.Tabular;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {

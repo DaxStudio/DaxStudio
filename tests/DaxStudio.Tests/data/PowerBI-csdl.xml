@@ -128,7 +128,9 @@
                 <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
                 <bi:QueryBatching>1</bi:QueryBatching>
                 <bi:Variables>1</bi:Variables>
+                <bi:TableConstructor>1</bi:TableConstructor>
                 <bi:DAXFunctions>
+                  <bi:TreatAs>1</bi:TreatAs>
                   <bi:SummarizeColumns>1</bi:SummarizeColumns>
                   <bi:SubstituteWithIndex>1</bi:SubstituteWithIndex>
                   <bi:LeftOuterJoin>1</bi:LeftOuterJoin>

@@ -13,47 +13,21 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using DaxStudio.UI.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
 
     public abstract class ToolPaneBaseViewModel : ToolWindowBase, IDragSource
     {
-        private ADOTabularConnection _connection;
-
-
-        public ToolPaneBaseViewModel(ADOTabularConnection connection, IEventAggregator eventAggregator)
+        public ToolPaneBaseViewModel( IEventAggregator eventAggregator)
         {
-            PropertyChanged += OnPropertyChanged;
-            Connection = connection;
             EventAggregator = eventAggregator;
         }
 
         protected IEventAggregator EventAggregator { get; set; }
 
-        public virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
 
-        }
-
-        public bool IsConnected
-        {
-            get { return Connection != null; }
-        }
-
-        public ADOTabularConnection Connection
-        {
-            get { return _connection; }
-            set
-            {
-                if (_connection == null && value == null) return;
-                _connection = value;
-                OnConnectionChanged();//isSameServer);
-            }
-        }
-
-        protected virtual void OnConnectionChanged()
-        { }
 
         public void MouseDoubleClick(IADOTabularObject item, MouseButtonEventArgs e)
         {

@@ -343,7 +343,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private long _totalCpuDuration = 0;
+        private long _totalCpuDuration;
         public long TotalCpuDuration
         {
             get { return _totalCpuDuration; }
@@ -387,7 +387,7 @@ namespace DaxStudio.UI.ViewModels
                 return StorageEngineQueryCount == 0 ? 0 : (double)VertipaqCacheMatches / (double)StorageEngineQueryCount;
             }
         }
-        private long _totalDuration = 0;
+        private long _totalDuration;
         public long TotalDuration
         {
             get { return _totalDuration; }
@@ -401,7 +401,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => TotalCpuFactor);
             }
         }
-        private long _formulaEngineDuration = 0;
+        private long _formulaEngineDuration;
         public long FormulaEngineDuration
         {
             get { return _formulaEngineDuration; }
@@ -412,7 +412,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
             }
         }
-        private long _storageEngineDuration = 0;
+        private long _storageEngineDuration;
         public long StorageEngineDuration
         {
             get { return _storageEngineDuration; }
@@ -424,7 +424,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
-        private long _storageEngineCpu = 0;
+        private long _storageEngineCpu;
         public long StorageEngineCpu
         {
             get { return _storageEngineCpu; }
@@ -435,7 +435,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
-        private long _storageEngineQueryCount = 0;
+        private long _storageEngineQueryCount;
         public long StorageEngineQueryCount
         {
             get { return _storageEngineQueryCount; }
@@ -446,7 +446,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private int _vertipaqCacheMatches = 0;
+        private int _vertipaqCacheMatches;
         public int VertipaqCacheMatches
         {
             get { return _vertipaqCacheMatches; }

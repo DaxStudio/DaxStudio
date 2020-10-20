@@ -44,6 +44,13 @@ namespace DaxStudio.UI.Events
             }
         }
 
+        public string DurationTooltip { 
+            get {
+                if (double.IsNaN( DurationMs )) return string.Empty;
+                return $"{DurationString} ms  ({TimeSpan.FromMilliseconds(DurationMs).ToString(@"h\:mm\:ss\.fff")})"; 
+            } 
+        }
+
         public void MessageDoubleClick()
         {
             System.Diagnostics.Debug.WriteLine("message double click");

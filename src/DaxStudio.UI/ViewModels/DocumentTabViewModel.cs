@@ -17,6 +17,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common;
 using System.Windows.Threading;
+using System.Windows.Interop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -112,18 +113,26 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewQueryDocument( string fileName, DocumentViewModel sourceDocument)
         {
-            // 1 Open BlankDocument
-            if (string.IsNullOrEmpty(fileName)) OpenNewBlankDocument(sourceDocument);
-            // 2 Open Document in current window (if it's an empty document)
-            else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
-            // 3 Open Document in a new window if current window has content
-            else OpenFileInNewWindow(fileName);           
-            
+            try
+            {
+                // 1 Open BlankDocument
+                if (string.IsNullOrEmpty(fileName)) OpenNewBlankDocument(sourceDocument);
+                // 2 Open Document in current window (if it's an empty document)
+                else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
+                // 3 Open Document in a new window if current window has content
+                else OpenFileInNewWindow(fileName);
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error creating new document: {ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(NewQueryDocument), msg);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+            }
         }
 
         private void RecoverAutoSaveFile(AutoSaveIndexEntry file)
         {
-            
+            Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Starting AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
             using (new StatusBarMessage(newDoc, $"Recovering \"{file.DisplayName}\""))
             {
@@ -142,7 +151,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
 
-                Log.Information("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"AutoSave Recovery complete for {file.DisplayName} ({file.AutoSaveId})");
+                Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
             }
         }
 
@@ -188,8 +197,7 @@ namespace DaxStudio.UI.ViewModels
             new System.Action(CleanActiveDocument).BeginOnUIThread();
 
             if (sourceDocument == null
-                || sourceDocument.Connection == null
-                || sourceDocument.Connection.State != System.Data.ConnectionState.Open)
+                || sourceDocument.Connection.IsConnected == false)
             {
                 if (!string.IsNullOrEmpty(_app.Args().Server) )
                 {
@@ -301,19 +309,26 @@ namespace DaxStudio.UI.ViewModels
 
             if (!message.RecoveryInProgress)
             {
-                // if auto save recovery is not already in progress 
-                // prompt the user for which files should be recovered
-                var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
+                Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Checking if any files need to be recovered from a previous crash");
+                
 
                 var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files);
 
                 if (filesToRecover.Count() == 0)
                 {
+                    Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "no files found that need to be recovered");
+
                     // if there are no files to recover then clean up 
                     // the recovery folder and exit here
                     AutoSaver.CleanUpRecoveredFiles();
                     return; 
                 }
+
+                Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", $"found {filesToRecover.Count()} file(s) that may need to be recovered, showing recovery dialog");
+
+                // if auto save recovery is not already in progress 
+                // prompt the user for which files should be recovered
+                var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
 
                 autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover);
 
@@ -329,6 +344,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (autoSaveRecoveryDialog.Result != OpenDialogResult.Cancel)
                 {
+                    Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Recovery Started - recovering selected files.");
                     message.RecoveryInProgress = true;
 
                     var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
@@ -342,6 +358,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
+                    Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Recovery Cancelled - cleaning up unwanted recovery files.");
                     // if recovery has been cancelled open a new blank document
                     NewQueryDocument("");
                     // and remove unwanted recovery files

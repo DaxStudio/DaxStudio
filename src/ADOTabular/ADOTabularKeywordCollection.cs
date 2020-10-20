@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {
@@ -11,7 +12,7 @@ namespace ADOTabular
         private List<string> _keywords = new List<string>();
         public ADOTabularKeywordCollection(IADOTabularConnection adoTabularConnection)
         {
-            // TODO: Complete member initialization
+            if (adoTabularConnection == null) throw new ArgumentNullException(nameof(adoTabularConnection));
             _connection = adoTabularConnection;
             _connection.Visitor.Visit(this);
         }

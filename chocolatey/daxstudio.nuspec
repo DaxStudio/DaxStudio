@@ -5,8 +5,8 @@
     <!-- == PACKAGE SPECIFIC SECTION == -->
     <id>daxstudio</id>
     <version>2.11.2</version>
-    <packageSourceUrl>https://github.com/teknowledgist/Chocolatey-packages/tree/master/automatic/daxstudio</packageSourceUrl>
-    <owners>Teknowledgist</owners>
+    <packageSourceUrl>https://github.com/DaxStudio/DaxStudio/tree/master/chocolatey</packageSourceUrl>
+    <owners>dgosbell</owners>
     <!-- == SOFTWARE SPECIFIC SECTION == -->
     <title>DAX Studio</title>
     <authors>DAXStudio.org</authors>

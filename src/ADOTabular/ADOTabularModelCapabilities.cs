@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADOTabular.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ADOTabular
 {
-    public class ADOTabularModelCapabilities
+    public class ADOTabularModelCapabilities : IModelCapabilities
     {
         /*
          * <bi:ModelCapabilities>
@@ -21,14 +22,19 @@ namespace ADOTabular
                 </bi:DAXFunctions>
               </bi:ModelCapabilities>
          */
+        
+        public IDAXFunctions DAXFunctions { get;  } = new DaxFunctions();
 
-        public DaxFunctions DAXFunctions { get; set; } = new DaxFunctions();
+        public bool Variables { get; set; }
+
+        public bool TableConstructor { get; set; }
+      
     }
-    public class DaxFunctions
+    public class DaxFunctions : IDAXFunctions
     {
-        public bool SummarizeColumns { get; set; } = false;
-        public bool SubstituteWithIndex { get; set; } = false;
-        public bool LeftOuterJoin { get; set; } = false;
-        public bool BinaryMinMax { get; set; } = false;
+        bool IDAXFunctions.SummarizeColumns { get; set; }
+        bool IDAXFunctions.SubstituteWithIndex { get; set; }
+
+        bool IDAXFunctions.TreatAs { get; set; }
     }
 }

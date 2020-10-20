@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Data;
 
 namespace DaxStudio.Controls.DataGridFilter.Support
@@ -12,21 +9,21 @@ namespace DaxStudio.Controls.DataGridFilter.Support
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
             object convertedValue;
 
-            if (value != null && value.ToString() == String.Empty)
+            if (string.IsNullOrEmpty(value.ToString() ))
             {
                 convertedValue = null;
             }
             else
             {
-                DateTime dateTime;
-
                 if (DateTime.TryParse(
                     value.ToString(),
                     culture.DateTimeFormat,
                     System.Globalization.DateTimeStyles.None,
-                    out dateTime))
+                    out var dateTime))
                 {
                     convertedValue = dateTime;
                 }

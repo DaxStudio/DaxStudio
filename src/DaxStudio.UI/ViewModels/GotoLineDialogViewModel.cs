@@ -11,8 +11,8 @@ namespace DaxStudio.UI.ViewModels
 {
     public class GotoLineDialogViewModel : Screen, INotifyDataErrorInfo
     {
-        private int _lineNo = 0;
-        private int _maxLines = 0;
+        private int _lineNo;
+        private int _maxLines;
         private readonly Dictionary<string, ICollection<string>>
             _validationErrors = new Dictionary<string, ICollection<string>>();
         private IEditor editor;

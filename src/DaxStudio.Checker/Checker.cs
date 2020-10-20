@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -154,6 +155,14 @@ namespace DaxStudio.CheckerApp
                 Output.AppendLine($"         X: {screen.Bounds.X} Y: {screen.Bounds.Y} Width: {screen.Bounds.Width} Height: {screen.Bounds.Height}");
 
             }
+
+            float dpiX, dpiY;
+            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                dpiX = graphics.DpiX;
+                dpiY = graphics.DpiY;
+            }
+            Output.AppendLine($"DPI X: {dpiX} Y: {dpiY} (Scaling: {dpiX / 96:0.0%})");
         }
         public void CheckLibrary(string shortName, string longNameFormat)
         {
@@ -379,7 +388,7 @@ namespace DaxStudio.CheckerApp
                 }
                 finally
                 {
-                    xlKey.Dispose();
+                    xlKey?.Dispose();
                 }
             }
             finally {

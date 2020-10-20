@@ -554,7 +554,6 @@
                             <!--<Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>-->
                             <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
-                            
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
                             <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
 
@@ -601,7 +600,7 @@
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
                         <avalondock:LayoutAnchorablePane Name="DockLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="185" DockWidth="200">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <!-- Main Document Pane -->
@@ -766,6 +765,19 @@
                 </avalondock:LayoutPanel>
 
             </avalondock:LayoutRoot>
+
+            
+            
+            <avalondock:DockingManager.AnchorableContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Float" Command="{Binding Path=FloatCommand}"/>
+                    <MenuItem Header="Dock" Command="{Binding Path=DockCommand}"/>
+                    <MenuItem Header="Dock as Tabbed Document" Visibility="Collapsed"/>
+                    <MenuItem Header="Auto Hide" Command="{Binding Path=AutoHideCommand}"/>
+                    <MenuItem Header="Hide" Command="{Binding Path=HideCommand}" />
+                    <!--<MenuItem Header="Close" Command="{Binding Path=CloseCommand}"/>-->
+                </ContextMenu>
+            </avalondock:DockingManager.AnchorableContextMenu>
         </avalondock:DockingManager>
 
     </Grid>

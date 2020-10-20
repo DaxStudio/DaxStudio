@@ -70,7 +70,7 @@ namespace DaxStudio.UI.Theme
             CurrentTheme = themeName;
             AppearanceManager.SetTheme(Themes, themeName, AccentColor);
 
-            Fluent.ThemeManager.ChangeTheme(_app, $"{themeName}.DaxStudio");
+            ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
         }
 
         public IThemeInfos Themes { get; }

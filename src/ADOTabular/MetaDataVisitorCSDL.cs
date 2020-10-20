@@ -8,7 +8,8 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Diagnostics;
 using ADOTabular.Utils;
-using DaxStudio.Common.Enums;
+using ADOTabular.Interfaces;
+using ADOTabular.Enums;
 
 namespace ADOTabular
 {
@@ -166,7 +167,7 @@ namespace ADOTabular
                     while (!(rdr.NodeType == XmlNodeType.EndElement 
                           && rdr.LocalName == eEntityContainer))
                     {
-                        if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "DAXFunctions") PopulateDAXFunctionsFromXml(tabs.Model, rdr);
+                        if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "ModelCapabilities") PopulateModelCapabilitiesFromXml(tabs.Model, rdr);
                         rdr.Read();
                     }
                     
@@ -175,17 +176,72 @@ namespace ADOTabular
             }
         }
 
+        private static void PopulateModelCapabilitiesFromXml(ADOTabularModel model, XmlReader rdr)
+        {
+            // read through the rest of the nodes until we get to the end element </bi:EntityContainer>
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                  && rdr.LocalName == "ModelCapabilities"))
+            {
+                bool enabled = false;
+                if (rdr.NodeType == XmlNodeType.Element)
+                {
+                    switch (rdr.LocalName)
+                    {
+                        case "Variables":
+                            enabled = rdr.ReadElementContentAsBoolean();
+                            model.Capabilities.Variables = enabled;
+                            break;
+                        case nameof(model.Capabilities.TableConstructor):
+                            enabled = rdr.ReadElementContentAsBoolean();
+                            model.Capabilities.TableConstructor = enabled;
+                            break;
+                        case "DAXFunctions":
+                            PopulateDAXFunctionsFromXml(model, rdr);
+                            break;
+                        default:
+                            rdr.Read();
+                            break;
+                    }
+                }
+                else
+                {
+                    rdr.Read();
+                }
+            }
+        }
+
         private static void PopulateDAXFunctionsFromXml(ADOTabularModel model, XmlReader rdr)
         {
+            
             while (!(rdr.NodeType == XmlNodeType.EndElement
                           && rdr.LocalName == "DAXFunctions"))
             {
-                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "SummarizeColumns") {
-                    var enabled = rdr.ReadElementContentAsBoolean();
-                    model.Capabilities.DAXFunctions.SummarizeColumns = enabled;
+                bool enabled = false;
+                if (rdr.NodeType == XmlNodeType.Element)
+                {
+                    switch (rdr.LocalName)
+                    {
+                        case "SummarizeColumns":
+                            enabled = rdr.ReadElementContentAsBoolean();
+                            model.Capabilities.DAXFunctions.SummarizeColumns = enabled;
+                            break;
+                        case "TreatAs":
+                            enabled = rdr.ReadElementContentAsBoolean();
+                            model.Capabilities.DAXFunctions.TreatAs = enabled;
+                            break;
+                        case "SubstituteWithIndex":
+                            enabled = rdr.ReadElementContentAsBoolean();
+                            model.Capabilities.DAXFunctions.SubstituteWithIndex = enabled;
+                            break;
+                        default:
+                            rdr.Read();
+                            break;
+                    }
                 }
-                
-                rdr.Read();
+                else
+                {
+                    rdr.Read();
+                }
             }
         }
 
@@ -999,10 +1055,10 @@ namespace ADOTabular
             {
                 functionGroups.AddFunction(dr);
             }
-            AddUndocumentedFunctions(_conn, functionGroups);
+            AddUndocumentedFunctions(functionGroups);
         }
 
-        private void AddUndocumentedFunctions(IADOTabularConnection conn, ADOTabularFunctionGroupCollection functionGroups)
+        private void AddUndocumentedFunctions(ADOTabularFunctionGroupCollection functionGroups)
         {
             var ssas2016 = new Version(13,0,0,0);
             if (Version.Parse(_conn.ServerVersion) >= ssas2016)

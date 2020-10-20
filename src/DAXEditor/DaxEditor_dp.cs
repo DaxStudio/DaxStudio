@@ -261,6 +261,8 @@ namespace DAXEditorControl
         #endregion EditorStateProperties
         #endregion properties
 
+        public bool IsMouseOverCompletionWindow { get; set; }
+
         #region methods
         /// <summary>
         /// The dependency property for has changed.
@@ -331,19 +333,21 @@ namespace DAXEditorControl
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            this.DisposeCompletionWindow();
+            DisposeCompletionWindow();
+            System.Diagnostics.Debug.WriteLine("OnLostFocus");
         }
 
         protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
         {
             base.OnLostKeyboardFocus(e);
             DisposeCompletionWindow();
+            System.Diagnostics.Debug.WriteLine("OnLostKeyboardFocus");
         }
 
         protected override void OnLostMouseCapture(MouseEventArgs e)
         {
             base.OnLostMouseCapture(e);
-            //System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
+            System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
         }
     }
 }

@@ -58,14 +58,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string _databaseID = string.Empty;
-        public string DatabaseID { get => _databaseID;
-            private set { 
-                _databaseID = value;
-                NotifyOfPropertyChange(nameof(DatabaseID));
-            } 
-        }
-
         private string _spid = "";
         
         public string Spid 
@@ -101,7 +93,7 @@ namespace DaxStudio.UI.ViewModels
                 if (message.Connection != null)
                 {
                     ServerName = message.Connection.IsPowerPivot?"<Power Pivot>": message.Connection.ServerName;
-                    Spid = message.Connection.Spid.ToString(CultureInfo.InvariantCulture);
+                    Spid = message.Connection.SPID.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -152,7 +144,6 @@ namespace DaxStudio.UI.ViewModels
             Spid = ActiveDocument.Spid.ToString() ;
             ServerName = ActiveDocument.ServerName;
             ServerVersion = ActiveDocument.ServerVersion;
-            DatabaseID = ActiveDocument.SelectedDatabase;
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
             RowCount = ActiveDocument.RowCount;
@@ -173,9 +164,6 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 case "ServerVersion":
                     ServerVersion = ActiveDocument.ServerVersion;
-                    break;
-                case "SelectedDatabase":
-                    DatabaseID = ActiveDocument.SelectedDatabase;
                     break;
                 case "ElapsedQueryTime":
                     TimerText = ActiveDocument.ElapsedQueryTime;
@@ -226,6 +214,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ServerName = string.Empty;
         }
+
 
     }
 }

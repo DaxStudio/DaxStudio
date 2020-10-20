@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -12,13 +11,10 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using System.Text.RegularExpressions;
 using DAXEditorControl.BracketRenderer;
-using ICSharpCode.AvalonEdit.Search;
 using System.Windows.Media;
 using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
-using System.Reflection;
-using System.IO;
 using System.Text;
 
 namespace DAXEditorControl
@@ -82,7 +78,7 @@ namespace DAXEditorControl
 
         public override bool Equals(object obj)
         {
-            return obj is HighlightPosition && Equals((HighlightPosition)obj);
+            return obj is HighlightPosition position && Equals(position);
         }
     }
     public delegate List<HighlightPosition> HighlightDelegate(string text, int startOffset, int endOffset); 
@@ -157,7 +153,7 @@ namespace DAXEditorControl
             foreach (var word in sortedWordList)
             {
                 pattern.Append(word.Replace(".", @"\."));
-                pattern.Append("|");
+                pattern.Append('|');
             }
             pattern.Remove(pattern.Length - 1, 1);
             pattern.Append(@")\b");
@@ -569,12 +565,24 @@ namespace DAXEditorControl
                 toolTip.IsOpen = false;
             }
         }
+
+        private readonly object disposeLock = new object();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
-            if (toolTip != null)
-                toolTip.IsOpen = false;
-            completionWindow?.Close();
-            completionWindow = null;
+            if (IsMouseOverCompletionWindow) return;
+            lock (disposeLock)
+            {
+                // close function tooltip if it is open
+                if (toolTip != null)
+                    toolTip.IsOpen = false;
+
+                // force completion window to close
+                if (completionWindow == null) return;
+                if (completionWindow.IsVisible) try { completionWindow?.Close(); } catch { }
+                completionWindow = null;
+            }
         }
 
         public void DisableIntellisense()

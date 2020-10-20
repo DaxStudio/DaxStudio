@@ -35,12 +35,12 @@ namespace DaxStudio.UI.Model
         #region Standard Properties
         public string Name => "Clipboard";
         public string Group => "Standard";
-        public int DisplayOrder => 400;
+        public int DisplayOrder => 210;
         public bool IsDefault => false;
         public bool IsAvailable => true;
         public string Message => "Query output sent to Clipboard";
         public OutputTarget Icon => OutputTarget.Clipboard;
-
+        public string Tooltip => "Exports Query results to the Clipboard";
         public bool IsEnabled => true;
 
         public string DisabledReason => "";

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {
@@ -20,7 +17,7 @@ namespace ADOTabular
             ComponentType = type;
         }
         // Need to be Public to grab the KPI measure expressions
-        public ADOTabularColumn Column;
+        public ADOTabularColumn Column { get; set; }
         public KpiComponentType ComponentType { get; set; }
 
         public string Caption => ComponentType.ToString(); 
