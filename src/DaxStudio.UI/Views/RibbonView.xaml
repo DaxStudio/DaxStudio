@@ -45,8 +45,9 @@
             <Border 
                         BorderThickness="4"
                         BorderBrush="Transparent">
-                <StackPanel>
+                    <StackPanel>
                     <Image VerticalAlignment="Top"
+                           
                         Source="{Binding Name, Converter={StaticResource OutputIcons}}"
                         Stretch="None" />
                     <TextBlock Text="{Binding Name}"
@@ -416,10 +417,11 @@
                         MinItemsInRow="1"
                         MaxItemsInRow="2"
                         Orientation="Horizontal"
-IsCollapsed="True"
+                        IsCollapsed="True"
                         Header="Output"
                         Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                         LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
+                        ItemWidth="62"
                         SizeDefinition="Large,Large,Small"
                         CanCollapseToButton="True"
                         ItemsSource="{Binding ResultsTargets}" 
