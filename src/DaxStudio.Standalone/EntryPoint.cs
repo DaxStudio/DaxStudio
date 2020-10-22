@@ -12,8 +12,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
@@ -26,7 +25,7 @@ namespace DaxStudio.Standalone
         private static  IEventAggregator _eventAggregator;
         // need to create application first
         private static readonly Application App = new Application();
-
+        private static IGlobalOptions _options;
         static EntryPoint()
         {
 
@@ -88,12 +87,12 @@ namespace DaxStudio.Standalone
                     new FrameworkPropertyMetadata(true));
 
                 // get the global options
-                var options = bootstrapper.GetOptions(); 
-                options.Initialize();
+                _options = bootstrapper.GetOptions(); 
+                _options.Initialize();
                 Log.Information("User Options initialized");
 
                 // check if we are running portable that we have write access to the settings
-                if (options.IsRunningPortable)
+                if (_options.IsRunningPortable)
                     if (CanWriteToSettings())
                     {
                         Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
@@ -109,7 +108,7 @@ namespace DaxStudio.Standalone
 
                 // load selected theme
                 var themeManager = bootstrapper.GetThemeManager();
-                themeManager.SetTheme(options.Theme);
+                themeManager.SetTheme(_options.Theme);
                 Log.Information("ThemeManager configured");
 
                 //var theme = options.Theme;// "Light"; 
@@ -255,7 +254,15 @@ namespace DaxStudio.Standalone
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
             LogFatalCrash(e.Exception, msg);
-            App.Shutdown(1);
+            if (App.Dispatcher.CheckAccess())
+            {
+                App.Shutdown(1);
+            }
+            else
+            {
+                App.Dispatcher.Invoke(() => App.Shutdown(1));
+
+            }
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -263,7 +270,15 @@ namespace DaxStudio.Standalone
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
             LogFatalCrash(ex, msg);
-            App.Shutdown(2);
+            if (App.Dispatcher.CheckAccess())
+            {
+                App.Shutdown(2);
+            }
+            else
+            {
+                App.Dispatcher.Invoke(() => App.Shutdown(2));
+
+            }
         }
 
         private static void LogFatalCrash(Exception ex, string msg)
@@ -273,6 +288,7 @@ namespace DaxStudio.Standalone
                 App.Properties.Add("HasCrashed", true);
 
             Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 CrashReporter.ReportCrash(ex, msg);

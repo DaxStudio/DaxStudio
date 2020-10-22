@@ -1,11 +1,9 @@
 ﻿using ADOTabular;
-using ADOTabular.AdomdClientWrappers;
 using DaxStudio.UI.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Model
 {
@@ -14,8 +12,6 @@ namespace DaxStudio.UI.Model
         public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
             var measureDefines = BuildMeasureDefines(columns);
-
-            var defineStart = measureDefines.Length > 0 ? "DEFINE\n    " : string.Empty;
 
             // using filter variables will not work against older data sources...
             //var filterDefines = BuildFilterDefines(filters);
@@ -38,7 +34,7 @@ namespace DaxStudio.UI.Model
         private static string BuildQueryWithColumns(string measureDefines, string columnList, string filterList, string measureList, string filterStart, string measureStart)
         {
             StringBuilder sbQuery = new StringBuilder();
-            sbQuery.Append("// START QUERY BUILDER\n");
+            sbQuery.Append("/* START QUERY BUILDER */\n");
             sbQuery.Append(measureDefines.Length > 0 ? "DEFINE\n" : string.Empty);
             sbQuery.Append(measureDefines);
             sbQuery.Append(measureDefines.Length > 0 ? "\n" : string.Empty);
@@ -50,14 +46,14 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
             sbQuery.Append("\n)");                     // query function end
-            sbQuery.Append("\n// END QUERY BUILDER");
+            sbQuery.Append("\n/* END QUERY BUILDER */");
             return sbQuery.ToString();
         }
 
         private static string BuildQueryWithOnlyMeasures(string measureDefines, string filterList, string measureList, string filterStart, string measureStart)
         {
             StringBuilder sbQuery = new StringBuilder();
-            sbQuery.Append("// START QUERY BUILDER\n");
+            sbQuery.Append("/* START QUERY BUILDER */\n");
             sbQuery.Append(measureDefines.Length > 0 ? "DEFINE\n" : string.Empty);
             sbQuery.Append(measureDefines);
             sbQuery.Append(measureDefines.Length > 0 ? "\n" : string.Empty);
@@ -71,7 +67,7 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(filterList);
 
             sbQuery.Append("\n)");                    // query function end
-            sbQuery.Append("\n// END QUERY BUILDER");
+            sbQuery.Append("\n/* END QUERY BUILDER */");
             return sbQuery.ToString();
         }
 
@@ -120,8 +116,7 @@ namespace DaxStudio.UI.Model
 
         public static string FilterExpressionTreatAs(QueryBuilderFilter filter)
         {
-            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
+            var formattedVal = FormattedValue(filter, () => filter.FilterValue);
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
@@ -138,15 +133,14 @@ namespace DaxStudio.UI.Model
 
         public static string FilterExpressionBasic(QueryBuilderFilter filter)
         {
-            var quotes = filter.TabularObject.DataType == typeof(string) ? "\"" : string.Empty;
-            var formattedVal = FormattedValue(filter, () => { return filter.FilterValue; });
-            var formattedVal2 = FormattedValue(filter, () => { return filter.FilterValue2; });
+            var formattedVal = FormattedValue(filter, () => filter.FilterValue);
+            var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
                 case FilterType.Is:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} = {formattedVal} ))";
-                case Enums.FilterType.IsNot:
+                case FilterType.IsNot:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <> {formattedVal} ))";
                 case FilterType.StartsWith:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), SEARCH( {formattedVal}, {colName}, 1, 0 ) = 1 ))";
@@ -195,8 +189,7 @@ namespace DaxStudio.UI.Model
         {
             if (dataType == typeof(DateTime))
             {
-                DateTime parsedDate = DateTime.MinValue;
-                DateTime.TryParse(val, out parsedDate);
+                DateTime.TryParse(val, out var parsedDate);
                 if (parsedDate > DateTime.MinValue)
                 {
                     return $"DATE({parsedDate.Year},{parsedDate.Month},{parsedDate.Day})";

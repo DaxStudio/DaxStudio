@@ -36,7 +36,7 @@ namespace DaxStudio.UI.Model
         private bool _isCheckRunning;
         private bool _isAutomaticCheck;
         /// <summary>
-        /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
+        /// Initializes a new instance of the <see cref="VersionCheck"/> class.
         /// </summary>
         /// <param name="eventAggregator">A reference to the event aggregator so we can publish an event when a new version is found.</param>
         [ImportingConstructor]
