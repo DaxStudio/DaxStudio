@@ -9,7 +9,8 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using System.Threading;
 using System.IO;
-using System.Linq.Expressions;
+using ADOTabular;
+using Serilog;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -22,8 +23,8 @@ namespace DaxStudio.UI.ResultsTargets
         IHandle<ConnectionChangedEvent>,
         IHandle<ActivateDocumentEvent>
     {
-        private IDaxStudioHost _host;
-        private IEventAggregator _eventAggregator;
+        private readonly IDaxStudioHost _host;
+        private readonly IEventAggregator _eventAggregator;
         private bool _isPowerBIOrSSDTConnection;
 
         [ImportingConstructor]
@@ -76,10 +77,10 @@ namespace DaxStudio.UI.ResultsTargets
                         var fixedConnStr = runner.ConnectionStringWithInitialCatalog.Replace("mdx compatibility=3", "mdx compatibility=1");
 
                         // create odc file
-                        var odcFile = OdcHelper.CreateOdcQueryFile(fixedConnStr, runner.QueryText );
+                        var odcFile = OdcHelper.CreateOdcQueryFile(fixedConnStr, dq );
 
 
-                        System.Diagnostics.Process.Start(odcFile);
+                        Process.Start(odcFile);
                         //  write results to Excel
                  
 
@@ -87,7 +88,7 @@ namespace DaxStudio.UI.ResultsTargets
                         var durationMs = sw.ElapsedMilliseconds;
                      
                         runner.OutputMessage(
-                            string.Format("Query Completed - Query sent to Excel for execution"), durationMs);
+                            "Query Completed - Query sent to Excel for execution", durationMs);
                         runner.OutputMessage("Note: odc files can only handle a query that returns a single result set. If you see an error try using one of the other output types to ensure your query is valid.");
                         
                         runner.ActivateOutput();
@@ -107,18 +108,21 @@ namespace DaxStudio.UI.ResultsTargets
                 });
         }
 
-        private async Task CleanUpOdcAsync(string odcFile)
+        private static async Task CleanUpOdcAsync(string odcFile)
         {
             await Task.Factory.StartNew(() =>
             {
-                Thread.Sleep(2000);
+                // wait before cleaning up the 
+                Thread.Sleep(20000);
                 try
                 {
                     File.Delete(odcFile);
                     Debug.Write($"ODC file deleted - {odcFile}");
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelLinkedOdc), nameof(CleanUpOdcAsync), $"Deleted odc file: {odcFile}");
                 }
                 catch
                 {
+                    // swallow any errors
                 }
             });
         }
