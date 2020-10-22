@@ -1,7 +1,5 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
-using ControlzEx.Standard;
-using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -10,9 +8,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using static LargeXlsx.XlsxAlignment;
 
@@ -21,8 +17,8 @@ namespace DaxStudio.UI.Model
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetExcelFile : IResultsTarget
     {
-        private IDaxStudioHost _host;
-        private IEventAggregator _eventAggregator;
+        private readonly IDaxStudioHost _host;
+        private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
         public ResultsTargetExcelFile(IDaxStudioHost host, IEventAggregator eventAggregator)
@@ -96,13 +92,11 @@ namespace DaxStudio.UI.Model
                                     {
                                         while (moreResults)
                                         {
-                                            int iRowCnt = 0;
-
                                             // create a worksheet for the current resultset
                                             xlsxWriter.BeginWorksheet($"Query{iFileCnt}",1);
 
                                             // write out the current resultset
-                                            iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
+                                            var iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
 
                                             // setup Excel Autofilters
                                             xlsxWriter.SetAutoFilter(1, 1, xlsxWriter.CurrentRowNumber, reader.FieldCount);
@@ -133,10 +127,7 @@ namespace DaxStudio.UI.Model
                             }
                             finally
                             {
-                                if (reader != null)
-                                {
-                                    reader.Dispose();
-                                }
+                                reader?.Dispose();
                             }
                         }
                     }
@@ -191,7 +182,6 @@ namespace DaxStudio.UI.Model
                 xlsxWriter.Write(colName);
 
                 // cache the column formatstrings as Excel Styles
-                daxCol = null;
                 reader.Connection.Columns.TryGetValue(reader.GetName(colIdx), out daxCol);
                 if (daxCol != null)
                     columnStyles[colIdx] = GetStyle(daxCol);
@@ -293,7 +283,7 @@ namespace DaxStudio.UI.Model
                     return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);
 
                 case "string":
-                    var stringAlignment = new XlsxAlignment(vertical : XlsxAlignment.Vertical.Top, wrapText : true);
+                    var stringAlignment = new XlsxAlignment(vertical : Vertical.Top, wrapText : true);
                     var stringStyle = XlsxStyle.Default.With(stringAlignment).With(XlsxNumberFormat.Text);
                     return stringStyle;
 

@@ -64,7 +64,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
-        , IHandle<DatabaseChangedEvent>
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
@@ -708,33 +707,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string SelectedModel { get; set; }
 
-        public string SelectedDatabase { get {
-                if (!IsConnected) return string.Empty;
-                return Connection?.Database?.Name;
-                //if (_selectedDatabase == null && IsConnected)
-                //{
-                //    _selectedDatabase = Connection.Database.Name;
-                //}
-                //return _selectedDatabase;
-            }
-            //set
-            //{
-            //    if (value != _selectedDatabase)
-            //    {
-            //        _selectedDatabase = value;
-            //        Connection.ChangeDatabase(value);
-            //        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-            //        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
-            //        NotifyOfPropertyChange(() => SelectedDatabase);
-
-            //        // set metadata pane SelectedDatabase
-            //        MetadataPane.SelectedDatabase = MetadataPane.DatabasesView.Where(db => db.Name == _selectedDatabase).FirstOrDefault();
-
-            //    }
-            //}
-        }
 
         //public string ConnectionString { get { return _connection.ConnectionString; } }
 
@@ -915,7 +888,6 @@ namespace DaxStudio.UI.ViewModels
                     if (message == null) return;
                     Connection.Connect(message) ;
                     NotifyOfPropertyChange(() => IsAdminConnection);
-                    NotifyOfPropertyChange(() => SelectedDatabase);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     // enable/disable traces depending on the current connection
                     foreach (var traceWatcher in TraceWatchers)
@@ -1645,7 +1617,7 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 //var queryText = includeQueryText ? this.QueryText : "";
-                qhe = new QueryHistoryEvent(queryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
+                qhe = new QueryHistoryEvent(queryText, DateTime.Now, this.ServerName, this.Connection.SelectedDatabaseName, this.FileName);
                 qhe.Status = QueryStatus.Running;
             }
             catch (Exception ex)
@@ -1880,7 +1852,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrEmpty(message.DatabaseName))
             {
                 if (Databases.Contains(message.DatabaseName))
-                    if (SelectedDatabase != message.DatabaseName)
+                    if (Connection.SelectedDatabaseName != message.DatabaseName)
                     {
                         try
                         {
@@ -2615,12 +2587,12 @@ namespace DaxStudio.UI.ViewModels
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
 
                 Connection.Database.ClearCache();
-                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
                 await ExecuteDataTableQueryAsync(DaxStudio.Common.Constants.RefreshSessionQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
-                OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.SelectedDatabaseName), duration);
 
             }
             catch (Exception ex)
@@ -3488,7 +3460,7 @@ namespace DaxStudio.UI.ViewModels
 
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(
-                        this.Connection.ServerName, this.SelectedDatabase, 
+                        this.Connection.ServerName, this.Connection.SelectedDatabaseName, 
                         "DaxStudio", version.ToString(), 
                         readStatisticsFromData: true, 
                         sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
@@ -3551,7 +3523,7 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                FileName = this.SelectedDatabase,
+                FileName = this.Connection.SelectedDatabaseName,
                 DefaultExt = ".vpax",
                 Filter = "Analyzer Data (vpax)|*.vpax"
                 //Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
@@ -3664,7 +3636,7 @@ namespace DaxStudio.UI.ViewModels
                             modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
                             break;
                     }
-                    ModelAnalyzer.ExportVPAX(this.Connection.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
+                    ModelAnalyzer.ExportVPAX(this.Connection.ServerName, this.Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)
@@ -3764,8 +3736,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(SelectedModelChangedEvent message)
         {
-            SelectedModel = message.SelectedModel;
-
+            
             UpdateRunningTraces();
         }
 
@@ -3798,10 +3769,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void Handle(DatabaseChangedEvent message)
-        {
-            NotifyOfPropertyChange(nameof(SelectedDatabase));
-        }
+
 
         public void Handle(ShowMeasureExpressionEditor message)
         {

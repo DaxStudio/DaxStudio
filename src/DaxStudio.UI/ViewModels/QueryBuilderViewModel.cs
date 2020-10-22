@@ -141,7 +141,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void AddNewMeasure()
         {
-            var firstTable = Document.Connection.Database.Models[Document.SelectedModel].Tables.First();
+            var firstTable = Document.Connection.SelectedModel.Tables.First();
             // TODO - need to make sure key is unique
             var newMeasureName = GetCustomMeasureName();
             var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable);
