@@ -125,7 +125,33 @@ Evaluate Filter(Values('Product'[Categories]), Product[Prod ,;. Rank] = 1.0)";
             Assert.AreEqual(expected, actual);
         }
 
-
+        [TestMethod]
+        public void QueryBuilderTest()
+        {
+            var input = @"/* START QUERY BUILDER */
+DEFINE
+MEASURE Customer[MyMeasure] = SUM( Sales[Sales Amount])
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[City],
+    ""MyMeasure"", [MyMeasure]
+)
+/* END QUERY BUILDER */
+";
+            var dsm = new DelimiterStateMachine(DelimiterType.Unknown);
+            var actual = dsm.ProcessString(input);
+            var expected = @"/* START QUERY BUILDER */
+DEFINE
+MEASURE Customer[MyMeasure] = SUM( Sales[Sales Amount])
+EVALUATE
+SUMMARIZECOLUMNS(
+    Customer[City];
+    ""MyMeasure""; [MyMeasure]
+)
+/* END QUERY BUILDER */
+";
+            StringAssert.Equals(expected, actual);
+        }
 
     }
 }

@@ -58,6 +58,7 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
             LineCommentState.When(NewLine, (sm, s, str, pos) => { return OtherText; });
             
             BlockCommentState.When(ForwardSlash, (sm, s, str, pos) => {
+                if (pos == 0) return BlockCommentState; // if block comment is at the start of the string
                 if (str[pos - 1] == Star) return OtherText;
                 return BlockCommentState; 
             });
