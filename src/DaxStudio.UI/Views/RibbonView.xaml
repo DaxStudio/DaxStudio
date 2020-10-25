@@ -635,6 +635,8 @@
                 <Fluent:SplitButton Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]"
+                               IsEnabled="{Binding CanFormatQueryStandard}"
+                               
                                Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
@@ -644,6 +646,7 @@
                     <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="{Binding FormatQueryTitle}"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
+                                          DisableReason="{Binding FormatQueryDisabledReason}"
                                            ></Fluent:ScreenTip>
                     </Fluent:SplitButton.ToolTip>
                     <Fluent:MenuItem Header="{Binding FormatQueryStandardTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]" />
@@ -1230,12 +1233,12 @@
         </Fluent:RibbonTabItem>
         
         <!--Contextual Tab Groups-->
-        <!-- Visibility="{Binding Path=TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter} }" -->
+        <!-- Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}" -->
         <Fluent:Ribbon.ContextualGroups>
             <Fluent:RibbonContextualTabGroup 
                 x:Name="traceLayoutGroup"
                 Header="Traces" 
-                Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                
                 Background="{StaticResource DaxStudioBrush}" 
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>

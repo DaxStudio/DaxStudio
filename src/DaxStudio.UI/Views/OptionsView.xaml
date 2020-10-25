@@ -19,8 +19,8 @@
             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
-            <conv:FontConverter x:Key="fontConverter"/>
-            <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>
+            <conv:FontConverter x:Key="FontConverter"/>
+            <conv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter" />
             <conv:IntToDoubleConverter x:Key="IntToDoubleConverter" />
             <conv:HotKeyConverter x:Key="HotKeyConverter" />
@@ -163,21 +163,6 @@
             </Style>
 
             <!-- Category Icons -->
-            <conv:ResourceLookupConverter x:Key="CategoryIcons">
-                <ResourceDictionary>
-                    <fa:ImageAwesome x:Key="Custom Export Format"  Icon="Download" Width="16"/>
-                    <fa:ImageAwesome x:Key="Dax Formatter" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Defaults" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Editor" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Metadata Pane" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Proxy" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Query History" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Results" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Timeouts" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Trace" Icon="Pencil" Width="16"/>
-                </ResourceDictionary>
-            </conv:ResourceLookupConverter>
-
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
                     <sys:String x:Key="Custom Export Format">Download</sys:String>
@@ -186,6 +171,7 @@
                     <sys:String x:Key="Editor">Pencil</sys:String>
                     <sys:String x:Key="Metadata Pane">Sitemap</sys:String>
                     <sys:String x:Key="Proxy">Wifi</sys:String>
+                    <sys:String x:Key="Privacy">UserSecret</sys:String>
                     <sys:String x:Key="Query History">History</sys:String>
                     <sys:String x:Key="Results">Table</sys:String>
                     <sys:String x:Key="Timeouts">ClockOutline</sys:String>
@@ -236,7 +222,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <CheckBox IsChecked="{Binding Value}" Grid.Row="0"/>
+                    <CheckBox IsChecked="{Binding Value}" IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
             </DataTemplate>
@@ -249,6 +235,7 @@
                     </Grid.RowDefinitions>
                     <nud:DoubleUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                                        IsReadOnly="False" 
+                                       IsEnabled="{Binding ValueEnabled}"
                                        MinValue="{Binding MinValue, Mode=OneTime}" 
                                        MaxValue="{Binding MaxValue, Mode=OneTime}" 
                                        FormatString="#,#.0"
@@ -269,6 +256,7 @@
                     </Grid.RowDefinitions>
                     <nud:NumericUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                                         IsReadOnly="False" 
+                                        IsEnabled="{Binding ValueEnabled}"
                                         MinValue="{Binding MinValue, Mode=OneTime}" 
                                         MaxValue="{Binding MaxValue, Mode=OneTime}" 
                                         MinWidth="120"
@@ -289,7 +277,7 @@
                     <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
 			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			                        ItemTemplate="{DynamicResource FontTemplate}"
-                                    SelectedItem="{Binding Path=Value, Mode=TwoWay, Converter={StaticResource fontConverter}}"
+                                    SelectedItem="{Binding Path=Value, Mode=TwoWay, Converter={StaticResource FontConverter}}"
                                     IsSynchronizedWithCurrentItem="True"
                                     VerticalContentAlignment="Center"      >
                         <ComboBox.Resources>
@@ -432,7 +420,6 @@
                                     <Rectangle x:Name="Hl" Width="3"  Margin="0,0,1,0" Fill="Transparent"/>
                                     <fa:FontAwesome Icon="{Binding Converter={StaticResource CategoryIconNames}}" Width="20" FontSize="14" Margin="5,0" />
 
-                                    <!--<Image Source="{Binding  Converter={StaticResource CategoryIcons}}"/>-->
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </StackPanel>
                             </Border>

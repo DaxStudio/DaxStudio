@@ -12,8 +12,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
@@ -24,6 +23,7 @@ namespace DaxStudio.Standalone
     {
         private static ILogger _log;
         private static  IEventAggregator _eventAggregator;
+        private static IGlobalOptions _options;
         // need to create application first
         private static readonly Application App = new Application();
 
@@ -57,7 +57,7 @@ namespace DaxStudio.Standalone
                 TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
                 
                 // Setup logging
-                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
+                var levelSwitch = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
 
 
                 ConfigureLogging(levelSwitch);
@@ -88,12 +88,12 @@ namespace DaxStudio.Standalone
                     new FrameworkPropertyMetadata(true));
 
                 // get the global options
-                var options = bootstrapper.GetOptions(); 
-                options.Initialize();
+                _options = bootstrapper.GetOptions(); 
+                _options.Initialize();
                 Log.Information("User Options initialized");
 
                 // check if we are running portable that we have write access to the settings
-                if (options.IsRunningPortable)
+                if (_options.IsRunningPortable)
                     if (CanWriteToSettings())
                     {
                         Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
@@ -109,7 +109,7 @@ namespace DaxStudio.Standalone
 
                 // load selected theme
                 var themeManager = bootstrapper.GetThemeManager();
-                themeManager.SetTheme(options.Theme);
+                themeManager.SetTheme(_options.Theme);
                 Log.Information("ThemeManager configured");
 
                 //var theme = options.Theme;// "Light"; 
@@ -117,8 +117,11 @@ namespace DaxStudio.Standalone
                 //else app.LoadLightTheme();
 
                 // log startup switches
-                var args = App.Args().AsDictionaryForTelemetry();
-                Telemetry.TrackEvent("App.Startup", args);
+                if (!_options.BlockVersionChecks)
+                {
+                    var args = App.Args().AsDictionaryForTelemetry();
+                    Telemetry.TrackEvent("App.Startup", args);
+                }
 
                 // Launch the User Interface
                 Log.Information("Launching User Interface");

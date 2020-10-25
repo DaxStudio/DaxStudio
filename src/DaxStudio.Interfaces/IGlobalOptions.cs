@@ -10,13 +10,10 @@ namespace DaxStudio.Interfaces
 {
     public interface IGlobalOptions
     {
-        [DefaultValue(true)]
-        bool EditorShowLineNumbers { get; set; }
-        [JsonIgnore]
-        double EditorFontSizePx { get; }
+        [DefaultValue(true)] bool EditorShowLineNumbers { get; set; }
+        [JsonIgnore] double EditorFontSizePx { get; }
         string EditorFontFamily { get; set; }
-        [JsonIgnore]
-        double ResultFontSizePx { get; }
+        [JsonIgnore] double ResultFontSizePx { get; }
         string ResultFontFamily { get; set; }
         bool EditorEnableIntellisense { get; set; }
         int QueryHistoryMaxItems { get; set; }
@@ -54,8 +51,8 @@ namespace DaxStudio.Interfaces
         string Theme { get; set; }
         bool CustomCsvQuoteStringFields { get; set; }
         CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
-        ObservableCollection<IDaxFile> RecentFiles { get;  } 
-        ObservableCollection<string> RecentServers { get;  } 
+        ObservableCollection<IDaxFile> RecentFiles { get; }
+        ObservableCollection<string> RecentServers { get; }
 
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
@@ -65,35 +62,24 @@ namespace DaxStudio.Interfaces
         Version CurrentDownloadVersion { get; set; }
 
         #region Hotkeys
-        [JsonIgnore]
-        string HotkeyWarningMessage { get; set; }
+
+        [JsonIgnore] string HotkeyWarningMessage { get; set; }
+
         // Hotkeys
-        [Hotkey]
-        string HotkeyCommentSelection { get; set; }
-        [Hotkey]
-        string HotkeyUnCommentSelection { get; set; }
-        [Hotkey]
-        string HotkeyToUpper { get; set; }
-        [Hotkey]
-        string HotkeyToLower { get; set; }
-        [Hotkey]
-        string HotkeyRunQuery { get; set; }
-        [Hotkey]
-        string HotkeyRunQueryAlt { get; set; }
-        [Hotkey]
-        string HotkeyNewDocument { get; set; }
-        [Hotkey]
-        string HotkeyNewDocumentWithCurrentConnection { get; set; }
-        [Hotkey]
-        string HotkeyOpenDocument { get; set; }
-        [Hotkey]
-        string HotkeySaveDocument { get; set; }
-        [Hotkey]
-        string HotkeyGotoLine { get; set; }
-        [Hotkey]
-        string HotkeyFormatQueryStandard { get; set; }
-        [Hotkey]
-        string HotkeyFormatQueryAlternate { get; set; }
+        [Hotkey] string HotkeyCommentSelection { get; set; }
+        [Hotkey] string HotkeyUnCommentSelection { get; set; }
+        [Hotkey] string HotkeyToUpper { get; set; }
+        [Hotkey] string HotkeyToLower { get; set; }
+        [Hotkey] string HotkeyRunQuery { get; set; }
+        [Hotkey] string HotkeyRunQueryAlt { get; set; }
+        [Hotkey] string HotkeyNewDocument { get; set; }
+        [Hotkey] string HotkeyNewDocumentWithCurrentConnection { get; set; }
+        [Hotkey] string HotkeyOpenDocument { get; set; }
+        [Hotkey] string HotkeySaveDocument { get; set; }
+        [Hotkey] string HotkeyGotoLine { get; set; }
+        [Hotkey] string HotkeyFormatQueryStandard { get; set; }
+        [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
+
         #endregion
 
         // Preview Features
@@ -105,15 +91,20 @@ namespace DaxStudio.Interfaces
         bool ShowPreviewBenchmark { get; set; }
 
         #region Methods
+
         // Methods
         string GetCustomCsvDelimiter();
         void Initialize();
 
         // 
-        [JsonIgnore]
-        bool IsRunningPortable { get; set; }
+        [JsonIgnore] bool IsRunningPortable { get; set; }
         bool EditorWordWrap { get; set; }
         bool ShowMetadataRefreshPrompt { get; set; }
-        #endregion
+        [JsonIgnore] bool BlockAllInternetAccess { get; set; }
+        bool BlockVersionChecks { get; set; }
+        bool BlockCrashReporting { get; set; }
+        bool BlockExternalServices { get; set; }
+
+    #endregion
     }
 }

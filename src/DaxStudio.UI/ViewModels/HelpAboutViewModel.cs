@@ -1,18 +1,10 @@
 ﻿using System;
 using Caliburn.Micro;
-using System.Collections.Specialized;
 using System.Collections.Generic;
-using System.Reflection;
-using DaxStudio.UI.Events;
 using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Diagnostics;
 using DaxStudio.Common;
-using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
-using Serilog;
 using DaxStudio.UI.Extensions;
 using Humanizer;
 
@@ -94,13 +86,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string FullVersionNumber => System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(3); 
+        public string FullVersionNumber => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version.ToString(3); 
         
-        public string BuildNumber => System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString(); 
+        public string BuildNumber => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version.ToString(); 
         
 
         //[Import(typeof(IVersionCheck))]
-        public IVersionCheck VersionChecker { get; private set; }
+        public IVersionCheck VersionChecker { get; }
 
         public SortedList<string,string> ReferencedAssemblies
         {
@@ -139,28 +131,35 @@ namespace DaxStudio.UI.ViewModels
 
         public string UpdateStatus
         {
-            get { 
+            get
+            {
                 if (IsCheckRunning)
                 {
                     return "Checking for updates...";
                 }
-                else
-                {
-                    if (VersionChecker.ServerVersion.IsNotSet()) return "(Unable to get version information)"; 
 
-                    var versionComparison = VersionChecker.LocalVersion.CompareTo(VersionChecker.ServerVersion);
-                    if (versionComparison > 0)  return $"(Ahead of Latest Version - {VersionChecker.ServerVersion.ToString(3)} )"; 
-                    if (versionComparison == 0) return "You have the lastest Version"; 
+                if (VersionChecker.ServerVersion.IsNotSet() || Options.BlockVersionChecks) return "(Unable to get version information from daxstudio.org)"; 
+
+                var versionComparison = VersionChecker.LocalVersion.CompareTo(VersionChecker.ServerVersion);
+                if (versionComparison > 0)  return $"(Ahead of Latest Version - {VersionChecker.ServerVersion.ToString(3)} )"; 
+                if (versionComparison == 0) return "You have the latest Version"; 
                     
-                    return $"(New Version available - {VersionChecker.ServerVersion})"; 
-
-                }
+                return $"(New Version available - {VersionChecker.ServerVersion})";
 
             }
 
         }
 
-        public string LastChecked => $"Last checked {Options.LastVersionCheckUTC.Humanize()}";
+        public string LastChecked
+        {
+            get
+            {
+                if (Options.BlockVersionChecks)
+                    return "Version checks blocked in options";
+                return $"Last checked {Options.LastVersionCheckUTC.Humanize()}";
+            }
+        }
+
         public Uri DownloadUrl { get; private set; }
         public bool VersionIsLatest { get; private set; }
 
@@ -169,9 +168,4 @@ namespace DaxStudio.UI.ViewModels
         public string LogFolder { get { return @"file:///" + ApplicationPaths.LogPath; } }
     }
 
-    public class ReferencedAssembly
-    {
-        public string Name { get; set; }
-        public string Version { get; set; }
-    }
 }

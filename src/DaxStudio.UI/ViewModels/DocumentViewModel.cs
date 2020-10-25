@@ -2973,6 +2973,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void FormatQuery(bool formatAlternateStyle)
         {
+            if (Options.BlockExternalServices)
+            {
+                OutputWarning("Unable to access DaxFormatter.com, permission to access external services blocked in Options");
+                return;
+            }
+
             using (var msg = new StatusBarMessage(this, "Formatting Query..."))
             {
 

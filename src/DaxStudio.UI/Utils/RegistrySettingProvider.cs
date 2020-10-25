@@ -3,18 +3,15 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System;
 using DaxStudio.UI.Model;
-using System.Threading.Tasks;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using System.ComponentModel;
-using Newtonsoft.Json;
 using System.Security;
 using System.Runtime.Serialization;
 using System.Globalization;
-using DaxStudio.Common.Exceptions;
 
 namespace DaxStudio.UI.Utils
 {
@@ -23,7 +20,7 @@ namespace DaxStudio.UI.Utils
     public class RegistrySettingProvider:ISettingProvider
     {
     
-        private const string registryRootKey = "SOFTWARE\\DaxStudio";
+        private const string RegistryRootKey = "SOFTWARE\\DaxStudio";
 
 
         public string LogPath => ApplicationPaths.LogPath;
@@ -53,7 +50,7 @@ namespace DaxStudio.UI.Utils
                 servers.Insert(0, currentServer);
                 while (servers.Count > Constants.MaxMruSize)
                 {
-                    servers.RemoveAt(servers.Count() - 1);
+                    servers.RemoveAt(servers.Count - 1);
                 }
             }
 
@@ -102,7 +99,7 @@ namespace DaxStudio.UI.Utils
 
         public T GetValue<T>(string subKey, T defaultValue )
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
             if (regDaxStudio == null) return defaultValue;
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T), CultureInfo.InvariantCulture );
         }
@@ -110,7 +107,7 @@ namespace DaxStudio.UI.Utils
 
         private static T GetValue<T>(string subKey)
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             if (regDaxStudio != null) return (T) regDaxStudio.GetValue(subKey);
             return default;
         }
@@ -118,8 +115,8 @@ namespace DaxStudio.UI.Utils
         public void SetValue(string subKey, DateTime value, bool isInitializing)
         {
                 if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true) 
-                                   ?? Registry.CurrentUser.CreateSubKey(registryRootKey);
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
+                                   ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
 
                 regDaxStudio?.SetValue(subKey,
                     value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
@@ -128,8 +125,8 @@ namespace DaxStudio.UI.Utils
         public void SetValue<T>(string subKey, T value, bool isInitializing)
         {
                 if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
-                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
+                var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
                 
                 regDaxStudio.SetValue(subKey, value);
         }
@@ -142,7 +139,7 @@ namespace DaxStudio.UI.Utils
 
         private bool KeyExists(string subKey)
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             return (regDaxStudio.GetSubKeyNames().ToList().Contains(subKey));
         }
 
@@ -150,7 +147,7 @@ namespace DaxStudio.UI.Utils
         internal ObservableCollection<string> GetMRUListFromRegistry(string listName)
         {
             var list = new ObservableCollection<string>();
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             if (regDaxStudio != null)
             {
                 var regListMRU = regDaxStudio.OpenSubKey($"{listName}MRU");
@@ -170,9 +167,9 @@ namespace DaxStudio.UI.Utils
         internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
             var listKey = $"{listName}MRU";
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
             if (regDaxStudio == null)
-                Registry.CurrentUser.CreateSubKey(registryRootKey);
+                Registry.CurrentUser.CreateSubKey(RegistryRootKey);
             if (regDaxStudio != null)
             {
                 // clear existing data
@@ -195,6 +192,8 @@ namespace DaxStudio.UI.Utils
 
         public void Initialize(IGlobalOptions options)
         {
+            InitializeMachineSettings(options);
+
             var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
@@ -274,6 +273,12 @@ namespace DaxStudio.UI.Utils
             
         }
 
-        
+        private static void InitializeMachineSettings(IGlobalOptions options)
+        {
+            var regDaxStudio = Registry.LocalMachine.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
+            if (regDaxStudio == null) return;
+            const string subKey = "BlockAllInternetAccess";
+            options.BlockAllInternetAccess = (bool)Convert.ChangeType(regDaxStudio.GetValue(subKey, false), typeof(bool), CultureInfo.InvariantCulture);
+        }
     }
 }

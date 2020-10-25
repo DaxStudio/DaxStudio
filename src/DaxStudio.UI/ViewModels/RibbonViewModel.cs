@@ -153,7 +153,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.MergeParameters();
         }
 
-        public bool CanFormatQueryStandard { get => ActiveDocument != null; }
+        public bool CanFormatQueryStandard { get => ActiveDocument != null && !Options.BlockExternalServices; }
 
         public void FormatQueryStandard()
         {
@@ -178,6 +178,16 @@ namespace DaxStudio.UI.ViewModels
                 }
                 return title + " (" + Options.HotkeyFormatQueryAlternate + ")";
             } 
+        }
+
+        public string FormatQueryDisabledReason
+        {
+            get
+            {
+                if (Options.BlockExternalServices) return "Access to External Services block in Options";
+                if (ActiveDocument == null) return "No Active Document";
+                return "Not disabled";
+            }
         }
 
         public bool CanUndo { get => ActiveDocument != null; }
@@ -540,6 +550,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanImportAnalysisData);
                 NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
+                NotifyOfPropertyChange(() => FormatQueryDisabledReason);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -951,7 +962,8 @@ namespace DaxStudio.UI.ViewModels
             ResultAutoFormat = Options.ResultAutoFormat;
             NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
-
+            NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));
+            NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
         }
 
         public void LaunchSqlProfiler()
