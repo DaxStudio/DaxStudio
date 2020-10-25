@@ -202,7 +202,7 @@
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding TableSize}" Style="{StaticResource NumTextBlockStyle}"/>
+                                        <TextBlock Text="{Binding TableSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
 
