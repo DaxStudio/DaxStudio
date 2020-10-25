@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
-using Xceed.Wpf.AvalonDock.Layout;
+using AvalonDock.Layout;
 
 namespace DaxStudio.UI.TemplateSelectors
 {

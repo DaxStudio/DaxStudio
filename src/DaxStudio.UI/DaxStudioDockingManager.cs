@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AvalonDock;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Xceed.Wpf.AvalonDock;
-using Xceed.Wpf.AvalonDock.Layout;
+
 
 namespace DaxStudio.UI
 {

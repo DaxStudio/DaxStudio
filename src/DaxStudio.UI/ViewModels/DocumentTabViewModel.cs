@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition;
-using Xceed.Wpf.AvalonDock;
+using AvalonDock;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using Microsoft.Win32;
@@ -93,9 +93,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
+        public AvalonDock.Themes.Theme AvalonDockTheme { get {
 
-                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                return new AvalonDock.Themes.GenericTheme();
 
                 //if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
                 //else return new Theme.DaxStudioLightTheme();

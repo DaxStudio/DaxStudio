@@ -3,15 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
-             xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+             xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
+             xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
              xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Xceed.Wpf.AvalonDock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
              xmlns:views="clr-namespace:DaxStudio.UI.Views"
              xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
-             xmlns:utils="clr-namespace:DaxStudio.UI.Utils"
+             xmlns:utils="clr-namespace:DaxStudio.UI.Utils" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>

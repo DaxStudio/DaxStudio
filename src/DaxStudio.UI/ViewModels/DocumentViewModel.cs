@@ -40,7 +40,7 @@ using System.Net.Http.Headers;
 using DaxStudio.Common;
 using GongSolutions.Wpf.DragDrop;
 using System.ComponentModel;
-using Xceed.Wpf.AvalonDock;
+using AvalonDock;
 using System.Windows.Media;
 using Dax.ViewModel;
 using System.Reflection;
@@ -3785,9 +3785,9 @@ namespace DaxStudio.UI.ViewModels
             IsFocused = true;
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
+        public AvalonDock.Themes.Theme AvalonDockTheme { get {
 
-                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+                return new AvalonDock.Themes.GenericTheme();
 
                 //if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
                 ////else return null; 

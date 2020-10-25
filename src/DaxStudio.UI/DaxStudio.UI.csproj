@@ -172,6 +172,12 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="AvalonDock, Version=4.40.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.AvalonDock.4.40.0\lib\net40\AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.VS2013, Version=4.40.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dirkster.AvalonDock.Themes.VS2013.4.40.0\lib\net40\AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
     <Reference Include="Caliburn.Micro, Version=3.2.0.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Caliburn.Micro.Core.3.2.0\lib\net45\Caliburn.Micro.dll</HintPath>
     </Reference>
@@ -182,25 +188,25 @@
       <HintPath>..\..\packages\Caliburn.Micro.3.2.0\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
     </Reference>
     <Reference Include="ControlzEx, Version=4.0.0.0, Culture=neutral, PublicKeyToken=69f1c32f803d307e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ControlzEx.4.3.0\lib\net462\ControlzEx.dll</HintPath>
+      <HintPath>..\..\packages\ControlzEx.4.3.2\lib\net462\ControlzEx.dll</HintPath>
     </Reference>
     <Reference Include="CsvHelper, Version=15.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CsvHelper.15.0.6\lib\net47\CsvHelper.dll</HintPath>
+      <HintPath>..\..\packages\CsvHelper.15.0.8\lib\net47\CsvHelper.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Metadata, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Metadata.1.0.26\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
+    <Reference Include="Dax.Metadata, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Metadata.1.0.27\lib\netstandard2.0\Dax.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Model.Extractor, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.26\lib\net471\Dax.Model.Extractor.dll</HintPath>
+    <Reference Include="Dax.Model.Extractor, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Model.Extractor.1.0.27\lib\net471\Dax.Model.Extractor.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewModel, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewModel.1.0.26\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
+    <Reference Include="Dax.ViewModel, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewModel.1.0.27\lib\netstandard2.0\Dax.ViewModel.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.ViewVpaExport, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.26\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
+    <Reference Include="Dax.ViewVpaExport, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.ViewVpaExport.1.0.27\lib\netstandard2.0\Dax.ViewVpaExport.dll</HintPath>
     </Reference>
-    <Reference Include="Dax.Vpax, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dax.Vpax.1.0.26\lib\net471\Dax.Vpax.dll</HintPath>
+    <Reference Include="Dax.Vpax, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Dax.Vpax.1.0.27\lib\net471\Dax.Vpax.dll</HintPath>
     </Reference>
     <Reference Include="Fluent, Version=8.0.0.0, Culture=neutral, PublicKeyToken=3e436e32a8c5546f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fluent.Ribbon.8.0.0\lib\net462\Fluent.dll</HintPath>
@@ -209,7 +215,7 @@
       <HintPath>..\..\packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.WPF.DragDrop, Version=2.0.0.0, Culture=neutral, PublicKeyToken=91f1945125b7a587, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\gong-wpf-dragdrop.2.2.0\lib\net47\GongSolutions.WPF.DragDrop.dll</HintPath>
+      <HintPath>..\..\packages\gong-wpf-dragdrop.2.3.1\lib\net47\GongSolutions.WPF.DragDrop.dll</HintPath>
     </Reference>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
@@ -223,23 +229,26 @@
     <Reference Include="LargeXlsx, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\LargeXlsx.1.1.1\lib\netstandard2.0\LargeXlsx.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
+    <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MahApps.Metro.2.3.1\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.AdomdClient.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.AdomdClient.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=19.10.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.10.0\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -328,12 +337,6 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.6.2.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirkster.AvalonDock.3.6.2\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2013, Version=3.6.2.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dirkster.AvalonDock.Themes.VS2013.3.6.2\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2013.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
