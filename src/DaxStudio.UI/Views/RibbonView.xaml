@@ -1235,7 +1235,7 @@
             <Fluent:RibbonContextualTabGroup 
                 x:Name="traceLayoutGroup"
                 Header="Traces" 
-                Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Visibility="{Binding Path=TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 Background="{StaticResource DaxStudioBrush}" 
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>
