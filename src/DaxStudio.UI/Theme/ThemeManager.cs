@@ -55,10 +55,10 @@ namespace DaxStudio.UI.Theme
                   ,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
                   
                   ,new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
+                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
+                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
+                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.xaml", UriKind.RelativeOrAbsolute)
+                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
 
                 }, Themes);
         }

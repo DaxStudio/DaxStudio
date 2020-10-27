@@ -218,7 +218,7 @@
                                                         
                                                     </ComboBox>
 -->
-                                                <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
+                                                <!--<unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
                                                FontSize="12"
                                                ItemsSource="{Binding SelectedItem.DefaultValues}"
                                                ToolTip="{Binding ValueTip}"
@@ -233,7 +233,7 @@
                                                     <unit:UnitCombobox.Text>
                                                         <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
                                                     </unit:UnitCombobox.Text>
-                                                </unit:UnitCombobox>
+                                                </unit:UnitCombobox>-->
 
                                                 <ScrollBar Name="PART_HorizontalScrollBar"
                                    Orientation="Horizontal"

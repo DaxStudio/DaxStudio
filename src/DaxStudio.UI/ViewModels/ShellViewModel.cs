@@ -12,6 +12,7 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Principal;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using System.Threading.Tasks;
@@ -220,14 +221,18 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             // load the saved window positions
             _window = view as Window;
-            _window.Closing += windowClosing;
-            // SetPlacement will adjust the position if it's outside of the visible boundaries
-            _window.SetPlacement(Options.WindowPosition);
-            notifyIcon = new NotifyIcon(_window, _eventAggregator);
-            if (_host.DebugLogging) ShowLoggingEnabledNotification();
+            if (_window != null)
+            {
+                _window.Closing += WindowClosing;
+                // SetPlacement will adjust the position if it's outside of the visible boundaries
+                _window.SetPlacement(Options.WindowPosition);
+                notifyIcon = new NotifyIcon(_window, _eventAggregator);
+                if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
-            //Application.Current.LoadRibbonTheme();
-            _inputBindings = new InputBindings(_window);
+                //Application.Current.LoadRibbonTheme();
+                _inputBindings = new InputBindings(_window);
+            }
+
             _inputBindings.RegisterCommands(GetInputBindingCommands());
             //await _queryHistory.LoadHistoryFilesAsync();
             _eventAggregator.PublishOnBackgroundThread(new LoadQueryHistoryAsyncEvent());
@@ -266,7 +271,7 @@ namespace DaxStudio.UI.ViewModels
             _inputBindings.RegisterCommands(GetInputBindingCommands());
         }
 
-        void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             double sessionMin = 0;
             try
@@ -274,8 +279,10 @@ namespace DaxStudio.UI.ViewModels
                 TimeSpan sessionSpan = DateTime.UtcNow - utcSessionStart;
                 sessionMin = sessionSpan.TotalMinutes;
             }
-            catch 
-            { }
+            catch
+            {
+                // ignored
+            }
 
             Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
             { 
@@ -285,7 +292,7 @@ namespace DaxStudio.UI.ViewModels
             // Store the current window position
             var w = sender as Window;
             Options.WindowPosition = w.GetPlacement();
-            _window.Closing -= windowClosing;
+            _window.Closing -= WindowClosing;
 
         }
 
@@ -297,7 +304,8 @@ namespace DaxStudio.UI.ViewModels
         #region Event Handlers
         public void Handle(NewVersionEvent message)
         {           
-            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
+            var newVersionText =
+                $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
         }
@@ -312,7 +320,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var loggingText = string.Format("Debug Logging enabled.\nClick here to open the log folder");
+                var loggingText = "Debug Logging enabled.\nClick here to open the log folder";
                 var fullPath = ApplicationPaths.LogPath;
                 notifyIcon.Notify(loggingText, fullPath);
             }
@@ -336,22 +344,48 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsOverlayVisible);
         }
 
-        public bool IsOverlayVisible
-        {
-            get { return _overlayDependencies > 0; }
-        }
+        public bool IsOverlayVisible => _overlayDependencies > 0;
 
         public object UserString => Options.ShowUserInTitlebar? $" ({_username})":string.Empty;
 
         public string AppTitle { get {
 #if PREVIEW
-                return string.Format("DaxStudio - {0} (PREVIEW){1}", Version.ToString(4),UserString);
+                $"DaxStudio - {Version.ToString(3)} (PREVIEW){UserString}{AdminString}";
 #else
-                return string.Format("DaxStudio - {0}{1}", Version.ToString(3), UserString);
+                return $"DaxStudio - {Version.ToString(3)}{UserString}{AdminString}";
 #endif    
             }
         }
         #endregion
+
+        public string AdminString => IsUserAdministrator() ? " [Admin]" : "";
+
+        public bool IsUserAdministrator()
+        {
+            //bool value to hold our return value
+            bool isAdmin;
+            WindowsIdentity user = null;
+            try
+            {
+                //get the currently logged in user
+                user = WindowsIdentity.GetCurrent();
+                var principal = new WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                isAdmin = false;
+            }
+            catch (Exception)
+            {
+                isAdmin = false;
+            }
+            finally
+            {
+                user?.Dispose();
+            }
+            return isAdmin;
+        }
 
         #region Global Keyboard Hooks
         public void RunQuery()

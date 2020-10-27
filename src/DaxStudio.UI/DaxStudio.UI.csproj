@@ -230,7 +230,7 @@
       <HintPath>..\..\packages\LargeXlsx.1.1.1\lib\netstandard2.0\LargeXlsx.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MahApps.Metro.2.3.1\lib\net47\MahApps.Metro.dll</HintPath>
+      <HintPath>..\..\packages\MahApps.Metro.2.1.1\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=19.12.3.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.3\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
@@ -711,6 +711,9 @@
     </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ShellView.xaml.cs">
+      <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml.cs">
       <DependentUpon>ExportDataWizardExportStatusView.xaml</DependentUpon>

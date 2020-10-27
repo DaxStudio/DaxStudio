@@ -56,7 +56,6 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
-        //, Xceed.Wpf.AvalonDock.Layout.ILayoutElement
         , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
@@ -79,7 +78,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
-        //, IHandle<UpdateConnectionEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
@@ -88,7 +86,6 @@ namespace DaxStudio.UI.ViewModels
         , IQueryRunner
         , IQueryTextProvider
         , IHaveShutdownTask
-        //, IConnection
         , ISaveable
 
     {
@@ -98,7 +95,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private MetadataPaneViewModel _metadataPane;
         private IObservableCollection<object> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
@@ -165,9 +161,8 @@ namespace DaxStudio.UI.ViewModels
             MeasureExpressionEditor = new MeasureExpressionEditorViewModel(this, _eventAggregator, Options);
 
             var globalHistory = IoC.Get<GlobalQueryHistory>();
-            //var qryHistFactory = IoC.Get<Func<GlobalQueryHistory, IEventAggregator, DocumentViewModel, QueryHistoryPaneViewModel>>();
+
             QueryHistoryPane = new QueryHistoryPaneViewModel(globalHistory, _eventAggregator, this, Options);
-            //QueryHistoryPane = IoC.Get<QueryHistoryPaneViewModel>();
 
             Document = new TextDocument();
             FindReplaceDialog = new FindReplaceDialogViewModel(_eventAggregator);
@@ -241,7 +236,7 @@ namespace DaxStudio.UI.ViewModels
             UpdateSettings();
             if (_editor != null)
             {
-                FindReplaceDialog.Editor = _editor;
+                if (FindReplaceDialog != null) FindReplaceDialog.Editor = _editor;
                 SetDefaultHighlightFunction();
                 _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
                 _editor.TextChanged += OnDocumentChanged;
@@ -289,10 +284,11 @@ namespace DaxStudio.UI.ViewModels
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
-                string content = e.DataObject.GetData("UnicodeText", true) as string;
-                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
-                e.DataObject = dataObject;
-
+                if (e.DataObject.GetData("UnicodeText", true) is string content)
+                {
+                    var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                    e.DataObject = dataObject;
+                }
             }
             catch (Exception ex)
             {
@@ -719,11 +715,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public MetadataPaneViewModel MetadataPane
-        {
-            get { return _metadataPane; }
-            set { _metadataPane = value; }
-        }
+        public MetadataPaneViewModel MetadataPane { get; private set; }
 
         public FunctionPaneViewModel FunctionPane { get; private set; }
 
@@ -967,6 +959,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async void ChangeConnection()
         {
+
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;

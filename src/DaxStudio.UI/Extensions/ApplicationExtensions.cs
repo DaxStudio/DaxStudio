@@ -19,12 +19,12 @@ namespace DaxStudio.UI.Extensions
             app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Dark.DaxStudio.xaml"), UriKind.Absolute) });
 
             //Monotone Theme files
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Colors.xaml"), UriKind.Absolute) });
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Brushes.xaml"), UriKind.Absolute) });
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.xaml"), UriKind.Absolute) });
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.ExtendedWPFToolkit.xaml"), UriKind.Absolute) });
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.DaxEditor.xaml"), UriKind.Absolute) });
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "DarkTheme.xaml"), UriKind.Absolute) });
+            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Colors.xaml"), UriKind.Absolute) });
+            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Brushes.xaml"), UriKind.Absolute) });
+            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.xaml"), UriKind.Absolute) });
+            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.DaxEditor.xaml"), UriKind.Absolute) });
+            ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.ExtendedWPFToolkit.xaml"), UriKind.Absolute) });
+            ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "DarkTheme.xaml"), UriKind.Absolute) });
             app.ChangeRibbonTheme("Dark");
         }
 

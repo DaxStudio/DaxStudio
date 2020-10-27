@@ -122,7 +122,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.LabelTextBrush" SolidColorBrush.Color="{StaticResource Gray6}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.BorderBrush" SolidColorBrush.Color="{StaticResource Gray6}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.Disabled.BorderBrush" SolidColorBrush.Color="{StaticResource Gray5}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource WhiteColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />

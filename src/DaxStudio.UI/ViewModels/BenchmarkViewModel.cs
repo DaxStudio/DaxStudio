@@ -1,15 +1,11 @@
 ﻿using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FontAwesome.WPF;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.Interfaces;
 using System.Data;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
