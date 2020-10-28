@@ -1099,6 +1099,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _ResultAutoFormat;
         [Category("Results")]
+        [SortOrder(10)]
         [DisplayName("Automatic Format Results")]
         [Description("Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name as the column in the output")]
         [DataMember, DefaultValue(false)]
@@ -1111,7 +1112,26 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ResultAutoFormat);
             }
         }
-
+                
+        private string _DefaultDateAutoFormat;
+        [Category("Results")]
+        [SortOrder(20)]
+        [DisplayName("Default Date Automatic Format")]
+        [Description("The automatic format result will use this setting to format dates column, keep it empty to get the default format.")]
+        [DataMember]
+        [DefaultValue("yyyy-MM-dd")]
+        public string DefaultDateAutoFormat
+        {
+            get => _DefaultDateAutoFormat;
+            set
+            {
+                _DefaultDateAutoFormat = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue("DefaultDateAutoFormat", value, _isInitializing);
+                NotifyOfPropertyChange(() => DefaultDateAutoFormat);
+            }
+        }
+        
         private bool _scaleResultsFontWithEditor = true;
         [Category("Results")]
         [DisplayName("Scale Results Font with Editor")]
