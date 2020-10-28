@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -39,7 +38,8 @@ namespace DaxStudio.UI.ViewModels
     public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable
     {
         #region Private Fields
-        Stack<IScreen> _previousPages = new Stack<IScreen>();
+
+        readonly Stack<IScreen> _previousPages = new Stack<IScreen>();
         private string sqlTableName = string.Empty;
         private long sqlBatchRows;
         private int currentTableIdx;
@@ -289,7 +289,7 @@ namespace DaxStudio.UI.ViewModels
                     try { 
                         textWriter = new StreamWriter(csvFilePath, false, encoding);
 
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.CurrentCulture))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                         {
                             for (long batchRows = 0; batchRows < totalRows; batchRows += maxBatchSize)
@@ -307,6 +307,7 @@ namespace DaxStudio.UI.ViewModels
                                     
 
                                     // configure delimiter
+                                    
                                     csvWriter.Configuration.Delimiter = CsvDelimiter;
 
                                     // output dates using ISO 8601 format
