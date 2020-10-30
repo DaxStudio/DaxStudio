@@ -1310,7 +1310,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var editor = GetEditor();
-                await editor.Dispatcher.InvokeAsync(async () =>
+                editor.Dispatcher.Invoke(() =>
                     {
                         // capture the row and column location for error reporting (if needed)
                         if (editor.SelectionLength > 0)
@@ -1459,16 +1459,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Task CancelQueryAsync()
-        {
-            return Task.Run(() => CancelQuery());
-        }
-
-        //public Task<DataTable> ExecuteQueryAsync(string daxQuery)
-        //{
-        //    return Task.Run(() => ExecuteDataTableQueryAsync(daxQuery));
-        //}
-
         public async void Handle(RunQueryEvent message)
         {
             // if we can't run the query then do nothing 
@@ -1561,10 +1551,11 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-
-                        if (QueryText.Trim().Length == 0)
+                        // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
+                        // see if the query builder is active and try and use that to get the Query text.
+                        if (QueryText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel))
                         {
-                            if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0)
+                            if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0 )
                             {
                                 OutputMessage("There is no text in the editor, redirecting the run command to the Query Builder");
                                 message.QueryProvider = QueryBuilder;
@@ -2097,9 +2088,7 @@ namespace DaxStudio.UI.ViewModels
                 }
         }
 
-        internal string AutoSaveFileName {
-            get { return Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax"); }
-        }
+        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax");
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
         internal async Task AutoSave()
@@ -2200,7 +2189,7 @@ namespace DaxStudio.UI.ViewModels
                     //HttpResponseMessage response = await client.PostStreamAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
                     if (!response.IsSuccessStatusCode) {
                         publishStopWatch.Stop();
-                        string pingResult = string.Format("Error from ping version: ", response.StatusCode.ToString());
+                        string pingResult = $"Error from ping version: {response.StatusCode.ToString()}";
                         Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
                         OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
@@ -3116,7 +3105,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName))
                 {
                     Log.Error("{class} {method} {message} ", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Connection is not open");
-                    OutputError(string.Format("Error Connecting to server: {0}", ServerName));
+                    OutputError($"Error Connecting to server: {ServerName}");
                     ServerName = string.Empty; // clear the server name so that we don't throw this error again
                     ActivateOutput();
                     // need to reset ribbon buttons if there is an error on the connection

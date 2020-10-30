@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
+        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters, ICollection<QueryBuilderColumn> orderBy)
         {
             var measureDefines = BuildMeasureDefines(columns);
 
@@ -19,6 +19,7 @@ namespace DaxStudio.UI.Model
             var columnList = BuildColumns(columns);
             var filterList = BuildFilters(modelCaps, filters);
             var measureList = BuildMeasures(columns);
+            var orderByList = BuildOrderBy(orderBy);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
                 ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
@@ -27,11 +28,21 @@ namespace DaxStudio.UI.Model
                 : string.Empty;  
 
 
-            if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(measureDefines,filterList, measureList, filterStart, measureStart);
-            return BuildQueryWithColumns(measureDefines, columnList, filterList, measureList, filterStart, measureStart);
+            if (columnList.Length == 0) return BuildQueryWithOnlyMeasures(measureDefines,filterList, measureList, filterStart, measureStart, orderByList);
+            return BuildQueryWithColumns(measureDefines, columnList, filterList, measureList, filterStart, measureStart, orderByList);
         }
 
-        private static string BuildQueryWithColumns(string measureDefines, string columnList, string filterList, string measureList, string filterStart, string measureStart)
+        private static string BuildOrderBy(ICollection<QueryBuilderColumn> orderBy)
+        {
+            // get all levels or columns
+            var cols = orderBy.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level);
+            if (!cols.Any()) return string.Empty;
+
+            // build a comma separated list of [DaxName] values
+            return "\nORDER BY " + cols.Select(c => c.DaxName).Aggregate((current, next) => current + ",\n    " + next);
+        }
+
+        private static string BuildQueryWithColumns(string measureDefines, string columnList, string filterList, string measureList, string filterStart, string measureStart, string orderBy)
         {
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("/* START QUERY BUILDER */\n");
@@ -45,12 +56,14 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(filterList);
             sbQuery.Append(measureStart);
             sbQuery.Append(measureList);
-            sbQuery.Append("\n)");                     // query function end
+            sbQuery.Append("\n)");
+            sbQuery.Append(orderBy);
+            // query function end
             sbQuery.Append("\n/* END QUERY BUILDER */");
             return sbQuery.ToString();
         }
 
-        private static string BuildQueryWithOnlyMeasures(string measureDefines, string filterList, string measureList, string filterStart, string measureStart)
+        private static string BuildQueryWithOnlyMeasures(string measureDefines, string filterList, string measureList, string filterStart, string measureStart, string orderBy)
         {
             StringBuilder sbQuery = new StringBuilder();
             sbQuery.Append("/* START QUERY BUILDER */\n");
@@ -67,6 +80,7 @@ namespace DaxStudio.UI.Model
             sbQuery.Append(filterList);
 
             sbQuery.Append("\n)");                    // query function end
+            sbQuery.Append(orderBy);
             sbQuery.Append("\n/* END QUERY BUILDER */");
             return sbQuery.ToString();
         }
@@ -91,8 +105,8 @@ namespace DaxStudio.UI.Model
 
         private static string BuildColumns(ICollection<QueryBuilderColumn> columns)
         {
-            // TODO - should I get Levels also??
-            var cols = columns.Where(c => c.ObjectType == ADOTabularObjectType.Column);
+            // get all levels or columns
+            var cols = columns.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level);
             if (!cols.Any()) return string.Empty;
 
             // build a comma separated list of [DaxName] values
