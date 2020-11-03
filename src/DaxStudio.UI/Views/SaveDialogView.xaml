@@ -17,8 +17,8 @@
         </ResourceDictionary.MergedDictionaries>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="4,2"/>
-                <Setter Property="Padding" Value="8,2"/>
-            </Style>
+            <Setter Property="Padding" Value="8,2"/>
+        </Style>
         <DataTemplate  DataType="{x:Type viewModel:DocumentViewModel}">
                 
                 <StackPanel Orientation="Horizontal">

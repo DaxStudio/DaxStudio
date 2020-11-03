@@ -230,7 +230,7 @@
                 </StackPanel>
             </DataTemplate>
 
-                <DataTemplate x:Key="BoolTemplate">
+            <DataTemplate x:Key="BoolTemplate">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

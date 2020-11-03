@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:DaxStudio.UI.Theme">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.FlatButton.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />
+
+    <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/Themes/generic.xaml"/>
+    <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/DarkBrushs.xaml"/>
+
+    <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Colors.xaml"/>
+
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
