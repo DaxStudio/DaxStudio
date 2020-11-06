@@ -159,7 +159,11 @@ namespace ADOTabular
             //}
             //else
             //{
-            _adomdConn.ChangeDatabase(database);
+            if (_adomdConn.Database != database)
+            {
+                _adomdConn.ChangeDatabase(database);
+            }
+
             //}
             ConnectionChanged?.Invoke(this, new EventArgs());
 

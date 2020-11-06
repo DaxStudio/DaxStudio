@@ -12,6 +12,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Windows;
+using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 
