@@ -365,7 +365,8 @@ namespace DaxStudio.UI.ViewModels
         {
             //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
-            IsDirty = this._editor.Text.Length > 0;
+            IsDirty = _editor.Text.Length > 0;
+            ShowHelpWatermark = !IsDirty;
             LastModifiedUtcTime = DateTime.UtcNow;
             NotifyOfPropertyChange(() => IsDirty);
             NotifyOfPropertyChange(() => DisplayName);
@@ -616,6 +617,11 @@ namespace DaxStudio.UI.ViewModels
                 QueryHistoryPane,
                 QueryBuilder
             });
+
+        public void OpenQueryBuilder()
+        {
+            ShowQueryBuilder = true;
+        }
 
         public bool ShowQueryBuilder {
             get => QueryBuilder?.IsVisible ?? false;
@@ -3827,6 +3833,18 @@ namespace DaxStudio.UI.ViewModels
             {
                 OutputError(ex.Message);
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ApplicationActivatedEvent>", ex.Message);
+            }
+        }
+
+        private bool _showHelpWatermark = true;
+        public bool ShowHelpWatermark
+        {
+            get => _showHelpWatermark;
+            set
+            {
+                if (value == _showHelpWatermark) return;
+                _showHelpWatermark = value;
+                NotifyOfPropertyChange(nameof(ShowHelpWatermark));
             }
         }
     }
