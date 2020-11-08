@@ -1500,10 +1500,12 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                IsBenchmarkRunning = true;
+
                 var serverTimingsTrace = TraceWatchers.FirstOrDefault(tw => tw is ServerTimesViewModel);
 
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked??false;
-
+                
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
                 using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
                 {
@@ -1532,6 +1534,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
+            }
+            finally
+            {
+                IsBenchmarkRunning = false;
             }
         }
 
@@ -3112,6 +3118,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 if (IsQueryRunning) return false; // if query is running schema cannot have changed (and this connection will be busy with the query)
+                if (IsBenchmarkRunning) return false;
                 if (Connection == null) return false;
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName))
                 {
@@ -3812,6 +3819,8 @@ namespace DaxStudio.UI.ViewModels
         public IAutoSaver AutoSaver { get; }
 
         IModelIntellisenseProvider IDaxDocument.Connection => Connection;
+
+        public bool IsBenchmarkRunning {get;set;}
 
         //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
 
