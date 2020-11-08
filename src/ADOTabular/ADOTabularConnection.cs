@@ -7,6 +7,7 @@ using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using ADOTabular.Enums;
 using ADOTabular.Utils;
@@ -359,6 +360,18 @@ namespace ADOTabular
         {
             const string cmd = "<Batch xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'/>";
             ExecuteNonQuery(cmd);
+        }
+
+        public void PingTrace()
+        {
+            
+            // Ping the server by sending a discover request for the current catalog name
+            //var restrictionCollection = new AdomdRestrictionCollection();
+            //var restriction = new AdomdRestriction("PropertyName", "Catalog");
+            //restrictionCollection.Add(restriction);
+            GetSchemaDataSet("TMSCHEMA_TABLES");
+
+            //ExecuteNonQuery(cmd);
         }
 
 

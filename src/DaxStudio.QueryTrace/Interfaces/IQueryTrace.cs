@@ -25,6 +25,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
         event EventHandler TraceStarted;
         event EventHandler<string> TraceError;
+        event EventHandler<string> TraceWarning;
         /*
         public void ClearEvents();
         void OnQueryEnd();

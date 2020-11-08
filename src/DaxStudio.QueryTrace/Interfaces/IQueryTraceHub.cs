@@ -9,6 +9,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         void ConfigureTrace(ADOTabular.ADOTabularConnection connection, List<DaxStudioTraceEventClass> events);
 
         void OnTraceError(string message);
+        void OnTraceWarning(string message);
         void OnTraceComplete(IList<DaxStudioTraceEventArgs> capturedEvents);
         void OnTraceComplete(DaxStudioTraceEventArgs[] capturedEvents);
         void OnTraceStarting();

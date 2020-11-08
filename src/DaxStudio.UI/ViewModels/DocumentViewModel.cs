@@ -456,6 +456,7 @@ namespace DaxStudio.UI.ViewModels
                     _tracer.TraceStarted += TracerOnTraceStarted;
                     _tracer.TraceCompleted += TracerOnTraceCompleted;
                     _tracer.TraceError += TracerOnTraceError;
+                    _tracer.TraceWarning += TracerOnTraceWarning;
                 }
             }
             catch (AggregateException ex)
@@ -494,7 +495,7 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 _tracer.Events.Clear();
-                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
+                _tracer.Events.Add(DaxStudioTraceEventClass.DiscoverBegin);
                 _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
                 foreach (var e in events)
                 {
@@ -513,6 +514,11 @@ namespace DaxStudio.UI.ViewModels
         {
             OutputError(e);
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
+        }
+
+        private void TracerOnTraceWarning(object sender, string e)
+        {
+            OutputWarning(e);
         }
 
         private List<DaxStudioTraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
@@ -2083,6 +2089,10 @@ namespace DaxStudio.UI.ViewModels
             if (Dispatcher.CurrentDispatcher.CheckAccess())
                 if (Tracer != null)
                 {
+                    _tracer.TraceCompleted -= TracerOnTraceCompleted;
+                    _tracer.TraceError -= TracerOnTraceError;
+                    _tracer.TraceStarted -= TracerOnTraceStarted;
+                    _tracer.TraceWarning -= TracerOnTraceWarning;
                     Tracer?.Stop();
                     Tracer?.Dispose();
                     _tracer = null;
