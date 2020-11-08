@@ -85,10 +85,10 @@ namespace DaxStudio.QueryTrace
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
         public event EventHandler TraceStarted;
         public event EventHandler<string> TraceError;
+        public event EventHandler<string> TraceWarning;
+        #endregion
 
-#endregion
-
-#region Internal implementation
+        #region Internal implementation
         private xlAmo.Server _server;
         private xlAmo.Trace _trace;
         private DateTime _utcPingStart;
@@ -285,6 +285,11 @@ namespace DaxStudio.QueryTrace
         public void OutputError( string message)
         {
             TraceError?.Invoke(this, message);
+        }
+
+        public void OutputWarning(string message)
+        {
+            TraceWarning?.Invoke(this, message);
         }
 
         private bool _traceStarted;
