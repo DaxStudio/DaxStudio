@@ -7,7 +7,6 @@ using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using ADOTabular.Enums;
 using ADOTabular.Utils;
@@ -38,7 +37,7 @@ namespace ADOTabular
         { }
 
 
-        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery vistorType)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery visitorType)
         {
             
             ShowHiddenObjects = showHiddenObjects;
@@ -49,7 +48,7 @@ namespace ADOTabular
             //   _adomdConn.ConnectionString = connectionString;
 
             //_adomdConn.Open();
-            if (vistorType == ADOTabularMetadataDiscovery.Adomd)
+            if (visitorType == ADOTabularMetadataDiscovery.Adomd)
             {
                 Visitor = new MetaDataVisitorADOMD(this);
             }
@@ -129,12 +128,12 @@ namespace ADOTabular
 
         private void CacheFunctionGroups()
         {
-            if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(this);
+            _functionGroups ??= new ADOTabularFunctionGroupCollection(this);
         }
 
         private void CacheKeywords()
         {
-            if (_keywords == null) _keywords = new ADOTabularKeywordCollection(this);
+            _keywords ??= new ADOTabularKeywordCollection(this);
         }
 
         /*       public void Open(string connectionString)
@@ -177,7 +176,7 @@ namespace ADOTabular
         private bool _showHiddenObjects;
         public bool ShowHiddenObjects
         {
-            get { return _showHiddenObjects; }
+            get => _showHiddenObjects;
             set
             {
                 if (_adomdConn != null)
@@ -192,20 +191,10 @@ namespace ADOTabular
         public ADOTabularConnectionType ConnectionType { get; private set; }
 
 
-        public AdomdType Type
-        {
-            get { return _adomdConn.Type; }
-        }
+        public AdomdType Type => _adomdConn.Type;
 
 
-
-        public bool SupportsQueryTable
-        {
-            get
-            {
-                return _adomdConn.Type == AdomdType.AnalysisServices;
-            }
-        }
+        public bool SupportsQueryTable => _adomdConn.Type == AdomdType.AnalysisServices;
 
         public override string ToString()
         {
@@ -214,7 +203,8 @@ namespace ADOTabular
 
         private string _connectionString = "";
         private Dictionary<string, string> _connectionProps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase );
-        public Dictionary<string, string> Properties {get{ return _connectionProps; }}
+        public Dictionary<string, string> Properties => _connectionProps;
+
         public string ConnectionString
         {
             get
@@ -369,7 +359,7 @@ namespace ADOTabular
             //var restrictionCollection = new AdomdRestrictionCollection();
             //var restriction = new AdomdRestriction("PropertyName", "Catalog");
             //restrictionCollection.Add(restriction);
-            GetSchemaDataSet("TMSCHEMA_TABLES");
+            GetSchemaDataSet("MDSCHEMA_CUBES");
 
             //ExecuteNonQuery(cmd);
         }
