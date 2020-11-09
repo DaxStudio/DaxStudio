@@ -12,7 +12,6 @@
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-            xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
@@ -123,44 +122,6 @@
                 </Style.Resources>
             </Style>-->
 
-            <Style x:Key="checkboxLeftSideText" TargetType="{x:Type CheckBox}">
-                <Setter Property="SnapsToDevicePixels" Value="true"/>
-                <Setter Property="FocusVisualStyle"  Value="{DynamicResource CheckBoxFocusVisual}"/>
-                <Setter Property="Background" Value="{DynamicResource NormalBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource NormalBorderBrush}"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type CheckBox}">
-
-                            <DockPanel 
-                              HorizontalAlignment="Stretch" 
-                              VerticalAlignment="Top" 
-                              Width="Auto" 
-                              LastChildFill="True">
-
-                                <Microsoft_Windows_Themes:BulletChrome 
-                                DockPanel.Dock="Right" 
-                                Margin="7,0,0,0"
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                IsChecked="{TemplateBinding IsChecked}" 
-                                RenderMouseOver="{TemplateBinding IsMouseOver}" 
-                                RenderPressed="{TemplateBinding IsPressed}" 
-                                HorizontalAlignment="Stretch" 
-                                VerticalAlignment="Center" 
-                                Width="Auto" 
-                                Height="Auto"/>
-
-                                <ContentPresenter 
-                                Content="{TemplateBinding Content}" 
-                                RecognizesAccessKey="True" 
-                                Height="Auto" 
-                                HorizontalAlignment="Left" />
-                            </DockPanel>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
 
             <!-- Category Icons -->
             <conv:ResourceLookupConverter x:Key="CategoryIcons">
