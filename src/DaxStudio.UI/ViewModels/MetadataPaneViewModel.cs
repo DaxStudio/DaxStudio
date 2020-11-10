@@ -37,14 +37,14 @@ namespace DaxStudio.UI.ViewModels
         private string _modelName;
         private readonly IGlobalOptions _options;
         private readonly IMetadataProvider _metadataProvider;
-        //private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
-        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base( eventAggregator)
+        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
+            : base( eventAggregator)
         {
             _metadataProvider = metadataProvider;
             ActiveDocument = document;
-            //    _eventAggregator = eventAggregator;
+
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
@@ -104,6 +104,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
+            if (!_metadataProvider.IsConnected) return;
             _metadataProvider.Refresh();
             var tmpModel = _selectedModel;
             ModelList = _metadataProvider.GetModels();
@@ -285,7 +286,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ExpandSearch => IsMouseOverSearch 
                                  || IsKeyboardFocusWithinSearch 
-                                 || _pinSearchOpen; 
+                                 || PinSearchOpen; 
 
         public bool HasCriteria => _currentCriteria.Length > 0;
 
@@ -761,10 +762,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(() => ExpandSearch);
+            
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
+            NotifyOfPropertyChange(() => ExpandSearch);
         }
 
         #endregion
