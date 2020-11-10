@@ -301,7 +301,7 @@ namespace DaxStudio.QueryTrace
             // has started capturing events
             if (!_traceStarted)
             {
-                Log.Debug("{class} {mothod} Pending TraceEvent: {eventClass}","QueryTraceEngineExcel","OnTraceEventInternal", e.EventClass.ToString());
+                Log.Debug("{class} {method} Pending TraceEvent: {eventClass}","QueryTraceEngineExcel","OnTraceEventInternal", e.EventClass.ToString());
                 StopTimer();
                 _traceStarted = true;
                 _connection.Close(false);

@@ -653,7 +653,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
                     }
-                    catch 
+                    catch (Exception ex)
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }

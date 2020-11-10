@@ -290,7 +290,13 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            _retry.Execute(() => { _connection.Ping(); } );
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone();
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close();
+            } );
         }
         public ADOTabularModel SelectedModel { get; set; }
 

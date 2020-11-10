@@ -491,12 +491,27 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{Class} {Method} {Message}", "MetadataPaneViewModel", "CopyDatabase", ex.Message);
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseName), ex.Message);
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database name to the clipboard - {ex.Message} "));
             }
             
         }
-        
+
+        public void CopyDatabaseId()
+        {
+            try
+            {
+                Clipboard.SetText(SelectedDatabaseObject.Id);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database Id '{SelectedDatabaseObject.Id}' to clipboard"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseId), ex.Message);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database Id to the clipboard - {ex.Message} "));
+            }
+
+        }
+
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
             if (column == null) return;
