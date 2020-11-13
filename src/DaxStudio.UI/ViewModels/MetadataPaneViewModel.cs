@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows.Threading;
 using ADOTabular;
@@ -13,12 +12,10 @@ using System;
 using System.Threading.Tasks;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Interfaces;
-using System.Data;
 using System.Windows;
-using System.Text.RegularExpressions;
-using DaxStudio.UI.Interfaces;
 using System.Diagnostics;
 using ADOTabular.Interfaces;
+using Humanizer;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -39,15 +36,15 @@ namespace DaxStudio.UI.ViewModels
     {
         private string _modelName;
         private readonly IGlobalOptions _options;
-        private IMetadataProvider _metadataProvider;
-        //private readonly IEventAggregator _eventAggregator;
+        private readonly IMetadataProvider _metadataProvider;
 
         [ImportingConstructor]
-        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base( eventAggregator)
+        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
+            : base( eventAggregator)
         {
             _metadataProvider = metadataProvider;
             ActiveDocument = document;
-            //    _eventAggregator = eventAggregator;
+
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
@@ -83,10 +80,7 @@ namespace DaxStudio.UI.ViewModels
             PinSearchOpen = !PinSearchOpen;
         }
 
-        public string PinSearchOpenLabel
-        {
-            get { return PinSearchOpen ? "Unpin Search" : "Pin Search"; }
-        }
+        public string PinSearchOpenLabel => PinSearchOpen ? "Unpin Search" : "Pin Search";
 
         public DocumentViewModel ActiveDocument { get; }
 
@@ -95,7 +89,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ModelName
         {
-            get { return _modelName; }
+            get => _modelName;
             set
             {
                 if (value == _modelName)
@@ -110,8 +104,9 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
+            if (!_metadataProvider.IsConnected) return;
             _metadataProvider.Refresh();
-            var _tmpModel = _selectedModel;
+            var tmpModel = _selectedModel;
             ModelList = _metadataProvider.GetModels();
             // TODO - should we get tables, databases and reset selected database??
 
@@ -137,9 +132,7 @@ namespace DaxStudio.UI.ViewModels
 
         public ADOTabularModel SelectedModel
         {
-            get { 
-                    return _selectedModel;
-                }
+            get => _selectedModel;
             set
             {
                 if (_selectedModel != value)
@@ -154,21 +147,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string SelectedModelName
-        {
-            get
-            {
-                return SelectedModel == null ? "--" : SelectedModel.Name;
-            }
-        }
+        public string SelectedModelName => SelectedModel == null ? "--" : SelectedModel.Name;
 
         private IEnumerable<IFilterableTreeViewItem> _treeViewTables;
         public IEnumerable<IFilterableTreeViewItem> Tables
         {
-            get
-            {
-                return _treeViewTables;
-            }
+            get => _treeViewTables;
             set
             {
                 _treeViewTables = value;
@@ -195,7 +179,7 @@ namespace DaxStudio.UI.ViewModels
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
-                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), $"Starting Refresh of Tables ");
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Starting Refresh of Tables ");
                         _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
                         sw.Stop();
                         Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
@@ -203,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.Task", ex.Message, ex.StackTrace);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
                     }
                     finally
                     {
@@ -214,14 +198,14 @@ namespace DaxStudio.UI.ViewModels
 
                 try
                 {
-                    this.IsNotifying = false;
+                    IsNotifying = false;
                     Tables = _treeViewTables;
                     EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                 }
                 catch(Exception ex)
                 {
                     Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
-                    EventAggregator.PublishOnUIThread(new OutputMessage(Events.MessageType.Error, ex.Message));
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
                 }
                 finally
                 {
@@ -235,19 +219,19 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane
         {
-            get { return "DockLeft"; }
-            set { base.DefaultDockingPane = value; }
+            get => "DockLeft";
+            set => base.DefaultDockingPane = value;
         }
         public override string Title
         {
-            get { return "Metadata"; }
-            set { base.Title = value; }
+            get => "Metadata";
+            set => base.Title = value;
         }
 
         private ADOTabularModelCollection _modelList;
         public ADOTabularModelCollection ModelList
         {
-            get { return _modelList; }
+            get => _modelList;
             set
             {
                 if (value == _modelList)
@@ -262,7 +246,7 @@ namespace DaxStudio.UI.ViewModels
         private string _currentCriteria = string.Empty;
         public string CurrentCriteria
         {
-            get { return _currentCriteria; }
+            get => _currentCriteria;
             set
             {
                 _currentCriteria = value;
@@ -278,10 +262,10 @@ namespace DaxStudio.UI.ViewModels
         private bool _isMouseOverSearch;
         public bool IsMouseOverSearch
         {
-            get { return _isMouseOverSearch; }
+            get => _isMouseOverSearch;
             set
             {
-                System.Diagnostics.Debug.WriteLine("MouseOver: " + value);
+                Debug.WriteLine("MouseOver: " + value);
                 _isMouseOverSearch = value;
                 NotifyOfPropertyChange(() => IsMouseOverSearch);
                 NotifyOfPropertyChange(() => ExpandSearch);
@@ -290,10 +274,10 @@ namespace DaxStudio.UI.ViewModels
         private bool _isKeyboardFocusWithinSearch;
         public bool IsKeyboardFocusWithinSearch
         {
-            get { return _isKeyboardFocusWithinSearch; }
+            get => _isKeyboardFocusWithinSearch;
             set
             {
-                System.Diagnostics.Debug.WriteLine("KeyboardFocusWithin: " + value);
+                Debug.WriteLine("KeyboardFocusWithin: " + value);
                 _isKeyboardFocusWithinSearch = value;
                 NotifyOfPropertyChange(() => IsKeyboardFocusWithinSearch);
                 NotifyOfPropertyChange(() => ExpandSearch);
@@ -302,12 +286,9 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ExpandSearch => IsMouseOverSearch 
                                  || IsKeyboardFocusWithinSearch 
-                                 || _pinSearchOpen; 
+                                 || PinSearchOpen; 
 
-        public bool HasCriteria
-        {
-            get { return _currentCriteria.Length > 0; }
-        }
+        public bool HasCriteria => _currentCriteria.Length > 0;
 
         public void ClearCriteria()
         {
@@ -324,7 +305,7 @@ namespace DaxStudio.UI.ViewModels
         private BindableCollection<string> _databases = new BindableCollection<string>();
         public BindableCollection<string> Databases
         {
-            get { return _databases; }
+            get => _databases;
             set
             {
                 _databases = value;
@@ -372,7 +353,7 @@ namespace DaxStudio.UI.ViewModels
         private DatabaseReference _selectedDatabase;
         public DatabaseReference SelectedDatabase
         {
-            get { return _selectedDatabase; }
+            get => _selectedDatabase;
             set
             {
                 if (_selectedDatabase != value)
@@ -380,6 +361,9 @@ namespace DaxStudio.UI.ViewModels
                     _selectedDatabase = value;
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
                     _metadataProvider.SetSelectedDatabase(_selectedDatabase);
+                    NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
+                    NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
+                    NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
                     ModelList = _metadataProvider.GetModels();
                 }
                 
@@ -387,29 +371,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ADOTabularDatabase SelectedDatabaseObject
-        {
-            get
-            {
-                return _metadataProvider.SelectedDatabase;
-            }
-        }
+        public ADOTabularDatabase SelectedDatabaseObject => _metadataProvider.SelectedDatabase;
 
-        public bool CanSelectDatabase
-        {
+        public string SelectedDatabaseDurationSinceUpdate {
             get
             {
-                return  !_metadataProvider.IsPowerPivot && !ActiveDocument.IsQueryRunning;
+                var timespan = DateTime.UtcNow - SelectedDatabaseObject.LastUpdate;
+                return $"({timespan.Humanize(1)} ago)";
             }
         }
+        public DateTime SelectedDatabaseLastUpdateLocalTime => SelectedDatabaseObject.LastUpdate.ToLocalTime();
 
-        public bool CanSelectModel
-        {
-            get
-            {
-                return _metadataProvider.IsConnected && !ActiveDocument.IsQueryRunning;
-            }
-        }
+        public bool CanSelectDatabase => !_metadataProvider.IsPowerPivot && !ActiveDocument.IsQueryRunning;
+
+        public bool CanSelectModel => _metadataProvider.IsConnected && !ActiveDocument.IsQueryRunning;
 
         public void RefreshDatabases()
         {
@@ -419,15 +394,15 @@ namespace DaxStudio.UI.ViewModels
                 _metadataProvider.Refresh();
                 var sourceSet = _metadataProvider.GetDatabases().ToBindableCollection();
 
-                var deletedItems = this.Databases.Except(sourceSet);
-                var newItems = sourceSet.Except(this.Databases);
+                var deletedItems = Databases.Except(sourceSet);
+                var newItems = sourceSet.Except(Databases);
                 // remove deleted items
                 for (var i = deletedItems.Count() - 1; i >= 0; i--)
                 {
                     var tmp = deletedItems.ElementAt(i);
                     Execute.OnUIThread(() =>
                     {
-                        this.Databases.Remove(tmp);
+                        Databases.Remove(tmp);
                     });
                 }
                 // add new items
@@ -435,7 +410,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Execute.OnUIThread(() =>
                     {
-                        this.Databases.Add(itm);
+                        Databases.Add(itm);
                     });
                 }
                 DatabasesView.Refresh();
@@ -461,14 +436,15 @@ namespace DaxStudio.UI.ViewModels
         private bool _isBusy;
         public bool IsBusy
         {
-            get { return _isBusy; }
+            get => _isBusy;
             set
             {
                 _isBusy = value;
                 NotifyOfPropertyChange(() => IsBusy);
             }
         }
-        public string BusyMessage { get { return "Loading"; } }
+        public string BusyMessage => "Loading";
+
         #endregion
 
         private bool _showHiddenObjects = true;
@@ -505,13 +481,7 @@ namespace DaxStudio.UI.ViewModels
             ShowHiddenObjects = !ShowHiddenObjects;
         }
 
-        public string ShowHiddenObjectsLabel
-        {
-            get
-            {
-                return ShowHiddenObjects ? "Hide Hidden Objects" : "Show Hidden Objects";
-            }
-        }
+        public string ShowHiddenObjectsLabel => ShowHiddenObjects ? "Hide Hidden Objects" : "Show Hidden Objects";
 
         public void CopyDatabaseName()
         {
@@ -522,12 +492,27 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{Class} {Method} {Message}", "MetadataPaneViewModel", "CopyDatabase", ex.Message);
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseName), ex.Message);
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database name to the clipboard - {ex.Message} "));
             }
             
         }
-        
+
+        public void CopyDatabaseId()
+        {
+            try
+            {
+                Clipboard.SetText(SelectedDatabaseObject.Id);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database Id '{SelectedDatabaseObject.Id}' to clipboard"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseId), ex.Message);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database Id to the clipboard - {ex.Message} "));
+            }
+
+        }
+
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
             if (column == null) return;
@@ -631,7 +616,7 @@ namespace DaxStudio.UI.ViewModels
                     EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasureTree", ex.Message, ex.StackTrace);
             }
@@ -652,7 +637,7 @@ namespace DaxStudio.UI.ViewModels
                     EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasureTree", ex.Message, ex.StackTrace);
             }
@@ -698,7 +683,7 @@ namespace DaxStudio.UI.ViewModels
 
                 EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineFilterDumpMeasure", ex.Message, ex.StackTrace);
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error defining filter dump measure: {ex.Message}"));
@@ -768,7 +753,7 @@ namespace DaxStudio.UI.ViewModels
 
                 EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineMeasure", ex.Message, ex.StackTrace);
 
@@ -777,10 +762,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(() => ExpandSearch);
+            
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
+            NotifyOfPropertyChange(() => ExpandSearch);
         }
 
         #endregion
@@ -807,7 +793,7 @@ namespace DaxStudio.UI.ViewModels
                     EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceMeasure", ex.Message, ex.StackTrace);
             }
@@ -833,7 +819,7 @@ namespace DaxStudio.UI.ViewModels
                     EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "MetadataPaneViewModel", "DefineObjectsThatReferenceTable", ex.Message, ex.StackTrace);
             }

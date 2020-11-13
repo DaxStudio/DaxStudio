@@ -37,7 +37,7 @@ namespace ADOTabular
         { }
 
 
-        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery vistorType)
+        public ADOTabularConnection(string connectionString, AdomdType connectionType, bool showHiddenObjects, ADOTabularMetadataDiscovery visitorType)
         {
             
             ShowHiddenObjects = showHiddenObjects;
@@ -48,7 +48,7 @@ namespace ADOTabular
             //   _adomdConn.ConnectionString = connectionString;
 
             //_adomdConn.Open();
-            if (vistorType == ADOTabularMetadataDiscovery.Adomd)
+            if (visitorType == ADOTabularMetadataDiscovery.Adomd)
             {
                 Visitor = new MetaDataVisitorADOMD(this);
             }
@@ -128,12 +128,12 @@ namespace ADOTabular
 
         private void CacheFunctionGroups()
         {
-            if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(this);
+            _functionGroups ??= new ADOTabularFunctionGroupCollection(this);
         }
 
         private void CacheKeywords()
         {
-            if (_keywords == null) _keywords = new ADOTabularKeywordCollection(this);
+            _keywords ??= new ADOTabularKeywordCollection(this);
         }
 
         /*       public void Open(string connectionString)
@@ -159,7 +159,11 @@ namespace ADOTabular
             //}
             //else
             //{
-            _adomdConn.ChangeDatabase(database);
+            if (_adomdConn.Database != database)
+            {
+                _adomdConn.ChangeDatabase(database);
+            }
+
             //}
             ConnectionChanged?.Invoke(this, new EventArgs());
 
@@ -172,7 +176,7 @@ namespace ADOTabular
         private bool _showHiddenObjects;
         public bool ShowHiddenObjects
         {
-            get { return _showHiddenObjects; }
+            get => _showHiddenObjects;
             set
             {
                 if (_adomdConn != null)
@@ -187,20 +191,10 @@ namespace ADOTabular
         public ADOTabularConnectionType ConnectionType { get; private set; }
 
 
-        public AdomdType Type
-        {
-            get { return _adomdConn.Type; }
-        }
+        public AdomdType Type => _adomdConn.Type;
 
 
-
-        public bool SupportsQueryTable
-        {
-            get
-            {
-                return _adomdConn.Type == AdomdType.AnalysisServices;
-            }
-        }
+        public bool SupportsQueryTable => _adomdConn.Type == AdomdType.AnalysisServices;
 
         public override string ToString()
         {
@@ -209,7 +203,8 @@ namespace ADOTabular
 
         private string _connectionString = "";
         private Dictionary<string, string> _connectionProps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase );
-        public Dictionary<string, string> Properties {get{ return _connectionProps; }}
+        public Dictionary<string, string> Properties => _connectionProps;
+
         public string ConnectionString
         {
             get
@@ -355,6 +350,18 @@ namespace ADOTabular
         {
             const string cmd = "<Batch xmlns='http://schemas.microsoft.com/analysisservices/2003/engine'/>";
             ExecuteNonQuery(cmd);
+        }
+
+        public void PingTrace()
+        {
+            
+            // Ping the server by sending a discover request for the current catalog name
+            //var restrictionCollection = new AdomdRestrictionCollection();
+            //var restriction = new AdomdRestriction("PropertyName", "Catalog");
+            //restrictionCollection.Add(restriction);
+            GetSchemaDataSet("MDSCHEMA_CUBES");
+
+            //ExecuteNonQuery(cmd);
         }
 
 
@@ -646,7 +653,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
                     }
-                    catch 
+                    catch (Exception ex)
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }

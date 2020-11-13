@@ -10,7 +10,7 @@ namespace DaxStudio.QueryTrace
         private DaxStudioTraceEventClass _eventClass = DaxStudioTraceEventClass.NotAvailable;
         private DaxStudioTraceEventSubclass _eventSubclass = DaxStudioTraceEventSubclass.NotAvailable;
         
-        public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e, string powerBIFileName)
+        public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e, string powerBiFileName)
         {
             StartTime = DateTime.Now;
             EventClassName = e.EventClass.ToString();
@@ -21,12 +21,11 @@ namespace DaxStudio.QueryTrace
             TextData = e.TextData;
             RequestID = e[TraceColumn.RequestID];
             DatabaseName = e.DatabaseName;
-            DatabaseFriendlyName = !string.IsNullOrEmpty(powerBIFileName)? powerBIFileName : DatabaseName;
+            DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
 
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
-                    // TODO
                     RequestProperties = e.RequestProperties;
                     RequestParameters = e.RequestParameters;
                     NTUserName = e.NTUserName;
@@ -37,7 +36,6 @@ namespace DaxStudio.QueryTrace
                     StartTime = e.StartTime;
                     NTUserName = e.NTUserName;
                     EndTime = e.EndTime;
-                    StartTime = e.StartTime;
                     CpuTime = e.CpuTime;
                     break;
                 case TraceEventClass.DirectQueryEnd:
@@ -50,20 +48,20 @@ namespace DaxStudio.QueryTrace
                     StartTime = e.StartTime;
                     CpuTime = e.CpuTime;
                     Duration = e.Duration;
-                    //EndTime = e.EndTime;
                     NTUserName = e.NTUserName;
                     break;
+                case TraceEventClass.AggregateTableRewriteQuery:
                 case TraceEventClass.VertiPaqSEQueryCacheMatch:
                     StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
                     break;
                 case TraceEventClass.CommandBegin:
-                    DateTime startTime;
                     string s = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
-                    DateTime.TryParse(s, out startTime);
+                    DateTime.TryParse(s, out var startTime);
                     StartTime = startTime;
                     NTUserName = e.NTUserName;
                     break;
+                case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.DAXQueryPlan:
                     // no additional properties captured, the plan is stored in the text field
                     break;
@@ -127,7 +125,7 @@ namespace DaxStudio.QueryTrace
             //{ }
         }
 
-        // This default constructor is required to allow deserializeing from JSON when tracing PowerPivot
+        // This default constructor is required to allow deserializing from JSON when tracing PowerPivot
         public DaxStudioTraceEventArgs() { }
 
         // This constructor is only called from Excel
@@ -145,12 +143,12 @@ namespace DaxStudio.QueryTrace
         
         // HACK: properties must have public setters so that we can deserialize from JSON when tracing against PowerPivot
         public string EventClassName { 
-            get { return _eventClassName; } 
+            get => _eventClassName;
             set { _eventClassName = value;
             Enum.TryParse<DaxStudioTraceEventClass>(_eventClassName, out _eventClass);
             } }
         public string EventSubclassName {
-            get { return _eventSubclassName; }
+            get => _eventSubclassName;
             set
             {
                 _eventSubclassName = value;
@@ -162,14 +160,16 @@ namespace DaxStudio.QueryTrace
         public long Duration { get; set; }
         public long CpuTime { get; set; }
 
-        public DaxStudioTraceEventClass EventClass { get { return _eventClass; } }
-        public DaxStudioTraceEventSubclass EventSubclass { get { return _eventSubclass; } }
+        public DaxStudioTraceEventClass EventClass => _eventClass;
+        public DaxStudioTraceEventSubclass EventSubclass => _eventSubclass;
+        // ReSharper disable once InconsistentNaming
         public string NTUserName { get; set; }
         public DateTime EndTime { get; set; }
         public DateTime StartTime { get; set; }
         public string DatabaseName { get; set; }
 
         public string DatabaseFriendlyName { get; set; }
+        // ReSharper disable once InconsistentNaming
         public string RequestID { get; set; }
         public string RequestProperties { get; set; }
         public string RequestParameters { get; set; }

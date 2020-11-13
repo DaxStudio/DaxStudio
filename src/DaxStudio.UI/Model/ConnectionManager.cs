@@ -103,11 +103,11 @@ namespace DaxStudio.UI.Model
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            return _retry.Execute<DataTable>(()=> { return _connection.ExecuteDaxQueryDataTable(query); });
+            return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
         }
         public AdomdDataReader ExecuteReader(string query)
         {
-            return _retry.Execute<AdomdDataReader>(()=> { return _connection.ExecuteReader(query); });
+            return _retry.Execute(()=> _connection.ExecuteReader(query));
         }
         public string FileName => _connection.FileName;
 
@@ -126,7 +126,7 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
-            return await _retry.Execute<Task<bool>>(async () =>
+            return await _retry.Execute(async () =>
             {
                 
                 bool hasChanged = await Task.Run(() =>
@@ -134,7 +134,7 @@ namespace DaxStudio.UI.Model
                     var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
                     conn.ChangeDatabase(this.SelectedDatabaseName);
                     if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn?.Database?.LastUpdate > _lastSchemaUpdate;
+                    var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                     conn.Close(true); // close and end the session
                     return dbChanges;
                 });
@@ -154,7 +154,10 @@ namespace DaxStudio.UI.Model
             }
         }
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT??false;
-        public bool IsPowerPivot { get => _connection?.IsPowerPivot ?? false; set { _connection.IsPowerPivot = value; } }
+        public bool IsPowerPivot { 
+            get => _connection?.IsPowerPivot ?? false; 
+            set => _connection.IsPowerPivot = value;
+        }
 
         public void Open()
         {
@@ -162,7 +165,7 @@ namespace DaxStudio.UI.Model
         }
         public void Refresh()
         {
-            _connection.Refresh();
+            if (_connection?.State == ConnectionState.Open) _connection.Refresh();
         }
         public string ServerEdition => _connection.ServerEdition;
         public string ServerLocation => _connection.ServerLocation;
@@ -170,7 +173,7 @@ namespace DaxStudio.UI.Model
         public string ServerName => _connection?.ServerName??string.Empty;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
-        public ADOTabular.Enums.ServerType ServerType { get; private set; }//=> _connection.ServerType;
+        public ServerType ServerType { get; private set; }
         public int SPID => _connection.SPID;
         public string ShortFileName => _connection.ShortFileName;
 
@@ -178,11 +181,11 @@ namespace DaxStudio.UI.Model
         {
             switch (_connection.ConnectionType)
             {
-                case ADOTabular.ADOTabularConnectionType.Cloud:
+                case ADOTabularConnectionType.Cloud:
                     return options.AutoRefreshMetadataCloud;
-                case ADOTabular.ADOTabularConnectionType.LocalNetwork:
+                case ADOTabularConnectionType.LocalNetwork:
                     return options.AutoRefreshMetadataLocalNetwork;
-                case ADOTabular.ADOTabularConnectionType.LocalMachine:
+                case ADOTabularConnectionType.LocalMachine:
                     return options.AutoRefreshMetadataLocalMachine;
                 default:
                     return true;
@@ -193,14 +196,7 @@ namespace DaxStudio.UI.Model
         private ADOTabularDatabase _selectedDatabase;
         private DateTime _lastSchemaUpdate;
 
-        public ADOTabularFunctionGroupCollection FunctionGroups
-        {
-            get
-            {
-                if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(_connection);
-                return _functionGroups;
-            }
-        }
+        public ADOTabularFunctionGroupCollection FunctionGroups => _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(_connection));
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
@@ -290,11 +286,17 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            _retry.Execute(() => { _connection.Ping(); } );
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone();
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close();
+            });
         }
         public ADOTabularModel SelectedModel { get; set; }
 
-        public void SetSelectedModel(ADOTabular.ADOTabularModel model)
+        public void SetSelectedModel(ADOTabularModel model)
         {
 
 
@@ -344,8 +346,13 @@ namespace DaxStudio.UI.Model
             if (SelectedDatabase != database)
             {
                 SelectedDatabase = database;
-                if (SelectedDatabase != null) _connection.ChangeDatabase(SelectedDatabase.Name);
-                ModelList = _connection.Database.Models;
+                if (SelectedDatabase != null)
+                {
+                    _connection?.ChangeDatabase(SelectedDatabase.Name);
+                }
+
+                if (_connection?.Database != null)
+                    ModelList = _connection.Database.Models;
 
                 _eventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
             }

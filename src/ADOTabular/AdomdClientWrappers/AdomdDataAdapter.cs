@@ -61,6 +61,7 @@ namespace ADOTabular.AdomdClientWrappers
            }
        }
 
+
         #region IDisposable Support
         private bool disposedValue; // To detect redundant calls
 

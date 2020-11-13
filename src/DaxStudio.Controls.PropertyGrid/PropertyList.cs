@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Reflection;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Data;
 
 namespace DaxStudio.Controls.PropertyGrid
@@ -21,7 +22,7 @@ namespace DaxStudio.Controls.PropertyGrid
                                                                                                 typeof(PropertyList), 
                                                                                                 new FrameworkPropertyMetadata(default(object), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSourceChanged));
 
-        private async static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static async void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             await ((PropertyList)d).UpdateSource(e.NewValue);
         }
@@ -73,15 +74,21 @@ namespace DaxStudio.Controls.PropertyGrid
 
         private static bool CategoryFilterPredicate( PropertyBinding<object> p, DependencyObject d)
         {
-            var text = ((PropertyList)d).SearchText;
-            var cat = ((PropertyList)d).CategoryFilter;
+            return System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => CategoryFilterContains(p, d));
+        }
+
+        private static bool CategoryFilterContains(PropertyBinding<object> p, DependencyObject d)
+        {
+            var text = ((PropertyList) d).SearchText;
+            var cat = ((PropertyList) d).CategoryFilter;
             if (!string.IsNullOrWhiteSpace(text))
             {
-                return p.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) || p.Subcategory.Contains(text, StringComparison.OrdinalIgnoreCase);
+                return p.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                       p.Subcategory.Contains(text, StringComparison.OrdinalIgnoreCase);
             }
 
-            if (!string.IsNullOrEmpty(cat)) 
-                return p.Category == ((PropertyList)d).CategoryFilter;
+            if (!string.IsNullOrEmpty(cat))
+                return p.Category == ((PropertyList) d).CategoryFilter;
 
             // if neither filter is set return everything
             return true;

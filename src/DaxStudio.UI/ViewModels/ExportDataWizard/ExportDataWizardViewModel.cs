@@ -260,7 +260,7 @@ namespace DaxStudio.UI.ViewModels
             var selectedTables = Tables.Where(t => t.IsSelected);
             var totalTables = selectedTables.Count();
             var tableCnt = 0;
-            string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
+            string decimalSep = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
             var encoding = new UTF8Encoding(false);
 
@@ -289,7 +289,7 @@ namespace DaxStudio.UI.ViewModels
                     try { 
                         textWriter = new StreamWriter(csvFilePath, false, encoding);
 
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.CurrentCulture))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                         {
                             for (long batchRows = 0; batchRows < totalRows; batchRows += maxBatchSize)
