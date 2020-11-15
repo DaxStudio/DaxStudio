@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Utils
 {
     public static class ClipboardHelper
     {
-        const int MaxLineLen = 200;
+        const int MaxLineLen = 500;
 
         public static string FixupString(string input)
         {
@@ -26,6 +26,9 @@ namespace DaxStudio.UI.Utils
                 // which would normally cause the tabular engine to throw an error
                 if (c == '\u00A0') c = ' ';
                 sb.Append(c);
+
+                // reset the current line length if we hit a newline character
+                if (c == '\n') lineLen = 0;
 
                 // if the current line is greater than the specified max length then
                 // insert a newline character after the next char we find in the switch list below. 
@@ -45,6 +48,7 @@ namespace DaxStudio.UI.Utils
                     }
                 }
             }
+
             return sb.ToString();
         }
 
