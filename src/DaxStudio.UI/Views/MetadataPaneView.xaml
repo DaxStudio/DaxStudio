@@ -226,22 +226,28 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                             <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
                             <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                         </StackPanel>
-                        <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
+                        <TextBlock Text="(Right-Click to copy Database Name/ID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
                         <TextBlock Text="Compatibility: " Grid.Row="2"/>
                         <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
                         <TextBlock Text="Culture: " Grid.Row="3"/>
                         <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
                         <TextBlock Text="Last Updated: " Grid.Row="4"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
-                        <TextBlock Text="Is Admin: " Grid.Row="5"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay, StringFormat=g}" Grid.Row="5" Grid.Column="1"/>
-                        <TextBlock Text="Roles: " Grid.Row="6"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay, StringFormat=g}" Grid.Row="6" Grid.Column="1"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+                            <TextBlock Text="{Binding SelectedDatabaseLastUpdateLocalTime, Mode=OneWay, StringFormat='g'}" />
+                            
+                            <TextBlock Text="{Binding SelectedDatabaseLastUpdateLocalTime, Mode=OneWay, StringFormat=' (K)'}"  />
+                        </StackPanel>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedDatabaseDurationSinceUpdate, Mode=OneWay}" FontStyle="Italic"/>
+                        <TextBlock Text="Is Admin: " Grid.Row="6"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay}" Grid.Row="6" Grid.Column="1"/>
+                        <TextBlock Text="Roles: " Grid.Row="7"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay}" Grid.Row="7" Grid.Column="1"/>
                     </Grid>
                 </Grid>
             </ComboBox.ToolTip>
@@ -255,7 +261,12 @@
             </ComboBox.ItemTemplate>
             <ComboBox.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseName()]">
+                    <MenuItem Header="Copy Database Name"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseName()]">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Copy Database Id"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseId()]">
                         <MenuItem.Icon>
                             <Image Source="{StaticResource CopyIcon}"/>
                         </MenuItem.Icon>

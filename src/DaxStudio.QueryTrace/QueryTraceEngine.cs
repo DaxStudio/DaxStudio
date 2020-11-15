@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using Microsoft.AnalysisServices;
@@ -11,6 +12,7 @@ using Serilog;
 using DaxStudio.Common;
 using Polly;
 using ADOTabular.Enums;
+using Trace = Microsoft.AnalysisServices.Trace;
 
 namespace DaxStudio.QueryTrace
 {
@@ -94,7 +96,7 @@ namespace DaxStudio.QueryTrace
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
         public event EventHandler TraceStarted;
         public event EventHandler<string> TraceError;
-
+        public event EventHandler<string> TraceWarning;
         #endregion
 
         #region Internal implementation
@@ -173,8 +175,8 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
             trace.Events.Clear();
-            // Add CommandBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
+            // Add DiscoverBegin so we can catch the heartbeat events
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin));
             // Add QueryEnd so we know when to stop the trace
             trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
             
@@ -293,12 +295,14 @@ namespace DaxStudio.QueryTrace
                                     Log.Error(exception,"{class} {method}", "QueryTraceEngine", "OnTimerElapsed");
                                     System.Diagnostics.Debug.WriteLine("Error pinging trace connection: " + exception.Message);
                                     // TODO - should we raise event aggregator 
+                                    RaiseWarning("There was an error while pinging the trace - retrying");
                                 }
                             );
 
                         policy.Execute(() => {
                             if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-                            _connection.Ping(); 
+                            Debug.WriteLine("Connection.Ping()");
+                            _connection.PingTrace(); 
                             Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
                         });
                     }
@@ -354,6 +358,12 @@ namespace DaxStudio.QueryTrace
         {
             TraceError?.Invoke(this, message);
             Log.Error("{class} {method} {message}", "QueryTraceEngine", "RaiseError", message);
+        }
+
+        public void RaiseWarning(string message)
+        {
+            TraceWarning?.Invoke(this, message);
+            Log.Warning("{class} {method} {message}", "QueryTraceEngine", "RaiseWarning", message);
         }
 
         public void RaiseError(Exception ex)
@@ -439,6 +449,15 @@ namespace DaxStudio.QueryTrace
                 }
                 else
                 {
+                    // exit early if there is no text in the query
+                    if ((e.EventClass == TraceEventClass.QueryBegin ||
+                         e.EventClass == TraceEventClass.QueryEnd) && e.TextData.StartsWith("/* PING */"))
+                    {
+                        Debug.WriteLine("Skipping Empty <Statement>");
+                        return;
+                    }
+
+
                     System.Diagnostics.Debug.Print("TraceEvent: {0}", e.EventClass.ToString());
                     Log.Verbose("TraceEvent: {EventClass} - {EventSubClass} - {ActivityId}", e.EventClass.ToString(), e.EventSubclass.ToString(), e[TraceColumn.ActivityID]);
                     if (e.EventClass == TraceEventClass.QueryBegin)
@@ -490,6 +509,7 @@ namespace DaxStudio.QueryTrace
             TraceEvent = (TraceEventHandler)Delegate.RemoveAll(TraceEvent, TraceEvent);
             TraceCompleted = (EventHandler<IList<DaxStudioTraceEventArgs>>)Delegate.RemoveAll(TraceCompleted, TraceCompleted);
             TraceError = (EventHandler<string>)Delegate.RemoveAll(TraceError, TraceError);
+            TraceWarning = (EventHandler<string>)Delegate.RemoveAll(TraceWarning, TraceWarning);
         }
 
         public void Update(string databaseName, string sessionId)

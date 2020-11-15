@@ -36,6 +36,7 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy.On("OnTraceStarted", () => {OnTraceStarted();});
             queryTraceHubProxy.On("OnTraceComplete", (e) => { OnTraceComplete(e); });
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
+            queryTraceHubProxy.On<string>("OnTraceWarning", (msg) => { OnTraceWarning(msg); });
             hubConnection.Start().Wait();
             // configure trace
             Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQueryTraceEngine", "<constructor>", "about to create remote engine", connectionManager.Type.ToString(), connectionManager.SessionId, events.Count);
@@ -72,6 +73,14 @@ namespace DaxStudio.QueryTrace
             }
         }
 
+        public void OnTraceWarning(string errorMessage)
+        {
+            if (TraceWarning != null)
+            {
+                TraceWarning(this, errorMessage);
+            }
+        }
+
         public void OnTraceComplete(DaxStudioTraceEventArgs[] capturedEvents)
         {
             if (TraceCompleted != null)
@@ -83,9 +92,8 @@ namespace DaxStudio.QueryTrace
         {            
             // HACK: not sure why we have to explicitly cast the argument from a JArray, I thought Signalr should do this for us
             var e = myArray.ToObject<DaxStudioTraceEventArgs[]>();
-            
-            if (TraceCompleted != null)
-            { TraceCompleted(this, e); }
+
+            TraceCompleted?.Invoke(this, e);
         }
 
         public void OnTraceCompleted(IList<DaxStudioTraceEventArgs> capturedEvents) { 
@@ -93,14 +101,14 @@ namespace DaxStudio.QueryTrace
             { TraceCompleted(this, capturedEvents); }
         }
 
-        public List<DaxStudioTraceEventClass> Events { get { return _eventsToCapture; } }
-        
+        public List<DaxStudioTraceEventClass> Events => _eventsToCapture;
+
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
 
         public event EventHandler TraceStarted;
 
         public event EventHandler<string> TraceError;
-
+        public event EventHandler<string> TraceWarning;
         public QueryTraceStatus Status
         {
             get
