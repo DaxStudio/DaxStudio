@@ -1216,6 +1216,13 @@ namespace ADOTabular
                 product.Type = "Azure AS";
                 product.Name = product.Type;
             }
+            else if (serverName.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)       // Power BI XMLA EndPoint (Premium, Premium per User)
+                || serverName.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)        // Power BI Dataset
+                || serverName.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase) )  // Power BI Premium Internal
+            {
+                product.Type = "Power BI Service";
+                product.Name = product.Type;
+            }
             else if (serverId.Contains(@"\AnalysisServicesWorkspace")) {
                 product.Type = "Power BI";
                 product.Name = product.Type;

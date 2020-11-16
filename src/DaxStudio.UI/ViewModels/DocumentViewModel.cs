@@ -281,7 +281,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-
             try
             {
                 // this check strips out unicode non-breaking spaces and replaces them
@@ -289,8 +288,9 @@ namespace DaxStudio.UI.ViewModels
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
+
                 if (content == null) return;
-                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                var dataObject = new DataObject(ClipboardHelper.FixupString(content));
                 e.DataObject = dataObject;
 
             }
@@ -299,7 +299,6 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "Error while Pasting: {message}", ex.Message);
                 OutputError($"Error while Pasting: {ex.Message}");
             }
-
         }
 
         private void OnDrop(object sender, DragEventArgs e)
