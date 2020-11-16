@@ -1,16 +1,16 @@
-﻿using DaxStudio.Interfaces.Enums;
+﻿using System.Collections.Generic;
 
-namespace DaxStudio.UI.Utils.DelimiterTranslator
+namespace DaxStudio.UI.Utils
 {
     /// <summary>
     /// This class takes care of swapping delimiters from US to NonUS styles
     /// </summary>
-    public class DelimiterStateMachine : StringStateMachine<DelimiterStateMachine>
+    public class LongLineStateMachine : LineStateMachine<LongLineStateMachine>
     {
         // states
         private static readonly State OtherText = new State("Other", (sm, str, pos) => {
             sm.EventHappens(str, pos);
-            return ProcessOtherText((DelimiterStateMachine)sm, str, pos);
+            return ProcessOtherText((LongLineStateMachine)sm, str, pos);
         });
         private static readonly State TableName = new State("Table");
         private static readonly State ColumnName = new State("Column");
@@ -29,10 +29,12 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
         private const char Star = '*';
         private const char NewLine = '\n';
 
-        public DelimiterType TargetDelimiterType = DelimiterType.Unknown;
+        //public DelimiterType TargetDelimiterType = DelimiterType.Unknown;
+        public int MaxLineLength = 5000;
+
 
         #region Constructors
-        static DelimiterStateMachine()
+        static LongLineStateMachine()
         {
             // setup all the state transitions
             OtherText.When(SingleQuote, (sm, s, str, pos) => TableName)
@@ -66,59 +68,32 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
 
         }
 
-        public DelimiterStateMachine() : base(OtherText) { TargetDelimiterType = DelimiterType.Unknown; }
-        public DelimiterStateMachine(DelimiterType targetDelimiterType) : base(OtherText) { TargetDelimiterType = targetDelimiterType; }
-        public DelimiterStateMachine(State initial, DelimiterType targetDelimiterType) : base(initial) { TargetDelimiterType = targetDelimiterType; }
+        public LongLineStateMachine() : base(OtherText) {  }
+        public LongLineStateMachine(int maxLineLength) : base(OtherText) { MaxLineLength = maxLineLength; }
+
+        public LongLineStateMachine(State initial, int maxLineLength) : base(initial) { MaxLineLength = maxLineLength; }
         #endregion
 
-        public static char ProcessOtherText(DelimiterStateMachine sm, string input, int pos)
+        public static IEnumerable<char> ProcessOtherText(LongLineStateMachine sm, string input, int pos)
         {
             switch (input[pos])
             {
-                case ';':
-                    if (sm.TargetDelimiterType == DelimiterType.Unknown) { sm.TargetDelimiterType = DelimiterType.Comma; }
-                    if (sm.TargetDelimiterType == DelimiterType.Comma) { return ','; }
-                    return input[pos];
-                case '.':
-                    if (sm.TargetDelimiterType == DelimiterType.Unknown)
+                case ')':
+                case '}':
+                case ' ':
+                    if (sm.LinePosition > sm.MaxLineLength)
                     {
-                        if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
-                        {
-                            sm.TargetDelimiterType = DelimiterType.SemiColon;
-                        }
+                        yield return input[pos];
+                        sm.InsertNewLine();
+                        yield break;
                     }
-                    if (sm.TargetDelimiterType == DelimiterType.SemiColon) { return ','; }
-                    return input[pos];
-                case ',':
-                    if (sm.TargetDelimiterType == DelimiterType.Unknown)
-                    {
-                        if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
-                        {
-                            sm.TargetDelimiterType = DelimiterType.Comma;
-                        }
-                        else
-                        {
-                            sm.TargetDelimiterType = DelimiterType.SemiColon;
-                        }
-                    }
-                    switch (sm.TargetDelimiterType)
-                    {
-                        case DelimiterType.SemiColon:
-                            return ';';
-                        case DelimiterType.Comma:
-                            return '.';
-                        default:
-                            return input[pos];
-                    }
-                default:
-                    return input[pos];
-            }
-        }
 
-        static bool IsNumeric(char c)
-        {
-            int tmp = 0;
-            return int.TryParse(c.ToString(), out tmp);
+                    yield return input[pos];
+                    yield break;
+                default:
+                    yield return input[pos];
+                    yield break;
+            }
         }
 
     }

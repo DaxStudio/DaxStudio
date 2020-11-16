@@ -155,7 +155,7 @@ defaults:
   - scope:
       path: "_documentation/features"
     values:
-      layout: "doco"
+      layout: "feature"
       feature: true
   - scope:
       path: "_documentation/installation"

@@ -605,6 +605,8 @@
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\LineStateMachine.cs" />
+    <Compile Include="Utils\LongLineStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
     <Compile Include="Utils\DisabledCommand.cs" />

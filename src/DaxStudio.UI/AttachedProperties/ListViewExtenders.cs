@@ -41,48 +41,50 @@ namespace DaxStudio.UI.AttachedProperties
         /// <param name="e">Some additional information</param>
         public static void OnAutoScrollToEndChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
-            var listView = s as ListView;
-            if (listView != null)
-            {
-                var listViewItems = listView.Items;
-                var data = listViewItems.SourceCollection as INotifyCollectionChanged;
+            if (!(s is ListView listView)) return;
+            var listViewItems = listView.Items;
+            var data = listViewItems.SourceCollection as INotifyCollectionChanged;
 
-                var scrollToEndHandler = new NotifyCollectionChangedEventHandler(
-                    (s1, e1) =>
-                        {
-                            if (listView.Items.Count > 0 && e1 != null && e1.NewItems != null) // fix for error in certain conditions
-                            {
-                                //object lastItem = listView.Items[listView.Items.Count - 1];
-                                var lastItem = e1.NewItems[0];
-                                listView.Items.MoveCurrentTo(lastItem);
-                                listView.ScrollIntoView(lastItem);
-                                listView.SelectedItem = lastItem;
-                            }
-                        });
-
-                var gotFocusHandler = new RoutedEventHandler (
-                    (s2, e2) =>
-                    {
-                        if (listView.Items.Count > 0)
-                        {
-                            //object lastItem = listView.Items[listView.Items.Count - 1];
-                            listView.ScrollIntoView(listView.SelectedItem);
-                        }
-                    });
-
-                if ((bool)e.NewValue)
+            var scrollToEndHandler = new NotifyCollectionChangedEventHandler(
+                (s1, e1) =>
                 {
-                    if (data != null)
+                    if (listView.Items.Count <= 0 || e1?.NewItems == null) return;
+                    try
                     {
-                        data.CollectionChanged += scrollToEndHandler;
-                        listView.GotFocus += gotFocusHandler;
+                        //object lastItem = listView.Items[listView.Items.Count - 1];
+                        var lastItem = e1.NewItems[0];
+                        listView.Items.MoveCurrentTo(lastItem);
+                        listView.ScrollIntoView(lastItem);
+                        listView.SelectedItem = lastItem;
                     }
-                }
-                else if (data != null) 
+                    catch
+                    {
+                        // swallow any exceptions
+                    }
+                });
+
+            var gotFocusHandler = new RoutedEventHandler (
+                (s2, e2) =>
                 {
-                    data.CollectionChanged -= scrollToEndHandler;
-                    listView.GotFocus -= gotFocusHandler;
+                    if (listView.Items.Count > 0)
+                    {
+                        //object lastItem = listView.Items[listView.Items.Count - 1];
+                        listView.ScrollIntoView(listView.SelectedItem);
+                    }
+                });
+
+            if ((bool)e.NewValue)
+            {
+                if (data != null)
+                {
+                    data.CollectionChanged += scrollToEndHandler;
+                    listView.GotFocus += gotFocusHandler;
                 }
+            }
+            else if (data != null) 
+            {
+                data.CollectionChanged -= scrollToEndHandler;
+                listView.GotFocus -= gotFocusHandler;
             }
         }
     }
