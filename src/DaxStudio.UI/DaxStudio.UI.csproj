@@ -399,12 +399,14 @@
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
+    <Compile Include="Enums\MultipleQueriesDetectedDialogResult.cs" />
     <Compile Include="Events\ConnectFailedEvent.cs" />
     <Compile Include="Events\ConnectionOpenedEvent.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
     <Compile Include="Events\ReconnectEvent.cs" />
     <Compile Include="Events\RefreshTablesEvent.cs" />
     <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
+    <Compile Include="Events\SendColumnToEditorEvent.cs" />
     <Compile Include="Events\SetFocusEvent.cs" />
     <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
     <Compile Include="Events\TablesRefreshedEvent.cs" />
@@ -606,6 +608,7 @@
     <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\ClipboardHelper.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
@@ -694,6 +697,7 @@
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderFilter.cs" />
+    <Compile Include="ViewModels\MultipleQueriesDetectedDialogViewModel.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\PartitionGroupDescription.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\RelationshipGroupDescription.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\TableGroupDescription.cs" />
@@ -705,6 +709,9 @@
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
+      <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\BenchmarkView.xaml.cs">
       <DependentUpon>BenchmarkView.xaml</DependentUpon>
@@ -877,6 +884,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Monotone.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MultipleQueriesDetectedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

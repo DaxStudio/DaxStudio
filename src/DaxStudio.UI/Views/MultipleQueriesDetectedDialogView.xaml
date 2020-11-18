@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.MultipleQueriesDetectedDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             mc:Ignorable="d" 
+             d:DesignHeight="350" d:DesignWidth="480"
+             Width="570"
+             MinHeight="350">
+    <UserControl.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4,2"/>
+                <Setter Property="Padding" Value="15 5"/>
+                <Setter Property="FontSize" Value="16"></Setter>
+            </Style>
+   
+            <Style TargetType="Run">
+                <Setter Property="ToolTipService.ShowDuration" Value="30000" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
+                    <Label Content="Multiple query types detected" Foreground="{StaticResource DaxStudioBrush}" 
+                           Margin="3,0"
+                           FontWeight="Light" FontSize="44" ></Label>
+                    <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+                </StackPanel>
+                <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green">// SQL Query </Run> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
+                    <Run Foreground="Blue" TextDecorations="Underline">remote storage engine (Direct Query)
+                        <Run.ToolTip>
+                            <ToolTip MaxWidth="300" HasDropShadow="True" >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <fa:FontAwesome Icon="InfoCircle" FontSize="50" Grid.Column="0" Foreground="{StaticResource DaxStudioBrush}" Margin="5,0"/>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap">Direct Query generates queries sent to the remote storage engine. These queries cannot be executed in DAX Studio using the connection to the local data model; they need a connection to the remote data source. By executing the DAX query in DAX Studio, you would see the same Direct Query queries in the Server Timings pane as SQL subclass type.</TextBlock>
+                                </Grid>
+                            </ToolTip>
+                        </Run.ToolTip></Run>.</TextBlock>
+                <TextBlock Padding="10" TextWrapping="Wrap">There are <Run Text="{Binding CharactersBeforeComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters before the <Run FontFamily="Courier New" Foreground="Green">// SQL Query</Run> comment and <Run Text="{Binding CharactersAfterComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters after it.</TextBlock>
+                <TextBlock Padding="10" TextWrapping="Wrap" FontWeight="Light" FontSize="24" HorizontalAlignment="Center">Which queries do you want to paste?</TextBlock>
+            </StackPanel>
+            
+            
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="7,5" HorizontalAlignment="Center">
+                <Button x:Name="RemoveDirectQueryCode" IsDefault="True" FontWeight="Bold" FontSize="20">_DAX Query Only</Button>
+                <Button x:Name="KeepDirectQueryCode"  FontSize="14" >_Both DAX and Direct Query</Button>
+                <Button x:Name="Cancel" IsCancel="True" FontSize="13" >_Cancel</Button>
+            </StackPanel>
+            <CheckBox x:Name="RememberChoice" Grid.Row="3" HorizontalAlignment="Center" Margin="10,10,10,20"><TextBlock>Remember this choice next time
+                <Run FontStyle="Italic">(can also be set in Options)</Run></TextBlock>
+            </CheckBox>
+        </Grid>
+    </Border>
+</UserControl>

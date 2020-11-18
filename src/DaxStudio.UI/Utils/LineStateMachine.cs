@@ -7,7 +7,7 @@ namespace DaxStudio.UI.Utils
     public abstract class LineStateMachine<T> where T : LineStateMachine<T>
     {
         private const char NewLine = '\n';
-        private const string SqlQueryComment = "// SQL Query\n";
+        private const string SqlQueryComment = "// SQL Query";
         public State CurrentState { get; set; }
         private StringBuilder _sbMain;
         private StringBuilder _sbCurrentLine;
@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Utils
                 foreach (char ch in CurrentState.ProcessCharacter((T)this, input, pos))
                 {
                     _sbMain.Append(ch);
-                    _sbCurrentLine.Append(ch);
+                    if (ch != '\r' && ch != '\n') _sbCurrentLine.Append(ch);
                 }
 
                 if (input[pos] == NewLine)

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
+using System.Windows.Documents;
 
 namespace DaxStudio.Controls.PropertyGrid
 {
@@ -159,7 +160,7 @@ namespace DaxStudio.Controls.PropertyGrid
 
                     binding.SetValue = (value) => prop.SetValue(newSource, value);
                     binding.GetValue = () => prop.GetValue(newSource);
-
+                    
                     var enabledProp = newSource.GetType().GetProperty($"{prop.Name}Enabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     if (enabledProp != null)
                     {
@@ -169,6 +170,7 @@ namespace DaxStudio.Controls.PropertyGrid
                     }
 
                     props.Add(binding);
+
                 }
                 _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView(props);
                 PropertyGroupDescription groupDescription = new PropertyGroupDescription("Subcategory");

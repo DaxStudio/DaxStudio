@@ -14,18 +14,13 @@ using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using DaxStudio.UI.Enums;
 using System.Collections.ObjectModel;
-using DaxStudio.UI.Model;
 using DaxStudio.UI.JsonConverters;
-using System.Collections.Specialized;
 using Microsoft.Win32;
-using System.Runtime.InteropServices;
 using System.IO;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.Controls.PropertyGrid;
 using System.Reflection;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
@@ -93,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
         [SortOrder(10)]
         [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
-        public string EditorFontFamily { get { return _selectedEditorFontFamily; }
+        public string EditorFontFamily { get => _selectedEditorFontFamily;
             set {
                 if (_selectedEditorFontFamily == value) return;
                 _selectedEditorFontFamily = value;
@@ -113,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
         [MinValue(6),MaxValue(120)]
         [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
-        public double EditorFontSize { get { return _editorFontSize; }
+        public double EditorFontSize { get => _editorFontSize;
             set {
                 if (_editorFontSize == value) return;
                 _editorFontSize = value;
@@ -141,7 +136,7 @@ namespace DaxStudio.UI.ViewModels
         [DataMember]
         [DefaultValue(DefaultResultsFontFamily)]
         public string ResultFontFamily {
-            get { return _selectedResultFontFamily; }
+            get => _selectedResultFontFamily;
             set {
                 if (_selectedResultFontFamily == value) return;
                 _selectedResultFontFamily = value;
@@ -162,7 +157,7 @@ namespace DaxStudio.UI.ViewModels
         [MinValue(4.0)]
         [MaxValue(256.0)]
         public double ResultFontSize {
-            get { return _resultFontSize; }
+            get => _resultFontSize;
             set {
                 if (_resultFontSize == value) return;
                 _resultFontSize = value;
@@ -178,7 +173,7 @@ namespace DaxStudio.UI.ViewModels
         [SortOrder(30)]
         [DataMember]
         [DefaultValue(true)]
-        public bool EditorShowLineNumbers { get { return _showLineNumbers; }
+        public bool EditorShowLineNumbers { get => _showLineNumbers;
             set
             {
                 if (_showLineNumbers == value) return;
@@ -196,7 +191,7 @@ namespace DaxStudio.UI.ViewModels
         [DefaultValue(true)]
         public bool EditorEnableIntellisense
         {
-            get { return _enableIntellisense; }
+            get => _enableIntellisense;
             set
             {
                 if (_enableIntellisense == value) return;
@@ -207,12 +202,31 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Editor")]
+        [DisplayName("Multiple queries detected on paste")]
+        [Description("Specifies how to handle code after a \"// SQL Query\" comment when pasting code from Power BI Performance Analyzer")]
+        [SortOrder(60)]
+        [DataMember]
+        [DefaultValue(MultipleQueriesDetectedOnPaste.Prompt)]
+        public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste
+        {
+            get => _removeDirectQueryCode;
+            set
+            {
+                if (_removeDirectQueryCode == value) return;
+                _removeDirectQueryCode = value;
+                NotifyOfPropertyChange(() => EditorMultipleQueriesDetectedOnPaste);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<MultipleQueriesDetectedOnPaste>(nameof(EditorMultipleQueriesDetectedOnPaste), value, _isInitializing);
+            }
+        }
+
         [DisplayName("Legacy DirectQuery Trace")]
         [Category("Trace")]
         [Description("On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible")]
         [DataMember, DefaultValue(false)]
         public bool TraceDirectQuery {
-            get { return _traceDirectQuery; }
+            get => _traceDirectQuery;
             set {
                 if (_traceDirectQuery == value) return;
                 _traceDirectQuery = value;
@@ -347,7 +361,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("Query History")]
         [DisplayName("History items to keep")]
         [DataMember, DefaultValue(200), MinValue(0), MaxValue(500)]
-        public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
+        public int QueryHistoryMaxItems { get => _maxQueryHistory;
             set
             {
                 if (_maxQueryHistory == value) return;
@@ -1632,8 +1646,15 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+            this.Refresh();
+        }
+
         #region IDisposable Support
         private bool disposedValue; // To detect redundant calls
+        private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;
 
         protected virtual void Dispose(bool disposing)
         {

@@ -60,11 +60,11 @@ namespace DaxStudio.Interfaces
 
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
-
+        MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool ShowUserInTitlebar { get; set; }
 
         Version CurrentDownloadVersion { get; set; }
-
+        
         #region Hotkeys
         [JsonIgnore]
         string HotkeyWarningMessage { get; set; }

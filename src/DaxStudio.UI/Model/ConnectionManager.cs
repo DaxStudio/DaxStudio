@@ -145,7 +145,7 @@ namespace DaxStudio.UI.Model
         }
 
         public ADOTabularDatabaseCollection Databases => _connection.Databases;
-        public bool IsAdminConnection => _connection.IsAdminConnection;
+        public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
 
         public bool IsConnected { get
             {

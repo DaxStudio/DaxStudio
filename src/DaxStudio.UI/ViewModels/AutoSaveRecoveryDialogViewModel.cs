@@ -57,6 +57,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SelectAll);
             } }
 
-        public OpenDialogResult Result { get { return _dialogResult; } }
+        public OpenDialogResult Result => _dialogResult;
     }
 }

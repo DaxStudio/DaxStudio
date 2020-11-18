@@ -46,6 +46,8 @@ using Dax.ViewModel;
 using System.Reflection;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
+using ControlzEx.Standard;
+using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Utils.Intellisense;
 
 namespace DaxStudio.UI.ViewModels
@@ -290,7 +292,20 @@ namespace DaxStudio.UI.ViewModels
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
 
                 if (content == null) return;
-                var dataObject = new DataObject(ClipboardHelper.FixupString(content));
+
+                var sm = new LongLineStateMachine(500);
+                var newContent = sm.ProcessString(content);
+                if (sm.SqlQueryCommentFound)
+                {
+                    if (MultipleQueriesDetectedDialogResult.RemoveDirectQuery ==
+                        ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
+                    {
+                        // remove the direct query code from the text we are pasting in
+                        newContent = newContent.Substring(0, sm.SqlQueryCommentPosition);
+                    }
+                }
+                
+                var dataObject = new DataObject(newContent);
                 e.DataObject = dataObject;
 
             }
@@ -299,6 +314,37 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "Error while Pasting: {message}", ex.Message);
                 OutputError($"Error while Pasting: {ex.Message}");
             }
+        }
+
+        private MultipleQueriesDetectedDialogResult ShowStripDirectQueryDialog(int commentPosition, int stringLength)
+        {
+            // check in options if we should prompt or return a default option
+            if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax)
+                return MultipleQueriesDetectedDialogResult.RemoveDirectQuery;
+            if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepBoth)
+                return MultipleQueriesDetectedDialogResult.KeepDirectQuery;
+
+            // if we get here we should prompt the user
+            const int commentLength = 12;
+            var charactersAfterComment = stringLength - commentPosition - commentLength;
+            
+            var stripDirectQueryDialog = new MultipleQueriesDetectedDialogViewModel(Options)
+            {
+                CharactersBeforeComment = commentPosition,
+                CharactersAfterComment = charactersAfterComment
+            };
+
+            _windowManager.ShowDialogBox(stripDirectQueryDialog, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+
+            return stripDirectQueryDialog.Result;
         }
 
         private void OnDrop(object sender, DragEventArgs e)
