@@ -148,7 +148,7 @@ namespace DaxStudio.UI.Model
         public static string FilterExpressionBasic(QueryBuilderFilter filter)
         {
             var formattedVal = FormattedValue(filter, () => filter.FilterValue);
-            var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
+            
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
@@ -177,6 +177,7 @@ namespace DaxStudio.UI.Model
                 case FilterType.LessThanOrEqual:
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} <= {formattedVal} ))";
                 case FilterType.Between:
+                    var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
