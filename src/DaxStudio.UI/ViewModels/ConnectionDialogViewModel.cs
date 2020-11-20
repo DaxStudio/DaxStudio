@@ -732,6 +732,7 @@ namespace DaxStudio.UI.ViewModels
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
                         if (props.ContainsKey("Initial Catalog"))
                         {
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Setting the \'Initial Catalog\" property in the Advanced options to \"{ props["Initial Catalog"]}\""));
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
