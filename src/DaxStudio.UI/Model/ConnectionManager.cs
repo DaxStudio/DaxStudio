@@ -200,13 +200,13 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
-            return _connection.Databases;
+            return _retry.Execute(() => { return _connection.Databases; });
         }
 
         public ADOTabularModelCollection GetModels()
         {
-            return _connection.Database.Models;
-        }
+            return _retry.Execute(() => { return _connection.Database.Models; });
+    }
 
         public ADOTabularTableCollection GetTables()
         {
