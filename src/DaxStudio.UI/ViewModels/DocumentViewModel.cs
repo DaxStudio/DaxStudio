@@ -49,6 +49,7 @@ using ADOTabular.Enums;
 using ControlzEx.Standard;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Utils.Intellisense;
+using Constants = DaxStudio.Common.Constants;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -517,6 +518,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _tracer.Events.Clear();
                 _tracer.Events.Add(DaxStudioTraceEventClass.DiscoverBegin);
+                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
                 _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
                 foreach (var e in events)
                 {
@@ -800,6 +802,7 @@ namespace DaxStudio.UI.ViewModels
                 if (CanRunQuery)
                 {
                     await CheckForMetadataUpdatesAsync();
+                    // TODO - look at removing this as it breaks some connections
                     Connection.Ping();
                 }
 
@@ -1300,7 +1303,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshElapsedTime()
         {
-            NotifyOfPropertyChange(() => ElapsedQueryTime);
+            try
+            {
+                NotifyOfPropertyChange(() => ElapsedQueryTime);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshElapsedTime), "Error updating elapsed time");
+            }
         }
 
         public async Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
@@ -2688,8 +2698,15 @@ namespace DaxStudio.UI.ViewModels
 
         internal void SetStatusBarMessage(string message)
         {
-            _statusBarMessage = message;
-            NotifyOfPropertyChange(() => StatusBarMessage);
+            try
+            {
+                _statusBarMessage = message;
+                NotifyOfPropertyChange(() => StatusBarMessage);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetStatusBarMessage), ex.Message);
+            }
         }
 
         private int _spid = -1;
@@ -3813,8 +3830,10 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // TODO - this was running synchronously and was causing issues on slow connections (like AAS)
+
                 // ping the connection to make sure we are connected and the session is active
-                if (Connection.IsConnected) Connection.Ping();
+                //if (Connection.IsConnected) Connection.Ping();
             }
             catch (Exception ex)
             {

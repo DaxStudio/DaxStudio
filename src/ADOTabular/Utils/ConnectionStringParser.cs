@@ -45,6 +45,9 @@ namespace ADOTabular.Utils
                             case ParsingState.InKey:
                                 if (results.Count == 0)
                                 {
+                                    // If there is some text before the first semi-colon we assume this 
+                                    // a Data Source, so we add that to the dictionary and then keep parsing the
+                                    // rest of the string
                                     results.Add("Data Source", key.ToString());
                                     key.Clear();
                                     value.Clear();

@@ -123,7 +123,7 @@ namespace DaxStudio.QueryTrace
             Status = QueryTraceStatus.Stopped;
 
             // ping the connection to make sure it is connected
-            connectionManager.Ping();
+            _connectionManager.Ping();
 
             _sessionId = connectionManager.SessionId;
             _connectionType = connectionManager.Type;
@@ -175,8 +175,9 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
             trace.Events.Clear();
-            // Add DiscoverBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin));
+            // Add CommandBegine & DiscoverBegin so we can catch the heartbeat events
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin)); 
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
             // Add QueryEnd so we know when to stop the trace
             trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
             

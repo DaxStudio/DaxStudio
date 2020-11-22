@@ -717,7 +717,7 @@ namespace DaxStudio.UI.ViewModels
                     string text = Convert.ToString(e.DataObject.GetData(DataFormats.Text));
 
                     if (text.Contains(";")) {
-                        var msg = "Detected paste of a string with semi-colons, attempting to parse out the 'Data Source' property";
+                        var msg = "Detected paste of a string with semi-colons, attempting to parse out the \"Data Source\" and \"Initial Catalog\" properties";
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
                         _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, msg));
 
@@ -732,7 +732,7 @@ namespace DaxStudio.UI.ViewModels
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
                         if (props.ContainsKey("Initial Catalog"))
                         {
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Setting the \'Initial Catalog\" property in the Advanced options to \"{ props["Initial Catalog"]}\""));
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }

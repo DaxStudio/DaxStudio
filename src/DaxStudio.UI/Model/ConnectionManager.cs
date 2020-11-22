@@ -286,6 +286,7 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
+            
             _retry.Execute(() =>
             {
                 var tempConn = _connection.Clone();

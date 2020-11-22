@@ -14,8 +14,10 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Interfaces;
 using System.Windows;
 using System.Diagnostics;
+using System.Windows.Input;
 using ADOTabular.Interfaces;
 using Humanizer;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -461,6 +463,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _sortFoldersFirstInMetadata = true;
+        private bool _metadataHasFocus;
+        private IFilterableTreeViewItem _selectedTreeViewItem;
+
         public bool SortFoldersFirstInMetadata
         {
             get => _sortFoldersFirstInMetadata;
@@ -843,6 +848,52 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+
+        public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)
+        {
+            switch (args.Key)
+            {
+                case Key.Space:
+                case Key.C:
+                    if (selectedItem is ITreeviewColumn col)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col,false));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this ,nameof(CurrentCriteria));
+                    }
+                    break;
+                case Key.Enter:
+                case Key.F:
+                    if (selectedItem is ITreeviewColumn filter)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, true));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this,nameof(CurrentCriteria));
+                    }
+                    break;
+            }
+        }
+
+        public void SetFocusToMetadata()
+        {
+            Debug.WriteLine("Setting focus to Tables");
+            FocusManager.SetFocus(this, nameof(Tables));
+            var firstItem = Tables.FirstOrDefault(t => t.IsMatch);
+            firstItem.IsSelected = true;
+        }
+
+        public IFilterableTreeViewItem SelectedTreeViewItem
+        {
+            get => _selectedTreeViewItem;
+            set
+            {
+                _selectedTreeViewItem = value; 
+                NotifyOfPropertyChange();
+            }
+        }
+
         public void Handle(QueryStartedEvent message)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
@@ -923,16 +974,6 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
-
-    //public class DatabaseComparer : IComparer
-    //{
-    //    public int Compare(object x, object y)
-    //    {
-    //        String custX = x as String;
-    //        String custY = y as String;
-    //        return custX.CompareTo(custY);
-    //    }
-    //}
 
 
     public class DatabaseReference : IDatabaseReference

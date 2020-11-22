@@ -22,6 +22,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
+        ,IHandle<SendColumnToEditorEvent>
         ,IDisposable
     {
         const string NewMeasurePrefix = "MyMeasure";
@@ -39,6 +40,13 @@ namespace DaxStudio.UI.ViewModels
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
             OrderBy = new QueryBuilderFieldList(EventAggregator);
+            VisibilityChanged += OnVisibilityChanged;
+        }
+
+        private void OnVisibilityChanged(object sender, EventArgs e)
+        {
+            if (IsVisible) EventAggregator.Subscribe(this);
+            else EventAggregator.Unsubscribe(this);
         }
 
         private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -63,6 +71,8 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _isEnabled = value;
+                if (_isEnabled) EventAggregator.Subscribe(this);
+                else EventAggregator.Unsubscribe(this);
                 NotifyOfPropertyChange();
             }
         }
@@ -171,6 +181,12 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        protected override void OnVisibilityChanged(EventArgs e)
+        {
+            base.OnVisibilityChanged(e);
+            
+        }
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
 
@@ -198,5 +214,25 @@ namespace DaxStudio.UI.ViewModels
 
 
         #endregion
+
+        public void Handle(SendColumnToEditorEvent message)
+        {
+            if (message.IsFilter) AddColumnToFilters(message.Column);
+            else AddColumnToColumns(message.Column);
+        }
+
+        private void AddColumnToColumns(ITreeviewColumn column)
+        {
+            if (Columns.Contains(column.InternalColumn))
+            {
+                // write warning and return
+            }
+            Columns.Add(column.InternalColumn);
+        }
+
+        private void AddColumnToFilters(ITreeviewColumn column)
+        {
+            Filters.Add(column.InternalColumn);
+        }
     }
 }

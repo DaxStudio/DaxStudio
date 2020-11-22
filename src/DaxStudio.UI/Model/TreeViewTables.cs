@@ -196,14 +196,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private bool match = true;
+        private bool _match = true;
         public bool IsMatch
         {
-            get { return match; }
+            get => _match;
             set
             {
-                if (value == match) return;
-                match = value;
+                if (value == _match) return;
+                _match = value;
                 NotifyOfPropertyChange(()=> IsMatch);
             }
         }
@@ -218,7 +218,7 @@ namespace DaxStudio.UI.Model
 
         private bool _isExpanded ;
         public bool IsExpanded { 
-            get { return _isExpanded; }
+            get => _isExpanded;
             set
             {
                 if (value == _isExpanded) return;
@@ -227,12 +227,24 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (value == _isSelected) return;
+                _isSelected = value;
+                NotifyOfPropertyChange(() => IsSelected);
+            }
+        }
+
         public IMetadataPane MetadataPane { get; }
 
         public IGlobalOptions Options
         {
-            get { return _options; }
-            set { _options = value; }
+            get => _options;
+            set => _options = value;
         }
 
         public void ApplyCriteria(string criteria, Stack<IFilterableTreeViewItem> ancestors)

@@ -134,8 +134,9 @@ namespace DaxStudio.QueryTrace
         {
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "enter");
             trace.Events.Clear();
-            // Add DiscoverBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.DiscoverBegin));
+            // Add CommandBegin & DiscoverBegin so we can catch the heartbeat events
+            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.DiscoverBegin)); 
+            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.CommandBegin));
             // Add QueryEnd so we know when to stop the trace
             trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.QueryEnd));
             

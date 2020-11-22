@@ -350,8 +350,7 @@
                                         dd:DragDrop.IsDropTarget="False" 
                                         dd:DragDrop.DragHandler="{Binding}"
                                         dd:DragDrop.UseDefaultDragAdorner="True"
-                                                
-                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"         
+                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         Margin="0,2,0,-2">
@@ -360,6 +359,12 @@
                                 <beh:TreeViewClipboardBehavior />
                                 <beh:TreeViewMultipleSelectionBehaviour SelectedItems="{Binding SelectedItems}" />
                             </i:Interaction.Behaviors>
+
+                            <!--<ctrl:TreeViewEx.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                                </Style>
+                            </ctrl:TreeViewEx.ItemContainerStyle>-->
                             <ctrl:TreeViewEx.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
@@ -553,7 +558,6 @@
                         <!-- Search Box -->
                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
                             <Border Style="{StaticResource searchBox}" 
-                                    Grid.Row="1" 
                                     x:Name="srchBox"
                                     ClipToBounds="True"
                                     ap:MouseObserver.Observe="True"
@@ -608,6 +612,12 @@
                                                     <KeyBinding Key="Escape"/>
                                                 </trig:InputBindingTrigger.InputBinding>
                                                 <cal:ActionMessage MethodName="ClearCriteria"/>
+                                            </trig:InputBindingTrigger>
+                                            <trig:InputBindingTrigger>
+                                                <trig:InputBindingTrigger.InputBinding>
+                                                    <KeyBinding Key="Down"/>
+                                                </trig:InputBindingTrigger.InputBinding>
+                                                <cal:ActionMessage MethodName="SetFocusToMetadata"/>
                                             </trig:InputBindingTrigger>
                                         </i:Interaction.Triggers>
 

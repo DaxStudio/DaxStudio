@@ -9,7 +9,7 @@ namespace DaxStudio.Interfaces
         void ApplyCriteria(string criteria, Stack<IFilterableTreeViewItem> nodes);
         bool IsMatch { get; set; }
         bool IsExpanded { get; set; }
-
+        bool IsSelected { get; set; }
         IEnumerable<IFilterableTreeViewItem> Children { get; }
     }
 }
