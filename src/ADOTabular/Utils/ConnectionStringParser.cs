@@ -20,7 +20,7 @@ namespace ADOTabular.Utils
         {
             if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
 
-            Dictionary<string, string> results = new Dictionary<string, string>();
+            Dictionary<string, string> results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ParsingState state = ParsingState.InKey;
             StringBuilder key = new StringBuilder();
             StringBuilder value = new StringBuilder();
@@ -41,6 +41,17 @@ namespace ADOTabular.Utils
                             case ParsingState.InDoubleQuotedValue:
                             case ParsingState.InSingleQuotedValue:
                                 value.Append(c);
+                                break;
+                            case ParsingState.InKey:
+                                if (results.Count == 0)
+                                {
+                                    // If there is some text before the first semi-colon we assume this 
+                                    // a Data Source, so we add that to the dictionary and then keep parsing the
+                                    // rest of the string
+                                    results.Add("Data Source", key.ToString());
+                                    key.Clear();
+                                    value.Clear();
+                                }
                                 break;
                             default:
                                 System.Diagnostics.Debug.WriteLine("Duplicate ; char skipped");

@@ -50,15 +50,9 @@ namespace DaxStudio.SignalR
 
         public bool TraceDirectQuery
         {
-            get
-            {
-                return false;
-            }
+            get => false;
 
-            set
-            {
-                throw new NotImplementedException();
-            }
+            set => throw new NotImplementedException();
         }
 
         public bool ExcludeHeadersWhenCopyingResults { get; set; }
@@ -113,6 +107,8 @@ namespace DaxStudio.SignalR
         public Version CurrentDownloadVersion { get; set; }
         public bool ShowMetadataRefreshPrompt { get; set; }
         public string HotkeyWarningMessage { get; set; }
+        public string DefaultDateAutoFormat { get; set; }
+        public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

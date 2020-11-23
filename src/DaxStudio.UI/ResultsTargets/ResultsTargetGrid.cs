@@ -45,6 +45,7 @@ namespace DaxStudio.UI.Model
         {
             // Read the AutoFormat option from the options singleton
             bool autoFormat = _options.ResultAutoFormat;
+            string autoDateFormat = _options.DefaultDateAutoFormat;
             await Task.Run(() =>
                 {
                     long durationMs = 0;
@@ -64,7 +65,7 @@ namespace DaxStudio.UI.Model
                             if (dataReader != null)
                             {
                                 Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat,isSessionsDmv);
+                                runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat, isSessionsDmv, autoDateFormat);
                                 Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
 
                                 sw.Stop();

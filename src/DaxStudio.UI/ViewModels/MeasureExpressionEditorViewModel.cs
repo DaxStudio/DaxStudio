@@ -1,10 +1,7 @@
 ﻿using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
-using DAXEditorControl;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Views;
@@ -12,14 +9,10 @@ using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit.Document;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
+using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 
@@ -56,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public ADOTabularTableCollection Tables => Document?.SelectedModel != null ? Document?.Connection.Database.Models[Document?.SelectedModel].Tables : null;
+        public ADOTabularTableCollection Tables => Document?.Connection?.SelectedModel?.Tables;
 
         private bool _isModelItem;
         public bool IsModelItem { get => _isModelItem;

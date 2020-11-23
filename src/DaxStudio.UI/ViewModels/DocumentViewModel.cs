@@ -46,6 +46,10 @@ using Dax.ViewModel;
 using System.Reflection;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
+using ControlzEx.Standard;
+using DaxStudio.Interfaces.Enums;
+using DaxStudio.UI.Utils.Intellisense;
+using Constants = DaxStudio.Common.Constants;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -56,7 +60,6 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
-        //, Xceed.Wpf.AvalonDock.Layout.ILayoutElement
         , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
@@ -64,7 +67,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
-        , IHandle<DatabaseChangedEvent>
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
@@ -99,7 +101,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private MetadataPaneViewModel _metadataPane;
         private IObservableCollection<object> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
@@ -112,7 +113,7 @@ namespace DaxStudio.UI.ViewModels
         private IQueryHistoryEvent _currentQueryDetails;
         private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
-        private static readonly ImageSourceConverter ISC = new ImageSourceConverter();
+        private static readonly ImageSourceConverter ImgSourceConverter = new ImageSourceConverter();
 
 
         [ImportingConstructor]
@@ -136,7 +137,7 @@ namespace DaxStudio.UI.ViewModels
             _uniqueId = Guid.NewGuid();
             Options = options;
             AutoSaver = autoSaver;
-            IconSource = ISC.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
+            IconSource = ImgSourceConverter.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
             Connection = new ConnectionManager(_eventAggregator);
             IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
             Init(_ribbon);
@@ -177,7 +178,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
-
+            t.FireAndForget();
         }
 
         private void QueryBuilder_VisibilityChanged(object sender, EventArgs e)
@@ -283,7 +284,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
-
             try
             {
                 // this check strips out unicode non-breaking spaces and replaces them
@@ -291,7 +291,22 @@ namespace DaxStudio.UI.ViewModels
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
                 string content = e.DataObject.GetData("UnicodeText", true) as string;
-                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+
+                if (content == null) return;
+
+                var sm = new LongLineStateMachine(500);
+                var newContent = sm.ProcessString(content);
+                if (sm.SqlQueryCommentFound)
+                {
+                    if (MultipleQueriesDetectedDialogResult.RemoveDirectQuery ==
+                        ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
+                    {
+                        // remove the direct query code from the text we are pasting in
+                        newContent = newContent.Substring(0, sm.SqlQueryCommentPosition);
+                    }
+                }
+                
+                var dataObject = new DataObject(newContent);
                 e.DataObject = dataObject;
 
             }
@@ -300,7 +315,37 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "Error while Pasting: {message}", ex.Message);
                 OutputError($"Error while Pasting: {ex.Message}");
             }
+        }
 
+        private MultipleQueriesDetectedDialogResult ShowStripDirectQueryDialog(int commentPosition, int stringLength)
+        {
+            // check in options if we should prompt or return a default option
+            if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax)
+                return MultipleQueriesDetectedDialogResult.RemoveDirectQuery;
+            if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepBoth)
+                return MultipleQueriesDetectedDialogResult.KeepDirectQuery;
+
+            // if we get here we should prompt the user
+            const int commentLength = 12;
+            var charactersAfterComment = stringLength - commentPosition - commentLength;
+            
+            var stripDirectQueryDialog = new MultipleQueriesDetectedDialogViewModel(Options)
+            {
+                CharactersBeforeComment = commentPosition,
+                CharactersAfterComment = charactersAfterComment
+            };
+
+            _windowManager.ShowDialogBox(stripDirectQueryDialog, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+
+            return stripDirectQueryDialog.Result;
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -316,50 +361,28 @@ namespace DaxStudio.UI.ViewModels
                     InsertTextAtCaret(data);
                 }
 
-                if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                {
-                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    var file = files[0];
+                if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
 
-                    if (file.EndsWith(".dax") || file.EndsWith(".msdax"))
-                    {
-                        _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
-                        _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
-                    } else
-                    {
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop .dax or .msdax files"));
-                    }
-                    if (files.Length > 1)
-                    {
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop a single file at a time"));
-                    }
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files == null) return;
+
+                var file = files[0];
+
+                if (file.EndsWith(".dax") || file.EndsWith(".msdax"))
+                {
+                    _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
+                    _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
+                } else
+                {
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop .dax or .msdax files"));
+                }
+                if (files.Length > 1)
+                {
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop a single file at a time"));
                 }
             }
         }
 
-        void OnEditorLostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
-        {
-            this.CanCopy = false;
-            this.CanPaste = false;
-            this.CanCut = false;
-        }
-
-        void OnEditorGotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
-        {
-            this.CanCopy = true;
-            this.CanPaste = true;
-            this.CanCut = true;
-        }
-
-        void OnDragOver(object sender, DragEventArgs e)
-        {
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "OnDragOver Fired"));
-            IntellisenseProvider?.CloseCompletionWindow();
-            if (e.Data.Equals(string.Empty))
-            {
-                e.Effects = DragDropEffects.None;
-            }
-        }
 
         private void OnDocumentChanged(object sender, EventArgs e)
         {
@@ -373,8 +396,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnPositionChanged(object sender, EventArgs e)
         {
-            var caret = sender as Caret;
-            if (caret != null)
+            if (sender is Caret caret)
                 _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(caret.Column, caret.Line));
         }
 
@@ -386,7 +408,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isDirty;
         public bool IsDirty
         {
-            get { return _isDirty; }
+            get => _isDirty;
 
             set
             {
@@ -456,6 +478,7 @@ namespace DaxStudio.UI.ViewModels
                     _tracer.TraceStarted += TracerOnTraceStarted;
                     _tracer.TraceCompleted += TracerOnTraceCompleted;
                     _tracer.TraceError += TracerOnTraceError;
+                    _tracer.TraceWarning += TracerOnTraceWarning;
                 }
             }
             catch (AggregateException ex)
@@ -494,6 +517,7 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 _tracer.Events.Clear();
+                _tracer.Events.Add(DaxStudioTraceEventClass.DiscoverBegin);
                 _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
                 _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
                 foreach (var e in events)
@@ -513,6 +537,11 @@ namespace DaxStudio.UI.ViewModels
         {
             OutputError(e);
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
+        }
+
+        private void TracerOnTraceWarning(object sender, string e)
+        {
+            OutputWarning(e);
         }
 
         private List<DaxStudioTraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
@@ -689,7 +718,7 @@ namespace DaxStudio.UI.ViewModels
             foreach (var tw in TraceWatchers)
             {
                 if (tw.IsChecked) tw.QueryCompleted(isCancelled, _currentQueryDetails);
-                if (tw is ServerTimesViewModel svrTimings) { svrTimingsEnabled = true; }
+                if (tw is ServerTimesViewModel ) { svrTimingsEnabled = true; }
 
             }
             if (!svrTimingsEnabled && _currentQueryDetails != null)
@@ -708,49 +737,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string SelectedModel { get; set; }
 
-        public string SelectedDatabase { get {
-                if (!IsConnected) return string.Empty;
-                return Connection?.Database?.Name;
-                //if (_selectedDatabase == null && IsConnected)
-                //{
-                //    _selectedDatabase = Connection.Database.Name;
-                //}
-                //return _selectedDatabase;
-            }
-            //set
-            //{
-            //    if (value != _selectedDatabase)
-            //    {
-            //        _selectedDatabase = value;
-            //        Connection.ChangeDatabase(value);
-            //        var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-            //        _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases,activeTrace));
-            //        NotifyOfPropertyChange(() => SelectedDatabase);
-
-            //        // set metadata pane SelectedDatabase
-            //        MetadataPane.SelectedDatabase = MetadataPane.DatabasesView.Where(db => db.Name == _selectedDatabase).FirstOrDefault();
-
-            //    }
-            //}
-        }
 
         //public string ConnectionString { get { return _connection.ConnectionString; } }
 
-        public string ConnectionStringWithInitialCatalog {
-            get {
-                //var cubeEquals = this.Connection.IsMultiDimensional ? $";Cube={this.Sele}: "";
-                //return string.Format("{0};Initial Catalog={1}", _connection.ConnectionString , SelectedDatabase );
-                return Connection != null ? Connection.ConnectionStringWithInitialCatalog : string.Empty;
-            }
-        }
+        public string ConnectionStringWithInitialCatalog => Connection != null ? Connection.ConnectionStringWithInitialCatalog : string.Empty;
 
-        public MetadataPaneViewModel MetadataPane
-        {
-            get { return _metadataPane; }
-            set { _metadataPane = value; }
-        }
+        public MetadataPaneViewModel MetadataPane { get; set; }
 
         public FunctionPaneViewModel FunctionPane { get; private set; }
 
@@ -809,6 +802,7 @@ namespace DaxStudio.UI.ViewModels
                 if (CanRunQuery)
                 {
                     await CheckForMetadataUpdatesAsync();
+                    // TODO - look at removing this as it breaks some connections
                     Connection.Ping();
                 }
 
@@ -915,7 +909,6 @@ namespace DaxStudio.UI.ViewModels
                     if (message == null) return;
                     Connection.Connect(message) ;
                     NotifyOfPropertyChange(() => IsAdminConnection);
-                    NotifyOfPropertyChange(() => SelectedDatabase);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     // enable/disable traces depending on the current connection
                     foreach (var traceWatcher in TraceWatchers)
@@ -945,7 +938,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     _eventAggregator.PublishOnUIThread(new ConnectFailedEvent());
-                    var msg = $"The following error occured while updating the connection: {ex.Message}";
+                    var msg = $"The following error occurred while updating the connection: {ex.Message}";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
                     OutputError(msg);
                     ActivateOutput();
@@ -957,24 +950,7 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning(msg);
             }
         }
-
-        //private Task UpdateConnectionsAsync(ADOTabularConnection value, string selectedDatabase)
-        //{
-        //    Log.Debug("{Class} {Event} {Connection} {selectedDatabase}", "DocumentViewModel", "UpdateConnectionsAsync", value.ConnectionString, selectedDatabase);
-        //    return Task.Run(() =>
-        //        {
-        //            UpdateConnections(value, selectedDatabase);
-        //        });
-        //}
-
-        public void ContentRendered()
-        {
-            if (Connection == null)
-            {
-                ChangeConnection();
-            }
-        }
-
+        
         public string SelectedText { get {
                 var editor = GetEditor();
                 if (editor == null) return "";
@@ -1008,14 +984,14 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     
-                    bool hasPpvtModel = x.Result;
+                    bool hasPowerPivotModel = x.Result;
 
-                    Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPpvtModel);
+                    Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPowerPivotModel);
                     msg.Dispose();
 
                     Execute.OnUIThread(() =>
                     {
-                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPpvtModel, this, SettingProvider, Options);
+                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
 
                         _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
                                         {
@@ -1054,7 +1030,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsQueryRunning
         {
-            get { return _queryRunning; }
+            get => _queryRunning;
             set {
                 _queryRunning = value;
                 NotifyOfPropertyChange(() => IsQueryRunning);
@@ -1327,7 +1303,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshElapsedTime()
         {
-            NotifyOfPropertyChange(() => ElapsedQueryTime);
+            try
+            {
+                NotifyOfPropertyChange(() => ElapsedQueryTime);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshElapsedTime), "Error updating elapsed time");
+            }
         }
 
         public async Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
@@ -1338,7 +1321,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var editor = GetEditor();
-                await editor.Dispatcher.InvokeAsync(async () =>
+                editor.Dispatcher.Invoke(() =>
                     {
                         // capture the row and column location for error reporting (if needed)
                         if (editor.SelectionLength > 0)
@@ -1456,11 +1439,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public string ElapsedQueryTime
-        {
-            get { return _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(DaxStudio.Common.Constants.StatusBarTimerFormat); }
-
-        }
+        public string ElapsedQueryTime => _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(Common.Constants.StatusBarTimerFormat);
 
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -1486,16 +1465,6 @@ namespace DaxStudio.UI.ViewModels
                 ActivateOutput();
             }
         }
-
-        public Task CancelQueryAsync()
-        {
-            return Task.Run(() => CancelQuery());
-        }
-
-        //public Task<DataTable> ExecuteQueryAsync(string daxQuery)
-        //{
-        //    return Task.Run(() => ExecuteDataTableQueryAsync(daxQuery));
-        //}
 
         public async void Handle(RunQueryEvent message)
         {
@@ -1531,10 +1500,12 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                IsBenchmarkRunning = true;
+
                 var serverTimingsTrace = TraceWatchers.FirstOrDefault(tw => tw is ServerTimesViewModel);
 
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked??false;
-
+                
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
                 using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
                 {
@@ -1564,6 +1535,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
                 _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
             }
+            finally
+            {
+                IsBenchmarkRunning = false;
+            }
         }
 
         private async Task RunQueryInternalAsync(RunQueryEvent message)
@@ -1589,10 +1564,11 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-
-                        if (QueryText.Trim().Length == 0)
+                        // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
+                        // see if the query builder is active and try and use that to get the Query text.
+                        if (QueryText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel))
                         {
-                            if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0)
+                            if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0 )
                             {
                                 OutputMessage("There is no text in the editor, redirecting the run command to the Query Builder");
                                 message.QueryProvider = QueryBuilder;
@@ -1623,7 +1599,7 @@ namespace DaxStudio.UI.ViewModels
                             await _eventAggregator.PublishOnUIThreadAsync(_currentQueryDetails);
                         }
                         _queryStopWatch?.Reset();
-                        _eventAggregator.PublishOnUIThread(new QueryFinishedEvent());
+                        await _eventAggregator.PublishOnUIThreadAsync(new QueryFinishedEvent());
                         msg.Dispose();
                        
                     }
@@ -1631,7 +1607,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
+                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
 
                 }
             }
@@ -1643,10 +1619,11 @@ namespace DaxStudio.UI.ViewModels
             QueryHistoryEvent qhe = null;
             try
             {
-
-                //var queryText = includeQueryText ? this.QueryText : "";
-                qhe = new QueryHistoryEvent(queryText, DateTime.Now, this.ServerName, this.SelectedDatabase, this.FileName);
-                qhe.Status = QueryStatus.Running;
+                qhe = new QueryHistoryEvent(queryText
+                    , DateTime.Now
+                    , this.ServerName
+                    , this.Connection.SelectedDatabaseName
+                    , this.FileName) {Status = QueryStatus.Running};
             }
             catch (Exception ex)
             {
@@ -1662,36 +1639,34 @@ namespace DaxStudio.UI.ViewModels
 
         public DataTable ResultsTable
         {
-            get { return QueryResultsPane.ResultsDataTable; }
-            set { QueryResultsPane.ResultsDataTable = value; }
+            get => QueryResultsPane.ResultsDataTable;
+            set => QueryResultsPane.ResultsDataTable = value;
         }
 
         public DataSet ResultsDataSet
         {
-            get { return QueryResultsPane.ResultsDataSet; }
-            set { QueryResultsPane.ResultsDataSet = value; }
+            get => QueryResultsPane.ResultsDataSet;
+            set => QueryResultsPane.ResultsDataSet = value;
         }
 
-        public bool CanRunQuery
-        {
+        public bool CanRunQuery =>
             // todo - do we need to track query traces changing?
-            get { return !IsQueryRunning && !IsTraceChanging && IsConnected && !ShowMeasureExpressionEditor; }
-        }
+            !IsQueryRunning && !IsTraceChanging && IsConnected && !ShowMeasureExpressionEditor;
 
         #region Output Messages
         public void OutputMessage(string message)
         {
-            OutputPane.AddInformation(message);
+            OutputPane?.AddInformation(message);
         }
 
         public void OutputMessage(string message, double duration)
         {
-            OutputPane.AddInformation(message, duration);
+            OutputPane?.AddInformation(message, duration);
         }
 
         public void OutputWarning(string warning)
         {
-            OutputPane.AddWarning(warning);
+            OutputPane?.AddWarning(warning);
         }
 
         public void OutputError(string error)
@@ -1712,7 +1687,7 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                OutputPane.AddError(error, durationMs);
+                OutputPane?.AddError(error, durationMs);
             }
         }
 
@@ -1735,7 +1710,7 @@ namespace DaxStudio.UI.ViewModels
                 editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
             });
 
-            OutputPane.AddError(error, msgRow, msgCol);
+            OutputPane?.AddError(error, msgRow, msgCol);
         }
 
         #endregion
@@ -1880,7 +1855,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrEmpty(message.DatabaseName))
             {
                 if (Databases.Contains(message.DatabaseName))
-                    if (SelectedDatabase != message.DatabaseName)
+                    if (Connection.SelectedDatabaseName != message.DatabaseName)
                     {
                         try
                         {
@@ -2119,15 +2094,17 @@ namespace DaxStudio.UI.ViewModels
             if (Dispatcher.CurrentDispatcher.CheckAccess())
                 if (Tracer != null)
                 {
+                    _tracer.TraceCompleted -= TracerOnTraceCompleted;
+                    _tracer.TraceError -= TracerOnTraceError;
+                    _tracer.TraceStarted -= TracerOnTraceStarted;
+                    _tracer.TraceWarning -= TracerOnTraceWarning;
                     Tracer?.Stop();
                     Tracer?.Dispose();
                     _tracer = null;
                 }
         }
 
-        internal string AutoSaveFileName {
-            get { return Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax"); }
-        }
+        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax");
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
         internal async Task AutoSave()
@@ -2228,7 +2205,7 @@ namespace DaxStudio.UI.ViewModels
                     //HttpResponseMessage response = await client.PostStreamAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
                     if (!response.IsSuccessStatusCode) {
                         publishStopWatch.Stop();
-                        string pingResult = string.Format("Error from ping version: ", response.StatusCode.ToString());
+                        string pingResult = $"Error from ping version: {response.StatusCode.ToString()}";
                         Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
                         OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
@@ -2615,12 +2592,12 @@ namespace DaxStudio.UI.ViewModels
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
 
                 Connection.Database.ClearCache();
-                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", SelectedDatabase));
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
                 await ExecuteDataTableQueryAsync(DaxStudio.Common.Constants.RefreshSessionQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
-                OutputMessage(string.Format("Cache Cleared for Database: {0}", SelectedDatabase), duration);
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.SelectedDatabaseName), duration);
 
             }
             catch (Exception ex)
@@ -2721,8 +2698,15 @@ namespace DaxStudio.UI.ViewModels
 
         internal void SetStatusBarMessage(string message)
         {
-            _statusBarMessage = message;
-            NotifyOfPropertyChange(() => StatusBarMessage);
+            try
+            {
+                _statusBarMessage = message;
+                NotifyOfPropertyChange(() => StatusBarMessage);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetStatusBarMessage), ex.Message);
+            }
         }
 
         private int _spid = -1;
@@ -3146,11 +3130,12 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 if (IsQueryRunning) return false; // if query is running schema cannot have changed (and this connection will be busy with the query)
+                if (IsBenchmarkRunning) return false;
                 if (Connection == null) return false;
                 if (!IsConnected && !string.IsNullOrWhiteSpace(ServerName))
                 {
                     Log.Error("{class} {method} {message} ", nameof(DocumentViewModel), nameof(ShouldAutoRefreshMetadataAsync), "Connection is not open");
-                    OutputError(string.Format("Error Connecting to server: {0}", ServerName));
+                    OutputError($"Error Connecting to server: {ServerName}");
                     ServerName = string.Empty; // clear the server name so that we don't throw this error again
                     ActivateOutput();
                     // need to reset ribbon buttons if there is an error on the connection
@@ -3494,7 +3479,7 @@ namespace DaxStudio.UI.ViewModels
 
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(
-                        this.Connection.ServerName, this.SelectedDatabase, 
+                        this.Connection.ServerName, this.Connection.SelectedDatabaseName, 
                         "DaxStudio", version.ToString(), 
                         readStatisticsFromData: true, 
                         sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
@@ -3557,7 +3542,7 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                FileName = this.SelectedDatabase,
+                FileName = this.Connection.SelectedDatabaseName,
                 DefaultExt = ".vpax",
                 Filter = "Analyzer Data (vpax)|*.vpax"
                 //Filter = "Vertipaq Analyzer Data File (vpa)|*.vpa"
@@ -3670,7 +3655,7 @@ namespace DaxStudio.UI.ViewModels
                             modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
                             break;
                     }
-                    ModelAnalyzer.ExportVPAX(this.Connection.ServerName, this.SelectedDatabase, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
+                    ModelAnalyzer.ExportVPAX(this.Connection.ServerName, this.Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)
@@ -3770,8 +3755,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(SelectedModelChangedEvent message)
         {
-            SelectedModel = message.SelectedModel;
-
+            
             UpdateRunningTraces();
         }
 
@@ -3804,18 +3788,13 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void Handle(DatabaseChangedEvent message)
-        {
-            NotifyOfPropertyChange(nameof(SelectedDatabase));
-        }
+
 
         public void Handle(ShowMeasureExpressionEditor message)
         {
             MeasureExpressionEditor.Column = message.Column;
-            
             ShowMeasureExpressionEditor = true;
             QueryBuilder.IsEnabled = false;
-            // TODO - set measure name and expression
         }
 
         public void Handle(SetFocusEvent message)
@@ -3823,17 +3802,7 @@ namespace DaxStudio.UI.ViewModels
             IsFocused = true;
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
-
-                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-
-                //if (Options.Theme == "Dark") return new Theme.MonotoneTheme();
-                ////else return null; 
-                ////else return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-                ////else return new Xceed.Wpf.AvalonDock.Themes.AeroTheme();
-                //else return new Theme.DaxStudioLightTheme();
-            }
-        }
+        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme => new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
 
         private bool _showMeasureExpressionEditor;
         public bool ShowMeasureExpressionEditor
@@ -3851,9 +3820,8 @@ namespace DaxStudio.UI.ViewModels
 
         IModelIntellisenseProvider IDaxDocument.Connection => Connection;
 
-        //ILayoutContainer ILayoutElement.Parent => LayoutElement.Parent;
+        public bool IsBenchmarkRunning {get;set;}
 
-        //public ILayoutRoot Root => LayoutElement.Root;
         public void CloseConnection()
         {
             Connection.Close();
@@ -3868,8 +3836,10 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // TODO - this was running synchronously and was causing issues on slow connections (like AAS)
+
                 // ping the connection to make sure we are connected and the session is active
-                if (Connection.IsConnected) Connection.Ping();
+                //if (Connection.IsConnected) Connection.Ping();
             }
             catch (Exception ex)
             {

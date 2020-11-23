@@ -32,7 +32,7 @@
                     <Setter Property="BorderThickness" Value="1.5"/>
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     <Setter Property="Visibility" Value="{Binding IsMatch, Converter={StaticResource ResourceKey=BoolToVisibility}}"/>
-
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="BorderBrush" Value="#FFABC0F0"/>

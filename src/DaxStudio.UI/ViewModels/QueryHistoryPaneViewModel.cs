@@ -5,6 +5,8 @@ using DaxStudio.UI.Model;
 using System.Windows.Data;
 using System;
 using System.ComponentModel;
+using System.Net.Mime;
+using System.Windows;
 using Serilog;
 using DaxStudio.Interfaces;
 
@@ -23,8 +25,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly GlobalQueryHistory _globalHistory;
         private readonly ListCollectionView _queryHistory;
         private readonly IEventAggregator _eventAggregator;
-        private readonly IConnection _currentConnection;
+        //private readonly IConnection _currentConnection;
         private readonly IGlobalOptions _globalOptions;
+        private readonly DocumentViewModel CurrentDocument;
 
         [ImportingConstructor]
         public QueryHistoryPaneViewModel(GlobalQueryHistory globalHistory, IEventAggregator eventAggregator, DocumentViewModel currentDocument, IGlobalOptions options)
@@ -36,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Subscribe(this);            
             _queryHistory = new ListCollectionView(globalHistory.QueryHistory);
             //_queryHistory.PageSize = 50;
-            _currentConnection = currentDocument.Connection;
+            CurrentDocument = currentDocument;
             _queryHistory.Filter = HistoryFilter;
             // sort by StartTime Desc by default
             _queryHistory.SortDescriptions.Add(new SortDescription("StartTime", ListSortDirection.Descending));
@@ -47,8 +50,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override string Title => "Query History";
 
-        public string CurrentServer => _currentConnection.ServerName;
-        public string CurrentDatabase => _currentConnection.SelectedDatabaseName;
+
 
         public bool IsFilteredByServer
         {
@@ -77,8 +79,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
             return qhe != null 
-                && (String.Compare( qhe.ServerName, _currentConnection?.ServerName??string.Empty, StringComparison.OrdinalIgnoreCase)==0 || !IsFilteredByServer)
-                && (String.Compare(qhe.DatabaseName,  _currentConnection?.SelectedDatabaseName??string.Empty, StringComparison.OrdinalIgnoreCase) == 0 || !IsFilteredByDatabase);
+                && (String.Compare( qhe.ServerName, CurrentDocument?.Connection.ServerName??string.Empty, StringComparison.OrdinalIgnoreCase)==0 || !IsFilteredByServer)
+                && (String.Compare(qhe.DatabaseName,  CurrentDocument?.Connection?.SelectedDatabaseName??string.Empty, StringComparison.OrdinalIgnoreCase) == 0 || !IsFilteredByDatabase);
         }
 
         public ICollectionView QueryHistory => _queryHistory;
@@ -103,10 +105,18 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateHistoryFilters()
         {
-            QueryHistory.Filter = HistoryFilter;
-            QueryHistory.Refresh();
-            NotifyOfPropertyChange(() => CurrentServer);
-            NotifyOfPropertyChange(() => CurrentDatabase);
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => { 
+                    QueryHistory.Filter = HistoryFilter;
+                    QueryHistory.Refresh();
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryHistoryPaneViewModel), nameof(UpdateHistoryFilters), ex.Message);
+                CurrentDocument.OutputWarning("An error occurred while trying to update the filters on the Query History pane due to a connection change");
+            }
         }
 
         public void MouseDoubleClick(object sender)//, MouseButtonEventArgs e)

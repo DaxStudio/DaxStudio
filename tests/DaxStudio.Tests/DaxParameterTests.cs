@@ -150,10 +150,10 @@ SUMMARIZE (
         [TestMethod]
         public void TestQueryParamParsingShouldSkipStrings()
         {
-            var testQuery = @"FILTER(
+            var testQuery2 = @"FILTER(
 table,
 table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
-            var qi = new QueryInfo(testQuery, false, false, mockEventAggregator);
+            var qi = new QueryInfo(testQuery2, false, false, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
             Assert.AreEqual(1, qi.Parameters.Count);
         }

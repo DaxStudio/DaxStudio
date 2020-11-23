@@ -36,6 +36,7 @@ namespace DaxStudio.Interfaces
         bool ExcludeHeadersWhenCopyingResults { get; set; }
 
         bool ResultAutoFormat { get; set; }
+        string DefaultDateAutoFormat { get; set; }
         bool ScaleResultsFontWithEditor { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }
         bool KeepMetadataSearchOpen { get; set; }
@@ -56,11 +57,11 @@ namespace DaxStudio.Interfaces
 
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
-
+        MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool ShowUserInTitlebar { get; set; }
 
         Version CurrentDownloadVersion { get; set; }
-
+        
         #region Hotkeys
 
         [JsonIgnore] string HotkeyWarningMessage { get; set; }

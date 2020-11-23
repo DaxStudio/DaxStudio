@@ -7,6 +7,23 @@
 		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 		ga('create', '{{ site.google_analytics }}', 'auto');
 		ga('send', 'pageview');
+
+		// capture download clicks as events
+		jQuery(document).ready(function($) {
+			var exts =  'zip|exe|msi' ;         
+			var regExt = new RegExp(".*\\.(" + exts + ")(\\?.*)?$");
+			jQuery('a').filter(function () {
+			//include only internal links for downloads
+			if (this.hostname && (this.hostname !== window.location.hostname)) {
+				return this.href.match(regExt);
+			}
+			}).click(function (e) {
+				var regLink = new RegExp("DaxStudio_(?<version>\\d*_\\d*_\\d*)_(?<type>portable|setup).*\\.(zip|exe|msi)(\\?.*)?$");
+				var groups = this.href.match(regLink).groups;
+				ga('send', 'event', 'Downloads', groups.type,  groups.version.replace(/_/g,'.'))                   
+			});
+		});
 	</script>
+	
 	<!-- End Google Analytics -->
 {% endif %}

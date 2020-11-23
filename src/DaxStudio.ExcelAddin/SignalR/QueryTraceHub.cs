@@ -60,6 +60,7 @@ namespace DaxStudio
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
                             _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
+                            _engine.TraceWarning += ((o, e) => { Clients.Caller.OnTraceWarning(e); });
                             _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
                             _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
                             Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));

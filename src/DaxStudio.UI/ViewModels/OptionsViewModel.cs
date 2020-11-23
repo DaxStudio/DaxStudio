@@ -21,10 +21,17 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.JsonConverters;
-using DaxStudio.UI.Utils;
-using Microsoft.Win32;
 using Newtonsoft.Json;
+using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Collections.ObjectModel;
+using DaxStudio.UI.JsonConverters;
+using Microsoft.Win32;
+using System.IO;
+using DaxStudio.Interfaces.Attributes;
+using DaxStudio.Controls.PropertyGrid;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -203,6 +210,25 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => EditorEnableIntellisense);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(EditorEnableIntellisense), value, _isInitializing);
+            }
+        }
+
+        [Category("Editor")]
+        [DisplayName("Multiple queries detected on paste")]
+        [Description("Specifies how to handle code after a \"// SQL Query\" comment when pasting code from Power BI Performance Analyzer")]
+        [SortOrder(60)]
+        [DataMember]
+        [DefaultValue(MultipleQueriesDetectedOnPaste.Prompt)]
+        public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste
+        {
+            get => _removeDirectQueryCode;
+            set
+            {
+                if (_removeDirectQueryCode == value) return;
+                _removeDirectQueryCode = value;
+                NotifyOfPropertyChange(() => EditorMultipleQueriesDetectedOnPaste);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<MultipleQueriesDetectedOnPaste>(nameof(EditorMultipleQueriesDetectedOnPaste), value, _isInitializing);
             }
         }
 
@@ -1057,6 +1083,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _resultAutoFormat;
         [Category("Results")]
+        [SortOrder(10)]
         [DisplayName("Automatic Format Results")]
         [Description("Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name as the column in the output")]
         [DataMember, DefaultValue(false)]
@@ -1069,7 +1096,26 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ResultAutoFormat);
             }
         }
-
+                
+        private string _DefaultDateAutoFormat;
+        [Category("Results")]
+        [SortOrder(20)]
+        [DisplayName("Default Date Automatic Format")]
+        [Description("The automatic format result will use this setting to format dates column, keep it empty to get the default format.")]
+        [DataMember]
+        [DefaultValue("yyyy-MM-dd")]
+        public string DefaultDateAutoFormat
+        {
+            get => _DefaultDateAutoFormat;
+            set
+            {
+                _DefaultDateAutoFormat = value;
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue("DefaultDateAutoFormat", value, _isInitializing);
+                NotifyOfPropertyChange(() => DefaultDateAutoFormat);
+            }
+        }
+        
         private bool _scaleResultsFontWithEditor = true;
         [Category("Results")]
         [DisplayName("Scale Results Font with Editor")]
@@ -1618,8 +1664,15 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+            this.Refresh();
+        }
+
         #region IDisposable Support
         private bool disposedValue; // To detect redundant calls
+        private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;
 
         protected virtual void Dispose(bool disposing)
         {

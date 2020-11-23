@@ -15,10 +15,7 @@ namespace DaxStudio.Controls.PropertyGrid
             set => SetValue(value);
         }
         public Func<bool> GetValueEnabled { get; set; } = () =>  true;
-        public bool ValueEnabled
-        {
-            get => GetValueEnabled();
-        }
+        public bool ValueEnabled => GetValueEnabled();
 
         public void OnEnabledChanged()
         {
@@ -42,7 +39,7 @@ namespace DaxStudio.Controls.PropertyGrid
         public Type PropertyType { get; set; }
         
         public string Description { get; internal set; }
-        public Visibility ShowDescription { get => !string.IsNullOrWhiteSpace(Description) ? Visibility.Visible : Visibility.Collapsed; }
+        public Visibility ShowDescription => !string.IsNullOrWhiteSpace(Description) ? Visibility.Visible : Visibility.Collapsed;
 
         public double MinValue { get; set; }
         public double MaxValue { get; set; }

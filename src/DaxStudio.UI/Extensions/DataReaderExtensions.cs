@@ -120,7 +120,7 @@ namespace DaxStudio.UI.Extensions
 
 
 
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
@@ -168,6 +168,17 @@ namespace DaxStudio.UI.Extensions
                                     break;
                                 case "Int64":
                                     formatString = "#,0";
+                                    break;
+                                case "DateTime":
+                                    if (string.IsNullOrWhiteSpace(autoDateFormat)
+                                        || column.Caption.ToLower().Contains(@"time") 
+                                        || column.Caption.ToLower().Contains(@"hour") ) {
+                                        formatString = null;
+                                    }
+                                    else
+                                    {
+                                        formatString = "yyyy-MM-dd";
+                                    }
                                     break;
                                 default:
                                     formatString = null;

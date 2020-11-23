@@ -86,10 +86,10 @@ namespace DAXEditorControl
     {
         private readonly BracketRenderer.BracketHighlightRenderer _bracketRenderer;
         private WordHighlighTransformer _wordHighlighter;
-        private readonly TextMarkerService textMarkerService;
-        private ToolTip toolTip;
-        private bool syntaxErrorDisplayed;
-        private IHighlighter documentHighlighter;
+        private readonly TextMarkerService _textMarkerService;
+        private ToolTip _toolTip;
+        private bool _syntaxErrorDisplayed;
+        private IHighlighter _documentHighlighter;
 
         static DAXEditor()
         {
@@ -113,10 +113,10 @@ namespace DAXEditorControl
             textView.Services.AddService(typeof(BracketHighlightRenderer), _bracketRenderer);
 
             // Add Syntax Error marker
-            textMarkerService = new TextMarkerService(this);
-            textView.BackgroundRenderers.Add(textMarkerService);
-            textView.LineTransformers.Add(textMarkerService);
-            textView.Services.AddService(typeof(TextMarkerService), textMarkerService);
+            _textMarkerService = new TextMarkerService(this);
+            textView.BackgroundRenderers.Add(_textMarkerService);
+            textView.LineTransformers.Add(_textMarkerService);
+            textView.Services.AddService(typeof(TextMarkerService), _textMarkerService);
 
             // add handlers for tooltip error display
             textView.MouseHover += TextEditorMouseHover;
@@ -142,7 +142,7 @@ namespace DAXEditorControl
 
         internal void UpdateSyntaxRule(string colourName,  IEnumerable<string> wordList)
         {
-            var kwordRule = this.SyntaxHighlighting.MainRuleSet.Rules.Where(r => r.Color.Name == colourName).FirstOrDefault();
+            var kwordRule = this.SyntaxHighlighting.MainRuleSet.Rules.FirstOrDefault(r => r.Color.Name == colourName);
             var pattern = new StringBuilder();
             pattern.Append(@"\b(?>");
 
@@ -176,7 +176,7 @@ namespace DAXEditorControl
             {
                 var foreground = syntaxHighlight.Foreground.GetColor(null);
                 if (foreground == null) return;
-                HSLColor hsl = new HSLColor((System.Windows.Media.Color)foreground);
+                HSLColor hsl = new HSLColor((Color)foreground);
                 hsl.Luminosity *= factor;
                 syntaxHighlight.Foreground = new SimpleHighlightingBrush((Color)hsl);
             }
@@ -220,7 +220,7 @@ namespace DAXEditorControl
         {
             if (this.Document == null ) return;
             if (this.SyntaxHighlighting == null) return;
-            documentHighlighter = new DocumentHighlighter( this.Document, this.SyntaxHighlighting);
+            _documentHighlighter = new DocumentHighlighter( this.Document, this.SyntaxHighlighting);
         }
 
         public bool IsInComment()
@@ -237,7 +237,7 @@ namespace DAXEditorControl
         public bool IsInComment(TextLocation loc)
         {
             var pos = this.Document.GetOffset(loc);
-            HighlightedLine result = documentHighlighter.HighlightLine(loc.Line);
+            HighlightedLine result = _documentHighlighter.HighlightLine(loc.Line);
             bool isInComment = result.Sections.Any(
                 s => s.Offset <= pos && s.Offset + s.Length >= pos
                      && s.Color.Name == "Comment");
@@ -276,7 +276,7 @@ namespace DAXEditorControl
             }
          
             // default settings - can be overridden in the settings dialog
-            this.FontFamily = new System.Windows.Media.FontFamily("Lucida Console");
+            this.FontFamily = new FontFamily("Lucida Console");
             this.DefaultFontSize = 11.0;
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;
@@ -290,7 +290,7 @@ namespace DAXEditorControl
 
         private void TextArea_TextChanged(object sender, EventArgs e)
         {
-            if (syntaxErrorDisplayed)
+            if (_syntaxErrorDisplayed)
             {
                 ClearErrorMarkings();
             }
@@ -298,28 +298,32 @@ namespace DAXEditorControl
 
         void Caret_PositionChanged(object sender, EventArgs e)
         {
-            try{
+            try
+            {
                 HighlightBrackets();
             }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch { }
+            catch
+            {
+                // swallow all errors
+            }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
         public Brush HighlightBackgroundBrush { get; set; }
 
-        private HighlightDelegate _hightlightFunction;
+        private HighlightDelegate _highlightFunction;
         public HighlightDelegate HighlightFunction
                {
-                   get { return _hightlightFunction; }
+                   get { return _highlightFunction; }
                    set {
-                       if (_hightlightFunction != null)
+                       if (_highlightFunction != null)
                        { 
                            // remove the old function before adding the new one
                            this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter); 
                        }
-                       _hightlightFunction = value;
-                        _wordHighlighter = new WordHighlighTransformer(_hightlightFunction, HighlightBackgroundBrush);
+                       _highlightFunction = value;
+                        _wordHighlighter = new WordHighlighTransformer(_highlightFunction, HighlightBackgroundBrush);
                         this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
                    }
                }
@@ -334,15 +338,12 @@ namespace DAXEditorControl
 
         public double FontScale
         {
-            get { return FontSize/DefaultFontSize * 100; }
-            set { FontSize = DefaultFontSize * value/100; }
+            get => FontSize/DefaultFontSize * 100;
+            set => FontSize = DefaultFontSize * value/100;
         }
 
         private readonly List<double> _fontScaleDefaultValues = new List<double>() {25.0, 50.0, 100.0, 200.0, 300.0, 400.0};
-        public  List<double> FontScaleDefaultValues
-        {
-            get { return _fontScaleDefaultValues; }
-        }
+        public  List<double> FontScaleDefaultValues => _fontScaleDefaultValues;
 
         private void OnUnloaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -398,22 +399,14 @@ namespace DAXEditorControl
 
         private IIntellisenseProvider IntellisenseProvider { get; set; }
 
-        CompletionWindow completionWindow;
+        CompletionWindow _completionWindow;
         public InsightWindow InsightWindow { get; set; }
 
-        TextArea IEditor.TextArea
-        {
-            get
-            {
-                return TextArea;
-            }
-
-
-        }
+        TextArea IEditor.TextArea => TextArea;
 
         void TextEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
         {
-            IntellisenseProvider.ProcessTextEntered(sender, e,ref completionWindow);
+            IntellisenseProvider.ProcessTextEntered(sender, e,ref _completionWindow);
         }
 
         const string COMMENT_DELIM_SLASH="//";
@@ -459,7 +452,7 @@ namespace DAXEditorControl
 
         void TextEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
         {
-            IntellisenseProvider.ProcessTextEntering(sender, e, ref completionWindow);
+            IntellisenseProvider.ProcessTextEntering(sender, e, ref _completionWindow);
         }
 
         
@@ -492,8 +485,8 @@ namespace DAXEditorControl
                 if (length <= 1) length = endOffset - offset;
                 if (length <= 0) length = 1;
                 
-                textMarkerService.Create(offset, length, message);
-                syntaxErrorDisplayed = true;
+                _textMarkerService.Create(offset, length, message);
+                _syntaxErrorDisplayed = true;
             }    
 
         }
@@ -503,11 +496,11 @@ namespace DAXEditorControl
             IServiceProvider sp = this;
             var markerService = (TextMarkerService)sp.GetService(typeof(TextMarkerService));
             markerService.Clear();
-            if (toolTip != null)
+            if (_toolTip != null)
             {
-                toolTip.IsOpen = false;
+                _toolTip.IsOpen = false;
             }
-            syntaxErrorDisplayed = false;
+            _syntaxErrorDisplayed = false;
         }
 
         private void TextEditorMouseHover(object sender, MouseEventArgs e)
@@ -519,17 +512,17 @@ namespace DAXEditorControl
                 TextLocation logicalPosition = pos.Value.Location;
                 int offset = this.Document.GetOffset(logicalPosition);
 
-                var markersAtOffset = textMarkerService.GetMarkersAtOffset(offset);
+                var markersAtOffset = _textMarkerService.GetMarkersAtOffset(offset);
                 TextMarkerService.TextMarker markerWithToolTip = markersAtOffset.FirstOrDefault(marker => marker.ToolTip != null);
 
                 if (markerWithToolTip != null)
                 {
-                    if (toolTip == null)
+                    if (_toolTip == null)
                     {
-                        toolTip = new ToolTip();
-                        toolTip.Closed += ToolTipClosed;
-                        toolTip.PlacementTarget = this;
-                        toolTip.Content = new TextBlock
+                        _toolTip = new ToolTip();
+                        _toolTip.Closed += ToolTipClosed;
+                        _toolTip.PlacementTarget = this;
+                        _toolTip.Content = new TextBlock
                         {
                             Text = markerWithToolTip.ToolTip,
                             TextWrapping = TextWrapping.Wrap,
@@ -537,7 +530,7 @@ namespace DAXEditorControl
                             MaxHeight = 50,
                             MaxWidth = 600
                         };
-                        toolTip.IsOpen = true;
+                        _toolTip.IsOpen = true;
                         e.Handled = true;
                     }
                 }
@@ -546,48 +539,56 @@ namespace DAXEditorControl
 
         void ToolTipClosed(object sender, RoutedEventArgs e)
         {
-            toolTip = null;
+            _toolTip = null;
         }
 
         void TextEditorMouseHoverStopped(object sender, MouseEventArgs e)
         {
-            if (toolTip != null)
+            if (_toolTip != null)
             {
-                toolTip.IsOpen = false;
+                _toolTip.IsOpen = false;
                 e.Handled = true;
             }
         }
 
         private void VisualLinesChanged(object sender, EventArgs e)
         {
-            if (toolTip != null)
+            if (_toolTip != null)
             {
-                toolTip.IsOpen = false;
+                _toolTip.IsOpen = false;
             }
         }
 
-        private readonly object disposeLock = new object();
+        private readonly object _disposeLock = new object();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
             if (IsMouseOverCompletionWindow) return;
-            lock (disposeLock)
+            lock (_disposeLock)
             {
                 // close function tooltip if it is open
-                if (toolTip != null)
-                    toolTip.IsOpen = false;
+                if (_toolTip != null)
+                    _toolTip.IsOpen = false;
 
                 // force completion window to close
-                if (completionWindow == null) return;
-                if (completionWindow.IsVisible) try { completionWindow?.Close(); } catch { }
-                completionWindow = null;
+                if (_completionWindow == null) return;
+                //if (_completionWindow.IsVisible) 
+                try
+                {
+                    _completionWindow?.Close();
+                } 
+                catch 
+                { 
+                    //swallow any errors while trying to close the completion window
+                }
+                _completionWindow = null;
             }
         }
 
         public void DisableIntellisense()
         {
-            this.IntellisenseProvider = new IntellisenseProviderStub();
+            IntellisenseProvider = new IntellisenseProviderStub();
         }
 
         public void EnableIntellisense(IIntellisenseProvider provider)
@@ -614,7 +615,7 @@ namespace DAXEditorControl
         {
             if (disposing)
             {
-                documentHighlighter.Dispose();
+                _documentHighlighter.Dispose();
             }
         }
 

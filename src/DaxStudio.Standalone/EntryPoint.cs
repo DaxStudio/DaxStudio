@@ -26,7 +26,7 @@ namespace DaxStudio.Standalone
         private static IGlobalOptions _options;
         // need to create application first
         private static readonly Application App = new Application();
-
+        private static IGlobalOptions _options;
         static EntryPoint()
         {
 
@@ -50,19 +50,16 @@ namespace DaxStudio.Standalone
             try
             {
 
-
                 // add unhandled exception handler
                 App.DispatcherUnhandledException += App_DispatcherUnhandledException;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
                 TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
                 
-                // Setup logging
-                var levelSwitch = new LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
-
-
-                ConfigureLogging(levelSwitch);
+                // Setup logging, default to information level to start with to log the startup and key system information
+                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
 
                 Log.Information("============ DaxStudio Startup =============");
+                ConfigureLogging(levelSwitch);
 
                 // add the custom DAX Studio accent color theme
                 App.AddDaxStudioAccentColor();
@@ -190,10 +187,17 @@ namespace DaxStudio.Standalone
             var logCmdLineSwitch = App.Args().LoggingEnabled;
 
 #if DEBUG
-            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
-            Log.Debug("Information Logging Enabled due to running in debug mode");
+            Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
+            // write basic information about the current PC to the log file
+            SystemInfo.WriteToLog();
 
+            if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
+            if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
+            Log.Information("CommandLine Args: {args}", Environment.GetCommandLineArgs());
+            Log.Information($"Portable Mode: {ApplicationPaths.IsInPortableMode}");
+
+            // Set the default logging level
             if (isLoggingKeyDown || logCmdLineSwitch)
             {
 #if DEBUG
@@ -205,18 +209,18 @@ namespace DaxStudio.Standalone
                     Log.Debug("Debug Logging Enabled");
 #endif
             }
-
-
+            else
+            {
 #if DEBUG
-            Serilog.Debugging.SelfLog.Enable(Console.Out);
-#endif
-            // write basic information about the current PC to the log file
-            SystemInfo.WriteToLog();
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
+                Log.Information("Information Logging Enabled due to running in debug mode");
+#else
+            Log.Information("Changing minimum log event to Error");
+            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
 
-            if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
-            if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
-            Log.Information("CommandLine Args: {args}", Environment.GetCommandLineArgs());
-            Log.Information($"Portable Mode: {ApplicationPaths.IsInPortableMode}");
+#endif
+            }
+
         }
 
         private static bool CanWriteToSettings()
@@ -257,8 +261,8 @@ namespace DaxStudio.Standalone
         {
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
+            e.SetObserved();
             LogFatalCrash(e.Exception, msg);
-            App.Shutdown(1);
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -266,7 +270,15 @@ namespace DaxStudio.Standalone
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
             LogFatalCrash(ex, msg);
-            App.Shutdown(2);
+            if (App.Dispatcher.CheckAccess())
+            {
+                App.Shutdown(2);
+            }
+            else
+            {
+                App.Dispatcher.Invoke(() => App.Shutdown(2));
+
+            }
         }
 
         private static void LogFatalCrash(Exception ex, string msg)
@@ -275,7 +287,8 @@ namespace DaxStudio.Standalone
             if (!App.Properties.Contains("HasCrashed"))
                 App.Properties.Add("HasCrashed", true);
 
-            Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+            Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+
             if (Application.Current.Dispatcher.CheckAccess())
             {
                 CrashReporter.ReportCrash(ex, msg);

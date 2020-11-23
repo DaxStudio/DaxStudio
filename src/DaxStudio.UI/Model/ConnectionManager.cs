@@ -1,14 +1,11 @@
 ﻿using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
-using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.ViewModels;
 using Polly;
 using Polly.Retry;
 using Serilog;
@@ -16,15 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-/// <summary>
-/// The purpose of the ConnectionManager is to centralize all the connection handling into one place
-/// This allows for consistent retry policies and allows us to use a secondary connection for things 
-/// like metadata refreshes.
-/// </summary>
+
 namespace DaxStudio.UI.Model
 {
 
@@ -33,6 +25,11 @@ namespace DaxStudio.UI.Model
     // TODO - flush metadata on connection failure
     // TODO - cache functions and dmvs unless we change the connection
 
+/// <summary>
+/// The purpose of the ConnectionManager is to centralize all the connection handling into one place
+/// This allows for consistent retry policies and allows us to use a secondary connection for things 
+/// like metadata refreshes.
+/// </summary>
     public class ConnectionManager : IConnectionManager
         , IDmvProvider
         , IFunctionProvider
@@ -45,8 +42,8 @@ namespace DaxStudio.UI.Model
         public bool IsConnecting { get; private set; }
 
         private ADOTabularConnection _connection;
-        private IEventAggregator _eventAggregator;
-        private RetryPolicy retry;
+        private readonly IEventAggregator _eventAggregator;
+        private RetryPolicy _retry;
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -78,7 +75,7 @@ namespace DaxStudio.UI.Model
 
         private void ConfigureRetryPolicy()
         {
-            retry = Policy
+            _retry = Policy
                     .HandleInner<Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException>()
                     .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200), (exception, timespan, retryCount, context) =>
                     {
@@ -106,11 +103,11 @@ namespace DaxStudio.UI.Model
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            return retry.Execute<DataTable>(()=> { return _connection.ExecuteDaxQueryDataTable(query); });
+            return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
         }
         public AdomdDataReader ExecuteReader(string query)
         {
-            return retry.Execute<AdomdDataReader>(()=> { return _connection.ExecuteReader(query); });
+            return _retry.Execute(()=> _connection.ExecuteReader(query));
         }
         public string FileName => _connection.FileName;
 
@@ -119,7 +116,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                if (_dynamicManagementViews == null) _dynamicManagementViews = new ADOTabularDynamicManagementViewCollection(_connection);
+                if (_dynamicManagementViews == null && _connection != null) _dynamicManagementViews = new ADOTabularDynamicManagementViewCollection(_connection);
                 return _dynamicManagementViews;
             }
         }
@@ -129,7 +126,7 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
-            return await retry.Execute<Task<bool>>(async () =>
+            return await _retry.Execute(async () =>
             {
                 
                 bool hasChanged = await Task.Run(() =>
@@ -137,7 +134,7 @@ namespace DaxStudio.UI.Model
                     var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
                     conn.ChangeDatabase(this.SelectedDatabaseName);
                     if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn?.Database?.LastUpdate > _lastSchemaUpdate;
+                    var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                     conn.Close(true); // close and end the session
                     return dbChanges;
                 });
@@ -148,7 +145,7 @@ namespace DaxStudio.UI.Model
         }
 
         public ADOTabularDatabaseCollection Databases => _connection.Databases;
-        public bool IsAdminConnection => _connection.IsAdminConnection;
+        public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
 
         public bool IsConnected { get
             {
@@ -157,7 +154,10 @@ namespace DaxStudio.UI.Model
             }
         }
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT??false;
-        public bool IsPowerPivot { get => _connection?.IsPowerPivot ?? false; set { _connection.IsPowerPivot = value; } }
+        public bool IsPowerPivot { 
+            get => _connection?.IsPowerPivot ?? false; 
+            set => _connection.IsPowerPivot = value;
+        }
 
         public void Open()
         {
@@ -165,7 +165,7 @@ namespace DaxStudio.UI.Model
         }
         public void Refresh()
         {
-            _connection.Refresh();
+            if (_connection?.State == ConnectionState.Open) _connection.Refresh();
         }
         public string ServerEdition => _connection.ServerEdition;
         public string ServerLocation => _connection.ServerLocation;
@@ -173,7 +173,7 @@ namespace DaxStudio.UI.Model
         public string ServerName => _connection?.ServerName??string.Empty;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
-        public ADOTabular.Enums.ServerType ServerType { get; private set; }//=> _connection.ServerType;
+        public ServerType ServerType { get; private set; }
         public int SPID => _connection.SPID;
         public string ShortFileName => _connection.ShortFileName;
 
@@ -181,11 +181,11 @@ namespace DaxStudio.UI.Model
         {
             switch (_connection.ConnectionType)
             {
-                case ADOTabular.ADOTabularConnectionType.Cloud:
+                case ADOTabularConnectionType.Cloud:
                     return options.AutoRefreshMetadataCloud;
-                case ADOTabular.ADOTabularConnectionType.LocalNetwork:
+                case ADOTabularConnectionType.LocalNetwork:
                     return options.AutoRefreshMetadataLocalNetwork;
-                case ADOTabular.ADOTabularConnectionType.LocalMachine:
+                case ADOTabularConnectionType.LocalMachine:
                     return options.AutoRefreshMetadataLocalMachine;
                 default:
                     return true;
@@ -196,24 +196,17 @@ namespace DaxStudio.UI.Model
         private ADOTabularDatabase _selectedDatabase;
         private DateTime _lastSchemaUpdate;
 
-        public ADOTabularFunctionGroupCollection FunctionGroups
-        {
-            get
-            {
-                if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(_connection);
-                return _functionGroups;
-            }
-        }
+        public ADOTabularFunctionGroupCollection FunctionGroups => _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(_connection));
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
-            return _connection.Databases;
+            return _retry.Execute(() => { return _connection.Databases; });
         }
 
         public ADOTabularModelCollection GetModels()
         {
-            return _connection.Database.Models;
-        }
+            return _retry.Execute(() => { return _connection.Database.Models; });
+    }
 
         public ADOTabularTableCollection GetTables()
         {
@@ -293,11 +286,18 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            retry.Execute(() => { _connection.Ping(); } );
+            
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone();
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close();
+            });
         }
         public ADOTabularModel SelectedModel { get; set; }
 
-        public void SetSelectedModel(ADOTabular.ADOTabularModel model)
+        public void SetSelectedModel(ADOTabularModel model)
         {
 
 
@@ -347,8 +347,13 @@ namespace DaxStudio.UI.Model
             if (SelectedDatabase != database)
             {
                 SelectedDatabase = database;
-                if (SelectedDatabase != null) _connection.ChangeDatabase(SelectedDatabase.Name);
-                ModelList = _connection.Database.Models;
+                if (SelectedDatabase != null)
+                {
+                    _connection?.ChangeDatabase(SelectedDatabase.Name);
+                }
+
+                if (_connection?.Database != null)
+                    ModelList = _connection.Database.Models;
 
                 _eventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
             }
@@ -450,7 +455,7 @@ namespace DaxStudio.UI.Model
         {
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
             //if (database.Name == _connection.Database?.Name) return;
-            retry.Execute(ctx =>
+            _retry.Execute(ctx =>
             {
                 if (database != null)_connection.ChangeDatabase(database.Name);
                 SelectedDatabase = _connection.Database;
@@ -478,7 +483,7 @@ namespace DaxStudio.UI.Model
         public Task Handle(RefreshTablesEvent message)
         {
             return Task.Factory.StartNew(() => {
-                retry.Execute(() =>
+                _retry.Execute(() =>
                 {
                     GetTables();
                     IsConnecting = false;
@@ -489,7 +494,7 @@ namespace DaxStudio.UI.Model
 
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
         {
-            return retry.Execute(() => {
+            return _retry.Execute(() => {
                 var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
                 return tvt;
             });
