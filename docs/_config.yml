@@ -16,6 +16,8 @@ repository: "DaxStudio/DaxStudio"
 collections:
   documentation:
     output: true
+  tutorials:
+    output: true
 
 # Name of website
 title: "DAX Studio"
@@ -28,9 +30,12 @@ description: "The ultimate client tool for working with DAX queries"
 # List of links in the navigation bar
 navbar-links:
   Downloads: "downloads"
+  Tutorials:
+    - Getting Connected: "tutorials/getting-connected"
+    - Writing DAX Queries: "tutorials/writing-dax-queries"
   Documentation:
     - Home: "documentation"
-    - Feature List: "documentation/features"
+    - Feature List: "documentation/features/all-queries-trace"
     - Videos: "documentation/videos"
     - Installation: "documentation/installation"
     - Requirements: "documentation/requirements"

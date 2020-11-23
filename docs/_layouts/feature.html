@@ -9,11 +9,11 @@ layout: base
     <div class="col-lg-2 col-lg-offset-1 col-md-1">
       {% assign docs = site.documentation | where: "feature", "true" | sort: "title" %}
       <h4>Features</h4>
-      <ul >
+      <ul class="sidenav" >
       {% for doc in docs %}
-      <li >
-        <a href="{{ doc.url }}">
-        {{ doc.title }}
+      <li>
+        <a href="{{ doc.url }}" {% if page.title == doc.title%} class="active" {% endif %}>
+        {{ doc.title }} 
         </a>
       </li>
       {% endfor %}
