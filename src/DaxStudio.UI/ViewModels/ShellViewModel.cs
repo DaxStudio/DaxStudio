@@ -14,6 +14,7 @@ using System.Linq;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -270,7 +271,7 @@ namespace DaxStudio.UI.ViewModels
                 // swallow all errors
             }
 
-            if (!Options.BlockVersionChecks)
+            if (Options.AnyExternalAccessAllowed())
             {
                 Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
                 {

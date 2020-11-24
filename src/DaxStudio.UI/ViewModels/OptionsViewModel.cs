@@ -22,16 +22,9 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Collections.ObjectModel;
 using DaxStudio.UI.JsonConverters;
 using Microsoft.Win32;
-using System.IO;
-using DaxStudio.Interfaces.Attributes;
-using DaxStudio.Controls.PropertyGrid;
-using System.Reflection;
-using System.Threading.Tasks;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -227,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_removeDirectQueryCode == value) return;
                 _removeDirectQueryCode = value;
                 NotifyOfPropertyChange(() => EditorMultipleQueriesDetectedOnPaste);
-                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue<MultipleQueriesDetectedOnPaste>(nameof(EditorMultipleQueriesDetectedOnPaste), value, _isInitializing);
             }
         }
@@ -1097,7 +1090,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
                 
-        private string _DefaultDateAutoFormat;
+        private string _defaultDateAutoFormat;
         [Category("Results")]
         [SortOrder(20)]
         [DisplayName("Default Date Automatic Format")]
@@ -1106,11 +1099,11 @@ namespace DaxStudio.UI.ViewModels
         [DefaultValue("yyyy-MM-dd")]
         public string DefaultDateAutoFormat
         {
-            get => _DefaultDateAutoFormat;
+            get => _defaultDateAutoFormat;
             set
             {
-                _DefaultDateAutoFormat = value;
-                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                _defaultDateAutoFormat = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue("DefaultDateAutoFormat", value, _isInitializing);
                 NotifyOfPropertyChange(() => DefaultDateAutoFormat);
             }
@@ -1413,13 +1406,29 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _blockAllInternetAccess;
         // this setting is set by the installer writing a non-zero value to HKLM:\Software\DaxStudio\BlockAllInternetAccess
-        public bool BlockAllInternetAccess { get; set; }
+        [Category("Privacy")]
+        [DisplayName("Block All Internet Access")]
+        [Description("[NOT RECOMMENDED] Stops DAX Studio from all external access. This option can only be set by an administrator during an 'All Users' install and overrides all the other options below. (and they will show up as disabled when this option has been set)")]
+        [DataMember, DefaultValue(false)]
+        public bool BlockAllInternetAccess { get => _blockAllInternetAccess;
+            set
+            {
+                _blockAllInternetAccess = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                NotifyOfPropertyChange();
+                // NOTE: we do not write this change to the provider since it is 
+                //       saved in HKEY_LOCAL_MACHINE and can only be updated by the setup program
+            }
+        }
+
+        public bool BlockAllInternetAccessEnabled => false;
 
         private bool _blockVersionChecks;
         [Category("Privacy")]
         [DisplayName("Block Version Checks")]
-        [Description("[Not Recommended] Stops DAX Studio from checking for and notifying of available updates")]
+        [Description("[NOT RECOMMENDED] Stops DAX Studio from checking for and notifying of available updates")]
         [DataMember, DefaultValue(false)]
         public bool BlockVersionChecks
         {
@@ -1438,7 +1447,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _blockCrashReporting;
         [Category("Privacy")]
         [DisplayName("Block Crash Reporting")]
-        [Description("[Not Recommended] Stops DAX Studio from sending crash reports to the developer. There is a small chance that the screenshot of the crash could include personal information. Although you can untick the option to include the screenshot in the report if this is the case.")]
+        [Description("[NOT RECOMMENDED] Stops DAX Studio from sending crash reports to the developer. There is a small chance that the screenshot of the crash could include personal information. Although you can untick the option to include the screenshot in the report if this is the case.")]
         [DataMember, DefaultValue(false)]
         public bool BlockCrashReporting
         {
@@ -1457,7 +1466,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _blockExternalServices;
         [Category("Privacy")]
         [DisplayName("Block External Services")]
-        [Description("[Not Recommended] Stops DAX Studio from accessing external services (such as DaxFormatter.com). We never send any data externally, but there is a small chance that query text might contain personal information if you were writing queries that filtered for specific information like Customer Names")]
+        [Description("[NOT RECOMMENDED] Stops DAX Studio from accessing external services (such as DaxFormatter.com). We never send any data externally, but there is a small chance that query text might contain personal information if you were writing queries that filtered for specific information like Customer Names")]
         [DataMember, DefaultValue(false)]
         public bool BlockExternalServices
         {
@@ -1671,12 +1680,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #region IDisposable Support
-        private bool disposedValue; // To detect redundant calls
+        private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -1688,7 +1697,7 @@ namespace DaxStudio.UI.ViewModels
                 }
 
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

@@ -190,18 +190,17 @@ namespace DaxStudio.UI.Utils
             }
         }
 
+        /// <summary>
+        /// This method loops through each of the properties using reflection and attempts
+        /// to load the values from the registry
+        /// </summary>
+        /// <param name="options"></param>
         public void Initialize(IGlobalOptions options)
         {
-            InitializeMachineSettings(options);
-
+            
             var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
-                //if (interfaceProps.Find(prop.Name, true)==null) continue;
-
-                //JsonIgnoreAttribute ignoreAttr = prop.Attributes[typeof(JsonIgnoreAttribute)] 
-                //                                                 as JsonIgnoreAttribute;
-                //if (ignoreAttr != null) continue; // go to next attribute if this prop is tagged as [JsonIgnore]
 
                 // Set default value if DefaultValueAttribute is present
                 DefaultValueAttribute attrDefaultVal = prop.Attributes[typeof(DefaultValueAttribute)]
@@ -270,7 +269,10 @@ namespace DaxStudio.UI.Utils
                     prop.SetValue(options, val);
                 }
             }
-            
+
+            // Check for machine level settings which are configured by the installer
+            InitializeMachineSettings(options);
+
         }
 
         private static void InitializeMachineSettings(IGlobalOptions options)

@@ -413,6 +413,7 @@
     <Compile Include="Extensions\ContextExtensions.cs" />
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
+    <Compile Include="Extensions\IGlobalOptionsExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\VersionExtensions.cs" />
     <Compile Include="Interfaces\IDaxDocument.cs" />
@@ -710,6 +711,9 @@
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
+      <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
       <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
     </Compile>
@@ -886,6 +890,10 @@
     <Page Include="Theme\Monotone.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CrashReportingBlockedDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MultipleQueriesDetectedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>

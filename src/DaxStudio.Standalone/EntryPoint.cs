@@ -12,8 +12,11 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 
@@ -26,7 +29,6 @@ namespace DaxStudio.Standalone
         private static IGlobalOptions _options;
         // need to create application first
         private static readonly Application App = new Application();
-        private static IGlobalOptions _options;
         static EntryPoint()
         {
 
@@ -47,8 +49,8 @@ namespace DaxStudio.Standalone
         [STAThread]
         public static void Main()
         {
-            try
-            {
+            //try
+            //{
 
                 // add unhandled exception handler
                 App.DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -77,7 +79,7 @@ namespace DaxStudio.Standalone
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
-                if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+                
 
                 // force control tooltips to display even if disabled
                 ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
@@ -114,44 +116,35 @@ namespace DaxStudio.Standalone
                 //else app.LoadLightTheme();
 
                 // log startup switches
-                if (!_options.BlockVersionChecks)
+                if (_options.AnyExternalAccessAllowed())
                 {
                     var args = App.Args().AsDictionaryForTelemetry();
                     Telemetry.TrackEvent("App.Startup", args);
                 }
 
+                // only used for testing of crash reporting UI
+                if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 bootstrapper.DisplayShell();
                 App.Run();
-            }
-            //catch (ArgumentOutOfRangeException argEx)
-            //{
-            //    var st = new System.Diagnostics.StackTrace(argEx);
-            //    var sf = st.GetFrame(0);
-            //    if (sf.GetMethod().Name == "GetLineByOffset")
-            //    {
-            //        if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan beyond the end of the current line"));
-            //        Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
-            //    }
             //}
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-                Log.CloseAndFlush();
-//#if DEBUG
-//                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-//#else
-                // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
-//#endif
 
-            }
-            finally
-            {
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
+                
+            //    // use CrashReporter.Net to send bug to DrDump
+            //    LogFatalCrash(ex, "DAX Studio Standalone Fatal crash in Main() method", _options);
+                
+       
+            //}
+            //finally
+            //{
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
-            }
+            //}
         }
 
         private static void ShowSettingPermissionErrorDialog()
@@ -262,14 +255,14 @@ namespace DaxStudio.Standalone
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
             e.SetObserved();
-            LogFatalCrash(e.Exception, msg);
+            LogFatalCrash(e.Exception, msg, _options);
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
-            LogFatalCrash(ex, msg);
+            LogFatalCrash(ex, msg, _options);
             if (App.Dispatcher.CheckAccess())
             {
                 App.Shutdown(2);
@@ -281,7 +274,7 @@ namespace DaxStudio.Standalone
             }
         }
 
-        private static void LogFatalCrash(Exception ex, string msg)
+        private static void LogFatalCrash(Exception ex, string msg, IGlobalOptions options)
         {
             // add a property to the application indicating that we have crashed
             if (!App.Properties.Contains("HasCrashed"))
@@ -289,14 +282,26 @@ namespace DaxStudio.Standalone
 
             Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
 
-            if (Application.Current.Dispatcher.CheckAccess())
+            if (_options.BlockCrashReporting)
             {
+                Application.Current.Dispatcher.Invoke(()=>{
+                    // Show a dialog to let the user know there was a fatal crash
+                    // but we are unable to automatically log the crash due to their privacy settings
+                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = msg}};
+                    blockedDlg.ShowDialog();
+
+                });
+
+                return;
+            }
+
+            //ThreadPool.QueueUserWorkItem((e) =>
+            //{
+            //Application.Current.Dispatcher.Invoke(() =>
+            //{
                 CrashReporter.ReportCrash(ex, msg);
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
-            }
+            //});
+            //});
 
         }
 
@@ -326,7 +331,7 @@ namespace DaxStudio.Standalone
                         return;
                     default:
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
-                        CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+                        LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
                         e.Handled = true;
                         
                         Application.Current.Shutdown(1);
@@ -336,7 +341,7 @@ namespace DaxStudio.Standalone
             }
             else
             {
-                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash");
+                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash",_options);
                 e.Handled = true;
                 App?.Shutdown(3);
             }
