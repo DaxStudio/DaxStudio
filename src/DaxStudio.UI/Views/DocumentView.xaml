@@ -24,6 +24,7 @@
     d:DesignWidth="500" 
     d:DesignHeight="400"
     d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
+    
     >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -45,18 +46,6 @@
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
-
-            <Style x:Key="HyperlinkButton" TargetType="Button">
-                <Setter Property ="Padding" Value="0"/>
-                <Setter Property="Margin" Value="0"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <ContentPresenter/>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
 
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
@@ -659,6 +648,7 @@
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
+                                                   cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]"
                                     >
                                         <!--dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"-->
                                         <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
@@ -719,23 +709,14 @@
                                     </dax:DAXEditor>
 
                                     <!-- Help Watermark -->
-                                    <StackPanel  
-                                        Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
-                                        Grid.RowSpan="2" 
-                                        Grid.ColumnSpan="2" 
-                                        VerticalAlignment="Center" 
-                                        HorizontalAlignment="Center">
-                                        <TextBlock Foreground="DarkGray">Type in a DAX query eg. EVALUTE &lt;table expression&gt;</TextBlock>
-                                        <TextBlock Foreground="DarkGray">See more examples at <Hyperlink NavigateUri="https://daxstudio.org">daxstudio.org</Hyperlink></TextBlock>
-                                        <TextBlock Foreground="DarkGray" HorizontalAlignment="Center" Margin="5"> or </TextBlock>
-                                        <TextBlock Foreground="DarkGray" HorizontalAlignment="Center">
-                                            Open the 
-                                            <Button cal:Message.Attach="[Event Click] = [Action OpenQueryBuilder()]" Style="{StaticResource HyperlinkButton}">
-                                                <Hyperlink Focusable="False">Query Builder</Hyperlink>
-                                            </Button>
-                                        </TextBlock>
-                                        <CheckBox HorizontalAlignment="Center" Foreground="DarkGray" Margin="5">Do not show this help text in future</CheckBox>
-                                    </StackPanel>
+                                    <ContentControl x:Name="HelpWatermark"
+                                                    cal:View.Model="{Binding HelpWatermark}" 
+                                                    cal:View.ApplyConventions="true"
+                                                    Grid.RowSpan="2"
+                                                    Grid.ColumnSpan="2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ></ContentControl>
 
                                     <!-- Floats over the main editor control -->
                                     <Border x:Name="borExpressionBackground" 

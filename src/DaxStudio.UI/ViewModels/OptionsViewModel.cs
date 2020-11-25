@@ -258,7 +258,7 @@ namespace DaxStudio.UI.ViewModels
         [DataMember, DefaultValue("")]
         public string ProxyAddress
         {
-            get { return _proxyAddress; }
+            get => _proxyAddress;
             set
             {
                 if (_proxyAddress == value) return;
@@ -267,6 +267,22 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<string>(nameof(ProxyAddress), value, _isInitializing);
                 WebRequestFactory.ResetProxy();
+            }
+        }
+
+        private bool _neverShowHelpWatermark;
+        [Category("Editor")]
+        [DisplayName("Show Help Text on Empty Document")]
+        [SortOrder(120)]
+        [DataMember, DefaultValue(true)]
+        public bool ShowHelpWatermark { get => _neverShowHelpWatermark;
+            set
+            {
+                if (_neverShowHelpWatermark == value) return;
+                _neverShowHelpWatermark = value;
+                NotifyOfPropertyChange(() => ShowHelpWatermark);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ShowHelpWatermark), value, _isInitializing);
             }
         }
 

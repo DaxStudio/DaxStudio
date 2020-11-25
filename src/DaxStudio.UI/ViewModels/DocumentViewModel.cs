@@ -99,7 +99,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private MetadataPaneViewModel _metadataPane;
         private IObservableCollection<object> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
@@ -176,9 +175,13 @@ namespace DaxStudio.UI.ViewModels
             SelectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
+            HelpWatermark = new HelpWatermarkViewModel(Options);
+
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
 
         }
+
+        public HelpWatermarkViewModel HelpWatermark { get; set; }
 
         private void QueryBuilder_VisibilityChanged(object sender, EventArgs e)
         {
@@ -620,6 +623,16 @@ namespace DaxStudio.UI.ViewModels
 
         public void OpenQueryBuilder()
         {
+            // Only allow the Query Builder to be shown if we are connected
+            // (otherwise there is nothing to drag in from the metadata pane)
+            if (!Connection.IsConnected)
+            {
+                MessageBox.Show(
+                    "The current window is not connected to a data model. You must be connected before you can open the Query Builder",
+                    "Query Builder", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             ShowQueryBuilder = true;
         }
 
@@ -628,7 +641,6 @@ namespace DaxStudio.UI.ViewModels
             set {
                 QueryBuilder.IsVisible = value;
                 NotifyOfPropertyChange(nameof(ShowQueryBuilder));
-
             }
         }
 
@@ -726,11 +738,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public MetadataPaneViewModel MetadataPane
-        {
-            get { return _metadataPane; }
-            set { _metadataPane = value; }
-        }
+        public MetadataPaneViewModel MetadataPane { get; set; }
 
         public FunctionPaneViewModel FunctionPane { get; private set; }
 
@@ -746,6 +754,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
+            _eventAggregator.Unsubscribe(HelpWatermark);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
@@ -774,6 +783,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(FunctionPane);
                 _eventAggregator.Subscribe(Connection);
                 _eventAggregator.Subscribe(IntellisenseProvider);
+                _eventAggregator.Subscribe(HelpWatermark);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in this.TraceWatchers)
                 {
@@ -3836,16 +3846,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showHelpWatermark = true;
         public bool ShowHelpWatermark
         {
-            get => _showHelpWatermark;
-            set
-            {
-                if (value == _showHelpWatermark) return;
-                _showHelpWatermark = value;
-                NotifyOfPropertyChange(nameof(ShowHelpWatermark));
-            }
+            get => HelpWatermark.ShowHelpWatermark;
+            set => HelpWatermark.ShowHelpWatermark = value;
+        }
+
+        public void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
         }
     }
 }

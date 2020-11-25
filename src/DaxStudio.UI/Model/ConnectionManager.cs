@@ -98,7 +98,7 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabase Database => _connection?.Database;
         public string DatabaseName => _connection?.Database?.Name ?? string.Empty;
-        public DaxMetadata DaxMetadataInfo => _connection.DaxMetadataInfo;
+        public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
 
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
@@ -145,7 +145,7 @@ namespace DaxStudio.UI.Model
         }
 
         public ADOTabularDatabaseCollection Databases => _connection.Databases;
-        public bool IsAdminConnection => _connection.IsAdminConnection;
+        public bool IsAdminConnection => _connection?.IsAdminConnection??false;
 
         public bool IsConnected { get
             {
