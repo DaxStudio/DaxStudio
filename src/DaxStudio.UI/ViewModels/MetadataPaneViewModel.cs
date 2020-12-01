@@ -106,14 +106,22 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
-            if (!_metadataProvider.IsConnected) return;
-            _metadataProvider.Refresh();
-            var tmpModel = _selectedModel;
-            ModelList = _metadataProvider.GetModels();
-            // TODO - should we get tables, databases and reset selected database??
+            try
+            {
+                if (!_metadataProvider.IsConnected) return;
+                _metadataProvider.Refresh();
+                var tmpModel = _selectedModel;
+                ModelList = _metadataProvider.GetModels();
+                // TODO - should we get tables, databases and reset selected database??
 
-            ShowMetadataRefreshPrompt = false;
-            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
+                ShowMetadataRefreshPrompt = false;
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
+            }
+            catch (Exception ex)
+            {
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
+                Log.Error(ex,Common.Constants.LogMessageTemplate,nameof(MetadataPaneViewModel), nameof(RefreshMetadata), ex.Message);
+            }
         }
 
         private bool _showMetadataRefreshPrompt;
