@@ -1334,11 +1334,14 @@ namespace DaxStudio.UI.ViewModels
                 );
 
                 var c = Connection;
-                foreach (var tw in TraceWatchers)
+                if (daxQuery != DaxStudio.Common.Constants.RefreshSessionQuery)
                 {
-                    if (tw.IsChecked && !tw.IsPaused)
+                    foreach (var tw in TraceWatchers)
                     {
-                        tw.IsBusy = true;
+                        if (tw.IsChecked && !tw.IsPaused)
+                        {
+                            tw.IsBusy = true;
+                        }
                     }
                 }
                 if (Options.DefaultSeparator != DaxStudio.Interfaces.Enums.DelimiterType.Comma) {
