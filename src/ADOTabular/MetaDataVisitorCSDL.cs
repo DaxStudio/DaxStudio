@@ -6,10 +6,11 @@ using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
-using System.Diagnostics;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -119,7 +120,7 @@ namespace ADOTabular
                                 UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
                             break;
                         case "EntitySet":
-                            var tab = BuildTableFromEntitySet(rdr, eEntitySet);
+                            var tab = BuildTableFromEntitySet(rdr, eEntitySet,tabs.Model);
                             tabs.Add(tab);
                             break;
                         case "EntityType":
@@ -160,6 +161,7 @@ namespace ADOTabular
                         {
                             case "Culture":
                                 tabs.Model.Database.Culture = rdr.Value;
+                                tabs.Model.TOMModel.Culture = rdr.Value;
                                 break;
                         }
                     }
@@ -182,9 +184,9 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                   && rdr.LocalName == "ModelCapabilities"))
             {
-                bool enabled = false;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
+                    bool enabled;
                     switch (rdr.LocalName)
                     {
                         case "Variables":
@@ -216,9 +218,9 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                           && rdr.LocalName == "DAXFunctions"))
             {
-                bool enabled = false;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
+                    bool enabled;
                     switch (rdr.LocalName)
                     {
                         case "SummarizeColumns":
@@ -247,7 +249,7 @@ namespace ADOTabular
 
         private static void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)
         {
-            string refname = string.Empty;
+            string refName = string.Empty;
             string toColumnRef = string.Empty;
             string fromColumnRef = string.Empty;
             string toColumnMultiplicity = string.Empty;
@@ -258,7 +260,7 @@ namespace ADOTabular
                 switch (rdr.LocalName)
                 {
                     case "Name":
-                        refname = rdr.Value;
+                        refName = rdr.Value;
                         break;
                 }
             }
@@ -283,7 +285,7 @@ namespace ADOTabular
             {
                 foreach (var rel in tab.Relationships)
                 {
-                    if (rel.InternalName == refname)
+                    if (rel.InternalName == refName)
                     {
                         rel.ToColumn = toColumnRef;
                         rel.ToColumnMultiplicity = toColumnMultiplicity;
@@ -298,7 +300,7 @@ namespace ADOTabular
 
         private static void BuildRelationshipFromAssociationSet(XmlReader rdr, ADOTabularTableCollection tabs, string eAssociationSet)
         {
-            string refname = string.Empty;
+            string refName = string.Empty;
             string fromTableRef = "";
             string toTableRef = "";
             string crossFilterDir = "";
@@ -308,7 +310,7 @@ namespace ADOTabular
                 switch (rdr.LocalName)
                 {
                     case "Name":
-                        refname = rdr.Value;
+                        refName = rdr.Value;
                         break;
                 }
             }
@@ -337,7 +339,7 @@ namespace ADOTabular
             fromTable.Relationships.Add(new ADOTabularRelationship() {
                 FromTable = fromTableRef,
                 ToTable = toTableRef,
-                InternalName = refname,
+                InternalName = refName,
                 CrossFilterDirection = crossFilterDir
             });
 
@@ -389,14 +391,14 @@ namespace ADOTabular
         }
 
 
-        private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet)
+        private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet, ADOTabularModel model)
         {
             string caption = null;
             string description = "";
-            string refname = null;
+            string refName = null;
             bool isVisible = true;
             string name = null;
-            bool _private = false;
+            bool isPrivate = false;
             bool showAsVariationsOnly = false;
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
@@ -419,10 +421,10 @@ namespace ADOTabular
                             isVisible = !bool.Parse(rdr.Value);
                             break;
                         case "Name":
-                            refname = rdr.Value;
+                            refName = rdr.Value;
                             break;
                         case "Private":
-                            _private = bool.Parse(rdr.Value);
+                            isPrivate = bool.Parse(rdr.Value);
                             break;
                         case "ShowAsVariationsOnly":
                             showAsVariationsOnly = bool.Parse(rdr.Value);
@@ -444,7 +446,7 @@ namespace ADOTabular
             //                - if this is missing the Name property is used
             // Caption        - this is what the end user sees (may be translated)
             //                - if this is missing the Name property is used
-            var tab = new ADOTabularTable(_conn, refname, name, caption, description, isVisible, _private, showAsVariationsOnly);
+            var tab = new ADOTabularTable(_conn, model, refName, name, caption, description, isVisible, isPrivate, showAsVariationsOnly);
 
             return tab;
         }
@@ -482,229 +484,238 @@ namespace ADOTabular
             , ADOTabularTableCollection tables
             , string eEntityType)
         {
-            var eProperty = rdr.NameTable.Add("Property");
-            var eMeasure = rdr.NameTable.Add("Measure");
-            var eSummary = rdr.NameTable.Add("Summary");
-            var eStatistics = rdr.NameTable.Add("Statistics");
-            var eMinValue = rdr.NameTable.Add("MinValue");
-            var eMaxValue = rdr.NameTable.Add("MaxValue");
-
-            // this routine effectively processes and <EntityType> element and it's children
-            string caption = "";
-            string description = "";
-            bool isVisible = true;
-            string name = null;
-            string refName = "";
-            string tableId = "";
-            string dataType = "";
-            string contents = "";
-            string minValue = "";
-            string maxValue = "";
-            string formatString = "";
-            string keyRef = "";
-            long stringValueMaxLength = 0;
-            long distinctValueCount = 0;
-            bool nullable = true;
-            ADOTabularTable tab = null;
-
-            IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
-
-            List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
-
-            KpiDetails kpi = new KpiDetails();
-
-            var colType = ADOTabularObjectType.Column;
-            while (!(rdr.NodeType == XmlNodeType.EndElement
-                     && rdr.LocalName == eEntityType))
+            if (rdr.NameTable != null)
             {
-                //while (rdr.NodeType == XmlNodeType.Whitespace)
-                //{
-                //    rdr.Read();
-                //}
+                var eProperty = rdr.NameTable.Add("Property");
+                var eMeasure = rdr.NameTable.Add("Measure");
+                var eSummary = rdr.NameTable.Add("Summary");
+                var eStatistics = rdr.NameTable.Add("Statistics");
+                var eMinValue = rdr.NameTable.Add("MinValue");
+                var eMaxValue = rdr.NameTable.Add("MaxValue");
 
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.Name == eEntityType)
-                {
-                    while (rdr.MoveToNextAttribute())
-                    {
-                        switch (rdr.LocalName)
-                        {
-                            case "Name":
-                                tableId = rdr.Value;
-                                tab = tables.GetById(tableId);
-                                break;
-                        }
-                    }
-                }
+                // this routine effectively processes and <EntityType> element and it's children
+                string caption = "";
+                string description = "";
+                bool isVisible = true;
+                string name = null;
+                string refName = "";
+                string tableId = "";
+                string dataType = "";
+                string contents = "";
+                string minValue = "";
+                string maxValue = "";
+                string formatString = "";
+                string keyRef = "";
+                long stringValueMaxLength = 0;
+                long distinctValueCount = 0;
+                bool nullable = true;
+                DataType dataTypeEnum = DataType.Unknown;
 
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "Key")
+                ADOTabularTable tab = null;
+
+                IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
+
+                List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
+
+                KpiDetails kpi = new KpiDetails();
+
+                var colType = ADOTabularObjectType.Column;
+                while (!(rdr.NodeType == XmlNodeType.EndElement
+                         && rdr.LocalName == eEntityType))
                 {
-                    // TODO - store table Key
-                    keyRef = GetKeyReference(rdr);
-                }
+                    //while (rdr.NodeType == XmlNodeType.Whitespace)
+                    //{
+                    //    rdr.Read();
+                    //}
 
                     if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "Hierarchy")
-                {
-                    ProcessHierarchy(rdr, tab);
-
-                }
-
-                if (rdr.NodeType == XmlNodeType.Element 
-                    && rdr.Name == "bi:EntityType")
-                {
-                //    rdr.MoveToAttribute("Contents");
-                    var contentAttr = rdr.GetAttribute("Contents");
-
-                    bool isDateTable = contentAttr == "Time";
-                    tab.IsDateTable = isDateTable;
-                }
-
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "DisplayFolder")
-                {
-                    ProcessDisplayFolder(rdr,tab,tab);
-                }
-
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "Kpi")
-                {
-                    kpi = ProcessKpi(rdr);
-                }
-
-                string defaultAggregateFunction;
-                if (rdr.NodeType == XmlNodeType.Element
-                    && (rdr.LocalName == eProperty
-                    || rdr.LocalName == eMeasure
-                    || rdr.LocalName == eSummary
-                    || rdr.LocalName == eStatistics
-                    || rdr.LocalName == eMinValue
-                    || rdr.LocalName == eMaxValue))
-                {
-
-                    if (rdr.LocalName == eMeasure)
-                        colType = ADOTabularObjectType.Measure;
-
-                    if (rdr.LocalName == eSummary)
-                        description = rdr.ReadElementContentAsString();
-
-                    while (rdr.MoveToNextAttribute())
+                        && rdr.Name == eEntityType)
                     {
-                        switch (rdr.LocalName)
+                        while (rdr.MoveToNextAttribute())
                         {
-                            case "Name":
-                                refName = rdr.Value;
-                                break;
-                            case "ReferenceName":  // reference name will always come after the Name and will override it if present
-                                name = rdr.Value;
-                                break;
-                            case "Type":
-                                dataType = rdr.Value;
-                                break;
-                            case "Caption":
-                                caption = rdr.Value;
-                                break;
-                            case "Contents":
-                                contents = rdr.Value;
-                                break;
-                            case "Hidden":
-                                isVisible = !bool.Parse(rdr.Value);
-                                break;
-                            case "Description":
-                                description = rdr.Value;
-                                break;
-                            case "DistinctValueCount":
-                                distinctValueCount = long.Parse(rdr.Value, invariantCulture);
-                                break;
-                            case "StringValueMaxLength":
-                                stringValueMaxLength = long.Parse(rdr.Value, invariantCulture);
-                                break;
-                            case "FormatString":
-                                formatString = rdr.Value;
-                                break;
-                            case "DefaultAggregateFunction":
-                                defaultAggregateFunction = rdr.Value;
-                                break;
-                            case "Nullable":
-                                nullable = bool.Parse(rdr.Value);
-                                break;
+                            switch (rdr.LocalName)
+                            {
+                                case "Name":
+                                    tableId = rdr.Value;
+                                    tab = tables.GetById(tableId);
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "Key")
+                    {
+                        // TODO - store table Key
+                        keyRef = GetKeyReference(rdr);
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "Hierarchy")
+                    {
+                        ProcessHierarchy(rdr, tab);
+
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element 
+                        && rdr.Name == "bi:EntityType")
+                    {
+                        // gets the DataCategory (eg. "Time" for date tables)
+                        var contentAttr = rdr.GetAttribute("Contents");
+                        tab.DataCategory = contentAttr;
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "DisplayFolder")
+                    {
+                        ProcessDisplayFolder(rdr,tab,tab);
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "Kpi")
+                    {
+                        kpi = ProcessKpi(rdr);
+                    }
+
+                    string defaultAggregateFunction;
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && (rdr.LocalName == eProperty
+                            || rdr.LocalName == eMeasure
+                            || rdr.LocalName == eSummary
+                            || rdr.LocalName == eStatistics
+                            || rdr.LocalName == eMinValue
+                            || rdr.LocalName == eMaxValue))
+                    {
+
+                        if (rdr.LocalName == eMeasure)
+                            colType = ADOTabularObjectType.Measure;
+
+                        if (rdr.LocalName == eSummary)
+                            description = rdr.ReadElementContentAsString();
+
+                        while (rdr.MoveToNextAttribute())
+                        {
+                            switch (rdr.LocalName)
+                            {
+                                case "Name":
+                                    refName = rdr.Value;
+                                    break;
+                                case "ReferenceName":  // reference name will always come after the Name and will override it if present
+                                    name = rdr.Value;
+                                    break;
+                                case "Type":
+                                    dataType = rdr.Value;
+                                    if (!Enum.TryParse(dataType, out dataTypeEnum))
+                                    {
+                                        dataTypeEnum = DataType.Unknown;
+                                    }
+                                    break;
+                                case "Caption":
+                                    caption = rdr.Value;
+                                    break;
+                                case "Contents":
+                                    contents = rdr.Value;
+                                    break;
+                                case "Hidden":
+                                    isVisible = !bool.Parse(rdr.Value);
+                                    break;
+                                case "Description":
+                                    description = rdr.Value;
+                                    break;
+                                case "DistinctValueCount":
+                                    distinctValueCount = long.Parse(rdr.Value, invariantCulture);
+                                    break;
+                                case "StringValueMaxLength":
+                                    stringValueMaxLength = long.Parse(rdr.Value, invariantCulture);
+                                    break;
+                                case "FormatString":
+                                    formatString = rdr.Value;
+                                    break;
+                                case "DefaultAggregateFunction":
+                                    defaultAggregateFunction = rdr.Value;
+                                    break;
+                                case "Nullable":
+                                    nullable = bool.Parse(rdr.Value);
+                                    break;
                                 // Precision Scale 
                                 //TODO - Add RowCount
+                            }
                         }
+
                     }
 
-                }
-
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "Variations") {
-                    _variations = ProcessVariations(rdr);
-                }
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "Variations") {
+                        _variations = ProcessVariations(rdr);
+                    }
 
 
-                if (rdr.NodeType == XmlNodeType.EndElement
-                    && rdr.LocalName == eProperty
-                    && rdr.LocalName == "Property")
-                {
-
-                    if (caption.Length == 0)
-                        caption = refName;
-                    if (!string.IsNullOrWhiteSpace(caption))
+                    if (rdr.NodeType == XmlNodeType.EndElement
+                        && rdr.LocalName == eProperty
+                        && rdr.LocalName == "Property")
                     {
+
+                        if (caption.Length == 0)
+                            caption = refName;
+                        if (!string.IsNullOrWhiteSpace(caption))
+                        {
                         
-                        if (kpi.IsBlank())
-                        {
-                            var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
+                            if (kpi.IsBlank())
                             {
-                                DataType = Type.GetType($"System.{dataType}"),
-                                Nullable = nullable,
-                                MinValue = minValue,
-                                MaxValue = maxValue,
-                                DistinctValues = distinctValueCount,
-                                FormatString = formatString,
-                                StringValueMaxLength = stringValueMaxLength
-                            };
-                            col.Variations.AddRange(_variations);
-                            tables.Model.AddRole(col);
-                            tab.Columns.Add(col);
-                            _conn.Columns.Add(col.DaxName, col);
-                        }
-                        else
-                        {
-                            colType = ADOTabularObjectType.KPI;
-                            var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi)
+                                var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
+                                {
+                                    SystemType = Type.GetType($"System.{dataType}"),
+                                    DataType = dataTypeEnum,
+                                    Nullable = nullable,
+                                    MinValue = minValue,
+                                    MaxValue = maxValue,
+                                    DistinctValues = distinctValueCount,
+                                    FormatString = formatString,
+                                    StringValueMaxLength = stringValueMaxLength
+                                };
+                                col.Variations.AddRange(_variations);
+                                tables.Model.AddRole(col);
+                                tab.Columns.Add(col);
+                                _conn.Columns.Add(col.DaxName, col);
+                            }
+                            else
                             {
-                                DataType = Type.GetType($"System.{dataType}")
-                            };
-                            tab.Columns.Add(kpiCol);
-                            _conn.Columns.Add(kpiCol.DaxName, kpiCol);
+                                colType = ADOTabularObjectType.KPI;
+                                var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi)
+                                {
+                                    SystemType = Type.GetType($"System.{dataType}")
+                                };
+                                tab.Columns.Add(kpiCol);
+                                _conn.Columns.Add(kpiCol.DaxName, kpiCol);
+                            }
                         }
+
+
+                        // reset temp column variables
+                        kpi = new KpiDetails();
+                        refName = "";
+                        caption = "";
+                        name = null;
+                        description = "";
+                        isVisible = true;
+                        contents = "";
+                        dataType = "";
+                        stringValueMaxLength = -1;
+                        formatString = "";
+                        defaultAggregateFunction = "";
+                        nullable = true;
+                        colType = ADOTabularObjectType.Column;
+                        _variations = new List<ADOTabularVariation>();
+                        dataTypeEnum = DataType.Unknown;
+
                     }
-
-
-                    // reset temp column variables
-                    kpi = new KpiDetails();
-                    refName = "";
-                    caption = "";
-                    name = null;
-                    description = "";
-                    isVisible = true;
-                    contents = "";
-                    dataType = "";
-                    stringValueMaxLength = -1;
-                    formatString = "";
-                    defaultAggregateFunction = "";
-                    nullable = true;
-                    colType = ADOTabularObjectType.Column;
-                    _variations = new List<ADOTabularVariation>();
-
+                    if (!rdr.Read()) break;// quit the read loop if there is no more data
                 }
-                if (!rdr.Read()) break;// quit the read loop if there is no more data
-            }
 
-            // Set Key column
-            var keyCol = tab?.Columns.GetByPropertyRef(keyRef);
-            if(keyCol != null) keyCol.IsKey = true;
+                // Set Key column
+                var keyCol = tab?.Columns.GetByPropertyRef(keyRef);
+                if(keyCol != null) keyCol.IsKey = true;
+            }
 
             //TODO - link up back reference to backing measures for KPIs
 
@@ -729,7 +740,7 @@ namespace ADOTabular
         private static List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
         {
             string _name;
-            bool _default = false;
+            bool isDefault = false;
             string navigationPropertyRef = string.Empty;
             string defaultHierarchyRef = string.Empty;
 
@@ -748,7 +759,7 @@ namespace ADOTabular
                                 _name = rdr.Value;
                                 break;
                             case "Default":
-                                _default = bool.Parse( rdr.Value);
+                                isDefault = bool.Parse( rdr.Value);
                                 break;
                         }
                     }
@@ -777,8 +788,8 @@ namespace ADOTabular
                 if (rdr.NodeType == XmlNodeType.EndElement
                     && rdr.LocalName == "Variation")
                 {
-                    _variations.Add(new ADOTabularVariation() { NavigationPropertyRef = navigationPropertyRef, DefaultHierarchyRef = defaultHierarchyRef, IsDefault = _default });
-                    _default = false;
+                    _variations.Add(new ADOTabularVariation() { NavigationPropertyRef = navigationPropertyRef, DefaultHierarchyRef = defaultHierarchyRef, IsDefault = isDefault });
+                    isDefault = false;
                     navigationPropertyRef = string.Empty;
                     defaultHierarchyRef = string.Empty;
                 }
@@ -970,7 +981,7 @@ namespace ADOTabular
                                 break;
                         }
                     }
-                    string structure = GetHierarchStructure(table, hierName, hierCap);
+                    string structure = GetHierarchyStructure(table, hierName, hierCap);
                     hier = new ADOTabularHierarchy(table, hierName, hierName, hierCap ?? hierName, "", hierIsVisible, ADOTabularObjectType.Hierarchy, "", structure);
                     table.Columns.Add(hier);
                     rdr.Read();
@@ -1032,7 +1043,7 @@ namespace ADOTabular
              
         }
 
-        private string GetHierarchStructure(ADOTabularTable table, string hierName, string hierCap)
+        private string GetHierarchyStructure(ADOTabularTable table, string hierName, string hierCap)
         {
             if (_hierStructure == null) return "";
             if (_hierStructure.Count == 0) return "";
@@ -1216,9 +1227,7 @@ namespace ADOTabular
                 product.Type = "Azure AS";
                 product.Name = product.Type;
             }
-            else if (serverName.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)       // Power BI XMLA EndPoint (Premium, Premium per User)
-                || serverName.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)        // Power BI Dataset
-                || serverName.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase) )  // Power BI Premium Internal
+            else if (serverName.IsPowerBIService() )  // Power BI Premium Internal
             {
                 product.Type = "Power BI Service";
                 product.Name = product.Type;
@@ -1263,7 +1272,7 @@ namespace ADOTabular
             if (measures == null) throw new ArgumentNullException(nameof(measures));
             //RRomano: Better way to reuse this method in the two visitors? 
             // Create an abstract class of a visitor so that code can be shared 
-            // (csdl doesnt seem to have the DAX expression)
+            // (csdl doesn't seem to have the DAX expression)
 
             var ret = MetaDataVisitorADOMD.VisitMeasures(measures, this._conn);
 

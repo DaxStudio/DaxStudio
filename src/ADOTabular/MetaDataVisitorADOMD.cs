@@ -44,7 +44,9 @@ namespace ADOTabular
             foreach (DataRow dr in dtTables.Rows)
             {
                 tables.Add(
-                    new ADOTabularTable(_conn, dr["DIMENSION_NAME"].ToString()
+                    new ADOTabularTable(_conn
+                        , tables.Model
+                        ,dr["DIMENSION_NAME"].ToString()
                         ,dr["DIMENSION_NAME"].ToString()
                         ,dr["DIMENSION_CAPTION"].ToString()
                         ,dr["DESCRIPTION"].ToString()

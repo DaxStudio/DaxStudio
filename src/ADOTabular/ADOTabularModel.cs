@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ADOTabular.Interfaces;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -28,11 +29,12 @@ namespace ADOTabular
             BaseModelName = baseModelName;
             Roles = new Dictionary<string, ADOTabularColumn>();
             Relationships = new List<ADOTabularRelationship>();
+            TOMModel = new Model(){Name = name};
         }
         public ADOTabularDatabase Database { get; }
         public string BaseModelName { get; private set; }
 
-        public bool IsPerspective { get { return !string.IsNullOrEmpty(BaseModelName); } }
+        public bool IsPerspective => !string.IsNullOrEmpty(BaseModelName);
 
         public string Name { get; private set; }
 
@@ -47,6 +49,7 @@ namespace ADOTabular
         public Dictionary<string,ADOTabularColumn> Roles { get; private set; }
 
         public List<ADOTabularRelationship> Relationships { get; private set; }
+        public Model TOMModel { get; }
 
         public MetadataImages MetadataImage
         {

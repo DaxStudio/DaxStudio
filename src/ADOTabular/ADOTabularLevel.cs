@@ -34,7 +34,7 @@ namespace ADOTabular
 
         public long DistinctValues => Column.DistinctValues;
 
-        public Type DataType => Column.DataType;
+        public Type SystemType => Column.SystemType;
 
         public MetadataImages MetadataImage => Column.MetadataImage;
 

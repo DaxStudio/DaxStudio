@@ -62,12 +62,12 @@ namespace DaxStudio.UI.Model
                         case FilterType.Contains:
                         case FilterType.DoesNotContain:
                             // these filters only apply to strings
-                            if (TabularObject.DataType == typeof(string)) yield return ft;
+                            if (TabularObject.SystemType == typeof(string)) yield return ft;
                             break;
                         case FilterType.In:
                         case FilterType.NotIn:
                             // if the data type is string and the model supports TREATAS
-                            if (TabularObject.DataType == typeof(string) && ModelCapabilities.DAXFunctions.TreatAs ) yield return ft;
+                            if (TabularObject.SystemType == typeof(string) && ModelCapabilities.DAXFunctions.TreatAs ) yield return ft;
                             break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
@@ -75,7 +75,7 @@ namespace DaxStudio.UI.Model
                         case FilterType.LessThanOrEqual:
                         case FilterType.Between:
                             // these filters only apply non-strings
-                            if (TabularObject.DataType != typeof(string)) yield return ft;
+                            if (TabularObject.SystemType != typeof(string)) yield return ft;
                             break;
                         default:
                             throw new NotSupportedException($"Unknown FilterType '{ft.ToString()}'");

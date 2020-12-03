@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -57,7 +58,8 @@ namespace ADOTabular
 
         public bool IsInDisplayFolder { get; set; }
  
-        public Type DataType { get; set; }
+        public Type SystemType { get; set; }
+        public DataType DataType { get; set; }
 
         public bool Nullable { get; internal set; }
         public long DistinctValues { get; internal set; }
@@ -66,7 +68,7 @@ namespace ADOTabular
         public string FormatString { get; internal set; }
         public string DefaultAggregateFunction { get; internal set; }
         public long StringValueMaxLength { get; internal set; }
-        public string DataTypeName { get { return DataType==null?string.Empty:DataType.ToString().Replace("System.", ""); } }
+        public string DataTypeName { get { return SystemType==null?string.Empty:SystemType.ToString().Replace("System.", ""); } }
 
         //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
         public string MeasureExpression
@@ -122,7 +124,7 @@ namespace ADOTabular
             if (connection == null) return;
 
             string qry;
-            switch (Type.GetTypeCode(DataType))
+            switch (Type.GetTypeCode(SystemType))
             {
                 case TypeCode.Boolean:
                     qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";

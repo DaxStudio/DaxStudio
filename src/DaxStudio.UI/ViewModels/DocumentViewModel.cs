@@ -46,7 +46,6 @@ using Dax.ViewModel;
 using System.Reflection;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
-using ControlzEx.Standard;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Utils.Intellisense;
 using Constants = DaxStudio.Common.Constants;
@@ -152,7 +151,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 // log the error and re-throw it
-                Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "ctor","Error in Constructor");
+                Log.Error(ex,Constants.LogMessageTemplate, nameof(DocumentViewModel), "ctor","Error in Constructor");
                 throw;
             }
         }

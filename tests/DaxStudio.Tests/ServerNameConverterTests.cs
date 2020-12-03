@@ -19,6 +19,39 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestPowerBiDedicatedXmlaConvert()
+        {
+            var conv = new DaxStudio.UI.Converters.ServerNameConverter();
+            var name = "pbidedicated://api.powerbi.com/v1.0/myorg/Xmla Test";
+            string expectedName = "pbidedicated://.../myorg/Xmla Test";
+            string actualName = (string)conv.Convert(name, typeof(string), null, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expectedName, actualName);
+        }
+
+        [TestMethod]
+        public void TestPowerBiAzureXmlaConvert()
+        {
+            var conv = new DaxStudio.UI.Converters.ServerNameConverter();
+            var name = "pbiazure://api.powerbi.com/v1.0/myorg/Xmla Test";
+            string expectedName = "pbiazure://.../myorg/Xmla Test";
+            string actualName = (string)conv.Convert(name, typeof(string), null, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expectedName, actualName);
+        }
+
+        [TestMethod]
+        public void TestPowerBiUnknownPrefixDoesNotConvert()
+        {
+            var conv = new DaxStudio.UI.Converters.ServerNameConverter();
+            var name = "pbiblah://api.powerbi.com/v1.0/myorg/Xmla Test";
+            string expectedName = "pbiblah://.../myorg/Xmla Test";
+            string actualName = (string)conv.Convert(name, typeof(string), null, CultureInfo.CurrentCulture);
+
+            Assert.AreNotEqual(expectedName, actualName);
+        }
+
+        [TestMethod]
         public void TestAsAzureConvert()
         {
             var conv = new DaxStudio.UI.Converters.ServerNameConverter();

@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 
 namespace DaxStudio.UI.Converters
 {
     public class ServerNameConverter : IValueConverter
     {
-        public static Regex rex = new Regex(@"(?<=powerbi://)([^/]+/v\d+\.\d+)|(?<=asazure://)([^/]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static Regex rex = new Regex(@"(?<=pbiazure://)([^/]+/v\d+\.\d+)|(?<=pbidedicated://)([^/]+/v\d+\.\d+)|(?<=powerbi://)([^/]+/v\d+\.\d+)|(?<=asazure://)([^/]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

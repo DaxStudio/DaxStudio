@@ -191,46 +191,7 @@ namespace DaxStudio.Tests
         #endregion
 
 
-        /*
-        [TestMethod]
-        public void TestMethod1()
-        {
-            var conn =
-                new ADOTabularConnection("Data Source=localhost;Initial Catalog=AdventureWorks Tabular Model SQL 2012",
-                                                    AdomdType.AnalysisServices, ADOTabularMetadataDiscovery.Csdl);
-
-            Assert.IsTrue(conn.Database.Models[0].Tables.Any(), "No tables found");
-            conn.Close();
-        }
-
-        [TestMethod]
-        public void FindAllDateColumns()
-        {
-            var conn =
-                   new ADOTabularConnection("Data Source=localhost;Initial Catalog=AdventureWorks Tabular Model SQL 2012",
-                                                       AdomdType.AnalysisServices, ADOTabularMetadataDiscovery.Csdl);
-            DataTable final = null;
-            foreach (var t in conn.Database.Models.First().Tables)
-            {
-                foreach (var c in t.Columns)
-                {
-                    if (c.DataType == typeof(DateTime))
-                    {
-                        var qry = string.Format("evaluate row(\"TableName\", \"{0}\",\"ColumnName\",\"{1}\", \"MaxDate\", max({2}))",c.Table.Caption,c.Caption ,c.DaxName);
-                        var dt = conn.ExecuteDaxQueryDataTable(qry);
-                        if (final == null)
-                            final = dt.Clone();
-                        else
-                        {
-                            final.Merge(dt);
-                        }
-                    }
-                }
-            }
-            Assert.AreEqual(0,final.Rows.Count,"incorrect row count");
-        }
-        */
-
+        
         [TestMethod]
         public void TestADOTabularCSDLVisitor()
         {
@@ -245,8 +206,14 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.AreEqual(4, tabs.Count);
-            Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+            Assert.AreEqual(8, tabs["Sales"].Columns.Count()); // excludes internal rowcount column
             Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
+
+            // Check TOM objects
+
+            Assert.AreEqual(4, m.TOMModel.Tables.Count, "Count of tables in TOM Model");
+            Assert.AreEqual(4, m.TOMModel.Tables["Sales"].Columns.Count, "Count of columns in TOM Model"); // includes external rowcount column
+            Assert.AreEqual(5, m.TOMModel.Tables["Sales"].Measures.Count, "Count of measures in TOM Model");
         }
 
         [TestMethod]

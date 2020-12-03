@@ -21,7 +21,7 @@ namespace ADOTabular
             _model = model;
         }
         */
-        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible, bool _private, bool showAsVariationsOnly )
+        public ADOTabularTable(IADOTabularConnection adoTabConn, ADOTabularModel model, string internalReference, string name, string caption, string description, bool isVisible, bool isPrivate, bool showAsVariationsOnly )
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;
@@ -32,8 +32,9 @@ namespace ADOTabular
             IsVisible = isVisible;
             Relationships = new List<ADOTabularRelationship>();
             FolderItems = new List<IADOTabularObjectReference>();
-            Private = _private;
+            Private = isPrivate;
             ShowAsVariationsOnly = showAsVariationsOnly;
+            Model = model;
         }
 
         public string DaxName
@@ -101,6 +102,7 @@ namespace ADOTabular
 
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }
-        public bool IsDateTable { get; set; }
+        public bool IsDateTable => DataCategory == "Time";
+        public string DataCategory { get; internal set; }
     }
 }

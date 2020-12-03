@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 
@@ -780,7 +781,7 @@ namespace ADOTabular
             }
         }
 
-        public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
+        public bool IsPowerBIXmla { get => this.Properties["Data Source"].IsPowerBIService(); }
         public string ShortFileName { get; private set; }
 
         public bool IsAdminConnection => SPID != -1 || Properties.ContainsKey("roles") || Properties.ContainsKey("EffectiveUserName") || IsPowerBIXmla;
