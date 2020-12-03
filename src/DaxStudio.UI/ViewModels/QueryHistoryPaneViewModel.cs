@@ -94,8 +94,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryHistoryDoubleClick(QueryHistoryEvent queryHistoryEvent)
         {
+            if (queryHistoryEvent == null) return;  // exit here silently if no history event is selected
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHistoryEvent.QueryText));
-            //_eventAggregator.PublishOnUIThread(new SendTextToEditor(queryText));
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)

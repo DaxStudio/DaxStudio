@@ -176,9 +176,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void OpenNewBlankDocument(DocumentViewModel sourceDocument)
         {
-
+            Log.Debug(Constants.LogMessageTemplate,nameof(DocumentTabViewModel),nameof(OpenNewBlankDocument), "Requesting new document from document factory");
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
-            
+
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), "Adding new document to tabs collection");
             Items.Add(newDoc);
             ActivateItem(newDoc);
             ActiveDocument = newDoc;

@@ -126,21 +126,35 @@ namespace DaxStudio.UI.ViewModels
             , ISettingProvider settingProvider
             , IAutoSaver autoSaver)
         {
-            _host = host;
-            _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
-            _windowManager = windowManager;
-            _ribbon = ribbon;
-            SettingProvider = settingProvider;
-            ServerTimingDetails = serverTimingDetails;
-            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
-            _uniqueId = Guid.NewGuid();
-            Options = options;
-            AutoSaver = autoSaver;
-            IconSource = ImgSourceConverter.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
-            Connection = new ConnectionManager(_eventAggregator);
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
-            Init(_ribbon);
+            try
+            {
+                _host = host;
+                _eventAggregator = eventAggregator;
+                _eventAggregator.Subscribe(this);
+                _windowManager = windowManager;
+                _ribbon = ribbon;
+                SettingProvider = settingProvider;
+                ServerTimingDetails = serverTimingDetails;
+                _rexQueryError =
+                    new Regex(
+                        @"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$",
+                        RegexOptions.Compiled | RegexOptions.Multiline);
+                _uniqueId = Guid.NewGuid();
+                Options = options;
+                AutoSaver = autoSaver;
+                IconSource =
+                    ImgSourceConverter.ConvertFromInvariantString(
+                        @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
+                Connection = new ConnectionManager(_eventAggregator);
+                IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
+                Init(_ribbon);
+            }
+            catch (Exception ex)
+            {
+                // log the error and re-throw it
+                Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "ctor","Error in Constructor");
+                throw;
+            }
         }
 
 

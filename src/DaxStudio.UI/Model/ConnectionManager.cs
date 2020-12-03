@@ -96,8 +96,8 @@ namespace DaxStudio.UI.Model
         public string ConnectionString => _connection?.ConnectionString??string.Empty;
         public string ConnectionStringWithInitialCatalog => _connection?.ConnectionStringWithInitialCatalog??string.Empty;
 
-        public ADOTabularDatabase Database => _connection?.Database;
-        public string DatabaseName => _connection?.Database?.Name ?? string.Empty;
+        public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
+        public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo => _connection.DaxMetadataInfo;
 
         #region Query Exection
