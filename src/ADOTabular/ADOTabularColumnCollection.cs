@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics.Contracts;
+using ADOTabular.Extensions;
 using ADOTabular.Interfaces;
 using Microsoft.AnalysisServices.Tabular;
 
@@ -57,10 +58,17 @@ namespace ADOTabular
                         IsHidden = !column.IsVisible});
                     break;
                 case ADOTabularObjectType.Measure:
-                    tomTable.Measures.Add(new Measure(){
+                    var measure = new Measure()
+                    {
                         Name = column.Name,
                         Description = column.Description,
-                        IsHidden = !column.IsVisible});
+                        IsHidden = !column.IsVisible
+                    };
+                    measure.SetDataType(column.DataType);
+                    //var t = typeof(Measure);
+                    //t.GetProperty("DataType")
+                    //    .SetValue(measure, column.DataType, null);
+                    tomTable.Measures.Add(measure);
                     break;
 
             }

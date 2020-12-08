@@ -515,7 +515,7 @@ namespace ADOTabular
 
                 IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
-                List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
+                List<ADOTabularVariation> variations = new List<ADOTabularVariation>();
 
                 KpiDetails kpi = new KpiDetails();
 
@@ -646,7 +646,7 @@ namespace ADOTabular
 
                     if (rdr.NodeType == XmlNodeType.Element
                         && rdr.LocalName == "Variations") {
-                        _variations = ProcessVariations(rdr);
+                        variations = ProcessVariations(rdr);
                     }
 
 
@@ -673,7 +673,7 @@ namespace ADOTabular
                                     FormatString = formatString,
                                     StringValueMaxLength = stringValueMaxLength
                                 };
-                                col.Variations.AddRange(_variations);
+                                col.Variations.AddRange(variations);
                                 tables.Model.AddRole(col);
                                 tab.Columns.Add(col);
                                 _conn.Columns.Add(col.DaxName, col);
@@ -705,7 +705,7 @@ namespace ADOTabular
                         defaultAggregateFunction = "";
                         nullable = true;
                         colType = ADOTabularObjectType.Column;
-                        _variations = new List<ADOTabularVariation>();
+                        variations = new List<ADOTabularVariation>();
                         dataTypeEnum = DataType.Unknown;
 
                     }
