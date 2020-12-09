@@ -2412,7 +2412,7 @@ namespace DaxStudio.UI.ViewModels
             // we can only load trace watchers if we are connected to a server
             //if (!this.IsConnected) return;
 
-            foreach (var tw in TraceWatchers)
+            foreach (var tw in ToolWindows)
             {
                 var loader = tw as ISaveState;
                 if (loader == null) continue;

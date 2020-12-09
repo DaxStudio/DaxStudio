@@ -10,9 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using Microsoft.AnalysisServices;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -20,10 +22,12 @@ namespace DaxStudio.UI.ViewModels
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
+    [JsonObject(MemberSerialization.OptIn)]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
         ,IHandle<SendColumnToEditorEvent>
         ,IDisposable
+        ,ISaveState
     {
         const string NewMeasurePrefix = "MyMeasure";
 
@@ -60,8 +64,11 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public new bool CanHide => true;
         public bool CanOrderBy => Columns.Any();
+        [JsonProperty]
         public QueryBuilderFieldList Columns { get; } 
+        [JsonProperty]
         public QueryBuilderFilterList Filters { get; }
+        [JsonProperty]
         public QueryBuilderFieldList OrderBy { get; }
 
         private bool _isEnabled = true;
@@ -233,6 +240,23 @@ namespace DaxStudio.UI.ViewModels
         private void AddColumnToFilters(ITreeviewColumn column)
         {
             Filters.Add(column.InternalColumn);
+        }
+
+        public void Save(string filename)
+        {
+            string json = JsonConvert.SerializeObject(this);
+            File.WriteAllText(filename + ".queryBuilder", json);
+        }
+
+        public void Load(string filename)
+        {
+            filename = filename + ".queryBuilder";
+            if (!File.Exists(filename)) return;
+
+            // TODO - show query builder
+            //EventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            string data = File.ReadAllText(filename);
+            var model = JsonConvert.DeserializeObject<QueryBuilderViewModel>(data);
         }
     }
 }

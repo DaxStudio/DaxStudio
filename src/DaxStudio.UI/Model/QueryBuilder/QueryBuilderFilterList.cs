@@ -8,9 +8,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class QueryBuilderFilterList :  IQueryBuilderFieldList
     {
         public QueryBuilderFilterList(Func<IModelCapabilities> modelCapabilities)
@@ -23,6 +25,7 @@ namespace DaxStudio.UI.Model
         {
             Items.Remove(item);
         }
+        [JsonProperty]
         public ObservableCollection<QueryBuilderFilter> Items { get; } = new ObservableCollection<QueryBuilderFilter>();
         public QueryBuilderDropHandler DropHandler { get; }
         public Func<IModelCapabilities> GetModelCapabilities { get; }

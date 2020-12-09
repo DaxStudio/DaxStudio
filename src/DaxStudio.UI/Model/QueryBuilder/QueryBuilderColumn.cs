@@ -4,15 +4,19 @@ using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class QueryBuilderColumn : PropertyChangedBase, IADOTabularColumn
     {
+        [JsonProperty(ReferenceLoopHandling = ReferenceLoopHandling.Ignore)]
         public IADOTabularColumn TabularObject;
         private string _caption = string.Empty;
 
         private IADOTabularObject _selectedTable;
+        [JsonProperty(ReferenceLoopHandling = ReferenceLoopHandling.Ignore) ]
         public IADOTabularObject SelectedTable { get => _selectedTable;
             set {
                 _selectedTable = value;
@@ -48,6 +52,7 @@ namespace DaxStudio.UI.Model
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
 
         private string _overridenMeasureExpression = string.Empty;
+        [JsonProperty]
         public string MeasureExpression
         {
             get

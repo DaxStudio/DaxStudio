@@ -14,9 +14,11 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using ADOTabular.Interfaces;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
@@ -25,13 +27,15 @@ namespace DaxStudio.UI.Model
             TabularObject = obj;
             ModelCapabilities = modelCapabilities;
         }
-
+        [JsonProperty]
         public IADOTabularColumn TabularObject { get; }
         public IModelCapabilities ModelCapabilities { get; }
 
+        [JsonProperty]
         public string Caption => TabularObject.Caption;
 
         private FilterType _fitlerType;
+        [JsonProperty]
         public FilterType FilterType 
         {  
             get => _fitlerType;
@@ -88,13 +92,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        [JsonProperty]
         public string FilterValue { get; set; }
 
         public bool ShowFilterValue
         {
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
-
+        [JsonProperty]
         public string FilterValue2 { get; set; }
         public bool ShowFilterValue2 => FilterType == FilterType.Between;
 
