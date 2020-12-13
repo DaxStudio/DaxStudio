@@ -4,19 +4,20 @@ using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    public class QueryBuilderColumn : PropertyChangedBase, IADOTabularColumn
+    [DataContract]
+    public class QueryBuilderColumn : PropertyChangedBase //, IADOTabularColumn
     {
-        [JsonProperty(ReferenceLoopHandling = ReferenceLoopHandling.Ignore)]
+        [DataMember]
         public IADOTabularColumn TabularObject;
         private string _caption = string.Empty;
-
+        
         private IADOTabularObject _selectedTable;
-        [JsonProperty(ReferenceLoopHandling = ReferenceLoopHandling.Ignore) ]
+    
         public IADOTabularObject SelectedTable { get => _selectedTable;
             set {
                 _selectedTable = value;
@@ -25,7 +26,7 @@ namespace DaxStudio.UI.Model
         }
 
         private string _tableName = string.Empty;
-
+        [DataMember]
         public bool IsModelItem { get; }
 
         public QueryBuilderColumn(IADOTabularColumn item, bool isModelItem)
@@ -46,7 +47,7 @@ namespace DaxStudio.UI.Model
         public string MaxValue => TabularObject?.MaxValue;
 
         public long DistinctValues => TabularObject?.DistinctValues??0;
-
+        
         public Type DataType => TabularObject?.DataType;
         public string TableName => TabularObject.TableName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
@@ -74,6 +75,7 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        [DataMember]
         public bool IsOverriden => !string.IsNullOrWhiteSpace(_overridenMeasureExpression);
 
         public string DaxName => TabularObject?.DaxName?? "[" + Caption  +"]";

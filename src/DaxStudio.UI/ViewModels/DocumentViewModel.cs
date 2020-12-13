@@ -2169,34 +2169,78 @@ namespace DaxStudio.UI.ViewModels
                 SaveAs();
             else
             {
-                try
+                if (FileName.EndsWith(".daxx",StringComparison.OrdinalIgnoreCase)) SavePackageFile();
+                else SaveSingleFiles();
+            }
+        }
+
+        private void SavePackageFile()
+        {
+            try
+            {
+                var package = Package.Open(FileName, FileMode.Create);
+                Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+                using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
                 {
-                    using (TextWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
-                    {
-                        tw.Write(GetEditor().Text);
-                        tw.Close();
-                    }
-                    // Save all visible TraceWatchers
-                    foreach (var tw in ToolWindows)
-                    {
-                        var saver = tw as ISaveState;
-                        if (saver != null)
-                        {
-                            saver.Save(FileName);
-                        }
-                    }
-                    _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
-                    IsDirty = false;
-                    NotifyOfPropertyChange(() => DisplayName);
-                    DeleteAutoSave();
+                    tw.Write(GetEditor().Text);
+                    tw.Close();
                 }
-                catch (Exception ex)
+                
+
+                // Save all visible TraceWatchers
+                foreach (var tw in ToolWindows)
                 {
-                    // catch and report any errors while trying to save
-                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Save", ex.Message);
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+                    var saver = tw as ISaveState;
+                    if (saver != null)
+                    {
+                        saver.SavePackage(package);
+                    }
                 }
 
+                package.Close();
+
+                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
+                IsDirty = false;
+                NotifyOfPropertyChange(() => DisplayName);
+                DeleteAutoSave();
+            }
+            catch (Exception ex)
+            {
+                // catch and report any errors while trying to save
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SavePackageFile), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+            }
+        }
+        private void SaveSingleFiles()
+        {
+            try
+            {
+                using (TextWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
+                {
+                    tw.Write(GetEditor().Text);
+                    tw.Close();
+                }
+
+                // Save all visible TraceWatchers
+                foreach (var tw in ToolWindows)
+                {
+                    var saver = tw as ISaveState;
+                    if (saver != null)
+                    {
+                        saver.Save(FileName);
+                    }
+                }
+
+                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
+                IsDirty = false;
+                NotifyOfPropertyChange(() => DisplayName);
+                DeleteAutoSave();
+            }
+            catch (Exception ex)
+            {
+                // catch and report any errors while trying to save
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
 
@@ -2396,7 +2440,10 @@ namespace DaxStudio.UI.ViewModels
                     }).ContinueWith((previousOutput) =>
                     {
                     // todo - should we be checking for exceptions in this continuation
-                    Execute.OnUIThread(() => { ChangeConnection(); });
+                    if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Execute.OnUIThread(() => { ChangeConnection(); });
+                    }
                     }, TaskScheduler.Default).ContinueWith((previousOutput) =>
                  {
                     // todo - should we be checking for exceptions in this continuation
@@ -2416,36 +2463,64 @@ namespace DaxStudio.UI.ViewModels
             {
                 var loader = tw as ISaveState;
                 if (loader == null) continue;
+
                 loader.Load(FileName);
             }
+
             _isLoadingFile = false;
         }
+
+        private void LoadState(Package package)
+        {
+            if (!_isLoadingFile) return;
+
+
+            foreach (var tw in ToolWindows)
+            {
+                var loader = tw as ISaveState;
+                if (loader == null) continue;
+
+                loader.LoadPackage(package);
+            }
+
+            foreach (var tw in TraceWatchers)
+            {
+                var loader = tw as ISaveState;
+                if (loader == null) continue;
+
+                loader.LoadPackage(package);
+            }
+
+            _isLoadingFile = false;
+
+        }
+
 
 
         public void LoadFile(string fileName)
         {
-            FileName = fileName;
-            _isLoadingFile = true;
-            _displayName = Path.GetFileName(FileName);
-            IsDiskFileName = true;
+            
             if (File.Exists(FileName))
             {
-                try
+                if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                 {
-                    using (TextReader tr = new StreamReader(FileName, true))
-                    {
-                        // put contents in edit window
-                        GetEditor().Text = tr.ReadToEnd();
-                        tr.Close();
-                    }
+                    ImportAnalysisData(fileName);
+                    return;
                 }
-                catch (Exception ex)
+
+                FileName = fileName;
+                _isLoadingFile = true;
+                _displayName = Path.GetFileName(FileName);
+                IsDiskFileName = true;
+                if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                 {
-                    // todo - need to test what happens if we enter this catch block
-                    //        
-                    _isLoadingFile = false;
-                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
-                    OutputError($"Error opening file: {ex.Message}");
+                    var package = LoadPackageFile();
+                    LoadState(package);
+                }
+                else
+                {
+                    LoadSingleFile();
+                    LoadState();
                 }
             }
             else
@@ -2454,10 +2529,77 @@ namespace DaxStudio.UI.ViewModels
                 OutputError(string.Format("The file '{0}' was not found", FileName));
             }
 
-            LoadState();
-
+            
             IsDirty = false;
             State = DocumentState.Loaded;
+        }
+
+        private Package LoadPackageFile()
+        {
+            Package package = null;
+            try
+            {
+                var editor = GetEditor();
+
+                package = Package.Open(FileName);
+
+                Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+                if (!package.PartExists(uriTom)) return package;
+
+                var part = package.GetPart(uriTom);
+                using (TextReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
+                {
+                    // put contents in edit window
+                    editor.Dispatcher.Invoke(() =>
+                    {
+                        editor.Document.BeginUpdate();
+                        editor.Document.Text = tr.ReadToEnd();
+                        editor.Document.EndUpdate();
+                    });
+                    tr.Close();
+
+                }
+
+                return package;
+
+            }
+            catch (Exception ex)
+            {
+                // todo - need to test what happens if we enter this catch block
+                //        
+                _isLoadingFile = false;
+                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
+                OutputError($"Error opening file: {ex.Message}");
+            }
+
+            return package;
+        }
+
+        private void LoadSingleFile()
+        {
+            try
+            {
+                using (TextReader tr = new StreamReader(FileName, true))
+                {
+                    var editor = GetEditor();
+                    // put contents in edit window
+                    editor.Dispatcher.Invoke(() =>
+                    {
+                        editor.Document.BeginUpdate();
+                        editor.Document.Text = tr.ReadToEnd();
+                        editor.Document.EndUpdate();
+                    });
+                    tr.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                // todo - need to test what happens if we enter this catch block
+                //        
+                _isLoadingFile = false;
+                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
+                OutputError($"Error opening file: {ex.Message}");
+            }
         }
 
         public new string DisplayName

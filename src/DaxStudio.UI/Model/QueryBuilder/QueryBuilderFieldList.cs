@@ -3,22 +3,17 @@ using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
-using GongSolutions.Wpf.DragDrop;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace DaxStudio.UI.Model
 {
     public class QueryBuilderFieldList : 
         PropertyChangedBase,
         IQueryBuilderFieldList,
-        IEnumerable<IADOTabularColumn>
+        IEnumerable<QueryBuilderColumn>
     {
         public QueryBuilderFieldList(IEventAggregator eventAggregator)
         {
@@ -46,6 +41,13 @@ namespace DaxStudio.UI.Model
                 builderItem.SelectedTable = col.Table;
             }
             Items.Add(builderItem);
+            NotifyOfPropertyChange(nameof(Items));
+        }
+
+        public void Add(QueryBuilderColumn item)
+        {
+
+            Items.Add(item);
             NotifyOfPropertyChange(nameof(Items));
         }
 
@@ -84,8 +86,13 @@ namespace DaxStudio.UI.Model
         #endregion
 
         #region IEnumerable Support
-        public IEnumerator<IADOTabularColumn> GetEnumerator() => Items.GetEnumerator();
+        public IEnumerator<QueryBuilderColumn> GetEnumerator() => Items.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
         #endregion
+
+        public void Clear()
+        {
+            Items.Clear();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using Caliburn.Micro;
@@ -6,10 +7,13 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.IO.Packaging;
+using System.Text;
 using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Utils;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels
@@ -226,15 +230,46 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             QueryPlanModel m = JsonConvert.DeserializeObject<QueryPlanModel>(data);
 
             PhysicalQueryPlanRows = m.PhysicalQueryPlanRows;
             LogicalQueryPlanRows = m.LogicalQueryPlanRows;
 
-            
+
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
             NotifyOfPropertyChange(() => CanExport);
+        }
+
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+            }
+
         }
         #endregion
 

@@ -396,6 +396,8 @@
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
+    <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
@@ -422,6 +424,7 @@
     <Compile Include="Interfaces\IQueryRunner.cs" />
     <Compile Include="Interfaces\IQueryTextProvider.cs" />
     <Compile Include="Interfaces\IZoomable.cs" />
+    <Compile Include="JsonConverters\InterfaceContractResolver.cs" />
     <Compile Include="JsonConverters\SecureStringConverter.cs" />
     <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
@@ -507,6 +510,7 @@
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
+    <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilder.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderColumn.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderDropHandler.cs" />
@@ -607,6 +611,7 @@
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\ClipboardHelper.cs" />
+    <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />

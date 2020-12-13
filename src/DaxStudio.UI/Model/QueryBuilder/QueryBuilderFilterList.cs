@@ -48,6 +48,11 @@ namespace DaxStudio.UI.Model
             Items.Add(filter);
         }
 
+        internal void Add(QueryBuilderFilter filter)
+        {
+            Items.Add(filter);
+        }
+
         public bool Contains(IADOTabularColumn item)
         {
             return Items.FirstOrDefault(f => f.TabularObject == item) != null;
@@ -71,5 +76,10 @@ namespace DaxStudio.UI.Model
             Items.Move(oldIndex, newIndex);
         }
         #endregion
+
+        public void Clear()
+        {
+            Items.Clear();
+        }
     }
 }

@@ -11,14 +11,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using ADOTabular.Interfaces;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.Model
 {
-    [JsonObject(MemberSerialization.OptIn)]
+    [DataContract]
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
@@ -27,15 +29,16 @@ namespace DaxStudio.UI.Model
             TabularObject = obj;
             ModelCapabilities = modelCapabilities;
         }
-        [JsonProperty]
+        [DataMember]
         public IADOTabularColumn TabularObject { get; }
+        [DataMember]
         public IModelCapabilities ModelCapabilities { get; }
 
-        [JsonProperty]
+
         public string Caption => TabularObject.Caption;
 
         private FilterType _fitlerType;
-        [JsonProperty]
+        [DataMember,JsonConverter(typeof(StringEnumConverter))]
         public FilterType FilterType 
         {  
             get => _fitlerType;
@@ -92,14 +95,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        [JsonProperty]
+        [DataMember]
         public string FilterValue { get; set; }
 
         public bool ShowFilterValue
         {
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
-        [JsonProperty]
+        [DataMember]
         public string FilterValue2 { get; set; }
         public bool ShowFilterValue2 => FilterType == FilterType.Between;
 

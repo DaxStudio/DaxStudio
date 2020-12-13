@@ -16,6 +16,9 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
+using System.IO.Packaging;
+using System;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -530,6 +533,31 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+            }
+
+        }
+
         private string GetJsonString()
         {
             var m = new ServerTimesModel()
@@ -555,6 +583,11 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             var eventConverter = new ServerTimingConverter();
             var deseralizeSettings = new JsonSerializerSettings();
             deseralizeSettings.Converters.Add(eventConverter);
@@ -574,7 +607,6 @@ namespace DaxStudio.UI.ViewModels
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
-
         }
 
         #endregion

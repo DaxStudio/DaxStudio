@@ -11,8 +11,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Windows;
+using DaxStudio.UI.JsonConverters;
+using DaxStudio.UI.Utils;
 using Microsoft.AnalysisServices;
 using Newtonsoft.Json;
 
@@ -22,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
-    [JsonObject(MemberSerialization.OptIn)]
+    [DataContract]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
         ,IHandle<SendColumnToEditorEvent>
@@ -64,11 +69,11 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public new bool CanHide => true;
         public bool CanOrderBy => Columns.Any();
-        [JsonProperty]
+        [DataMember]
         public QueryBuilderFieldList Columns { get; } 
-        [JsonProperty]
+        [DataMember]
         public QueryBuilderFilterList Filters { get; }
-        [JsonProperty]
+        [DataMember]
         public QueryBuilderFieldList OrderBy { get; }
 
         private bool _isEnabled = true;
@@ -244,8 +249,27 @@ namespace DaxStudio.UI.ViewModels
 
         public void Save(string filename)
         {
-            string json = JsonConvert.SerializeObject(this);
+            var json = GetJson();
             File.WriteAllText(filename + ".queryBuilder", json);
+        }
+
+        internal string GetJson()
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                ContractResolver = new InterfaceContractResolver(typeof(IADOTabularColumn))
+            };
+            string json = JsonConvert.SerializeObject(this, settings);
+            return json;
+        }
+
+        internal QueryBuilderViewModel LoadJson(string jsontext)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Converters.Add(new QueryBuilderConverter());
+            //settings.Converters.Add(new ADOTabularColumnCreationConverter());
+            var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
+            return result;
         }
 
         public void Load(string filename)
@@ -253,10 +277,52 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".queryBuilder";
             if (!File.Exists(filename)) return;
 
-            // TODO - show query builder
-            //EventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
-            var model = JsonConvert.DeserializeObject<QueryBuilderViewModel>(data);
+            var model = LoadJson(data);
+            LoadViewModel(model);
+        }
+
+        private void LoadViewModel(QueryBuilderViewModel model)
+        {
+            this.Columns.Clear();
+            foreach (var col in model.Columns)
+            {
+                this.Columns.Add(col);
+            }
+
+            this.Filters.Clear();
+            foreach (var filter in model.Filters.Items)
+            {
+                this.Filters.Add(filter);
+            }
+
+            this.IsVisible = true;
+        }
+
+        public void SavePackage(Package package)
+        {
+           
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryBuilder, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJson());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryBuilder, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                var model = LoadJson(data);
+                LoadViewModel(model);
+            }
+            
         }
     }
 }
