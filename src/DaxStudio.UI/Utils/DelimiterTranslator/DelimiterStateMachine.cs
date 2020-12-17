@@ -80,16 +80,21 @@ namespace DaxStudio.UI.Utils.DelimiterTranslator
                     if (sm.TargetDelimiterType == DelimiterType.Comma) { return ','; }
                     return input[pos];
                 case '.':
+                    bool isBetweenDigits = pos > 0 
+                                           && pos < input.Length - 1 
+                                           && IsNumeric(input[pos - 1]) 
+                                           && IsNumeric(input[pos + 1]);
                     if (sm.TargetDelimiterType == DelimiterType.Unknown)
                     {
-                        if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
+                        if (isBetweenDigits)
                         {
                             sm.TargetDelimiterType = DelimiterType.SemiColon;
                         }
                     }
-                    if (sm.TargetDelimiterType == DelimiterType.SemiColon) { return ','; }
+                    if (sm.TargetDelimiterType == DelimiterType.SemiColon && isBetweenDigits) { return ','; }
                     return input[pos];
                 case ',':
+
                     if (sm.TargetDelimiterType == DelimiterType.Unknown)
                     {
                         if (pos > 0 && pos < input.Length - 1 && IsNumeric(input[pos - 1]) && IsNumeric(input[pos + 1]))
