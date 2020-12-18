@@ -400,6 +400,7 @@
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedDialogResult.cs" />
+    <Compile Include="Enums\QueryBuilderItem.cs" />
     <Compile Include="Events\ConnectFailedEvent.cs" />
     <Compile Include="Events\ConnectionOpenedEvent.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
@@ -414,10 +415,12 @@
     <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
+    <Compile Include="Extensions\QueryBuilderColumnExtensions.cs" />
     <Compile Include="Extensions\VersionExtensions.cs" />
     <Compile Include="Interfaces\IDaxDocument.cs" />
     <Compile Include="Interfaces\IDaxStudioHost.cs" />
     <Compile Include="Interfaces\IDaxStudioProxy.cs" />
+    <Compile Include="Interfaces\IMetadataProvider.cs" />
     <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
     <Compile Include="Interfaces\IQueryRunner.cs" />
     <Compile Include="Interfaces\IQueryTextProvider.cs" />

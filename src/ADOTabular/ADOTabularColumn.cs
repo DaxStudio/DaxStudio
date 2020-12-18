@@ -29,6 +29,12 @@ namespace ADOTabular
             Contents = contents;
             Role = $"{Table.InternalReference}_{InternalReference}";
             Variations = new List<ADOTabularVariation>();
+            // tag measures that return the formatString for a calculation group
+            if (columnType == ADOTabularObjectType.Measure && name == $"_{caption} FormatString")
+            {
+                ObjectType = ADOTabularObjectType.MeasureFormatString;
+                Caption += " (FormatString)";
+            }
         }
 
         public string InternalReference { get; private set; }
@@ -111,6 +117,9 @@ namespace ADOTabular
                         return MetadataImages.Measure;
                     case ADOTabularObjectType.UnnaturalHierarchy:
                         return MetadataImages.UnnaturalHierarchy;
+                    case ADOTabularObjectType.MeasureFormatString:
+                        // TODO - add image for format string
+                        return MetadataImages.HiddenMeasure;
                     default:
                         return IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;
                 

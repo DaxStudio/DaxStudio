@@ -255,7 +255,7 @@ namespace DaxStudio.QueryTrace
             {
                 _startingTimer.Stop();
                 _trace.Drop();
-                OutputError("Timeout exceeded attempting to start Trace");
+                OutputError("Timeout exceeded attempting to start Trace. You could try increasing this timeout in the Options");
                 Log.Warning("{class} {method} {event}", "QueryTraceEngineExcel", "OnTimerElapsed", "Timeout exceeded attempting to start Trace");
             }
 

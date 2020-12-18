@@ -102,7 +102,23 @@ namespace ADOTabular
 
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }
+
         public bool IsDateTable => DataCategory == "Time";
         public string DataCategory { get; internal set; }
+
+        public long RowCount { get; private set; }
+
+        public void UpdateBasicStats(ADOTabularConnection connection)
+        {
+            if (connection == null) return;
+
+            string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
+            
+            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
+            {
+                RowCount = (long)dt.Rows[0][0];
+            }
+        }
+
     }
 }
