@@ -15,6 +15,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DaxStudio.UI.Interfaces;
 
 
 namespace DaxStudio.UI.Model
@@ -498,6 +499,29 @@ namespace DaxStudio.UI.Model
                 var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
                 return tvt;
             });
+        }
+
+        public async void UpdateTableBasicStats(TreeViewTable table)
+        {
+            table.UpdatingBasicStats = true;
+            try
+            {
+                await Task.Run(() => {
+                    using (var newConn = _connection.Clone())
+                    {
+                        table.UpdateBasicStats(newConn);
+;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+            }
+            finally
+            {
+                table.UpdatingBasicStats = false;
+            }
         }
 
         public void Handle(SelectedModelChangedEvent message)

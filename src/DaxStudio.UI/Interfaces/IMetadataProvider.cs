@@ -1,9 +1,9 @@
 ﻿using ADOTabular;
-using ADOTabular.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces;
 
-namespace DaxStudio.Interfaces
+namespace DaxStudio.UI.Interfaces
 {
     public interface IMetadataProvider
     {
@@ -31,5 +31,6 @@ namespace DaxStudio.Interfaces
         string DefineFilterDumpMeasureExpression(string tableName, bool allTables);
         string ExpandDependentMeasure(string measureName, bool ignoreNonUniqueMeasureNames);
         IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPaneViewModel, IGlobalOptions options);
+        void UpdateTableBasicStats(DaxStudio.UI.Model.TreeViewTable table);
     }
 }
