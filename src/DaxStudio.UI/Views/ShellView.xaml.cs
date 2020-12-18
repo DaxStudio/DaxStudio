@@ -12,37 +12,6 @@ namespace DaxStudio.UI.Views
         {
             this.InitializeComponent();
 
-            //this.TestContent.Backstage.UseHighestAvailableAdornerLayer = false;
-
-            this.Loaded += this.ShellView_Loaded;
-            this.Closed += this.ShellView_Closed;
-        }
-
-        private void ShellView_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.TitleBar = this.FindChild<RibbonTitleBar>("RibbonTitleBar");
-            this.TitleBar.InvalidateArrange();
-            this.TitleBar.UpdateLayout();
-
-            // We need this inside this window because MahApps.Metro is not loaded globally inside the Fluent.Ribbon Showcase application.
-            // This code is not required in an application that loads the MahApps.Metro styles globally.
-        //    ThemeManager.Current.ChangeTheme(this, ThemeManager.Current.DetectTheme(Application.Current));
-        //    ThemeManager.Current.ThemeChanged += this.SyncThemes;
-        }
-
-        private void SyncThemes(object sender, ThemeChangedEventArgs e)
-        {
-            if (e.Target == this)
-            {
-                return;
-            }
-
-            ThemeManager.Current.ChangeTheme(this, e.NewTheme);
-        }
-
-        private void ShellView_Closed(object sender, EventArgs e)
-        {
-            ThemeManager.Current.ThemeChanged -= this.SyncThemes;
         }
 
 
@@ -51,7 +20,7 @@ namespace DaxStudio.UI.Views
         /// <summary>
         /// Gets ribbon titlebar
         /// </summary>
-        public RibbonTitleBar TitleBar
+        public new RibbonTitleBar TitleBar
         {
             get => (RibbonTitleBar)this.GetValue(TitleBarProperty);
             private set => SetValue(TitleBarPropertyKey, value);

@@ -1,4 +1,4 @@
-﻿<mah:MetroWindow x:Class="DaxStudio.UI.Views.ShellView"
+﻿<fluent:RibbonWindow x:Class="DaxStudio.UI.Views.ShellView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
         xmlns:fluent="clr-namespace:Fluent;assembly=Fluent"
@@ -15,13 +15,9 @@
         MinWidth="460"                    
         Height="720"
         Width="1120"
-        Top="5"
-        ShowSystemMenuOnRightClick="False"
-        WindowTransitionsEnabled="False"
-        >
-    <!-- Style="{DynamicResource MetroWindowStyle}"-->
-    <!--Fluent:MetroColors.ThemeColorKey="#FF0072C6"-->
-    <mah:MetroWindow.Resources>
+        Top="5">
+
+    <fluent:RibbonWindow.Resources>
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -129,16 +125,7 @@
             </Style>
         </ResourceDictionary>
 
-
-
-    </mah:MetroWindow.Resources>
-    
-        <mah:MetroWindow.TitleTemplate>
-            <DataTemplate>
-                <fluent:RibbonTitleBar x:Name="RibbonTitleBar"                                   
-                                       Header="{Binding Path=Title, RelativeSource={RelativeSource AncestorType=Window}}"/>
-            </DataTemplate>
-        </mah:MetroWindow.TitleTemplate>
+    </fluent:RibbonWindow.Resources>
 
     <Grid>
         <Grid x:Name="LayoutRoot"
@@ -188,4 +175,4 @@
                       ProgressState="Indeterminate"/>
     </Window.TaskbarItemInfo>
     -->
-</mah:MetroWindow>
+</fluent:RibbonWindow>
