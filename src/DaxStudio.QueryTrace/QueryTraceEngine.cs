@@ -323,7 +323,7 @@ namespace DaxStudio.QueryTrace
                 {
                     _startingTimer.Stop();
                     DisposeTrace();
-                    RaiseError("Timeout exceeded attempting to start Trace");
+                    RaiseError("Timeout exceeded attempting to start Trace. You could try increasing this timeout in the Options");
                 }
             }
         }

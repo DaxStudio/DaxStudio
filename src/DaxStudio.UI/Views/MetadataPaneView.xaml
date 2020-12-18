@@ -373,7 +373,9 @@
                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                             <fa:ImageAwesome Icon="ClockOutline" Width="10" Margin="7,12,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
                                         </Grid>
-                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
+                                        <TextBlock  Text="{Binding Caption}"
+                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action TableTooltipOpening($dataContext)]"
+                                                    > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="450">
                                                             <StackPanel Orientation="Horizontal">
@@ -391,8 +393,23 @@
                                                                     <ColumnDefinition />
                                                                     <ColumnDefinition />
                                                                 </Grid.ColumnDefinitions>
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition />
+                                                                    <RowDefinition />
+                                                                </Grid.RowDefinitions>
                                                                 <TextBlock Style="{StaticResource ToolTipLabel}">Columns:</TextBlock>
-                                                                <TextBlock Grid.Column="1" Text="{Binding Path=ColumnCount, StringFormat={}{0:N0}, Mode=OneWay}"/>
+                                                                <TextBlock Grid.Row="0"
+                                                                           Grid.Column="1" 
+                                                                           Text="{Binding Path=ColumnCount, StringFormat={}{0:N0}, Mode=OneWay}"/>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Grid.Row="1" 
+                                                                           Style="{StaticResource ToolTipLabel}"
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"
+                                                                           >Rows:</TextBlock>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Grid.Row="1" 
+                                                                           Text="{Binding Path=RowCount, StringFormat={}{0:N0}, Mode=OneWay}" 
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"/>
                                                             </Grid>
                                                         </StackPanel>
                                                     </TextBlock.ToolTip>    
@@ -432,7 +449,8 @@
                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                                             <!--<fa:ImageAwesome Icon="Key" Width="10" Margin="3,6,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsKey}"/>-->
                                         </Grid>
-                                        <TextBlock x:Name="Caption" Text="{Binding Caption}" 
+                                        <TextBlock x:Name="Caption" 
+                                                   Text="{Binding Caption}" 
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
                                                    >
                                             <TextBlock.ToolTip>

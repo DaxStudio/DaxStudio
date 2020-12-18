@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -21,7 +22,7 @@ namespace DaxStudio.UI.Model
             var measureList = BuildMeasures(columns);
             var orderByList = BuildOrderBy(orderBy);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
-            var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
+            var measureStart = !string.IsNullOrWhiteSpace(measureList)
                 ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
                 ? ",\n    " 
                 : "\n    "
@@ -87,8 +88,8 @@ namespace DaxStudio.UI.Model
 
         private static string BuildMeasures(ICollection<QueryBuilderColumn> columns)
         {
-            // TODO - should I get KPIs also??
-            var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure);
+            
+            var meas = columns.Where(c => c.IsMeasure());
             if (!meas.Any()) return string.Empty;
             // build a comma separated list of "Caption", [DaxName] values
             return meas.Select(c => $"\"{c.Caption}\", {c.DaxName}").Aggregate((i, j) => i + ",\n    " + j);

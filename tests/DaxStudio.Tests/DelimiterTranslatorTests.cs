@@ -153,5 +153,38 @@ SUMMARIZECOLUMNS(
             StringAssert.Equals(expected, actual);
         }
 
+
+        [TestMethod]
+        public void FunctionWithPeriodsTest()
+        {
+            string input = "PERCENTILE.EXC( 1.0 )";
+            var dsm = new DelimiterStateMachine(DelimiterType.Unknown);
+            string actual = dsm.ProcessString(input);
+            string expected = "PERCENTILE.EXC( 1,0 )";
+
+            Assert.AreEqual(expected, actual);
+            // convert back
+            dsm = new DelimiterStateMachine(DelimiterType.Unknown);
+            actual = dsm.ProcessString(actual);
+            Assert.AreEqual(input, actual, "Toggle the delimiters back the original state");
+        }
+
+        [TestMethod]
+        public void FunctionsWithPeriodsTest()
+        {
+            string input = @"
+Evaluate ROW(""Test"", PERCENTILE.EXC( 1.0 ) )";
+            var dsm = new DelimiterStateMachine(DelimiterType.Unknown);
+            string actual = dsm.ProcessString(input);
+            string expected = @"
+Evaluate ROW(""Test""; PERCENTILE.EXC( 1,0 ) )";
+
+            Assert.AreEqual(expected, actual);
+            // convert back
+            dsm = new DelimiterStateMachine(DelimiterType.Unknown);
+            actual = dsm.ProcessString(actual);
+            Assert.AreEqual(input, actual,"Toggle the delimiters back the original state");
+        }
+
     }
 }

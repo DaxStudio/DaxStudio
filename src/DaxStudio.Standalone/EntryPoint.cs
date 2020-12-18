@@ -63,6 +63,9 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 ConfigureLogging(levelSwitch);
 
+                // Default web requests like AAD Auth to use windows credentials for proxy auth
+                System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+
                 // add the custom DAX Studio accent color theme
                 App.AddDaxStudioAccentColor();
 

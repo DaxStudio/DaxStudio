@@ -1,16 +1,17 @@
 ﻿using DaxStudio.Interfaces;
+using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.Events
 {
     public class SendColumnToEditorEvent
     {
-        public SendColumnToEditorEvent(ITreeviewColumn column, bool isFilter)
+        public SendColumnToEditorEvent(ITreeviewColumn column, QueryBuilderItemType itemType)
         {
             Column = column;
-            IsFilter = isFilter;
+            ItemType = itemType;
         }
 
         public ITreeviewColumn Column { get; }
-        public bool IsFilter { get;  }
+        public QueryBuilderItemType ItemType { get;  }
     }
 }
