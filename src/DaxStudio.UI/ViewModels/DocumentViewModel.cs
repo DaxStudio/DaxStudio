@@ -443,6 +443,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool HighlightXmSqlCallbacks
+        {
+            get => Options.HighlightXmSqlCallbacks;
+        }
+
+        public bool SimplifyXmSqlSyntax
+        {
+            get => Options.SimplifyXmSqlSyntax;
+        }
+
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => Options.ReplaceXmSqlColumnNames;
+        }
+
         public bool WordWrap
         {
             get => Options.EditorWordWrap;
@@ -2049,6 +2064,7 @@ namespace DaxStudio.UI.ViewModels
                 if (watcher is ServerTimesViewModel && watcher.IsChecked)
                 {
                     ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+                    ((ServerTimesViewModel)watcher).RemapColumnNames = this.Connection.DaxColumnsRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();
@@ -3329,6 +3345,14 @@ namespace DaxStudio.UI.ViewModels
         {
             get {
                 return Connection?.DaxMetadataInfo;
+            }
+        }
+
+        public ADOTabular.MetadataInfo.DaxColumnsRemap DaxColumnsRemapInfo
+        {
+            get
+            {
+                return Connection?.DaxColumnsRemapInfo;
             }
         }
 

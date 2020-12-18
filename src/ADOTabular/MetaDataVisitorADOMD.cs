@@ -215,6 +215,11 @@ namespace ADOTabular
             throw new System.NotImplementedException();
         }
 
+        public void Visit(MetadataInfo.DaxColumnsRemap daxColumnsRemap)
+        {
+            throw new System.NotImplementedException();
+        }
+
     }
 
 }

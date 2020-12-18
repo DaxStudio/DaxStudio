@@ -93,7 +93,7 @@
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.7.2\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.12.7.2, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.AdomdClient.retail.amd64.19.12.7.2\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.7.2\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.12.7.2, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.12.7.2\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
@@ -186,6 +186,7 @@
     <Compile Include="Interfaces\IDAXFunctions.cs" />
     <Compile Include="Interfaces\IDmv.cs" />
     <Compile Include="Interfaces\IModelCapabilities.cs" />
+    <Compile Include="MetadataInfo\DaxColumnsRemap.cs" />
     <Compile Include="MetadataInfo\DaxFunction.cs" />
     <Compile Include="MetadataInfo\DaxMetadata.cs" />
     <Compile Include="MetadataInfo\SsasVersion.cs" />
