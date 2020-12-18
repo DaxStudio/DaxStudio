@@ -12,6 +12,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using DaxStudio.UI.Enums;
+using DaxStudio.UI.Extensions;
 using Microsoft.AnalysisServices;
 
 namespace DaxStudio.UI.ViewModels
@@ -131,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool CheckForCrossjoins()
         {
-            bool hasMeasures = this.Columns.Any(c => c.ObjectType == ADOTabularObjectType.Measure);
+            bool hasMeasures = this.Columns.Items.Any(c => c.IsMeasure());
             if (hasMeasures) return false;  // we have a measure so that should prevent a large crossjoin
             
             var cols = this.Columns.GroupBy(c => c.TableName);
@@ -217,8 +219,20 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(SendColumnToEditorEvent message)
         {
-            if (message.IsFilter) AddColumnToFilters(message.Column);
-            else AddColumnToColumns(message.Column);
+            switch (message.ItemType)
+            {
+                case QueryBuilderItemType.Column:
+                    AddColumnToColumns(message.Column);
+                    break;
+                case QueryBuilderItemType.Filter:
+                    AddColumnToFilters(message.Column);
+                    break;
+                case QueryBuilderItemType.Both:
+                    AddColumnToColumns(message.Column);
+                    AddColumnToFilters(message.Column);
+                    break;
+            }
+            
         }
 
         private void AddColumnToColumns(ITreeviewColumn column)

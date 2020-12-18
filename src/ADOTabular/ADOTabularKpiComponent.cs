@@ -1,4 +1,6 @@
-﻿using ADOTabular.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {
@@ -9,7 +11,7 @@ namespace ADOTabular
         Status
     }
         
-    public class ADOTabularKpiComponent : IADOTabularObject
+    public class ADOTabularKpiComponent : IADOTabularObject, IADOTabularColumn
     {
         public ADOTabularKpiComponent(ADOTabularColumn column, KpiComponentType type)
         {
@@ -40,5 +42,23 @@ namespace ADOTabular
             }
         }
         public bool IsVisible => true;
+        public string MinValue => Column.MinValue;
+        public string MaxValue => Column.MaxValue;
+        public long DistinctValues => Column.DistinctValues;
+        public void UpdateBasicStats(ADOTabularConnection connection)
+        {
+            // Do Nothing
+        }
+
+        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        {
+            // Do Nothing
+            return null;
+        }
+
+        public Type DataType => Column.DataType;
+        public MetadataImages MetadataImage => MetadataImages.Measure;
+        public string MeasureExpression => Column.MeasureExpression;
+        public string TableName => Column.TableName;
     }
 }

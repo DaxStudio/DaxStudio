@@ -63,7 +63,7 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderColumn Column { get => _column;
             internal set {
                 _column = value;
-                MeasureExpression.Text = _column.MeasureExpression;
+                MeasureExpression.Text = _column.MeasureExpression??string.Empty;
                 MeasureName = _column.Caption;
                 SelectedTable = _column.SelectedTable;
                 IsModelItem = _column.IsModelItem;

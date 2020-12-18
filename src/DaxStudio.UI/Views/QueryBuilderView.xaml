@@ -9,6 +9,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              IsEnabled="{Binding IsEnabled}">
@@ -55,14 +56,20 @@
                         <Setter.Value>
                             <ControlTemplate>
                                 <Border BorderBrush="Gray" BorderThickness="0.5">
-                                    <TextBlock 
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock 
                                            TextWrapping="Wrap" 
-                                           Padding="10"
+                                           Padding="5 10 5 0"
                                            FontWeight ="Bold"
-                                           FontSize="28"
+                                           FontSize="24"
                                            Margin="0"
                                            Foreground="LightGray"
                                            TextAlignment="Center">Drag output Columns / Measures Here</TextBlock>
+                                            <TextBlock 
+                                                TextWrapping="Wrap"
+                                                Margin="5 0"
+                                                Foreground="LightGray" TextDecorations="Underline" TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
+                                    </StackPanel>
                                 </Border>
                             </ControlTemplate>
                         </Setter.Value>
@@ -81,14 +88,21 @@
                         <Setter.Value>
                             <ControlTemplate>
                                 <Border BorderBrush="Gray" BorderThickness="0.5">
-                                    <TextBlock  
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock  
                                            TextWrapping="Wrap" 
-                                           Padding="10"
+                                           Padding="5 10 5 0"
                                            FontWeight ="Bold"
-                                           FontSize="28"
+                                           FontSize="24"
                                            Foreground="LightGray"
                                            TextAlignment="Center">Drag Filter Columns Here</TextBlock>
-                                </Border>
+                                        <TextBlock Foreground="LightGray" 
+                                                   TextDecorations="Underline" 
+                                                   TextWrapping="Wrap"
+                                                   Margin="5 0"
+                                                   TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
+                                    </StackPanel>
+                                    </Border>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
@@ -125,7 +139,7 @@
                 
             <Button x:Name="AddNewMeasure" Grid.Column="1" MaxWidth="80" Margin="0,0,10,0"
                     ToolTip="Create a new measure for this query">
-                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <StackPanel Orientation="Horizontal">
                     <fa:FontAwesome Icon="PlusSquare" Margin="2" Foreground="Green"/>
                     <TextBlock>New</TextBlock>
                 </StackPanel>

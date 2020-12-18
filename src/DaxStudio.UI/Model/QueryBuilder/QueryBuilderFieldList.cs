@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -34,6 +35,11 @@ namespace DaxStudio.UI.Model
         public ObservableCollection<QueryBuilderColumn> Items { get; } = new ObservableCollection<QueryBuilderColumn>();
         public IEventAggregator EventAggregator { get; }
         public QueryBuilderDropHandler DropHandler { get; }
+
+        public bool HasMeasures()
+        {
+            return this.Items.Any(c => c.IsMeasure());
+        } 
 
         #region IQueryBuilderFieldList
         public void Add(IADOTabularColumn item)

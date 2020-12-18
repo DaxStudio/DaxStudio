@@ -19,7 +19,8 @@ namespace ADOTabular
         Table,
         DMV,
         Function,
-        Unknown
+        Unknown,
+        MeasureFormatString
     }
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>

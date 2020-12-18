@@ -178,7 +178,6 @@
     <Compile Include="DiscoverXmlParser.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Enums\AdomdType.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IADOTabularColumn.cs" />
     <Compile Include="Interfaces\IADOTabularConnection.cs" />
