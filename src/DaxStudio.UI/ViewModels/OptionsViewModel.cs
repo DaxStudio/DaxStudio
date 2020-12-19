@@ -944,7 +944,7 @@ namespace DaxStudio.UI.ViewModels
                 var props = typeof(OptionsViewModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
                 foreach (var prop in props)
                 {
-                    if (!prop.Name.StartsWith("Hotkey")) continue;
+                    if (!prop.Name.StartsWith("Hotkey", StringComparison.InvariantCultureIgnoreCase)) continue;
 
                     foreach (var att in prop.GetCustomAttributes(false))
                     {

@@ -627,7 +627,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (isConnected)
                 {
-                    connectionDetail = $"{activeConnection.ServerType.ToString()} - {activeConnection.ServerVersion}";
+                    connectionDetail = $"{activeConnection.ServerType} - {activeConnection.ServerVersion}";
                 }
 
                 var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();

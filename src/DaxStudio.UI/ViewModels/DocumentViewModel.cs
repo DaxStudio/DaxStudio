@@ -382,7 +382,7 @@ namespace DaxStudio.UI.ViewModels
 
                 var file = files[0];
 
-                if (file.EndsWith(".dax") || file.EndsWith(".msdax"))
+                if (file.EndsWith(".dax", StringComparison.InvariantCultureIgnoreCase) || file.EndsWith(".msdax", StringComparison.InvariantCultureIgnoreCase))
                 {
                     _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
                     _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
@@ -2061,10 +2061,10 @@ namespace DaxStudio.UI.ViewModels
                     ToolWindows.Add(watcher);
 
                 // synch the ribbon buttons and the server timings pane
-                if (watcher is ServerTimesViewModel && watcher.IsChecked)
+                if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
                 {
-                    ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
-                    ((ServerTimesViewModel)watcher).RemapColumnNames = this.Connection.DaxColumnsRemapInfo.RemapNames;
+                    stvModel.ServerTimingDetails = ServerTimingDetails;
+                    stvModel.RemapColumnNames = this.Connection.DaxColumnsRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();
@@ -2137,7 +2137,7 @@ namespace DaxStudio.UI.ViewModels
                 }
         }
 
-        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax");
+        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId}.dax");
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
         internal async Task AutoSave()
@@ -2238,7 +2238,7 @@ namespace DaxStudio.UI.ViewModels
                     //HttpResponseMessage response = await client.PostStreamAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
                     if (!response.IsSuccessStatusCode) {
                         publishStopWatch.Stop();
-                        string pingResult = $"Error from ping version: {response.StatusCode.ToString()}";
+                        string pingResult = $"Error from ping version: {response.StatusCode}";
                         Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
                         OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
@@ -3100,7 +3100,7 @@ namespace DaxStudio.UI.ViewModels
                                    }
                                     // if the error is at the end of text then we need to move in 1 character
                                     var errOffset = editor.Document.GetOffset(errLine, errCol);
-                                   if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
+                                   if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" ", StringComparison.InvariantCultureIgnoreCase))
                                    {
                                        editor.Document.Insert(errOffset, " ");
                                    }
