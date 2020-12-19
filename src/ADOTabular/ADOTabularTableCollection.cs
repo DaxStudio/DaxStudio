@@ -10,7 +10,7 @@ namespace ADOTabular
         
         private readonly IADOTabularConnection _adoTabConn;
         private SortedDictionary<string, ADOTabularTable> _tables;
-        private readonly object mutex = new object();
+        private object mutex = new object();
 
         public ADOTabularTableCollection(IADOTabularConnection adoTabConn, ADOTabularModel model)
         {

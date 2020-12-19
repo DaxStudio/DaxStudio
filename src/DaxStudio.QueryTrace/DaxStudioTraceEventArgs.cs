@@ -66,7 +66,7 @@ namespace DaxStudio.QueryTrace
                     // no additional properties captured, the plan is stored in the text field
                     break;
                 default:
-                    throw new ArgumentException($"No mapping for the event class {e.EventClass} was found");
+                    throw new ArgumentException($"No mapping for the event class {e.EventClass.ToString()} was found");
 
             }
             

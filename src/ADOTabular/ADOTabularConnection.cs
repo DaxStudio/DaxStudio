@@ -252,7 +252,8 @@ namespace ADOTabular
 
         private static Dictionary<string, string> SplitConnectionString(string connectionString)
         {
-            var props = ConnectionStringParser.Parse(connectionString);
+            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            props = ConnectionStringParser.Parse(connectionString);
 
             return props;
         }
@@ -667,7 +668,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
                     }
-                    catch (Exception )
+                    catch (Exception ex)
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }
@@ -715,7 +716,8 @@ namespace ADOTabular
 
         public string FileName { get { return _powerBIFileName; }
             set {
-                _powerBIFileName = value ?? throw new ArgumentNullException(nameof(FileName));
+                if (value == null) throw new ArgumentNullException(nameof(FileName));
+                _powerBIFileName = value;
                 if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                   || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
                 {

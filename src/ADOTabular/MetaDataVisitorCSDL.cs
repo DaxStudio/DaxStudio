@@ -182,7 +182,7 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                   && rdr.LocalName == "ModelCapabilities"))
             {
-                bool enabled;
+                bool enabled = false;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
                     switch (rdr.LocalName)
@@ -216,7 +216,7 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                           && rdr.LocalName == "DAXFunctions"))
             {
-                bool enabled;
+                bool enabled = false;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
                     switch (rdr.LocalName)
@@ -495,14 +495,13 @@ namespace ADOTabular
             bool isVisible = true;
             string name = null;
             string refName = "";
-            string tableId;
+            string tableId = "";
             string dataType = "";
             string contents = "";
             string minValue = "";
             string maxValue = "";
             string formatString = "";
             string keyRef = "";
-            string defaultAggregateFunction = "";
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
@@ -574,6 +573,7 @@ namespace ADOTabular
                     kpi = ProcessKpi(rdr);
                 }
 
+                string defaultAggregateFunction;
                 if (rdr.NodeType == XmlNodeType.Element
                     && (rdr.LocalName == eProperty
                     || rdr.LocalName == eMeasure
@@ -662,8 +662,7 @@ namespace ADOTabular
                                 MaxValue = maxValue,
                                 DistinctValues = distinctValueCount,
                                 FormatString = formatString,
-                                StringValueMaxLength = stringValueMaxLength,
-                                DefaultAggregateFunction = defaultAggregateFunction
+                                StringValueMaxLength = stringValueMaxLength
                             };
                             col.Variations.AddRange(_variations);
                             tables.Model.AddRole(col);
@@ -746,10 +745,7 @@ namespace ADOTabular
                         switch (rdr.LocalName)
                         {
                             case "Name":
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
-                                // Not sure whether _name was supposed to be used, or it could be removed - Darren?
                                 _name = rdr.Value;
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
                                 break;
                             case "Default":
                                 _default = bool.Parse( rdr.Value);
@@ -1108,7 +1104,7 @@ namespace ADOTabular
                            join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
                            from kword in a.DefaultIfEmpty()
                            where kword == null
-                           select new { Keyword = (string)keyword["Keyword"] , Matched= (kword==null)};
+                           select new { Keyword = (string)keyword["Keyword"] , Matched= kword==null?true:false};
 
             //foreach (DataRow dr in drKeywords)
             foreach (var dr in kwords)
@@ -1126,8 +1122,8 @@ namespace ADOTabular
         }
         private static string GetXmlString(IDataRecord dr, int column) {
             // Use the original AdomdDataReader (we don't have to use the proxy here!)
-            if (dr.GetValue(column) is not Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField)
-            {
+            Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField = dr.GetValue(column) as Microsoft.AnalysisServices.AdomdClient.AdomdDataReader;
+            if (mdXmlField == null) {
                 return null;
             }
             XElement piXml = new XElement("PARAMETERINFO");
