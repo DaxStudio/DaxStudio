@@ -15,6 +15,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DaxStudio.UI.Interfaces;
 
 
 namespace DaxStudio.UI.Model
@@ -96,9 +97,10 @@ namespace DaxStudio.UI.Model
         public string ConnectionString => _connection?.ConnectionString??string.Empty;
         public string ConnectionStringWithInitialCatalog => _connection?.ConnectionStringWithInitialCatalog??string.Empty;
 
-        public ADOTabularDatabase Database => _connection?.Database;
-        public string DatabaseName => _connection?.Database?.Name ?? string.Empty;
+        public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
+        public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo => _connection.DaxMetadataInfo;
+        public DaxColumnsRemap DaxColumnsRemapInfo => _connection.DaxColumnsRemapInfo;
 
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
@@ -286,6 +288,7 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
+            
             _retry.Execute(() =>
             {
                 var tempConn = _connection.Clone();
@@ -497,6 +500,29 @@ namespace DaxStudio.UI.Model
                 var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
                 return tvt;
             });
+        }
+
+        public async void UpdateTableBasicStats(TreeViewTable table)
+        {
+            table.UpdatingBasicStats = true;
+            try
+            {
+                await Task.Run(() => {
+                    using (var newConn = _connection.Clone())
+                    {
+                        table.UpdateBasicStats(newConn);
+;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+            }
+            finally
+            {
+                table.UpdatingBasicStats = false;
+            }
         }
 
         public void Handle(SelectedModelChangedEvent message)

@@ -12,6 +12,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using DaxStudio.UI.Enums;
+using DaxStudio.UI.Extensions;
 using Microsoft.AnalysisServices;
 
 namespace DaxStudio.UI.ViewModels
@@ -22,6 +24,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
+        ,IHandle<SendColumnToEditorEvent>
         ,IDisposable
     {
         const string NewMeasurePrefix = "MyMeasure";
@@ -39,6 +42,13 @@ namespace DaxStudio.UI.ViewModels
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
             OrderBy = new QueryBuilderFieldList(EventAggregator);
+            VisibilityChanged += OnVisibilityChanged;
+        }
+
+        private void OnVisibilityChanged(object sender, EventArgs e)
+        {
+            if (IsVisible) EventAggregator.Subscribe(this);
+            else EventAggregator.Unsubscribe(this);
         }
 
         private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -63,6 +73,8 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _isEnabled = value;
+                if (_isEnabled) EventAggregator.Subscribe(this);
+                else EventAggregator.Unsubscribe(this);
                 NotifyOfPropertyChange();
             }
         }
@@ -121,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool CheckForCrossjoins()
         {
-            bool hasMeasures = this.Columns.Any(c => c.ObjectType == ADOTabularObjectType.Measure);
+            bool hasMeasures = this.Columns.Items.Any(c => c.IsMeasure());
             if (hasMeasures) return false;  // we have a measure so that should prevent a large crossjoin
             
             var cols = this.Columns.GroupBy(c => c.TableName);
@@ -171,6 +183,12 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        protected override void OnVisibilityChanged(EventArgs e)
+        {
+            base.OnVisibilityChanged(e);
+            
+        }
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
 
@@ -198,5 +216,37 @@ namespace DaxStudio.UI.ViewModels
 
 
         #endregion
+
+        public void Handle(SendColumnToEditorEvent message)
+        {
+            switch (message.ItemType)
+            {
+                case QueryBuilderItemType.Column:
+                    AddColumnToColumns(message.Column);
+                    break;
+                case QueryBuilderItemType.Filter:
+                    AddColumnToFilters(message.Column);
+                    break;
+                case QueryBuilderItemType.Both:
+                    AddColumnToColumns(message.Column);
+                    AddColumnToFilters(message.Column);
+                    break;
+            }
+            
+        }
+
+        private void AddColumnToColumns(ITreeviewColumn column)
+        {
+            if (Columns.Contains(column.InternalColumn))
+            {
+                // write warning and return
+            }
+            Columns.Add(column.InternalColumn);
+        }
+
+        private void AddColumnToFilters(ITreeviewColumn column)
+        {
+            Filters.Add(column.InternalColumn);
+        }
     }
 }

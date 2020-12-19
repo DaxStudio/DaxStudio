@@ -49,6 +49,7 @@ using ADOTabular.Enums;
 using ControlzEx.Standard;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Utils.Intellisense;
+using Constants = DaxStudio.Common.Constants;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -125,21 +126,35 @@ namespace DaxStudio.UI.ViewModels
             , ISettingProvider settingProvider
             , IAutoSaver autoSaver)
         {
-            _host = host;
-            _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
-            _windowManager = windowManager;
-            _ribbon = ribbon;
-            SettingProvider = settingProvider;
-            ServerTimingDetails = serverTimingDetails;
-            _rexQueryError = new Regex(@"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$", RegexOptions.Compiled | RegexOptions.Multiline);
-            _uniqueId = Guid.NewGuid();
-            Options = options;
-            AutoSaver = autoSaver;
-            IconSource = ImgSourceConverter.ConvertFromInvariantString(@"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
-            Connection = new ConnectionManager(_eventAggregator);
-            IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
-            Init(_ribbon);
+            try
+            {
+                _host = host;
+                _eventAggregator = eventAggregator;
+                _eventAggregator.Subscribe(this);
+                _windowManager = windowManager;
+                _ribbon = ribbon;
+                SettingProvider = settingProvider;
+                ServerTimingDetails = serverTimingDetails;
+                _rexQueryError =
+                    new Regex(
+                        @"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$",
+                        RegexOptions.Compiled | RegexOptions.Multiline);
+                _uniqueId = Guid.NewGuid();
+                Options = options;
+                AutoSaver = autoSaver;
+                IconSource =
+                    ImgSourceConverter.ConvertFromInvariantString(
+                        @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
+                Connection = new ConnectionManager(_eventAggregator);
+                IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
+                Init(_ribbon);
+            }
+            catch (Exception ex)
+            {
+                // log the error and re-throw it
+                Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "ctor","Error in Constructor");
+                throw;
+            }
         }
 
 
@@ -428,6 +443,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool HighlightXmSqlCallbacks
+        {
+            get => Options.HighlightXmSqlCallbacks;
+        }
+
+        public bool SimplifyXmSqlSyntax
+        {
+            get => Options.SimplifyXmSqlSyntax;
+        }
+
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => Options.ReplaceXmSqlColumnNames;
+        }
+
         public bool WordWrap
         {
             get => Options.EditorWordWrap;
@@ -517,6 +547,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _tracer.Events.Clear();
                 _tracer.Events.Add(DaxStudioTraceEventClass.DiscoverBegin);
+                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
                 _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
                 foreach (var e in events)
                 {
@@ -800,6 +831,7 @@ namespace DaxStudio.UI.ViewModels
                 if (CanRunQuery)
                 {
                     await CheckForMetadataUpdatesAsync();
+                    // TODO - look at removing this as it breaks some connections
                     Connection.Ping();
                 }
 
@@ -1300,7 +1332,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshElapsedTime()
         {
-            NotifyOfPropertyChange(() => ElapsedQueryTime);
+            try
+            {
+                NotifyOfPropertyChange(() => ElapsedQueryTime);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshElapsedTime), "Error updating elapsed time");
+            }
         }
 
         public async Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
@@ -2025,6 +2064,7 @@ namespace DaxStudio.UI.ViewModels
                 if (watcher is ServerTimesViewModel && watcher.IsChecked)
                 {
                     ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+                    ((ServerTimesViewModel)watcher).RemapColumnNames = this.Connection.DaxColumnsRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();
@@ -2691,8 +2731,15 @@ namespace DaxStudio.UI.ViewModels
 
         internal void SetStatusBarMessage(string message)
         {
-            _statusBarMessage = message;
-            NotifyOfPropertyChange(() => StatusBarMessage);
+            try
+            {
+                _statusBarMessage = message;
+                NotifyOfPropertyChange(() => StatusBarMessage);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetStatusBarMessage), ex.Message);
+            }
         }
 
         private int _spid = -1;
@@ -3301,6 +3348,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public ADOTabular.MetadataInfo.DaxColumnsRemap DaxColumnsRemapInfo
+        {
+            get
+            {
+                return Connection?.DaxColumnsRemapInfo;
+            }
+        }
+
         public void Handle(ExportDaxFunctionsEvent exportFunctions)
         {
             if (exportFunctions.AutoDelete) PublishDaxFunctions();
@@ -3816,8 +3871,10 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // TODO - this was running synchronously and was causing issues on slow connections (like AAS)
+
                 // ping the connection to make sure we are connected and the session is active
-                if (Connection.IsConnected) Connection.Ping();
+                //if (Connection.IsConnected) Connection.Ping();
             }
             catch (Exception ex)
             {

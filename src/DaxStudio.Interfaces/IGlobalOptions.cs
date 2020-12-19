@@ -105,6 +105,10 @@ namespace DaxStudio.Interfaces
         bool ShowPreviewQueryBuilder { get; set; }
         bool ShowPreviewBenchmark { get; set; }
 
+        bool HighlightXmSqlCallbacks { get; set; }
+        bool SimplifyXmSqlSyntax { get; set; }
+        bool ReplaceXmSqlColumnNames { get; set; }
+
         #region Methods
         // Methods
         string GetCustomCsvDelimiter();

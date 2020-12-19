@@ -15,5 +15,7 @@ namespace ADOTabular.Interfaces
 
         void Visit(MetadataInfo.DaxMetadata daxMetadata);
 
+        void Visit(MetadataInfo.DaxColumnsRemap daxColumnsRemap);
+
     }
 }

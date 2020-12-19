@@ -11,7 +11,6 @@ namespace DaxStudio.UI.Utils
         public State CurrentState { get; set; }
         private StringBuilder _sbMain;
         private StringBuilder _sbCurrentLine;
-        private int _outputPosition;
         protected LineStateMachine(State initial)
         {
             CurrentState = initial;

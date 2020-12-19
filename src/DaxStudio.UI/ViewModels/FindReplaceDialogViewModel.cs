@@ -49,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 return Enum.GetValues(typeof(SearchDirection))
-                    .Cast<SearchDirection>(); ;
+                    .Cast<SearchDirection>(); 
             }
         }
         public IEditor Editor { get; set; }
@@ -66,7 +66,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool UseWildcards
         {
-            get { return _useWildcards; }
+            get => _useWildcards;
             set
             {
                 _useWildcards = value;
@@ -76,7 +76,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string TextToFind
         {
-            get { return _textToFind; }
+            get => _textToFind;
             set
             {
                 _textToFind = value;
@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string TextToReplace
         {
-            get { return _textToReplace; }
+            get => _textToReplace;
             set
             {
                 _textToReplace = value;
@@ -97,7 +97,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CaseSensitive { get {return _caseSensitive;}
+        public bool CaseSensitive { get => _caseSensitive;
             set
             {
                 _caseSensitive = value;
@@ -105,13 +105,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool UseRegex { get {return _useRegex;}
+        public bool UseRegex { get => _useRegex;
             set { _useRegex = value;
             NotifyOfPropertyChange(() => UseRegex);
             }
         }
 
-        public bool UseWholeWord { get {return _useWholeWord;}
+        public bool UseWholeWord { get => _useWholeWord;
             set
             {
                 _useWholeWord = value;
@@ -119,20 +119,20 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public bool CanFind { get { return !string.IsNullOrEmpty(TextToFind); } }
-        public bool CanReplace { get { return !string.IsNullOrEmpty(TextToReplace); } }
-        public bool CanReplaceAll { get { return !string.IsNullOrEmpty(TextToReplace); } }
+        public bool CanFind => !string.IsNullOrEmpty(TextToFind);
+        public bool CanReplace => !string.IsNullOrEmpty(TextToReplace);
+        public bool CanReplaceAll => !string.IsNullOrEmpty(TextToReplace);
 
         private bool _isVisible;
         public bool IsVisible
         {
-            get { return _isVisible; }
+            get => _isVisible;
             set {
                 try
                 {
                     _isVisible = value;
                     NotifyOfPropertyChange(() => IsVisible);
-                    if (value == true)
+                    if (value)
                     {
                         //FocusOnFindBox();
                         this.SetFocus(() => TextToFind);
@@ -156,7 +156,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ShowReplace
         {
-            get { return _showReplace; }
+            get => _showReplace;
             set { _showReplace = value;
                 NotifyOfPropertyChange(() => ShowReplace);
             }
@@ -234,18 +234,26 @@ namespace DaxStudio.UI.ViewModels
 
         public void ReplaceAllText()
         {
-            
-            Regex regex = GetRegEx(TextToFind, true);
-            int offset = 0;
-            Editor.BeginChange();
-            // TODO  if selectionlength > 0 replace only in selection
-            foreach (Match match in regex.Matches(Editor.Text))
+            try
             {
-                Editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
-                offset += TextToReplace.Length - match.Length;
+                Regex regex = GetRegEx(TextToFind, true);
+                int offset = 0;
+                Editor.BeginChange();
+                // TODO  if selectionlength > 0 replace only in selection
+                foreach (Match match in regex.Matches(Editor.Text))
+                {
+                    Editor.DocumentReplace(offset + match.Index, match.Length, TextToReplace);
+                    offset += TextToReplace.Length - match.Length;
+                }
+
+                Editor.EndChange();
             }
-            Editor.EndChange();
-            
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceAllText), ex.Message);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Replacing All Text: {ex.Message}" ));
+            }
+
         }
 
         private bool FindNextInternal()
