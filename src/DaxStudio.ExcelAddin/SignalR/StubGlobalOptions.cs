@@ -113,14 +113,6 @@ namespace DaxStudio.SignalR
         public bool SimplifyXmSqlSyntax { get; set; }
         public bool ReplaceXmSqlColumnNames { get; set; }
 
-        public bool HighlightXmSqlCallbacks { get; set; }
-        public bool SimplifyXmSqlSyntax { get; set; }
-        public bool ReplaceXmSqlColumnNames { get; set; }
-
-        public bool HighlightXmSqlCallbacks { get; set; }
-        public bool SimplifyXmSqlSyntax { get; set; }
-        public bool ReplaceXmSqlColumnNames { get; set; }
-
         public string GetCustomCsvDelimiter()
         {
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;

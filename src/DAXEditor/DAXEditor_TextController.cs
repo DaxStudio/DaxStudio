@@ -64,7 +64,7 @@ namespace DAXEditorControl
             {
                 // Sometime the newController is already there but the event handling is not working
                 // Remove controller and event handling and install a new one instead.
-                if (elements.TryGetValue(newController, out TextEditor test) == true)
+                if (elements.TryGetValue(newController, out TextEditor test))
                 {
                     elements.Remove(newController);
 
@@ -95,9 +95,7 @@ namespace DAXEditorControl
     private static void SelectAll(ITextBoxController sender)
     {
             if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element from sender for SelecteAll method");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
             element.Focus();
       element.SelectAll();
@@ -113,9 +111,7 @@ namespace DAXEditorControl
     private static void Select(ITextBoxController sender, int start, int length)
     {
        if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element from sender for Select method");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
             // element.Focus();
 
@@ -132,9 +128,7 @@ namespace DAXEditorControl
     private static void ScrollToLine(ITextBoxController sender, int line)
     {
       if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element from sender for ScrollToline method");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.Focus();
       element.ScrollToLine(line);
@@ -152,9 +146,7 @@ namespace DAXEditorControl
     {
 
       if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get Element for sender in CurrentSelection method");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       start = element.SelectionStart;
       length = element.SelectionLength;

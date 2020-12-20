@@ -1,0 +1,19 @@
+﻿[*.cs]
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = suggestion
+
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = silent
+
+# CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = silent
+
+# CA2237: Mark ISerializable types with SerializableAttribute
+dotnet_diagnostic.CA2237.severity = warning
+
+dotnet_analyzer_diagnostic.category-Naming.severity = suggestion
+dotnet_analyzer_diagnostic.category-Style.severity = silent
+
+# Default severity for all the categories (including forma)
+dotnet_analyzer_diagnostic.severity = suggestion
