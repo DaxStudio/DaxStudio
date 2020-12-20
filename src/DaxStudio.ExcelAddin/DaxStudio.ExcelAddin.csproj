@@ -33,7 +33,7 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>DaxStudio</RootNamespace>
     <AssemblyName>DaxStudio</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
