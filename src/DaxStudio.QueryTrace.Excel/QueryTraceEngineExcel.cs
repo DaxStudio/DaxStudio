@@ -20,10 +20,10 @@ namespace DaxStudio.QueryTrace
     public class QueryTraceEngineExcel : IQueryTrace, IDisposable
     {
 #region public IQueryTrace interface
-        public async Task StartAsync(int startTimeoutSecs)
+        public async Task StartAsync(int startTimeoutSec)
         {
             Log.Debug("{class} {method} {message}", "QueryTraceEngineExcel", "StartAsync", "entered");
-            TraceStartTimeoutSecs = startTimeoutSecs;
+            TraceStartTimeoutSecs = startTimeoutSec;
             await Task.Run(() => Start()).ConfigureAwait(false);
         }
 
@@ -79,7 +79,9 @@ namespace DaxStudio.QueryTrace
         public QueryTraceStatus Status { get; private set; }
 
         public List<DaxStudioTraceEventClass> Events { get; }
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
         public delegate void DaxStudioTraceEventHandler(object sender, DaxStudioTraceEventArgs e);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 
         public event DaxStudioTraceEventHandler TraceEvent;
         public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
@@ -95,8 +97,6 @@ namespace DaxStudio.QueryTrace
         private string _connectionString;
         private readonly string _originalConnectionString;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "IDE0069:Disposable fields should be disposed", Justification = "<Pending>")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Quality", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
         private ADOTabular.ADOTabularConnection _connection;
 
         private AdomdType _connectionType;
