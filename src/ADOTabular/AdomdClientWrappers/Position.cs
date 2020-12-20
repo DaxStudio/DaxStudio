@@ -2,10 +2,11 @@
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Position
     {
-        private Microsoft.AnalysisServices.AdomdClient.Position _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Position _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Position _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Position _objExcel;
 
         public Position(Microsoft.AnalysisServices.AdomdClient.Position obj)
         {

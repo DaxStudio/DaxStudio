@@ -4,7 +4,6 @@ using ADOTabular.Enums;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -538,7 +537,7 @@ namespace ADOTabular.AdomdClientWrappers
                 foreach (DataRow drow in dtSchema.Rows)
                 {
                     string columnName = drow["ColumnName"].ToString();
-                    DataColumn column = new DataColumn(columnName, (Type)(drow["DataType"]));
+                    DataColumn column = new DataColumn(columnName, (Type)drow["DataType"]);
                     //column.Unique = (bool)drow["IsUnique"];
                     //column.AllowDBNull = (bool)drow["AllowDBNull"];
                     //column.AutoIncrement = (bool)drow["IsAutoIncrement"];
@@ -555,9 +554,9 @@ namespace ADOTabular.AdomdClientWrappers
                 for (int i = 0; i < listCols.Count; i++)
                 {
                     if (listCols[i].ExtendedProperties.ContainsKey("FormatString"))
-                        dataRow[((DataColumn)listCols[i])] = string.Format(invariantCulture, listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
+                        dataRow[(DataColumn)listCols[i]] = string.Format(invariantCulture, listCols[i].ExtendedProperties["FormatString"].ToString() , this[i]);
                     else
-                        dataRow[((DataColumn)listCols[i])] = this[i];
+                        dataRow[(DataColumn)listCols[i]] = this[i];
                 }
                 dt.Rows.Add(dataRow);
                 rowCnt++;

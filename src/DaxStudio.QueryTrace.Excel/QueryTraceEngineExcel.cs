@@ -157,7 +157,9 @@ namespace DaxStudio.QueryTrace
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "exit");
         }
 
+#pragma warning disable IDE0051 // Remove unused private members
         private static  XmlNode GetSpidFilter(int spid)
+#pragma warning restore IDE0051 // Remove unused private members
         {
             var filterXml = string.Format(CultureInfo.InvariantCulture
                 , "<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>"
@@ -294,7 +296,9 @@ namespace DaxStudio.QueryTrace
         }
 
         private bool _traceStarted;
+#pragma warning disable IDE0052 // Remove unread private members
         private string _applicationName;
+#pragma warning restore IDE0052 // Remove unread private members
         
         private void OnTraceEventInternal(object sender, xlAmo.TraceEventArgs e)
         {

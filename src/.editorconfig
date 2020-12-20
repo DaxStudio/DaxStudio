@@ -1,7 +1,48 @@
 ﻿[*.cs]
+# CA2237: Mark ISerializable types with SerializableAttribute
+dotnet_diagnostic.CA2237.severity = suggestion
+# CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = none
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = suggestion 
+# CA1717: Only FlagsAttribute enums should have plural names
+dotnet_diagnostic.CA1717.severity = warning 
+
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = suggestion 
+
+# Style disabled
+dotnet_diagnostic.IDE0001.severity = none
+dotnet_diagnostic.IDE0003.severity = none
+dotnet_diagnostic.IDE0004.severity = none
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0010.severity = none
+dotnet_diagnostic.IDE0011.severity = none
+dotnet_diagnostic.IDE0047.severity = none
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.IDE0061.severity = none
+dotnet_diagnostic.IDE0072.severity = none
+
+# Possible improvements
+dotnet_diagnostic.IDE0025.severity = silent
+dotnet_diagnostic.IDE0045.severity = silent
+dotnet_diagnostic.IDE0046.severity = silent
+dotnet_diagnostic.IDE0058.severity = silent
 
 # Default severity for analyzer diagnostics with category 'Naming'
 dotnet_analyzer_diagnostic.category-Naming.severity = suggestion
 
 # Default severity for analyzer diagnostics with category 'Globalization'
 dotnet_analyzer_diagnostic.category-Globalization.severity = suggestion
+
+# Default severity for analyzer diagnostics with category 'Performance'
+dotnet_analyzer_diagnostic.category-Performance.severity = suggestion
+
+dotnet_analyzer_diagnostic.category-Design.severity = suggestion
+
+dotnet_analyzer_diagnostic.category-Usage.severity = suggestion
+
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+
+# Default severity for all the categories (including forma)
+dotnet_analyzer_diagnostic.severity = warning

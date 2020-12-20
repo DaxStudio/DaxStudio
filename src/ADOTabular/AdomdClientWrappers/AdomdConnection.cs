@@ -9,25 +9,24 @@ namespace ADOTabular.AdomdClientWrappers
 {
     public sealed class AdomdConnection:IDisposable
     {
-        private readonly AdomdType _type;
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
         private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
-        private readonly Object rowsetLock = new Object();
+        private readonly object rowsetLock = new object();
         public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
-            _type = AdomdType.AnalysisServices;
+            Type = AdomdType.AnalysisServices;
             _conn = connection;
         }
         public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
-            _type = AdomdType.Excel;
+            Type = AdomdType.Excel;
             _connExcel = connection;
         }
         
         public AdomdConnection(string connectionString, AdomdType type)
         {
-            _type = type;
-            if (_type == AdomdType.AnalysisServices)
+            Type = type;
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
             }
@@ -41,16 +40,13 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        internal AdomdType Type
-        {
-            get { return _type; }
-        }
+        internal AdomdType Type { get; }
 
         internal object UnderlyingConnection
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return _conn;
                 }
@@ -69,7 +65,7 @@ namespace ADOTabular.AdomdClientWrappers
         public void Open()
         {
             
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn.Open();
             }
@@ -82,7 +78,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Open(string connectionString)
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn.Open(connectionString);
             }
@@ -95,7 +91,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Close()
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn.Close();
             }
@@ -108,7 +104,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Close(bool endSession)
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn.Close(endSession);
             }
@@ -123,7 +119,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             if (database == null) return; 
             if (database.Trim().Length == 0) return;
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 _conn.ChangeDatabase(database);
             }
@@ -138,7 +134,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return _conn.ConnectionString;
                 }
@@ -154,7 +150,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return _conn.ClientVersion;
                 }
@@ -191,7 +187,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return new CubeCollection(_conn.Cubes);
                 }
@@ -207,7 +203,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     if (_conn != null) return _conn.State;
                     return ConnectionState.Closed;
@@ -228,7 +224,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return _conn.SessionID;
                 }
@@ -243,7 +239,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
             set
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     _conn.SessionID = value;
                 }
@@ -259,7 +255,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     return _conn.Database;
                 }
@@ -275,7 +271,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                if (_type == AdomdType.AnalysisServices)
+                if (Type == AdomdType.AnalysisServices)
                 {
                     if (_conn.State != ConnectionState.Open)
                         _conn.Open();
@@ -291,7 +287,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions, bool throwOnInlineErrors)
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                 if (restrictions != null)
@@ -350,7 +346,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void RefreshMetadata()
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 if (_conn != null)
                     _conn.RefreshMetadata();
@@ -369,7 +365,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Dispose()
         {
-            if (_type == AdomdType.AnalysisServices)
+            if (Type == AdomdType.AnalysisServices)
             {
                 if (_conn != null)
                 {

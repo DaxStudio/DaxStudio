@@ -78,8 +78,8 @@ namespace ADOTabular
 
         public ADOTabularColumn this[string index]
         {
-            get { return _cols[index]; }
-            set { _cols[index] = value; }
+            get => _cols[index];
+            set => _cols[index] = value;
         }
 
         public ADOTabularColumn this[int index]

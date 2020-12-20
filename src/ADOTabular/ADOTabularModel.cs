@@ -41,7 +41,7 @@ namespace ADOTabular
 
         public ADOTabularTableCollection Tables
         {
-            get { return _tableColl ?? (_tableColl = new ADOTabularTableCollection(_adoTabConn, this)); }
+            get { return _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this); }
         }
 
         public Dictionary<string,ADOTabularColumn> Roles { get; private set; }

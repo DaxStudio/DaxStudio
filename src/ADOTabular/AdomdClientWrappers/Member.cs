@@ -3,10 +3,11 @@ using System.Collections.Generic;
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Member
     {
-        private Microsoft.AnalysisServices.AdomdClient.Member _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Member _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Member _objExcel;
 
         public Member(Microsoft.AnalysisServices.AdomdClient.Member obj)
         {

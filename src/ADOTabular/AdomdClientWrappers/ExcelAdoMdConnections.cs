@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -18,7 +17,7 @@ namespace ADOTabular.AdomdClientWrappers
         private static string _excelAdomdClientAssemblyPath;
 
         [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
-        private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] StringBuilder lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
+        private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] char[] lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
         [DllImport("Kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -51,8 +50,8 @@ namespace ADOTabular.AdomdClientWrappers
                 int error = Marshal.GetLastWin32Error();
                 throw new Win32Exception(error);
             }
-            StringBuilder lpFilename = new StringBuilder(0x400);
-            if (GetModuleFileName(moduleHandle, lpFilename, lpFilename.Capacity) == 0)
+            char[] lpFilename = new char[0x400];
+            if (GetModuleFileName(moduleHandle, lpFilename, lpFilename.Length) == 0)
             {
                 int num3 = Marshal.GetLastWin32Error();
                 throw new Win32Exception(num3);

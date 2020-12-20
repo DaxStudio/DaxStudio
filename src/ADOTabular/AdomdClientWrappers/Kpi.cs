@@ -2,6 +2,7 @@
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Kpi
     {
         private readonly Microsoft.AnalysisServices.AdomdClient.Kpi _obj;

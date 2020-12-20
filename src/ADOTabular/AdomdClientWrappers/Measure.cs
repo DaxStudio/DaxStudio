@@ -2,10 +2,11 @@
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Measure
     {
-        private Microsoft.AnalysisServices.AdomdClient.Measure _obj;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Measure _objExcel;
+        private readonly Microsoft.AnalysisServices.AdomdClient.Measure _obj;
+        private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.Measure _objExcel;
 
         public Measure(Microsoft.AnalysisServices.AdomdClient.Measure obj)
         {

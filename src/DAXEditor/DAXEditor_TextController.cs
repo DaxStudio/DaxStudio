@@ -167,9 +167,7 @@ namespace DAXEditorControl
     {
 
       if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element for sender in BeginChange");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.BeginChange();
     }
@@ -178,9 +176,7 @@ namespace DAXEditorControl
     {
 
       if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element for sender in EndChange");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       element.EndChange();
     }
@@ -189,9 +185,7 @@ namespace DAXEditorControl
     private static void GetSelectedText(ITextBoxController sender, out string selectedText)
     {
       if (!elements.TryGetValue(sender, out TextEditor element))
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new ArgumentException("Unable to get element for sender in GetSelectedText");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
       selectedText = element.SelectedText;
     }

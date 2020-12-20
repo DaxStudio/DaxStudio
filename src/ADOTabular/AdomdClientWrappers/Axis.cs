@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Axis
     {
         private readonly Microsoft.AnalysisServices.AdomdClient.Axis _obj;

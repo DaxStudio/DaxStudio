@@ -4,6 +4,7 @@ using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class Hierarchy
     {
         private readonly Microsoft.AnalysisServices.AdomdClient.Hierarchy _obj;

@@ -6,7 +6,6 @@ using System.Xml;
 using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
-using System.Diagnostics;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
@@ -85,10 +84,8 @@ namespace ADOTabular
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
 
-            using (XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit })
-            {
-                GenerateTablesFromXmlReader(tables, rdr);
-            }
+            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
+            GenerateTablesFromXmlReader(tables, rdr);
         }
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
@@ -182,7 +179,7 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                   && rdr.LocalName == "ModelCapabilities"))
             {
-                bool enabled = false;
+                bool enabled;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
                     switch (rdr.LocalName)
@@ -216,7 +213,7 @@ namespace ADOTabular
             while (!(rdr.NodeType == XmlNodeType.EndElement
                           && rdr.LocalName == "DAXFunctions"))
             {
-                bool enabled = false;
+                bool enabled;
                 if (rdr.NodeType == XmlNodeType.Element)
                 {
                     switch (rdr.LocalName)
@@ -495,13 +492,13 @@ namespace ADOTabular
             bool isVisible = true;
             string name = null;
             string refName = "";
-            string tableId = "";
             string dataType = "";
             string contents = "";
             string minValue = "";
             string maxValue = "";
             string formatString = "";
             string keyRef = "";
+            string defaultAggregateFunction = "";
             long stringValueMaxLength = 0;
             long distinctValueCount = 0;
             bool nullable = true;
@@ -530,7 +527,7 @@ namespace ADOTabular
                         switch (rdr.LocalName)
                         {
                             case "Name":
-                                tableId = rdr.Value;
+                                string tableId = rdr.Value;
                                 tab = tables.GetById(tableId);
                                 break;
                         }
@@ -573,7 +570,6 @@ namespace ADOTabular
                     kpi = ProcessKpi(rdr);
                 }
 
-                string defaultAggregateFunction;
                 if (rdr.NodeType == XmlNodeType.Element
                     && (rdr.LocalName == eProperty
                     || rdr.LocalName == eMeasure
@@ -662,7 +658,8 @@ namespace ADOTabular
                                 MaxValue = maxValue,
                                 DistinctValues = distinctValueCount,
                                 FormatString = formatString,
-                                StringValueMaxLength = stringValueMaxLength
+                                StringValueMaxLength = stringValueMaxLength,
+                                DefaultAggregateFunction = defaultAggregateFunction,
                             };
                             col.Variations.AddRange(_variations);
                             tables.Model.AddRole(col);
@@ -745,7 +742,10 @@ namespace ADOTabular
                         switch (rdr.LocalName)
                         {
                             case "Name":
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+                                // NOTE (marcorus): Is this assignment necessary? Why _name is not used later?
                                 _name = rdr.Value;
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
                                 break;
                             case "Default":
                                 _default = bool.Parse( rdr.Value);
@@ -829,7 +829,7 @@ namespace ADOTabular
 
                 // Reset DisplayFolder local variables
                 folderCaption = null;
-                folderReference = String.Empty;
+                folderReference = string.Empty;
                     
                 if ((rdr.NodeType == XmlNodeType.Element)
                     && (rdr.LocalName == "PropertyRef" 
@@ -856,7 +856,7 @@ namespace ADOTabular
                     rdr.Read();
                 }
 
-                if ((rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders"))
+                if (rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders")
 
                 {
                     if (rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement)
@@ -1063,17 +1063,15 @@ namespace ADOTabular
             var ssas2016 = new Version(13,0,0,0);
             if (Version.Parse(_conn.ServerVersion) >= ssas2016)
             {
-                using (DataTable paramTable = CreateParameterTable())
-                {
+                using DataTable paramTable = CreateParameterTable();
 
-                    paramTable.Rows.Add(new[] { "Rows", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Skip", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Table", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "OrderByExpression", "TRUE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Order", "FALSE", "TRUE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Rows", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Skip", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Table", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "OrderByExpression", "TRUE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Order", "FALSE", "TRUE", "FALSE" });
 
-                    functionGroups.AddFunction("FILTER", "TOPNSKIP", "Retrieves a number of rows from a table efficiently, skipping a number of rows. Compared to TOPN, the TOPNSKIP function is less flexible, but much faster.", paramTable.Select());
-                }
+                functionGroups.AddFunction("FILTER", "TOPNSKIP", "Retrieves a number of rows from a table efficiently, skipping a number of rows. Compared to TOPN, the TOPNSKIP function is less flexible, but much faster.", paramTable.Select());
             }
         }
 
@@ -1104,7 +1102,9 @@ namespace ADOTabular
                            join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
                            from kword in a.DefaultIfEmpty()
                            where kword == null
-                           select new { Keyword = (string)keyword["Keyword"] , Matched= kword==null?true:false};
+#pragma warning disable IDE0050 // Convert to tuple
+                         select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
+#pragma warning restore IDE0050 // Convert to tuple
 
             //foreach (DataRow dr in drKeywords)
             foreach (var dr in kwords)
@@ -1122,8 +1122,8 @@ namespace ADOTabular
         }
         private static string GetXmlString(IDataRecord dr, int column) {
             // Use the original AdomdDataReader (we don't have to use the proxy here!)
-            Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField = dr.GetValue(column) as Microsoft.AnalysisServices.AdomdClient.AdomdDataReader;
-            if (mdXmlField == null) {
+            if (!(dr.GetValue(column) is Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField))
+            {
                 return null;
             }
             XElement piXml = new XElement("PARAMETERINFO");
@@ -1280,14 +1280,12 @@ namespace ADOTabular
 
             // Load remapping
 
-            using (AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS))
+            using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS);
+            while (result.Read())
             {
-                while (result.Read())
-                {
-                    string columnId = GetString(result, 0);
-                    string columnName = GetString(result, 1);
-                    daxColumnsRemap.RemapNames.Add(columnId, columnName);
-                }
+                string columnId = GetString(result, 0);
+                string columnName = GetString(result, 1);
+                daxColumnsRemap.RemapNames.Add(columnId, columnName);
             }
         }
     }

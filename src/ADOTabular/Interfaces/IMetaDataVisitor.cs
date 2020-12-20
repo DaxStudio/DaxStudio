@@ -11,7 +11,7 @@ namespace ADOTabular.Interfaces
 
         void Visit(ADOTabularFunctionGroupCollection functionGroups);
 
-        void Visit(ADOTabularKeywordCollection aDOTabularKeywordCollection);
+        void Visit(ADOTabularKeywordCollection keywords);
 
         void Visit(MetadataInfo.DaxMetadata daxMetadata);
 

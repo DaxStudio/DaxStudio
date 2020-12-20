@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ADOTabular.AdomdClientWrappers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0039:Use local function", Justification = "<Pending>")]
     public class CellSet
     {
         private readonly Microsoft.AnalysisServices.AdomdClient.CellSet _obj;
