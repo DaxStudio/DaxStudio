@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Model
             var orderByList = BuildOrderBy(orderBy);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = !string.IsNullOrWhiteSpace(measureList)
-                ? columns.Any(c => c.ObjectType == ADOTabularObjectType.Column)
+                ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
                 ? ",\n    " 
                 : "\n    "
                 : string.Empty;  

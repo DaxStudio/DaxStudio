@@ -63,17 +63,17 @@ namespace DaxStudio.UI.ViewModels
             // check connection state
             if (Document.Connection == null)
             {
-                throw new ArgumentException("The current document is not connected to a data source", nameof(document));
+                throw new ArgumentException("The current document is not connected to a data source", "Document");
             }
 
             if (!Document.Connection.IsConnected)
             {
-                throw new ArgumentException("The connection for the current document is not in an open state", nameof(document));
+                throw new ArgumentException("The connection for the current document is not in an open state", "Document");
             }
 
             if (Document.Connection.Database.Models.Count == 0)
             {
-                throw new ArgumentException("The connection for the current document does not have a data model", nameof(document));
+                throw new ArgumentException("The connection for the current document does not have a data model", "Document");
             }
 
             PopulateTablesList();
@@ -255,7 +255,7 @@ namespace DaxStudio.UI.ViewModels
             Document.QueryStopWatch.Start();
 
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
-            var totalTables = selectedTables.Count;
+            var totalTables = selectedTables.Count();
             var tableCnt = 0;
             string decimalSep = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
@@ -450,7 +450,7 @@ namespace DaxStudio.UI.ViewModels
 
             _currentTableIdx = 0;
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
-            _totalTableCnt = selectedTables.Count;
+            _totalTableCnt = selectedTables.Count();
 
             var connRead = Document.Connection;
 

@@ -4,9 +4,7 @@ using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels.ExportDataWizard
 {
-#pragma warning disable CA2237 // Mark ISerializable types with serializable
     public class TransitionMap : Dictionary<Type, Dictionary<ExportDataWizardPage, Type>>
-#pragma warning restore CA2237 // Mark ISerializable types with serializable
     {
 
         public TransitionMap() { }

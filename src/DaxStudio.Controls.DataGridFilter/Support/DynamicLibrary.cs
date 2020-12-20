@@ -174,9 +174,7 @@ namespace System.Linq.Dynamic
             return Expression.Lambda(parser.Parse(resultType), parameters);
         }
 
-#pragma warning disable CA1715 // Identifiers should have correct prefix
         public static Expression<Func<T, S>> ParseLambda<T, S>(string expression, params object[] values)
-#pragma warning restore CA1715 // Identifiers should have correct prefix
         {
             return (Expression<Func<T, S>>)ParseLambda(typeof(T), typeof(S), expression, values);
         }
@@ -410,9 +408,8 @@ namespace System.Linq.Dynamic
         }
     }
 
-#pragma warning disable CA2237 // Mark ISerializable types with serializable
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1032:Implement Exception constructors", Justification = "<Pending>")]
     public sealed class ParseException : Exception
-#pragma warning restore CA2237 // Mark ISerializable types with serializable
     {
         public ParseException()
         {
@@ -428,9 +425,7 @@ namespace System.Linq.Dynamic
 
         public override string ToString()
         {
-#pragma warning disable CA1305 // Specify IFormatProvider
             return string.Format(Res.ParseExceptionFormat, Message, Position);
-#pragma warning restore CA1305 // Specify IFormatProvider
         }
     }
 
@@ -686,6 +681,7 @@ namespace System.Linq.Dynamic
             return expr;
         }
 
+#pragma warning disable 0219
         public IEnumerable<DynamicOrdering> ParseOrdering()
         {
             List<DynamicOrdering> orderings = new List<DynamicOrdering>();
@@ -709,6 +705,7 @@ namespace System.Linq.Dynamic
             ValidateToken(TokenId.End, Res.SyntaxError);
             return orderings;
         }
+#pragma warning restore 0219
 
         // ?: operator
         Expression ParseExpression()

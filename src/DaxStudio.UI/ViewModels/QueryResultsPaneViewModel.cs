@@ -181,7 +181,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private double _fontSize = 20;
+        public double _fontSize = 20;
         public double FontSize {
             get { return _fontSize; }
             set {
@@ -190,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string _fontFamily = "Arial";
+        public string _fontFamily = "Arial";
         public string FontFamily
         {
             get { return _fontFamily; }
