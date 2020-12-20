@@ -1318,7 +1318,6 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Execute Query
-        private Timer _timer;
         private Stopwatch _queryStopWatch;
 
         public Stopwatch QueryStopWatch
@@ -1347,6 +1346,7 @@ namespace DaxStudio.UI.ViewModels
 
             int row = 0;
             int col = 0;
+            Timer _timer = new Timer(300);
             try
             {
                 var editor = GetEditor();
@@ -1377,7 +1377,6 @@ namespace DaxStudio.UI.ViewModels
                     var dsm = new DelimiterStateMachine(DaxStudio.Interfaces.Enums.DelimiterType.Comma);
                     daxQuery = dsm.ProcessString(daxQuery);
                 }
-                _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
@@ -1397,7 +1396,7 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 _queryStopWatch.Stop();
-                _timer.Stop();
+                _timer?.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
                 NotifyOfPropertyChange(() => ElapsedQueryTime);
@@ -1420,6 +1419,7 @@ namespace DaxStudio.UI.ViewModels
             int row = 0;
             int col = 0;
             var editor = GetEditor();
+            Timer _timer = new Timer(300);
             editor.Dispatcher.Invoke(() =>
             {
                 if (editor.SelectionLength > 0)
@@ -1439,7 +1439,6 @@ namespace DaxStudio.UI.ViewModels
                         tw.IsBusy = true;
                     }
                 }
-                _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
@@ -2261,7 +2260,7 @@ namespace DaxStudio.UI.ViewModels
                     var fileContent = File.ReadAllBytes(metadataFilename);
                     var metadataContent = new ByteArrayContent(fileContent);
 
-                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Count());
+                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Length);
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading {0}", uploadingMessage));
 
                     metadataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("fileUpload") {
