@@ -1,5 +1,8 @@
 ﻿[*.cs]
 
+# CA1011: Do not catch general exception types
+dotnet_diagnostic.CA1011.severity = warning
+
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = suggestion
 
@@ -14,6 +17,7 @@ dotnet_diagnostic.CA2237.severity = warning
 
 dotnet_analyzer_diagnostic.category-Naming.severity = suggestion
 dotnet_analyzer_diagnostic.category-Style.severity = silent
+dotnet_analyzer_diagnostic.category-Design.severity = suggestion
 
 # Default severity for all the categories (including forma)
 dotnet_analyzer_diagnostic.severity = suggestion

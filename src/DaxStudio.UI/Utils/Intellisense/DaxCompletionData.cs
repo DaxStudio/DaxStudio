@@ -91,15 +91,15 @@ _insightProvider = insightProvider;
                 var newSegment = GetPreceedingWordSegment(document, completionSegment);
                 var replaceOffset = newSegment.Offset;
                 var replaceLength = newSegment.Length;
-                var funcParamStart = Text.IndexOf("«");
+                var funcParamStart = Text.IndexOf("«",StringComparison.OrdinalIgnoreCase);
                 string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
 
-                if (insertionRequestEventArgs is TextCompositionEventArgs)
+                if (insertionRequestEventArgs is TextCompositionEventArgs args)
                 {
                     // if the insertion char is the same as the last char in the 
                     // insertion text then trim it off
-                    var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
-                    if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
+                    var insertionChar = args.Text;
+                    if (insertionText.EndsWith(insertionChar,StringComparison.Ordinal)) insertionText = insertionText.TrimEnd(insertionChar[0]);
                 }
                 if (completionSegment.EndOffset <= document.TextLength - 1)
                 {

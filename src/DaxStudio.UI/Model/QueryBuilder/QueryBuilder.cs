@@ -181,7 +181,7 @@ namespace DaxStudio.UI.Model
                     var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
-                    throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
+                    throw new NotSupportedException($"The filter type '{filter.FilterType}' is not supported");
             }
 
             

@@ -3,6 +3,9 @@
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = suggestion
 
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = suggestion
+
 # CA1815: Override equals and operator equals on value types
 dotnet_diagnostic.CA1815.severity = silent
 

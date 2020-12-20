@@ -430,7 +430,6 @@ namespace DaxStudio.UI.ViewModels
 
         
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
@@ -765,7 +764,7 @@ namespace DaxStudio.UI.ViewModels
                             }
                         }
 
-                        if (!string.IsNullOrEmpty(dataTypeName) && dataTypeName.EndsWith("*money"))
+                        if (!string.IsNullOrEmpty(dataTypeName) && dataTypeName.EndsWith("*money",StringComparison.OrdinalIgnoreCase))
                         {
                             return dataTypeName;
                         }

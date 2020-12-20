@@ -290,8 +290,8 @@ namespace DaxStudio.UI.ViewModels
         {
             System.Diagnostics.Debug.WriteLine("DoubleClick fired");
             string dataContext = string.Empty;
-            if (e.OriginalSource is TextBlock) { dataContext = ((TextBlock)e.OriginalSource).DataContext as string; }
-            if (e.OriginalSource is Border) { dataContext = ((Border)e.OriginalSource).DataContext as string; }
+            if (e.OriginalSource is TextBlock block) { dataContext = block.DataContext as string; }
+            if (e.OriginalSource is Border border) { dataContext = border.DataContext as string; }
 
             if (!string.IsNullOrEmpty(dataContext))
             {

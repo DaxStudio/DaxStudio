@@ -1,7 +1,7 @@
 ﻿[*.cs]
 
 # CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = suggestion
+dotnet_diagnostic.CA1031.severity = warning
 
 # CA1815: Override equals and operator equals on value types
 dotnet_diagnostic.CA1815.severity = silent
