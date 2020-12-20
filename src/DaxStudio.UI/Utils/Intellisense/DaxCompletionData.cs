@@ -6,6 +6,7 @@ using System;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using IDocument = ICSharpCode.AvalonEdit.Document.IDocument;
 
 namespace DaxStudio.UI.Utils
 {
@@ -84,7 +85,7 @@ _insightProvider = insightProvider;
             CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
         }
 
-        public void CompleteInternal(IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+        public void CompleteInternal(ICSharpCode.AvalonEdit.Document.IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
             try
@@ -118,7 +119,7 @@ _insightProvider = insightProvider;
             }
         }
 
-        private LinePosition GetPreceedingWordSegment(IDocument document, ISegment completionSegment)
+        private LinePosition GetPreceedingWordSegment(ICSharpCode.AvalonEdit.Document.IDocument document, ISegment completionSegment)
         {
             string line = "";
             
