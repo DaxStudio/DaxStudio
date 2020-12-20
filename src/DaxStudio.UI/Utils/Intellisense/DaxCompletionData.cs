@@ -15,7 +15,9 @@ namespace DaxStudio.UI.Utils
         private readonly object _content;
         private readonly string _description;
         private readonly ImageSource _image;
+#pragma warning disable IDE0052 // Remove unread private members
         private double _priority = 120.0;
+#pragma warning restore IDE0052 // Remove unread private members
         private IInsightProvider _insightProvider;
 
         /*
@@ -202,7 +204,9 @@ _insightProvider = insightProvider;
 
     public struct LinePosition
     {
+#pragma warning disable CA1051 // Do not declare visible instance fields
         public int Offset;
         public int Length;
+#pragma warning restore CA1051 // Do not declare visible instance fields
     }
 }

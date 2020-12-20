@@ -23,7 +23,7 @@
     <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>1</WarningLevel>
+    <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>DaxStudio.Common.ruleset</CodeAnalysisRuleSet>
     <LangVersion>8.0</LangVersion>
