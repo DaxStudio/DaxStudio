@@ -1,5 +1,9 @@
 ﻿[*.cs]
 
+# Disable editor warnings to keep legacy code
+dotnet_diagnostic.IDE0018.severity = silent
+dotnet_diagnostic.IDE0019.severity = silent
+
 # CA1011: Do not catch general exception types
 dotnet_diagnostic.CA1011.severity = warning
 

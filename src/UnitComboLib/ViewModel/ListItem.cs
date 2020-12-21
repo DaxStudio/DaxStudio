@@ -22,8 +22,8 @@
                     ObservableCollection<string> defaultValues)
     {
       this.Key = key;
-      this.DisplayNameLong = (displayNameLong == null ? "(null)" : displayNameLong);
-      this.DisplayNameShort = (displayNameShort == null ? "(null)" : displayNameShort);
+      this.DisplayNameLong = (displayNameLong ?? "(null)");
+      this.DisplayNameShort = (displayNameShort ?? "(null)");
 
       this.DefaultValues = defaultValues;
     }
