@@ -1381,9 +1381,13 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
                 _queryStopWatch.Start();
-                var dt = c.ExecuteDaxQueryDataTable(daxQuery);
-                dt.FixColumnNaming(daxQuery);
-                return dt;
+                DataTable dt;
+                return await Task.Run(() => { 
+                    dt = c.ExecuteDaxQueryDataTable(daxQuery);
+                    dt.FixColumnNaming(daxQuery);
+                    return dt;
+                });
+                
             }
             catch (Exception e)
             {
@@ -1943,6 +1947,14 @@ namespace DaxStudio.UI.ViewModels
             // Try to find the DEFINE statements
 
             var currentText = editor.Text;
+
+            // if the default separator is not the default Comma style
+            // then we should switch the separators to the SemiColon style
+            if (Options.DefaultSeparator == DelimiterType.SemiColon)
+            {
+                var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                measureExpression = dsm.ProcessString(measureExpression);
+            }
 
             var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
             // TODO - expand measure expression and generate other measures here!!
@@ -3720,11 +3732,14 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        void IDropTarget.DragOver(IDropInfo dropInfo)
+        public void DragOver(IDropInfo dropInfo)
         {
             IntellisenseProvider?.CloseCompletionWindow();
 
-            if (dropInfo.DragInfo.DataObject is IADOTabularObject || dropInfo.DragInfo.Data is string)
+            DataObject data = dropInfo.Data as DataObject;
+            bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat)??false;
+
+            if (dropInfo.DragInfo?.DataObject is IADOTabularObject || stringPresent)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -3740,18 +3755,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        void IDropTarget.Drop(IDropInfo dropInfo)
+        public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.DragInfo.DataObject as IADOTabularObject;
+            var obj = dropInfo.DragInfo?.DataObject as IADOTabularObject;
             var text = string.Empty;
             if (obj != null)
             {
                 text = obj.DaxName;
             }
 
-            if (dropInfo.DragInfo.Data is string)
+            DataObject data = dropInfo.Data as DataObject;
+            bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat) ?? false;
+
+            if (stringPresent)
             {
-                text = dropInfo.DragInfo.Data as string;
+                text = data.GetText();
             }
             InsertTextAtCaret(text);
         }
