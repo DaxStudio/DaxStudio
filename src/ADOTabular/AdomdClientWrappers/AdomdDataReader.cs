@@ -10,12 +10,12 @@ namespace ADOTabular.AdomdClientWrappers
     {
         private readonly Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _obj;
         //private readonly ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdDataReader _objExcel;
-        private readonly AdomdType _type = AdomdType.AnalysisServices;
+        //private readonly AdomdType _type = AdomdType.AnalysisServices;
         public AdomdDataReader() { }
         public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
             _obj = dataReader;
-            _type = AdomdType.AnalysisServices;
+            //_type = AdomdType.AnalysisServices;
             
         }
 
