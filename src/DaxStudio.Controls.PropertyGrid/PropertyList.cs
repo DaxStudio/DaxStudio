@@ -164,7 +164,9 @@ namespace DaxStudio.Controls.PropertyGrid
                     var enabledProp = newSource.GetType().GetProperty($"{prop.Name}Enabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     if (enabledProp != null)
                     {
+#pragma warning disable CA1305 // Specify IFormatProvider
                         binding.GetValueEnabled = () => Convert.ToBoolean( enabledProp.GetValue(newSource) );
+#pragma warning restore CA1305 // Specify IFormatProvider
                         onEnabledChangedFuncs.Add(enabledProp.Name, binding.OnEnabledChanged);
 
                     }

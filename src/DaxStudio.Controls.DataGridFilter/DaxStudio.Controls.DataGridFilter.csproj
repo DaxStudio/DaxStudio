@@ -54,7 +54,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -70,7 +69,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

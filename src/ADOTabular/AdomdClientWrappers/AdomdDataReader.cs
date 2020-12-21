@@ -13,7 +13,6 @@ namespace ADOTabular.AdomdClientWrappers
         public AdomdDataReader(Microsoft.AnalysisServices.AdomdClient.AdomdDataReader dataReader)
         {
             _obj = dataReader;
-           
         }
 
 

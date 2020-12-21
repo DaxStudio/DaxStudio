@@ -57,10 +57,10 @@
 
       if (element != null)
       {
-        element.MouseLeftButtonUp += element_MouseLeftButtonUp;
+        element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
       }
       else
-        element.MouseLeftButtonUp -= element_MouseLeftButtonUp;
+        element.MouseLeftButtonUp -= Element_MouseLeftButtonUp;
     }
 
     /// <summary>
@@ -70,7 +70,7 @@
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private static void element_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private static void Element_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
       var element = sender as FrameworkElement;
 
