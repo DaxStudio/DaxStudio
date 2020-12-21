@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Xml;
-using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
+using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
+
+using Tuple = System.Tuple;
 
 namespace ADOTabular
 {

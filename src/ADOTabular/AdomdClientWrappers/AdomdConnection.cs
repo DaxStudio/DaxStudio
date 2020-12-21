@@ -1,6 +1,4 @@
-﻿extern alias ExcelAdomdClientReference;
-
-using ADOTabular.Enums;
+﻿using ADOTabular.Enums;
 using System;
 using System.Data;
 using System.Threading;
@@ -10,285 +8,100 @@ namespace ADOTabular.AdomdClientWrappers
     public sealed class AdomdConnection:IDisposable
     {
         private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
-        private ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection _connExcel;
+        
         private readonly object rowsetLock = new object();
         public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             Type = AdomdType.AnalysisServices;
             _conn = connection;
         }
-        public AdomdConnection(ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
-        {
-            Type = AdomdType.Excel;
-            _connExcel = connection;
-        }
         
         public AdomdConnection(string connectionString, AdomdType type)
         {
             Type = type;
-            if (Type == AdomdType.AnalysisServices)
-            {
-                _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
-            }
-            else
-            {
-                void f()
-                {
-                    _connExcel = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
-                }
-                f();
-            }
+            _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
+ 
         }
 
         internal AdomdType Type { get; }
 
-        internal object UnderlyingConnection
-        {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return _conn;
-                }
-                else
-                {
-                    object f()
-                    {
-                        return _connExcel;
-                    }
-                    return f();
-                }
-            }
-        }
+        internal object UnderlyingConnection => _conn;
 
-        
-        public void Open()
-        {
-            
-            if (Type == AdomdType.AnalysisServices)
-            {
-                _conn.Open();
-            }
-            else
-            {
-                void f() => _connExcel.Open();
-                f();
-            }
-        }
 
-        public void Open(string connectionString)
-        {
-            if (Type == AdomdType.AnalysisServices)
-            {
-                _conn.Open(connectionString);
-            }
-            else
-            {
-                void f() => _connExcel.Open(connectionString);
-                f();
-            }
-        }
+        public void Open() => _conn.Open();
 
-        public void Close()
-        {
-            if (Type == AdomdType.AnalysisServices)
-            {
-                _conn.Close();
-            }
-            else
-            {
-                void f() => _connExcel.Close();
-                f();
-            }
-        }
+        public void Open(string connectionString) => _conn.Open(connectionString);
 
-        public void Close(bool endSession)
-        {
-            if (Type == AdomdType.AnalysisServices)
-            {
-                _conn.Close(endSession);
-            }
-            else
-            {
-                void f() => _connExcel.Close(endSession);
-                f();
-            }
-        }
+        public void Close() => _conn.Close();
+
+        public void Close(bool endSession) => _conn.Close(endSession);
 
         public void ChangeDatabase(string database)
         {
             if (database == null) return; 
             if (database.Trim().Length == 0) return;
-            if (Type == AdomdType.AnalysisServices)
-            {
+            
                 _conn.ChangeDatabase(database);
-            }
-            else
-            {
-                void f() => _connExcel.ChangeDatabase(database);
-                f();
-            }
+            
         }
 
-        public string ConnectionString
-        {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return _conn.ConnectionString;
-                }
-                else
-                {
-                    string f() => _connExcel.ConnectionString;
-                    return f();
-                }
-            }
-        }
+        public string ConnectionString => _conn.ConnectionString;
 
-        public string ClientVersion
-        {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return _conn.ClientVersion;
-                }
-                else
-                {
-                    string f() => _connExcel.ClientVersion;
-                    return f();
-                }
-            }
-        }
+        public string ClientVersion => _conn.ClientVersion;
 
         public AdomdCommand CreateCommand()
         {
-            //if (_type == AdomdType.AnalysisServices)
-            //{
+
             var cmd = new AdomdCommand
             {
                 Connection = this
             };
             return cmd;
-            /*}
-            else
-            {
-                ExcelAdoMdConnections.ReturnDelegate<ExcelAdomdClientReference.Microsoft.AnalysisServices.AdomdClient.AdomdCommand> f = delegate
-                {
-                    return _connExcel.CreateCommand();
-                };
-                f();
-            }
-             */ 
+
         }
 
-        public CubeCollection Cubes
-        {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return new CubeCollection(_conn.Cubes);
-                }
-                else
-                {
-                    CubeCollection f() => new CubeCollection(_connExcel.Cubes);
-                    return f();
-                }
-            }
-        }
+        //public CubeCollection Cubes
+        //{
+        //    get
+        //    {
+                
+        //            return new CubeCollection(_conn.Cubes);
+                
+        //    }
+        //}
 
         public ConnectionState State
         {
             get
             {
-                if (Type == AdomdType.AnalysisServices)
-                {
+                
                     if (_conn != null) return _conn.State;
                     return ConnectionState.Closed;
-                }
-                else
-                {
-                    ConnectionState f()
-                    {
-                        if (_connExcel != null) return _connExcel.State;
-                        return ConnectionState.Closed;
-                    }
-                    return f();
-                }
+                
             }
         }
 
         public string SessionID
         {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return _conn.SessionID;
-                }
-                else
-                {
-                    string f()
-                    {
-                        return _connExcel.SessionID;
-                    }
-                    return f();
-                }
-            }
-            set
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    _conn.SessionID = value;
-                }
-                else
-                {
-                    void f() => _connExcel.SessionID = value;
-                    f();
-                }
-            }
+            get => _conn.SessionID;
+            set => _conn.SessionID = value;
         }
 
-        public string Database
-        {
-            get
-            {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    return _conn.Database;
-                }
-                else
-                {
-                    string f() => _connExcel.Database;
-                    return f();
-                }
-            }
-        }
+        public string Database => _conn.Database;
 
         public string ServerVersion
         {
             get
             {
-                if (Type == AdomdType.AnalysisServices)
-                {
-                    if (_conn.State != ConnectionState.Open)
-                        _conn.Open();
-                    return _conn.ServerVersion;
-                }
-                else
-                {
-                    string f() => _connExcel.ServerVersion;
-                    return f();
-                }
+                if (_conn.State != ConnectionState.Open)
+                    _conn.Open();
+                return _conn.ServerVersion;
             }
         }
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions, bool throwOnInlineErrors)
         {
-            if (Type == AdomdType.AnalysisServices)
-            {
+            
                 global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new global::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                 if (restrictions != null)
                 {
@@ -318,73 +131,20 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     throw new InvalidOperationException("Timeout exceeded attempting to establish internal lock for GetSchemaDataSet");
                 }
-            }
-            else
-            {
-                DataSet f()
-                {
-                    ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-                    if (restrictions != null)
-                    {
-                        foreach (AdomdRestriction res in restrictions)
-                        {
-                            coll.Add(new ExcelAdomdClientReference::Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
-                        }
-                    }
-                    if (_connExcel.State != ConnectionState.Open)
-                    {
-                        _connExcel.Open();
-                    }
-                    lock (rowsetLock)
-                    {
-                        return _connExcel.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
-                    }
-                }
-                return f();
-            }
+            
         }
 
         public void RefreshMetadata()
         {
-            if (Type == AdomdType.AnalysisServices)
-            {
-                if (_conn != null)
-                    _conn.RefreshMetadata();
-            }
-            else
-            {
-                void f()
-                {
-                    if (_connExcel != null)
-                        _connExcel.RefreshMetadata();
-                }
-                f();
-                
-            }
+            _conn?.RefreshMetadata();
         }
 
         public void Dispose()
         {
-            if (Type == AdomdType.AnalysisServices)
+            if (_conn != null)
             {
-                if (_conn != null)
-                {
-                    _conn.Dispose();
-                    _conn = null;
-                }
-            }
-            else
-            {
-                void f()
-                {
-                    if (_connExcel != null)
-                    {
-                        _connExcel.Dispose();
-                        _connExcel = null;
-                    }
-                }
-                f();
-                
+                _conn.Dispose();
+                _conn = null;
             }
         }
     }

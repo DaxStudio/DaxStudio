@@ -195,7 +195,7 @@
     </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>7F2BEF6866A0329D2BD2E3D70D347E5AD79CB426</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>4711BEEBD42B7EFBBCD136642FC9364A653160B9</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
     <OutputPath>bin\Release64\</OutputPath>
@@ -447,6 +447,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="DaxStudio.ExcelAddin.ruleset" />
+    <None Include="DaxStudio.ExcelAddin_TemporaryKey.pfx" />
     <None Include="DaxStudio_TemporaryKey.pfx" />
     <None Include="images\DaxStudioSetupBanner.pdn" />
     <None Include="images\PlayButton.pdn" />

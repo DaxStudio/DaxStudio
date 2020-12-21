@@ -182,7 +182,6 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -198,7 +197,6 @@ namespace DaxStudio.UI.ViewModels
                     InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -500,23 +498,6 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public bool CanConnect
-        {
-            get {
-
-                return true;
-                if (!PowerBIModeSelected) return true;
-
-                if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1)
-                {
-                    return false;
-                }
-
-                if (ShowConnectionWarning) return false;
-
-                return true;
-            }
-        }
 
         public void Connect()
         {
@@ -613,7 +594,6 @@ namespace DaxStudio.UI.ViewModels
                 InitialCatalog = string.Empty;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 
@@ -859,7 +839,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showConnectionWarning = value;
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
-                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 

@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Http;
 using ADOTabular;
 using System.Reflection;
+using Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
 {

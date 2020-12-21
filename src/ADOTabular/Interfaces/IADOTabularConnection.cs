@@ -1,7 +1,8 @@
-﻿using ADOTabular.AdomdClientWrappers;
+﻿
 using ADOTabular.Enums;
 using System.Collections.Generic;
 using System.Data;
+using ADOTabular.AdomdClientWrappers;
 
 namespace ADOTabular.Interfaces
 {
@@ -30,9 +31,9 @@ namespace ADOTabular.Interfaces
         #region Methods
         int ExecuteCommand(string command);
         DataTable ExecuteDaxQueryDataTable(string query);
-        DataSet GetSchemaDataSet(string dataset);
-        DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions);
-        DataSet GetSchemaDataSet(string dataset, AdomdRestrictionCollection restrictions, bool throwOnErrors);
+        DataSet GetSchemaDataSet(string dataSet);
+        DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions);
+        DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions, bool throwOnErrors);
 
         AdomdDataReader ExecuteReader(string command);
         #endregion

@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Data;
 using System.Xml;
-using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
+using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
@@ -42,7 +42,7 @@ namespace ADOTabular
             
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new AdomdConnection(ConnectionString, connectionType);
+            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, AdomdType.AnalysisServices);
 
             _connectionType = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
@@ -191,10 +191,14 @@ namespace ADOTabular
         public ADOTabularConnectionType ConnectionType { get; private set; }
 
 
-        public AdomdType Type => _adomdConn.Type;
+        public AdomdType Type
+        {
+            get;
+            set;
+        }
 
 
-        public bool SupportsQueryTable => _adomdConn.Type == AdomdType.AnalysisServices;
+        public bool SupportsQueryTable => Type == AdomdType.AnalysisServices;
 
         public override string ToString()
         {
@@ -374,7 +378,7 @@ namespace ADOTabular
             }
         }
 
-        public AdomdDataReader ExecuteReader(string command)
+        public ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string command)
         {
             if (_runningCommand != null)
             {
@@ -736,7 +740,7 @@ namespace ADOTabular
         {
             _currentCube = cubeName;
             _adomdConn.Close();
-            _adomdConn = new AdomdConnection($"{ConnectionString};Cube={cubeName};Initial Catalog={Database.Name}", _connectionType);
+            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection($"{ConnectionString};Cube={cubeName};Initial Catalog={Database.Name}", AdomdType.AnalysisServices);
         }
 
         public bool Is2012SP1OrLater

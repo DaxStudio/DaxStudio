@@ -5,7 +5,6 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using ADOTabular.AdomdClientWrappers;
 using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using DaxStudio.UI.Model;
 using DaxStudio.Interfaces;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
 using ADOTabular.Interfaces;
+using ADOTabular.AdomdClientWrappers;
 
 namespace DaxStudio.Tests
 {
