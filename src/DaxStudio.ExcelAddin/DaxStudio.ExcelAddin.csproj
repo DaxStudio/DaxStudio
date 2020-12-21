@@ -194,9 +194,13 @@
     <ManifestKeyFile>
     </ManifestKeyFile>
   </PropertyGroup>
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <ManifestCertificateThumbprint>4711BEEBD42B7EFBBCD136642FC9364A653160B9</ManifestCertificateThumbprint>
+  </PropertyGroup>-->
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>7F2BEF6866A0329D2BD2E3D70D347E5AD79CB426</ManifestCertificateThumbprint>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
     <OutputPath>bin\Release64\</OutputPath>
     <DefineConstants>VSTO40;TRACE</DefineConstants>
