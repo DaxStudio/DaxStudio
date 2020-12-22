@@ -14,18 +14,13 @@ using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using DaxStudio.UI.Enums;
 using System.Collections.ObjectModel;
-using DaxStudio.UI.Model;
 using DaxStudio.UI.JsonConverters;
-using System.Collections.Specialized;
 using Microsoft.Win32;
-using System.Runtime.InteropServices;
 using System.IO;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.Controls.PropertyGrid;
 using System.Reflection;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
@@ -56,6 +51,9 @@ namespace DaxStudio.UI.ViewModels
         private int _queryEndEventTimeout;
         private int _daxFormatterRequestTimeout;
         private bool _traceDirectQuery;
+        private bool _highlightXmSqlCallbacks;
+        private bool _simplifyXmSqlSyntax;
+        private bool _replaceXmSqlColumnNames;
 
         private readonly IEventAggregator _eventAggregator;
 
@@ -93,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
         [SortOrder(10)]
         [DataMember]
         [DefaultValue(DefaultEditorFontFamily)]
-        public string EditorFontFamily { get { return _selectedEditorFontFamily; }
+        public string EditorFontFamily { get => _selectedEditorFontFamily;
             set {
                 if (_selectedEditorFontFamily == value) return;
                 _selectedEditorFontFamily = value;
@@ -113,7 +111,7 @@ namespace DaxStudio.UI.ViewModels
         [MinValue(6),MaxValue(120)]
         [DataMember]
         [DefaultValue(DefaultEditorFontSize)]
-        public double EditorFontSize { get { return _editorFontSize; }
+        public double EditorFontSize { get => _editorFontSize;
             set {
                 if (_editorFontSize == value) return;
                 _editorFontSize = value;
@@ -141,7 +139,7 @@ namespace DaxStudio.UI.ViewModels
         [DataMember]
         [DefaultValue(DefaultResultsFontFamily)]
         public string ResultFontFamily {
-            get { return _selectedResultFontFamily; }
+            get => _selectedResultFontFamily;
             set {
                 if (_selectedResultFontFamily == value) return;
                 _selectedResultFontFamily = value;
@@ -162,7 +160,7 @@ namespace DaxStudio.UI.ViewModels
         [MinValue(4.0)]
         [MaxValue(256.0)]
         public double ResultFontSize {
-            get { return _resultFontSize; }
+            get => _resultFontSize;
             set {
                 if (_resultFontSize == value) return;
                 _resultFontSize = value;
@@ -178,7 +176,7 @@ namespace DaxStudio.UI.ViewModels
         [SortOrder(30)]
         [DataMember]
         [DefaultValue(true)]
-        public bool EditorShowLineNumbers { get { return _showLineNumbers; }
+        public bool EditorShowLineNumbers { get => _showLineNumbers;
             set
             {
                 if (_showLineNumbers == value) return;
@@ -196,7 +194,7 @@ namespace DaxStudio.UI.ViewModels
         [DefaultValue(true)]
         public bool EditorEnableIntellisense
         {
-            get { return _enableIntellisense; }
+            get => _enableIntellisense;
             set
             {
                 if (_enableIntellisense == value) return;
@@ -207,12 +205,31 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        [Category("Editor")]
+        [DisplayName("Multiple queries detected on paste")]
+        [Description("Specifies how to handle code after a \"// SQL Query\" comment when pasting code from Power BI Performance Analyzer")]
+        [SortOrder(60)]
+        [DataMember]
+        [DefaultValue(MultipleQueriesDetectedOnPaste.Prompt)]
+        public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste
+        {
+            get => _removeDirectQueryCode;
+            set
+            {
+                if (_removeDirectQueryCode == value) return;
+                _removeDirectQueryCode = value;
+                NotifyOfPropertyChange(() => EditorMultipleQueriesDetectedOnPaste);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<MultipleQueriesDetectedOnPaste>(nameof(EditorMultipleQueriesDetectedOnPaste), value, _isInitializing);
+            }
+        }
+
         [DisplayName("Legacy DirectQuery Trace")]
         [Category("Trace")]
         [Description("On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible")]
         [DataMember, DefaultValue(false)]
         public bool TraceDirectQuery {
-            get { return _traceDirectQuery; }
+            get => _traceDirectQuery;
             set {
                 if (_traceDirectQuery == value) return;
                 _traceDirectQuery = value;
@@ -221,6 +238,58 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue<bool>(nameof(TraceDirectQuery), value, _isInitializing);
             }
         }
+
+        [DisplayName("Highlight VertiPaq callbacks")]
+        [Category("Server Timings")]
+        [Description("Highlight xmSQL queries containing callbacks that don't store the result in the storage engine cache.")]
+        [DataMember, DefaultValue(true)]
+        public bool HighlightXmSqlCallbacks
+        {
+            get => _highlightXmSqlCallbacks;
+            set
+            {
+                if (_highlightXmSqlCallbacks == value) return;
+                _highlightXmSqlCallbacks = value;
+                NotifyOfPropertyChange(() => HighlightXmSqlCallbacks);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(HighlightXmSqlCallbacks), value, _isInitializing);
+            }
+        }
+
+        [DisplayName("Simplify SE query syntax")]
+        [Category("Server Timings")]
+        [Description("Remove internal IDs and verbose syntax from xmSQL queries.")]
+        [DataMember, DefaultValue(true)]
+        public bool SimplifyXmSqlSyntax
+        {
+            get => _simplifyXmSqlSyntax;
+            set
+            {
+                if (_simplifyXmSqlSyntax == value) return;
+                _simplifyXmSqlSyntax = value;
+                NotifyOfPropertyChange(() => SimplifyXmSqlSyntax);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(SimplifyXmSqlSyntax), value, _isInitializing);
+            }
+        }
+
+        [DisplayName("Replace column ID with name")]
+        [Category("Server Timings")]
+        [Description("Replace xmSQL column ID with corresponding column name in data model.")]
+        [DataMember, DefaultValue(true)]
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => _replaceXmSqlColumnNames;
+            set
+            {
+                if (_replaceXmSqlColumnNames == value) return;
+                _replaceXmSqlColumnNames = value;
+                NotifyOfPropertyChange(() => ReplaceXmSqlColumnNames);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlColumnNames), value, _isInitializing);
+            }
+        }
+
         #region Http Proxy properties
 
         [Category("Proxy")]
@@ -363,7 +432,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("Query History")]
         [DisplayName("History items to keep")]
         [DataMember, DefaultValue(200), MinValue(0), MaxValue(500)]
-        public int QueryHistoryMaxItems { get { return _maxQueryHistory; }
+        public int QueryHistoryMaxItems { get => _maxQueryHistory;
             set
             {
                 if (_maxQueryHistory == value) return;
@@ -891,7 +960,7 @@ namespace DaxStudio.UI.ViewModels
                 var props = typeof(OptionsViewModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
                 foreach (var prop in props)
                 {
-                    if (!prop.Name.StartsWith("Hotkey")) continue;
+                    if (!prop.Name.StartsWith("Hotkey", StringComparison.InvariantCultureIgnoreCase)) continue;
 
                     foreach (var att in prop.GetCustomAttributes(false))
                     {
@@ -1648,8 +1717,15 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+            this.Refresh();
+        }
+
         #region IDisposable Support
         private bool disposedValue; // To detect redundant calls
+        private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;
 
         protected virtual void Dispose(bool disposing)
         {

@@ -15,6 +15,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DaxStudio.UI.Interfaces;
 
 
 namespace DaxStudio.UI.Model
@@ -96,18 +97,19 @@ namespace DaxStudio.UI.Model
         public string ConnectionString => _connection?.ConnectionString??string.Empty;
         public string ConnectionStringWithInitialCatalog => _connection?.ConnectionStringWithInitialCatalog??string.Empty;
 
-        public ADOTabularDatabase Database => _connection?.Database;
-        public string DatabaseName => _connection?.Database?.Name ?? string.Empty;
-        public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
+        public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
+        public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
+        public DaxMetadata DaxMetadataInfo => _connection.DaxMetadataInfo;
+        public DaxColumnsRemap DaxColumnsRemapInfo => _connection.DaxColumnsRemapInfo;
 
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            return _retry.Execute<DataTable>(()=> { return _connection.ExecuteDaxQueryDataTable(query); });
+            return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
         }
         public AdomdDataReader ExecuteReader(string query)
         {
-            return _retry.Execute<AdomdDataReader>(()=> { return _connection.ExecuteReader(query); });
+            return _retry.Execute(()=> _connection.ExecuteReader(query));
         }
         public string FileName => _connection.FileName;
 
@@ -126,7 +128,7 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
-            return await _retry.Execute<Task<bool>>(async () =>
+            return await _retry.Execute(async () =>
             {
                 
                 bool hasChanged = await Task.Run(() =>
@@ -134,7 +136,7 @@ namespace DaxStudio.UI.Model
                     var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
                     conn.ChangeDatabase(this.SelectedDatabaseName);
                     if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn?.Database?.LastUpdate > _lastSchemaUpdate;
+                    var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                     conn.Close(true); // close and end the session
                     return dbChanges;
                 });
@@ -145,7 +147,7 @@ namespace DaxStudio.UI.Model
         }
 
         public ADOTabularDatabaseCollection Databases => _connection.Databases;
-        public bool IsAdminConnection => _connection?.IsAdminConnection??false;
+        public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
 
         public bool IsConnected { get
             {
@@ -154,7 +156,10 @@ namespace DaxStudio.UI.Model
             }
         }
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT??false;
-        public bool IsPowerPivot { get => _connection?.IsPowerPivot ?? false; set { _connection.IsPowerPivot = value; } }
+        public bool IsPowerPivot { 
+            get => _connection?.IsPowerPivot ?? false; 
+            set => _connection.IsPowerPivot = value;
+        }
 
         public void Open()
         {
@@ -162,7 +167,7 @@ namespace DaxStudio.UI.Model
         }
         public void Refresh()
         {
-            _connection.Refresh();
+            if (_connection?.State == ConnectionState.Open) _connection.Refresh();
         }
         public string ServerEdition => _connection.ServerEdition;
         public string ServerLocation => _connection.ServerLocation;
@@ -170,7 +175,7 @@ namespace DaxStudio.UI.Model
         public string ServerName => _connection?.ServerName??string.Empty;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
-        public ADOTabular.Enums.ServerType ServerType { get; private set; }//=> _connection.ServerType;
+        public ServerType ServerType { get; private set; }
         public int SPID => _connection.SPID;
         public string ShortFileName => _connection.ShortFileName;
 
@@ -178,11 +183,11 @@ namespace DaxStudio.UI.Model
         {
             switch (_connection.ConnectionType)
             {
-                case ADOTabular.ADOTabularConnectionType.Cloud:
+                case ADOTabularConnectionType.Cloud:
                     return options.AutoRefreshMetadataCloud;
-                case ADOTabular.ADOTabularConnectionType.LocalNetwork:
+                case ADOTabularConnectionType.LocalNetwork:
                     return options.AutoRefreshMetadataLocalNetwork;
-                case ADOTabular.ADOTabularConnectionType.LocalMachine:
+                case ADOTabularConnectionType.LocalMachine:
                     return options.AutoRefreshMetadataLocalMachine;
                 default:
                     return true;
@@ -193,24 +198,17 @@ namespace DaxStudio.UI.Model
         private ADOTabularDatabase _selectedDatabase;
         private DateTime _lastSchemaUpdate;
 
-        public ADOTabularFunctionGroupCollection FunctionGroups
-        {
-            get
-            {
-                if (_functionGroups == null) _functionGroups = new ADOTabularFunctionGroupCollection(_connection);
-                return _functionGroups;
-            }
-        }
+        public ADOTabularFunctionGroupCollection FunctionGroups => _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(_connection));
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
-            return _connection.Databases;
+            return _retry.Execute(() => { return _connection.Databases; });
         }
 
         public ADOTabularModelCollection GetModels()
         {
-            return _connection.Database.Models;
-        }
+            return _retry.Execute(() => { return _connection.Database.Models; });
+    }
 
         public ADOTabularTableCollection GetTables()
         {
@@ -290,11 +288,18 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            _retry.Execute(() => { _connection.Ping(); } );
+            
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone();
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close();
+            });
         }
         public ADOTabularModel SelectedModel { get; set; }
 
-        public void SetSelectedModel(ADOTabular.ADOTabularModel model)
+        public void SetSelectedModel(ADOTabularModel model)
         {
 
 
@@ -344,8 +349,13 @@ namespace DaxStudio.UI.Model
             if (SelectedDatabase != database)
             {
                 SelectedDatabase = database;
-                if (SelectedDatabase != null) _connection.ChangeDatabase(SelectedDatabase.Name);
-                ModelList = _connection.Database.Models;
+                if (SelectedDatabase != null)
+                {
+                    _connection?.ChangeDatabase(SelectedDatabase.Name);
+                }
+
+                if (_connection?.Database != null)
+                    ModelList = _connection.Database.Models;
 
                 _eventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
             }
@@ -490,6 +500,29 @@ namespace DaxStudio.UI.Model
                 var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
                 return tvt;
             });
+        }
+
+        public async void UpdateTableBasicStats(TreeViewTable table)
+        {
+            table.UpdatingBasicStats = true;
+            try
+            {
+                await Task.Run(() => {
+                    using (var newConn = _connection.Clone())
+                    {
+                        table.UpdateBasicStats(newConn);
+;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+            }
+            finally
+            {
+                table.UpdatingBasicStats = false;
+            }
         }
 
         public void Handle(SelectedModelChangedEvent message)

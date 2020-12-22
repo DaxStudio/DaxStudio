@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using System.Collections;
 using System.Diagnostics.Contracts;
 
@@ -7,7 +6,8 @@ namespace ADOTabular
 {
     public class ADOTabularFunctionCollection: IEnumerable<ADOTabularFunction>
     {
-        private readonly SortedDictionary<string, ADOTabularFunction> _functions; 
+        private readonly SortedDictionary<string, ADOTabularFunction> _functions;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "<Pending>")]
         private readonly ADOTabularConnection _adoTabConn;
         public ADOTabularFunctionCollection(ADOTabularConnection adoTabConn)
         {

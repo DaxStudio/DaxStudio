@@ -109,6 +109,10 @@ namespace DaxStudio.SignalR
         public bool ShowMetadataRefreshPrompt { get; set; }
         public string HotkeyWarningMessage { get; set; }
         public string DefaultDateAutoFormat { get; set; }
+        public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
+        public bool HighlightXmSqlCallbacks { get; set; }
+        public bool SimplifyXmSqlSyntax { get; set; }
+        public bool ReplaceXmSqlColumnNames { get; set; }
 
         public string GetCustomCsvDelimiter()
         {

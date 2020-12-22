@@ -61,11 +61,11 @@ namespace DaxStudio.Interfaces
 
         bool EditorConvertTabsToSpaces { get; set; }
         int EditorIndentationSize { get; set; }
-
+        MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool ShowUserInTitlebar { get; set; }
 
         Version CurrentDownloadVersion { get; set; }
-
+        
         #region Hotkeys
         [JsonIgnore]
         string HotkeyWarningMessage { get; set; }
@@ -105,6 +105,10 @@ namespace DaxStudio.Interfaces
         int VpaxSampleReferentialIntegrityViolations { get; set; }
         bool ShowPreviewQueryBuilder { get; set; }
         bool ShowPreviewBenchmark { get; set; }
+
+        bool HighlightXmSqlCallbacks { get; set; }
+        bool SimplifyXmSqlSyntax { get; set; }
+        bool ReplaceXmSqlColumnNames { get; set; }
 
         #region Methods
         // Methods

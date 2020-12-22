@@ -358,7 +358,7 @@ namespace DaxStudio.UI.ViewModels
         private void QueryEndEventTimeout(object sender, ElapsedEventArgs e)
         {
             Reset();
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not received - Tracing timeout exceeded"));
+            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
         }
 
     }

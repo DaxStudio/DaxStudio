@@ -14,10 +14,7 @@ using DaxStudio.UI.Extensions;
 using System.Windows;
 using System.Linq;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Utils;
 using DaxStudio.Common;
-using System.Windows.Threading;
-using System.Windows.Interop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -38,7 +35,8 @@ namespace DaxStudio.UI.ViewModels
         private DocumentViewModel _activeDocument;
         private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
         private readonly IGlobalOptions _options;
-        private object _activeDocumentLock = new object();
+        private readonly object _activeDocumentLock = new object();
+        private readonly Application _app;
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
@@ -65,7 +63,7 @@ namespace DaxStudio.UI.ViewModels
 
         public DocumentViewModel ActiveDocument
         {
-            get { return _activeDocument; }
+            get => _activeDocument;
             set
             {
                 if (_activeDocument == value) 
@@ -93,18 +91,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme { get {
-
-                return new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
-
-                //if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
-                //else return new Theme.DaxStudioLightTheme();
-            }
-        }
+        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme => new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+        //if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
+        //else return new Theme.DaxStudioLightTheme();
 
         public IAutoSaver AutoSaver { get; }
-
-        private Application _app;
 
         public void NewQueryDocument(string fileName)
         {
@@ -185,13 +176,14 @@ namespace DaxStudio.UI.ViewModels
 
         private void OpenNewBlankDocument(DocumentViewModel sourceDocument)
         {
-
+            Log.Debug(Constants.LogMessageTemplate,nameof(DocumentTabViewModel),nameof(OpenNewBlankDocument), "Requesting new document from document factory");
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
-            
+
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), "Adding new document to tabs collection");
             Items.Add(newDoc);
             ActivateItem(newDoc);
             ActiveDocument = newDoc;
-            newDoc.DisplayName = string.Format("Query{0}.dax", _documentCount);
+            newDoc.DisplayName = $"Query{_documentCount}.dax";
             _documentCount++;
             
             new System.Action(CleanActiveDocument).BeginOnUIThread();
@@ -199,8 +191,14 @@ namespace DaxStudio.UI.ViewModels
             if (sourceDocument == null
                 || sourceDocument.Connection.IsConnected == false)
             {
-                if (!string.IsNullOrEmpty(_app.Args().Server) )
+                if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected") )
                 {
+                    // we only want to run this code to default connection to the server name and database arguments
+                    // on the first window that is connected. After that the user can use the copy connection option
+                    // so if they start a new window chances are that they want to connect to another source
+                    // Setting this property on the app means this code should only run once
+                    _app.Properties.Add("InitialQueryConnected",true);
+
                     var server = _app.Args().Server;
                     var database = _app.Args().Database;
                     var initialCatalog = string.Empty;
@@ -284,8 +282,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Activate(object document)
         {
-            var doc = document as DocumentViewModel;
-            if (doc != null)
+            if (document is DocumentViewModel doc)
             {
                 ActivateItem(doc);
                 ActiveDocument = doc;
@@ -297,7 +294,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => AvalonDockTheme);
             foreach (var itm in this.Items)
             {
-                var doc = itm as DocumentViewModel;
+                if (!(itm is DocumentViewModel doc)) continue;
                 doc.UpdateSettings();
                 doc.UpdateTheme();
             }
@@ -312,9 +309,9 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Checking if any files need to be recovered from a previous crash");
                 
 
-                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files);
+                var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files).ToList();
 
-                if (filesToRecover.Count() == 0)
+                if (!filesToRecover.Any())
                 {
                     Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "no files found that need to be recovered");
 
@@ -324,13 +321,15 @@ namespace DaxStudio.UI.ViewModels
                     return; 
                 }
 
-                Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", $"found {filesToRecover.Count()} file(s) that may need to be recovered, showing recovery dialog");
+                Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", $"found {filesToRecover.Count} file(s) that may need to be recovered, showing recovery dialog");
 
                 // if auto save recovery is not already in progress 
                 // prompt the user for which files should be recovered
-                var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel();
+                var autoSaveRecoveryDialog = new AutoSaveRecoveryDialogViewModel
+                {
+                    Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover)
+                };
 
-                autoSaveRecoveryDialog.Files = new ObservableCollection<AutoSaveIndexEntry>(filesToRecover);
 
                 _windowManager.ShowDialogBox(autoSaveRecoveryDialog, settings: new Dictionary<string, object>
                 {

@@ -61,6 +61,7 @@ namespace DaxStudio.QueryTrace
                     StartTime = startTime;
                     NTUserName = e.NTUserName;
                     break;
+                case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.DAXQueryPlan:
                     // no additional properties captured, the plan is stored in the text field
                     break;

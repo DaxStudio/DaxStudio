@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Extensions
         {
             Version version;
             Version.TryParse(versionString, out version);
-            return version == null ? false : version.Major >= 14;
+            return (version != null) && (version.Major >= 14);
         }
 
         public static bool SupportsAggregateTables(this string versionString)
@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Extensions
             Version AggSupportMinVersion = new Version(AggTableSupportMinVerStr);
             Version version;
             Version.TryParse(versionString, out version);
-            return version == null ? false : version >= AggSupportMinVersion;
+            return (version != null) && (version >= AggSupportMinVersion);
         }
     }
 }

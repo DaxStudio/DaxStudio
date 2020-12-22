@@ -14,8 +14,12 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Interfaces;
 using System.Windows;
 using System.Diagnostics;
+using System.Windows.Input;
 using ADOTabular.Interfaces;
+using DaxStudio.UI.Enums;
+using DaxStudio.UI.Interfaces;
 using Humanizer;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -37,14 +41,14 @@ namespace DaxStudio.UI.ViewModels
         private string _modelName;
         private readonly IGlobalOptions _options;
         private readonly IMetadataProvider _metadataProvider;
-        //private readonly IEventAggregator _eventAggregator;
 
         [ImportingConstructor]
-        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) : base( eventAggregator)
+        public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
+            : base( eventAggregator)
         {
             _metadataProvider = metadataProvider;
             ActiveDocument = document;
-            //    _eventAggregator = eventAggregator;
+
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
             // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
@@ -104,13 +108,22 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
-            _metadataProvider.Refresh();
-            var tmpModel = _selectedModel;
-            ModelList = _metadataProvider.GetModels();
-            // TODO - should we get tables, databases and reset selected database??
+            try
+            {
+                if (!_metadataProvider.IsConnected) return;
+                _metadataProvider.Refresh();
+                var tmpModel = _selectedModel;
+                ModelList = _metadataProvider.GetModels();
+                // TODO - should we get tables, databases and reset selected database??
 
-            ShowMetadataRefreshPrompt = false;
-            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
+                ShowMetadataRefreshPrompt = false;
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
+            }
+            catch (Exception ex)
+            {
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
+                Log.Error(ex,Common.Constants.LogMessageTemplate,nameof(MetadataPaneViewModel), nameof(RefreshMetadata), ex.Message);
+            }
         }
 
         private bool _showMetadataRefreshPrompt;
@@ -285,7 +298,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ExpandSearch => IsMouseOverSearch 
                                  || IsKeyboardFocusWithinSearch 
-                                 || _pinSearchOpen; 
+                                 || PinSearchOpen; 
 
         public bool HasCriteria => _currentCriteria.Length > 0;
 
@@ -462,6 +475,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _sortFoldersFirstInMetadata = true;
+        private IFilterableTreeViewItem _selectedTreeViewItem;
+
         public bool SortFoldersFirstInMetadata
         {
             get => _sortFoldersFirstInMetadata;
@@ -493,12 +508,27 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{Class} {Method} {Message}", "MetadataPaneViewModel", "CopyDatabase", ex.Message);
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseName), ex.Message);
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database name to the clipboard - {ex.Message} "));
             }
             
         }
-        
+
+        public void CopyDatabaseId()
+        {
+            try
+            {
+                Clipboard.SetText(SelectedDatabaseObject.Id);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database Id '{SelectedDatabaseObject.Id}' to clipboard"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{Class} {Method} {Message}", nameof(MetadataPaneViewModel), nameof(CopyDatabaseId), ex.Message);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following Error occured while copying the database Id to the clipboard - {ex.Message} "));
+            }
+
+        }
+
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
             if (column == null) return;
@@ -511,6 +541,16 @@ namespace DaxStudio.UI.ViewModels
             if (_options == null) return;
             if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,10) ;
             if (_options.ShowTooltipBasicStats && !column.HasBasicStats) _metadataProvider.UpdateColumnBasicStats(column); 
+        }
+
+        public void TableTooltipOpening(TreeViewTable table)
+        {
+            if (table == null) return;
+
+            // TODO - make an option for the sample size
+            if (_options == null) return;
+
+            if (_options.ShowTooltipBasicStats && !table.HasBasicStats) _metadataProvider.UpdateTableBasicStats(table);
         }
 
         internal void ChangeDatabase(string databaseName)
@@ -699,10 +739,9 @@ namespace DaxStudio.UI.ViewModels
                         measureExpression = column.DaxName;
                     }
                 }
-                else if (item.Column is ADOTabularKpi)
+                else if (item.Column is ADOTabularKpi kpi)
                 {
                     column = (ADOTabularColumn)item.Column;
-                    var kpi = (ADOTabularKpi)item.Column;
                     measureExpression = kpi.MeasureExpression;
                 }
                 else
@@ -748,10 +787,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(() => ExpandSearch);
+            
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
+            NotifyOfPropertyChange(() => ExpandSearch);
         }
 
         #endregion
@@ -826,6 +866,61 @@ namespace DaxStudio.UI.ViewModels
 
             dragInfo.Effects = DragDropEffects.Move;
 
+        }
+
+
+        public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)
+        {
+            switch (args.Key)
+            {
+                case Key.Enter:
+                case Key.C:
+                    if (selectedItem is ITreeviewColumn col)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col, QueryBuilderItemType.Column));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this ,nameof(CurrentCriteria));
+                    }
+                    break;
+                case Key.Space:
+                case Key.F:
+                    if (selectedItem is ITreeviewColumn filter)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, QueryBuilderItemType.Filter));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this,nameof(CurrentCriteria));
+                    }
+                    break;
+                case Key.B:
+                    if (selectedItem is ITreeviewColumn item)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(item, QueryBuilderItemType.Both));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                    }
+                    break;
+            }
+        }
+
+        public void SetFocusToMetadata()
+        {
+            Debug.WriteLine("Setting focus to Tables");
+            FocusManager.SetFocus(this, nameof(Tables));
+            var firstItem = Tables.FirstOrDefault(t => t.IsMatch);
+            firstItem.IsSelected = true;
+        }
+
+        public IFilterableTreeViewItem SelectedTreeViewItem
+        {
+            get => _selectedTreeViewItem;
+            set
+            {
+                _selectedTreeViewItem = value; 
+                NotifyOfPropertyChange();
+            }
         }
 
         public void Handle(QueryStartedEvent message)
@@ -908,16 +1003,6 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
-
-    //public class DatabaseComparer : IComparer
-    //{
-    //    public int Compare(object x, object y)
-    //    {
-    //        String custX = x as String;
-    //        String custY = y as String;
-    //        return custX.CompareTo(custY);
-    //    }
-    //}
 
 
     public class DatabaseReference : IDatabaseReference

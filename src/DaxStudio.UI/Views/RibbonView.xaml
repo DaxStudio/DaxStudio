@@ -1120,6 +1120,24 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+
+                <Fluent:Button Name="hlpGithubDiscussion"
+                               Header="Ask a Question"
+                               cal:Message.Attach="[Event Click] = [Action LinkToGithubDiscussions()]"
+                               SizeDefinition="Large,Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.LargeIcon>
+                        <fa:FontAwesome  Icon="CommentsOutline" Foreground="SeaGreen" Padding="0" FontSize="32" />
+                    </Fluent:Button.LargeIcon>
+                    <Fluent:Button.Icon>
+                        <fa:FontAwesome  Icon="CommentsOutline" Foreground="SeaGreen" Margin="0" FontSize="16" />
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Ask a Question"
+                                          Text="Start a discussion on the Github project site for DAX Studio. You can ask questions or suggest features and improvements."
+                        ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="" Margin="0,0,4,0">
                 <Fluent:Button Name="hlpAbout"

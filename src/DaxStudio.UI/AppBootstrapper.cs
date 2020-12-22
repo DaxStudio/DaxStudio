@@ -313,8 +313,8 @@ namespace DaxStudio.UI
             foreach (var backstageTab in backstageTabs.Items)
             {
                 ///foreach (var obj in BindingScope.GetNamedElements(backstageTab))
-                if (backstageTab is ContentControl)
-                    foreach (var obj in BindingScope.GetNamedElements((ContentControl)backstageTab))
+                if (backstageTab is ContentControl control)
+                    foreach (var obj in BindingScope.GetNamedElements(control))
                         yield return obj;
             }
             
