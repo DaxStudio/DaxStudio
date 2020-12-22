@@ -6,6 +6,7 @@ using System;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using IDocument = ICSharpCode.AvalonEdit.Document.IDocument;
 
 namespace DaxStudio.UI.Utils
 {
@@ -15,7 +16,9 @@ namespace DaxStudio.UI.Utils
         private readonly object _content;
         private readonly string _description;
         private readonly ImageSource _image;
+#pragma warning disable IDE0052 // Remove unread private members
         private double _priority = 120.0;
+#pragma warning restore IDE0052 // Remove unread private members
         private IInsightProvider _insightProvider;
 
         /*
@@ -82,7 +85,7 @@ _insightProvider = insightProvider;
             CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
         }
 
-        public void CompleteInternal(IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+        public void CompleteInternal(ICSharpCode.AvalonEdit.Document.IDocument document, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             Log.Debug("{class} {method} {start}-{end}({length})", "DaxCompletionData", "Complete", completionSegment.Offset, completionSegment.EndOffset, completionSegment.Length);
             try
@@ -91,15 +94,15 @@ _insightProvider = insightProvider;
                 var newSegment = GetPreceedingWordSegment(document, completionSegment);
                 var replaceOffset = newSegment.Offset;
                 var replaceLength = newSegment.Length;
-                var funcParamStart = Text.IndexOf("«");
+                var funcParamStart = Text.IndexOf("«",StringComparison.OrdinalIgnoreCase);
                 string insertionText = funcParamStart > 0 ? Text.Substring(0, funcParamStart) : Text;
 
-                if (insertionRequestEventArgs is TextCompositionEventArgs)
+                if (insertionRequestEventArgs is TextCompositionEventArgs args)
                 {
                     // if the insertion char is the same as the last char in the 
                     // insertion text then trim it off
-                    var insertionChar = ((TextCompositionEventArgs)insertionRequestEventArgs).Text;
-                    if (insertionText.EndsWith(insertionChar)) insertionText = insertionText.TrimEnd(insertionChar[0]);
+                    var insertionChar = args.Text;
+                    if (insertionText.EndsWith(insertionChar,StringComparison.Ordinal)) insertionText = insertionText.TrimEnd(insertionChar[0]);
                 }
                 if (completionSegment.EndOffset <= document.TextLength - 1)
                 {
@@ -116,7 +119,7 @@ _insightProvider = insightProvider;
             }
         }
 
-        private LinePosition GetPreceedingWordSegment(IDocument document, ISegment completionSegment)
+        private LinePosition GetPreceedingWordSegment(ICSharpCode.AvalonEdit.Document.IDocument document, ISegment completionSegment)
         {
             string line = "";
             
@@ -202,7 +205,9 @@ _insightProvider = insightProvider;
 
     public struct LinePosition
     {
+#pragma warning disable CA1051 // Do not declare visible instance fields
         public int Offset;
         public int Length;
+#pragma warning restore CA1051 // Do not declare visible instance fields
     }
 }

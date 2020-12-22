@@ -6,7 +6,6 @@ namespace ADOTabular
 {
     public class ADOTabularFunction: IADOTabularObject
     {
-        private readonly ADOTabularParameterCollection _paramColl;
         public ADOTabularFunction(DataRow dr)
         {
             Contract.Requires(dr != null, "The dr parameter must not be null");
@@ -14,7 +13,7 @@ namespace ADOTabular
             Caption = dr["FUNCTION_NAME"].ToString();
             Description = dr["DESCRIPTION"].ToString();
             Group = dr["INTERFACE_NAME"].ToString();
-            _paramColl = new ADOTabularParameterCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
+            Parameters = new ADOTabularParameterCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
             
         }
 
@@ -23,7 +22,7 @@ namespace ADOTabular
             Caption = caption;
             Description = description;
             Group = groupName;
-            _paramColl = param;
+            Parameters = param;
         }
 
         public string Caption { get; }
@@ -35,7 +34,7 @@ namespace ADOTabular
 
         public string Group { get; }
 
-        public ADOTabularParameterCollection Parameters => _paramColl;
+        public ADOTabularParameterCollection Parameters { get; }
 
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Function;
         public string DaxName => $"{Caption}({Parameters})";

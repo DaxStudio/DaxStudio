@@ -1,10 +1,5 @@
 ﻿using ADOTabular.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DaxStudio.Tests
 {
@@ -39,6 +34,26 @@ namespace DaxStudio.Tests
             Assert.AreEqual(5, results.Count, "5 key value pairs");
             Assert.AreEqual("http://localhost:9000/xmla", results["Data Source"]);
             Assert.AreEqual("DAX Studio (Power Pivot) - 37fad17f-7a7a-4f60-a758-4340f9e3b478", results["Application Name"]);
+        }
+
+        [TestMethod]
+        public void TestCaseInsensitiveConnectionString()
+        {
+            var input = "data SOURCE=MyServer;InItIAl CataLoG=MyDatabase";
+            var results = ConnectionStringParser.Parse(input);
+            Assert.AreEqual(2, results.Count, "2 key value pairs");
+            Assert.AreEqual("MyServer", results["Data Source"]);
+            Assert.AreEqual("MyDatabase", results["Initial Catalog"]);
+        }
+
+        [TestMethod]
+        public void TestPastedPowerBIDatasetConnection()
+        {
+            var input = "powerbi://api.powerbi.com/v1.0/myorg/xxx Dashboard;initial catalog=xxx Dashboard";
+            var results = ConnectionStringParser.Parse(input);
+            Assert.AreEqual(2, results.Count, "2 key value pairs");
+            Assert.AreEqual("powerbi://api.powerbi.com/v1.0/myorg/xxx Dashboard", results["Data Source"]);
+            Assert.AreEqual("xxx Dashboard", results["Initial Catalog"]);
         }
 
     }

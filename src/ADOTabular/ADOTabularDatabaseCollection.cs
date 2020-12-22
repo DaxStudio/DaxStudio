@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Collections;
-using ADOTabular.AdomdClientWrappers;
 using System.Xml;
 using System.IO;
-using System.Collections.ObjectModel;
+using ADOTabular.AdomdClientWrappers;
 
 namespace ADOTabular
 {
@@ -22,10 +21,8 @@ namespace ADOTabular
 
         }
 
-        public DatabaseDetails(string name, string lastUpdate, string compatLevel, string roles) : this(name, string.Empty, lastUpdate, compatLevel, roles) { }
-        
-        public string Name {get;private set;}
-        public string Id {get;private set;}
+        public string Name {get; }
+        public string Id {get; }
         public DateTime LastUpdate {get; set;}
         public string CompatibilityLevel { get; internal set; }
         public string Roles { get; internal set; }
@@ -45,7 +42,7 @@ namespace ADOTabular
             if (_dsDatabases == null)
             {
                 _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
-                _dsDatabases.Tables[0].PrimaryKey = new DataColumn[] {
+                _dsDatabases.Tables[0].PrimaryKey = new[] {
                     _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
                 };
             }
@@ -67,7 +64,7 @@ namespace ADOTabular
             IDictionary<string,DatabaseDetails> tmpDatabaseDict;
             if (spid != -1)
             {
-                tmpDatabaseDict = GetDatabaseDictionaryFromXML();
+                tmpDatabaseDict = GetDatabaseDictionaryFromXml();
                 var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV();
                 foreach (var db in tmpDatabaseDict.Values)
                 {
@@ -121,6 +118,7 @@ namespace ADOTabular
             {
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
+                    row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : "",
                     row["DATE_MODIFIED"].ToString(),
                     row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
                     row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""
@@ -131,7 +129,7 @@ namespace ADOTabular
             return databaseDictionary;
         }
 
-        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXML()
+        private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXml()
         {
             
             var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
@@ -142,66 +140,61 @@ namespace ADOTabular
                                                          new AdomdRestriction("ObjectExpansion", "ExpandObject")
                                                      });
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
-            
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Ignore})
+
+            using XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Ignore};
+            if (rdr.NameTable == null) return databaseDictionary;
+            var eDatabase = rdr.NameTable.Add("Database");
+
+            while (rdr.Read())
             {
-                if (rdr.NameTable != null)
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == eDatabase)
                 {
-                    var eDatabase = rdr.NameTable.Add("Database");
-                    var eName = rdr.NameTable.Add("Name");
-                    var eId = rdr.NameTable.Add("ID");
-                    var eLastUpdate = rdr.NameTable.Add("LastUpdate");
-                    while (rdr.Read())
+                    string name = "";
+                    string id = "";
+                    string lastUpdate = "";
+                    string compatLevel = "";
+                    while (!rdr.EOF)
                     {
-                        if (rdr.NodeType == XmlNodeType.Element
+                        if (rdr.NodeType == XmlNodeType.Element)
+                        {
+                            switch (rdr.LocalName)
+                            {
+                                case "Name":
+                                    name = rdr.ReadElementContentAsString();
+                                    break;
+                                case "ID":
+                                    id = rdr.ReadElementContentAsString();
+                                    break;
+                                case "LastUpdate":
+                                    lastUpdate = rdr.ReadElementContentAsString();
+                                    break;
+                                case "CompatibilityLevel":
+                                    compatLevel = rdr.ReadElementContentAsString();
+                                    break;
+                                default:
+                                    rdr.Read();
+                                    break;
+                            }
+                            continue;
+                        }                                 
+                                    
+                                    
+                                
+                                
+                        if (rdr.NodeType == XmlNodeType.EndElement
                             && rdr.LocalName == eDatabase)
                         {
-                            string name = "";
-                            string id = "";
-                            string lastUpdate = "";
-                            string compatLevel = "";
-                            while (!rdr.EOF)
-                            {
-                                if (rdr.NodeType == XmlNodeType.Element)
-                                {
-                                    switch (rdr.LocalName)
-                                    {
-                                        case "Name":
-                                            name = rdr.ReadElementContentAsString();
-                                            break;
-                                        case "ID":
-                                            id = rdr.ReadElementContentAsString();
-                                            break;
-                                        case "LastUpdate":
-                                            lastUpdate = rdr.ReadElementContentAsString();
-                                            break;
-                                        case "CompatibilityLevel":
-                                            compatLevel = rdr.ReadElementContentAsString();
-                                            break;
-                                        default:
-                                            rdr.Read();
-                                            break;
-                                    }
-                                    continue;
-                                }                                 
+                            databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel,""));
                                     
-                                    
-                                
-                                
-                                if (rdr.NodeType == XmlNodeType.EndElement
-                                    && rdr.LocalName == eDatabase)
-                                {
-                                    databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel,""));
-                                    
-                                }
-
-                                rdr.Read();
-                            }
                         }
 
+                        rdr.Read();
                     }
                 }
+
             }
+
             return databaseDictionary;
         }
 
@@ -248,16 +241,7 @@ namespace ADOTabular
             return GetDatabaseTable().Rows.Contains(databaseName);
         }
 
-        public int Count { get { return GetDatabaseTable().Rows.Count; } }
-        /*
-        public SortedSet<string> ToSortedSet()
-        {
-            var ss = new SortedSet<string>();
-            foreach (var dbname in this)
-            { ss.Add(dbname); }
-            return ss;
-        }*/
-        
+        public int Count => GetDatabaseTable().Rows.Count;
 
     }
 }

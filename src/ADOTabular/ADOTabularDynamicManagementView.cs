@@ -10,16 +10,12 @@ namespace ADOTabular
         {
             Contract.Requires(dr != null, "The dr parameter must not be null");
 
-            _caption = dr["SchemaName"].ToString();
+            Caption = dr["SchemaName"].ToString();
         }
 
-        private readonly string _caption;
-        public string Caption
-        {
-            get { return _caption; }
-        }
+        public string Caption { get; }
         // DMV names are not translated so the Name and Caption are the same
-        public string Name => _caption;
+        public string Name => Caption;
         public string DaxName
         {
             get { return DefaultQuery; }

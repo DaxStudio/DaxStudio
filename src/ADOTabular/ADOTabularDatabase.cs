@@ -1,8 +1,6 @@
 ﻿using ADOTabular.Interfaces;
 using System;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace ADOTabular
 {
@@ -38,24 +36,19 @@ namespace ADOTabular
                 // do nothing - probably trying to check for changes while query is still running
                 System.Diagnostics.Debug.WriteLine("HasSchemaChanged Error: {0}", ex.Message);
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
             return false;
         }
 
         public string Culture { get; internal set; } = string.Empty;
         public string Id { get; }
         public DateTime LastUpdate { get; internal set; } = DateTime.MinValue;
+
         public string Name { get;
         //get { return _adoTabConn.PowerBIFileName == string.Empty? _databaseName: _adoTabConn.PowerBIFileName; }
         }
 
-        public ADOTabularModelCollection Models
-        {
-            get { return _modelColl ?? (_modelColl = new ADOTabularModelCollection(Connection, this)); }
-        }
+        public ADOTabularModelCollection Models => _modelColl ??= new ADOTabularModelCollection(Connection, this);
 
         public IADOTabularConnection Connection { get; }
 

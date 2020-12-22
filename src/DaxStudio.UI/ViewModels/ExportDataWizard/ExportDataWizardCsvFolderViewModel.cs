@@ -1,6 +1,4 @@
-﻿using Caliburn.Micro;
-
-namespace DaxStudio.UI.ViewModels
+﻿namespace DaxStudio.UI.ViewModels
 {
     public class ExportDataWizardCsvFolderViewModel : ExportDataWizardBasePageViewModel
     {
@@ -8,11 +6,13 @@ namespace DaxStudio.UI.ViewModels
 
         public ExportDataWizardCsvFolderViewModel(ExportDataWizardViewModel wizard):base(wizard)
         {
+            // default to using culture default delimiter
+            UseCultureDefaultDelimiter = true;
         }
 
         public string CsvFolder
         {
-            get { return Wizard.CsvFolder; }
+            get => Wizard.CsvFolder;
             set { Wizard.CsvFolder = value;
                 NotifyOfPropertyChange(() => CsvFolder);
                 NotifyOfPropertyChange(() => CanNext);
@@ -27,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        // ReSharper disable once UnusedMember.Global
         public bool CsvQuoteStrings
         {
             get => Wizard.CsvQuoteStrings;
@@ -47,6 +48,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _useCommaDelimiter;
+        // ReSharper disable once UnusedMember.Global
         public bool UseCommaDelimiter { get => _useCommaDelimiter;
             set {
                 _useCommaDelimiter = value;
@@ -58,6 +60,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _useTabDelimiter;
+        // ReSharper disable once UnusedMember.Global
         public bool UseTabDelimiter { get => _useTabDelimiter;
             set { _useTabDelimiter = value;
                 if (_useTabDelimiter)
@@ -68,13 +71,10 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private bool _useOtherDelimiter;
-        public bool UseOtherDelimiter { get => _useOtherDelimiter;
-            set { _useOtherDelimiter = value;
-                
-            }
-        }
+        // ReSharper disable once UnusedMember.Global
+        public bool UseOtherDelimiter { get; set; }
 
+        // ReSharper disable once UnusedMember.Global
         public void BrowseFolders()
         {
             // show browse folders
@@ -95,9 +95,6 @@ namespace DaxStudio.UI.ViewModels
             TryClose();
         }
 
-        public bool CanNext
-        {
-            get { return CsvFolder.Length > 0; }
-        }
+        public bool CanNext => CsvFolder.Length > 0;
     }
 }

@@ -226,22 +226,28 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                             <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
                             <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                         </StackPanel>
-                        <TextBlock Text="(Right-Click to copy DatabaseID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
+                        <TextBlock Text="(Right-Click to copy Database Name/ID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
                         <TextBlock Text="Compatibility: " Grid.Row="2"/>
                         <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="2" Grid.Column="1"  FontWeight="SemiBold"/>
                         <TextBlock Text="Culture: " Grid.Row="3"/>
                         <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}" FontWeight="SemiBold" Grid.Column="1" Grid.Row="3"/>
                         <TextBlock Text="Last Updated: " Grid.Row="4"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.LastUpdate, Mode=OneWay, StringFormat=g}" Grid.Row="4" Grid.Column="1"/>
-                        <TextBlock Text="Is Admin: " Grid.Row="5"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay, StringFormat=g}" Grid.Row="5" Grid.Column="1"/>
-                        <TextBlock Text="Roles: " Grid.Row="6"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay, StringFormat=g}" Grid.Row="6" Grid.Column="1"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+                            <TextBlock Text="{Binding SelectedDatabaseLastUpdateLocalTime, Mode=OneWay, StringFormat='g'}" />
+                            
+                            <TextBlock Text="{Binding SelectedDatabaseLastUpdateLocalTime, Mode=OneWay, StringFormat=' (K)'}"  />
+                        </StackPanel>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedDatabaseDurationSinceUpdate, Mode=OneWay}" FontStyle="Italic"/>
+                        <TextBlock Text="Is Admin: " Grid.Row="6"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay}" Grid.Row="6" Grid.Column="1"/>
+                        <TextBlock Text="Roles: " Grid.Row="7"/>
+                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay}" Grid.Row="7" Grid.Column="1"/>
                     </Grid>
                 </Grid>
             </ComboBox.ToolTip>
@@ -255,7 +261,12 @@
             </ComboBox.ItemTemplate>
             <ComboBox.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseName()]">
+                    <MenuItem Header="Copy Database Name"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseName()]">
+                        <MenuItem.Icon>
+                            <Image Source="{StaticResource CopyIcon}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Copy Database Id"  cal:Message.Attach="[Event Click] = [Action CopyDatabaseId()]">
                         <MenuItem.Icon>
                             <Image Source="{StaticResource CopyIcon}"/>
                         </MenuItem.Icon>
@@ -339,8 +350,7 @@
                                         dd:DragDrop.IsDropTarget="False" 
                                         dd:DragDrop.DragHandler="{Binding}"
                                         dd:DragDrop.UseDefaultDragAdorner="True"
-                                                
-                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"         
+                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         Margin="0,2,0,-2">
@@ -349,6 +359,12 @@
                                 <beh:TreeViewClipboardBehavior />
                                 <beh:TreeViewMultipleSelectionBehaviour SelectedItems="{Binding SelectedItems}" />
                             </i:Interaction.Behaviors>
+
+                            <!--<ctrl:TreeViewEx.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                                </Style>
+                            </ctrl:TreeViewEx.ItemContainerStyle>-->
                             <ctrl:TreeViewEx.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
@@ -357,7 +373,9 @@
                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
                                             <fa:ImageAwesome Icon="ClockOutline" Width="10" Margin="7,12,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
                                         </Grid>
-                                        <TextBlock  Text="{Binding Caption}" > <TextBlock Foreground="BlueViolet" />
+                                        <TextBlock  Text="{Binding Caption}"
+                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action TableTooltipOpening($dataContext)]"
+                                                    > <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="450">
                                                             <StackPanel Orientation="Horizontal">
@@ -375,8 +393,23 @@
                                                                     <ColumnDefinition />
                                                                     <ColumnDefinition />
                                                                 </Grid.ColumnDefinitions>
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition />
+                                                                    <RowDefinition />
+                                                                </Grid.RowDefinitions>
                                                                 <TextBlock Style="{StaticResource ToolTipLabel}">Columns:</TextBlock>
-                                                                <TextBlock Grid.Column="1" Text="{Binding Path=ColumnCount, StringFormat={}{0:N0}, Mode=OneWay}"/>
+                                                                <TextBlock Grid.Row="0"
+                                                                           Grid.Column="1" 
+                                                                           Text="{Binding Path=ColumnCount, StringFormat={}{0:N0}, Mode=OneWay}"/>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Grid.Row="1" 
+                                                                           Style="{StaticResource ToolTipLabel}"
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"
+                                                                           >Rows:</TextBlock>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Grid.Row="1" 
+                                                                           Text="{Binding Path=RowCount, StringFormat={}{0:N0}, Mode=OneWay}" 
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"/>
                                                             </Grid>
                                                         </StackPanel>
                                                     </TextBlock.ToolTip>    
@@ -416,7 +449,8 @@
                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                                             <!--<fa:ImageAwesome Icon="Key" Width="10" Margin="3,6,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsKey}"/>-->
                                         </Grid>
-                                        <TextBlock x:Name="Caption" Text="{Binding Caption}" 
+                                        <TextBlock x:Name="Caption" 
+                                                   Text="{Binding Caption}" 
                                                    cal:Message.Attach="[Event ToolTipOpening] = [Action ColumnTooltipOpening($dataContext)]"
                                                    >
                                             <TextBlock.ToolTip>
@@ -542,7 +576,6 @@
                         <!-- Search Box -->
                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
                             <Border Style="{StaticResource searchBox}" 
-                                    Grid.Row="1" 
                                     x:Name="srchBox"
                                     ClipToBounds="True"
                                     ap:MouseObserver.Observe="True"
@@ -597,6 +630,12 @@
                                                     <KeyBinding Key="Escape"/>
                                                 </trig:InputBindingTrigger.InputBinding>
                                                 <cal:ActionMessage MethodName="ClearCriteria"/>
+                                            </trig:InputBindingTrigger>
+                                            <trig:InputBindingTrigger>
+                                                <trig:InputBindingTrigger.InputBinding>
+                                                    <KeyBinding Key="Down"/>
+                                                </trig:InputBindingTrigger.InputBinding>
+                                                <cal:ActionMessage MethodName="SetFocusToMetadata"/>
                                             </trig:InputBindingTrigger>
                                         </i:Interaction.Triggers>
 

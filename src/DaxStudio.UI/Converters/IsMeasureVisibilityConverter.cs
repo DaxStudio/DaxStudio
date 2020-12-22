@@ -16,10 +16,17 @@ namespace DaxStudio.UI.Converters
         {
             if (value is ADOTabularObjectType objectType)
             {
-                if (objectType == ADOTabularObjectType.Measure)
-                    return Visibility.Visible;
-                else
-                    return Visibility.Collapsed;
+                switch ( objectType)
+                {
+                    case ADOTabularObjectType.Measure:
+                    case ADOTabularObjectType.KPI:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
+                        return Visibility.Visible;
+                    default:
+                        return Visibility.Collapsed;
+                }
+
             }
             return Visibility.Collapsed;
         }

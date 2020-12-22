@@ -12,6 +12,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Windows;
+using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 
@@ -62,7 +63,7 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderColumn Column { get => _column;
             internal set {
                 _column = value;
-                MeasureExpression.Text = _column.MeasureExpression;
+                MeasureExpression.Text = _column.MeasureExpression??string.Empty;
                 MeasureName = _column.Caption;
                 SelectedTable = _column.SelectedTable;
                 IsModelItem = _column.IsModelItem;
