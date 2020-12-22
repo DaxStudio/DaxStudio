@@ -1521,8 +1521,11 @@
     <PackageReference Include="Dax.Vpax">
       <Version>1.0.30</Version>
     </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock">
+      <Version>4.50.1</Version>
+    </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
-      <Version>3.6.2</Version>
+      <Version>4.50.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.MLib">
       <Version>1.3.0.1</Version>
@@ -1556,6 +1559,9 @@
     </PackageReference>
     <PackageReference Include="LargeXlsx">
       <Version>1.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="MahApps.Metro">
+      <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.7</Version>

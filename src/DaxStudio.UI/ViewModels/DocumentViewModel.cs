@@ -3852,7 +3852,7 @@ namespace DaxStudio.UI.ViewModels
             IsFocused = true;
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme => new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+        public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.GenericTheme();
 
         private bool _showMeasureExpressionEditor;
         public bool ShowMeasureExpressionEditor
