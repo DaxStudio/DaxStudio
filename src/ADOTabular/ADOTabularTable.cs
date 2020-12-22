@@ -21,7 +21,7 @@ namespace ADOTabular
             _model = model;
         }
         */
-        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible, bool _private, bool showAsVariationsOnly )
+        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible, bool @private, bool showAsVariationsOnly )
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;
@@ -32,7 +32,7 @@ namespace ADOTabular
             IsVisible = isVisible;
             Relationships = new List<ADOTabularRelationship>();
             FolderItems = new List<IADOTabularObjectReference>();
-            Private = _private;
+            Private = @private;
             ShowAsVariationsOnly = showAsVariationsOnly;
         }
 
@@ -79,12 +79,12 @@ namespace ADOTabular
 
         public ADOTabularColumnCollection Columns
         {
-            get { return _columnColl ?? (_columnColl = new ADOTabularColumnCollection(_adoTabConn, this)); }
+            get { return _columnColl ??= new ADOTabularColumnCollection(_adoTabConn, this); }
         }
 
         public ADOTabularMeasureCollection Measures
         {
-            get { return _measuresColl ?? (_measuresColl = new ADOTabularMeasureCollection(_adoTabConn, this)); }
+            get { return _measuresColl ??= new ADOTabularMeasureCollection(_adoTabConn, this); }
         }
 
         public ADOTabularModel Model { get; private set; }
@@ -102,5 +102,16 @@ namespace ADOTabular
         public bool Private { get; }
         public bool ShowAsVariationsOnly { get; }
         public bool IsDateTable { get; set; }
+        public long RowCount { get; private set; }
+
+        public void UpdateBasicStats(ADOTabularConnection connection)
+        {
+            if (connection == null) return;
+
+            string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
+
+            using var dt = connection.ExecuteDaxQueryDataTable(qry);
+            RowCount = (long)dt.Rows[0][0];
+        }
     }
 }

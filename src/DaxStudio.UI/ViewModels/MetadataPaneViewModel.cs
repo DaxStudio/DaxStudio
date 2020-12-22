@@ -16,6 +16,8 @@ using System.Windows;
 using System.Diagnostics;
 using System.Windows.Input;
 using ADOTabular.Interfaces;
+using DaxStudio.UI.Enums;
+using DaxStudio.UI.Interfaces;
 using Humanizer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
@@ -471,7 +473,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _sortFoldersFirstInMetadata = true;
-        private bool _metadataHasFocus;
         private IFilterableTreeViewItem _selectedTreeViewItem;
 
         public bool SortFoldersFirstInMetadata
@@ -538,6 +539,16 @@ namespace DaxStudio.UI.ViewModels
             if (_options == null) return;
             if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,10) ;
             if (_options.ShowTooltipBasicStats && !column.HasBasicStats) _metadataProvider.UpdateColumnBasicStats(column); 
+        }
+
+        public void TableTooltipOpening(TreeViewTable table)
+        {
+            if (table == null) return;
+
+            // TODO - make an option for the sample size
+            if (_options == null) return;
+
+            if (_options.ShowTooltipBasicStats && !table.HasBasicStats) _metadataProvider.UpdateTableBasicStats(table);
         }
 
         internal void ChangeDatabase(string databaseName)
@@ -726,10 +737,9 @@ namespace DaxStudio.UI.ViewModels
                         measureExpression = column.DaxName;
                     }
                 }
-                else if (item.Column is ADOTabularKpi)
+                else if (item.Column is ADOTabularKpi kpi)
                 {
                     column = (ADOTabularColumn)item.Column;
-                    var kpi = (ADOTabularKpi)item.Column;
                     measureExpression = kpi.MeasureExpression;
                 }
                 else
@@ -861,24 +871,33 @@ namespace DaxStudio.UI.ViewModels
         {
             switch (args.Key)
             {
-                case Key.Space:
+                case Key.Enter:
                 case Key.C:
                     if (selectedItem is ITreeviewColumn col)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col,false));
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col, QueryBuilderItemType.Column));
                         SelectedTreeViewItem = null;
                         CurrentCriteria = string.Empty;
                         FocusManager.SetFocus(this ,nameof(CurrentCriteria));
                     }
                     break;
-                case Key.Enter:
+                case Key.Space:
                 case Key.F:
                     if (selectedItem is ITreeviewColumn filter)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, true));
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, QueryBuilderItemType.Filter));
                         SelectedTreeViewItem = null;
                         CurrentCriteria = string.Empty;
                         FocusManager.SetFocus(this,nameof(CurrentCriteria));
+                    }
+                    break;
+                case Key.B:
+                    if (selectedItem is ITreeviewColumn item)
+                    {
+                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(item, QueryBuilderItemType.Both));
+                        SelectedTreeViewItem = null;
+                        CurrentCriteria = string.Empty;
+                        FocusManager.SetFocus(this, nameof(CurrentCriteria));
                     }
                     break;
             }

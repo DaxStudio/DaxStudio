@@ -310,9 +310,44 @@ namespace DaxStudio.UI.Model
         // so for a column it would be something like 'table name'[column name]
         // but for a table it would be 'table name'
         public string DaxName => _table.DaxName;
-        public int ColumnCount
+        public int ColumnCount => _table.Columns.Count;
+
+        private bool _rowCountSet;
+        private long _rowCount;
+        public long RowCount
         {
-            get { return _table.Columns.Count; }
+            get => _rowCount;
+            set
+            {
+                _rowCount = value;
+                _rowCountSet = true;
+                NotifyOfPropertyChange(nameof(RowCount));
+                NotifyOfPropertyChange(nameof(ShowRowCount));
+            }
+        }
+
+
+
+        public bool ShowRowCount => _rowCountSet;
+
+        private bool _updatingBasicStats;
+        public bool UpdatingBasicStats
+        {
+            get => _updatingBasicStats;
+            set
+            {
+                _updatingBasicStats = value;
+                NotifyOfPropertyChange(() => UpdatingBasicStats);
+                NotifyOfPropertyChange(() => ShowRowCount);
+            }
+        }
+
+        public bool HasBasicStats => ShowRowCount;
+
+        internal void UpdateBasicStats(ADOTabularConnection newConn)
+        {
+            _table.UpdateBasicStats(newConn);
+            RowCount = _table.RowCount;
         }
     }
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Collections;
-using System;
 using ADOTabular.Interfaces;
 
 namespace ADOTabular
@@ -36,12 +35,10 @@ namespace ADOTabular
 
         public IEnumerator<ADOTabularDynamicManagementView> GetEnumerator()
         {
-            using (var dmvTable = GetDmvTable())
+            using var dmvTable = GetDmvTable();
+            foreach (DataRow dr in dmvTable.Rows)
             {
-                foreach (DataRow dr in dmvTable.Rows)
-                {
-                    yield return new ADOTabularDynamicManagementView(dr);
-                }
+                yield return new ADOTabularDynamicManagementView(dr);
             }
         }
 

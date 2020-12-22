@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -21,8 +22,8 @@ namespace DaxStudio.UI.Model
             var measureList = BuildMeasures(columns);
             var orderByList = BuildOrderBy(orderBy);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
-            var measureStart = columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure) > 0
-                ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
+            var measureStart = !string.IsNullOrWhiteSpace(measureList)
+                ? columns.Any(c => c.ObjectType == ADOTabularObjectType.Column)
                 ? ",\n    " 
                 : "\n    "
                 : string.Empty;  
@@ -87,8 +88,8 @@ namespace DaxStudio.UI.Model
 
         private static string BuildMeasures(ICollection<QueryBuilderColumn> columns)
         {
-            // TODO - should I get KPIs also??
-            var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure);
+            
+            var meas = columns.Where(c => c.IsMeasure());
             if (!meas.Any()) return string.Empty;
             // build a comma separated list of "Caption", [DaxName] values
             return meas.Select(c => $"\"{c.Caption}\", {c.DaxName}").Aggregate((i, j) => i + ",\n    " + j);
@@ -180,7 +181,7 @@ namespace DaxStudio.UI.Model
                     var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
-                    throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
+                    throw new NotSupportedException($"The filter type '{filter.FilterType}' is not supported");
             }
 
             

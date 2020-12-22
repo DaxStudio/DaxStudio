@@ -60,6 +60,9 @@ namespace DaxStudio.Standalone
                 Log.Information("============ DaxStudio Startup =============");
                 ConfigureLogging(levelSwitch);
 
+                // Default web requests like AAD Auth to use windows credentials for proxy auth
+                System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+
                 // add the custom DAX Studio accent color theme
                 App.AddDaxStudioAccentColor();
 
@@ -234,7 +237,9 @@ namespace DaxStudio.Standalone
                     return true;
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // ignored
             }

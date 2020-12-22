@@ -1,7 +1,4 @@
-﻿
-using System.Collections.Generic;
-
-namespace ADOTabular.Interfaces
+﻿namespace ADOTabular.Interfaces
 {
     public interface IADOTabularObject
     {
