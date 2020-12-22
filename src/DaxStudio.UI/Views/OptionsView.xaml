@@ -1145,7 +1145,7 @@
                         <GroupBox Header="Publish Functions">
                             <StackPanel>
                                 <Button Margin="5" Padding="3" Name="PublishDaxFunctions">Publish Functions</Button>
-                                <TextBlock Margin="10,0,0,10" Foreground="{StaticResource MutedTextBrush}" Visibility="{Binding CanPublishDaxFunctions, Converter={StaticResource BoolToNotVisibleConverter}}">Publish Functions is currently running...</TextBlock>
+                                <TextBlock Margin="10,0,0,10" Foreground="{StaticResource MutedTextBrush}" Name="CanPublishDaxFunctionsMessage"></TextBlock>
                                 <Button Margin="5" Padding="3" Name="ExportDAXFunctions">Export Functions</Button>
                             </StackPanel>
                         </GroupBox>

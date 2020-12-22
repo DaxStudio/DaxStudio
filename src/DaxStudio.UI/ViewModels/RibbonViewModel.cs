@@ -190,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (Options.BlockExternalServices) return "Access to External Services block in Options";
+                if (Options.BlockExternalServices) return "Access to External Services blocked in Options privacy settings";
                 if (ActiveDocument == null) return "No Active Document";
                 return "Not disabled";
             }

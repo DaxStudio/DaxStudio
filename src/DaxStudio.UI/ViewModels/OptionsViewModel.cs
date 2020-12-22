@@ -613,7 +613,7 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public bool CanPublishDaxFunctions
         {
-            get => _canPublishDaxFunctions;
+            get => _canPublishDaxFunctions && !BlockExternalServices;
 
             set
             {
@@ -621,6 +621,16 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanPublishDaxFunctions);
             }
         }
+        
+        [JsonIgnore]
+        public string CanPublishDaxFunctionsMessage {
+            get
+            {
+                if (BlockExternalServices) return "Access to External Services blocked in Options";
+                if (!_canPublishDaxFunctions) return "Publish Functions is currently running...";
+                return string.Empty;
+            }
+        } 
 
         private bool _excludeHeadersWhenCopyingResults;
         [Category("Results")]
@@ -1532,6 +1542,8 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(BlockExternalServices), value, _isInitializing);
                 NotifyOfPropertyChange(() => BlockExternalServices);
+                NotifyOfPropertyChange(() => CanPublishDaxFunctions);
+                NotifyOfPropertyChange(() => CanPublishDaxFunctionsMessage);
             }
         }
 
