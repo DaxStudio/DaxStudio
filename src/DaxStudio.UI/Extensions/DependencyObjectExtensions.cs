@@ -24,9 +24,9 @@ namespace DaxStudio.UI.Extensions
 
             while (parent != null)
             {
-                if (parent is T)
+                if (parent is T t)
                 {
-                    return (T)parent;
+                    return t;
                 }
 
                 parent = VisualTreeHelper.GetParent(parent);
@@ -47,9 +47,9 @@ namespace DaxStudio.UI.Extensions
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T)
+                if (child is T t)
                 {
-                    return (T)child;
+                    return t;
                 }
 
                 var descendant = FindVisualChild<T>(child);
@@ -74,9 +74,9 @@ namespace DaxStudio.UI.Extensions
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T)
+                if (child is T t)
                 {
-                    yield return (T)child;
+                    yield return t;
                 }
 
                 var descendants = FindVisualChildren<T>(child);

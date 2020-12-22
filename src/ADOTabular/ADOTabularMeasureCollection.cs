@@ -10,13 +10,11 @@ namespace ADOTabular
 
     public class ADOTabularMeasureCollection: IEnumerable<ADOTabularMeasure>
     {
-        private readonly ADOTabularTable _table;
         private readonly IADOTabularConnection _adoTabConn;
         public ADOTabularMeasureCollection(IADOTabularConnection adoTabConn, ADOTabularTable table)
         {
-            _table = table;
-            if (adoTabConn == null) throw new ArgumentNullException(nameof(adoTabConn));
-            _adoTabConn = adoTabConn;
+            Table = table;
+            _adoTabConn = adoTabConn ?? throw new ArgumentNullException(nameof(adoTabConn));
 
             if (_measures == null)
             {
@@ -24,9 +22,7 @@ namespace ADOTabular
             }
         }
 
-        public ADOTabularTable Table {
-            get { return _table; }
-        }
+        public ADOTabularTable Table { get; }
 
         public void Add(ADOTabularMeasure column)
         {
@@ -48,8 +44,8 @@ namespace ADOTabular
 
         public ADOTabularMeasure this[string index]
         {
-            get { return _measures[index]; }
-            set { _measures[index] = value; }
+            get => _measures[index];
+            set => _measures[index] = value;
         }
 
         public ADOTabularMeasure this[int index]
@@ -66,7 +62,7 @@ namespace ADOTabular
         {
             foreach (var c in _measures)
             {
-                if (c.Value.InternalReference.Equals(referenceName, System.StringComparison.InvariantCultureIgnoreCase))
+                if (c.Value.InternalReference.Equals(referenceName, StringComparison.OrdinalIgnoreCase))
                 {
                     return c.Value;
                 }

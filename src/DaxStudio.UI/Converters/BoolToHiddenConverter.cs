@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            if (value is Visibility && (Visibility)value == Visibility.Visible)
+            if (value is Visibility visibility && visibility == Visibility.Visible)
             {
                 return true;
             }

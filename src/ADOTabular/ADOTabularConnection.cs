@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Data;
 using System.Xml;
-using ADOTabular.AdomdClientWrappers;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Data.OleDb;
 using System.Globalization;
+using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using ADOTabular.Utils;
@@ -21,7 +21,9 @@ namespace ADOTabular
 
         public event EventHandler ConnectionChanged;
         private AdomdConnection _adomdConn;
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly AdomdType _connectionType;
+#pragma warning restore IDE0052 // Remove unread private members
         private string _currentDatabase;
         private readonly Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -43,7 +45,7 @@ namespace ADOTabular
             
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new AdomdConnection(ConnectionString, connectionType);
+            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, AdomdType.AnalysisServices);
 
             _connectionType = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
@@ -192,10 +194,14 @@ namespace ADOTabular
         public ADOTabularConnectionType ConnectionType { get; private set; }
 
 
-        public AdomdType Type => _adomdConn.Type;
+        public AdomdType Type
+        {
+            get;
+            set;
+        }
 
 
-        public bool SupportsQueryTable => _adomdConn.Type == AdomdType.AnalysisServices;
+        public bool SupportsQueryTable => Type == AdomdType.AnalysisServices;
 
         public override string ToString()
         {
@@ -203,8 +209,8 @@ namespace ADOTabular
         }
 
         private string _connectionString = "";
-        private Dictionary<string, string> _connectionProps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase );
-        public Dictionary<string, string> Properties => _connectionProps;
+
+        public Dictionary<string, string> Properties { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public string ConnectionString
         {
@@ -235,7 +241,7 @@ namespace ADOTabular
             set { _connectionString = value;
                 if (_connectionString != null)
                 {
-                    _connectionProps = SplitConnectionString(_connectionString);
+                    Properties = SplitConnectionString(_connectionString);
                     ConnectionType = GetConnectionType(ServerName);
                     //_connectionProps = ConnectionStringParser.Parse(_connectionString);
                 }
@@ -253,8 +259,7 @@ namespace ADOTabular
 
         private static Dictionary<string, string> SplitConnectionString(string connectionString)
         {
-            var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            props = ConnectionStringParser.Parse(connectionString);
+            var props = ConnectionStringParser.Parse(connectionString);
 
             return props;
         }
@@ -291,6 +296,7 @@ namespace ADOTabular
                 return _adoTabDatabaseColl.Count;
             }
         }
+#pragma warning disable CA1725 // Parameter names should match base declaration
         public DataSet GetSchemaDataSet(string schemaName)
         {
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
@@ -316,6 +322,7 @@ namespace ADOTabular
             return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection, throwOnInlineErrors);
             
         }
+#pragma warning restore CA1725 // Parameter names should match base declaration
 
 
         public void ExecuteNonQuery(string command)
@@ -326,7 +333,7 @@ namespace ADOTabular
                 cmd.CommandText = command;
                 cmd.CommandType = CommandType.Text;
 
-                cmd.ExecuteNonQuery();
+                _ = cmd.ExecuteNonQuery();
             }
             finally
             {
@@ -355,12 +362,12 @@ namespace ADOTabular
 
         public void PingTrace()
         {
-            
+
             // Ping the server by sending a discover request for the current catalog name
             //var restrictionCollection = new AdomdRestrictionCollection();
             //var restriction = new AdomdRestriction("PropertyName", "Catalog");
             //restrictionCollection.Add(restriction);
-            GetSchemaDataSet("MDSCHEMA_CUBES");
+            _ = GetSchemaDataSet("MDSCHEMA_CUBES");
 
             //ExecuteNonQuery(cmd);
         }
@@ -374,7 +381,7 @@ namespace ADOTabular
             }
         }
 
-        public AdomdDataReader ExecuteReader(string query)
+        public ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string command)
         {
             if (_runningCommand != null)
             {
@@ -384,13 +391,13 @@ namespace ADOTabular
 
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
-            _runningCommand.CommandText = query;
+            _runningCommand.CommandText = command;
             // TOOO - add parameters to connection
 
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             rdr.Connection = this;
-            rdr.CommandText = query;
+            rdr.CommandText = command;
      
             return rdr;
 
@@ -495,8 +502,23 @@ namespace ADOTabular
             }
         }
 
-        public void CacheDaxMetadataInfo() {
+        public void CacheDaxMetadataInfo()
+        {
             if (_daxMetadataInfo == null) _daxMetadataInfo = new MetadataInfo.DaxMetadata(this);
+        }
+
+        private MetadataInfo.DaxColumnsRemap _daxColumnsRemapInfo;
+        public MetadataInfo.DaxColumnsRemap DaxColumnsRemapInfo
+        {
+            get
+            {
+                CacheColumnRemapInfo();
+                return _daxColumnsRemapInfo;
+            }
+        }
+
+        public void CacheColumnRemapInfo() {
+            if (_daxColumnsRemapInfo == null) _daxColumnsRemapInfo = new MetadataInfo.DaxColumnsRemap(this);
         }
 
         private ADOTabularKeywordCollection _keywords;
@@ -538,18 +560,16 @@ namespace ADOTabular
         private string _svrVersion;
         public string ServerVersion
         {
-            get {
+            get
+            {
                 if (_svrVersion == null)
                 {
                     _svrVersion = _adomdConn.ServerVersion;
-                    
+
                 }
                 return _svrVersion;
             }
-            set
-            {
-                _svrVersion = value;
-            }
+            set => _svrVersion = value;
         }
         public string SessionId
         { 
@@ -654,7 +674,7 @@ namespace ADOTabular
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception )
                     {
                         _spid = -1;  // non-adminstrators cannot run DISCOVER_SESSIONS so we will return -1
                     }
@@ -700,10 +720,12 @@ namespace ADOTabular
         private string _powerBIFileName = string.Empty;
         private string _currentCube = string.Empty;
 
-        public string FileName { get { return _powerBIFileName; }
-            set {
-                if (value == null) throw new ArgumentNullException(nameof(FileName));
-                _powerBIFileName = value;
+        public string FileName
+        {
+            get => _powerBIFileName;
+            set
+            {
+                _powerBIFileName = value ?? throw new ArgumentNullException(nameof(FileName));
                 if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                   || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
                 {
@@ -721,7 +743,7 @@ namespace ADOTabular
         {
             _currentCube = cubeName;
             _adomdConn.Close();
-            _adomdConn = new AdomdConnection($"{ConnectionString};Cube={cubeName};Initial Catalog={Database.Name}", _connectionType);
+            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection($"{ConnectionString};Cube={cubeName};Initial Catalog={Database.Name}", AdomdType.AnalysisServices);
         }
 
         public bool Is2012SP1OrLater
@@ -735,9 +757,9 @@ namespace ADOTabular
         public string ApplicationName
         {
             get { 
-                if (_connectionProps == null) return "";
-                if (!_connectionProps.ContainsKey("Application Name")) return "";
-                return _connectionProps["Application Name"];
+                if (Properties == null) return "";
+                if (!Properties.ContainsKey("Application Name")) return "";
+                return Properties["Application Name"];
             }
         }
 
@@ -763,7 +785,7 @@ namespace ADOTabular
             }
         }
 
-        internal object CurrentCubeInternal => (string.IsNullOrEmpty(_currentCube)) ? string.Empty : $";Cube={_currentCube}";
+        internal object CurrentCubeInternal => string.IsNullOrEmpty(_currentCube) ? string.Empty : $";Cube={_currentCube}";
 
         public Dictionary<string, ADOTabularColumn> Columns { get; } = new Dictionary<string, ADOTabularColumn>();
 

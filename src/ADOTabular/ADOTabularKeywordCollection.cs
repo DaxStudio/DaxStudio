@@ -8,12 +8,11 @@ namespace ADOTabular
 {
     public class ADOTabularKeywordCollection: IEnumerable<string>
     {
-        private IADOTabularConnection _connection;
-        private List<string> _keywords = new List<string>();
+        private readonly IADOTabularConnection _connection;
+        private readonly List<string> _keywords = new List<string>();
         public ADOTabularKeywordCollection(IADOTabularConnection adoTabularConnection)
         {
-            if (adoTabularConnection == null) throw new ArgumentNullException(nameof(adoTabularConnection));
-            _connection = adoTabularConnection;
+            _connection = adoTabularConnection ?? throw new ArgumentNullException(nameof(adoTabularConnection));
             _connection.Visitor.Visit(this);
         }
 

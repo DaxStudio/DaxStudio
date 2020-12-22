@@ -1,4 +1,4 @@
-﻿using ADOTabular.AdomdClientWrappers;
+﻿
 using ADOTabular.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;

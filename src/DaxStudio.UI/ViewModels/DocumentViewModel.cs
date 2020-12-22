@@ -381,7 +381,7 @@ namespace DaxStudio.UI.ViewModels
 
                 var file = files[0];
 
-                if (file.EndsWith(".dax") || file.EndsWith(".msdax"))
+                if (file.EndsWith(".dax", StringComparison.InvariantCultureIgnoreCase) || file.EndsWith(".msdax", StringComparison.InvariantCultureIgnoreCase))
                 {
                     _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
                     _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
@@ -440,6 +440,21 @@ namespace DaxStudio.UI.ViewModels
             {
                 return _tracer;
             }
+        }
+
+        public bool HighlightXmSqlCallbacks
+        {
+            get => Options.HighlightXmSqlCallbacks;
+        }
+
+        public bool SimplifyXmSqlSyntax
+        {
+            get => Options.SimplifyXmSqlSyntax;
+        }
+
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => Options.ReplaceXmSqlColumnNames;
         }
 
         public bool WordWrap
@@ -1302,7 +1317,6 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Execute Query
-        private Timer _timer;
         private Stopwatch _queryStopWatch;
 
         public Stopwatch QueryStopWatch
@@ -1331,6 +1345,7 @@ namespace DaxStudio.UI.ViewModels
 
             int row = 0;
             int col = 0;
+            Timer _timer = new Timer(300);
             try
             {
                 var editor = GetEditor();
@@ -1361,14 +1376,17 @@ namespace DaxStudio.UI.ViewModels
                     var dsm = new DelimiterStateMachine(DaxStudio.Interfaces.Enums.DelimiterType.Comma);
                     daxQuery = dsm.ProcessString(daxQuery);
                 }
-                _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
                 _queryStopWatch.Start();
-                var dt = c.ExecuteDaxQueryDataTable(daxQuery);
-                dt.FixColumnNaming(daxQuery);
-                return dt;
+                DataTable dt;
+                return await Task.Run(() => { 
+                    dt = c.ExecuteDaxQueryDataTable(daxQuery);
+                    dt.FixColumnNaming(daxQuery);
+                    return dt;
+                });
+                
             }
             catch (Exception e)
             {
@@ -1381,7 +1399,7 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 _queryStopWatch.Stop();
-                _timer.Stop();
+                _timer?.Stop();
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
                 NotifyOfPropertyChange(() => ElapsedQueryTime);
@@ -1404,6 +1422,7 @@ namespace DaxStudio.UI.ViewModels
             int row = 0;
             int col = 0;
             var editor = GetEditor();
+            Timer _timer = new Timer(300);
             editor.Dispatcher.Invoke(() =>
             {
                 if (editor.SelectionLength > 0)
@@ -1423,7 +1442,6 @@ namespace DaxStudio.UI.ViewModels
                         tw.IsBusy = true;
                     }
                 }
-                _timer = new Timer(300);
                 _timer.Elapsed += _timer_Elapsed;
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
@@ -1929,6 +1947,14 @@ namespace DaxStudio.UI.ViewModels
 
             var currentText = editor.Text;
 
+            // if the default separator is not the default Comma style
+            // then we should switch the separators to the SemiColon style
+            if (Options.DefaultSeparator == DelimiterType.SemiColon)
+            {
+                var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                measureExpression = dsm.ProcessString(measureExpression);
+            }
+
             var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
             // TODO - expand measure expression and generate other measures here!!
 
@@ -2045,9 +2071,10 @@ namespace DaxStudio.UI.ViewModels
                     ToolWindows.Add(watcher);
 
                 // synch the ribbon buttons and the server timings pane
-                if (watcher is ServerTimesViewModel && watcher.IsChecked)
+                if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
                 {
-                    ((ServerTimesViewModel)watcher).ServerTimingDetails = ServerTimingDetails;
+                    stvModel.ServerTimingDetails = ServerTimingDetails;
+                    stvModel.RemapColumnNames = this.Connection.DaxColumnsRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();
@@ -2120,7 +2147,7 @@ namespace DaxStudio.UI.ViewModels
                 }
         }
 
-        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId.ToString()}.dax");
+        internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId}.dax");
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
         internal async Task AutoSave()
@@ -2221,7 +2248,7 @@ namespace DaxStudio.UI.ViewModels
                     //HttpResponseMessage response = await client.PostStreamAsync("api/v1/pingversion", new VersionRequest { SsasVersion = ssasVersion });  // responseTask.Result;
                     if (!response.IsSuccessStatusCode) {
                         publishStopWatch.Stop();
-                        string pingResult = $"Error from ping version: {response.StatusCode.ToString()}";
+                        string pingResult = $"Error from ping version: {response.StatusCode}";
                         Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", pingResult);
                         OutputMessage(pingResult, publishStopWatch.ElapsedMilliseconds);
                         return;
@@ -2244,7 +2271,7 @@ namespace DaxStudio.UI.ViewModels
                     var fileContent = File.ReadAllBytes(metadataFilename);
                     var metadataContent = new ByteArrayContent(fileContent);
 
-                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Count());
+                    string uploadingMessage = string.Format("file {0} ({1} bytes)", metadataFilename, fileContent.Length);
                     Log.Information("{class} {method} {message}", "DocumentViewModel", "PublishDaxFunctions", string.Format("Uploading {0}", uploadingMessage));
 
                     metadataContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("fileUpload") {
@@ -3083,7 +3110,7 @@ namespace DaxStudio.UI.ViewModels
                                    }
                                     // if the error is at the end of text then we need to move in 1 character
                                     var errOffset = editor.Document.GetOffset(errLine, errCol);
-                                   if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" "))
+                                   if (errOffset == editor.Document.TextLength && !editor.Text.EndsWith(" ", StringComparison.InvariantCultureIgnoreCase))
                                    {
                                        editor.Document.Insert(errOffset, " ");
                                    }
@@ -3328,6 +3355,14 @@ namespace DaxStudio.UI.ViewModels
         {
             get {
                 return Connection?.DaxMetadataInfo;
+            }
+        }
+
+        public ADOTabular.MetadataInfo.DaxColumnsRemap DaxColumnsRemapInfo
+        {
+            get
+            {
+                return Connection?.DaxColumnsRemapInfo;
             }
         }
 
@@ -3696,11 +3731,14 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        void IDropTarget.DragOver(IDropInfo dropInfo)
+        public void DragOver(IDropInfo dropInfo)
         {
             IntellisenseProvider?.CloseCompletionWindow();
 
-            if (dropInfo.DragInfo.DataObject is IADOTabularObject || dropInfo.DragInfo.Data is string)
+            DataObject data = dropInfo.Data as DataObject;
+            bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat)??false;
+
+            if (dropInfo.DragInfo?.DataObject is IADOTabularObject || stringPresent)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -3716,18 +3754,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        void IDropTarget.Drop(IDropInfo dropInfo)
+        public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.DragInfo.DataObject as IADOTabularObject;
+            var obj = dropInfo.DragInfo?.DataObject as IADOTabularObject;
             var text = string.Empty;
             if (obj != null)
             {
                 text = obj.DaxName;
             }
 
-            if (dropInfo.DragInfo.Data is string)
+            DataObject data = dropInfo.Data as DataObject;
+            bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat) ?? false;
+
+            if (stringPresent)
             {
-                text = dropInfo.DragInfo.Data as string;
+                text = data.GetText();
             }
             InsertTextAtCaret(text);
         }

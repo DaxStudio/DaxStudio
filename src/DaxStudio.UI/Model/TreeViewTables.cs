@@ -313,7 +313,7 @@ namespace DaxStudio.UI.Model
         public int ColumnCount => _table.Columns.Count;
 
         private bool _rowCountSet;
-        private long _rowCount = 0;
+        private long _rowCount;
         public long RowCount
         {
             get => _rowCount;

@@ -24,7 +24,7 @@ namespace DaxStudio.UI.Controls
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             viewModel = this.DataContext as IZoomable;
-            Debug.Assert(viewModel != null, $"The view model '{DataContext.GetType().ToString() }' does not support IZoomable");
+            Debug.Assert(viewModel != null, $"The view model '{DataContext.GetType()}' does not support IZoomable");
             if (viewModel == null) return;
             viewModel.OnScaleChanged += ViewModel_OnScaleChanged;
         }

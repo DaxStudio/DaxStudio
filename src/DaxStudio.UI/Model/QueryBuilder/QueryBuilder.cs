@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Model
             var orderByList = BuildOrderBy(orderBy);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = !string.IsNullOrWhiteSpace(measureList)
-                ? columns.Count(c => c.ObjectType == ADOTabularObjectType.Column) > 0 
+                ? columns.Any(c => c.ObjectType == ADOTabularObjectType.Column)
                 ? ",\n    " 
                 : "\n    "
                 : string.Empty;  
@@ -181,7 +181,7 @@ namespace DaxStudio.UI.Model
                     var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
                 default:
-                    throw new NotSupportedException($"The filter type '{filter.FilterType.ToString()}' is not supported");
+                    throw new NotSupportedException($"The filter type '{filter.FilterType}' is not supported");
             }
 
             

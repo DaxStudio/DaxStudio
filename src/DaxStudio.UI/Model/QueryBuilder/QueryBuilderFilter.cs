@@ -78,7 +78,7 @@ namespace DaxStudio.UI.Model
                             if (TabularObject.SystemType != typeof(string)) yield return ft;
                             break;
                         default:
-                            throw new NotSupportedException($"Unknown FilterType '{ft.ToString()}'");
+                            throw new NotSupportedException($"Unknown FilterType '{ft}'");
 
                     }
                 }

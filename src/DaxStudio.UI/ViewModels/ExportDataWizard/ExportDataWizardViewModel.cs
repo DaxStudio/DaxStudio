@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -63,17 +64,17 @@ namespace DaxStudio.UI.ViewModels
             // check connection state
             if (Document.Connection == null)
             {
-                throw new ArgumentException("The current document is not connected to a data source", "Document");
+                throw new ArgumentException("The current document is not connected to a data source", nameof(document));
             }
 
             if (!Document.Connection.IsConnected)
             {
-                throw new ArgumentException("The connection for the current document is not in an open state", "Document");
+                throw new ArgumentException("The connection for the current document is not in an open state", nameof(document));
             }
 
             if (Document.Connection.Database.Models.Count == 0)
             {
-                throw new ArgumentException("The connection for the current document does not have a data model", "Document");
+                throw new ArgumentException("The connection for the current document does not have a data model", nameof(document));
             }
 
             PopulateTablesList();
@@ -195,7 +196,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 Document.IsQueryRunning = true;
                 try
@@ -217,7 +218,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Document.IsQueryRunning = false;
                 }
-            })
+            } )
             .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted)
             .ContinueWith(prevTask => {
                 //TryClose(true);
@@ -226,10 +227,13 @@ namespace DaxStudio.UI.ViewModels
 
             void HandleFaults(Task t)
             {
-                var ex = t.Exception.GetBaseException();
+                if (t.Exception != null)
+                {
+                    var ex = t.Exception.GetBaseException();
 
-                Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+                    Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+                }
             }
         }
 
@@ -255,9 +259,9 @@ namespace DaxStudio.UI.ViewModels
             Document.QueryStopWatch.Start();
 
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
-            var totalTables = selectedTables.Count();
+            var totalTables = selectedTables.Count;
             var tableCnt = 0;
-            string decimalSep = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
+            string decimalSep = CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
             var encoding = new UTF8Encoding(false);
 
@@ -265,7 +269,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(table));
 
-                var rows = 0;
                 tableCnt++;
                 try
                 {
@@ -300,7 +303,7 @@ namespace DaxStudio.UI.ViewModels
                                 
                                 using (var reader = connRead.ExecuteReader(daxQuery))
                                 {
-                                    rows = 0;
+                                    var rows = 0;
                                     
 
                                     // configure delimiter
@@ -309,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
                                     // output dates using ISO 8601 format
                                     csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
                                         typeof(DateTime),
-                                        new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
+                                        new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new[] { isoDateFormat } });
 
                                     // if this is the first batch of rows 
                                     if (batchRows == 0)
@@ -331,10 +334,9 @@ namespace DaxStudio.UI.ViewModels
 
                                             // quote all string fields
                                             if (reader.GetFieldType(fieldOrdinal) == typeof(string))
-                                                if (reader.IsDBNull(fieldOrdinal))
-                                                    csvWriter.WriteField("", this.CsvQuoteStrings);
-                                                else
-                                                    csvWriter.WriteField(fieldValue.ToString(), this.CsvQuoteStrings);
+                                                csvWriter.WriteField(
+                                                    reader.IsDBNull(fieldOrdinal) ? "" : fieldValue.ToString(),
+                                                    this.CsvQuoteStrings);
                                             else
                                                 csvWriter.WriteField(fieldValue);
 
@@ -378,13 +380,13 @@ namespace DaxStudio.UI.ViewModels
                                 if (!connRead.AllFunctions.Contains("TOPNSKIP")) break; 
                             } // end of batch
 
-                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, ExportTableMsg.Format(rows, rows == 1 ? "":"s", table.DaxName + ".csv")));
+                            EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "":"s", table.DaxName + ".csv")));
 
                         }
                     }
                     finally
                     {
-                        textWriter?.Dispose();
+                        textWriter.Dispose();
                     }
 
                     table.Status = ExportStatus.Done;
@@ -430,7 +432,6 @@ namespace DaxStudio.UI.ViewModels
 
         
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         private void ExportDataToSQLServer(string connStr, string schemaName, bool truncateTables)
         {
             var metadataPane = this.Document.MetadataPane;
@@ -451,7 +452,7 @@ namespace DaxStudio.UI.ViewModels
 
             _currentTableIdx = 0;
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
-            _totalTableCnt = selectedTables.Count();
+            _totalTableCnt = selectedTables.Count;
 
             var connRead = Document.Connection;
 
@@ -490,7 +491,7 @@ namespace DaxStudio.UI.ViewModels
                             var totalRows = dtRows.Rows[0].Field<long>(0);
                             _currentTable.TotalRows = totalRows;
 
-                            using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                            using (var _ = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                             {
 
                                 for (long batchRows = 0; batchRows < totalRows; batchRows += MaxBatchSize)
@@ -521,31 +522,33 @@ namespace DaxStudio.UI.ViewModels
                                                 }
                                             }
 
-                                            var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction); 
-
-                                            sqlBulkCopy.DestinationTableName = _sqlTableName;
-                                            sqlBulkCopy.BatchSize = 5000;
-                                            sqlBulkCopy.NotifyAfter = 5000;
-                                            sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
-                                            sqlBulkCopy.EnableStreaming = true;
-                                            var task = sqlBulkCopy.WriteToServerAsync(reader, _cancellationTokenSource.Token);
-
-                                            WaitForTaskPollingForCancellation(_cancellationTokenSource, task);
-
-                                            // update the currentTable with the final rowcount
-                                            _currentTable.RowCount = sqlBulkCopy.RowsCopiedCount() + batchRows;
-
-                                            if (CancelRequested)
+                                            using (var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                                             {
-                                                transaction.Rollback();
-                                                _currentTable.Status = ExportStatus.Cancelled;
-                                            }
-                                            else
-                                            {
-                                                transaction.Commit();
-                                                if (_currentTable.RowCount >= _currentTable.TotalRows)
-                                                    _currentTable.Status = ExportStatus.Done;
-                                            }
+                                                sqlBulkCopy.DestinationTableName = _sqlTableName;
+                                                sqlBulkCopy.BatchSize = 5000;
+                                                sqlBulkCopy.NotifyAfter = 5000;
+                                                sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
+                                                sqlBulkCopy.EnableStreaming = true;
+                                                var task = sqlBulkCopy.WriteToServerAsync(reader,
+                                                    _cancellationTokenSource.Token);
+
+                                                WaitForTaskPollingForCancellation(_cancellationTokenSource, task);
+
+                                                // update the currentTable with the final row count
+                                                _currentTable.RowCount = sqlBulkCopy.RowsCopiedCount() + batchRows;
+
+                                                if (CancelRequested)
+                                                {
+                                                    transaction.Rollback();
+                                                    _currentTable.Status = ExportStatus.Cancelled;
+                                                }
+                                                else
+                                                {
+                                                    transaction.Commit();
+                                                    if (_currentTable.RowCount >= _currentTable.TotalRows)
+                                                        _currentTable.Status = ExportStatus.Done;
+                                                }
+                                            } // end using sqlBulkCopy
                                         } // end transaction
 
                                     } // end using reader
@@ -573,7 +576,6 @@ namespace DaxStudio.UI.ViewModels
                             Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), ex.Message);
                             EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {ex.Message}"));
                             EventAggregator.PublishOnUIThread(new ExportStatusUpdateEvent(_currentTable, true));
-                            continue; // skip to next table on error
                         }
 
                     } // end foreach table
@@ -636,7 +638,7 @@ namespace DaxStudio.UI.ViewModels
             //    e.Abort = true;
             //    cancellationTokenSource.Cancel();
             //}
-            new StatusBarMessage(Document, $"Exporting Table {_currentTableIdx} of {_totalTableCnt} : {_sqlTableName} ({(e.RowsCopied + _sqlBatchRows ):N0} rows)");
+            var _ = new StatusBarMessage(Document, $"Exporting Table {_currentTableIdx} of {_totalTableCnt} : {_sqlTableName} ({(e.RowsCopied + _sqlBatchRows ):N0} rows)");
             _currentTable.RowCount = e.RowsCopied + _sqlBatchRows;
             Document.RefreshElapsedTime();
         }
@@ -647,22 +649,25 @@ namespace DaxStudio.UI.ViewModels
 
             var schemaTable = reader.GetSchemaTable();
 
-            foreach (System.Data.DataRow row in schemaTable.Rows)
-            {
-                var colName = row.Field<string>("ColumnName");
-
-                var regEx = System.Text.RegularExpressions.Regex.Match(colName, @".+\[(.+)\]");
-
-                if (regEx.Success)
+            if (schemaTable != null)
+                foreach (DataRow row in schemaTable.Rows)
                 {
-                    colName = regEx.Groups[1].Value;
+                    var colName = row.Field<string>("ColumnName");
+
+                    var regEx = Regex.Match(colName, @".+\[(.+)\]");
+
+                    if (regEx.Success)
+                    {
+                        colName = regEx.Groups[1].Value;
+                    }
+
+                    var fixedName = colName.Replace('|', '_');
+                    var sqlType = ConvertDotNetToSQLType(row);
+
+                    strColumns.AppendLine($",[{fixedName}] {sqlType} NULL");
                 }
-                colName.Replace('|', '_');
-                var sqlType = ConvertDotNetToSQLType(row);
 
-                strColumns.AppendLine($",[{colName}] {sqlType} NULL");
-            }
-
+            // ReSharper disable once StringLiteralTypo
             var cmdText = @"                
                 declare @sqlCmd nvarchar(max)
 
@@ -705,9 +710,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string ConvertDotNetToSQLType(System.Data.DataRow row)
+        private string ConvertDotNetToSQLType(DataRow row)
         {
-            var dataType = row.Field<System.Type>("DataType").ToString();
+            var dataType = row.Field<Type>("DataType").ToString();
 
             string dataTypeName = null;
 
@@ -721,7 +726,7 @@ namespace DaxStudio.UI.ViewModels
                 case "System.Double":
                     {
                         return "float";
-                    };
+                    }
                 case "System.Boolean":
                     {
                         return "bit";
@@ -735,7 +740,7 @@ namespace DaxStudio.UI.ViewModels
                             dataTypeName = "nvarchar";
                         }
 
-                        string columnSizeStr = "MAX";
+                        string columnSizeStr;
 
                         if (columnSize == null || columnSize <= 0 || (dataTypeName == "varchar" && columnSize > 8000) || (dataTypeName == "nvarchar" && columnSize > 4000))
                         {
@@ -765,7 +770,7 @@ namespace DaxStudio.UI.ViewModels
                             }
                         }
 
-                        if (!string.IsNullOrEmpty(dataTypeName) && dataTypeName.EndsWith("*money"))
+                        if (!string.IsNullOrEmpty(dataTypeName) && dataTypeName.EndsWith("*money",StringComparison.OrdinalIgnoreCase))
                         {
                             return dataTypeName;
                         }

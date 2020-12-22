@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Xml;
-using ADOTabular.AdomdClientWrappers;
 using System.Linq;
 using System.Xml.Linq;
+using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using Microsoft.AnalysisServices.Tabular;
+
+using Tuple = System.Tuple;
 
 namespace ADOTabular
 {
@@ -86,10 +88,8 @@ namespace ADOTabular
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
 
-            using (XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit })
-            {
-                GenerateTablesFromXmlReader(tables, rdr);
-            }
+            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
+            GenerateTablesFromXmlReader(tables, rdr);
         }
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
@@ -756,7 +756,10 @@ namespace ADOTabular
                         switch (rdr.LocalName)
                         {
                             case "Name":
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+                                // NOTE (marcorus): Is this assignment necessary? Why _name is not used later?
                                 _name = rdr.Value;
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
                                 break;
                             case "Default":
                                 isDefault = bool.Parse( rdr.Value);
@@ -840,7 +843,7 @@ namespace ADOTabular
 
                 // Reset DisplayFolder local variables
                 folderCaption = null;
-                folderReference = String.Empty;
+                folderReference = string.Empty;
                     
                 if ((rdr.NodeType == XmlNodeType.Element)
                     && (rdr.LocalName == "PropertyRef" 
@@ -867,7 +870,7 @@ namespace ADOTabular
                     rdr.Read();
                 }
 
-                if ((rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders"))
+                if (rdr.LocalName != "DisplayFolder" && rdr.LocalName != "PropertyRef" && rdr.LocalName != "DisplaFolders")
 
                 {
                     if (rdr.NodeType != XmlNodeType.Element && rdr.NodeType != XmlNodeType.EndElement)
@@ -1074,17 +1077,15 @@ namespace ADOTabular
             var ssas2016 = new Version(13,0,0,0);
             if (Version.Parse(_conn.ServerVersion) >= ssas2016)
             {
-                using (DataTable paramTable = CreateParameterTable())
-                {
+                using DataTable paramTable = CreateParameterTable();
 
-                    paramTable.Rows.Add(new[] { "Rows", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Skip", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Table", "FALSE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "OrderByExpression", "TRUE", "FALSE", "FALSE" });
-                    paramTable.Rows.Add(new[] { "Order", "FALSE", "TRUE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Rows", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Skip", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Table", "FALSE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "OrderByExpression", "TRUE", "FALSE", "FALSE" });
+                paramTable.Rows.Add(new[] { "Order", "FALSE", "TRUE", "FALSE" });
 
-                    functionGroups.AddFunction("FILTER", "TOPNSKIP", "Retrieves a number of rows from a table efficiently, skipping a number of rows. Compared to TOPN, the TOPNSKIP function is less flexible, but much faster.", paramTable.Select());
-                }
+                functionGroups.AddFunction("FILTER", "TOPNSKIP", "Retrieves a number of rows from a table efficiently, skipping a number of rows. Compared to TOPN, the TOPNSKIP function is less flexible, but much faster.", paramTable.Select());
             }
         }
 
@@ -1115,7 +1116,9 @@ namespace ADOTabular
                            join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
                            from kword in a.DefaultIfEmpty()
                            where kword == null
-                           select new { Keyword = (string)keyword["Keyword"] , Matched= kword==null?true:false};
+#pragma warning disable IDE0050 // Convert to tuple
+                         select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
+#pragma warning restore IDE0050 // Convert to tuple
 
             //foreach (DataRow dr in drKeywords)
             foreach (var dr in kwords)
@@ -1133,8 +1136,8 @@ namespace ADOTabular
         }
         private static string GetXmlString(IDataRecord dr, int column) {
             // Use the original AdomdDataReader (we don't have to use the proxy here!)
-            Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField = dr.GetValue(column) as Microsoft.AnalysisServices.AdomdClient.AdomdDataReader;
-            if (mdXmlField == null) {
+            if (!(dr.GetValue(column) is Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField))
+            {
                 return null;
             }
             XElement piXml = new XElement("PARAMETERINFO");
@@ -1277,6 +1280,25 @@ namespace ADOTabular
             var ret = MetaDataVisitorADOMD.VisitMeasures(measures, this._conn);
 
             return ret;
+        }
+
+        public void Visit(MetadataInfo.DaxColumnsRemap daxColumnsRemap)
+        {
+            if (daxColumnsRemap == null) throw new ArgumentNullException(nameof(daxColumnsRemap));
+
+            // Clear remapping
+            daxColumnsRemap.RemapNames.Clear();
+            const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
+
+            // Load remapping
+
+            using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS);
+            while (result.Read())
+            {
+                string columnId = GetString(result, 0);
+                string columnName = GetString(result, 1);
+                daxColumnsRemap.RemapNames.Add(columnId, columnName);
+            }
         }
     }
 

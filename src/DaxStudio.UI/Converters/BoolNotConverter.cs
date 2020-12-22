@@ -12,18 +12,18 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool boolean)
             {
-                return !(bool)value;
+                return !boolean;
             }
             return Binding.DoNothing;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool boolean)
             {
-                return !(bool)value;
+                return !boolean;
             }
             return Binding.DoNothing;
         }

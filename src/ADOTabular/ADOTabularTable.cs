@@ -80,12 +80,12 @@ namespace ADOTabular
 
         public ADOTabularColumnCollection Columns
         {
-            get { return _columnColl ?? (_columnColl = new ADOTabularColumnCollection(_adoTabConn, this)); }
+            get { return _columnColl ??= new ADOTabularColumnCollection(_adoTabConn, this); }
         }
 
         public ADOTabularMeasureCollection Measures
         {
-            get { return _measuresColl ?? (_measuresColl = new ADOTabularMeasureCollection(_adoTabConn, this)); }
+            get { return _measuresColl ??= new ADOTabularMeasureCollection(_adoTabConn, this); }
         }
 
         public ADOTabularModel Model { get; private set; }
@@ -113,11 +113,9 @@ namespace ADOTabular
             if (connection == null) return;
 
             string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
-            
-            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
-            {
-                RowCount = (long)dt.Rows[0][0];
-            }
+
+            using var dt = connection.ExecuteDaxQueryDataTable(qry);
+            RowCount = (long)dt.Rows[0][0];
         }
 
     }
