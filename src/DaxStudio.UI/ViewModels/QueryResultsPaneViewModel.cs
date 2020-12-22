@@ -181,7 +181,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public double _fontSize = 20;
+        private double _fontSize = 20;
         public double FontSize {
             get { return _fontSize; }
             set {
@@ -190,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string _fontFamily = "Arial";
+        private string _fontFamily = "Arial";
         public string FontFamily
         {
             get { return _fontFamily; }
@@ -290,8 +290,8 @@ namespace DaxStudio.UI.ViewModels
         {
             System.Diagnostics.Debug.WriteLine("DoubleClick fired");
             string dataContext = string.Empty;
-            if (e.OriginalSource is TextBlock) { dataContext = ((TextBlock)e.OriginalSource).DataContext as string; }
-            if (e.OriginalSource is Border) { dataContext = ((Border)e.OriginalSource).DataContext as string; }
+            if (e.OriginalSource is TextBlock block) { dataContext = block.DataContext as string; }
+            if (e.OriginalSource is Border border) { dataContext = border.DataContext as string; }
 
             if (!string.IsNullOrEmpty(dataContext))
             {

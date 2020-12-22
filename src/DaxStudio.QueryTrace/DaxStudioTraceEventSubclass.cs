@@ -3,7 +3,6 @@
     // Copied from Microsoft.AnalysisServices 11.0
     // could possibly be trimmed down as we only use a small subset of these
     // 2018-07-01: refreshed list, so we have BatchVertiPaqScan
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "The underscores reflect the actual value used by SSAS")]
     public enum DaxStudioTraceEventSubclass
     {
         NotAvailable,

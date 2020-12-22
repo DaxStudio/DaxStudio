@@ -55,6 +55,9 @@ namespace DaxStudio.UI.ViewModels
         private int _queryEndEventTimeout;
         private int _daxFormatterRequestTimeout;
         private bool _traceDirectQuery;
+        private bool _highlightXmSqlCallbacks;
+        private bool _simplifyXmSqlSyntax;
+        private bool _replaceXmSqlColumnNames;
 
         private readonly IEventAggregator _eventAggregator;
 
@@ -239,6 +242,58 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue(nameof(TraceDirectQuery), value, _isInitializing);
             }
         }
+
+        [DisplayName("Highlight VertiPaq callbacks")]
+        [Category("Server Timings")]
+        [Description("Highlight xmSQL queries containing callbacks that don't store the result in the storage engine cache.")]
+        [DataMember, DefaultValue(true)]
+        public bool HighlightXmSqlCallbacks
+        {
+            get => _highlightXmSqlCallbacks;
+            set
+            {
+                if (_highlightXmSqlCallbacks == value) return;
+                _highlightXmSqlCallbacks = value;
+                NotifyOfPropertyChange(() => HighlightXmSqlCallbacks);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(HighlightXmSqlCallbacks), value, _isInitializing);
+            }
+        }
+
+        [DisplayName("Simplify SE query syntax")]
+        [Category("Server Timings")]
+        [Description("Remove internal IDs and verbose syntax from xmSQL queries.")]
+        [DataMember, DefaultValue(true)]
+        public bool SimplifyXmSqlSyntax
+        {
+            get => _simplifyXmSqlSyntax;
+            set
+            {
+                if (_simplifyXmSqlSyntax == value) return;
+                _simplifyXmSqlSyntax = value;
+                NotifyOfPropertyChange(() => SimplifyXmSqlSyntax);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(SimplifyXmSqlSyntax), value, _isInitializing);
+            }
+        }
+
+        [DisplayName("Replace column ID with name")]
+        [Category("Server Timings")]
+        [Description("Replace xmSQL column ID with corresponding column name in data model.")]
+        [DataMember, DefaultValue(true)]
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => _replaceXmSqlColumnNames;
+            set
+            {
+                if (_replaceXmSqlColumnNames == value) return;
+                _replaceXmSqlColumnNames = value;
+                NotifyOfPropertyChange(() => ReplaceXmSqlColumnNames);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlColumnNames), value, _isInitializing);
+            }
+        }
+
         #region Http Proxy properties
 
         [Category("Proxy")]
@@ -867,7 +922,7 @@ namespace DaxStudio.UI.ViewModels
                 var props = typeof(OptionsViewModel).GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var prop in props)
                 {
-                    if (!prop.Name.StartsWith("Hotkey")) continue;
+                    if (!prop.Name.StartsWith("Hotkey", StringComparison.InvariantCultureIgnoreCase)) continue;
 
                     foreach (var att in prop.GetCustomAttributes(false))
                     {

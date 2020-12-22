@@ -182,7 +182,6 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -198,7 +197,6 @@ namespace DaxStudio.UI.ViewModels
                     InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -222,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_connectionProperties.ContainsKey("Application Name"))
                     {
-                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (Power BI)"))
+                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (Power BI)", StringComparison.OrdinalIgnoreCase))
                         {
                             PowerPivotModeSelected = false;
                             ServerModeSelected = false;
@@ -244,7 +242,7 @@ namespace DaxStudio.UI.ViewModels
                                 EffectiveUserName = p.Value;
                                 break;
                             case "mdx compatibility":
-                                MdxCompatibility = MdxCompatibilityOptions.Find(x => x.StartsWith(p.Value));
+                                MdxCompatibility = MdxCompatibilityOptions.Find(x => x.StartsWith(p.Value, StringComparison.OrdinalIgnoreCase));
                                 break;
                             case "directquerymode":
                                 DirectQueryMode = p.Value;
@@ -286,7 +284,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string _additionalOptions = string.Empty;
         public string AdditionalOptions {
-            get { if (_additionalOptions.Trim().EndsWith(";"))
+            get { if (_additionalOptions.Trim().EndsWith(";", StringComparison.OrdinalIgnoreCase))
                     return _additionalOptions;
                 else
                     return _additionalOptions.Trim() + ";";
@@ -405,7 +403,7 @@ namespace DaxStudio.UI.ViewModels
         public string MdxCompatibility { 
             get { 
                 if (string.IsNullOrWhiteSpace(_mdxCompatibility))
-                    {_mdxCompatibility = MdxCompatibilityOptions.Find(x=> x.StartsWith("3"));}
+                    {_mdxCompatibility = MdxCompatibilityOptions.Find(x=> x.StartsWith("3", StringComparison.OrdinalIgnoreCase));}
                 return _mdxCompatibility;
             }
             set {
@@ -500,23 +498,6 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public bool CanConnect
-        {
-            get {
-
-                return true;
-                if (!PowerBIModeSelected) return true;
-
-                if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1)
-                {
-                    return false;
-                }
-
-                if (ShowConnectionWarning) return false;
-
-                return true;
-            }
-        }
 
         public void Connect()
         {
@@ -613,7 +594,6 @@ namespace DaxStudio.UI.ViewModels
                 InitialCatalog = string.Empty;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
-                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 
@@ -859,7 +839,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showConnectionWarning = value;
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
-                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 

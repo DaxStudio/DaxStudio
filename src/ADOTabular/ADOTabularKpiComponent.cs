@@ -29,16 +29,13 @@ namespace ADOTabular
         public string Description => Column.Description;
         public ADOTabularObjectType ObjectType {
             get {
-                switch (ComponentType)
+                return ComponentType switch
                 {
-                    case KpiComponentType.Goal:
-                        return ADOTabularObjectType.KPIGoal;
-                    case KpiComponentType.Status:
-                        return ADOTabularObjectType.KPIStatus;
-                    case KpiComponentType.Value:
-                        return ADOTabularObjectType.KPI;
-                }
-                return ADOTabularObjectType.Unknown;
+                    KpiComponentType.Goal => ADOTabularObjectType.KPIGoal,
+                    KpiComponentType.Status => ADOTabularObjectType.KPIStatus,
+                    KpiComponentType.Value => ADOTabularObjectType.KPI,
+                    _ => ADOTabularObjectType.Unknown,
+                };
             }
         }
         public bool IsVisible => true;

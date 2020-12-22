@@ -92,7 +92,7 @@ namespace ADOTabular
 
                 var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 
-                return (measure?.Expression);
+                return measure?.Expression;
             }
         }
 
@@ -130,38 +130,21 @@ namespace ADOTabular
         {
             if (connection == null) return;
 
-            string qry;
-            switch (Type.GetTypeCode(DataType))
+            string qry = Type.GetTypeCode(DataType) switch
             {
-                case TypeCode.Boolean:
-                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
-                    break;
-                case TypeCode.Empty:
-                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
-                    break;
-                case TypeCode.String:
-                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )";
-                    break;
-                default:
-                    qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )";
-                    break;
+                TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                TypeCode.Empty   => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                TypeCode.String  => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                _                => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )",
+            };
 
-            }
-
-            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
-            {
-
-                MinValue = dt.Rows[0][0].ToString();
-                MaxValue = dt.Rows[0][1].ToString();
-                if (dt.Rows[0][2] == DBNull.Value)
-                {
-                    DistinctValues = 0;
-                }
-                else
-                {
-                    DistinctValues = (long)dt.Rows[0][2];
-                }
-            }
+            using var dt = connection.ExecuteDaxQueryDataTable(qry);
+            MinValue = dt.Rows[0][0].ToString();
+            MaxValue = dt.Rows[0][1].ToString();
+            DistinctValues = 
+                (dt.Rows[0][2] == DBNull.Value) 
+                ? 0 
+                : (long)dt.Rows[0][2];
         }
 
 
@@ -175,15 +158,13 @@ namespace ADOTabular
                 qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), 1) ORDER BY {{1}}";
 
             var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName);
-            using (var dt = connection.ExecuteDaxQueryDataTable(qry))
+            using var dt = connection.ExecuteDaxQueryDataTable(qry);
+            List<string> _tmp = new List<string>(sampleSize * 2);
+            foreach (DataRow dr in dt.Rows)
             {
-                List<string> _tmp = new List<string>(sampleSize * 2);
-                foreach (DataRow dr in dt.Rows)
-                {
-                    _tmp.Add(string.Format(CultureInfo.InvariantCulture, string.Format(CultureInfo.InvariantCulture, "{{0:{0}}}", FormatString), dr[0]));
-                }
-                return _tmp.Distinct().Take(sampleSize).ToList();
+                _tmp.Add(string.Format(CultureInfo.InvariantCulture, string.Format(CultureInfo.InvariantCulture, "{{0:{0}}}", FormatString), dr[0]));
             }
+            return _tmp.Distinct().Take(sampleSize).ToList();
         }
 
         // used for relationship links

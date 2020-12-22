@@ -2,7 +2,6 @@
 using System.Data;
 using System.Linq;
 using ADOTabular;
-using ADOTabular.AdomdClientWrappers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Extensions;
 using Moq;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using DaxStudio.UI.Model;
 using Caliburn.Micro;
 using ADOTabular.Interfaces;
+using ADOTabular.AdomdClientWrappers;
 
 namespace DaxStudio.Tests
 {

@@ -163,6 +163,23 @@
             </Style>
 
             <!-- Category Icons -->
+            <conv:ResourceLookupConverter x:Key="CategoryIcons">
+                <ResourceDictionary>
+                    <fa:ImageAwesome x:Key="Custom Export Format"  Icon="Download" Width="16"/>
+                    <fa:ImageAwesome x:Key="Dax Formatter" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Defaults" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Editor" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Metadata Pane" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Proxy" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Privacy" Icon="UserSecret" Width="16" />
+                    <fa:ImageAwesome x:Key="Query History" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Results" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Server Timings" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Timeouts" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Trace" Icon="Pencil" Width="16"/>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
+
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
                     <sys:String x:Key="Custom Export Format">Download</sys:String>
@@ -174,6 +191,7 @@
                     <sys:String x:Key="Privacy">UserSecret</sys:String>
                     <sys:String x:Key="Query History">History</sys:String>
                     <sys:String x:Key="Results">Table</sys:String>
+                    <sys:String x:Key="Server Timings">Database</sys:String>
                     <sys:String x:Key="Timeouts">ClockOutline</sys:String>
                     <sys:String x:Key="Trace">Search</sys:String>
                 </ResourceDictionary>

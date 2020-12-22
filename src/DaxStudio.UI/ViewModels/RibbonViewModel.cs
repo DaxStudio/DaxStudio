@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Http;
 using ADOTabular;
 using System.Reflection;
+using Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -638,7 +639,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (isConnected)
                 {
-                    connectionDetail = $"{activeConnection.ServerType.ToString()} - {activeConnection.ServerVersion}";
+                    connectionDetail = $"{activeConnection.ServerType} - {activeConnection.ServerVersion}";
                 }
 
                 var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();

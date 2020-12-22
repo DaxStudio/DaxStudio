@@ -1,11 +1,10 @@
-﻿using ICSharpCode.AvalonEdit;
+﻿using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using ICSharpCode.AvalonEdit;
 
 namespace DAXEditorControl
 {
-    using System;
-    using System.Windows;
-    using System.Windows.Input;
-    using System.Windows.Media;
 
     /// <summary>
     /// This part of the AvalonEdit extension contains additional
@@ -273,13 +272,9 @@ namespace DAXEditorControl
         /// <param name="e"></param>
         private static void OnCurrentLineBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            DAXEditor view = d as DAXEditor;
-
-            if (view != null && e != null)
+            if (d is DAXEditor view && e != null)
             {
-                SolidColorBrush newValue = e.NewValue as SolidColorBrush;
-
-                if (newValue != null)
+                if (e.NewValue is SolidColorBrush newValue)
                 {
                     view.EditorCurrentLineBackground = newValue;
                     //view.AdjustCurrentLineBackground(newValue);
@@ -290,9 +285,7 @@ namespace DAXEditorControl
 
         private static void OnConvertTabsToSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            DAXEditor view = d as DAXEditor;
-
-            if (view == null) return;
+            if (!(d is DAXEditor view)) return;
             if (e == null) return;
 
             var convertTabsToSpaces = e.NewValue as bool?;
@@ -303,9 +296,7 @@ namespace DAXEditorControl
 
         private static void OnIndentationSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            DAXEditor view = d as DAXEditor;
-
-            if (view == null) return;
+            if (!(d is DAXEditor view)) return;
             if (e == null) return;
 
             var indentSize = e.NewValue as int?;

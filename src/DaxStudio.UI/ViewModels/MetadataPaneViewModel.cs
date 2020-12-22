@@ -737,10 +737,9 @@ namespace DaxStudio.UI.ViewModels
                         measureExpression = column.DaxName;
                     }
                 }
-                else if (item.Column is ADOTabularKpi)
+                else if (item.Column is ADOTabularKpi kpi)
                 {
                     column = (ADOTabularColumn)item.Column;
-                    var kpi = (ADOTabularKpi)item.Column;
                     measureExpression = kpi.MeasureExpression;
                 }
                 else
