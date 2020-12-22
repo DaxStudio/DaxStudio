@@ -132,13 +132,12 @@ namespace ADOTabular
         {
             if (connection == null) return;
 
-            string qry;
-            switch (Type.GetTypeCode(SystemType))
+            string qry = Type.GetTypeCode(SystemType) switch
             {
                 TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                TypeCode.Empty   => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                TypeCode.String  => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                _                => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )",
+                TypeCode.Empty => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                TypeCode.String => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )",
             };
 
             using var dt = connection.ExecuteDaxQueryDataTable(qry);
