@@ -7,7 +7,7 @@
              xmlns:converters="clr-namespace:DaxStudio.UI.Converters" xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="450"
+             d:DesignHeight="450" d:DesignWidth="500"
              MaxWidth="500"
              >
             
@@ -41,14 +41,13 @@
     <UserControl.LayoutTransform>
         <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
     </UserControl.LayoutTransform>
-    <Grid>
-
+    <Grid Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
+          attachedProperties:VisibilityAnimation.AnimationType="Fade">
+    <Border Padding="10"
+            Grid.RowSpan="2" 
+            Grid.ColumnSpan="2" >
         <!-- Help Watermark -->
         <StackPanel  
-            Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
-            attachedProperties:VisibilityAnimation.AnimationType="Fade"
-            Grid.RowSpan="2" 
-            Grid.ColumnSpan="2" 
             VerticalAlignment="Center" 
             HorizontalAlignment="Center">
             <TextBlock  HorizontalAlignment="Center" FontWeight="Normal" FontSize="28" Margin="0 10">Start by typing your query in this area. </TextBlock>
@@ -70,5 +69,6 @@
             </StackPanel>
             <CheckBox HorizontalAlignment="Center" Foreground="{StaticResource WatermarkTextColor}" Margin="0 15 0 0" x:Name="NeverShowHelpWatermark">Do not show this help text in future</CheckBox>
         </StackPanel>
+    </Border>
     </Grid>
 </UserControl>

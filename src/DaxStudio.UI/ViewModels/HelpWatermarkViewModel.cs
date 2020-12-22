@@ -13,7 +13,8 @@ namespace DaxStudio.UI.ViewModels
         // if the editor get smaller than the values below we
         // need to hide the help text as it will be too big
         private const int MinWidth = 515;
-        private const int MinHeight = 270;
+        private const int MinHeight = 290;
+        private const double MaxScale = 1.2;
         private Size EditorSize;
 
         public HelpWatermarkViewModel(IGlobalOptions options)
@@ -67,11 +68,11 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (EditorSize.Height >= MinHeight && EditorSize.Width >= MinWidth) return 1.0;
+                //if (EditorSize.Height >= MinHeight && EditorSize.Width >= MinWidth) return 1.0;
                 var heightScale = EditorSize.Height / MinHeight;
                 var widthScale = EditorSize.Width / MinWidth;
-                if (heightScale > widthScale) return widthScale;
-                return heightScale;
+                if (heightScale > widthScale) return widthScale > MaxScale ? MaxScale : widthScale;
+                return heightScale > MaxScale ? MaxScale : heightScale;
             }
         }
     }
