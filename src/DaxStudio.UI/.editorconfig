@@ -1,7 +1,16 @@
 ﻿[*.cs]
 
+# IDE0051: emove unread private member
+dotnet_diagnostic.IDE0051.severity = silent
+
+# IDE0052: emove unread private member
+dotnet_diagnostic.IDE0052.severity = silent
+
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = silent
+
+# CA1051: Do not declare visible instance fields
+dotnet_diagnostic.CA1051.severity = silent
 
 # CA1304: Specify CultureInfo
 dotnet_diagnostic.CA1304.severity = silent
