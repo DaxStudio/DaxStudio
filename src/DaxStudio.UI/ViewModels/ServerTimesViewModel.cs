@@ -14,6 +14,7 @@ using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Windows.Media;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
 using Microsoft.Xaml.Behaviors.Media;
@@ -69,12 +70,10 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            get {
-                return _queryRichText;
-            }
+            get => _queryRichText;
         }
 
-        protected IGlobalOptions Options;
+        protected IGlobalOptions Options { get; }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
         {
@@ -568,20 +567,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "Server Timings"; }
-            set { }
-        }
-
-        public override string ToolTipText
+        public override string Title => "Server Timings";
+        public override string ContentId => "server-timings-trace";
+        public override ImageSource IconSource
         {
             get
             {
-                return "Runs a server trace to record detailed timing information for performance profiling";
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
+
             }
-            set { }
         }
+
+        public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 
         public override void OnReset()
         {

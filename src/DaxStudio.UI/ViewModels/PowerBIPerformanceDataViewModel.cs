@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
+using System.Windows.Media;
 using Newtonsoft.Json.Linq;
 using Serilog;
 
@@ -37,19 +38,27 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
         }
-      
-        
-        public new bool CanHide { get { return true; } }
+
+
+        public new bool CanHide => true;
+        public override string ContentId => "pbi-performance-data";
+        public override ImageSource IconSource
+        {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-pbi-tachometer@2x.png") as ImageSource;
+
+            }
+        }
 
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; } 
        
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "PBI Performance"; }
-            set { }
-        }
+        public override string Title => "PBI Performance";
+        public override string DefaultDockingPane => "DockBottom";
 
 
         string _fileName = "";

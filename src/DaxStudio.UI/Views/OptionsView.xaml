@@ -1170,17 +1170,6 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-<!--
-                                <CheckBox Grid.Column="0" x:Name="ShowExportMetrics" VerticalAlignment="Top" Content="Show Export Metrics button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export metrics about your data model to a .vpax file which can be imported into Vertipaq Analyzer v2</TextBlock>
-
-                                <CheckBox Grid.Row="2"  Grid.Column="0" x:Name="ShowExportAllData" VerticalAlignment="Top" Content="Show Export All Data button" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will export all data from the currently selected data model to a collection of csv files or SQL Server tables</TextBlock>
-
-                                <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ShowExternalTools" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show External Tools" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature will add "Launch Excel" and "Launch SQL Profiler" options to the advanced tool bar</TextBlock>
-
-                                -->
 
                                 <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>

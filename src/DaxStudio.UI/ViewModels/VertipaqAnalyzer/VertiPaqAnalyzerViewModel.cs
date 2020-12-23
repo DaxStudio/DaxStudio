@@ -2,21 +2,14 @@
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
 using System.Windows.Data;
-using System;
 using System.ComponentModel;
 using Serilog;
-using System.Windows.Input;
 using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
-using System.Windows.Navigation;
-using System.Web.UI.WebControls;
-using System.Windows.Controls;
-using DataGrid = System.Windows.Controls.DataGrid;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -164,9 +157,18 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
 
         // TODO: we might add the database name here
-        public override string Title
-        {
-            get { return "VertiPaq Analyzer Metrics"; }
+        public override string Title => "VertiPaq Analyzer Metrics";
+
+        public override string DefaultDockingPane => "DockBottom";
+        public override string ContentId => "vertipaq-analyzer";
+        public override ImageSource IconSource {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-view-metrics.png") as ImageSource;
+
+            }
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)

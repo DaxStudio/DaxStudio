@@ -1510,6 +1510,9 @@
     <PackageReference Include="Dax.Vpax">
       <Version>1.0.30</Version>
     </PackageReference>
+    <PackageReference Include="Dirkster.AvalonDock">
+      <Version>3.6.2</Version>
+    </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
       <Version>3.6.2</Version>
     </PackageReference>
