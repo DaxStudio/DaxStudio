@@ -654,7 +654,7 @@ namespace DaxStudio.UI.ViewModels
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); } }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0, GridUnitType.Pixel) : new GridLength(1, GridUnitType.Star); } }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails
