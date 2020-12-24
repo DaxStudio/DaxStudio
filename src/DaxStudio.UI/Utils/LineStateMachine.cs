@@ -69,7 +69,7 @@ namespace DaxStudio.UI.Utils
 
                 if (input[pos] == NewLine)
                 {
-                    if (CurrentLineIsSqlQueryComment()) SqlQueryCommentPosition = pos - LinePosition;
+                    if (CurrentLineIsSqlQueryComment() && SqlQueryCommentPosition == 0) SqlQueryCommentPosition = pos - LinePosition;
                     LinePosition = 0;
                 }
                 else LinePosition++;

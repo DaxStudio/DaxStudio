@@ -83,8 +83,9 @@ namespace DaxStudio.UI.Utils
                 case ' ':
                     if (sm.LinePosition > sm.MaxLineLength)
                     {
+                        char nextChar = (pos + 1) < input.Length ? input[pos + 1] : char.MinValue;
                         yield return input[pos];
-                        sm.InsertNewLine();
+                        if (nextChar != '\r' && nextChar != '\n') sm.InsertNewLine();
                         yield break;
                     }
 

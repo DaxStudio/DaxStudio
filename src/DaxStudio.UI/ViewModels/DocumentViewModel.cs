@@ -312,11 +312,17 @@ namespace DaxStudio.UI.ViewModels
                 var newContent = sm.ProcessString(content);
                 if (sm.SqlQueryCommentFound)
                 {
-                    if (MultipleQueriesDetectedDialogResult.RemoveDirectQuery ==
-                        ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
+                    switch (ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
                     {
-                        // remove the direct query code from the text we are pasting in
-                        newContent = newContent.Substring(0, sm.SqlQueryCommentPosition);
+                        case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
+                            // remove the direct query code from the text we are pasting in
+                            newContent = newContent.Substring(0, sm.SqlQueryCommentPosition);
+                            break;
+                        case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
+                            break;
+                        case MultipleQueriesDetectedDialogResult.Cancel:
+                            e.CancelCommand();
+                            return;
                     }
                 }
                 
