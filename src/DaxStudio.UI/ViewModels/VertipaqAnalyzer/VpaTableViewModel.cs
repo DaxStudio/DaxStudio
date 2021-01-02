@@ -43,6 +43,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 RelationshipMaxFromCardinality = RelationshipsFrom.Max(r => r.FromColumnCardinality);
                 RelationshipMaxToCardinality = RelationshipsFrom.Max(r => r.ToColumnCardinality);
+                RelationshipMaxOneToManyRatio = RelationshipsFrom.Max(r => r.OneToManyRatio);
                 RelationshipFromMissingKeys = RelationshipsFrom.Sum(r => r.MissingKeys);
                 RelationshipInvalidRows = RelationshipsFrom.Sum(r => r.InvalidRows);
             }
@@ -123,6 +124,7 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaColumnViewModel> Columns { get; }
         public IEnumerable<VpaRelationshipViewModel> RelationshipsFrom { get; }
         public long RelationshipMaxFromCardinality { get; }
+        public double RelationshipMaxOneToManyRatio { get; }
         public long RelationshipFromMissingKeys { get; }
         public long RelationshipInvalidRows { get; }
         public long ColumnMaxTotalSize { get; }
@@ -166,6 +168,8 @@ namespace DaxStudio.UI.ViewModels
                     return RelationshipFromMissingKeys.CompareTo(objTable.RelationshipFromMissingKeys) * SortDirection;
                 case "FromColumnCardinality":
                     return RelationshipMaxFromCardinality.CompareTo(objTable.RelationshipMaxFromCardinality) * SortDirection;
+                case "OneToManyRatio":
+                    return RelationshipMaxOneToManyRatio.CompareTo(objTable.RelationshipMaxOneToManyRatio) * SortDirection;
                 case "ToColumnCardinality":
                     return RelationshipMaxToCardinality.CompareTo(objTable.RelationshipMaxToCardinality) * SortDirection;
                 case "InvalidRows":
