@@ -16,6 +16,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
+using System.Text;
 
 namespace DaxStudio.Standalone
 {
@@ -134,6 +135,19 @@ namespace DaxStudio.Standalone
             //        Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
             //    }
             //}
+            catch (ReflectionTypeLoadException ex)
+            {
+                
+                var loaderExceptions = ex.LoaderExceptions;
+                var sbError = new StringBuilder();
+                foreach(var innerEx in ex.LoaderExceptions)
+                {
+                    sbError.AppendLine(innerEx.Message);
+                }
+                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main",  sbError.ToString());
+
+                LogFatalCrash(ex, ex.Message);
+            }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
@@ -284,21 +298,22 @@ namespace DaxStudio.Standalone
 
         private static void LogFatalCrash(Exception ex, string msg)
         {
-            // add a property to the application indicating that we have crashed
-            if (!App.Properties.Contains("HasCrashed"))
-                App.Properties.Add("HasCrashed", true);
+            Execute.OnUIThread(() => { 
+                // add a property to the application indicating that we have crashed
+                if (!App.Properties.Contains("HasCrashed"))
+                    App.Properties.Add("HasCrashed", true);
 
-            Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
-
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
-                CrashReporter.ReportCrash(ex, msg);
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
-            }
-
+                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+                Log.CloseAndFlush();
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
+                    CrashReporter.ReportCrash(ex, msg);
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
+                }
+            });
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
