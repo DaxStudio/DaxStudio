@@ -10,6 +10,7 @@ using DaxStudio.QueryTrace;
 using System.Timers;
 using DaxStudio.UI.Utils;
 using System;
+using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
@@ -109,7 +110,7 @@ namespace DaxStudio.UI.ViewModels
         public abstract void OnReset();
        
         // IToolWindow interface
-        public abstract string Title { get; set; }
+        public abstract string Title { get; }
 
         public virtual string TraceStatusText {
             get {
@@ -119,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
                 //if (IsPaused) return $"Trace is paused, click on the start button in the toolbar below to re-start tracing";
                 return string.Empty; } }
 
-        public abstract string ToolTipText { get; set; }
+        public abstract string ToolTipText { get; }
 
         public virtual string DefaultDockingPane
         {
@@ -127,18 +128,20 @@ namespace DaxStudio.UI.ViewModels
             set { }
         }
 
-        public bool CanCloseWindow
+        public virtual bool CanCloseWindow
         {
-            get { return true; }
+            get => true;
             set { }
         }
-        public bool CanHide
+        public virtual bool CanHide
         {
-            get { return true; }
+            get => true;
             set { }
         }
         public int AutoHideMinHeight { get; set; }
         public bool IsSelected { get; set; }
+        public abstract string ContentId { get; }
+        public abstract ImageSource IconSource { get; }
 
         private bool _isEnabled ;
         public bool IsEnabled { get { return _isEnabled; }

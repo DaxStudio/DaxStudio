@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.IO.Packaging;
 using System.Text;
+using System.Windows.Media;
 using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
@@ -187,20 +188,21 @@ namespace DaxStudio.UI.ViewModels
         }
         
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "Query Plan"; }
-            set { }
-        }
+        public override string Title => "Query Plan";
 
-        public override string ToolTipText
+        public override string ContentId => "query-plan";
+        public override ImageSource IconSource
         {
             get
             {
-                return "Runs a server trace to capture the Logical and Physical DAX Query Plans";
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png") as ImageSource;
+
             }
-            set { }
         }
+
+        public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }
 

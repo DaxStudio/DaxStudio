@@ -3,8 +3,12 @@ title: Downloads
 layout: page
 ---
 
+> This page lists previous releases of DAX Studio - the current release is available from the top of the [homepage](/)
+
+{% assign idx = 0 %}
+
 {% for release in  site.github.releases %} 
-  {% if release.draft != true and release.prerelease != true %}
+  {% if release.draft != true and release.prerelease != true and idx > 0 %}
 ### {{ release.name }}
     {% assign sorted = release.assets | sort: 'browser_download_url' | reverse %}
     {% for asset in sorted %}
@@ -16,8 +20,9 @@ layout: page
         {% assign download_type = "portable" %}
       {% endif %}
 - [{{ release.name }} ({{ download_type}})]({{ asset.browser_download_url }}) <br/>
-  Size: {% include filesize.html number=download_size %} \| Date: {% if asset.created_at  %}{{ asset.created_at | date_to_string }} {% else %} N/A {% endif %} 
-    {% endfor %}
+  Size: {% include filesize.html number=download_size %} \| Date: {% if asset.created_at  %}{{ asset.created_at | date_to_string }} {% else %} N/A {% endif %} \| Downloads: {% include intcomma.html number=download_count %}
+     {% endfor %}      
+
 
 {% comment %}
 
@@ -28,4 +33,6 @@ layout: page
 {% endcomment %}
 
   {% endif %}
+  {% assign idx = 1 %}
+
 {% endfor %}

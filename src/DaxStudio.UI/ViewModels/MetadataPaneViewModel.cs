@@ -15,6 +15,7 @@ using DaxStudio.Interfaces;
 using System.Windows;
 using System.Diagnostics;
 using System.Windows.Input;
+using System.Windows.Media;
 using ADOTabular.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
@@ -229,16 +230,19 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public override string DefaultDockingPane
+        public override string DefaultDockingPane => "DockLeft";
+        public override string ContentId => "metadata";
+        public override ImageSource IconSource
         {
-            get => "DockLeft";
-            set => base.DefaultDockingPane = value;
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/hierarchy.png") as ImageSource;
+
+            }
         }
-        public override string Title
-        {
-            get => "Metadata";
-            set => base.Title = value;
-        }
+        public override string Title => "Metadata";
 
         private ADOTabularModelCollection _modelList;
         public ADOTabularModelCollection ModelList
@@ -371,6 +375,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_selectedDatabase != value)
                 {
                     _selectedDatabase = value;
+                    if (_selectedDatabase == null) return;
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
                     _metadataProvider.SetSelectedDatabase(_selectedDatabase);
                     NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
@@ -388,11 +393,12 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedDatabaseDurationSinceUpdate {
             get
             {
+                if (SelectedDatabaseObject == null) return string.Empty;
                 var timespan = DateTime.UtcNow - SelectedDatabaseObject.LastUpdate;
                 return $"({timespan.Humanize(1)} ago)";
             }
         }
-        public DateTime SelectedDatabaseLastUpdateLocalTime => SelectedDatabaseObject.LastUpdate.ToLocalTime();
+        public DateTime SelectedDatabaseLastUpdateLocalTime => SelectedDatabaseObject?.LastUpdate.ToLocalTime() ?? DateTime.MinValue;
 
         public bool CanSelectDatabase => !_metadataProvider.IsPowerPivot && !ActiveDocument.IsQueryRunning;
 

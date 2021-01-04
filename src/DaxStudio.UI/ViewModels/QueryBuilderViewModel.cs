@@ -18,6 +18,7 @@ using System.Text;
 using System.Windows;
 using DaxStudio.UI.JsonConverters;
 using DaxStudio.UI.Utils;
+using System.Windows.Media;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Microsoft.AnalysisServices;
@@ -45,8 +46,6 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
             Options = globalOptions;
             Filters = new QueryBuilderFilterList(GetModelCapabilities);
-            Title = "Builder";
-            DefaultDockingPane = "DockMidLeft";
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
@@ -69,7 +68,21 @@ namespace DaxStudio.UI.ViewModels
 
 
         // ReSharper disable once UnusedMember.Global
+        public override string Title => "Query Builder";
+        public override string DefaultDockingPane => "DockMidLeft";
         public new bool CanHide => true;
+        public override string ContentId => "query-builder";
+        public override ImageSource IconSource
+        {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                // TODO - can I convert FontAwesome to an ImageSource ??
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-undo.png") as ImageSource;
+
+            }
+        }
         public bool CanOrderBy => Columns.Any();
         [DataMember]
         public QueryBuilderFieldList Columns { get; } 

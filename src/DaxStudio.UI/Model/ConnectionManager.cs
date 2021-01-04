@@ -99,8 +99,8 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
-        public DaxMetadata DaxMetadataInfo => _connection.DaxMetadataInfo;
-        public DaxColumnsRemap DaxColumnsRemapInfo => _connection.DaxColumnsRemapInfo;
+        public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
+        public DaxColumnsRemap DaxColumnsRemapInfo => _retry.Execute(() => _connection?.DaxColumnsRemapInfo);
 
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)

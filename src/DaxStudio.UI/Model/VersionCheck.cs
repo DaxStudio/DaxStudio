@@ -4,10 +4,8 @@ namespace DaxStudio.UI.Model
     using DaxStudio.Common;
     using DaxStudio.Interfaces;
     using DaxStudio.UI.Events;
-    using DaxStudio.UI.Interfaces;
     using DaxStudio.UI.Utils;
     using Extensions;
-    using Fluent.Localization.Languages;
     using Newtonsoft.Json.Linq;
     using Serilog;
     using System;
@@ -45,6 +43,12 @@ namespace DaxStudio.UI.Model
             _eventAggregator = eventAggregator;
             
             _globalOptions = globalOptions;
+
+            if (_globalOptions.BlockVersionChecks)
+            {
+                UpdateCompleteCallback?.Invoke();
+                return;
+            }
 
             worker.DoWork += new DoWorkEventHandler(BackgroundGetGitHubVersion);
             if (Enabled && LastVersionCheck.AddHours(CHECK_EVERY_HOURS) < DateTime.UtcNow)
@@ -128,7 +132,7 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                if (_globalOptions.LastVersionCheckUTC == null) _globalOptions.LastVersionCheckUTC = DateTime.UtcNow;
+                if (_globalOptions.LastVersionCheckUTC == DateTime.MinValue) _globalOptions.LastVersionCheckUTC = DateTime.UtcNow;
                 return _globalOptions.LastVersionCheckUTC;
             }
             set

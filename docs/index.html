@@ -14,7 +14,7 @@ js-footer: "/js/index-footer.js"
 {% assign zip_assets = download.assets | where_exp: "item", "item.browser_download_url contains '.zip'" %}
 {% assign portable = zip_assets[0] %}
 
-
+<!-- Installer Download link -->
 <div class="main-explain-area jumbotron center">
   <div class="centered">
     <div style="padding-bottom:10px">Download the latest release of DAX Studio here:</div>
@@ -28,12 +28,14 @@ js-footer: "/js/index-footer.js"
     {% assign download_count = installer.download_count %}
     {% assign download_size = installer.size %}
     <div class="download-info">
-      <i class="fa fa-download" title="downloads"></i><span>Size: {% include filesize.html number=download_size %} | </span>
+      <i class="fa fa-download" title="downloads"></i> <span>Size: {% include filesize.html number=download_size %} | </span>
       <i class="fa fa-calendar" title="release date"></i><span>{% if installer.created_at != nil %}{{ installer.created_at | date_to_string }} {% else %}N/A{% endif %} </span>
       <span id="download_cnt"></span> 
     </div>
   </div>
 </div>
+
+<!-- Portable Version download link -->
 
   {% if portable != nil  %}  
   <div class="centered">
@@ -46,9 +48,9 @@ js-footer: "/js/index-footer.js"
     {% assign download_count_1 = portable.download_count %}
     {% assign download_size_1 = portable.size %}
     <div class="download-info">
-      <i class="fa fa-download" title="downloads"></i><span>Size: {% include filesize.html number=download_size_1 %} | </span>
-      <i class="fa fa-calendar" title="release date"></i><span>{% if portable.created_at != nil %}{{ portable.created_at | date_to_string }} {% else %}N/A{% endif %} </span>
-      <span id="download_cnt_1"></span> 
+      <i class="fa fa-download" title="downloads"></i> <span>Size: {% include filesize.html number=download_size_1 %} | </span>
+      <i class="fa fa-calendar" title="release date"></i>&nbsp;<span>{% if portable.created_at != nil %}{{ portable.created_at | date_to_string }} {% else %}N/A{% endif %} </span>
+      <span id="download_cnt_zip"></span> 
     </div>
   </div>
 
