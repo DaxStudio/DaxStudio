@@ -280,6 +280,12 @@ namespace DaxStudio.UI.Model
             Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
             try
             {
+                if (globalOptions.BlockExternalServices)
+                {
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(DaxFormatterProxy), nameof(PrimeConnectionAsync), "Skipping Priming Connection to DaxFormatter.com as External Services are blocked in options");
+                    return;
+                }
+                
                 if (redirectHost == null)
                 {
                     // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
