@@ -20,6 +20,7 @@ namespace DaxStudio.Interfaces
         bool QueryHistoryShowTraceColumns { get; set; }
         bool ProxyUseSystem { get; set; }
         string ProxyAddress { get; set; }
+        bool ShowHelpWatermark { get; set; }
         string ProxyUser { get; set; }
         SecureString ProxySecurePassword { get; set; }
         int QueryEndEventTimeout { get; set; }

@@ -197,9 +197,13 @@ namespace DaxStudio.UI.ViewModels
             SelectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
+            HelpWatermark = new HelpWatermarkViewModel(Options);
+
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
             t.FireAndForget();
         }
+
+        public HelpWatermarkViewModel HelpWatermark { get; set; }
 
         private void QueryBuilder_VisibilityChanged(object sender, EventArgs e)
         {
@@ -416,6 +420,7 @@ namespace DaxStudio.UI.ViewModels
             //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
             _logger.Info("In OnDocumentChanged");
             IsDirty = _editor.Text.Length > 0;
+            ShowHelpWatermark = !IsDirty;
             LastModifiedUtcTime = DateTime.UtcNow;
             NotifyOfPropertyChange(() => IsDirty);
             NotifyOfPropertyChange(() => DisplayName);
@@ -662,12 +667,26 @@ namespace DaxStudio.UI.ViewModels
                 QueryBuilder
             });
 
+        public void OpenQueryBuilder()
+        {
+            // Only allow the Query Builder to be shown if we are connected
+            // (otherwise there is nothing to drag in from the metadata pane)
+            if (!Connection.IsConnected)
+            {
+                MessageBox.Show(
+                    "The current window is not connected to a data model. You must be connected before you can open the Query Builder",
+                    "Query Builder", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            ShowQueryBuilder = true;
+        }
+
         public bool ShowQueryBuilder {
             get => QueryBuilder?.IsVisible ?? false;
             set {
                 QueryBuilder.IsVisible = value;
                 NotifyOfPropertyChange(nameof(ShowQueryBuilder));
-
             }
         }
 
@@ -775,7 +794,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
-            foreach (var tw in TraceWatchers)
+            _eventAggregator.Unsubscribe(HelpWatermark);
+            foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
             }
@@ -803,6 +823,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(FunctionPane);
                 _eventAggregator.Subscribe(Connection);
                 _eventAggregator.Subscribe(IntellisenseProvider);
+                _eventAggregator.Subscribe(HelpWatermark);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in TraceWatchers)
                 {
@@ -3876,6 +3897,17 @@ namespace DaxStudio.UI.ViewModels
                 OutputError(ex.Message);
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ApplicationActivatedEvent>", ex.Message);
             }
+        }
+
+        public bool ShowHelpWatermark
+        {
+            get => HelpWatermark.ShowHelpWatermark;
+            set => HelpWatermark.ShowHelpWatermark = value;
+        }
+
+        public void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
         }
     }
 }

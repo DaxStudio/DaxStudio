@@ -29,6 +29,7 @@ namespace DaxStudio.SignalR
         public bool CanPublishDaxFunctions { get; set; }
 
         public string ProxyAddress { get; set; }
+        public bool ShowHelpWatermark { get; set; }
 
         public SecureString ProxySecurePassword { get; set; }
 

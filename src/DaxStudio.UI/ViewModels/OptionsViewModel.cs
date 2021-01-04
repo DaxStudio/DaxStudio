@@ -340,6 +340,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _neverShowHelpWatermark;
+        [Category("Editor")]
+        [DisplayName("Show Help Text on Empty Document")]
+        [SortOrder(120)]
+        [DataMember, DefaultValue(true)]
+        public bool ShowHelpWatermark { get => _neverShowHelpWatermark;
+            set
+            {
+                if (_neverShowHelpWatermark == value) return;
+                _neverShowHelpWatermark = value;
+                NotifyOfPropertyChange(() => ShowHelpWatermark);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ShowHelpWatermark), value, _isInitializing);
+            }
+        }
+
         [JsonIgnore]
         public bool ProxyAddressEnabled => !ProxyUseSystem;
 

@@ -375,6 +375,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_selectedDatabase != value)
                 {
                     _selectedDatabase = value;
+                    if (_selectedDatabase == null) return;
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
                     _metadataProvider.SetSelectedDatabase(_selectedDatabase);
                     NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
@@ -392,11 +393,12 @@ namespace DaxStudio.UI.ViewModels
         public string SelectedDatabaseDurationSinceUpdate {
             get
             {
+                if (SelectedDatabaseObject == null) return string.Empty;
                 var timespan = DateTime.UtcNow - SelectedDatabaseObject.LastUpdate;
                 return $"({timespan.Humanize(1)} ago)";
             }
         }
-        public DateTime SelectedDatabaseLastUpdateLocalTime => SelectedDatabaseObject.LastUpdate.ToLocalTime();
+        public DateTime SelectedDatabaseLastUpdateLocalTime => SelectedDatabaseObject?.LastUpdate.ToLocalTime() ?? DateTime.MinValue;
 
         public bool CanSelectDatabase => !_metadataProvider.IsPowerPivot && !ActiveDocument.IsQueryRunning;
 
