@@ -40,17 +40,6 @@ namespace DaxStudio.UI.Utils
             
         }
 
-        public static void WriteStartUpEventToAppInsights()
-        {
-            Telemetry.TrackEvent("App.Startup"
-                , new Dictionary<string, string>()
-                {
-                    {"UtcDateTime",DateTime.UtcNow.ToString("o") }
-                    ,{"Version", version.ToString()}
-                });
-
-        }
-
         private static void PopulateInfo()
         {
             if (version != null) return; // exit here if this info is already populated

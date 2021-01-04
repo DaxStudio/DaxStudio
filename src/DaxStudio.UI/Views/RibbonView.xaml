@@ -499,7 +499,7 @@
             </Fluent:RibbonGroupBox>-->
 
 
-            <Fluent:RibbonGroupBox Header="View" Visibility="{Binding ShowPreviewQueryBuilder, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="View">
                 <Fluent:ToggleButton 
                     Header="Query Builder"
                     Name="DisplayQueryBuilder" 
@@ -903,7 +903,7 @@
                     </Fluent:Button>
                 
             </Fluent:RibbonGroupBox>
-            <Fluent:RibbonGroupBox Header="Performance" Visibility="{Binding ShowPreviewBenchmark, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Fluent:RibbonGroupBox Header="Performance">
                 <Fluent:Button
                     Name="RunBenchmark"
                     Header="Run Benchmark"

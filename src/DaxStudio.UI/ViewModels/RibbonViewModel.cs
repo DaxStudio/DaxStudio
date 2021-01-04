@@ -908,27 +908,6 @@ namespace DaxStudio.UI.ViewModels
         #region "Preview Features"
 
 
-        private bool _showPreviewQueryBuilder;
-        public bool ShowPreviewQueryBuilder
-        {
-            get { return _showPreviewQueryBuilder; }
-            private set
-            {
-                _showPreviewQueryBuilder = value;
-                NotifyOfPropertyChange(() => ShowPreviewQueryBuilder);
-            }
-        }
-
-        private bool _showPreviewBenchmark;
-        public bool ShowPreviewBenchmark
-        {
-            get { return _showPreviewBenchmark; }
-            private set
-            {
-                _showPreviewBenchmark = value;
-                NotifyOfPropertyChange(() => ShowPreviewBenchmark);
-            }
-        }
 
         #endregion
 
@@ -997,8 +976,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
-            ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
             NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));

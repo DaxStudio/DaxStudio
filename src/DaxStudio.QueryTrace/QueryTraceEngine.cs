@@ -111,7 +111,7 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-        private readonly IGlobalOptions _globalOptions;
+        private readonly IGlobalOptionsBase _globalOptions;
         private readonly object _connectionLockObj = new object();
         private readonly bool _filterForCurrentSession;
         private readonly string _powerBiFileName;
@@ -137,7 +137,7 @@ namespace DaxStudio.QueryTrace
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptionsBase globalOptions, bool filterForCurrentSession, string powerBiFileName)
         {
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionString);
             _globalOptions = globalOptions;

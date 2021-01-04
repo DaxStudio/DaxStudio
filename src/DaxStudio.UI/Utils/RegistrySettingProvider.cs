@@ -273,6 +273,20 @@ namespace DaxStudio.UI.Utils
             // Check for machine level settings which are configured by the installer
             InitializeMachineSettings(options);
 
+            // Clean up Preview keys
+            CleanupPreviewKeys();
+        }
+
+        private void CleanupPreviewKeys()
+        {
+            var previewKeys = new string[] { "ShowPreviewQueryBuilder", "ShowPreviewBenchmark" };
+
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            if (regDaxStudio == null) return;
+            foreach (var subKey in previewKeys)
+            {
+                regDaxStudio.DeleteValue(subKey,false);
+            }
         }
 
         private static void InitializeMachineSettings(IGlobalOptions options)

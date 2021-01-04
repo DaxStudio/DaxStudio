@@ -8,7 +8,7 @@ using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.Interfaces
 {
-    public interface IGlobalOptions
+    public interface IGlobalOptions: IGlobalOptionsBase
     {
         [DefaultValue(true)] bool EditorShowLineNumbers { get; set; }
         [JsonIgnore] double EditorFontSizePx { get; }
@@ -29,7 +29,7 @@ namespace DaxStudio.Interfaces
         DelimiterType DefaultSeparator { get; set; }
         DaxFormatStyle DefaultDaxFormatStyle { get; set; }
         bool SkipSpaceAfterFunctionName { get; set; }
-        bool TraceDirectQuery { get; set; }
+
         bool ShowPreReleaseNotifications { get; set; }
         bool ShowTooltipBasicStats { get; set; }
         bool ShowTooltipSampleData { get; set; }
@@ -89,8 +89,6 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
-        bool ShowPreviewQueryBuilder { get; set; }
-        bool ShowPreviewBenchmark { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
@@ -111,6 +109,8 @@ namespace DaxStudio.Interfaces
         bool BlockCrashReporting { get; set; }
         bool BlockExternalServices { get; set; }
 
-    #endregion
+        bool AnyExternalAccessAllowed();
+
+        #endregion
     }
 }

@@ -38,37 +38,39 @@ namespace DaxStudio.Common
             return client;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors while tracking events should be ignored")]
         public static void TrackEvent(string key, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (Enabled)
             {
-                    try
-                    {
-                        _telemetryClient.TrackEvent(key, properties, metrics);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackEvent), $"Error tracking event: {key} Message: {ex.Message}");
-                    }
+                try
+                {
+                    _telemetryClient.TrackEvent(key, properties, metrics);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackEvent), $"Error tracking event: {key} Message: {ex.Message}");
+                }
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors while tracking exceptions should be ignored")]
         public static void TrackException(Exception ex,string source)
         {
 
             if (ex != null && Enabled)
             {
-                    try
-                    {
-                        var telex = new Microsoft.ApplicationInsights.DataContracts.ExceptionTelemetry(ex);
-                        telex.Properties.Add("Source", source);
-                        _telemetryClient.TrackException(telex);
-                        Flush();
-                    }
-                    catch(Exception trackEx)
-                    {
-                        Log.Fatal(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackException), trackEx.Message);
-                    }
+                try
+                {
+                    var telex = new Microsoft.ApplicationInsights.DataContracts.ExceptionTelemetry(ex);
+                    telex.Properties.Add("Source", source);
+                    _telemetryClient.TrackException(telex);
+                    Flush();
+                }
+                catch(Exception trackEx)
+                {
+                    Log.Fatal(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackException), trackEx.Message);
+                }
             }
         }
 

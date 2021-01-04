@@ -35,7 +35,6 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private NotifyIcon _notifyIcon;
         private Window _window;
-        private readonly Application _app;
         private readonly string _username;
         private readonly DateTime _utcSessionStart;
 

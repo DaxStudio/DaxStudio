@@ -1085,58 +1085,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showPreviewQueryBuilder;
-        [DataMember, DefaultValue(false)]
-        public bool ShowPreviewQueryBuilder
-        {
-            get => _showPreviewQueryBuilder;
-
-            set
-            {
-                _showPreviewQueryBuilder = value;
-                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(ShowPreviewQueryBuilder), value, _isInitializing);
-                NotifyOfPropertyChange(() => ShowPreviewQueryBuilder);
-            }
-        }
-
-        private bool _showPreviewBenchmark;
-        [DataMember, DefaultValue(false)]
-        public bool ShowPreviewBenchmark
-        {
-            get => _showPreviewBenchmark;
-
-            set
-            {
-                _showPreviewBenchmark = value;
-                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(ShowPreviewBenchmark), value, _isInitializing);
-                NotifyOfPropertyChange(() => ShowPreviewBenchmark);
-            }
-        }
-
-        //private bool _showDatabaseIdStatus = true;
-        //[DataMember, DefaultValue(true)]
-        //public bool ShowDatabaseIdStatus {
-
-        //    get
-        //    {
-        //        return _showDatabaseIdStatus;
-        //    }
-
-        //    set
-        //    {
-        //        _showDatabaseIdStatus = value;
-        //        _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
-        //        SettingProvider.SetValueAsync(nameof(ShowDatabaseIdStatus), value, _isInitializing);
-        //        NotifyOfPropertyChange(() => ShowDatabaseIdStatus);
-        //    }
-
-        //}
-
         #endregion
-
-
 
 
         private string _theme = "Light";
@@ -1589,6 +1538,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool AnyExternalAccessAllowed()
+        {
+            return !BlockCrashReporting || !BlockExternalServices || !BlockVersionChecks;
+        }
         private string ExcelAddinKey
         {
             get
@@ -1791,6 +1744,8 @@ namespace DaxStudio.UI.ViewModels
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
+
+
         #endregion
 
 
