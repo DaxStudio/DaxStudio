@@ -209,6 +209,10 @@ namespace DaxStudio.UI.ViewModels
             Document.OutputPane.AddError(error, double.NaN);
         }
 
+        public bool ConvertTabsToSpaces => Options.EditorConvertTabsToSpaces;
+        public int IndentationSize => Options.EditorIndentationSize;
+        public bool WordWrap => Options.EditorWordWrap;
+        public bool IsFocused { get; set; }
         public void UpdateSettings()
         {
             var editor = GetEditor();
@@ -239,7 +243,9 @@ namespace DaxStudio.UI.ViewModels
                 editor.DisableIntellisense();
             }
 
-
+            NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
+            NotifyOfPropertyChange(nameof(IndentationSize));
+            NotifyOfPropertyChange(nameof(WordWrap));
         }
 
     }

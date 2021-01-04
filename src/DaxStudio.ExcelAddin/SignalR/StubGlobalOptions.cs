@@ -29,6 +29,7 @@ namespace DaxStudio.SignalR
         public bool CanPublishDaxFunctions { get; set; }
 
         public string ProxyAddress { get; set; }
+        public bool ShowHelpWatermark { get; set; }
 
         public SecureString ProxySecurePassword { get; set; }
 
@@ -106,6 +107,10 @@ namespace DaxStudio.SignalR
         public bool ShowPreviewBenchmark { get; set; }
         public Version CurrentDownloadVersion { get; set; }
         public bool ShowMetadataRefreshPrompt { get; set; }
+        public bool BlockAllInternetAccess { get; set; }
+        public bool BlockVersionChecks { get; set; }
+        public bool BlockCrashReporting { get; set; }
+        public bool BlockExternalServices { get; set; }
         public string HotkeyWarningMessage { get; set; }
         public string DefaultDateAutoFormat { get; set; }
         public MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }

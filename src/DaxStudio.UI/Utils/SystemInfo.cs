@@ -9,6 +9,7 @@ using System.Threading;
 using System.Reflection;
 using Microsoft.Win32;
 using System.Globalization;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.Utils
 {

@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Extensions
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
                         }
-                        if (daxCol != null) {
+                        if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString)) {
                             column.ExtendedProperties.Add(Constants.FormatString, daxCol.FormatString);
                             if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                         }
@@ -159,6 +159,7 @@ namespace DaxStudio.UI.Extensions
                             {
                                 case "Decimal":
                                 case "Double":
+                                case "Object":
                                     if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
                                         formatString = "0.00%";
                                     }

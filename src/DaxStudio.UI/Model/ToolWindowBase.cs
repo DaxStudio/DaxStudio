@@ -1,24 +1,24 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
-using System.Windows.Input;
 using System;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.Model
 {
-    public class ToolWindowBase:Screen , IToolWindow, IZoomable
+    public abstract class ToolWindowBase:Screen , IToolWindow, IZoomable
     {
         public event EventHandler VisibilityChanged;
-        public virtual string Title { get; set; }
-        public virtual string DefaultDockingPane { get; set; }
+        public abstract string Title { get; }
+        public abstract string DefaultDockingPane { get;  }
         public DisabledCommand DockAsDocumentCommand;
         public bool CanCloseWindow { get; set; }
-        public ToolWindowBase()
+
+        protected ToolWindowBase()
         {
             CanCloseWindow = true;
             CanHide = false;
             AutoHideMinHeight = 100;
-            DefaultDockingPane = "DockBottom";
             DockAsDocumentCommand = new DisabledCommand();
             NotifyOfPropertyChange(()=>DockAsDocumentCommand);
             ViewAttached += ToolWindowBase_ViewAttached;
@@ -58,6 +58,10 @@ namespace DaxStudio.UI.Model
             set { _isSelected = value;
             NotifyOfPropertyChange(()=>IsSelected);}
         }
+
+        public abstract string ContentId { get; }
+        public abstract ImageSource IconSource { get; }
+
         public void Activate()
         {
             //DockAsDocumentCommand.RaiseCanExecuteChanged();

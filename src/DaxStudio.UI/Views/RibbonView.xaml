@@ -635,6 +635,8 @@
                 <Fluent:SplitButton Name="FormatQuery"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]"
+                               IsEnabled="{Binding CanFormatQueryStandard}"
+                               
                                Icon="{StaticResource DaxFormatterIcon}"
                                LargeIcon="{StaticResource DaxFormatterIcon}" 
                                SizeDefinition="Large,Large,Large"
@@ -644,6 +646,7 @@
                     <Fluent:SplitButton.ToolTip>
                         <Fluent:ScreenTip Title="{Binding FormatQueryTitle}"
                                           Text="Uses DaxFormatter.com to provide a nicely formatted query and highlight syntax errors"
+                                          DisableReason="{Binding FormatQueryDisabledReason}"
                                            ></Fluent:ScreenTip>
                     </Fluent:SplitButton.ToolTip>
                     <Fluent:MenuItem Header="{Binding FormatQueryStandardTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]" />
@@ -847,9 +850,7 @@
                                    Icon="{StaticResource ImportMetricsIcon}"
                                    LargeIcon="{StaticResource ImportMetricsIconLarger}"
                                    Margin="4,0"
-                                   SizeDefinition="Large,Large,Small"
-                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
-                                   >
+                                   SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Import Metrics"
                                    Text="Imports information and metrics from a *.vpax file to allow for detailed analysis of the model design. The import only includes metadata and size of objects, no actual data is included."
@@ -863,9 +864,7 @@
                                    Icon="{StaticResource ExportMetricsIcon}"
                                    LargeIcon="{StaticResource ExportMetricsIconLarger}"
                                    Margin="4,0"
-                                   SizeDefinition="Large,Large,Small"
-                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
-                                   >
+                                   SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Export Metrics"
                                    Text="Exports information and metrics about your model to allow for detailed analysis of the model design. This export only includes metadata and size of objects, no actual data is included."
@@ -879,9 +878,7 @@
                                    Icon="{StaticResource ViewMetricsIcon}"
                                    LargeIcon="{StaticResource ViewMetricsIconLarger}"
                                    Margin="4,0"
-                                   SizeDefinition="Large,Large,Small"
-                                   Visibility="{Binding ShowExportMetrics, Converter={StaticResource BoolToVisibilityConverter}}"
-                                   >
+                                   SizeDefinition="Large,Large,Small">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="View Metrics"
                                    Text="Display information and metrics about your model to allow for detailed analysis of the model design."
@@ -897,9 +894,7 @@
                                    Icon="{StaticResource ExportAllDataIconLarger}"
                                    LargeIcon="{StaticResource ExportAllDataIconLarger}"
                                    Margin="4,0"
-                                   SizeDefinition="Large,Large,Small"
-                                   Visibility="{Binding ShowExportAllData, Converter={StaticResource BoolToVisibilityConverter}}"
-                                   >
+                                   SizeDefinition="Large,Large,Small">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip Title="Export Data"
                                    Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
@@ -1248,7 +1243,7 @@
         </Fluent:RibbonTabItem>
         
         <!--Contextual Tab Groups-->
-        <!-- Visibility="{Binding Path=TraceGroupVisible, Converter={StaticResource BoolToVisibilityConverter} }" -->
+        <!-- Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}" -->
         <Fluent:Ribbon.ContextualGroups>
             <Fluent:RibbonContextualTabGroup 
                 x:Name="traceLayoutGroup"

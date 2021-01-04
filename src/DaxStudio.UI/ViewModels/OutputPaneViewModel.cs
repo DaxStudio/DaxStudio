@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using System.Windows.Media;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
@@ -49,9 +50,20 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Error, message,row,column ));
         }
 
-        public override string Title
+        public override string Title => "Output";
+
+        public override string DefaultDockingPane => "DockBottom";
+        public override string ContentId => "output";
+        public override ImageSource IconSource
         {
-            get { return "Output"; }
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                // TODO - add output pane icon
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-file.png") as ImageSource;
+
+            }
         }
 
 
