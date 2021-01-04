@@ -710,7 +710,7 @@ ORDER BY 'Product Category'[Category]
             StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
         }
 
-        [TestMethod]
+        [TestMethod,Ignore]
         public void TestSerializer()
         {
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
