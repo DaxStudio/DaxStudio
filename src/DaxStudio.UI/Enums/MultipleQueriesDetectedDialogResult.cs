@@ -3,6 +3,7 @@
     public enum MultipleQueriesDetectedDialogResult
     {
         KeepDirectQuery,
-        RemoveDirectQuery
+        RemoveDirectQuery,
+        Cancel
     }
 }

@@ -46,7 +46,9 @@ namespace DaxStudio.UI.Utils
                 {
                     _telemetry.TrackEvent(key, properties, metrics);
                 }
+#pragma warning disable CA1031
                 catch (Exception ex)
+#pragma warning restore CA1031
                 {
                     Log.Error(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackEvent), $"Error tracking event: {key} Message: {ex.Message}");
                 }
@@ -65,7 +67,9 @@ namespace DaxStudio.UI.Utils
                     _telemetry.TrackException(telex);
                     Flush();
                 }
-                catch(Exception trackEx)
+#pragma warning disable CA1031
+                catch (Exception trackEx)
+#pragma warning restore CA1031
                 {
                     Log.Fatal(ex, "{class} {method} {message}", nameof(Telemetry), nameof(TrackException), trackEx.Message);
                 }

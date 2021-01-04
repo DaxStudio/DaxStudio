@@ -271,6 +271,7 @@ namespace DaxStudio.UI.ViewModels
             public string TableRows => "The total number of rows in the table";
             public string MaxFromCardinality => "The maximum number of distinct values on the 'from' side of the relationship";
             public string MaxToCardinality => "The maximum number of distinct values on the 'to' side of the relationship";
+            public string MaxOneToManyRatio => "The maximum ratio of rows between the 'to' and the 'from' side of the relationship (only for 1:M type)";
             public string MissingKeys => "The number of distinct missing key values";
             public string InvalidRows => "The number of rows with missing keys";
             public string SampleViolations => "3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
