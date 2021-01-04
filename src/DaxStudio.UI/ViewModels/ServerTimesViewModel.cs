@@ -14,6 +14,7 @@ using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Windows.Media;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
 using Microsoft.Xaml.Behaviors.Media;
@@ -69,12 +70,10 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            get {
-                return _queryRichText;
-            }
+            get => _queryRichText;
         }
 
-        protected IGlobalOptions Options;
+        protected IGlobalOptions Options { get; }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
         {
@@ -360,7 +359,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                         }
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
@@ -368,7 +367,7 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineDuration += traceEvent.Duration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
@@ -376,7 +375,7 @@ namespace DaxStudio.UI.ViewModels
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;
                         //StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
@@ -389,7 +388,7 @@ namespace DaxStudio.UI.ViewModels
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                     {
                         VertipaqCacheMatches++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
                 }
 
@@ -568,20 +567,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "Server Timings"; }
-            set { }
-        }
-
-        public override string ToolTipText
+        public override string Title => "Server Timings";
+        public override string ContentId => "server-timings-trace";
+        public override ImageSource IconSource
         {
             get
             {
-                return "Runs a server trace to record detailed timing information for performance profiling";
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
+
             }
-            set { }
         }
+
+        public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 
         public override void OnReset()
         {
@@ -654,7 +653,7 @@ namespace DaxStudio.UI.ViewModels
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); } }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0, GridUnitType.Pixel) : new GridLength(1, GridUnitType.Star); } }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails

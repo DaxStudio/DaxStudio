@@ -57,6 +57,9 @@
             </ComboBox>
             <TextBox x:Name="MeasureName" Margin="2" Grid.Column="1" IsEnabled="{Binding IsModelItem, Converter={StaticResource BoolNotConverter}}" />
         </Grid>
+                        <!--EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            EditorCaretOffset="{Binding CaretOffset}"-->
         <dax:DAXEditor x:Name="daxExpressionEditor" 
                             Margin="2" 
                             Padding="8,8,8,8"
@@ -68,9 +71,6 @@
                             FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                             Document ="{Binding MeasureExpression, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             TabIndex="0"
-                            EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            EditorCaretOffset="{Binding CaretOffset}" 
 
                             dd:DragDrop.IsDropTarget="True"
                             dd:DragDrop.DropHandler="{Binding }"

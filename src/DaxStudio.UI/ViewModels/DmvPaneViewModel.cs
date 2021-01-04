@@ -11,6 +11,7 @@ using System.Collections;
 using System.Windows.Data;
 using System.Windows.Threading;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 using DaxStudio.Interfaces;
 using ADOTabular.Interfaces;
 
@@ -72,16 +73,19 @@ namespace DaxStudio.UI.ViewModels
                 return (((ADOTabularDynamicManagementView)dmv).Caption.IndexOf(SearchCriteria, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
-        public override string DefaultDockingPane
+        public override string DefaultDockingPane => "DockLeft";
+        public override string ContentId => "dmv";
+        public override ImageSource IconSource
         {
-            get { return "DockLeft"; }
-            set { base.DefaultDockingPane = value; }
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/DmvTable.png") as ImageSource;
+
+            }
         }
-        public override string Title
-        {
-            get { return "DMV"; }
-            set { base.Title = value; }
-        }
+        public override string Title => "DMV";
 
         public DocumentViewModel Document { get; private set; }
 
