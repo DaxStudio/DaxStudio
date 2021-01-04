@@ -17,6 +17,7 @@ using ADOTabular.Enums;
 using ADOTabular;
 using System.Windows.Input;
 using System.Linq.Expressions;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -498,7 +499,14 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-
+        public bool CanConnect
+        {
+            get
+            {
+                if (ServerModeSelected && DataSource.IsNullOrEmpty()) return false;
+                return true;
+            }
+        }
         public void Connect()
         {
             string connectionString = string.Empty;
