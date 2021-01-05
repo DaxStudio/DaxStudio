@@ -133,7 +133,7 @@ namespace ADOTabular
                 {
                     {"CATALOG_NAME", conn.Database.Name},
                     {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
-                    {"MEASUREGROUP_NAME",  measures.Table.Caption},
+                    {"MEASUREGROUP_NAME",  measures.Table.Name},
                     {
                         "MEASURE_VISIBILITY",
                         conn.ShowHiddenObjects
@@ -165,7 +165,7 @@ namespace ADOTabular
         {
             var resCollTables = new AdomdRestrictionCollection
                 {
-                    {"Name",  measures.Table.Caption},
+                    {"Name",  measures.Table.Name},
                 };
 
             // need to look up the TableID in TMSCHEMA_TABLES
