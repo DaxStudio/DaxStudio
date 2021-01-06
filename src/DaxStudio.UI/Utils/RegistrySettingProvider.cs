@@ -122,7 +122,7 @@ namespace DaxStudio.UI.Utils
             PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
             var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
 
-            var defaultValue = (DateTime)defaultValueAttribute.Value;
+            var defaultValue = DateTime.Parse(defaultValueAttribute.Value.ToString());
             if (value == defaultValue)
             {
                 regDaxStudio.DeleteValue(subKey);
