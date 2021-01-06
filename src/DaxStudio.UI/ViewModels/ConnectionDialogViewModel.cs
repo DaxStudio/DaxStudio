@@ -183,6 +183,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -198,6 +199,7 @@ namespace DaxStudio.UI.ViewModels
                     InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -602,6 +604,7 @@ namespace DaxStudio.UI.ViewModels
                 InitialCatalog = string.Empty;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 
