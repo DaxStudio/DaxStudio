@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -84,7 +85,7 @@ namespace DaxStudio.UI.Utils
             return ((T)_optionsDict[subKey]);
         }
         
-        public void SetValue<T>(string subKey, T value, bool isInitializing)
+        public void SetValue<T>(string subKey, T value, bool isInitializing, object options,  string propertyName)
         {
                 if (isInitializing) return;
                 _optionsDict[subKey] = value;
@@ -92,7 +93,7 @@ namespace DaxStudio.UI.Utils
                 SaveSettingsFile();
         }
 
-        public void SetValue(string subKey, DateTime value, bool isInitializing)
+        public void SetValue(string subKey, DateTime value, bool isInitializing, object options, string propertyName)
         {
                 if (isInitializing) return;
                 _optionsDict[subKey] = value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture);

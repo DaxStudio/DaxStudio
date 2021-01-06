@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Security;
 using System.Runtime.Serialization;
 using System.Globalization;
+using System.Reflection;
 
 namespace DaxStudio.UI.Utils
 {
@@ -112,23 +113,44 @@ namespace DaxStudio.UI.Utils
             return default;
         }
 
-        public void SetValue(string subKey, DateTime value, bool isInitializing)
+        public void SetValue(string subKey, DateTime value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
                 if (isInitializing) return;
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
                                    ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
 
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+
+            var defaultValue = (DateTime)defaultValueAttribute.Value;
+            if (value == defaultValue)
+            {
+                regDaxStudio.DeleteValue(subKey);
+                return;
+            }
+
                 regDaxStudio?.SetValue(subKey,
                     value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
         }
 
-        public void SetValue<T>(string subKey, T value, bool isInitializing)
+        public void SetValue<T>(string subKey, T value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
                 if (isInitializing) return;
                 var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
                 if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
-                
-                regDaxStudio.SetValue(subKey, value);
+
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName,true);
+
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+
+            var defaultValue = (T)defaultValueAttribute.Value;
+            if (defaultValue.Equals(value))
+            {
+                regDaxStudio.DeleteValue(subKey);
+                return;
+            }
+
+            regDaxStudio.SetValue(subKey, value);
         }
 
         public bool IsFileLoggingEnabled()
