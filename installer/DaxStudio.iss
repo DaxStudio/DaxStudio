@@ -81,6 +81,7 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all features requiring internet access including version checks, dax formatting and crash reporting. This setting requires a re-install to change."; GroupDescription: "Privacy"; Flags: unchecked; Check: IsAdmin
 ;Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration"; Check: IsAdmin;
 
 [Files]
@@ -140,6 +141,7 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 Root: "HKA"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core; Permissions: users-read
 Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "64Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is64BitExcelFromRegisteredExe
 Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "32Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: dword; ValueName: "BlockAllInternetAccess"; ValueData: 1; Flags: uninsdeletekey; Tasks: blockallinternetaccess
 
 ;Excel x86 Addin Keys - All Users
 Root: "HKA32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
