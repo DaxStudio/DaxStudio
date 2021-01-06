@@ -1,8 +1,6 @@
 ---
-title: Portable Install (Preview)
+title: Portable Install
 ---
-
-> *NOTE:* The portable version is current in preview
 
 The portable version of DAX Studio is distributed as a single zip file. 
 
