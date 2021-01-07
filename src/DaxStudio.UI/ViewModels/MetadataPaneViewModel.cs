@@ -807,8 +807,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (item != null)
                 {
-                    var txt = item.Name;
+                    var criteria = $"WHERE [REFERENCED_OBJECT] = '{item.Name}'";
+
+                    // if the current item is a column we should also include the table name
+                    if ( item.IsColumn)
+                    {
+                        criteria += Environment.NewLine + $" AND [REFERENCED_TABLE] = '{item.InternalColumn.TableName}'";
+                    }
+
                     var thisItem =
+                        Environment.NewLine +
                         "SELECT " + Environment.NewLine +
                         " [OBJECT_TYPE] AS [Object Type], " + Environment.NewLine +
                         " [TABLE] AS [Object's Table], " + Environment.NewLine +
@@ -817,8 +825,8 @@ namespace DaxStudio.UI.ViewModels
                         " [REFERENCED_OBJECT] AS [Referenced Object], " + Environment.NewLine +
                         " [REFERENCED_OBJECT_TYPE] AS [Referenced Object Type] " + Environment.NewLine +
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
-                        "WHERE [REFERENCED_OBJECT] = '" + txt + "'" + Environment.NewLine +
-                        "ORDER BY [OBJECT_TYPE]";
+                        criteria + Environment.NewLine +
+                        "ORDER BY [OBJECT_TYPE]" + Environment.NewLine;
                     EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
