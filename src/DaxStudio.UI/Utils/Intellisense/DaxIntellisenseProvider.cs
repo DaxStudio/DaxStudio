@@ -108,7 +108,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                     if (completionWindow != null) return;
 
                     // exit if we are inside a string or comment
-                    _daxState = ParseLine();
+                    //_daxState = ParseLine();
                     var lineState = _daxState.LineState;
                     if (lineState == LineState.String || _editor.IsInComment()) return;
 
