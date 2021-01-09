@@ -88,8 +88,7 @@ namespace DaxStudio.UI.Model
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Starting Population of version information from Github");
                     PopulateServerVersionFromGithub(_webRequestFactory);
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Updating Version Status");
-                    //SetVersionStatus();
-                    UpdateCompleteCallback?.Invoke();
+
                 }
                 catch (Exception ex)
                 {
@@ -107,6 +106,7 @@ namespace DaxStudio.UI.Model
             finally
             {
                 _isCheckRunning = false;
+                UpdateCompleteCallback?.Invoke();
             }
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Finished Background Version Check");
         }

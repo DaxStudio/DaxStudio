@@ -75,7 +75,13 @@ namespace DaxStudio.UI.ViewModels
             get => _queryRichText;
         }
 
-        protected IGlobalOptions Options { get; }
+        private IGlobalOptions _options;
+        protected IGlobalOptions Options { get {
+                if (_options == null) _options = IoC.Get<IGlobalOptions>();
+                return _options;
+            }
+            private set { _options = value; }
+        }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
         {

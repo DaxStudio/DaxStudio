@@ -40,5 +40,7 @@
         public const string SessionsDmv = "$SYSTEM.DISCOVER_SESSIONS";
         public const string SessionSpidColumn = "SESSION_SPID";
         //public const int TraceStartTimeoutSeconds = 30;
+
+        public const int MaxLineLength = 500;
     }
 }

@@ -304,6 +304,7 @@ namespace DaxStudio.UI.ViewModels
             set{ _dataSource=CleanDataSourceName(value);
                 NotifyOfPropertyChange(nameof( DataSource));
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
+                NotifyOfPropertyChange(nameof(CanConnect));
                 SelectedServerSetFocus = true;
             }
         }

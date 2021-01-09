@@ -319,7 +319,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (content == null) return;
 
-                var sm = new LongLineStateMachine(500);
+                var sm = new LongLineStateMachine(Constants.MaxLineLength);
                 var newContent = sm.ProcessString(content);
                 if (sm.SqlQueryCommentFound)
                 {
@@ -1914,7 +1914,14 @@ namespace DaxStudio.UI.ViewModels
                     else
                         OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
             }
-            InsertTextAtSelection(message.TextToSend, message.RunQuery);
+
+            // make sure that the query does not have excessively long lines
+            // as these are both hard to read and they can freeze up the UI
+            // while the syntax highlighting runs 
+            var sm = new LongLineStateMachine(Constants.MaxLineLength);
+            var newContent = sm.ProcessString(message.TextToSend);
+
+            InsertTextAtSelection(newContent, message.RunQuery);
 
             if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
 
@@ -2502,6 +2509,13 @@ namespace DaxStudio.UI.ViewModels
                 loader.Load(FileName);
             }
 
+            foreach (var tw in TraceWatchers)
+            {
+                var loader = tw as ISaveState;
+                if (loader == null) continue;
+
+                loader.Load(FileName);
+            }
             _isLoadingFile = false;
         }
 
