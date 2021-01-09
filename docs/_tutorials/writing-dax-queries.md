@@ -7,7 +7,7 @@ DAX Queries have quite a simple structure. Microsoft describes the query syntax 
 If you want to follow along and try out these queries yourself all you need is:
 * DAX Studio
 * Power BI Desktop
-* the [Adventure Works 2020](https://aka.ms/dax-docs-sample-file) sample file
+* the [Adventure Works 2020](https://github.com/microsoft/powerbi-desktop-samples/raw/master/DAX/Adventure%20Works%20DW%202020.pbix) sample file
 
 The simplest way to get started after installing both DAX Studio and Power BI Desktop is to open the **Adventure Works 2020.pbix** file, then click on External Tools and launch DAX Studio from there. 
 
