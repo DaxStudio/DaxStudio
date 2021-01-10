@@ -664,7 +664,43 @@ EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( EXCEPT( ALL( 'Customer'[String 1] ), TREATAS( {""red"",""green"",""blue""}, 'Customer'[String 1] ))),
+    KEEPFILTERS( FILTER( ALL( 'Customer'[String 1] ), NOT( 'Customer'[String 1] IN {""red"",""green"",""blue""} ))),
+    ""Total Sales"", [Total Sales]
+)
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
+        public void TestInListFilterQueryWithoutTreatAs()
+        {
+            // specify that this model supports TreatAs
+            mockFuncs.Setup(f => f.TreatAs).Returns(false);
+
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            var filterCol = MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String 1]", typeof(string),
+                ADOTabularObjectType.Column);
+
+            filters.Add(new QueryBuilderFilter(filterCol, modelCaps)
+            { FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
+
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    KEEPFILTERS( FILTER( ALL( 'Customer'[String 1] ), 'Customer'[String 1] IN {""red"",""green"",""blue""} )),
     ""Total Sales"", [Total Sales]
 )
 /* END QUERY BUILDER */".Replace("\r", "");

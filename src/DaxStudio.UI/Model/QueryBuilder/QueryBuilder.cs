@@ -135,8 +135,6 @@ namespace DaxStudio.UI.Model
             var colName = filter.TabularObject.DaxName;
             switch (filter.FilterType)
             {
-                case FilterType.NotIn:
-                    return $@"KEEPFILTERS( EXCEPT( ALL( {colName} ), TREATAS( {{{formattedVal}}}, {colName} )))";
                 case FilterType.In:
                     return $@"KEEPFILTERS( TREATAS( {{{formattedVal}}}, {colName} ))";
                 case FilterType.Is:
@@ -180,6 +178,10 @@ namespace DaxStudio.UI.Model
                 case FilterType.Between:
                     var formattedVal2 = FormattedValue(filter, () => filter.FilterValue2);
                     return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} >= {formattedVal} && {colName} <= {formattedVal2} ))";
+                case FilterType.NotIn:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), NOT( {colName} IN {{{formattedVal}}} )))";
+                case FilterType.In:
+                    return $@"KEEPFILTERS( FILTER( ALL( {colName} ), {colName} IN {{{formattedVal}}} ))";
                 default:
                     throw new NotSupportedException($"The filter type '{filter.FilterType}' is not supported");
             }
