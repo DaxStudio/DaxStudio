@@ -794,6 +794,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
+            _eventAggregator.Unsubscribe(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.Unsubscribe(HelpWatermark);
             foreach (var tw in this.TraceWatchers)
             {
@@ -823,6 +824,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(FunctionPane);
                 _eventAggregator.Subscribe(Connection);
                 _eventAggregator.Subscribe(IntellisenseProvider);
+                _eventAggregator.Subscribe(MeasureExpressionEditor.IntellisenseProvider);
                 _eventAggregator.Subscribe(HelpWatermark);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in TraceWatchers)

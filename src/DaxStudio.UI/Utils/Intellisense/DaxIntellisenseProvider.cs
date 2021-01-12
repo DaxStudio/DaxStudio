@@ -54,6 +54,13 @@ namespace DaxStudio.UI.Utils.Intellisense
             _options = options;
         }
 
+        public DaxIntellisenseProvider(IDaxDocument activeDocument, IEventAggregator eventAggregator, IGlobalOptions options, ADOTabularModel model, ADOTabularDynamicManagementViewCollection dmvs, ADOTabularFunctionGroupCollection functions): this(activeDocument,eventAggregator, options)
+        {
+            Model = model;
+            FunctionGroups = functions;
+            DMVs = dmvs;
+        }
+
         #region Properties
         public ADOTabularModel Model { get; private set; }
         public IEditor Editor { get => _editor; set => _editor = value;
@@ -72,6 +79,14 @@ namespace DaxStudio.UI.Utils.Intellisense
 
                 _daxState = ParseLine();
 
+                if (completionWindow != null
+                    && !string.IsNullOrWhiteSpace(e.Text)
+                    && completionWindow.StartOffset == completionWindow.EndOffset)
+                {
+                    Debug.WriteLine("Hack: Force dispose of completion window as StartOffset == EndOffset");
+                    _editor.DisposeCompletionWindow();
+                }
+                
                 if (completionWindow != null)
                 {
                     // close the completion window if it has no items
@@ -197,13 +212,17 @@ namespace DaxStudio.UI.Utils.Intellisense
                             completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
                             completionWindow.MouseEnter += completionWindow_MouseEnter;
                             completionWindow.MouseLeave += completionWindow_MouseLeave;
+                            completionWindow.IsVisibleChanged += delegate
+                            {
+                                _editor.DisposeCompletionWindow();
+                            };
                             completionWindow.Closed += delegate
                             {
                                 _editor.DisposeCompletionWindow();
                                 //completionWindow = null;
                             };
                         }
-                        else
+                        else 
                         {
                             Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider" , "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
                             _editor.DisposeCompletionWindow();
@@ -252,6 +271,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 case Key.Left:
                 case Key.Right:
                 case Key.OemCloseBrackets:
+                case Key.Escape:
                     _editor.DisposeCompletionWindow();
                     break;
 
