@@ -113,11 +113,12 @@ namespace DaxStudio.UI.Utils
             return default;
         }
 
+        // Datetime overload of SetValue
         public void SetValue(string subKey, DateTime value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
-                if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
-                                   ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
+                                ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
 
             PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
             var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
@@ -133,18 +134,56 @@ namespace DaxStudio.UI.Utils
                     value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
         }
 
+        // Version overload of SetValue
+        public void SetValue(string subKey, Version value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
+        {
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true)
+                                ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
+
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+
+            var defaultValue = Version.Parse(defaultValueAttribute.Value.ToString());
+            if (value == defaultValue)
+            {
+                regDaxStudio.DeleteValue(subKey);
+                return;
+            }
+
+            regDaxStudio?.SetValue(subKey, value.ToString());
+        }
+
+        // Generic SetValue method
         public void SetValue<T>(string subKey, T value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
-                if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
-                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
 
             PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName,true);
 
             var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
-
-            var defaultValue = (T)defaultValueAttribute.Value;
-            if (defaultValue.Equals(value))
+            bool valueIsSetToDefault = false;
+            if (typeof(T) == typeof(Version))
+            {
+                try
+                {
+                    var defaultValueVer = Version.Parse(defaultValueAttribute.Value.ToString());
+                    valueIsSetToDefault = defaultValueVer.Equals(value);
+                }
+                catch
+                {
+                    // ignore any errors parsing the version and assume the versions do not match
+                }
+            }
+            else
+            {
+                var defaultValue = (T)(object)defaultValueAttribute.Value;
+                valueIsSetToDefault = defaultValue.Equals(value);
+            }
+            
+            if (valueIsSetToDefault)
             {
                 regDaxStudio.DeleteValue(subKey);
                 return;

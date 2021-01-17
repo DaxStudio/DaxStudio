@@ -156,7 +156,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (Options.BlockVersionChecks)
                     return "Version checks blocked in options";
-                return $"Last checked {Options.LastVersionCheckUTC.Humanize()}";
+                return $"Last checked {Options.LastVersionCheckUTC.ToUniversalTime().Humanize()}";
             }
         }
 
