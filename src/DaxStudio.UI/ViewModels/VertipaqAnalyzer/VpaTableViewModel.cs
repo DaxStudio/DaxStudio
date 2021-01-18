@@ -34,15 +34,16 @@ namespace DaxStudio.UI.ViewModels
             _table = table;
             _parentViewModel = parentViewModel;
             Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this));
-            if (Columns.Count() > 0) {
+            if (Columns.Any()) {
                 ColumnMaxTotalSize = Columns.Max(c => c.TotalSize);
                 ColumnsMaxCardinality = Columns.Max(c => c.ColumnCardinality);
             }
             RelationshipsFrom = _table.RelationshipsFrom.Select(r => new VpaRelationshipViewModel(r, this));
-            if (RelationshipsFrom.Count() > 0)
+            if (RelationshipsFrom.Any())
             {
                 RelationshipMaxFromCardinality = RelationshipsFrom.Max(r => r.FromColumnCardinality);
                 RelationshipMaxToCardinality = RelationshipsFrom.Max(r => r.ToColumnCardinality);
+                RelationshipMaxOneToManyRatio = RelationshipsFrom.Max(r => r.OneToManyRatio);
                 RelationshipFromMissingKeys = RelationshipsFrom.Sum(r => r.MissingKeys);
                 RelationshipInvalidRows = RelationshipsFrom.Sum(r => r.InvalidRows);
             }
@@ -123,6 +124,7 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaColumnViewModel> Columns { get; }
         public IEnumerable<VpaRelationshipViewModel> RelationshipsFrom { get; }
         public long RelationshipMaxFromCardinality { get; }
+        public double RelationshipMaxOneToManyRatio { get; }
         public long RelationshipFromMissingKeys { get; }
         public long RelationshipInvalidRows { get; }
         public long ColumnMaxTotalSize { get; }
@@ -166,6 +168,8 @@ namespace DaxStudio.UI.ViewModels
                     return RelationshipFromMissingKeys.CompareTo(objTable.RelationshipFromMissingKeys) * SortDirection;
                 case "FromColumnCardinality":
                     return RelationshipMaxFromCardinality.CompareTo(objTable.RelationshipMaxFromCardinality) * SortDirection;
+                case "OneToManyRatio":
+                    return RelationshipMaxOneToManyRatio.CompareTo(objTable.RelationshipMaxOneToManyRatio) * SortDirection;
                 case "ToColumnCardinality":
                     return RelationshipMaxToCardinality.CompareTo(objTable.RelationshipMaxToCardinality) * SortDirection;
                 case "InvalidRows":
@@ -173,7 +177,7 @@ namespace DaxStudio.UI.ViewModels
                 case "UsedSize":
                     return RelationshipSize.CompareTo(objTable.RelationshipSize) * SortDirection;
                 default:
-                    return TableName.CompareTo(objTable.TableName) * SortDirection;
+                    return string.Compare(TableName, objTable.TableName, StringComparison.OrdinalIgnoreCase) * SortDirection;
             }
 
         }

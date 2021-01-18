@@ -17,6 +17,7 @@ using ADOTabular.Enums;
 using ADOTabular;
 using System.Windows.Input;
 using System.Linq.Expressions;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -222,7 +223,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (_connectionProperties.ContainsKey("Application Name"))
                     {
-                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (Power BI)"))
+                        if (_connectionProperties["Application Name"].StartsWith("DAX Studio (Power BI)", StringComparison.OrdinalIgnoreCase))
                         {
                             PowerPivotModeSelected = false;
                             ServerModeSelected = false;
@@ -244,7 +245,7 @@ namespace DaxStudio.UI.ViewModels
                                 EffectiveUserName = p.Value;
                                 break;
                             case "mdx compatibility":
-                                MdxCompatibility = MdxCompatibilityOptions.Find(x => x.StartsWith(p.Value));
+                                MdxCompatibility = MdxCompatibilityOptions.Find(x => x.StartsWith(p.Value, StringComparison.OrdinalIgnoreCase));
                                 break;
                             case "directquerymode":
                                 DirectQueryMode = p.Value;
@@ -286,7 +287,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string _additionalOptions = string.Empty;
         public string AdditionalOptions {
-            get { if (_additionalOptions.Trim().EndsWith(";"))
+            get { if (_additionalOptions.Trim().EndsWith(";", StringComparison.OrdinalIgnoreCase))
                     return _additionalOptions;
                 else
                     return _additionalOptions.Trim() + ";";
@@ -303,6 +304,7 @@ namespace DaxStudio.UI.ViewModels
             set{ _dataSource=CleanDataSourceName(value);
                 NotifyOfPropertyChange(nameof( DataSource));
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
+                NotifyOfPropertyChange(nameof(CanConnect));
                 SelectedServerSetFocus = true;
             }
         }
@@ -405,7 +407,7 @@ namespace DaxStudio.UI.ViewModels
         public string MdxCompatibility { 
             get { 
                 if (string.IsNullOrWhiteSpace(_mdxCompatibility))
-                    {_mdxCompatibility = MdxCompatibilityOptions.Find(x=> x.StartsWith("3"));}
+                    {_mdxCompatibility = MdxCompatibilityOptions.Find(x=> x.StartsWith("3", StringComparison.OrdinalIgnoreCase));}
                 return _mdxCompatibility;
             }
             set {
@@ -502,22 +504,12 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanConnect
         {
-            get {
-
-                return true;
-                if (!PowerBIModeSelected) return true;
-
-                if (SelectedPowerBIInstance == null || SelectedPowerBIInstance?.Port == -1)
-                {
-                    return false;
-                }
-
-                if (ShowConnectionWarning) return false;
-
+            get
+            {
+                if (ServerModeSelected && DataSource.IsNullOrEmpty()) return false;
                 return true;
             }
         }
-
         public void Connect()
         {
             string connectionString = string.Empty;
@@ -717,7 +709,7 @@ namespace DaxStudio.UI.ViewModels
                     string text = Convert.ToString(e.DataObject.GetData(DataFormats.Text));
 
                     if (text.Contains(";")) {
-                        var msg = "Detected paste of a string with semi-colons, attempting to parse out the 'Data Source' property";
+                        var msg = "Detected paste of a string with semi-colons, attempting to parse out the \"Data Source\" and \"Initial Catalog\" properties";
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
                         _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, msg));
 
@@ -732,6 +724,7 @@ namespace DaxStudio.UI.ViewModels
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
                         if (props.ContainsKey("Initial Catalog"))
                         {
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
@@ -858,7 +851,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showConnectionWarning = value;
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
-                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 

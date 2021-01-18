@@ -47,15 +47,9 @@ namespace ADOTabular
             { return InternalModelCollection.Values.FirstOrDefault(m => !m.IsPerspective); }
         }
 
-        public ADOTabularModel this[string modelName]
-        {
-            get
-            {
-                return InternalModelCollection[modelName];
-                //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
-                // todo - should we return a model not found exception instead of null?
-            }
-        }
+        public ADOTabularModel this[string modelName] => InternalModelCollection[modelName];
+        //return (from dr in GetModelsTable().Rows.Cast<DataRow>() where string.Compare(modelName, dr["CUBE_NAME"].ToString(), StringComparison.InvariantCultureIgnoreCase) == 0 select new ADOTabularModel(_adoTabConn, dr)).FirstOrDefault();
+        // todo - should we return a model not found exception instead of null?
 
         public ADOTabularModel this[int index]
         {

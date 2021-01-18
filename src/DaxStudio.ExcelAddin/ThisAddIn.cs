@@ -5,7 +5,6 @@ using ADOTabular.AdomdClientWrappers;
 using Microsoft.Office.Tools.Ribbon;
 using Serilog;
 using System.IO;
-using DaxStudio.UI.Utils;
 using DaxStudio.Common;
 
 namespace DaxStudio.ExcelAddin

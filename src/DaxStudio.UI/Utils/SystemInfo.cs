@@ -9,6 +9,7 @@ using System.Threading;
 using System.Reflection;
 using Microsoft.Win32;
 using System.Globalization;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.Utils
 {
@@ -37,17 +38,6 @@ namespace DaxStudio.UI.Utils
             Log.Information("Culture Info: {setting} = {value}", "CurrencySymbol", curCulture.NumberFormat.CurrencySymbol);
             Log.Information("Culture Info: {setting} = {value}", "ShortDatePattern", curCulture.DateTimeFormat.ShortDatePattern);
             
-        }
-
-        public static void WriteStartUpEventToAppInsights()
-        {
-            Telemetry.TrackEvent("App.Startup"
-                , new Dictionary<string, string>()
-                {
-                    {"UtcDateTime",DateTime.UtcNow.ToString("o") }
-                    ,{"Version", version.ToString()}
-                });
-
         }
 
         private static void PopulateInfo()

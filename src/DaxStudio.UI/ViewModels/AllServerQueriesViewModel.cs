@@ -15,8 +15,11 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
+using System.IO.Packaging;
+using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -182,8 +185,18 @@ namespace DaxStudio.UI.ViewModels
  
         private readonly BindableCollection<QueryEvent> _queryEvents;
         
-        public new bool CanHide { get { return true; } }
+        public override bool CanHide { get { return true; } }
+        public override string ContentId => "all-queries-trace";
+        public override ImageSource IconSource
+        {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png") as ImageSource;
 
+            }
+        }
         public IObservableCollection<QueryEvent> QueryEvents 
         {
             get {
@@ -193,23 +206,12 @@ namespace DaxStudio.UI.ViewModels
 
         
 
-        public string DefaultQueryFilter { get { return "cat"; } }
+        public string DefaultQueryFilter => "cat";
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "All Queries"; }
-            set { }
-        }
+        public override string Title => "All Queries";
 
-        public override string ToolTipText
-        {
-            get
-            {
-                return "Runs a server trace to record all queries from all users for the current connection";
-            }
-            set { }
-        }
+        public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
 
         public override bool FilterForCurrentSession { get { return false; } }
 
@@ -222,7 +224,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-        public bool CanClearAll { get { return QueryEvents.Count > 0; } }
+        public bool CanClearAll => QueryEvents.Count > 0;
+
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
@@ -294,14 +297,46 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
-            
+
             _queryEvents.Clear();
             _queryEvents.AddRange(qe);
             NotifyOfPropertyChange(() => QueryEvents);
         }
 
-        
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+                
+            }
+
+        }
+
+
 
         public void SetDefaultFilter(string column, string value)
         {
@@ -319,6 +354,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public override bool CanExport => _queryEvents.Count > 0;
+
         public override void ExportTraceDetails(string filePath)
         {
             File.WriteAllText(filePath, GetJsonString());

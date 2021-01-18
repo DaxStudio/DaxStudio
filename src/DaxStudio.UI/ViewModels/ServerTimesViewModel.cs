@@ -14,8 +14,12 @@ using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Windows.Media;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
+using System.IO.Packaging;
+using System;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -31,32 +35,58 @@ namespace DaxStudio.UI.ViewModels
                 return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass };
             }
         }
-        public string Query { get;  set; }
-        public long? Duration { get;  set; }
-        public long? CpuTime { get;  set; }
-        public int RowNumber { get;  set; }
+        public string Query { get; set; }
+        public long? Duration { get; set; }
+        public long? CpuTime { get; set; }
+        public int RowNumber { get; set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
 
         // String that highlight important parts of the query
-        // Currently implement only the strong (~E~/~S~) for CallbackDataID and EncodeCallback function s
+        // Currently implement only the strong (~E~/~S~) for the following functions:
+        // - CallbackDataID
+        // - LogAbsValueCallback
+        // - RoundValueCallback
+        // - EncodeCallback
+        // - MinMaxColumnPositionCallback
+        //
+        // We probably need to cover also the function "Cond", which is a callback without having the callback name
+        // But we need to collect use cases to find a way to avoid making mistakes with any expression using "Cond"
         private string _queryRichText = "";
         public string QueryRichText {
             set {
-                var sb = new StringBuilder(value);
-                sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
-                sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
-                _queryRichText = sb.ToString();
+                if (Options.HighlightXmSqlCallbacks)
+                {
+                    var sb = new StringBuilder(value);
+                    sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
+                    sb.Replace("LogAbsValueCallback", "|~S~|LogAbsValueCallback|~E~|");
+                    sb.Replace("RoundValueCallback", "|~S~|RoundValueCallback|~E~|");
+                    sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
+                    sb.Replace("MinMaxColumnPositionCallback", "|~S~|MinMaxColumnPositionCallback|~E~|");
+                    _queryRichText = sb.ToString();
+                }
+                else
+                {
+                    _queryRichText = value;
+                }
             }
 
-            get {
-                return _queryRichText;
-            }
+            get => _queryRichText;
         }
 
-        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber)
+        private IGlobalOptions _options;
+        protected IGlobalOptions Options { get {
+                if (_options == null) _options = IoC.Get<IGlobalOptions>();
+                return _options;
+            }
+            private set { _options = value; }
+        }
+
+        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
         {
+            Options = options;
+
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
@@ -76,7 +106,8 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 default:
                     // TODO: we should implement as optional the removal of aliases and lineage
-                    Query = ev.TextData.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid();
+                    string queryRemapped = Options.ReplaceXmSqlColumnNames ? ev.TextData.ReplaceColumnNames( remapColumns ) : ev.TextData;
+                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
                     HighlightQuery = QueryRichText.Contains("|~E~|");
@@ -107,7 +138,7 @@ namespace DaxStudio.UI.ViewModels
 
         public RewriteTraceEngineEvent() { }
 
-        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber) : base(ev, rowNumber) {
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns) : base(ev, rowNumber, options, remapColumns) {
             TextData = ev.TextData;
         }
         
@@ -225,16 +256,37 @@ namespace DaxStudio.UI.ViewModels
             bool foundBytes = long.TryParse(bytesString, out bytes);
             return foundRows && foundBytes;
         }
+
+        public static string ReplaceColumnNames( this string xmSqlQuery, Dictionary<string,string> columnsMap )
+        {
+            // NOTE: the speed might be affected by the number of columns
+            // we could save time by reducing the mapping to calculated columns only, but it would not work with older versions of metadata (from XML instead of JSON)
+            foreach ( var replaceColumn in columnsMap )
+            {
+                if (xmSqlQuery.Contains(replaceColumn.Key))
+                {
+                    xmSqlQuery = xmSqlQuery.Replace(replaceColumn.Key, replaceColumn.Value);
+                }
+            }
+            return xmSqlQuery;
+        }
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     class ServerTimesViewModel
         : TraceWatcherBaseViewModel, ISaveState, IServerTimes
+        , IHandle<UpdateGlobalOptions>
     {
+        public IGlobalOptions Options { get; set; }
+        public Dictionary<string,string> RemapColumnNames { get; set; }
+
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
+            , IGlobalOptions options) : base(eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
+            RemapColumnNames = new Dictionary<string, string>();
+            Options = options;
             ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
@@ -266,6 +318,29 @@ namespace DaxStudio.UI.ViewModels
                 , DaxStudioTraceEventClass.QueryEnd};
         }
 
+        public bool HighlightXmSqlCallbacks
+        {
+            get => Options.HighlightXmSqlCallbacks;
+        }
+
+        public bool SimplifyXmSqlSyntax
+        {
+            get => Options.SimplifyXmSqlSyntax;
+        }
+
+        public bool ReplaceXmSqlColumnNames
+        {
+            get => Options.ReplaceXmSqlColumnNames;
+        }
+
+        public void Handle(UpdateGlobalOptions message)
+        {
+            NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
+            NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
+            NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
+            // TODO - update server timing pane?
+        }
+
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
@@ -292,7 +367,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                         }
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
@@ -300,7 +375,7 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineDuration += traceEvent.Duration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
@@ -308,7 +383,7 @@ namespace DaxStudio.UI.ViewModels
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;
                         //StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
@@ -321,7 +396,7 @@ namespace DaxStudio.UI.ViewModels
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                     {
                         VertipaqCacheMatches++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
                 }
 
@@ -500,20 +575,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "Server Timings"; }
-            set { }
-        }
-
-        public override string ToolTipText
+        public override string Title => "Server Timings";
+        public override string ContentId => "server-timings-trace";
+        public override ImageSource IconSource
         {
             get
             {
-                return "Runs a server trace to record detailed timing information for performance profiling";
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
+
             }
-            set { }
         }
+
+        public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 
         public override void OnReset()
         {
@@ -527,6 +602,31 @@ namespace DaxStudio.UI.ViewModels
         {
             string json = GetJsonString();
             File.WriteAllText(filename + ".serverTimings", json);
+
+        }
+
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+            }
 
         }
 
@@ -555,6 +655,11 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             var eventConverter = new ServerTimingConverter();
             var deseralizeSettings = new JsonSerializerSettings();
             deseralizeSettings.Converters.Add(eventConverter);
@@ -574,7 +679,6 @@ namespace DaxStudio.UI.ViewModels
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
-
         }
 
         #endregion
@@ -586,7 +690,7 @@ namespace DaxStudio.UI.ViewModels
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); } }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0, GridUnitType.Pixel) : new GridLength(1, GridUnitType.Star); } }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails

@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel;
 using System.Net.Mime;
 using System.Windows;
+using System.Windows.Media;
 using Serilog;
 using DaxStudio.Interfaces;
 
@@ -49,7 +50,18 @@ namespace DaxStudio.UI.ViewModels
         public BindableCollection<QueryHistoryEvent> QueryHistoryList => _globalHistory.QueryHistory;
 
         public override string Title => "Query History";
+        public override string DefaultDockingPane => "DockBottom";
+        public override string ContentId => "query-history";
+        public override ImageSource IconSource
+        {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-database.png") as ImageSource;
 
+            }
+        }
 
 
         public bool IsFilteredByServer
@@ -94,8 +106,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryHistoryDoubleClick(QueryHistoryEvent queryHistoryEvent)
         {
+            if (queryHistoryEvent == null) return;  // exit here silently if no history event is selected
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHistoryEvent.QueryText));
-            //_eventAggregator.PublishOnUIThread(new SendTextToEditor(queryText));
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)

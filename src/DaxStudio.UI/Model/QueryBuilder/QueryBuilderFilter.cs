@@ -11,12 +11,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using ADOTabular.Interfaces;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.Model
 {
+    [DataContract]
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
@@ -25,13 +29,16 @@ namespace DaxStudio.UI.Model
             TabularObject = obj;
             ModelCapabilities = modelCapabilities;
         }
-
+        [DataMember]
         public IADOTabularColumn TabularObject { get; }
+        [DataMember]
         public IModelCapabilities ModelCapabilities { get; }
+
 
         public string Caption => TabularObject.Caption;
 
         private FilterType _fitlerType;
+        [DataMember,JsonConverter(typeof(StringEnumConverter))]
         public FilterType FilterType 
         {  
             get => _fitlerType;
@@ -67,7 +74,7 @@ namespace DaxStudio.UI.Model
                         case FilterType.In:
                         case FilterType.NotIn:
                             // if the data type is string and the model supports TREATAS
-                            if (TabularObject.DataType == typeof(string) && ModelCapabilities.DAXFunctions.TreatAs ) yield return ft;
+                            if (TabularObject.DataType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) ) yield return ft;
                             break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
@@ -78,7 +85,7 @@ namespace DaxStudio.UI.Model
                             if (TabularObject.DataType != typeof(string)) yield return ft;
                             break;
                         default:
-                            throw new NotSupportedException($"Unknown FilterType '{ft.ToString()}'");
+                            throw new NotSupportedException($"Unknown FilterType '{ft}'");
 
                     }
                 }
@@ -88,13 +95,14 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        [DataMember]
         public string FilterValue { get; set; }
 
         public bool ShowFilterValue
         {
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
-
+        [DataMember]
         public string FilterValue2 { get; set; }
         public bool ShowFilterValue2 => FilterType == FilterType.Between;
 

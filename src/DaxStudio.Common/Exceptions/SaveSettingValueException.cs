@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Common.Exceptions
 {
-
+    [Serializable]
     public class SaveSettingValueException:Exception
     {
         public SaveSettingValueException():base() { }

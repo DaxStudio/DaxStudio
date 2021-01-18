@@ -17,6 +17,7 @@ using System;
 using DaxStudio.UI.Views;
 using UnitComboLib.ViewModel;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 using UnitComboLib.Unit.Screen;
 using DaxStudio.UI.Utils;
 
@@ -59,14 +60,23 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public override string Title
+        public override string Title => "Results";
+        public override string DefaultDockingPane => "DockBottom";
+        public override string ContentId => "results";
+        public override ImageSource IconSource
         {
-            get { return "Results"; }
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-table.png") as ImageSource;
+
+            }
         }
 
         public DataTable ResultsDataTable
         {
-            get { return _resultsTable; }
+            get => _resultsTable;
             set { _resultsTable = value;
             ShowResultsTable = true;
             NotifyOfPropertyChange(()=> ResultsDataView);}
@@ -181,7 +191,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public double _fontSize = 20;
+        private double _fontSize = 20;
         public double FontSize {
             get { return _fontSize; }
             set {
@@ -190,7 +200,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string _fontFamily = "Arial";
+        private string _fontFamily = "Arial";
         public string FontFamily
         {
             get { return _fontFamily; }
@@ -290,8 +300,8 @@ namespace DaxStudio.UI.ViewModels
         {
             System.Diagnostics.Debug.WriteLine("DoubleClick fired");
             string dataContext = string.Empty;
-            if (e.OriginalSource is TextBlock) { dataContext = ((TextBlock)e.OriginalSource).DataContext as string; }
-            if (e.OriginalSource is Border) { dataContext = ((Border)e.OriginalSource).DataContext as string; }
+            if (e.OriginalSource is TextBlock block) { dataContext = block.DataContext as string; }
+            if (e.OriginalSource is Border border) { dataContext = border.DataContext as string; }
 
             if (!string.IsNullOrEmpty(dataContext))
             {

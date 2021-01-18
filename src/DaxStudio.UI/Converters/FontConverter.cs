@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Converters
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", nameof(FontConverter), nameof(Convert), $"Error converting {value.ToString()} to a FontFamily Object: {ex.Message}");
+                Log.Error(ex, "{class} {method} {message}", nameof(FontConverter), nameof(Convert), $"Error converting {value} to a FontFamily Object: {ex.Message}");
                 // try setting a default font family if we hit an error
                 f = new FontFamily("Courier New, Segoe UI, Arial");
             }

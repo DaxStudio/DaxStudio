@@ -28,8 +28,10 @@ namespace DaxStudio.UI
     using MLib;
     using MLib.Interfaces;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public class AppBootstrapper : BootstrapperBase//<IShell>
-	{
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    {
 		CompositionContainer _container;
 	    private readonly Assembly _hostAssembly;
         
@@ -313,14 +315,12 @@ namespace DaxStudio.UI
             foreach (var backstageTab in backstageTabs.Items)
             {
                 ///foreach (var obj in BindingScope.GetNamedElements(backstageTab))
-                if (backstageTab is ContentControl)
-                    foreach (var obj in BindingScope.GetNamedElements((ContentControl)backstageTab))
+                if (backstageTab is ContentControl control)
+                    foreach (var obj in BindingScope.GetNamedElements(control))
                         yield return obj;
             }
             
             
         }
-        
-
     }
 }

@@ -30,6 +30,14 @@ These settings control if/how DAX Studio will use a Proxy server to connect to o
 | Proxy User | The username for accessing the Proxy server | _(blank)_ |
 | Proxy Password | The password for accessing the Proxy server | _(blank)_ |
 
+## Privacy
+
+| **Setting** | **Description** | **Default** |
+| --- | --- | --- |
+| Block All Internet Access | Stops DAX Studio from all external access. This option can only be set by an administrator during an 'All Users' install and overrides all the other options below. (and they will show up as disabled when this option has been set) | false |
+| Block Version Checks | Stops DAX Studio from checking for and notifying of available updates | false |
+| Block Crash Reporting | Stops DAX Studio from sending crash reports to the developer. There is a small chance that the screenshot of the crash could include personal information. Although you can untick the option to include the screenshot in the report if this is the case. | false |
+| Block External Services | Stops DAX Studio from accessing external services (such as DaxFormatter.com). We never send any data externally, but there is a small chance that query text might contain personal information if you were writing queries that filtered for specific information like Customer Names | false |
 
 ## Query History
 
@@ -40,7 +48,13 @@ DAX Studio keeps a log of recently executed commands (both successful and failed
 | History Items to keep | by default DAX Studio keeps a limited number of recent queries (_Note: setting this number too high can affect the startup time for DAX Studio_)  | 200 |
 | Show Trace Timings | This setting controls whether any trace timings are also capturd in the query log | true |
 
+## Server Timings
 
+| **Setting** | **Description** | **Default** |
+| --- | --- | --- |
+| Highlight Vertipaq Callbacks | Highlight xmSQL queries containing callbacks that don't store the result in the storage engine cache. | true |
+| Replace column ID with name | Replace xmSQL column ID with corresponding column name in data model. | true |
+| Simplify SE query syntax | Remove internal IDs and verbose syntax from xmSQL queries. | true |
 
 ## Timeouts
 

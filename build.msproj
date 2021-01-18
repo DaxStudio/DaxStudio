@@ -7,7 +7,8 @@
     <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
     <MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
     <ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
-    <ManifestThumbPrint>7F2BEF6866A0329D2BD2E3D70D347E5AD79CB426</ManifestThumbPrint>
+    <ManifestThumbPrint>FD452A79B4FA48AD217EE83AE4BF60A5461A5885</ManifestThumbPrint>
+    <TimeStampUri>http://timestamp.digicert.com</TimeStampUri>
   </PropertyGroup>
 
   <ItemGroup>
@@ -91,19 +92,19 @@
 
   <Target Name="SignAssemblies" DependsOnTargets="Build">
     <Message Text="Attempting to sign Assemblies" Importance="high" />
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
+    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/>
   </Target>
 
   <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
     <Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
-    <Exec Command='$(MageExe) -update ".\release\bin\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' IgnoreExitCode="true"/>
+    <Exec Command='$(MageExe) -update ".\release\bin\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri $(TimeStampUri)' IgnoreExitCode="true"/>
   </Target>
 
   <Target Name="SignVsto" DependsOnTargets="SignManifest">
     <Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
-    <Exec WorkingDirectory=".\Release\bin" Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri http://timestamp.verisign.com/scripts/timstamp.dll' />
+    <Exec WorkingDirectory=".\Release\bin" Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri $(TimeStampUri)' />
   </Target>
 
 
@@ -117,7 +118,7 @@
 
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-    <!--<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t http://timestamp.verisign.com/scripts/timstamp.dll .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>-->
+    <!--<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>-->
 	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true" />
   </Target>
 

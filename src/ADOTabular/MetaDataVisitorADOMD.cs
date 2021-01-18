@@ -4,9 +4,10 @@ using System.Linq;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Interfaces;
 
+
 namespace ADOTabular
 {
-    class MetaDataVisitorADOMD : IMetaDataVisitor
+    public class MetaDataVisitorADOMD : IMetaDataVisitor
     {
         private readonly ADOTabularConnection _conn;
 
@@ -37,7 +38,7 @@ namespace ADOTabular
                         "DIMENSION_VISIBILITY",
                         _conn.ShowHiddenObjects
                             ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
-                            : (int) (MdschemaVisibility.Visible)
+                            : (int) MdschemaVisibility.Visible
                     }
                 };
             DataTable dtTables = _conn.GetSchemaDataSet("MDSCHEMA_DIMENSIONS", resColl).Tables[0];
@@ -65,7 +66,7 @@ namespace ADOTabular
                                   {"HIERARCHY_ORIGIN", 2},
                                   {"CUBE_NAME",  columns.Table.Model.Name},
                                   {"DIMENSION_UNIQUE_NAME", $"[{columns.Table.Caption}"},
-                                  {"HIERARCHY_VISIBILITY", _conn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)(MdschemaVisibility.Visible)} 
+                                  {"HIERARCHY_VISIBILITY", _conn.ShowHiddenObjects ? (int)(MdschemaVisibility.Visible | MdschemaVisibility.NonVisible) : (int)MdschemaVisibility.Visible} 
                               };
             DataTable dtHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", resColl).Tables[0];
             foreach (DataRow dr in dtHier.Rows)
@@ -89,7 +90,7 @@ namespace ADOTabular
                         "MEASURE_VISIBILITY",
                         _conn.ShowHiddenObjects
                             ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
-                            : (int) (MdschemaVisibility.Visible)
+                            : (int) MdschemaVisibility.Visible
                     }
                 };
             DataTable dtMeasures = _conn.GetSchemaDataSet("MDSCHEMA_MEASURES", resCollMeasures).Tables[0];
@@ -132,12 +133,12 @@ namespace ADOTabular
                 {
                     {"CATALOG_NAME", conn.Database.Name},
                     {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
-                    {"MEASUREGROUP_NAME",  measures.Table.Caption},
+                    {"MEASUREGROUP_NAME",  measures.Table.Name},
                     {
                         "MEASURE_VISIBILITY",
                         conn.ShowHiddenObjects
                             ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
-                            : (int) (MdschemaVisibility.Visible)
+                            : (int) MdschemaVisibility.Visible
                     }
                 };
 
@@ -164,12 +165,12 @@ namespace ADOTabular
         {
             var resCollTables = new AdomdRestrictionCollection
                 {
-                    {"Name",  measures.Table.Caption},
+                    {"Name",  measures.Table.Name},
                 };
 
             // need to look up the TableID in TMSCHEMA_TABLES
             DataTable dtTables = conn.GetSchemaDataSet("TMSCHEMA_TABLES", resCollTables).Tables[0];
-            var tableId = dtTables.Rows[0].Field<System.UInt64>("ID");
+            var tableId = dtTables.Rows[0].Field<ulong>("ID");
 
             var ret = new SortedDictionary<string, ADOTabularMeasure>();
             var resCollMeasures = new AdomdRestrictionCollection
@@ -206,12 +207,17 @@ namespace ADOTabular
         }
 
 
-        public void Visit(ADOTabularKeywordCollection aDOTabularKeywordCollection)
+        public void Visit(ADOTabularKeywordCollection keywords)
         {
             throw new System.NotImplementedException();
         }
 
         public void Visit(MetadataInfo.DaxMetadata daxMetadata) {
+            throw new System.NotImplementedException();
+        }
+
+        public void Visit(MetadataInfo.DaxColumnsRemap daxColumnsRemap)
+        {
             throw new System.NotImplementedException();
         }
 

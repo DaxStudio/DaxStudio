@@ -1,0 +1,42 @@
+---
+layout: base
+---
+
+{% include header.html type="page" %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-2 col-lg-offset-1 col-md-1">
+      {% assign docs = site.documentation | where: "feature", "true" | sort: "title" %}
+      <h4>Features</h4>
+      <ul class="sidenav" >
+      {% for doc in docs %}
+      <li>
+        <a href="{{ doc.url }}" {% if page.title == doc.title%} class="active" {% endif %}>
+        {{ doc.title }} 
+        </a>
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+
+    <!--<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"></div>-->
+    <div class="col-lg-8  col-md-10 ">
+      <div class="centered">
+        <a href="/">home</a> | <a href="/documentation/">summary</a> | <a href="/documentation/features/">features</a> | <a href="/documentation/videos/">videos</a> | <a href="/documentation/installation/">installation</a> | <a href="/documentation/troubleshooting/">troubleshooting</a>
+      </div> 
+
+      {{ content }}
+
+      {% if page.social-share %}
+        {% include social-share.html %}
+      {% endif %}
+
+      {% if page.comments %}
+        <div class="disqus-comments">
+          {% include disqus.html %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -70,9 +70,9 @@ namespace DaxStudio.Common
                     // ignore it and skip to the next one in the collection
                     title = GetWindowTextTimeout(handle, timeout);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031
                 catch (Exception)
-#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1031
                 {
                     title = "";
                 }
@@ -116,7 +116,9 @@ namespace DaxStudio.Common
                 if (!String.IsNullOrEmpty(windowText.ToString()) && !String.IsNullOrWhiteSpace(windowText.ToString()))
                     caption = windowText.ToString();
             }
+#pragma warning disable CA1031
             catch (Exception ex)
+#pragma warning restore CA1031
             {
                 caption = ex.Message;
             }
@@ -142,6 +144,7 @@ namespace DaxStudio.Common
         internal static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
             IntPtr lParam);
 
+#pragma warning disable CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
         [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal unsafe static extern int SendMessageTimeout(
             IntPtr hWnd,
@@ -161,5 +164,6 @@ namespace DaxStudio.Common
 
         [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern long GetWindowText(IntPtr hwnd, StringBuilder lpString, long cch);
+#pragma warning restore CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
     }
 }

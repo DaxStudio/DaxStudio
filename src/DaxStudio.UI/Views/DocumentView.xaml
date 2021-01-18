@@ -24,6 +24,7 @@
     d:DesignWidth="500" 
     d:DesignHeight="400"
     d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
+    
     >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -45,6 +46,7 @@
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
+
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
@@ -646,7 +648,8 @@
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
-                                                   >
+                                                   cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]"
+                                    >
                                         <!--dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"-->
                                         <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
                                         EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
@@ -704,6 +707,16 @@
                                         </ContextMenuService.ContextMenu>
 
                                     </dax:DAXEditor>
+
+                                    <!-- Help Watermark -->
+                                    <ContentControl x:Name="HelpWatermark"
+                                                    cal:View.Model="{Binding HelpWatermark}" 
+                                                    cal:View.ApplyConventions="true"
+                                                    Grid.RowSpan="2"
+                                                    Grid.ColumnSpan="2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ></ContentControl>
 
                                     <!-- Floats over the main editor control -->
                                     <Border x:Name="borExpressionBackground" 

@@ -12,10 +12,14 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
+using System.Text;
 
 namespace DaxStudio.Standalone
 {
@@ -23,9 +27,9 @@ namespace DaxStudio.Standalone
     {
         private static ILogger _log;
         private static  IEventAggregator _eventAggregator;
+        private static IGlobalOptions _options;
         // need to create application first
         private static readonly Application App = new Application();
-        private static IGlobalOptions _options;
         static EntryPoint()
         {
 
@@ -46,22 +50,22 @@ namespace DaxStudio.Standalone
         [STAThread]
         public static void Main()
         {
-            try
-            {
-
+            //try
+            //{
 
                 // add unhandled exception handler
                 App.DispatcherUnhandledException += App_DispatcherUnhandledException;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
                 TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
                 
-                // Setup logging
-                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Error);
-
-
-                ConfigureLogging(levelSwitch);
+                // Setup logging, default to information level to start with to log the startup and key system information
+                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
 
                 Log.Information("============ DaxStudio Startup =============");
+                ConfigureLogging(levelSwitch);
+
+                // Default web requests like AAD Auth to use windows credentials for proxy auth
+                System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
 
                 // add the custom DAX Studio accent color theme
                 App.AddDaxStudioAccentColor();
@@ -79,7 +83,7 @@ namespace DaxStudio.Standalone
 
                 AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
-                if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+                
 
                 // force control tooltips to display even if disabled
                 ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
@@ -116,41 +120,38 @@ namespace DaxStudio.Standalone
                 //else app.LoadLightTheme();
 
                 // log startup switches
-                var args = App.Args().AsDictionaryForTelemetry();
-                Telemetry.TrackEvent("App.Startup", args);
+                if (_options.AnyExternalAccessAllowed())
+                {
+                    var args = App.Args().AsDictionaryForTelemetry();
+                    Telemetry.TrackEvent("App.Startup", args);
+                }
+
+                // only used for testing of crash reporting UI
+                if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
 
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 bootstrapper.DisplayShell();
                 App.Run();
-            }
-            //catch (ArgumentOutOfRangeException argEx)
-            //{
-            //    var st = new System.Diagnostics.StackTrace(argEx);
-            //    var sf = st.GetFrame(0);
-            //    if (sf.GetMethod().Name == "GetLineByOffset")
-            //    {
-            //        if (_eventAggregator != null) _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan beyond the end of the current line"));
-            //        Log.Warning(argEx, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
-            //    }
             //}
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-                Log.CloseAndFlush();
-//#if DEBUG
-//                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-//#else
-                // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
-//#endif
 
-            }
-            finally
-            {
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal(ex, "Class: {0} Method: {1} Error: {2}", "EntryPoint", "Main", ex.Message);
+            //    Log.CloseAndFlush();
+            //    //#if DEBUG
+            //    //                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
+            //    //#else
+            //    // use CrashReporter.Net to send bug to DrDump
+            //    LogFatalCrash(ex, ex.Message, _options);
+            //    //#endif
+
+            //}
+            //finally
+            //{
                 Log.Information("============ DaxStudio Shutdown =============");
                 Log.CloseAndFlush();
-            }
+            //}
         }
 
         private static void ShowSettingPermissionErrorDialog()
@@ -186,24 +187,6 @@ namespace DaxStudio.Standalone
             var logCmdLineSwitch = App.Args().LoggingEnabled;
 
 #if DEBUG
-            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
-            Log.Debug("Information Logging Enabled due to running in debug mode");
-#endif
-
-            if (isLoggingKeyDown || logCmdLineSwitch)
-            {
-#if DEBUG
-                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
-                Log.Debug("Verbose Logging Enabled");
-
-#else
-                    levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
-                    Log.Debug("Debug Logging Enabled");
-#endif
-            }
-
-
-#if DEBUG
             Serilog.Debugging.SelfLog.Enable(Console.Out);
 #endif
             // write basic information about the current PC to the log file
@@ -213,6 +196,30 @@ namespace DaxStudio.Standalone
             if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
             Log.Information("CommandLine Args: {args}", Environment.GetCommandLineArgs());
             Log.Information($"Portable Mode: {ApplicationPaths.IsInPortableMode}");
+
+            // Set the default logging level
+            if (isLoggingKeyDown || logCmdLineSwitch)
+            {
+#if DEBUG
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
+                Log.Debug("Verbose Logging Enabled");
+
+#else
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
+                Log.Debug("Debug Logging Enabled");
+#endif
+            }
+            else
+            {
+#if DEBUG
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
+                Log.Information("Information Logging Enabled due to running in debug mode");
+#else
+                Log.Information("Changing minimum log event to Error");
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
+#endif
+            }
+
         }
 
         private static bool CanWriteToSettings()
@@ -230,7 +237,9 @@ namespace DaxStudio.Standalone
                     return true;
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // ignored
             }
@@ -253,23 +262,15 @@ namespace DaxStudio.Standalone
         {
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
-            LogFatalCrash(e.Exception, msg);
-            if (App.Dispatcher.CheckAccess())
-            {
-                App.Shutdown(1);
-            }
-            else
-            {
-                App.Dispatcher.Invoke(() => App.Shutdown(1));
-
-            }
+            e.SetObserved();
+            LogFatalCrash(e.Exception, msg, _options);
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
-            LogFatalCrash(ex, msg);
+            LogFatalCrash(ex, msg, _options);
             if (App.Dispatcher.CheckAccess())
             {
                 App.Shutdown(2);
@@ -281,23 +282,60 @@ namespace DaxStudio.Standalone
             }
         }
 
-        private static void LogFatalCrash(Exception ex, string msg)
+        private static void LogFatalCrash(Exception ex, string msg, IGlobalOptions options)
         {
             // add a property to the application indicating that we have crashed
             if (!App.Properties.Contains("HasCrashed"))
                 App.Properties.Add("HasCrashed", true);
 
-            Log.Fatal(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+            UpdateErrorForLoaderExceptions(ref msg, ex);
 
-            if (Application.Current.Dispatcher.CheckAccess())
+            Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+
+            if (_options.BlockCrashReporting)
             {
-                CrashReporter.ReportCrash(ex, msg);
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
+                Application.Current.Dispatcher.Invoke(()=>{
+                    // Show a dialog to let the user know there was a fatal crash
+                    // but we are unable to automatically log the crash due to their privacy settings
+                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = msg}};
+                    blockedDlg.ShowDialog();
+                });
+
+                return;
             }
 
+            Execute.OnUIThread(() => { 
+                // add a property to the application indicating that we have crashed
+                if (!App.Properties.Contains("HasCrashed"))
+                    App.Properties.Add("HasCrashed", true);
+
+                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+                Log.CloseAndFlush();
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
+                    CrashReporter.ReportCrash(ex, msg);
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
+                }
+            });
+        }
+
+        private static void UpdateErrorForLoaderExceptions(ref string msg, Exception ex)
+        {
+            // if this is a type load exception we need to list out the LoaderException messages.
+            if (ex is ReflectionTypeLoadException loaderEx)
+            {
+
+                var loaderExceptions = loaderEx.LoaderExceptions;
+                var sbError = new StringBuilder();
+                foreach (var innerEx in loaderEx.LoaderExceptions)
+                {
+                    sbError.AppendLine(innerEx.Message);
+                }
+                msg += '\n' +  sbError.ToString();
+            }
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -326,7 +364,7 @@ namespace DaxStudio.Standalone
                         return;
                     default:
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
-                        CrashReporter.ReportCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception");
+                        LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
                         e.Handled = true;
                         
                         Application.Current.Shutdown(1);
@@ -336,7 +374,7 @@ namespace DaxStudio.Standalone
             }
             else
             {
-                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash");
+                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash",_options);
                 e.Handled = true;
                 App?.Shutdown(3);
             }

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using ADOTabular;
 using ADOTabular.Interfaces;
+using DaxStudio.Interfaces;
 using DaxStudio.Tests.Assertions;
 using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -16,6 +18,9 @@ namespace DaxStudio.Tests
     {
         private IModelCapabilities modelCaps;
         private Mock<IDAXFunctions> mockFuncs;
+        private List<QueryBuilderColumn> _blankOrderBy;
+        private IGlobalOptions mockOptions;
+
         [TestInitialize]
         public void TestSetup()
         {
@@ -25,19 +30,23 @@ namespace DaxStudio.Tests
             mockFuncs.Setup(f => f.TreatAs).Returns(true);
             mockModelCaps.Setup(c => c.DAXFunctions).Returns(mockFuncs.Object);
             modelCaps = mockModelCaps.Object;
+            _blankOrderBy = new List<QueryBuilderColumn>();
+            mockOptions = new Mock<IGlobalOptions>().Object;
         }
 
         [TestMethod]
         public void TestColumnsOnlyQuery()
         {
-           
+
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
 
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
@@ -45,7 +54,7 @@ SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color]
 )
-/* END QUERY BUILDER */".Replace("\r","");
+/* END QUERY BUILDER */".Replace("\r", "");
 
             StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
 
@@ -57,14 +66,22 @@ SUMMARIZECOLUMNS(
         {
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
-            
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "M"  });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),modelCaps) { FilterType = FilterType.Is, FilterValue = "Red" });
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "M"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "Red"});
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -85,14 +102,19 @@ SUMMARIZECOLUMNS(
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.IsNot, FilterValue = "M" });
-            
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.IsNot, FilterValue = "M"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -112,15 +134,23 @@ SUMMARIZECOLUMNS(
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add( MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
-            cols.Add( MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
-            cols.Add( MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter( MockColumn.Create("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),modelCaps) { FilterType = FilterType.Is, FilterValue = "M" });
-            filters.Add(new QueryBuilderFilter( MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),modelCaps) { FilterType = FilterType.Is, FilterValue = "Red" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "M"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "Red"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -142,14 +172,19 @@ SUMMARIZECOLUMNS(
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number of Children", "'Customer'[Number of Children]", typeof(int), ADOTabularObjectType.Column),modelCaps) { FilterType = FilterType.Is, FilterValue = "2" });
-            
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
+                        ADOTabularObjectType.Column), modelCaps) {FilterType = FilterType.Is, FilterValue = "2"});
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -170,17 +205,31 @@ SUMMARIZECOLUMNS(
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 1", "'Customer'[Number1]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.GreaterThan, FilterValue = "1" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 2", "'Customer'[Number2]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.GreaterThanOrEqual, FilterValue = "2" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 3", "'Customer'[Number3]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.LessThan, FilterValue = "3" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 4", "'Customer'[Number4]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.LessThanOrEqual, FilterValue = "4" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 1", "'Customer'[Number1]", typeof(int), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.GreaterThan, FilterValue = "1"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 2", "'Customer'[Number2]", typeof(int), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.GreaterThanOrEqual, FilterValue = "2"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 3", "'Customer'[Number3]", typeof(int), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.LessThan, FilterValue = "3"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 4", "'Customer'[Number4]", typeof(int), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.LessThanOrEqual, FilterValue = "4"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -205,16 +254,29 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Contains, FilterValue = "ABC" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 2", "'Customer'[String2]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.DoesNotContain, FilterValue = "DEF" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 3", "'Customer'[String3]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.StartsWith, FilterValue = "GHI" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 4", "'Customer'[String4]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.DoesNotStartWith, FilterValue = "JKL" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Contains, FilterValue = "ABC"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 2", "'Customer'[String2]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.DoesNotContain, FilterValue = "DEF"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 3", "'Customer'[String3]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.StartsWith, FilterValue = "GHI"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 4", "'Customer'[String4]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.DoesNotStartWith, FilterValue = "JKL"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -239,13 +301,17 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 1", "'Customer'[Number1]", typeof(long), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Between, FilterValue = "2", FilterValue2 = "5" });
-            
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 1", "'Customer'[Number1]", typeof(long), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Between, FilterValue = "2", FilterValue2 = "5"});
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -267,14 +333,21 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.IsBlank, FilterValue = "" });
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 2", "'Customer'[String2]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.IsNotBlank, FilterValue = "" });
-            
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.IsBlank, FilterValue = ""});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 2", "'Customer'[String2]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.IsNotBlank, FilterValue = ""});
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -297,13 +370,18 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "2019-11-24" });
-            
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            filters.Add(
+                new QueryBuilderFilter(
+                        MockColumn.CreateADOTabularColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime),
+                            ADOTabularObjectType.Column), modelCaps)
+                    {FilterType = FilterType.Is, FilterValue = "2019-11-24"});
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -326,13 +404,20 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "24/24/2019" });
+            filters.Add(
+                new QueryBuilderFilter(
+                        MockColumn.CreateADOTabularColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime),
+                            ADOTabularObjectType.Column), modelCaps)
+                    {FilterType = FilterType.Is, FilterValue = "24/24/2019"});
 
-            ExceptionAssert.Throws<ArgumentException>(() =>  QueryBuilder.BuildQuery(modelCaps, cols, filters), "Unable to parse the value '24/24/2019' as a DateTime value");
+            ExceptionAssert.Throws<ArgumentException>(
+                () => QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy),
+                "Unable to parse the value '24/24/2019' as a DateTime value");
 
 
         }
@@ -345,11 +430,16 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
-            cols.Add(MockColumn.Create("Total Freight", "[Total Freight]", typeof(double), ADOTabularObjectType.Measure));
+            cols.Add(
+                MockColumn.Create("Total Freight", "[Total Freight]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Date 1", "'Customer'[Birth Date]", typeof(DateTime), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "2019-11-24" });
+            filters.Add(
+                new QueryBuilderFilter(
+                        MockColumn.CreateADOTabularColumn("Date 1", "'Customer'[Birth Date]", typeof(DateTime),
+                            ADOTabularObjectType.Column), modelCaps)
+                    {FilterType = FilterType.Is, FilterValue = "2019-11-24"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 CALCULATETABLE(
@@ -372,18 +462,22 @@ CALCULATETABLE(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             var meas = MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure);
             meas.MeasureExpression = "123";
             var tab = new Mock<IADOTabularObject>();
             tab.SetupGet(t => t.DaxName).Returns("'Internet Sales'");
-            meas.SelectedTable = tab.Object; 
+            meas.SelectedTable = tab.Object;
             cols.Add(meas);
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number of Children", "'Customer'[Number of Children]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "2" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
+                        ADOTabularObjectType.Column), modelCaps) {FilterType = FilterType.Is, FilterValue = "2"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 DEFINE
 MEASURE 'Internet Sales'[Total Sales] = 123
@@ -417,9 +511,12 @@ SUMMARIZECOLUMNS(
             meas.SelectedTable = tab.Object;
             cols.Add(meas);
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number of Children", "'Customer'[Number of Children]", typeof(int), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "2" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
+                        ADOTabularObjectType.Column), modelCaps) {FilterType = FilterType.Is, FilterValue = "2"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 DEFINE
 MEASURE 'Internet Sales'[Test Measure] = 123
@@ -444,14 +541,18 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "ABC" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String1]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "ABC"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -475,14 +576,18 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("Number 1", "'Customer'[Number 1]", typeof(long), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.Is, FilterValue = "123" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Number 1", "'Customer'[Number 1]", typeof(long), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "123"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -506,14 +611,18 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            filters.Add(new QueryBuilderFilter(MockColumn.Create("String 1", "'Customer'[String 1]", typeof(string), ADOTabularObjectType.Column), modelCaps) { FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String 1]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.In, FilterValue = "red\ngreen\nblue"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -537,22 +646,25 @@ SUMMARIZECOLUMNS(
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
 
-            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
 
-            var filterCol = MockColumn.Create("String 1", "'Customer'[String 1]", typeof(string), ADOTabularObjectType.Column) ;
+            var filterCol = MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String 1]", typeof(string),
+                ADOTabularObjectType.Column);
 
-            filters.Add(new QueryBuilderFilter(filterCol, modelCaps) { FilterType = FilterType.NotIn, FilterValue = "red\ngreen\nblue" });
+            filters.Add(new QueryBuilderFilter(filterCol, modelCaps)
+                {FilterType = FilterType.NotIn, FilterValue = "red\ngreen\nblue"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
     'Product Category'[Category],
     'Product'[Color],
-    KEEPFILTERS( EXCEPT( ALL( 'Customer'[String 1] ), TREATAS( {""red"",""green"",""blue""}, 'Customer'[String 1] ))),
+    KEEPFILTERS( FILTER( ALL( 'Customer'[String 1] ), NOT( 'Customer'[String 1] IN {""red"",""green"",""blue""} ))),
     ""Total Sales"", [Total Sales]
 )
 /* END QUERY BUILDER */".Replace("\r", "");
@@ -561,5 +673,114 @@ SUMMARIZECOLUMNS(
 
         }
 
+        [TestMethod]
+        public void TestInListFilterQueryWithoutTreatAs()
+        {
+            // specify that this model supports TreatAs
+            mockFuncs.Setup(f => f.TreatAs).Returns(false);
+
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            var filterCol = MockColumn.CreateADOTabularColumn("String 1", "'Customer'[String 1]", typeof(string),
+                ADOTabularObjectType.Column);
+
+            filters.Add(new QueryBuilderFilter(filterCol, modelCaps)
+            { FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
+
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, _blankOrderBy);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    KEEPFILTERS( FILTER( ALL( 'Customer'[String 1] ), 'Customer'[String 1] IN {""red"",""green"",""blue""} )),
+    ""Total Sales"", [Total Sales]
+)
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
+        public void TestOrderByQuery()
+        {
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "M"});
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps) {FilterType = FilterType.Is, FilterValue = "Red"});
+
+            orderBy.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    KEEPFILTERS( TREATAS( {""M""}, 'Customer'[Gender] )),
+    KEEPFILTERS( TREATAS( {""Red""}, 'Product'[Color] ))
+)
+ORDER BY 'Product Category'[Category]
+/* END QUERY BUILDER */".Replace("\r", "");
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+        }
+
+        [TestMethod,Ignore]
+        public void TestSerializer()
+        {
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+            List<QueryBuilderColumn> orderBy = new List<QueryBuilderColumn>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+
+            filters.Add(
+                new QueryBuilderFilter(
+                        MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                        modelCaps)
+                    { FilterType = FilterType.Is, FilterValue = "M" });
+            filters.Add(
+                new QueryBuilderFilter(
+                        MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
+                        modelCaps)
+                    { FilterType = FilterType.Is, FilterValue = "Red" });
+
+            orderBy.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, orderBy);
+
+            QueryBuilderViewModel vm = new QueryBuilderViewModel(new MockEventAggregator(), null , mockOptions  );
+            cols.ForEach(c => vm.Columns.Add(c));
+            filters.ForEach(f => vm.Filters.Add(f));
+            orderBy.ForEach(o => vm.OrderBy.Add(o));
+
+            var json = vm.GetJson();
+            var expectedJson = @"{}";
+            StringAssertion.ShouldEqualWithDiff(expectedJson, json, DiffStyle.Full);
+        }
     }
 }

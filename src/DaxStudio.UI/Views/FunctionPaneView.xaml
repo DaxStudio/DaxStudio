@@ -17,6 +17,7 @@
             <BitmapImage x:Key="FunctionGroup" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Folder.ico"/>
             <BitmapImage x:Key="Function" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:MaxMultiConverter x:Key="MaxMultiConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
@@ -80,12 +81,14 @@
                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
                                 <TextBlock Text="{Binding Caption}" >
                                     <TextBlock.ToolTip>
-                                        <StackPanel>
+                                        <!-- Function Tooltip -->
+                                        <StackPanel x:Name="FunctionTooltip" MaxWidth="750" >
                                             <StackPanel Orientation="Horizontal">
                                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
                                                 <TextBlock Text="{Binding Caption}" FontWeight="Bold"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding DaxName}"/>
+                                            <TextBlock FontFamily="Courier New" Text="{Binding DaxName}" x:Name="DaxName"/>
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding Description}" />
                                         </StackPanel>
                                     </TextBlock.ToolTip>
                                 </TextBlock>

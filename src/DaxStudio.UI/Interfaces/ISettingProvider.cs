@@ -3,6 +3,7 @@ using DaxStudio.UI.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Interfaces
@@ -16,8 +17,8 @@ namespace DaxStudio.UI.Interfaces
         void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files);
 
         T GetValue<T>(string subKey, T defaultValue);
-        void SetValue<T>(string subKey, T value, bool isInitializing);
-        void SetValue(string subKey, DateTime value, bool isInitializing);
+        void SetValue<T>(string subKey, T value,  bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName ="");
+        void SetValue(string subKey, DateTime value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName="");
 
         bool IsFileLoggingEnabled();
         string LogPath { get; }

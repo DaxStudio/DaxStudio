@@ -12,11 +12,9 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
-using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using System.Threading.Tasks;
-using MLib.Interfaces;
 using System.Windows.Media;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,21 +30,19 @@ namespace DaxStudio.UI.ViewModels
         IHandle<UpdateHotkeys>,
         IHandle<UpdateGlobalOptions>
     {
-        private readonly IWindowManager _windowManager;
+
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
-        private NotifyIcon notifyIcon;
+        private NotifyIcon _notifyIcon;
         private Window _window;
-        private readonly Application _app;
         private readonly string _username;
-        private readonly DateTime utcSessionStart;
+        private readonly DateTime _utcSessionStart;
 
         private InputBindings _inputBindings;
 
         //private ILogger log;
         [ImportingConstructor]
-        public ShellViewModel(IWindowManager windowManager
-                            , IEventAggregator eventAggregator
+        public ShellViewModel(IEventAggregator eventAggregator
                             , RibbonViewModel ribbonViewModel
                             , StatusBarViewModel statusBar
                             , IConductor conductor
@@ -54,28 +50,24 @@ namespace DaxStudio.UI.ViewModels
                             , IVersionCheck versionCheck
                             , IGlobalOptions options
                             , IAutoSaver autoSaver
-                            , IThemeManager themeManager
-                            , GlobalQueryHistory queryHistory
-                            )
+                            , IThemeManager themeManager)
         {
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting Constructor");
-            utcSessionStart = DateTime.UtcNow;
+            Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting Constructor");
+            _utcSessionStart = DateTime.UtcNow;
             Ribbon = ribbonViewModel;
             Ribbon.Shell = this;
             StatusBar = statusBar;
             Options = options;
             AutoSaver = autoSaver;
             ThemeManager = themeManager;
-            _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _eventAggregator.Subscribe(this);
-            _queryHistory = queryHistory;
+
             Tabs = (DocumentTabViewModel)conductor;
             Tabs.ConductWith(this);
             //Tabs.CloseStrategy = new ApplicationCloseStrategy();
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
-            _app = Application.Current;
             _username = UserHelper.GetUser();
             var recoveringFiles = false;
 
@@ -86,14 +78,14 @@ namespace DaxStudio.UI.ViewModels
             // check for auto-saved files and offer to recover them
             if (filesToRecover.Any())
             {
-                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found autosave files, beginning recovery");
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
                 recoveringFiles = true;
                 RecoverAutoSavedFiles(autoSaveInfo);
             }
             else
             {
                 // if there are no auto-save files to recover, start the auto save timer
-                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting autosave timer");
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
                 eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
             }
 
@@ -104,10 +96,10 @@ namespace DaxStudio.UI.ViewModels
                 Tabs.NewQueryDocument(_host.CommandLineFileName);
             }
 
-            // if no tabs are open at this point and we are not recovering autosave file then, open a blank document
+            // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
             if (Tabs.Items.Count == 0 && !recoveringFiles)
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening a new blank query window");
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
                 NewDocument();
             }
 
@@ -120,7 +112,7 @@ namespace DaxStudio.UI.ViewModels
             
 
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
-            AutoSaveTimer.Elapsed += new ElapsedEventHandler(AutoSaveTimerElapsed);
+            AutoSaveTimer.Elapsed += AutoSaveTimerElapsed;
             
             Log.Debug("============ Shell Started - v{version} =============", Version.ToString());
             
@@ -144,7 +136,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // disable the timer while we are saving, so that if access to the UI thread is 
                 // blocked and we cannot read the contents of the editor controls we do not keep
-                // firing access denied errors on the autosave file. Once the UI thread is free 
+                // firing access denied errors on the auto-save file. Once the UI thread is free 
                 // the initial request will continue and the timer will be re-enabled.
               
                 AutoSaveTimer.Enabled = false;
@@ -153,7 +145,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                // we just catch and log any errors, we don't want the autosave timer to be
+                // we just catch and log any errors, we don't want the auto-save timer to be
                 // the cause of any crashes itself
                 Log.Error(ex, "{class} {method} {message}", "ShellViewModel", "AutoSaveTimerElapsed", ex.Message);
             }
@@ -172,16 +164,12 @@ namespace DaxStudio.UI.ViewModels
 
         
         public IAutoSaver AutoSaver { get; }
-        public Version Version { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
-
-        private GlobalQueryHistory _queryHistory;
+        public Version Version => Assembly.GetExecutingAssembly().GetName().Version;
 
         public DocumentTabViewModel Tabs { get; set; }
         public RibbonViewModel Ribbon { get; set; }
         public StatusBarViewModel StatusBar { get; set; }
         public IGlobalOptions Options { get; }
-        public ISettingProvider SettingProvider { get; }
-
 
         public IVersionCheck VersionChecker { get; set; }
         public override void TryClose(bool? dialogResult = null)
@@ -191,7 +179,7 @@ namespace DaxStudio.UI.ViewModels
             if (dialogResult != false )
             {
                 Ribbon.OnClose();
-                notifyIcon?.Dispose();
+                _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
                 if (!Application.Current.Properties.Contains("HasCrashed") )
                     AutoSaver.RemoveAll();
@@ -220,16 +208,19 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             // load the saved window positions
             _window = view as Window;
-            _window.Closing += windowClosing;
-            // SetPlacement will adjust the position if it's outside of the visible boundaries
-            _window.SetPlacement(Options.WindowPosition);
-            notifyIcon = new NotifyIcon(_window, _eventAggregator);
-            if (_host.DebugLogging) ShowLoggingEnabledNotification();
+            if (_window != null)
+            {
+                _window.Closing += WindowClosing;
+                // SetPlacement will adjust the position if it's outside of the visible boundaries
+                _window.SetPlacement(Options.WindowPosition);
+                _notifyIcon = new NotifyIcon(_window, _eventAggregator);
+                if (_host.DebugLogging) ShowLoggingEnabledNotification();
 
-            //Application.Current.LoadRibbonTheme();
-            _inputBindings = new InputBindings(_window);
+                //Application.Current.LoadRibbonTheme();
+                _inputBindings = new InputBindings(_window);
+            }
+
             _inputBindings.RegisterCommands(GetInputBindingCommands());
-            //await _queryHistory.LoadHistoryFilesAsync();
             _eventAggregator.PublishOnBackgroundThread(new LoadQueryHistoryAsyncEvent());
             
         }
@@ -266,26 +257,32 @@ namespace DaxStudio.UI.ViewModels
             _inputBindings.RegisterCommands(GetInputBindingCommands());
         }
 
-        void windowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             double sessionMin = 0;
             try
             {
-                TimeSpan sessionSpan = DateTime.UtcNow - utcSessionStart;
+                TimeSpan sessionSpan = DateTime.UtcNow - _utcSessionStart;
                 sessionMin = sessionSpan.TotalMinutes;
             }
-            catch 
-            { }
+            catch
+            {
+                // swallow all errors
+            }
 
-            Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
-            { 
-                { "SessionMin", sessionMin.ToString("#")}
-            });
-            Telemetry.Flush();
+            if (Options.AnyExternalAccessAllowed())
+            {
+                Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
+                {
+                    {"SessionMin", sessionMin.ToString("#")}
+                });
+                Telemetry.Flush();
+            }
+
             // Store the current window position
             var w = sender as Window;
             Options.WindowPosition = w.GetPlacement();
-            _window.Closing -= windowClosing;
+            _window.Closing -= WindowClosing;
 
         }
 
@@ -297,9 +294,10 @@ namespace DaxStudio.UI.ViewModels
         #region Event Handlers
         public void Handle(NewVersionEvent message)
         {           
-            var newVersionText = string.Format("Version {0} is available for download.\nClick here to go to the download page",message.NewVersion.ToString(3));
+            var newVersionText =
+                $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
-            notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
+            _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
         }
 
         public void Handle(AutoSaveEvent message)
@@ -312,9 +310,9 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var loggingText = string.Format("Debug Logging enabled.\nClick here to open the log folder");
+                var loggingText = "Debug Logging enabled.\nClick here to open the log folder";
                 var fullPath = ApplicationPaths.LogPath;
-                notifyIcon.Notify(loggingText, fullPath);
+                _notifyIcon.Notify(loggingText, fullPath);
             }
             catch (Exception ex)
             {
@@ -336,10 +334,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsOverlayVisible);
         }
 
-        public bool IsOverlayVisible
-        {
-            get { return _overlayDependencies > 0; }
-        }
+        public bool IsOverlayVisible => _overlayDependencies > 0;
 
         public object UserString => Options.ShowUserInTitlebar? $" ({_username})":string.Empty;
 
@@ -347,7 +342,7 @@ namespace DaxStudio.UI.ViewModels
 #if PREVIEW
                 return string.Format("DaxStudio - {0} (PREVIEW){1}", Version.ToString(4),UserString);
 #else
-                return string.Format("DaxStudio - {0}{1}", Version.ToString(3), UserString);
+                return $"DaxStudio - {Version.ToString(3)}{UserString}";
 #endif    
             }
         }
@@ -438,10 +433,6 @@ namespace DaxStudio.UI.ViewModels
             Ribbon.SwapDelimiters();
         }
 
-        public void HotKey(object param)
-        {
-            System.Diagnostics.Debug.WriteLine("HotKey" + param.ToString());
-        }
         #endregion
 
         #region Event Aggregator methods
@@ -464,30 +455,6 @@ namespace DaxStudio.UI.ViewModels
             //else SetLightTheme();
         }
 
-        //private IThemeInfos _themes;
-        //public IThemeInfos Themes
-        //{
-        //    get
-        //    {
-        //        if (_themes == null) _themes = AppearanceManager.CreateThemeInfos();
-        //        return _themes;
-
-        //    }
-        //}
-
-        private Color DaxStudioBlue => Color.FromRgb(0,114,198);
-
-        //private void SetLightTheme()
-        //{
-        //    _app.LoadLightTheme();
-        //    AppearanceManager.SetTheme( Themes, "Light", DaxStudioBlue);
-        //}
-
-        //private void SetDarkTheme()
-        //{
-        //    _app.LoadDarkTheme();
-        //    AppearanceManager.SetTheme(Themes, "Dark", DaxStudioBlue);
-        //}
 
         public void Handle(UpdateHotkeys message)
         {
@@ -496,7 +463,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(UpdateGlobalOptions message)
         {
-            // force a refresh of the Userstring in case this was just turned on in the options
+            // force a refresh of the User string in case this was just turned on in the options
             DisplayName = AppTitle;
         }
 

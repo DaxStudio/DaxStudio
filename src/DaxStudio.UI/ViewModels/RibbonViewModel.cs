@@ -15,7 +15,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
 using System.ComponentModel;
+using System.Net;
+using System.Net.Http;
 using ADOTabular;
+using System.Reflection;
+using Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -47,9 +51,11 @@ namespace DaxStudio.UI.ViewModels
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
-        private const string urlSsasForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlanalysisservices";
-        private const string urlGithubBugReport = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=bug_report.md&title=";
+        private const string urlSsasForum = "https://docs.microsoft.com/en-us/answers/topics/sql-server-analysis-services";
+        private const string urlGithubBugReportPrefix = @"https://github.com/DaxStudio/DaxStudio/issues/new?labels=from+app&template=bug_report.md&body=";
+        private const string urlGithubBugReportSuffix = @"%23%23%20Summary%20of%20Issue%0A%0A%0A%23%23%20Steps%20to%20Reproduce%0A1.%0A2.";
         private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
+        private const string urlGithubDiscussions = @"https://github.com/DaxStudio/DaxStudio/discussions";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
@@ -153,7 +159,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.MergeParameters();
         }
 
-        public bool CanFormatQueryStandard { get => ActiveDocument != null; }
+        public bool CanFormatQueryStandard { get => ActiveDocument != null && !Options.BlockExternalServices; }
 
         public void FormatQueryStandard()
         {
@@ -178,6 +184,16 @@ namespace DaxStudio.UI.ViewModels
                 }
                 return title + " (" + Options.HotkeyFormatQueryAlternate + ")";
             } 
+        }
+
+        public string FormatQueryDisabledReason
+        {
+            get
+            {
+                if (Options.BlockExternalServices) return "Access to External Services blocked in Options privacy settings";
+                if (ActiveDocument == null) return "No Active Document";
+                return "Not disabled";
+            }
         }
 
         public bool CanUndo { get => ActiveDocument != null; }
@@ -540,6 +556,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanImportAnalysisData);
                 NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
+                NotifyOfPropertyChange(() => FormatQueryDisabledReason);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -607,12 +624,46 @@ namespace DaxStudio.UI.ViewModels
 
         public void LinkToGithubBugReport()
         {
-            OpenUrl(urlGithubBugReport, "LinkToGithubBugReport");
+            var url = urlGithubBugReportPrefix + GetVersionInfoUrlEncoded() + urlGithubBugReportSuffix;
+            OpenUrl(url, "LinkToGithubBugReport");
+        }
+
+        private string GetVersionInfoUrlEncoded()
+        {
+            string encodedString = string.Empty;
+            try
+            {
+                var connectionDetail = "not connected";
+                var activeConnection = ActiveDocument?.Connection;
+                var isConnected = activeConnection?.IsConnected ?? false;
+
+                if (isConnected)
+                {
+                    connectionDetail = $"{activeConnection.ServerType} - {activeConnection.ServerVersion}";
+                }
+
+                var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                encodedString = WebUtility.UrlEncode($"DAX Studio v{version}\nConnection: {connectionDetail}\n\n");
+            }
+            catch (Exception ex)
+            {
+                // any errors should be swallowed
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(GetVersionInfoUrlEncoded), "Error encoding bug report body");
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,
+                    $"Error encoding bug report body: {ex.Message}"));
+            }
+
+            return encodedString;
         }
 
         public void LinkToGithubFeatureRequest()
         {
             OpenUrl(urlGithubFeatureRequest, "LinkToGithubFeatureRequest");
+        }
+
+        public void LinkToGithubDiscussions()
+        {
+            OpenUrl(urlGithubDiscussions, "LinkToGithubDiscussions");
         }
 
         internal void OpenUrl(string url, string name)
@@ -857,27 +908,6 @@ namespace DaxStudio.UI.ViewModels
         #region "Preview Features"
 
 
-        private bool _showPreviewQueryBuilder;
-        public bool ShowPreviewQueryBuilder
-        {
-            get { return _showPreviewQueryBuilder; }
-            private set
-            {
-                _showPreviewQueryBuilder = value;
-                NotifyOfPropertyChange(() => ShowPreviewQueryBuilder);
-            }
-        }
-
-        private bool _showPreviewBenchmark;
-        public bool ShowPreviewBenchmark
-        {
-            get { return _showPreviewBenchmark; }
-            private set
-            {
-                _showPreviewBenchmark = value;
-                NotifyOfPropertyChange(() => ShowPreviewBenchmark);
-            }
-        }
 
         #endregion
 
@@ -946,12 +976,11 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateGlobalOptions()
         {
-            ShowPreviewQueryBuilder = Options.ShowPreviewQueryBuilder;
-            ShowPreviewBenchmark = Options.ShowPreviewBenchmark;
             ResultAutoFormat = Options.ResultAutoFormat;
             NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
-
+            NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));
+            NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
         }
 
         public void LaunchSqlProfiler()

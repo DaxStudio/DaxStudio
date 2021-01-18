@@ -12,8 +12,7 @@ namespace ADOTabular
         private readonly ADOTabularConnection _connection;
         public ADOTabularFunctionGroupCollection(ADOTabularConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            _connection = connection;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _funcGroups = new Dictionary<string, ADOTabularFunctionGroup>();
             _funcDict = new Dictionary<string, ADOTabularFunction>( StringComparer.OrdinalIgnoreCase);
             _connection.Visitor.Visit(this);
@@ -70,8 +69,7 @@ namespace ADOTabular
 
         public ADOTabularFunction GetByName(string name)
         {
-            ADOTabularFunction fun = null;
-            _funcDict.TryGetValue(name, out fun);
+            _ = _funcDict.TryGetValue(name, out ADOTabularFunction fun);
             return fun;
         }
     }

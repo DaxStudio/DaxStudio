@@ -113,14 +113,11 @@ namespace DaxStudio.Controls.PropertyGrid
                 new UIPropertyMetadata(false, OnIsAutoUpdatingColumnWidthsChanged));
 
         // Get/set methods for the attached DependencyProperty
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
-            Justification = "Only applies to ListView instances.")]
         public static bool GetIsAutoUpdatingColumnWidths(ListView listView)
         {
             return (bool)listView.GetValue(IsAutoUpdatingColumnWidthsProperty);
         }
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
-            Justification = "Only applies to ListView instances.")]
+
         public static void SetIsAutoUpdatingColumnWidths(ListView listView, bool value)
         {
             listView.SetValue(IsAutoUpdatingColumnWidthsProperty, value);

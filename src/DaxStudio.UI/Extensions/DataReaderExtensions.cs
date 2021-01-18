@@ -40,26 +40,26 @@ namespace DaxStudio.UI.Extensions
             //                    select col).Count() > 0;
             bool isMdxResult = (from col in columns
                                 where mdxPattern.IsMatch(col)
-                                select col).Count() > 0;
+                                select col).Any();
 
             var measuresColumns = (from col in columns
-                                   where col.IndexOf(MEASURES_MDX) >= 0
+                                   where col.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase) >= 0
                                    select col);
-            bool hasPlainMeasures = (from col in measuresColumns
-                                     where col.IndexOf("].[", col.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length) > 0
-                                     select col).Count() == 0;
+            bool hasPlainMeasures = !(from col in measuresColumns
+                                      where col.IndexOf("].[", col.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase) + MEASURES_MDX.Length, StringComparison.OrdinalIgnoreCase) > 0
+                                      select col).Any();
             foreach (string columnName in columns)
             {
                 bool removeCaption = false;
                 string name = columnName;
                 bool removeSquareBrackets = !isMdxResult;
-                int measuresMdxPos = name.IndexOf(MEASURES_MDX);// + MEASURES_MDX.Length;
+                int measuresMdxPos = name.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase);// + MEASURES_MDX.Length;
                 if (isMdxResult)
                 {
                     if ((measuresMdxPos >= 0))
                     {
-                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length) == -1)
-                        && (name.IndexOf("].[", 0) == MEASURES_MDX.Length - 2))
+                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length, StringComparison.OrdinalIgnoreCase) == -1)
+                        && (name.IndexOf("].[", 0, StringComparison.OrdinalIgnoreCase) == MEASURES_MDX.Length - 2))
                         {
                             removeSquareBrackets = true;
                         }
@@ -120,7 +120,7 @@ namespace DaxStudio.UI.Extensions
 
 
 
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Extensions
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
                         }
-                        if (daxCol != null) {
+                        if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString)) {
                             column.ExtendedProperties.Add(Constants.FormatString, daxCol.FormatString);
                             if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                         }
@@ -159,6 +159,7 @@ namespace DaxStudio.UI.Extensions
                             {
                                 case "Decimal":
                                 case "Double":
+                                case "Object":
                                     if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
                                         formatString = "0.00%";
                                     }
@@ -168,6 +169,17 @@ namespace DaxStudio.UI.Extensions
                                     break;
                                 case "Int64":
                                     formatString = "#,0";
+                                    break;
+                                case "DateTime":
+                                    if (string.IsNullOrWhiteSpace(autoDateFormat)
+                                        || column.Caption.ToLower().Contains(@"time") 
+                                        || column.Caption.ToLower().Contains(@"hour") ) {
+                                        formatString = null;
+                                    }
+                                    else
+                                    {
+                                        formatString = "yyyy-MM-dd";
+                                    }
                                     break;
                                 default:
                                     formatString = null;

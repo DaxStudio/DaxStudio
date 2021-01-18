@@ -1,0 +1,43 @@
+﻿[*.cs]
+
+# IDE0051: emove unread private member
+dotnet_diagnostic.IDE0051.severity = silent
+
+# IDE0052: emove unread private member
+dotnet_diagnostic.IDE0052.severity = silent
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = silent
+
+# CA1051: Do not declare visible instance fields
+dotnet_diagnostic.CA1051.severity = silent
+
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = silent
+
+# CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = silent
+
+# CA1725: Parameter names should match base declaration
+dotnet_diagnostic.CA1725.severity = silent
+
+# CA1806: Do not ignore method results
+dotnet_diagnostic.CA1806.severity = silent
+
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = silent
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = silent
+
+# CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = silent
+
+# CA2237: Mark ISerializable types with SerializableAttribute
+dotnet_diagnostic.CA2237.severity = warning
+
+dotnet_analyzer_diagnostic.category-Naming.severity = suggestion
+dotnet_analyzer_diagnostic.category-Style.severity = silent
+
+# Default severity for all the categories (including forma)
+dotnet_analyzer_diagnostic.severity = suggestion
