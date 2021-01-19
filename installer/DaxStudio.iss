@@ -185,6 +185,8 @@ Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabula
 
 [InstallDelete]
 ; Make sure that local copies of the Excel files do not exist
+Type: files; Name: "{app}\bin\Microsoft.Excel.Amo.dll"
+Type: files; Name: "{app}\bin\Microsoft.Excel.AdomdClient.dll"
 Type: files; Name: "{app}\Microsoft.Excel.Amo.dll"
 Type: files; Name: "{app}\Microsoft.Excel.AdomdClient.dll"
 ; Make sure the .portable file does not exist 
@@ -419,6 +421,8 @@ begin
   try 
     Log('Clearing Disabled items from Excel Add-in registry location');
     CleanDisabledItems();
+
+
   except
     // Catch the exception, show it, and continue
     ShowExceptionMessage;
@@ -711,6 +715,7 @@ begin
   
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
+
   end;
 end;
 
