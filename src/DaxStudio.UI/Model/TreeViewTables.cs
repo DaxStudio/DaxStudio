@@ -310,7 +310,9 @@ namespace DaxStudio.UI.Model
         // so for a column it would be something like 'table name'[column name]
         // but for a table it would be 'table name'
         public string DaxName => _table.DaxName;
-        public int ColumnCount => _table.Columns.Count;
+        public int ColumnCount => _table.ColumnCount;
+
+        public int MeasureCount => _table.MeasureCount;
 
         private bool _rowCountSet;
         private long _rowCount;
