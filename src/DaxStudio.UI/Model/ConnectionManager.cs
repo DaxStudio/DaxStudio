@@ -137,6 +137,7 @@ namespace DaxStudio.UI.Model
                     conn.ChangeDatabase(this.SelectedDatabaseName);
                     if (conn.State != ConnectionState.Open) conn.Open();
                     var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                    _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
                     conn.Close(true); // close and end the session
                     return dbChanges;
                 });

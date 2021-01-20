@@ -3394,7 +3394,9 @@ namespace DaxStudio.UI.ViewModels
                 Connection.Refresh();
                 MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
                 Databases = MetadataPane.Databases;
-                MetadataPane.ModelList = Connection.Database.Models;
+                //MetadataPane.ModelList = Connection.Database.Models;
+                MetadataPane.RefreshMetadata();
+                
                 //this.MetadataPane.RefreshMetadata();
                 //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");

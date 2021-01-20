@@ -14,6 +14,7 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Interfaces;
 using System.Windows;
 using System.Diagnostics;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular.Interfaces;
@@ -42,7 +43,8 @@ namespace DaxStudio.UI.ViewModels
         private string _modelName;
         private readonly IGlobalOptions _options;
         private readonly IMetadataProvider _metadataProvider;
-
+        private List<IExpandedItem> _expandedItems = new List<IExpandedItem>();
+        
         [ImportingConstructor]
         public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
             : base( eventAggregator)
@@ -114,9 +116,10 @@ namespace DaxStudio.UI.ViewModels
                 if (!_metadataProvider.IsConnected) return;
                 _metadataProvider.Refresh();
                 var tmpModel = _selectedModel;
+                SaveExpandedState();
+                
                 ModelList = _metadataProvider.GetModels();
-                // TODO - should we get tables, databases and reset selected database??
-
+                
                 ShowMetadataRefreshPrompt = false;
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
             }
@@ -125,6 +128,49 @@ namespace DaxStudio.UI.ViewModels
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
                 Log.Error(ex,Common.Constants.LogMessageTemplate,nameof(MetadataPaneViewModel), nameof(RefreshMetadata), ex.Message);
             }
+        }
+
+        private void RestoreExpandedState(string tmpModelName)
+        {
+            RestoreExpandedStateInternal(_treeViewTables, _expandedItems);
+            _expandedItems.Clear();
+        }
+
+        private void RestoreExpandedStateInternal(IEnumerable<IFilterableTreeViewItem> metadataItems, List<IExpandedItem> expandedItems)
+        {
+            var filterableTreeViewItems = metadataItems as IFilterableTreeViewItem[] ?? metadataItems.ToArray();
+            foreach (var item in expandedItems)
+            {
+                foreach (var metadataItem in filterableTreeViewItems)
+                {
+                    if (item.Name == metadataItem.Name)
+                    {
+                        metadataItem.IsExpanded = true;
+                        RestoreExpandedStateInternal(metadataItem.Children, item.Children);
+                    }
+                }
+            }
+        }
+
+        private void SaveExpandedState()
+        {
+            _expandedItems.Clear();
+            SaveExpandedStateInternal(Tables, _expandedItems);
+        }
+
+        private void SaveExpandedStateInternal(IEnumerable<IFilterableTreeViewItem> items, List<IExpandedItem> expandedItems)
+        {
+            if (items == null) return;
+            foreach (var item in items)
+            {
+                if (item.IsExpanded)
+                {
+                    var newExpandedItem = new ExpandedItem(item.Name);
+                    expandedItems.Add(newExpandedItem);
+                    SaveExpandedStateInternal(item.Children, newExpandedItem.Children);
+                }
+            }
+            
         }
 
         private bool _showMetadataRefreshPrompt;
@@ -153,6 +199,7 @@ namespace DaxStudio.UI.ViewModels
                     _selectedModel = value;
                     NotifyOfPropertyChange(nameof(SelectedModel));
                     //EventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent( SelectedModelName));
+                    
                     // clear table list
                     _treeViewTables = null;
                     _metadataProvider.SetSelectedModel(SelectedModel);
@@ -196,6 +243,7 @@ namespace DaxStudio.UI.ViewModels
                         _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
                         sw.Stop();
                         Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
+                        RestoreExpandedState("");
                     }
                     catch (Exception ex)
                     {
@@ -1023,5 +1071,22 @@ namespace DaxStudio.UI.ViewModels
         public string Caption { get; set; }
 
         public string Description { get; set; }
+    }
+
+    class ExpandedItem: IExpandedItem
+    {
+        public ExpandedItem(string name)
+        {
+            Name = name;
+            Children = new List<IExpandedItem>();
+        }
+        public string Name { get; set; }
+        public List<IExpandedItem>Children { get; set; }
+    }
+
+    interface IExpandedItem
+    {
+        string Name { get; set; }
+        List<IExpandedItem> Children { get; set; }
     }
 }
