@@ -54,7 +54,7 @@
             <TextBlock >The simplest DAX query is in the form of:</TextBlock>
             <TextBlock  FontFamily="Courier New" Margin="10 10">EVALUATE &lt;table expression&gt;</TextBlock>
             <TextBlock >Where the &lt;table expression&gt; can be as simple as the name of a table or it could be a DAX function that returns a table such as FILTER or SUMMARIZECOLUMNS.</TextBlock>
-            <TextBlock HorizontalAlignment="Center" Margin="0 10 0 0" >See more examples at <Hyperlink NavigateUri="https://daxstudio.org/tutorials/writing-dax-queries">https://daxstudio.org/tutorials/writing-dax-queries</Hyperlink></TextBlock>
+            <TextBlock HorizontalAlignment="Center" Margin="0 10 0 0" >See more examples at <Hyperlink NavigateUri="https://daxstudio.org/tutorials/writing-dax-queries" attachedProperties:HyperlinkExtensions.IsExternal="true">https://daxstudio.org/tutorials/writing-dax-queries</Hyperlink></TextBlock>
             <TextBlock  HorizontalAlignment="Center" Margin="0"> or</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
                 <TextBlock VerticalAlignment="Center">For a drag/drop experience open the</TextBlock>

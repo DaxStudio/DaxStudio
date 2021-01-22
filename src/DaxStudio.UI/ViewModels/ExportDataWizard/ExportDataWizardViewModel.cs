@@ -507,20 +507,16 @@ namespace DaxStudio.UI.ViewModels
                                     {
                                         _sqlTableName = $"[{schemaName}].[{table.Caption}]";
                                         _sqlBatchRows = batchRows;
+                                        
                                         // if this is the first batch ensure the table exists
                                         if (batchRows == 0)
-                                            EnsureSQLTableExists(conn, _sqlTableName, reader);
+                                            EnsureSQLTableExists(conn, _sqlTableName, reader, truncateTables);
 
+                                        // if truncate tables is false we assume that this is a second run and that
+                                        // the table already exists with the correct structure.
+                                        
                                         using (var transaction = conn.BeginTransaction())
                                         {
-                                            if (truncateTables && batchRows == 0)
-                                            {
-                                                using (var cmd = new SqlCommand($"truncate table {_sqlTableName}", conn))
-                                                {
-                                                    cmd.Transaction = transaction;
-                                                    cmd.ExecuteNonQuery();
-                                                }
-                                            }
 
                                             using (var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                                             {
@@ -643,7 +639,7 @@ namespace DaxStudio.UI.ViewModels
             Document.RefreshElapsedTime();
         }
 
-        private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader)
+        private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader, bool truncateTable)
         {
             var strColumns = new StringBuilder();
 
@@ -669,14 +665,21 @@ namespace DaxStudio.UI.ViewModels
 
             // ReSharper disable once StringLiteralTypo
             var cmdText = @"                
-                declare @sqlCmd nvarchar(max)
+                declare @sqlCmd nvarchar(max)";
+
+            if (truncateTable)
+            {
+                cmdText += @"
 
                 IF object_id(@tableName, 'U') is not null
                 BEGIN
                     raiserror('Droping Table ""%s""', 1, 1, @tableName)
                     set @sqlCmd = 'drop table ' + @tableName + char(13)
                     exec sp_executesql @sqlCmd
-                END
+                END";
+            }
+
+            cmdText += @"
 
                 IF object_id(@tableName, 'U') is null
                 BEGIN

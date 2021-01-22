@@ -81,6 +81,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<ReconnectEvent>
         , IHandle<RunQueryEvent>
+        , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
@@ -832,6 +833,7 @@ namespace DaxStudio.UI.ViewModels
                     _eventAggregator.Subscribe(tw);
                 }
                 _ribbon.SelectedTarget = SelectedTarget;
+                SelectedRunStyle = _ribbon.SelectedRunStyle;
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
@@ -3394,7 +3396,9 @@ namespace DaxStudio.UI.ViewModels
                 Connection.Refresh();
                 MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
                 Databases = MetadataPane.Databases;
-                MetadataPane.ModelList = Connection.Database.Models;
+                //MetadataPane.ModelList = Connection.Database.Models;
+                MetadataPane.RefreshMetadata();
+                
                 //this.MetadataPane.RefreshMetadata();
                 //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");
@@ -4067,5 +4071,12 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
         }
+
+        public void Handle(RunStyleChangedEvent message)
+        {
+            SelectedRunStyle = message.RunStyle;
+        }
+
+        public RunStyle SelectedRunStyle { get; set; }
     }
 }

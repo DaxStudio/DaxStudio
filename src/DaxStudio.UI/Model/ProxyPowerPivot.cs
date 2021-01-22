@@ -123,7 +123,7 @@ namespace DaxStudio.UI.Model
                         } 
                         else
                         {
-                            var msg = response.Content.ReadAsStringAsync().Result;
+                            var msg = $"{response.Content.ReadAsStringAsync().Result} ({response.StatusCode})";
                             Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error getting WorkbookName:\n{msg}");
                         }
                     }

@@ -7,9 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
@@ -62,7 +59,7 @@ namespace DaxStudio.UI.Model
 
         public bool Contains(IADOTabularColumn item)
         {
-            return Items.FirstOrDefault(c => c == item) != null;
+            return Items.FirstOrDefault(c => c.TabularObject == item) != null;
             
         }
 
@@ -82,7 +79,7 @@ namespace DaxStudio.UI.Model
 
         public int IndexOf(IADOTabularColumn obj)
         {
-            var item = Items.FirstOrDefault(c => c == obj);
+            var item = Items.FirstOrDefault(c => c.TabularObject == obj);
             return Items.IndexOf(item);
         }
 

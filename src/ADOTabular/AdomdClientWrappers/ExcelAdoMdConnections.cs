@@ -53,8 +53,10 @@ namespace ADOTabular.AdomdClientWrappers
                 int error = Marshal.GetLastWin32Error();
                 throw new Win32Exception(error);
             }
-            StringBuilder lpFilename = new StringBuilder(0x400);
-            if (GetModuleFileName(moduleHandle, lpFilename, lpFilename.Length) == 0)
+
+            int lpFilenameLen = 2048;
+            StringBuilder lpFilename = new StringBuilder(lpFilenameLen);
+            if (GetModuleFileName(moduleHandle, lpFilename, lpFilenameLen) == 0)
             {
                 int num3 = Marshal.GetLastWin32Error();
                 throw new Win32Exception(num3);
