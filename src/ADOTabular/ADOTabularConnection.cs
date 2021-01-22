@@ -20,9 +20,6 @@ namespace ADOTabular
 
         public event EventHandler ConnectionChanged;
         private AdomdConnection _adomdConn;
-#pragma warning disable IDE0052 // Remove unread private members
-        private readonly AdomdType _connectionType;
-#pragma warning restore IDE0052 // Remove unread private members
         private string _currentDatabase;
         private readonly Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -44,9 +41,9 @@ namespace ADOTabular
             
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, AdomdType.AnalysisServices);
+            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, connectionType);
 
-            _connectionType = connectionType;
+            Type = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
 
             //_adomdConn.Open();

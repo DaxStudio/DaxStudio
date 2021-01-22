@@ -268,6 +268,7 @@
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
@@ -1620,4 +1621,14 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="ApplyAlias" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">
+        <Aliases>ExcelAmo</Aliases>
+      </ReferencePath>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.AdomdClient'">
+        <Aliases>ExcelAdomdClient</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
 </Project>

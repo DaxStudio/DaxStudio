@@ -229,4 +229,12 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+
+  <Target Name="ApplyAlias" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">
+        <Aliases>ExcelAmo</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
 </Project>

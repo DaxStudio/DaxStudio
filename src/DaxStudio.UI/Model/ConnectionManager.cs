@@ -216,7 +216,7 @@ namespace DaxStudio.UI.Model
             return _connection.Database.Models[SelectedModelName].Tables;
         }
 
-        public AdomdType Type => _connection.Type;
+        public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
 
         public string SelectedDatabaseName => SelectedDatabase?.Name ?? string.Empty;
 
