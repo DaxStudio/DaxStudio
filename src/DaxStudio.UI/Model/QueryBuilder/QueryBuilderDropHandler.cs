@@ -33,16 +33,20 @@ namespace DaxStudio.UI.Model
             // if we are re-ordering columns sourceItem will be non-null
             adoCol = dropInfo.DragInfo.SourceItem as IADOTabularColumn;
             var treeViewCol = dropInfo.DragInfo.SourceItem as TreeViewColumn;
-
+            var queryBuilderColumn = dropInfo.DragInfo.SourceItem as QueryBuilderColumn;
+            
             // if we are dragging a column from the metadata pane it will be detected here
             if (adoCol == null)
             {
-                if (treeViewCol == null)
+                if (treeViewCol == null && queryBuilderColumn == null)
                 {
                     dropInfo.Effects = DragDropEffects.None;
                     return;
                 }
-                adoCol = treeViewCol.Column as IADOTabularColumn;
+                
+                adoCol = treeViewCol?.Column as IADOTabularColumn;
+                if (adoCol == null) adoCol = queryBuilderColumn?.TabularObject;
+
             }
 
             if (adoCol == null)
@@ -71,16 +75,35 @@ namespace DaxStudio.UI.Model
 
         public void Drop(IDropInfo dropInfo)
         {
-            var objTreeViewCol = dropInfo.DragInfo.DataObject as TreeViewColumn;
-            IADOTabularColumn col = dropInfo.DragInfo.DataObject as IADOTabularColumn;
-            if (col == null & objTreeViewCol != null )
+            //var objTreeViewCol = dropInfo.DragInfo.DataObject as TreeViewColumn;
+            //var queryBuilderCol = dropInfo.DragInfo.DataObject as QueryBuilderColumn;
+            IADOTabularColumn col; // = dropInfo.DragInfo.DataObject as IADOTabularColumn;
+
+            var dragObject = dropInfo.DragInfo.DataObject ?? dropInfo.DragInfo.Data;
+            
+            switch (dragObject )
             {
-                col = objTreeViewCol.Column as IADOTabularColumn;
+                case TreeViewColumn objTreeViewColumn:
+                    col = objTreeViewColumn.Column as IADOTabularColumn;
+                    break;
+                case QueryBuilderColumn queryBuilderColumn:
+                    col = queryBuilderColumn.TabularObject;
+                    break;
+                case IADOTabularColumn adoCol:
+                    col = adoCol;
+                    break;
+                default:
+                    return;
             }
-            if (col == null && objTreeViewCol == null)
-            {
-                col = dropInfo.DragInfo.Data as IADOTabularColumn;
-            }
+            
+            //if (col == null & objTreeViewCol != null )
+            //{
+            //    col = objTreeViewCol.Column as IADOTabularColumn;
+            //}
+            //if (col == null && objTreeViewCol == null)
+            //{
+            //    col = dropInfo.DragInfo.Data as IADOTabularColumn;
+            //}
 
             // check if we are moving within list
             if (dropInfo.TargetCollection == dropInfo.DragInfo.SourceCollection)
@@ -95,7 +118,7 @@ namespace DaxStudio.UI.Model
             // don't add the same column twice
             if (List.Contains(col)) return;
 
-            // Inser new item
+            // Insert new item
             if (dropInfo.InsertIndex == List.Count)
             {
                 List.Add(col);

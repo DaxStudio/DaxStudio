@@ -14,7 +14,6 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Interfaces;
 using System.Windows;
 using System.Diagnostics;
-using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular.Interfaces;

@@ -81,6 +81,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<ReconnectEvent>
         , IHandle<RunQueryEvent>
+        , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
@@ -832,6 +833,7 @@ namespace DaxStudio.UI.ViewModels
                     _eventAggregator.Subscribe(tw);
                 }
                 _ribbon.SelectedTarget = SelectedTarget;
+                SelectedRunStyle = _ribbon.SelectedRunStyle;
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
@@ -4069,5 +4071,12 @@ namespace DaxStudio.UI.ViewModels
         {
             _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
         }
+
+        public void Handle(RunStyleChangedEvent message)
+        {
+            SelectedRunStyle = message.RunStyle;
+        }
+
+        public RunStyle SelectedRunStyle { get; set; }
     }
 }

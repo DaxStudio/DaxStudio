@@ -1,5 +1,4 @@
-﻿using ADOTabular.AdomdClientWrappers;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Events;
@@ -16,8 +15,6 @@ using System.Linq;
 using System.Windows;
 using System.ComponentModel;
 using System.Net;
-using System.Net.Http;
-using ADOTabular;
 using System.Reflection;
 using Microsoft.AnalysisServices.AdomdClient;
 
@@ -101,6 +98,7 @@ namespace DaxStudio.UI.ViewModels
             get { return _selectedRunStyle; }
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
+                _eventAggregator.PublishOnUIThread(new RunStyleChangedEvent(SelectedRunStyle));
                 //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }

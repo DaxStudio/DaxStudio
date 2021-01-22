@@ -1,5 +1,4 @@
-﻿using ADOTabular;
-using ADOTabular.Interfaces;
+﻿using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
@@ -21,7 +20,6 @@ using DaxStudio.UI.Utils;
 using System.Windows.Media;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
-using Microsoft.AnalysisServices;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
@@ -153,7 +151,7 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public void RunQuery() {
             if (! CheckForCrossjoins() )
-                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget) { QueryProvider = this });
+                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
         }
 
         private bool CheckForCrossjoins()
@@ -265,12 +263,20 @@ namespace DaxStudio.UI.ViewModels
             if (Columns.Contains(column.InternalColumn))
             {
                 // write warning and return
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
+                return;
             }
             Columns.Add(column.InternalColumn);
         }
 
         private void AddColumnToFilters(ITreeviewColumn column)
         {
+            if (Filters.Contains(column.InternalColumn))
+            {
+                // write warning and return
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
+                return;
+            }
             Filters.Add(column.InternalColumn);
         }
 
