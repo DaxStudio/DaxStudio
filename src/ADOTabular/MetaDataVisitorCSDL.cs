@@ -1281,13 +1281,18 @@ namespace ADOTabular
             const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
 
             // Load remapping
-
             using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS);
             while (result.Read())
             {
                 string columnId = GetString(result, 0);
                 string columnName = GetString(result, 1);
-                daxColumnsRemap.RemapNames.Add(columnId, columnName);
+
+                // PowerPivot does not include the table id in the columnid so if two 
+                // tables have a column with the same name this can throw a duplicate key error
+                // the IF check prevents this.
+                if (!daxColumnsRemap.RemapNames.ContainsKey(columnId))
+                    daxColumnsRemap.RemapNames.Add(columnId, columnName);
+                
             }
         }
     }
