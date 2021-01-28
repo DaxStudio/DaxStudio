@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using Serilog;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -96,6 +100,23 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(() => FunctionGroups);
             //EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+        }
+
+        public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)
+        {
+            switch (args.Key)
+            {
+                case Key.F1:
+                    
+                    LaunchDaxGuide(selectedItem);
+                    break;
+            }
+        }
+
+        public void LaunchDaxGuide(IFilterableTreeViewItem selectedItem)
+        {
+            if (!(selectedItem is ADOTabularFunctionsExtensions.TreeViewFunction func)) return;
+            Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}"));
         }
     }
 }
