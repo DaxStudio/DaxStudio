@@ -3712,7 +3712,7 @@ namespace DaxStudio.UI.ViewModels
                             model = TomExtractor.GetDaxModel(
                                 Connection.ServerName, Connection.SelectedDatabaseName,
                                 "DaxStudio", version.ToString(),
-                                readStatisticsFromData: Options.VpaxReadStatisticsFromData && (!isLegacySsas),
+                                readStatisticsFromData: false, // Disable statistics during retry
                                 sampleRows: Options.VpaxSampleReferentialIntegrityViolations);
                         }
                         else
@@ -3912,8 +3912,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(),
-                            readStatisticsFromData: Options.VpaxReadStatisticsFromData && (!isLegacySsas));
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false); // Disable statistics during retry
                         }
                         else
                         {
