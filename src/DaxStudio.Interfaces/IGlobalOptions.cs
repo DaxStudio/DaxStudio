@@ -88,6 +88,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportMetrics { get; set; }
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
+        bool VpaxReadStatisticsFromData { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
