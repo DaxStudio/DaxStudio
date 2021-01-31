@@ -46,6 +46,7 @@ using DaxStudio.UI.Views;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Serilog;
@@ -3678,18 +3679,48 @@ namespace DaxStudio.UI.ViewModels
                 vpaView.IsBusy = true;
                 vpaView.Activate();
 
+                // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
+                bool isLegacySsas = Connection.ServerVersion.StartsWith("10.")  // SSAS 2012 RC
+                    || Connection.ServerVersion.StartsWith("11.")               // SSAS 2012 SP1
+                    || Connection.ServerVersion.StartsWith("12.");              // SSAS 2014
+
+                bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+
                 VpaModel viewModel = null;
 
                 var task = new Task(() => {
                     // run Vertipaq Analyzer Async
 
-                    Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                    Dax.Metadata.Model model = TomExtractor.GetDaxModel(
-                        Connection.ServerName, Connection.SelectedDatabaseName, 
-                        "DaxStudio", version.ToString(), 
-                        readStatisticsFromData: true, 
-                        sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
+                    Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                    Dax.Metadata.Model model;
+                    try
+                    {
+                        model = TomExtractor.GetDaxModel(
+                            Connection.ServerName, Connection.SelectedDatabaseName, 
+                            "DaxStudio", version.ToString(), 
+                            readStatisticsFromData: readStatisticsFromData, 
+                            sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there is an error reading the statistics from data (e.g. model not processed, bug in SSAS), then retry without statistics
+                        if (readStatisticsFromData)
+                        {
+                            Log.Warning(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view with ReadStatisticsFromData enabled: {ex.Message}");
+                            OutputWarning($"Error viewing metrics with ReadStatisticsFromData enabled (retry without statistics): {ex.Message}");
 
+                            model = TomExtractor.GetDaxModel(
+                                Connection.ServerName, Connection.SelectedDatabaseName,
+                                "DaxStudio", version.ToString(),
+                                readStatisticsFromData: Options.VpaxReadStatisticsFromData && (!isLegacySsas),
+                                sampleRows: Options.VpaxSampleReferentialIntegrityViolations);
+                        }
+                        else
+                        {
+                            // propagate excetpion if ReadStatisticsFromData was disabled
+                            throw;
+                        }
+                    }
                     viewModel = new VpaModel(model);
                 });
                 task.ContinueWith(prevTask =>
@@ -3842,7 +3873,7 @@ namespace DaxStudio.UI.ViewModels
 
                     OutputMessage(String.Format("Saving {0}...", path));
                     // get current DAX Studio version
-                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                    Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     string modelCaption = Connection.Database.Name;
                     switch (Connection.ServerType)
                     {
@@ -3862,7 +3893,34 @@ namespace DaxStudio.UI.ViewModels
                             modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
                             break;
                     }
-                    ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
+                    // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
+                    bool isLegacySsas = Connection.ServerVersion.StartsWith("10.")  // SSAS 2012 RC
+                        || Connection.ServerVersion.StartsWith("11.")               // SSAS 2012 SP1
+                        || Connection.ServerVersion.StartsWith("12.");              // SSAS 2014
+
+                    bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+                    try
+                    {
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData);
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there is an error reading the statistics from data (e.g. model not processed, bug in SSAS), then retry without statistics
+                        if (readStatisticsFromData)
+                        {
+                            Log.Warning(ex, "{class} {method} Error Exporting Metrics with ReadStatisticsFromData enabled", "DocumentViewModel", "ExportAnalysisData");
+                            var exMsg = ex.GetAllMessages();
+                            OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
+
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(),
+                            readStatisticsFromData: Options.VpaxReadStatisticsFromData && (!isLegacySsas));
+                        }
+                        else
+                        {
+                            // propagate excetpion if ReadStatisticsFromData was disabled
+                            throw;
+                        }
+                    }
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)

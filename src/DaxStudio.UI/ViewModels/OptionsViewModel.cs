@@ -445,6 +445,21 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        private bool _vpaxReadStatisticsFromData = true;
+        [DataMember, DefaultValue(true)]
+        public bool VpaxReadStatisticsFromData
+        {
+            get => _vpaxReadStatisticsFromData;
+            set
+            {
+                if (_vpaxReadStatisticsFromData == value) return;
+                _vpaxReadStatisticsFromData = value;
+                NotifyOfPropertyChange(() => VpaxReadStatisticsFromData);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(VpaxReadStatisticsFromData), value, _isInitializing, this);
+            }
+
+        }
 
         private int _vpaxSampleReferentialIntegrityViolations = 3;
         [DataMember, DefaultValue(3)]
