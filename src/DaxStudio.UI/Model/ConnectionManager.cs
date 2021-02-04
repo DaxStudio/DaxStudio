@@ -15,6 +15,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 
 
@@ -110,16 +111,39 @@ namespace DaxStudio.UI.Model
         public DaxColumnsRemap DaxColumnsRemapInfo {
             get
             {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
                 try
                 {
-                    var remapInfo = _retry.Execute(() => _connection?.DaxColumnsRemapInfo);
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
+                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    {
+                        newConn = _connection.Clone(new[] {"EffectiveUserName", "Roles"});
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _connection;
+                    }
+
+                    var remapInfo = _retry.Execute(() => conn?.DaxColumnsRemapInfo);
                     return remapInfo;
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage( MessageType.Warning, $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis maybe caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxColumnsRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
                 }
 
             }
