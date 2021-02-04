@@ -15,6 +15,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 
 
@@ -26,11 +27,11 @@ namespace DaxStudio.UI.Model
     // TODO - flush metadata on connection failure
     // TODO - cache functions and dmvs unless we change the connection
 
-/// <summary>
-/// The purpose of the ConnectionManager is to centralize all the connection handling into one place
-/// This allows for consistent retry policies and allows us to use a secondary connection for things 
-/// like metadata refreshes.
-/// </summary>
+    /// <summary>
+    /// The purpose of the ConnectionManager is to centralize all the connection handling into one place
+    /// This allows for consistent retry policies and allows us to use a secondary connection for things 
+    /// like metadata refreshes.
+    /// </summary>
     public class ConnectionManager : IConnectionManager
         , IDmvProvider
         , IFunctionProvider
@@ -45,6 +46,7 @@ namespace DaxStudio.UI.Model
         private ADOTabularConnection _connection;
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
+
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -53,6 +55,7 @@ namespace DaxStudio.UI.Model
 
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
         public string ApplicationName => _connection.ApplicationName;
+
         public void Cancel()
         {
             _connection.Cancel();
@@ -77,32 +80,76 @@ namespace DaxStudio.UI.Model
         private void ConfigureRetryPolicy()
         {
             _retry = Policy
-                    .HandleInner<Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException>()
-                    .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200), (exception, timespan, retryCount, context) =>
+                .HandleInner<Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException>()
+                .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200),
+                    (exception, timespan, retryCount, context) =>
                     {
                         var contextDb = context.GetDatabaseName();
-                        var currentDb = contextDb??SelectedDatabase?.Name??string.Empty;
+                        var currentDb = contextDb ?? SelectedDatabase?.Name ?? string.Empty;
                         _connection.Close(true); // force the connection closed and close the session
-                        
+
                         _connection = new ADOTabularConnection(_connection.ConnectionString, _connection.Type);
                         _connection.ChangeDatabase(currentDb);
-                        
+
                         _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_connection.SessionId));
-                        var msg = $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
+                        var msg =
+                            $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
-                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), "RetryPolicy", msg);
+                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                            "RetryPolicy", msg);
                     });
         }
 
-        public string ConnectionString => _connection?.ConnectionString??string.Empty;
-        public string ConnectionStringWithInitialCatalog => _connection?.ConnectionStringWithInitialCatalog??string.Empty;
+        public string ConnectionString => _connection?.ConnectionString ?? string.Empty;
+
+        public string ConnectionStringWithInitialCatalog =>
+            _connection?.ConnectionStringWithInitialCatalog ?? string.Empty;
 
         public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
-        public DaxColumnsRemap DaxColumnsRemapInfo => _retry.Execute(() => _connection?.DaxColumnsRemapInfo);
+        public DaxColumnsRemap DaxColumnsRemapInfo {
+            get
+            {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
+                try
+                {
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
+                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    {
+                        newConn = _connection.Clone(new[] {"EffectiveUserName", "Roles"});
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _connection;
+                    }
 
-        #region Query Exection
+                    var remapInfo = _retry.Execute(() => conn?.DaxColumnsRemapInfo);
+                    return remapInfo;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    return new DaxColumnsRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
+                }
+
+            }
+        }   
+
+    #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));

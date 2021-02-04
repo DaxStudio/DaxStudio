@@ -844,7 +844,23 @@ namespace ADOTabular
 
         public ADOTabularConnection Clone()
         {
-            var cnn = new ADOTabularConnection(this.ConnectionStringWithInitialCatalog, this.Type)
+            return CloneInternal(this.ConnectionStringWithInitialCatalog);
+        }
+
+        public ADOTabularConnection Clone(string[] parametersToIgnore)
+        {
+            var connParams = ConnectionStringParser.Parse(this.ConnectionStringWithInitialCatalog);
+            foreach (var param in parametersToIgnore)
+            {
+                connParams.Remove(param);
+            }
+            var newConnStr = string.Join(";", connParams.Select(p => $"{p.Key}={p.Value}"));
+            return CloneInternal(newConnStr);
+        }
+
+        private ADOTabularConnection CloneInternal(string connectionString)
+        {
+            var cnn = new ADOTabularConnection(connectionString, this.Type)
             {
                 // copy keywords, functiongroups, DMV's
                 _functionGroups = this._functionGroups,

@@ -21,12 +21,14 @@ namespace DaxStudio.UI.Utils
     public static class ModelAnalyzer
     {
       
-        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion)
+        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData)
         {
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion);
+            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion, 
+                                                                                       readStatisticsFromData: readStatisticsFromData, 
+                                                                                       sampleRows: 0);
 
             //
             // Get TOM model from the SSAS engine
