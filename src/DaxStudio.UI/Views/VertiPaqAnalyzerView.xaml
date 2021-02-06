@@ -6,6 +6,7 @@
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
         xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
     <!-- Resources -->
@@ -27,7 +28,7 @@
             </Style>
 
             <Style x:Key="SummaryLabel" TargetType="{x:Type TextBlock}">
-                <Setter Property="Margin" Value="0 5 20 0"/>
+                <Setter Property="Margin" Value="0 5 5 0"/>
                 <Setter Property="Foreground" Value="#999999"/>
                 <Setter Property="FontSize" Value="12"/>
             </Style>
@@ -74,6 +75,20 @@
 
             <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}">
                 <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+
+            <Style TargetType="ToolTip">
+                <Style.Resources>
+                    <Style TargetType="ContentPresenter">
+                        <Style.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="HorizontalAlignment" Value="Left" />
+                            </Style>
+                        </Style.Resources>
+                    </Style>
+                </Style.Resources>
+                <Setter Property="MaxWidth" Value="500" />
             </Style>
 
             <DataTemplate x:Key="DashTemplate">
@@ -895,7 +910,16 @@
 
                         <!-- Row 1 -->
                         <TextBlock Text="Total Size" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
-                        <TextBlock Text="{Binding SummaryViewModel.FormattedTotalSize}" Grid.Column="1" Grid.Row="2" Style="{StaticResource SummaryValue}" FontWeight="SemiBold" ToolTip="{Binding SummaryViewModel.TotalSize, StringFormat=N0}"/>
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2" Margin="0 0 10 0"  >
+                            <TextBlock Text="{Binding SummaryViewModel.FormattedTotalSize}"
+                                       Style="{StaticResource SummaryValue}"
+                                       FontWeight="SemiBold" ToolTip="{Binding SummaryViewModel.TotalSize, StringFormat=N0}"/>
+                            <fa:FontAwesome Icon="InfoCircle" 
+                                            FontSize="16"
+                                            Foreground="{StaticResource DaxStudioBrush}" 
+                                            VerticalAlignment="Center"
+                                            ToolTip="The total size is the total amount of memory used while the model is loaded into RAM, it will be different to the size of the file(s) on disk. (often slightly larger because some structures are decompressed when the are loaded into memory)" />
+                        </StackPanel>
 
                         <TextBlock Text="Last Data Refresh" Grid.Column="2" Grid.Row="1" Style="{StaticResource SummaryLabel}" Grid.ColumnSpan="2" />
                         <TextBlock Text="{Binding SummaryViewModel.LastDataRefresh}" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource SummaryValue}"/>
