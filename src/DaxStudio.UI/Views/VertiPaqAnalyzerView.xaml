@@ -146,8 +146,8 @@
                                                                 <TextBlock Text="" Style="{StaticResource NumBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colPercentageTable}" />
                                                                 <TextBlock Text="{Binding Name.PercentageDatabase,StringFormat=P2}" Style="{StaticResource NumBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colPercentageDB}" />
                                                                 <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsNumber}" />
-                                                                <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
-                                                                <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
+                                                                <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
+                                                                <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
                                                             </StackPanel>
 
                                                         </Expander.Header>
@@ -176,11 +176,16 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn  x:Name="colRows"  HeaderStyle="{StaticResource RightHeader}" ClipboardContentBinding="{Binding ColumnCardinality}"
+                            <DataGridTemplateColumn  x:Name="colRows"
+                                                     Header="Cardinality"
+                                                     ClipboardContentBinding="{Binding ColumnCardinality}"
                                 SortMemberPath="ColumnCardinality" MinWidth="65" Width="80">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Cardinality" ToolTip="{Binding DataContext.Tooltips.Cardinality, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Cardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
@@ -200,12 +205,8 @@
                             <!-- CellTemplate="{StaticResource DashTemplate}" -->
                             <DataGridTemplateColumn  x:Name="colTableSize"   MinWidth="65" 
                                                      Header="Table Size"
-                                                        SortMemberPath="TableSize" Width="80" ClipboardContentBinding="{Binding TableSize}">
-                                <!--
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Table Size" ToolTip="{Binding DataContext.Tooltips.TableSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
-                                -->
+                                                     SortMemberPath="TableSize" Width="80" ClipboardContentBinding="{Binding TableSize}">
+
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -220,15 +221,17 @@
                             </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn x:Name="colColumns"  
-                                                    HeaderStyle="{StaticResource RightHeader}" 
+                                                    Header="Col Size"
                                                     ClipboardContentBinding="{Binding TotalSize}"
                                                     SortMemberPath="TotalSize" 
                                                     MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" 
                                                     SortDirection="Descending" 
                                                     Width="80" >
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Col Size" ToolTip="{Binding Path=DataContext.Tooltips.TotalSize,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                    <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize"  >
@@ -246,88 +249,148 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}"  x:Name="colData" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Data" ToolTip="{Binding Path=DataContext.Tooltips.DataSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}"  
+                                                x:Name="colData" 
+                                                Header="Data" ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" x:Name="colDictionary" HeaderStyle="{StaticResource RightHeader}"  ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Dictionary" ToolTip="{Binding Path=DataContext.Tooltips.DictionarySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            
+                            <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" x:Name="colDictionary" 
+                                                Header="Dictionary"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DictionarySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" x:Name="colHierarchies" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Hier Size" ToolTip="{Binding Path=DataContext.Tooltips.HierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            
+                            <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" 
+                                                x:Name="colHierarchies" 
+                                                Header="Hier Size"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.HierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Encoding}" x:Name="colEncoding" ToolTipService.ToolTip="{Binding DataContext.Tooltips.Encoding, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Encoding" ToolTip="{Binding Path=DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            
+                            <DataGridTextColumn Binding="{Binding Encoding}" 
+                                                x:Name="colEncoding" 
+                                                Header="Encoding">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding TypeName}" x:Name="colDataType">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Data Type" ToolTip="{Binding Path=DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            
+                            <DataGridTextColumn Binding="{Binding TypeName}" 
+                                                x:Name="colDataType"
+                                                Header="Data Type">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
                             <DataGridTemplateColumn  x:Name="colReferentialIntegrityViolationCount" 
                                                      ClipboardContentBinding="{Binding ReferentialIntegrityViolationCount}"
                                                      CellTemplate="{StaticResource DashTemplate}" 
+                                                     Header="RI Violations"
                                                      SortMemberPath="ReferentialIntegrityViolationCount" >
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="RI Violations" ToolTip="{Binding Path=DataContext.Tooltips.RIViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.RIViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn  x:Name="colUserHierarchies" 
                                                      ClipboardContentBinding="{Binding UserHierarchiesSize}"
                                                      CellTemplate="{StaticResource DashTemplate}" 
+                                                     Header="User Hier Size"
                                                      SortMemberPath="UserHierarchiesSize">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="User Hier Size" ToolTip="{Binding Path=DataContext.Tooltips.UserHierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.UserHierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
 
                             <DataGridTemplateColumn x:Name="colRelationships" 
                                                     CellTemplate="{StaticResource DashTemplate}" 
                                                     ClipboardContentBinding="{Binding RelationshipSize}"
+                                                    Header="Rel Size"
                                                     SortMemberPath="RelationshipSize">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Rel Size" ToolTip="{Binding Path=DataContext.Tooltips.RelationshipSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.RelationshipSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}"  x:Name="colPercentageTable" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="% Table" ToolTip="{Binding Path=DataContext.Tooltips.PercentOfTable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}"
+                                                x:Name="colPercentageTable" 
+                                                Header="% Table"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.PercentOfTable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" 
+                                                x:Name="colPercentageDB" 
+                                                Header="% DB" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.PercentOfDatabase, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
+                                                x:Name="colSegmentsNumber" 
+                                                Header="Segments"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}"
+                                                x:Name="colPartitionsNumber" 
+                                                Header="Partitions"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                             
-                            <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" x:Name="colPercentageDB" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="% DB" ToolTip="{Binding Path=DataContext.Tooltips.PercentOfDatabase, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding ColumnsNumber}" 
+                                                x:Name="colColumnsNumber" 
+                                                Header="Columns"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Columns, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                             
-                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" x:Name="colSegmentsNumber" ElementStyle="{StaticResource NumTextBlockStyle}" >
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Segments" ToolTip="{Binding Path=DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
-                            </DataGridTextColumn>
-                            
-                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" x:Name="colPartitionsNumber" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Partitions" ToolTip="{Binding Path=DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
-                            </DataGridTextColumn>
-                            
-                            <DataGridTextColumn Binding="{Binding ColumnsNumber}" x:Name="colColumnsNumber"  ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Columns" ToolTip="{Binding Path=DataContext.Tooltips.Columns, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
-                            </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -353,33 +416,47 @@
                           cal:Message.Attach="[Event Sorting] = [Action OnColumnSorting($eventArgs)]">
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding TableColumnName}" MinWidth="200">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Table-Column" ToolTip="{Binding Path=DataContext.Tooltips.TableColumn,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding TableColumnName}" 
+                                                Header="Table-Column"
+                                                MinWidth="200">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}"  ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" >
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Rows" ToolTip="{Binding Path=DataContext.Tooltips.TableRows, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}"  
+                                                ElementStyle="{StaticResource NumCell}" 
+                                                Header="Rows" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableRows, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" ElementStyle="{StaticResource NumCell}" HeaderStyle="{StaticResource RightHeader}" >
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Cardinality" ToolTip="{Binding Path=DataContext.Tooltips.Cardinality,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" 
+                                                ElementStyle="{StaticResource NumCell}" 
+                                                Header="Cardinality" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Cardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                             
                             <DataGridTemplateColumn 
-                                HeaderStyle="{StaticResource RightHeader}" 
+                                Header="Col Size" 
                                 ClipboardContentBinding="{Binding TotalSize}"
                                 SortMemberPath="TotalSize" 
                                 SortDirection="Descending" 
                                 MinWidth="75">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Col Size" ToolTip="{Binding Path=DataContext.Tooltips.TotalSize,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize" >
@@ -398,58 +475,90 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Data" ToolTip="{Binding Path=DataContext.Tooltips.DataSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding DataSize, StringFormat=N0}" 
+                                                Header="Data" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Dictionary" ToolTip="{Binding Path=DataContext.Tooltips.DictionarySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" 
+                                                Header="Dictionary" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DictionarySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}"  ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Hier Size" ToolTip="{Binding Path=DataContext.Tooltips.HierarchySize,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" 
+                                                Header="Hier Size"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.HierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="% Table" ToolTip="{Binding Path=DataContext.Tooltips.PercentOfTable,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding PercentageTable, StringFormat=P}" 
+                                                Header="% Table" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.PercentOfTable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="% DB" ToolTip="{Binding Path=DataContext.Tooltips.PercentOfDatabase,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding PercentageDatabase, StringFormat=P}" 
+                                                Header="% DB" ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.PercentOfDatabase, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding Encoding}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Encoding" ToolTip="{Binding Path=DataContext.Tooltips.Encoding,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding TypeName}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Data Type" ToolTip="{Binding Path=DataContext.Tooltips.DataType,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding TypeName}" Header="Data Type">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                             
-                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Segments" ToolTip="{Binding Path=DataContext.Tooltips.Segments,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
+                                                Header="Segments"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Partitions" ToolTip="{Binding Path=DataContext.Tooltips.Partitions,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" 
+                                                Header="Partitions"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
                         </DataGrid.Columns>
@@ -508,38 +617,36 @@
                         </DataGrid.GroupStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn x:Name="colRelName" MinWidth="300" ClipboardContentBinding="{Binding RelationshipFromToName}">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Table / Relationship" 
-                                               ToolTip="{Binding Path=DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
-
+                            <DataGridTemplateColumn x:Name="colRelName" MinWidth="300" 
+                                                    Header="Table / Relationship"
+                                                    ClipboardContentBinding="{Binding RelationshipFromToName}">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
+                                
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,0,0,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            
-                            <DataGridTemplateColumn x:Name="colRelSize"  HeaderStyle="{StaticResource RightHeader}"
+
+                            <DataGridTemplateColumn x:Name="colRelSize"  
+                                                    Header="Size"
                                                     ClipboardContentBinding="{Binding UsedSize}"
-                                                 SortMemberPath="UsedSize"
-                                                 SortDirection="Descending"
-                                                 MinWidth="65">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Size" ToolTip="{Binding Path=DataContext.Tooltips.RelationshipSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTemplateColumn.Header>
+                                                    SortMemberPath="UsedSize"
+                                                    SortDirection="Descending"
+                                                    MinWidth="65">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.RelationshipSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
-                                            <!--<Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
-                                            <Rectangle.Width>
-                                                <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
-                                                    <Binding Path="PercentOfMaxCardinality"/>
-                                                    <Binding Path="ActualWidth" ElementName="gridCardinality"/>
-                                                </MultiBinding>
-                                            </Rectangle.Width>
-                                        </Rectangle>-->
                                             <TextBlock Text="{Binding UsedSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                         </Grid>
                                     </DataTemplate>
@@ -547,42 +654,73 @@
                             </DataGridTemplateColumn>
 
 
-                            <DataGridTextColumn Binding="{Binding FromColumnCardinality, StringFormat=N0}" x:Name="colRelFromCardinality" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Max From Cardinality" ToolTip="{Binding Path=DataContext.Tooltips.MaxFromCardinality, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding FromColumnCardinality, StringFormat=N0}" 
+                                                x:Name="colRelFromCardinality" 
+                                                Header="Max From Cardinality" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.MaxFromCardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding ToColumnCardinality, StringFormat=N0}" x:Name="colRelToCardinality" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Max To Cardinality" ToolTip="{Binding Path=DataContext.Tooltips.MaxToCardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding ToColumnCardinality, StringFormat=N0}" 
+                                                x:Name="colRelToCardinality" 
+                                                Header="Max To Cardinality" ElementStyle="{StaticResource NumTextBlockStyle}">
+                                
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.MaxToCardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat={}{0:#0.00'%'}}" x:Name="colRelOneToManyRatio" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="1:M Ratio %" ToolTip="{Binding Path=DataContext.Tooltips.OneToManyRatio, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat={}{0:#0.00'%'}}" 
+                                                x:Name="colRelOneToManyRatio" 
+                                                Header="1:M Ratio %" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.OneToManyRatio, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding MissingKeys, StringFormat=N0}" x:Name="colMissingKeys" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Missing Keys" ToolTip="{Binding Path=DataContext.Tooltips.MissingKeys, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding MissingKeys, StringFormat=N0}" 
+                                                x:Name="colMissingKeys" 
+                                                Header="Missing Keys" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.MissingKeys, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding InvalidRows, StringFormat=N0}" x:Name="colInvalidRows" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Invalid Rows" ToolTip="{Binding Path=DataContext.Tooltips.InvalidRows, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding InvalidRows, StringFormat=N0}" 
+                                                x:Name="colInvalidRows" 
+                                                Header="Invalid Rows" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.InvalidRows, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                             
-                            <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" x:Name="colSampleViolations" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Sample Violations*" ToolTip="{Binding Path=DataContext.Tooltips.SampleViolations, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" 
+                                                x:Name="colSampleViolations" 
+                                                Header="Sample Violations">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.SampleViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -592,19 +730,19 @@
                 <Border BorderBrush="Gray" BorderThickness="1">
                     <DataGrid ItemsSource="{Binding GroupedPartitions, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
-                          AutoGenerateColumns="False" 
-                          RowHeaderWidth="0" 
-                          BorderBrush="LightGray"
-                          BorderThickness="1"
-                          HorizontalGridLinesBrush="LightGray"
-                          VerticalGridLinesBrush="Transparent"
-                          CanUserSortColumns="True" 
-                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.IsContainerVirtualizable="True" 
-                          CanUserAddRows="False"
-                          IsReadOnly="True"
-                          cal:Message.Attach="[Event Sorting] = [Action OnPartitionSorting($eventArgs)]">
+                              AutoGenerateColumns="False" 
+                              RowHeaderWidth="0" 
+                              BorderBrush="LightGray"
+                              BorderThickness="1"
+                              HorizontalGridLinesBrush="LightGray"
+                              VerticalGridLinesBrush="Transparent"
+                              CanUserSortColumns="True" 
+                              VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.IsContainerVirtualizable="True" 
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              cal:Message.Attach="[Event Sorting] = [Action OnPartitionSorting($eventArgs)]">
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
@@ -648,14 +786,17 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             
-                            <DataGridTemplateColumn  x:Name="colRowsCount"  HeaderStyle="{StaticResource RightHeader}"
-                                                 SortMemberPath="RowsCount"
-                                                 SortDirection="Descending"
-                                                 MinWidth="80"
-                                                 ClipboardContentBinding="{Binding RowsCount}">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Rows" ToolTip="{Binding Path=DataContext.Tooltips.Cardinality, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn  x:Name="colRowsCount"  
+                                                     Header="Rows"
+                                                     SortMemberPath="RowsCount"
+                                                     SortDirection="Descending"
+                                                     MinWidth="80"
+                                                     ClipboardContentBinding="{Binding RowsCount}">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Cardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
@@ -672,14 +813,17 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            
-                            <DataGridTemplateColumn x:Name="colDataSize"  HeaderStyle="{StaticResource RightHeader}"
+
+                            <DataGridTemplateColumn x:Name="colDataSize"  
+                                                    Header="Data"
                                                  SortMemberPath="DataSize"
                                                  MinWidth="80"
                                                  ClipboardContentBinding="{Binding DataSize}">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Data" ToolTip="{Binding Path=DataContext.Tooltips.DataSize, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize"  >
@@ -697,16 +841,26 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}"  x:Name="colPartitions" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Partitions" ToolTip="{Binding Path=DataContext.Tooltips.Partitions, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}"  
+                                                x:Name="colPartitions" 
+                                                Header="Partitions" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  x:Name="colSegments" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                <DataGridTextColumn.Header>
-                                    <TextBlock Text="Segments" ToolTip="{Binding Path=DataContext.Tooltips.Segments, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </DataGridTextColumn.Header>
+                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  
+                                                x:Name="colSegments" 
+                                                Header="Segments" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
                         </DataGrid.Columns>
