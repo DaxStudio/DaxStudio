@@ -219,21 +219,22 @@ namespace DaxStudio.UI.ViewModels
                     Document.IsQueryRunning = false;
                 }
             } )
-            .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted)
-            .ContinueWith(prevTask => {
-                //TryClose(true);
-            });
+            .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted);
 
 
             void HandleFaults(Task t)
             {
-                if (t.Exception != null)
-                {
-                    var ex = t.Exception.GetBaseException();
+                if (t.Exception == null) return;
+                var ex = t.Exception.GetBaseException();
+                // calls HandleExceptions on each child exception in the AggregateException from the Task
+                t.Exception.Handle(HandleExceptions);
+            }
 
-                    Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
-                }
+            bool HandleExceptions(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+                return true;
             }
         }
 

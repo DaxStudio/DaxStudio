@@ -102,6 +102,7 @@
                           
                 -->
                     <DataGrid ItemsSource="{Binding GroupedColumns, UpdateSourceTrigger=PropertyChanged}" 
+                              ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           BorderBrush="LightGray"
@@ -163,17 +164,19 @@
 
                         <DataGrid.Columns>
                             <!--<DataGridTextColumn Binding="{Binding ColumnName}" Header="Name" x:Name="colColumn" MinWidth="200" />-->
-                            <DataGridTemplateColumn  x:Name="colColumn" MinWidth="200" SortMemberPath="ColumnName">
-                                <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Name"/>
-                                </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn  x:Name="colColumn" 
+                                                     MinWidth="200" 
+                                                     Header="Name"
+                                                     SortMemberPath="ColumnName" 
+                                                     ClipboardContentBinding="{Binding TableColumnName}">
+                                
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn  x:Name="colRows"  HeaderStyle="{StaticResource RightHeader}"
+                            <DataGridTemplateColumn  x:Name="colRows"  HeaderStyle="{StaticResource RightHeader}" ClipboardContentBinding="{Binding ColumnCardinality}"
                                 SortMemberPath="ColumnCardinality" MinWidth="65" Width="80">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Cardinality" ToolTip="{Binding DataContext.Tooltips.Cardinality, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -195,11 +198,19 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <!-- CellTemplate="{StaticResource DashTemplate}" -->
-                            <DataGridTemplateColumn  x:Name="colTableSize" HeaderStyle="{StaticResource RightHeader}"  MinWidth="65" 
-                                                      SortMemberPath="TableSize" Width="80">
+                            <DataGridTemplateColumn  x:Name="colTableSize"   MinWidth="65" 
+                                                     Header="Table Size"
+                                                        SortMemberPath="TableSize" Width="80" ClipboardContentBinding="{Binding TableSize}">
+                                <!--
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Table Size" ToolTip="{Binding DataContext.Tooltips.TableSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
+                                -->
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding TableSize, StringFormat=N0}" Style="{StaticResource NumTextBlockStyle}"/>
@@ -208,7 +219,13 @@
 
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn x:Name="colColumns"  HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" SortDirection="Descending" Width="80" >
+                            <DataGridTemplateColumn x:Name="colColumns"  
+                                                    HeaderStyle="{StaticResource RightHeader}" 
+                                                    ClipboardContentBinding="{Binding TotalSize}"
+                                                    SortMemberPath="TotalSize" 
+                                                    MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" 
+                                                    SortDirection="Descending" 
+                                                    Width="80" >
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Col Size" ToolTip="{Binding Path=DataContext.Tooltips.TotalSize,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
@@ -255,19 +272,28 @@
                                 </DataGridTextColumn.Header>
                             </DataGridTextColumn>
 
-                            <DataGridTemplateColumn  x:Name="colReferentialIntegrityViolationCount" CellTemplate="{StaticResource DashTemplate}" SortMemberPath="ReferentialIntegrityViolationCount" >
+                            <DataGridTemplateColumn  x:Name="colReferentialIntegrityViolationCount" 
+                                                     ClipboardContentBinding="{Binding ReferentialIntegrityViolationCount}"
+                                                     CellTemplate="{StaticResource DashTemplate}" 
+                                                     SortMemberPath="ReferentialIntegrityViolationCount" >
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="RI Violations" ToolTip="{Binding Path=DataContext.Tooltips.RIViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn  x:Name="colUserHierarchies" CellTemplate="{StaticResource DashTemplate}" SortMemberPath="UserHierarchiesSize">
+                            <DataGridTemplateColumn  x:Name="colUserHierarchies" 
+                                                     ClipboardContentBinding="{Binding UserHierarchiesSize}"
+                                                     CellTemplate="{StaticResource DashTemplate}" 
+                                                     SortMemberPath="UserHierarchiesSize">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="User Hier Size" ToolTip="{Binding Path=DataContext.Tooltips.UserHierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn x:Name="colRelationships" CellTemplate="{StaticResource DashTemplate}" SortMemberPath="RelationshipSize">
+                            <DataGridTemplateColumn x:Name="colRelationships" 
+                                                    CellTemplate="{StaticResource DashTemplate}" 
+                                                    ClipboardContentBinding="{Binding RelationshipSize}"
+                                                    SortMemberPath="RelationshipSize">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Rel Size" ToolTip="{Binding Path=DataContext.Tooltips.RelationshipSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
@@ -311,6 +337,7 @@
                 <Border BorderBrush="Black" BorderThickness="1">
 
                     <DataGrid ItemsSource="{Binding SortedColumns, UpdateSourceTrigger=PropertyChanged}" 
+                              ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           BorderBrush="LightGray"
@@ -344,7 +371,12 @@
                                 </DataGridTextColumn.Header>
                             </DataGridTextColumn>
                             
-                            <DataGridTemplateColumn HeaderStyle="{StaticResource RightHeader}" SortMemberPath="TotalSize" SortDirection="Descending" MinWidth="75">
+                            <DataGridTemplateColumn 
+                                HeaderStyle="{StaticResource RightHeader}" 
+                                ClipboardContentBinding="{Binding TotalSize}"
+                                SortMemberPath="TotalSize" 
+                                SortDirection="Descending" 
+                                MinWidth="75">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Col Size" ToolTip="{Binding Path=DataContext.Tooltips.TotalSize,Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
@@ -429,6 +461,7 @@
             <TabItem Header="Relationships">
                 <Border BorderBrush="Gray" BorderThickness="1">
                     <DataGrid ItemsSource="{Binding GroupedRelationships, UpdateSourceTrigger=PropertyChanged}" 
+                              ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           BorderBrush="LightGray"
@@ -475,9 +508,10 @@
                         </DataGrid.GroupStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn x:Name="colRelName" MinWidth="300">
+                            <DataGridTemplateColumn x:Name="colRelName" MinWidth="300" ClipboardContentBinding="{Binding RelationshipFromToName}">
                                 <DataGridTemplateColumn.Header>
-                                    <TextBlock Text="Table / Relationship" ToolTip="{Binding Path=DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    <TextBlock Text="Table / Relationship" 
+                                               ToolTip="{Binding Path=DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataGridTemplateColumn.Header>
 
                                 <DataGridTemplateColumn.CellTemplate>
@@ -488,6 +522,7 @@
                             </DataGridTemplateColumn>
                             
                             <DataGridTemplateColumn x:Name="colRelSize"  HeaderStyle="{StaticResource RightHeader}"
+                                                    ClipboardContentBinding="{Binding UsedSize}"
                                                  SortMemberPath="UsedSize"
                                                  SortDirection="Descending"
                                                  MinWidth="65">
@@ -556,6 +591,7 @@
             <TabItem Header="Partitions">
                 <Border BorderBrush="Gray" BorderThickness="1">
                     <DataGrid ItemsSource="{Binding GroupedPartitions, UpdateSourceTrigger=PropertyChanged}" 
+                              ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           BorderBrush="LightGray"
@@ -600,7 +636,11 @@
                         </DataGrid.GroupStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="Table / Partition" x:Name="colPartitionName" MinWidth="300" SortMemberPath="TableAndPartitionName">
+                            <DataGridTemplateColumn Header="Table / Partition" 
+                                                    x:Name="colPartitionName" 
+                                                    MinWidth="300" 
+                                                    SortMemberPath="TableAndPartitionName"
+                                                    ClipboardContentBinding="{Binding TableAndPartitionName}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0"/>
@@ -611,7 +651,8 @@
                             <DataGridTemplateColumn  x:Name="colRowsCount"  HeaderStyle="{StaticResource RightHeader}"
                                                  SortMemberPath="RowsCount"
                                                  SortDirection="Descending"
-                                                 MinWidth="80">
+                                                 MinWidth="80"
+                                                 ClipboardContentBinding="{Binding RowsCount}">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Rows" ToolTip="{Binding Path=DataContext.Tooltips.Cardinality, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                                 </DataGridTemplateColumn.Header>
@@ -634,7 +675,8 @@
                             
                             <DataGridTemplateColumn x:Name="colDataSize"  HeaderStyle="{StaticResource RightHeader}"
                                                  SortMemberPath="DataSize"
-                                                 MinWidth="80">
+                                                 MinWidth="80"
+                                                 ClipboardContentBinding="{Binding DataSize}">
                                 <DataGridTemplateColumn.Header>
                                     <TextBlock Text="Data" ToolTip="{Binding Path=DataContext.Tooltips.DataSize, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                                 </DataGridTemplateColumn.Header>
