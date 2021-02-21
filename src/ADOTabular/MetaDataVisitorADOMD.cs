@@ -121,7 +121,10 @@ namespace ADOTabular
 
         internal static SortedDictionary<string, ADOTabularMeasure> VisitMeasures(ADOTabularMeasureCollection measures, IADOTabularConnection conn)
         {
-            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection) return GetTmSchemaMeasures(measures, conn);
+            // need to check if the DMV collection has the TMSCHEMA_MEASURES view, 
+            // and if this is a connection with admin rights
+            // and if it is not a PowerPivot model (as they seem to throw an error about the model needing to be in the "new" tabular mode)
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection && !conn.IsPowerPivot) return GetTmSchemaMeasures(measures, conn);
             return GetMdSchemaMeasures(measures, conn);
         }
 
