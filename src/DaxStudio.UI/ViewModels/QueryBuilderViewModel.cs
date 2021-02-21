@@ -175,9 +175,18 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanSendTextToEditor => Columns.Items.Count > 0;
 
+        public bool CanAddNewMeasure => Document?.Connection?.SelectedModel?.Tables.Count > 0 ;
         // ReSharper disable once UnusedMember.Global
         public void AddNewMeasure()
         {
+            if (Document.Connection.SelectedModel.Tables.Count == 0)
+            {
+                var msg = "Cannot add a new measure if the model has no tables";
+                Log.Warning(nameof(QueryBuilderViewModel), nameof(AddNewMeasure), msg);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,msg ));
+                return;
+            }
+            
             var firstTable = Document.Connection.SelectedModel.Tables.First();
             // TODO - need to make sure key is unique
             var newMeasureName = GetCustomMeasureName();

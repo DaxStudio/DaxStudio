@@ -987,7 +987,7 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             if (Connection.Databases.Count == 0) {
-                var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
+                var msg = $"No Databases were found when connecting to {Connection.ServerName} ({Connection.ServerType})"
                 + (Connection.ServerType == ServerType.PowerBIDesktop ? "\nIf your Power BI File is using a Live Connection please connect directly to the source model instead." : "");
                 OutputWarning(msg);
             }
