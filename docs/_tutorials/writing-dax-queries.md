@@ -11,7 +11,7 @@ If you want to follow along and try out these queries yourself all you need is:
 
 The simplest way to get started after installing both DAX Studio and Power BI Desktop is to open the **Adventure Works 2020.pbix** file, then click on External Tools and launch DAX Studio from there. 
 
-For more details on how you can connect to your particular data model check out the tutorial on [Getting Connected](getting-connected)
+For more details on how you can connect to your particular data model check out the tutorial on [Getting Connected](https://daxstudio.org/tutorials/getting-connected/)
 
 ## Basic Queries
 
