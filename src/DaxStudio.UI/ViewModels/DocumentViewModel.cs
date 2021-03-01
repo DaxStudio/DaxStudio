@@ -2806,7 +2806,21 @@ namespace DaxStudio.UI.ViewModels
 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
-                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+
+                
+                string refreshQuery;
+                if (Options.DefaultSeparator == DelimiterType.SemiColon)
+                {
+                    // switch the default delimiter on the refresh query to the semi-colon style
+                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
+                }
+                else
+                {
+                    refreshQuery = Constants.RefreshSessionQuery;
+                }
+
+                await ExecuteDataTableQueryAsync(refreshQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;

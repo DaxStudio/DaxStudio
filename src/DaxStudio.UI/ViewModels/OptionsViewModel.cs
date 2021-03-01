@@ -541,7 +541,7 @@ namespace DaxStudio.UI.ViewModels
                 _defaultSeparator = value;
                 NotifyOfPropertyChange(() => DefaultSeparator);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(DefaultSeparator), (int)value, _isInitializing, MethodBase.GetCurrentMethod().GetCustomAttribute<DefaultValueAttribute>());
+                SettingProvider.SetValue(nameof(DefaultSeparator), (int)value, _isInitializing, this);
             }
         }
 
@@ -556,7 +556,7 @@ namespace DaxStudio.UI.ViewModels
                 _defaultDaxFormatStyle = value;
                 NotifyOfPropertyChange(() => DefaultDaxFormatStyle);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(DefaultDaxFormatStyle), (int)value, _isInitializing, MethodBase.GetCurrentMethod().GetCustomAttribute<DefaultValueAttribute>());
+                SettingProvider.SetValue(nameof(DefaultDaxFormatStyle), (int)value, _isInitializing, this);
             }
         }
 
