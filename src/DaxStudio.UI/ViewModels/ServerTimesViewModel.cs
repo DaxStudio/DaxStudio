@@ -19,6 +19,8 @@ using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
 using System.IO.Packaging;
 using System;
+using System.Globalization;
+using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
@@ -391,7 +393,7 @@ namespace DaxStudio.UI.ViewModels
                         TotalDuration = traceEvent.Duration;
                         TotalCpuDuration = traceEvent.CpuTime;
                         //FormulaEngineDuration = traceEvent.CpuTime;
-
+                        QueryEndDateTime = traceEvent.EndTime;
                     }
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                     {
@@ -413,10 +415,13 @@ namespace DaxStudio.UI.ViewModels
 
                 Events.Clear();
 
-                NotifyOfPropertyChange(() => StorageEngineEvents);
-                NotifyOfPropertyChange(() => CanExport);
+                NotifyOfPropertyChange(nameof(StorageEngineEvents));
+                NotifyOfPropertyChange(nameof(CanExport));
+                NotifyOfPropertyChange(nameof(CanCopyResults));
             }
         }
+
+        public DateTime QueryEndDateTime { get; set; }
 
         private long _totalCpuDuration;
         public long TotalCpuDuration
@@ -641,7 +646,8 @@ namespace DaxStudio.UI.ViewModels
                 VertipaqCacheMatches = this.VertipaqCacheMatches,
                 StorageEngineQueryCount = this.StorageEngineQueryCount,
                 StoreageEngineEvents = this._storageEngineEvents,
-                TotalCpuDuration = this.TotalCpuDuration
+                TotalCpuDuration = this.TotalCpuDuration,
+                QueryEndDateTime = this.QueryEndDateTime
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             return json;
@@ -675,7 +681,7 @@ namespace DaxStudio.UI.ViewModels
             VertipaqCacheMatches = m.VertipaqCacheMatches;
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
-
+            QueryEndDateTime = m.QueryEndDateTime;
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
@@ -753,6 +759,29 @@ namespace DaxStudio.UI.ViewModels
             Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
         }
         #endregion
+
+        public override bool CanCopyResults => CanExport;
+        public override bool IsCopyResultsVisible => true;
+        public override void CopyResults()
+        {
+            CopyResultsData(true);
+        }
+
+        public void CopyResultsData()
+        {
+            CopyResultsData(false);
+        }
+        public void CopyResultsData(bool includeHeader)
+        {
+            var dataObject = new DataObject();
+            var headers = string.Empty;
+            if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE CPU(parallelism factor)\tSE Queries\tSE Cache\n";
+            var values = $"{QueryEndDateTime.ToString(Constants.IsoDateFormatPaste)}\t{TotalDuration}\t{FormulaEngineDuration}\t{StorageEngineDuration}\t{StorageEngineCpu}\t{StorageEngineCpuFactor}\t{StorageEngineQueryCount}\t{VertipaqCacheMatches}";
+            dataObject.SetData(DataFormats.StringFormat, $"{headers}{values}");
+            dataObject.SetData(DataFormats.CommaSeparatedValue, $"{headers.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}\n{values.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}");
+
+            Clipboard.SetDataObject(dataObject);
+        }
 
         public override bool CanExport => _storageEngineEvents.Count > 0;
         public override void ExportTraceDetails(string filePath)

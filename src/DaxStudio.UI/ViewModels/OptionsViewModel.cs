@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security;
@@ -18,6 +19,7 @@ using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -50,6 +52,7 @@ namespace DaxStudio.UI.ViewModels
         private string _proxyUser;
         private string _proxyPassword;
         private SecureString _proxySecurePassword = new SecureString();
+        private int _longQuerySeconds;
         private int _maxQueryHistory;
         private bool _queryHistoryShowTraceColumns;
         private int _queryEndEventTimeout;
@@ -58,7 +61,8 @@ namespace DaxStudio.UI.ViewModels
         private bool _highlightXmSqlCallbacks;
         private bool _simplifyXmSqlSyntax;
         private bool _replaceXmSqlColumnNames;
-
+        private bool _playSoundAtQueryEnd;
+        private LongOperationSounds _queryEndSound;
         private readonly IEventAggregator _eventAggregator;
 
         private DelimiterType _defaultSeparator;
@@ -531,6 +535,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("Defaults")]
         [DisplayName("Separators")]
         [DataMember, DefaultValue(DelimiterType.Comma)]
+        [Description("Sets the separator style used within DAX queries and expressions")]
         public DelimiterType DefaultSeparator
         {
             get => _defaultSeparator;
@@ -544,6 +549,67 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue(nameof(DefaultSeparator), (int)value, _isInitializing, this);
             }
         }
+
+
+        [Category("Sounds")]
+        [DisplayName("Play a sound after long running operations")]
+        [DataMember, DefaultValue(false)]
+        [Description("Enable this to play a sound after long running operations (export/benchmark/view metrics/queries)")]
+        [SortOrder(50)]
+        public bool PlaySoundAfterLongOperation
+        {
+            get => _playSoundAtQueryEnd;
+
+            set
+            {
+                if (_playSoundAtQueryEnd == value) return;
+                _playSoundAtQueryEnd = value;
+                NotifyOfPropertyChange(() => PlaySoundAfterLongOperation);
+                NotifyOfPropertyChange(nameof(QueryEndSoundEnabled));
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(PlaySoundAfterLongOperation), (bool)value, _isInitializing, this);
+            }
+        }
+
+        [Category("Sounds")]
+        [DisplayName("Long Operation Sound")]
+        [DataMember, DefaultValue(LongOperationSounds.Beep)]
+        [Description("Plays the selected sound from your Windows system sound settings after a long running operation")]
+        [SortOrder(55)]
+        public LongOperationSounds LongOperationSound
+        {
+            get => _queryEndSound;
+
+            set
+            {
+                if (_queryEndSound == value) return;
+                _queryEndSound = value;
+                NotifyOfPropertyChange(() => LongOperationSound);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(LongOperationSound), value, _isInitializing, this);
+            }
+        }
+
+        [Category("Sounds")]
+        [DisplayName("Long Query Seconds")]
+        [DataMember, DefaultValue(5), MinValue(0),MaxValue(600)]
+        [Description("If a query takes more than this number of seconds play the 'Long Operation' sound (use 0 to play a sound after all queries)")]
+        [SortOrder(60)]
+        public int LongQuerySeconds
+        {
+            get => _longQuerySeconds;
+
+            set
+            {
+                if (_longQuerySeconds == value) return;
+                _longQuerySeconds = value;
+                NotifyOfPropertyChange(() => LongQuerySeconds);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(LongQuerySeconds), value, _isInitializing, this);
+            }
+        }
+
+        public bool QueryEndSoundEnabled => PlaySoundAfterLongOperation;
 
         [Category("Dax Formatter")]
         [DisplayName("Default Format Style")]
@@ -1723,6 +1789,37 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
+
+        public void PlaySound(PropertyBinding<object> param)
+        {
+            System.Diagnostics.Debug.WriteLine("playing sound");
+            if (param?.Value is LongOperationSounds sound) PlaySound(sound);
+        }
+
+        public void PlaySound(LongOperationSounds value)
+        {
+            switch (value)
+            {
+                case LongOperationSounds.Asterisk:
+                    SystemSounds.Asterisk.Play();
+                    break;
+                case LongOperationSounds.Beep:
+                    SystemSounds.Beep.Play();
+                    break;
+                case LongOperationSounds.Exclamation:
+                    SystemSounds.Exclamation.Play();
+                    break;
+                case LongOperationSounds.Hand:
+                    SystemSounds.Hand.Play();
+                    break;
+                case LongOperationSounds.Question:
+                    SystemSounds.Question.Play();
+                    break;
+                default:
+                    SystemSounds.Beep.Play();
+                    break;
+            }
+        }
 
         protected override void OnActivate()
         {
