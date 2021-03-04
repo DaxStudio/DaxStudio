@@ -23,13 +23,13 @@ namespace DaxStudio.UI.ViewModels
     {
 
         [ImportingConstructor]
-        public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon)
+        public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
         {
             EventAggregator = eventAggregator;
             EventAggregator.Subscribe(this);
             Document = document;
             Ribbon = ribbon;
-            
+            Options = options;
             ColdRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.ClearThenRun);
             WarmRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultTargetTimer));
@@ -167,7 +167,12 @@ namespace DaxStudio.UI.ViewModels
             ProgressMessage = "Benchmark Complete";
             ProgressColor = "Green";
 
-            // todo - activeate results
+            if (Options.PlaySoundAfterLongOperation)
+            {
+                Options.PlaySound(Options.LongOperationSound);
+            }
+            
+            // todo - activate results
 
             // close the Benchmarking dialog
             this.TryClose(true);
@@ -353,6 +358,7 @@ namespace DaxStudio.UI.ViewModels
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
         public RibbonViewModel Ribbon { get; }
+        public IGlobalOptions Options { get; }
 
         private readonly RunStyle ColdRunStyle;
         private readonly RunStyle WarmRunStyle;

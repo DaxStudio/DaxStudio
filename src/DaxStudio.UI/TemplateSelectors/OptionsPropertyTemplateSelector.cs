@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using DaxStudio.Controls.PropertyGrid;
 
-namespace DaxStudio.Controls.PropertyGrid
+namespace DaxStudio.UI.TemplateSelectors
 {
-    public class PropertyTemplateSelector : DataTemplateSelector
+    public class OptionsPropertyTemplateSelector : DataTemplateSelector
     {
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
@@ -17,11 +18,15 @@ namespace DaxStudio.Controls.PropertyGrid
 
                 var templateDictionary = SetupTemplateDictionary(element);
 
-                if (prop.PropertyType.IsEnum) return element.FindResource("EnumTemplate") as DataTemplate;
+                
+                if (prop.PropertyType.IsEnum)
+                    if (prop.DisplayName.EndsWith("Sound")) return element.FindResource("SoundTemplate") as DataTemplate;
+                    else return element.FindResource("EnumTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(bool)) return  element.FindResource("BoolTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(double)) return element.FindResource("DoubleTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(int)) return element.FindResource("IntegerTemplate") as DataTemplate;
                 if (prop.DisplayName.EndsWith("Font Family")) return element.FindResource("FontFamilyTemplate") as DataTemplate;
+                
                 if (prop.DisplayName.EndsWith("Password")) return element.FindResource("PasswordTemplate") as DataTemplate;
                 return element.FindResource("GenericTemplate") as DataTemplate;
                 

@@ -238,7 +238,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RecoverNextAutoSaveFileEvent());
         }
 
-
+        public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
 
 
         public override void TryClose(bool? dialogResult = null)
@@ -1541,6 +1541,14 @@ namespace DaxStudio.UI.ViewModels
 
             await RunQueryInternalAsync(message);
 
+            if (Options.PlaySoundAfterLongOperation
+                && (CurrentQueryInfo.ClientDurationMs > (Options.LongQuerySeconds * 1000)
+                    || Options.LongQuerySeconds == 0)
+            )
+            {
+                Options.PlaySound(Options.LongOperationSound);
+            }
+            
         }
 
         private void BenchmarkQuery()
@@ -1555,7 +1563,7 @@ namespace DaxStudio.UI.ViewModels
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked??false;
                 
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
+                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options))
                 {
 
                     _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
@@ -3731,7 +3739,7 @@ namespace DaxStudio.UI.ViewModels
                         }
                         else
                         {
-                            // propagate excetpion if ReadStatisticsFromData was disabled
+                            // propagate exception if ReadStatisticsFromData was disabled
                             throw;
                         }
                     }
@@ -3768,6 +3776,11 @@ namespace DaxStudio.UI.ViewModels
                     IsVertipaqAnalyzerRunning = false;
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
+
+                    if (Options.PlaySoundAfterLongOperation)
+                    {
+                        Options.PlaySound(Options.LongOperationSound);
+                    }
 
                 }, TaskScheduler.Default);
                 task.Start(TaskScheduler.Default);

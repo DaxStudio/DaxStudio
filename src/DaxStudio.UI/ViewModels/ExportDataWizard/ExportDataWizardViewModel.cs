@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 
 namespace DaxStudio.UI.ViewModels
@@ -54,11 +55,11 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Constructor
-        public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document)
+        public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions options)
         {
             Document = document ?? throw new ArgumentNullException(nameof(document));
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-
+            Options = options;
             EventAggregator.Subscribe(this);
 
             // check connection state
@@ -144,6 +145,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties
         public IEventAggregator EventAggregator { get; }
+        public IGlobalOptions Options { get; }
         public DocumentViewModel Document { get; }
 
         public ExportDataType ExportType { get; set; }
@@ -217,6 +219,11 @@ namespace DaxStudio.UI.ViewModels
                 finally
                 {
                     Document.IsQueryRunning = false;
+
+                    if (Options.PlaySoundAfterLongOperation)
+                    {
+                        Options.PlaySound(Options.LongOperationSound);
+                    }
                 }
             } )
             .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted);
@@ -289,8 +296,9 @@ namespace DaxStudio.UI.ViewModels
                     StreamWriter textWriter = null;
                     try { 
                         textWriter = new StreamWriter(csvFilePath, false, encoding);
-
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.CurrentCulture))
+                        // configure csv delimiter and culture
+                        var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = CsvDelimiter};
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                         {
                             for (long batchRows = 0; batchRows < totalRows; batchRows += MaxBatchSize)
@@ -305,13 +313,9 @@ namespace DaxStudio.UI.ViewModels
                                 using (var reader = connRead.ExecuteReader(daxQuery))
                                 {
                                     var rows = 0;
-                                    
-
-                                    // configure delimiter
-                                    csvWriter.Configuration.Delimiter = CsvDelimiter;
 
                                     // output dates using ISO 8601 format
-                                    csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                                    csvWriter.Context.TypeConverterOptionsCache.AddOptions(
                                         typeof(DateTime),
                                         new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new[] { isoDateFormat } });
 
