@@ -487,6 +487,7 @@
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
+    <Compile Include="Utils\ApplicationHelper.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\ClipboardHelper.cs" />

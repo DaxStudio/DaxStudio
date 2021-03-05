@@ -167,10 +167,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressMessage = "Benchmark Complete";
             ProgressColor = "Green";
 
-            if (Options.PlaySoundAfterLongOperation)
-            {
-                Options.PlaySound(Options.LongOperationSound);
-            }
+            Options.PlayLongOperationSound(-1);
             
             // todo - activate results
 

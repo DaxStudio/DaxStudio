@@ -220,10 +220,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Document.IsQueryRunning = false;
 
-                    if (Options.PlaySoundAfterLongOperation)
-                    {
-                        Options.PlaySound(Options.LongOperationSound);
-                    }
+                    
+                    Options.PlayLongOperationSound(-1);
+                    
                 }
             } )
             .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted);

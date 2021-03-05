@@ -1541,14 +1541,9 @@ namespace DaxStudio.UI.ViewModels
 
             await RunQueryInternalAsync(message);
 
-            if (Options.PlaySoundAfterLongOperation
-                && (CurrentQueryInfo.ClientDurationMs > (Options.LongQuerySeconds * 1000)
-                    || Options.LongQuerySeconds == 0)
-            )
-            {
-                Options.PlaySound(Options.LongOperationSound);
-            }
-            
+            int durationSecs = CurrentQueryInfo.ClientDurationMs>int.MaxValue? int.MaxValue / 1000: (int)CurrentQueryInfo.ClientDurationMs/ 1000;
+            Options.PlayLongOperationSound(durationSecs );
+
         }
 
         private void BenchmarkQuery()
@@ -3777,10 +3772,8 @@ namespace DaxStudio.UI.ViewModels
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
-                    if (Options.PlaySoundAfterLongOperation)
-                    {
-                        Options.PlaySound(Options.LongOperationSound);
-                    }
+                    Options.PlayLongOperationSound(-1);
+                    
 
                 }, TaskScheduler.Default);
                 task.Start(TaskScheduler.Default);

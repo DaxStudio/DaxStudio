@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Caliburn.Micro;
+using DaxStudio.Common;
 using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
@@ -27,6 +28,7 @@ using Newtonsoft.Json;
 using DaxStudio.UI.JsonConverters;
 using Microsoft.Win32;
 using DaxStudio.UI.Utils;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -62,6 +64,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _simplifyXmSqlSyntax;
         private bool _replaceXmSqlColumnNames;
         private bool _playSoundAtQueryEnd;
+        private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
         private readonly IEventAggregator _eventAggregator;
 
@@ -565,16 +568,38 @@ namespace DaxStudio.UI.ViewModels
                 if (_playSoundAtQueryEnd == value) return;
                 _playSoundAtQueryEnd = value;
                 NotifyOfPropertyChange(() => PlaySoundAfterLongOperation);
-                NotifyOfPropertyChange(nameof(QueryEndSoundEnabled));
+                NotifyOfPropertyChange(nameof(LongOperationSoundEnabled));
+                NotifyOfPropertyChange(nameof(LongQuerySecondsEnabled));
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(PlaySoundAfterLongOperation), (bool)value, _isInitializing, this);
             }
         }
+        
+        
+        [Category("Sounds")]
+        [DisplayName("Only Play a sound if not active")]
+        [DataMember, DefaultValue(false)]
+        [Description("Only play a sound after long running operations if DAX Studio is not the active application")]
+        [SortOrder(52)]
+        public bool PlaySoundIfNotActive
+        {
+            get => _playSoundIfNotActive;
+
+            set
+            {
+                if (_playSoundIfNotActive == value) return;
+                _playSoundIfNotActive = value;
+                NotifyOfPropertyChange(() => PlaySoundIfNotActive);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(PlaySoundIfNotActive), (bool)value, _isInitializing, this);
+            }
+        }
+
 
         [Category("Sounds")]
         [DisplayName("Long Operation Sound")]
         [DataMember, DefaultValue(LongOperationSounds.Beep)]
-        [Description("Plays the selected sound from your Windows system sound settings after a long running operation")]
+        [Description("The sounds used here are taken from your Windows system sound settings")]
         [SortOrder(55)]
         public LongOperationSounds LongOperationSound
         {
@@ -592,7 +617,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Sounds")]
         [DisplayName("Long Query Seconds")]
-        [DataMember, DefaultValue(5), MinValue(0),MaxValue(600)]
+        [DataMember, DefaultValue(10), MinValue(0),MaxValue(600)]
         [Description("If a query takes more than this number of seconds play the 'Long Operation' sound (use 0 to play a sound after all queries)")]
         [SortOrder(60)]
         public int LongQuerySeconds
@@ -609,7 +634,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool QueryEndSoundEnabled => PlaySoundAfterLongOperation;
+        public bool LongOperationSoundEnabled => PlaySoundAfterLongOperation;
+        public bool LongQuerySecondsEnabled => PlaySoundAfterLongOperation;
 
         [Category("Dax Formatter")]
         [DisplayName("Default Format Style")]
@@ -1792,32 +1818,53 @@ namespace DaxStudio.UI.ViewModels
 
         public void PlaySound(PropertyBinding<object> param)
         {
-            System.Diagnostics.Debug.WriteLine("playing sound");
             if (param?.Value is LongOperationSounds sound) PlaySound(sound);
         }
 
+        public void PlayLongOperationSound(int currentOperationSeconds)
+        {
+            // if the time thresholds have not been breached exit here
+            if (LongQuerySeconds > 0
+                && currentOperationSeconds >= 0
+                && currentOperationSeconds < LongQuerySeconds) return;
+
+            // if the app is active and sounds should only be played when inactive then exit here
+            if (PlaySoundIfNotActive && ApplicationHelper.IsApplicationActive()) return;
+            
+            // otherwise play the selected sound
+            PlaySound(LongOperationSound);
+        }
+
+
         public void PlaySound(LongOperationSounds value)
         {
-            switch (value)
+            try
             {
-                case LongOperationSounds.Asterisk:
-                    SystemSounds.Asterisk.Play();
-                    break;
-                case LongOperationSounds.Beep:
-                    SystemSounds.Beep.Play();
-                    break;
-                case LongOperationSounds.Exclamation:
-                    SystemSounds.Exclamation.Play();
-                    break;
-                case LongOperationSounds.Hand:
-                    SystemSounds.Hand.Play();
-                    break;
-                case LongOperationSounds.Question:
-                    SystemSounds.Question.Play();
-                    break;
-                default:
-                    SystemSounds.Beep.Play();
-                    break;
+                switch (value)
+                {
+                    case LongOperationSounds.Asterisk:
+                        SystemSounds.Asterisk.Play();
+                        break;
+                    case LongOperationSounds.Beep:
+                        SystemSounds.Beep.Play();
+                        break;
+                    case LongOperationSounds.Exclamation:
+                        SystemSounds.Exclamation.Play();
+                        break;
+                    case LongOperationSounds.Hand:
+                        SystemSounds.Hand.Play();
+                        break;
+                    case LongOperationSounds.Question:
+                        SystemSounds.Question.Play();
+                        break;
+                    default:
+                        SystemSounds.Beep.Play();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(OptionsViewModel), nameof(PlaySound), "Error while trying to play a SystemSound");
             }
         }
 
@@ -1825,6 +1872,8 @@ namespace DaxStudio.UI.ViewModels
         {
             base.OnActivate();
             this.Refresh();
+            // trigger an update of the current properties pane by faking a category change
+            NotifyOfPropertyChange(nameof(SelectedCategory));
         }
 
         #region IDisposable Support

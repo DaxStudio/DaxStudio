@@ -66,6 +66,7 @@ namespace DaxStudio.Interfaces
 
 
         bool PlaySoundAfterLongOperation { get; set; }
+        bool PlaySoundIfNotActive { get; set; }
         LongOperationSounds LongOperationSound { get; set; }
         int LongQuerySeconds { get; set; }
 
@@ -124,7 +125,7 @@ namespace DaxStudio.Interfaces
 
         bool AnyExternalAccessAllowed();
 
-        void PlaySound(LongOperationSounds sound);
+        void PlayLongOperationSound(int currentOperationSeconds);
 
         #endregion
     }
