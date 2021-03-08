@@ -238,7 +238,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RecoverNextAutoSaveFileEvent());
         }
 
-
+        public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
 
 
         public override void TryClose(bool? dialogResult = null)
@@ -1541,6 +1541,9 @@ namespace DaxStudio.UI.ViewModels
 
             await RunQueryInternalAsync(message);
 
+            int durationSecs = CurrentQueryInfo.ClientDurationMs>int.MaxValue? int.MaxValue / 1000: (int)CurrentQueryInfo.ClientDurationMs/ 1000;
+            Options.PlayLongOperationSound(durationSecs );
+
         }
 
         private void BenchmarkQuery()
@@ -1555,7 +1558,7 @@ namespace DaxStudio.UI.ViewModels
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked??false;
                 
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
+                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options))
                 {
 
                     _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
@@ -2806,7 +2809,21 @@ namespace DaxStudio.UI.ViewModels
 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
-                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+
+                
+                string refreshQuery;
+                if (Options.DefaultSeparator == DelimiterType.SemiColon)
+                {
+                    // switch the default delimiter on the refresh query to the semi-colon style
+                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
+                }
+                else
+                {
+                    refreshQuery = Constants.RefreshSessionQuery;
+                }
+
+                await ExecuteDataTableQueryAsync(refreshQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
@@ -3717,7 +3734,7 @@ namespace DaxStudio.UI.ViewModels
                         }
                         else
                         {
-                            // propagate excetpion if ReadStatisticsFromData was disabled
+                            // propagate exception if ReadStatisticsFromData was disabled
                             throw;
                         }
                     }
@@ -3754,6 +3771,9 @@ namespace DaxStudio.UI.ViewModels
                     IsVertipaqAnalyzerRunning = false;
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
+
+                    Options.PlayLongOperationSound(-1);
+                    
 
                 }, TaskScheduler.Default);
                 task.Start(TaskScheduler.Default);

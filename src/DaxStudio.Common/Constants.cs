@@ -29,8 +29,9 @@
 
         public const string InternalQueryHeader = "/* <<DAX Studio Internal>> */";
         public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
-        public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ";
-
+        public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ"; // this is an Excel friendly ISO date format for csv files
+        public const string IsoDateFormatPaste = "yyyy-MM-dd HH:mm:ss"; // this is an Excel friendly ISO date format
+        
         public const int MaxRecentFiles = 25;
         public const int MaxRecentServers = 25;
         public const int MaxMruSize = 25;

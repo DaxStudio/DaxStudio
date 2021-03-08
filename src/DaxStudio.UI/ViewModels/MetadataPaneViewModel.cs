@@ -938,8 +938,11 @@ namespace DaxStudio.UI.ViewModels
                     {
                         EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col, QueryBuilderItemType.Column));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this ,nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
                 case Key.Space:
@@ -948,8 +951,11 @@ namespace DaxStudio.UI.ViewModels
                     {
                         EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, QueryBuilderItemType.Filter));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this,nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
                 case Key.B:
@@ -957,8 +963,11 @@ namespace DaxStudio.UI.ViewModels
                     {
                         EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(item, QueryBuilderItemType.Both));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
             }

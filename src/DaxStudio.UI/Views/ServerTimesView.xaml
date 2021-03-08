@@ -152,7 +152,12 @@
                         <ColumnDefinition Width="*" />
       
                     </Grid.ColumnDefinitions>
-                    
+                    <Grid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResults()]"></MenuItem>
+                            <MenuItem Header="Copy (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsData()]"></MenuItem>
+                        </ContextMenu>
+                    </Grid.ContextMenu>
                     <!-- Total Duration -->
                     <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"

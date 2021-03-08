@@ -232,16 +232,17 @@ namespace DaxStudio.UI.Extensions
 
             int iMaxCol = reader.FieldCount - 1;
             int iRowCnt = 0;
+            
+            // CSV Writer config
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) {Delimiter = sep};
 
-            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+
+            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
             {
-                // CSV Writer config
 
-                csvWriter.Configuration.Delimiter = sep;
 
                 // Datetime as ISOFormat
-
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                csvWriter.Context.TypeConverterOptionsCache.AddOptions(
                     typeof(DateTime),
                     new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
 

@@ -260,6 +260,12 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
         }
 
+        public override void CopyResults()
+        {
+            // not supported by AllQueries
+            throw new NotImplementedException();
+        }
+
         public override void ClearFilters()
         {
             var vw = GetView() as Views.AllServerQueriesView;
