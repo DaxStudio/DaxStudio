@@ -3660,6 +3660,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ViewAnalysisData()
         {
+            Stopwatch sw = new Stopwatch();
             if (!IsConnected)
             {
                 OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option");
@@ -3677,7 +3678,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 IsVertipaqAnalyzerRunning = true;
-
+                sw.Start();
                 var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
 
                 // check if PerfData Window is already open and use that
@@ -3772,7 +3773,8 @@ namespace DaxStudio.UI.ViewModels
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
 
-                    Options.PlayLongOperationSound(-1);
+                    sw.Stop();
+                    Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
                     
 
                 }, TaskScheduler.Default);
