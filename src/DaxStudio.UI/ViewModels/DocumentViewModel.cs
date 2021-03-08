@@ -3680,9 +3680,9 @@ namespace DaxStudio.UI.ViewModels
                 vpaView.Activate();
 
                 // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
-                bool isLegacySsas = Connection.ServerVersion.StartsWith("10.")  // SSAS 2012 RC
-                    || Connection.ServerVersion.StartsWith("11.")               // SSAS 2012 SP1
-                    || Connection.ServerVersion.StartsWith("12.");              // SSAS 2014
+                bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
+                    || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
+                    || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
 
                 bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
 
@@ -3894,9 +3894,9 @@ namespace DaxStudio.UI.ViewModels
                             break;
                     }
                     // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
-                    bool isLegacySsas = Connection.ServerVersion.StartsWith("10.")  // SSAS 2012 RC
-                        || Connection.ServerVersion.StartsWith("11.")               // SSAS 2012 SP1
-                        || Connection.ServerVersion.StartsWith("12.");              // SSAS 2014
+                    bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
+                        || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
+                        || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
 
                     bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
                     try
