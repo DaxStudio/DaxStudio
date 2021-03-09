@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -49,6 +50,7 @@ namespace DaxStudio.UI.ViewModels
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Regex _illegalFileCharsRegex;
         const long MaxBatchSize = 10000;
+        private Stopwatch _stopwatch = new Stopwatch();
 
         private const string ExportCompleteMsg = "Model Export Complete: {0} tables exported";
         private const string ExportTableMsg = "Exported {0:N0} row{1} to {2}";
@@ -198,6 +200,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
+            _stopwatch.Reset();
+            _stopwatch.Start();
             _ = Task.Run(() =>
             {
                 Document.IsQueryRunning = true;
@@ -214,14 +218,15 @@ namespace DaxStudio.UI.ViewModels
                         default:
                             throw new ArgumentException("Unknown ExportType requested");
                     }
-                    
+                    _stopwatch.Stop();
+                    Document.OutputMessage("Data Export Complete", _stopwatch.ElapsedMilliseconds );
                 }
                 finally
                 {
                     Document.IsQueryRunning = false;
-
+                    if (_stopwatch.IsRunning) _stopwatch.Stop();
                     
-                    Options.PlayLongOperationSound(-1);
+                    Options.PlayLongOperationSound((int)(_stopwatch.ElapsedMilliseconds / 1000) );
                     
                 }
             } )
