@@ -259,6 +259,7 @@
     <Compile Include="Converters\BoolToThicknessConverter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converters\CanDuplicateMeasureConverter.cs" />
     <Compile Include="Converters\CappedRowHeightConverter.cs" />
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
@@ -268,7 +269,9 @@
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />

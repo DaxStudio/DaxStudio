@@ -41,7 +41,7 @@ namespace DaxStudio.UI.Model
         {
             var builderItem = item as QueryBuilderColumn;
             if (builderItem == null)
-                 builderItem = new QueryBuilderColumn(item, true);
+                 builderItem = new QueryBuilderColumn(item, true, EventAggregator);
             if (item is ADOTabularColumn col)
             {
                 builderItem.SelectedTable = col.Table;
@@ -71,7 +71,7 @@ namespace DaxStudio.UI.Model
         }
         public void Insert(int index, IADOTabularColumn item)
         {
-            var builderItem = new QueryBuilderColumn(item,true);
+            var builderItem = new QueryBuilderColumn(item,true, EventAggregator);
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(builderItem);
             else Items.Insert(index, builderItem);
@@ -86,6 +86,17 @@ namespace DaxStudio.UI.Model
         public void EditMeasure(QueryBuilderColumn measure)
         {
             EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(measure));
+        }
+
+
+        //public bool CanDuplicateMeasure
+        //{
+        //    get => !string.IsNullOrEmpty(Selected.MeasureExpression);
+        //}
+        //public void DuplicateMeasure(QueryBuilderColumn measure)
+        public void DuplicateMeasure(object measure)
+        {
+            System.Diagnostics.Debug.WriteLine("Duplicating Measure");
         }
 
 

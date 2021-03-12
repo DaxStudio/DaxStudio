@@ -439,6 +439,32 @@ namespace DAXEditorControl
             SelectedText = rxComment.Replace(SelectedText, string.Format(invariantCulture,"{0}$1",COMMENT_DELIM_SLASH));
         }
 
+        public bool AllLinesCommented()
+        {
+            
+            foreach (var line in SelectedText.Split('\n'))
+            {
+                if (!line.StartsWith(COMMENT_DELIM_DASH)) return false;
+
+            }
+
+            return true;
+        }
+        
+        public void ToggleCommentSelectedLines()
+        {
+            SelectFullLines();
+            if (AllLinesCommented())
+            {
+                CommentSelectedLines();
+            }
+                else
+            {
+                
+                UncommentSelectedLines();
+            }
+        }
+
         public void UncommentSelectedLines()
         {
             SelectFullLines();

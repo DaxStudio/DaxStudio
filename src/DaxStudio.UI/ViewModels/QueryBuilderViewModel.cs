@@ -18,6 +18,7 @@ using System.Windows;
 using DaxStudio.UI.JsonConverters;
 using DaxStudio.UI.Utils;
 using System.Windows.Media;
+using ADOTabular;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
@@ -31,7 +32,8 @@ namespace DaxStudio.UI.ViewModels
     [DataContract]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
-        ,IHandle<SendColumnToEditorEvent>
+        ,IHandle<SendColumnToQueryBuilderEvent>
+        ,IHandle<DuplicateMeasureEvent>
         ,IDisposable
         ,ISaveState
     {
@@ -190,7 +192,7 @@ namespace DaxStudio.UI.ViewModels
             var firstTable = Document.Connection.SelectedModel.Tables.First();
             // TODO - need to make sure key is unique
             var newMeasureName = GetCustomMeasureName();
-            var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable);
+            var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable, this.EventAggregator);
             Columns.Add(newMeasure);
             //newMeasure.IsModelItem = false;
             SelectedColumn = newMeasure;
@@ -249,7 +251,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void Handle(SendColumnToEditorEvent message)
+        public void Handle(SendColumnToQueryBuilderEvent message)
         {
             switch (message.ItemType)
             {
@@ -308,7 +310,7 @@ namespace DaxStudio.UI.ViewModels
         internal QueryBuilderViewModel LoadJson(string jsontext)
         {
             JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new QueryBuilderConverter());
+            settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
             //settings.Converters.Add(new ADOTabularColumnCreationConverter());
             var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
             return result;
@@ -365,6 +367,14 @@ namespace DaxStudio.UI.ViewModels
                 LoadViewModel(model);
             }
             
+        }
+
+        public void Handle(DuplicateMeasureEvent message)
+        {
+            Log.Info(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
+            var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
+                { MeasureExpression = message.Measure.MeasureExpression };
+            Columns.Add(meas);
         }
     }
 }

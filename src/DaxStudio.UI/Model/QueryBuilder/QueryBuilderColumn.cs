@@ -4,6 +4,7 @@ using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using DaxStudio.UI.Events;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
@@ -28,14 +29,16 @@ namespace DaxStudio.UI.Model
         [DataMember]
         public bool IsModelItem { get; }
 
-        public QueryBuilderColumn(IADOTabularColumn item, bool isModelItem)
+        public QueryBuilderColumn(IADOTabularColumn item, bool isModelItem, IEventAggregator eventAggregator)
         {
-            this.TabularObject = item;
-            this.IsModelItem = isModelItem;
+            _eventAggregator = eventAggregator;
+            TabularObject = item;
+            IsModelItem = isModelItem;
         }
 
-        public QueryBuilderColumn(string caption, ADOTabularTable table)
+        public QueryBuilderColumn(string caption, ADOTabularTable table, IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             _caption = caption;
             SelectedTable = table;
             IsModelItem = false;
@@ -52,6 +55,8 @@ namespace DaxStudio.UI.Model
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
 
         private string _overridenMeasureExpression = string.Empty;
+        private IEventAggregator _eventAggregator;
+
         [JsonProperty]
         public string MeasureExpression
         {
@@ -81,14 +86,20 @@ namespace DaxStudio.UI.Model
 
         public string Name => TabularObject?.Name;
 
-        public bool IsVisible => TabularObject?.IsVisible ?? true;
+        //public bool IsVisible => TabularObject?.IsVisible ?? true;
 
         public ADOTabularObjectType ObjectType => TabularObject?.ObjectType?? ADOTabularObjectType.Measure;
 
-        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize) => throw new NotImplementedException();
+        //public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize) => throw new NotImplementedException();
 
-        public void UpdateBasicStats(ADOTabularConnection connection) => throw new NotImplementedException();
+        //public void UpdateBasicStats(ADOTabularConnection connection) => throw new NotImplementedException();
 
         public string Description => TabularObject.Description;
+
+        public void DuplicateMeasure()
+        {
+            _eventAggregator.PublishOnUIThread(new DuplicateMeasureEvent(this));
+            
+        }
     }
 }

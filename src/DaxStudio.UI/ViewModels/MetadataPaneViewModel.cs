@@ -936,7 +936,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.C:
                     if (selectedItem is ITreeviewColumn col)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col, QueryBuilderItemType.Column));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(col, QueryBuilderItemType.Column));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {
@@ -949,7 +949,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.F:
                     if (selectedItem is ITreeviewColumn filter)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, QueryBuilderItemType.Filter));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(filter, QueryBuilderItemType.Filter));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {
@@ -961,7 +961,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.B:
                     if (selectedItem is ITreeviewColumn item)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(item, QueryBuilderItemType.Both));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(item, QueryBuilderItemType.Both));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {

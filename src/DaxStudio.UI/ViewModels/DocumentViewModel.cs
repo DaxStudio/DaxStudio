@@ -1306,6 +1306,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void ToggleCommentSelection()
+        {
+            var editor = GetEditor();
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.ToggleCommentSelectedLines();
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(() => editor.ToggleCommentSelectedLines());
+            }
+        }
+
         public void UnCommentSelection()
         {
             var editor = GetEditor();
