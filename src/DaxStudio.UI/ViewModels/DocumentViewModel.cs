@@ -4170,5 +4170,35 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public RunStyle SelectedRunStyle { get; set; }
+
+        public void EditorContextMenuOpening()
+        {
+            NotifyOfPropertyChange(nameof(CanLookupDaxGuide));
+            NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+        }
+
+        public bool CanLookupDaxGuide { 
+            get {
+                NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+                if (this.Connection == null) return false;
+                if (!this.Connection.IsConnected) return false;
+                if (this.Connection.AllFunctions.Contains(_editor.ContextMenuWord, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                return false;
+            } 
+        }
+        public void LookupDaxGuide() {
+            string word = _editor.ContextMenuWord;
+            if (this.Connection == null) return;
+            if (!this.Connection.IsConnected) return;
+            if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Process.Start($"https://dax.guide/{word}");
+            }
+        }
+
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord} in dax.guide";
     }
 }

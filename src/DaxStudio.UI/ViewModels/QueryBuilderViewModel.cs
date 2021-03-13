@@ -371,7 +371,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(DuplicateMeasureEvent message)
         {
-            Log.Info(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
+            Log.Information(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
             var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);

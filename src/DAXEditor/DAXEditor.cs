@@ -16,6 +16,7 @@ using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Text;
+using ICSharpCode.AvalonEdit;
 
 namespace DAXEditorControl
 {
@@ -257,7 +258,7 @@ namespace DAXEditorControl
             TextArea.TextEntering += TextEditor_TextArea_TextEntering;
             TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextArea.PreviewKeyDown += TextArea_PreviewKeyDown;
-
+            TextArea.ContextMenuOpening += TextArea_ContextMenuOpening;
             TextArea.Caret.PositionChanged += Caret_PositionChanged;
             this.TextChanged += TextArea_TextChanged;
 
@@ -281,6 +282,25 @@ namespace DAXEditorControl
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;
             
+        }
+
+        private void TextArea_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var pos2 = Mouse.GetPosition(this);
+            // get line at position
+            var mousePos = new Point(e.CursorLeft, e.CursorTop);
+            var pos = this.GetPositionFromPoint(pos2);
+            if (pos == null) {
+                ContextMenuWord = string.Empty;
+            }
+            else
+            {
+                var word = IntellisenseProvider.GetCurrentWord((TextViewPosition)pos);
+                ContextMenuWord = word;
+            }
+            
+            // get word
+            // set contextMenuWord
         }
 
         void TextArea_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -627,6 +647,11 @@ namespace DAXEditorControl
             return Document.GetLineByOffset(pos);
         }
 
+        public DocumentLine DocumentGetLineByNumber(int line)
+        {
+            return Document.GetLineByNumber(line);
+        }
+
         public string DocumentGetText(int offset, int length)
         {
             return Document.GetText(offset, length);
@@ -635,6 +660,11 @@ namespace DAXEditorControl
         public string DocumentGetText(TextSegment segment)
         {
             return Document.GetText(segment);
+        }
+
+        public string GetCurrentWord(TextViewPosition pos)
+        {
+            return IntellisenseProvider.GetCurrentWord(pos);
         }
 
         protected virtual void Dispose(bool disposing)

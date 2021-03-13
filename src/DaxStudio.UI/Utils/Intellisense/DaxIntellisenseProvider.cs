@@ -13,6 +13,7 @@ using DAXEditorControl;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
@@ -309,6 +310,21 @@ namespace DaxStudio.UI.Utils.Intellisense
                 {
                     Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
                 }
+            }
+        }
+
+        public string GetCurrentWord(TextViewPosition pos)
+        {
+            try
+            {
+                var docLine = _editor.DocumentGetLineByNumber(pos.Line);
+                string line = _editor.DocumentGetText(docLine.Offset, docLine.Length);
+                var lineState = DaxLineParser.ParseLine(line, pos.Column , 0);
+                return line.Substring( lineState.StartOffset, lineState.EndOffset - lineState.StartOffset);
+            }
+            catch (Exception ex)
+            {
+                return string.Empty;
             }
         }
 

@@ -259,5 +259,55 @@ namespace DaxStudio.Tests
             Assert.AreEqual(34, daxState.StartOffset, "StartOffset");
         }
 
+        [TestMethod]
+        public void TestParsingToFindFunction()
+        {
+            var qry = "EVALUATE FILTER(Reseller, Reseller[Reselle]= \"bob\")";
+            //                    ^
+            var daxState = DaxLineParser.ParseLine(qry, 11, 0);
+            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(15, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(9, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual("FILTER", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        
+        }
+
+        [TestMethod]
+        public void TestParsingToFindFunctionWithPeriod()
+        {
+            var qry = "EVALUATE EXPON.DIST(123";
+            //                    ^
+            var daxState = DaxLineParser.ParseLine(qry, 11, 0);
+            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(19, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(9, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual("EXPON.DIST", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        }
+
+        [TestMethod]
+        public void TestParsingToFindFunctionWithTrailingSpace()
+        {
+            var qry = "EVALUATE ";
+            //                    ^
+            var daxState = DaxLineParser.ParseLine(qry, 1, 0);
+            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(0, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
+            
+            Assert.AreEqual("EVALUATE", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        }
+
+        [TestMethod]
+        public void TestParsingToFindFunctionWithoutTrailingSpace()
+        {
+            var qry = "EVALUATE";
+            //                    ^
+            var daxState = DaxLineParser.ParseLine(qry, 1, 0);
+            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(0, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
+
+            Assert.AreEqual("EVALUATE", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        }
     }
 }

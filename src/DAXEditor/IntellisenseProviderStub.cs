@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ICSharpCode.AvalonEdit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,11 @@ namespace DAXEditorControl
         public void ProcessKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             // Do Nothing
+        }
+
+        public string GetCurrentWord(TextViewPosition pos)
+        {
+            return string.Empty;
         }
     }
 }
