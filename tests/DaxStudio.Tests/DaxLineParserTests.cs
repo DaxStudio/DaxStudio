@@ -136,7 +136,7 @@ namespace DaxStudio.Tests
             //                                         ^ 32
             var daxState = DaxLineParser.ParseLine(dax, dax.Length - 1, 0);
             Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState);
-            Assert.AreEqual(dax.Length - 1, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual(dax.Length , daxState.EndOffset, "EndOffset");
             Assert.AreEqual(dax.Length - "Dim_D".Length, daxState.StartOffset, "StartOffset");
             
             //Assert.AreEqual("my table", daxState.TableName);
