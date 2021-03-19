@@ -30,7 +30,8 @@ namespace DaxStudio.Interfaces
         [JsonIgnore] double EditorFontSizePx { get; }
         int EditorIndentationSize { get; set; }
         MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
-        [DefaultValue(true)] bool EditorShowLineNumbers { get; set; }
+        bool EditorShowFunctionInsightsOnHover { get; set; }
+        bool EditorShowLineNumbers { get; set; }
         bool EditorWordWrap { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
         bool KeepMetadataSearchOpen { get; set; }
@@ -69,8 +70,6 @@ namespace DaxStudio.Interfaces
         bool PlaySoundIfNotActive { get; set; }
         LongOperationSounds LongOperationSound { get; set; }
         int LongQuerySeconds { get; set; }
-
-
 
 
 

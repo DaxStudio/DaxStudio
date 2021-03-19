@@ -75,6 +75,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
 
+        private bool _showFunctionInsightsOnHover;
         //public event EventHandler OptionsUpdated;
         private bool _isInitializing;
 
@@ -213,6 +214,25 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => EditorEnableIntellisense);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(EditorEnableIntellisense), value, _isInitializing, this);
+            }
+        }
+
+        [Category("Editor")]
+        [DisplayName("Show Function Tooltips on Hover")]
+        [Description("This feature requires a connection to a data source and it needs to move your keyboard cursor position on hover since the toolip is always positioned under the keyboard cursor")]
+        [SortOrder(45)]
+        [DataMember]
+        [DefaultValue(true)]
+        public bool EditorShowFunctionInsightsOnHover
+        {
+            get => _showFunctionInsightsOnHover;
+            set
+            {
+                if (_showFunctionInsightsOnHover == value) return;
+                _showFunctionInsightsOnHover = value;
+                NotifyOfPropertyChange(() => EditorShowFunctionInsightsOnHover);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(EditorShowFunctionInsightsOnHover), value, _isInitializing, this);
             }
         }
 

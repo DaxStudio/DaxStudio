@@ -105,6 +105,7 @@ namespace DAXEditorControl
             var brush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#C8FFA55F")); //orange // grey FFE6E6E6
             HighlightBackgroundBrush = brush;
             this.TextArea.SelectionChanged += TextEditor_TextArea_SelectionChanged;
+            
             TextView textView = this.TextArea.TextView;
 
             // Add Bracket Highlighter
@@ -118,7 +119,7 @@ namespace DAXEditorControl
             textView.BackgroundRenderers.Add(_textMarkerService);
             textView.LineTransformers.Add(_textMarkerService);
             textView.Services.AddService(typeof(TextMarkerService), _textMarkerService);
-
+            
             // add handlers for tooltip error display
             textView.MouseHover += TextEditorMouseHover;
             textView.MouseHoverStopped += TextEditorMouseHoverStopped;
@@ -610,6 +611,7 @@ namespace DAXEditorControl
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
+            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {IsMouseOverCompletionWindow}");
             if (IsMouseOverCompletionWindow) return;
             lock (_disposeLock)
             {
@@ -629,6 +631,7 @@ namespace DAXEditorControl
                     //swallow any errors while trying to close the completion window
                 }
                 _completionWindow = null;
+
             }
         }
 
@@ -662,9 +665,30 @@ namespace DAXEditorControl
             return Document.GetText(segment);
         }
 
+        public void SetCaretPosition(int line, int column)
+        {
+            var offset = Document.GetOffset(line, column);
+            CaretOffset = offset;
+        }
+
         public string GetCurrentWord(TextViewPosition pos)
         {
             return IntellisenseProvider.GetCurrentWord(pos);
+        }
+
+        public int GetOffset(int line, int column)
+        {
+            return Document.GetOffset(line, column);
+        }
+        
+        public void ShowInsightWindow(string functionName)
+        {
+            IntellisenseProvider?.ShowInsight(functionName);
+        }
+
+        public void ShowInsightWindow(string functionName, int offset)
+        {
+            IntellisenseProvider?.ShowInsight(functionName, offset);
         }
 
         protected virtual void Dispose(bool disposing)

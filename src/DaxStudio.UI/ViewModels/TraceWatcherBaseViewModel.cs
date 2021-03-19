@@ -275,6 +275,7 @@ namespace DaxStudio.UI.ViewModels
         public bool CanStop { get { return IsChecked; } }
         public void Stop()
         {
+            IsBusy = false;
             IsPaused = false;
             IsChecked = false;
         }

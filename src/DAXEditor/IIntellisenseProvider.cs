@@ -10,5 +10,7 @@ namespace DAXEditorControl
         void ProcessTextEntering(object sender, TextCompositionEventArgs e, ref CompletionWindow completionWindow);
         void ProcessKeyDown(object sender, KeyEventArgs e);
         string GetCurrentWord(TextViewPosition pos);
+        void ShowInsight(string funcName);
+        void ShowInsight(string funcName, int offset);
     }
 }

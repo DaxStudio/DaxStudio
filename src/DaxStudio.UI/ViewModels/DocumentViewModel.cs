@@ -44,8 +44,10 @@ using DaxStudio.UI.Utils.DelimiterTranslator;
 using DaxStudio.UI.Utils.Intellisense;
 using DaxStudio.UI.Views;
 using GongSolutions.Wpf.DragDrop;
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit.Rendering;
 using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -560,6 +562,7 @@ namespace DaxStudio.UI.ViewModels
         {
             OutputError(e);
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
+            ShutDownTraces();
         }
 
         private void TracerOnTraceWarning(object sender, string e)
@@ -4199,6 +4202,44 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord} in dax.guide";
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in dax.guide";
+
+        public void OnEditorHover(object source, MouseEventArgs eventArgs)
+        {
+            if (!Options.EditorShowFunctionInsightsOnHover) return;
+            if (Connection == null) return;
+            if (!Connection.IsConnected) return;
+
+            try
+            {
+                var mousePoint = eventArgs.GetPosition((DAXEditorControl.DAXEditor) eventArgs.Source);
+                // get the line and column position
+                var pos = _editor.GetPositionFromPoint(mousePoint);
+                
+                if (pos == null) return;
+                var word = _editor.GetCurrentWord((TextViewPosition) pos);
+                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Hovering over '{word}'");
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
+                        $"Hovering over '{word}'");
+                    // the function Insight window always positions itself under the cursor
+                    // so we need to set the caret position to where the cursor is hovering
+                    // or the insight window will appear in the wrong position.
+                    // the Insight window also has code to move itself when the parent window is moved
+                    // so we can't simply override the positioning
+                    //_editor.SetCaretPosition(pos.Value.Line, pos.Value.Column);
+                    var offset = _editor.GetOffset(pos.Value.Line, pos.Value.Column);
+                    _editor.ShowInsightWindow(word, offset);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
+                    $"The following error occurred: {ex.Message}");
+
+            }
+
+        }
     }
 }
