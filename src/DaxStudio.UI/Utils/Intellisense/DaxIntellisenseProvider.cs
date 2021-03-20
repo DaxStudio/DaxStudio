@@ -85,7 +85,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                     && completionWindow.StartOffset == completionWindow.EndOffset)
                 {
                     Debug.WriteLine("Hack: Force dispose of completion window as StartOffset == EndOffset");
-                    _editor.DisposeCompletionWindow();
+                    CloseCompletionWindow();
                 }
                 
                 if (completionWindow != null)
@@ -95,37 +95,31 @@ namespace DaxStudio.UI.Utils.Intellisense
                     if (!completionWindow.CompletionList.ListBox.HasItems || !completionWindow.IsVisible)
                     {
                         Debug.WriteLine("Completion Window has no items - Closing");
-                        _editor.DisposeCompletionWindow();
+                        CloseCompletionWindow();
                         completionWindow = null;
                         return;
                     }
-
-                    // close the completion window if it is not visible
-                    if (!completionWindow.IsVisible)
+                    else
                     {
-                        Debug.WriteLine("Completion Window has not visible - Closing");
-                        _editor.DisposeCompletionWindow();
-                        completionWindow = null;
+
+                        var document = ((TextArea)sender).Document;
+                        var startOffset = completionWindow.StartOffset;
+                        var endOffset = completionWindow.EndOffset;
+                        if (startOffset > document.TextLength) startOffset = document.TextLength;
+                        if (endOffset > document.TextLength) endOffset = document.TextLength;
+
+                        // close the completion window if the current text is a 100% match for the current item
+                        var txt = document.GetText(new TextSegment() { StartOffset = startOffset, EndOffset = endOffset });
+                        Debug.WriteLine($"processing: {txt} start: {startOffset}({completionWindow.StartOffset}) end: {endOffset }({completionWindow.EndOffset})");
+                        var selectedItem = completionWindow.CompletionList.SelectedItem;
+                        if (string.Compare(selectedItem.Text, txt, true) == 0 || string.Compare(selectedItem.Content.ToString(), txt, true) == 0)
+                        {
+                            CloseCompletionWindow();
+                            completionWindow = null;
+                        }
+
                         return;
                     }
-
-                    var document = ((TextArea)sender).Document;
-                    var startOffset = completionWindow.StartOffset;
-                    var endOffset = completionWindow.EndOffset;
-                    if (startOffset > document.TextLength) startOffset = document.TextLength;
-                    if (endOffset > document.TextLength) endOffset = document.TextLength;
-
-                    // close the completion window if the current text is a 100% match for the current item
-                    var txt = document.GetText(new TextSegment() { StartOffset = startOffset, EndOffset = endOffset });
-                    Debug.WriteLine($"processing: {txt} start: {startOffset}({completionWindow.StartOffset}) end: {endOffset }({completionWindow.EndOffset})");
-                    var selectedItem = completionWindow.CompletionList.SelectedItem;
-                    if (string.Compare(selectedItem.Text, txt, true) == 0 || string.Compare(selectedItem.Content.ToString(), txt, true) == 0)
-                    {
-                        _editor.DisposeCompletionWindow();
-                        completionWindow = null;
-                    }
-
-                    return;
                 }
 
                 if (char.IsLetterOrDigit(e.Text[0]) || "\'[".Contains(e.Text[0]))
@@ -141,30 +135,9 @@ namespace DaxStudio.UI.Utils.Intellisense
 
                     // don't show intellisense if we are in the measure name of a DEFINE block
                     if (DaxLineParser.IsLineMeasureDefinition(GetCurrentLine())) return;
-                    
+
                     Debug.WriteLine("Constructing new CompletionWindow");
-                    completionWindow = new CompletionWindow(sender as TextArea);
-                    completionWindow.ResizeMode = ResizeMode.NoResize;
-                    completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
-                    completionWindow.PreviewKeyUp += CompletionWindow_PreviewKeyUp;
-                    completionWindow.Closing += completionWindow_Closing;
-                    completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
-                    completionWindow.MouseEnter += completionWindow_MouseEnter;
-                    completionWindow.MouseLeave += completionWindow_MouseLeave;
-                    //completionWindow.IsVisibleChanged += delegate
-                    //{
-                    //    System.Diagnostics.Debug.WriteLine("firing CompletionWindow IsVisibleChanged delegate");
-                    //    _editor.DisposeCompletionWindow();
-                    //};
-                    completionWindow.Closed += delegate
-                    {
-                        System.Diagnostics.Debug.WriteLine("firing CompletionWindow Closed delegate");
-                        _editor.DisposeCompletionWindow();
-                        //completionWindow = null;
-                    };
-                    completionWindow.CloseAutomatically = false;
-                    completionWindow.WindowStyle = WindowStyle.None;
-                    completionWindow.CompletionList.BorderThickness = new Thickness(1);
+                    completionWindow = CreateCompletionWindow(sender);
 
                     if (char.IsLetterOrDigit(e.Text[0]))
                     {
@@ -201,7 +174,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState);
                                     break;
                                 case LineState.Table:
-                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState );
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState);
                                     break;
                                 case LineState.Measure:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
@@ -224,29 +197,29 @@ namespace DaxStudio.UI.Utils.Intellisense
                         // only show the completion window if we have valid items to display
                         if (completionWindow.CompletionList.ListBox.HasItems)
                         {
-                            
+
                             Log.Verbose("InsightWindow == null : {IsNull}", _editor.InsightWindow == null);
                             if (_editor.InsightWindow != null && _editor.InsightWindow.IsVisible)
                             {
                                 Log.Verbose("hiding insight window");
-                                _editor.InsightWindow.Visibility = Visibility.Collapsed;                               
+                                _editor.InsightWindow.Visibility = Visibility.Collapsed;
                             }
 
-                            Log.Verbose("CW null: {CompletionWindowNull} CW.Vis: {CompletionWindowVisible} IW null: {insightWindowNull} IW.Vis: {InsightWindowVisible}", completionWindow == null, completionWindow.Visibility.ToString() , _editor.InsightWindow == null, completionWindow.Visibility.ToString());
-                            
-                            
+                            Log.Verbose("CW null: {CompletionWindowNull} CW.Vis: {CompletionWindowVisible} IW null: {insightWindowNull} IW.Vis: {InsightWindowVisible}", completionWindow == null, completionWindow.Visibility.ToString(), _editor.InsightWindow == null, completionWindow.Visibility.ToString());
+
+
                             completionWindow.Show();
                         }
-                        else 
+                        else
                         {
-                            Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider" , "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
-                            _editor.DisposeCompletionWindow();
+                            Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
+                            CloseCompletionWindow();
                             completionWindow = null;
                         }
                     }
                     else
                     {
-                        _editor.DisposeCompletionWindow();
+                        CloseCompletionWindow();
                         completionWindow = null;
                     }
                 }
@@ -254,7 +227,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 if (e.Text[0] == '(')
                 {
                     //completionWindow?.Close();
-                    _editor?.DisposeCompletionWindow();
+                    CloseCompletionWindow();
                     var funcName = DaxLineParser.GetPreceedingWord(GetCurrentLine().TrimEnd('(').Trim()).ToLower();
                     Log.Verbose("Func: {Function}", funcName);
                     ShowInsight(funcName);
@@ -271,6 +244,54 @@ namespace DaxStudio.UI.Utils.Intellisense
                 Log.Error("{class} {method} {exception} {stacktrace}", "DaxIntellisenseProvider", "ProcessTextEntered", ex.Message, ex.StackTrace);
                 Document.OutputError($"Intellisense Disabled for this window - {ex.Message}");
             }
+        }
+
+        private CompletionWindow CreateCompletionWindow(object sender)
+        {
+            DaxStudioCompletionWindow completionWindow = new DaxStudioCompletionWindow(sender as TextArea);
+            // set properties
+            completionWindow.ResizeMode = ResizeMode.NoResize;
+            completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
+            completionWindow.CloseAutomatically = false;
+            completionWindow.WindowStyle = WindowStyle.None;
+            completionWindow.CompletionList.BorderThickness = new Thickness(1);
+
+            AttachCompletionWindowEvents(completionWindow);
+            completionWindow.DetachCompletionEvents = DetachCompletionWindowEvents;
+
+            return completionWindow;
+        }
+
+        private void AttachCompletionWindowEvents(CompletionWindow completionWindow)
+        {
+            completionWindow.PreviewKeyUp += CompletionWindow_PreviewKeyUp;
+            completionWindow.Closing += completionWindow_Closing;
+            completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
+            completionWindow.MouseEnter += completionWindow_MouseEnter;
+            completionWindow.MouseLeave += completionWindow_MouseLeave;
+            //completionWindow.IsVisibleChanged += delegate
+            //{
+            //    System.Diagnostics.Debug.WriteLine("firing CompletionWindow IsVisibleChanged delegate");
+            //    CloseCompletionWindow();
+            //};
+            completionWindow.Closed += completionWindow_Closed;
+        }
+
+        private void completionWindow_Closed(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("firing CompletionWindow Closed delegate");
+            CloseCompletionWindow();
+        }
+
+        private void DetachCompletionWindowEvents(CompletionWindow completionWindow)
+        {
+            System.Diagnostics.Debug.WriteLine("Detaching Completion Window Events");
+            completionWindow.PreviewKeyUp -= CompletionWindow_PreviewKeyUp;
+            completionWindow.Closing -= completionWindow_Closing;
+            completionWindow.PreviewKeyUp -= completionWindow_PreviewKeyUp;
+            completionWindow.MouseEnter -= completionWindow_MouseEnter;
+            completionWindow.MouseLeave -= completionWindow_MouseLeave;
+
         }
 
         private void completionWindow_MouseLeave(object sender, MouseEventArgs e)
@@ -292,7 +313,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 case Key.Right:
                 case Key.OemCloseBrackets:
                 case Key.Escape:
-                    _editor.DisposeCompletionWindow();
+                    CloseCompletionWindow();
                     break;
 
             }
@@ -398,7 +419,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 || keyStr == _options.HotkeyFormatQueryAlternate
                 )
             { 
-                _editor.DisposeCompletionWindow();
+                CloseCompletionWindow();
                 completionWindow = null;
             }
 

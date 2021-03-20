@@ -17,6 +17,7 @@ using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Text;
 using ICSharpCode.AvalonEdit;
+using System.ComponentModel;
 
 namespace DAXEditorControl
 {
@@ -706,4 +707,6 @@ namespace DAXEditorControl
             GC.SuppressFinalize(this);
         }
     }
+
+
 }

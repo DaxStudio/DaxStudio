@@ -497,6 +497,7 @@
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\FocusManager.cs" />
+    <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />

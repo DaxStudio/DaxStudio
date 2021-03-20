@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using System;
 
 namespace DAXEditorControl
 {
