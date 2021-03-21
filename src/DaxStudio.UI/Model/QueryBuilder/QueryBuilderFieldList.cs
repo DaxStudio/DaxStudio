@@ -45,6 +45,10 @@ namespace DaxStudio.UI.Model
             if (item is ADOTabularColumn col)
             {
                 builderItem.SelectedTable = col.Table;
+                if (col.OrderBy != null)
+                {
+                    // TODO - look at automatically pulling OrderBy columns into the query
+                }
             }
             Items.Add(builderItem);
             NotifyOfPropertyChange(nameof(Items));
