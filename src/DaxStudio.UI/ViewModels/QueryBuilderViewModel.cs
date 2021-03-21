@@ -1,5 +1,4 @@
-﻿using ADOTabular;
-using ADOTabular.Interfaces;
+﻿using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
@@ -10,11 +9,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.IO.Packaging;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Windows;
+using DaxStudio.UI.JsonConverters;
+using DaxStudio.UI.Utils;
+using System.Windows.Media;
+using ADOTabular;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
-using Microsoft.AnalysisServices;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -22,10 +29,13 @@ namespace DaxStudio.UI.ViewModels
 
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
+    [DataContract]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
-        ,IHandle<SendColumnToEditorEvent>
+        ,IHandle<SendColumnToQueryBuilderEvent>
+        ,IHandle<DuplicateMeasureEvent>
         ,IDisposable
+        ,ISaveState
     {
         const string NewMeasurePrefix = "MyMeasure";
 
@@ -36,8 +46,6 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
             Options = globalOptions;
             Filters = new QueryBuilderFilterList(GetModelCapabilities);
-            Title = "Builder";
-            DefaultDockingPane = "DockMidLeft";
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
@@ -60,10 +68,27 @@ namespace DaxStudio.UI.ViewModels
 
 
         // ReSharper disable once UnusedMember.Global
+        public override string Title => "Query Builder";
+        public override string DefaultDockingPane => "DockMidLeft";
         public new bool CanHide => true;
+        public override string ContentId => "query-builder";
+        public override ImageSource IconSource
+        {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                // TODO - can I convert FontAwesome to an ImageSource ??
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-undo.png") as ImageSource;
+
+            }
+        }
         public bool CanOrderBy => Columns.Any();
+        [DataMember]
         public QueryBuilderFieldList Columns { get; } 
+        [DataMember]
         public QueryBuilderFilterList Filters { get; }
+        [DataMember]
         public QueryBuilderFieldList OrderBy { get; }
 
         private bool _isEnabled = true;
@@ -128,7 +153,7 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public void RunQuery() {
             if (! CheckForCrossjoins() )
-                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget) { QueryProvider = this });
+                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
         }
 
         private bool CheckForCrossjoins()
@@ -152,13 +177,22 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanSendTextToEditor => Columns.Items.Count > 0;
 
+        public bool CanAddNewMeasure => Document?.Connection?.SelectedModel?.Tables.Count > 0 ;
         // ReSharper disable once UnusedMember.Global
         public void AddNewMeasure()
         {
+            if (Document.Connection.SelectedModel.Tables.Count == 0)
+            {
+                var msg = "Cannot add a new measure if the model has no tables";
+                Log.Warning(nameof(QueryBuilderViewModel), nameof(AddNewMeasure), msg);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,msg ));
+                return;
+            }
+            
             var firstTable = Document.Connection.SelectedModel.Tables.First();
             // TODO - need to make sure key is unique
             var newMeasureName = GetCustomMeasureName();
-            var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable);
+            var newMeasure = new QueryBuilderColumn(newMeasureName,firstTable, this.EventAggregator);
             Columns.Add(newMeasure);
             //newMeasure.IsModelItem = false;
             SelectedColumn = newMeasure;
@@ -217,7 +251,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void Handle(SendColumnToEditorEvent message)
+        public void Handle(SendColumnToQueryBuilderEvent message)
         {
             switch (message.ItemType)
             {
@@ -240,13 +274,107 @@ namespace DaxStudio.UI.ViewModels
             if (Columns.Contains(column.InternalColumn))
             {
                 // write warning and return
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
+                return;
             }
             Columns.Add(column.InternalColumn);
         }
 
         private void AddColumnToFilters(ITreeviewColumn column)
         {
+            if (Filters.Contains(column.InternalColumn))
+            {
+                // write warning and return
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
+                return;
+            }
             Filters.Add(column.InternalColumn);
+        }
+
+        public void Save(string filename)
+        {
+            var json = GetJson();
+            File.WriteAllText(filename + ".queryBuilder", json);
+        }
+
+        internal string GetJson()
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                ContractResolver = new InterfaceContractResolver(typeof(IADOTabularColumn))
+            };
+            string json = JsonConvert.SerializeObject(this, settings);
+            return json;
+        }
+
+        internal QueryBuilderViewModel LoadJson(string jsontext)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
+            //settings.Converters.Add(new ADOTabularColumnCreationConverter());
+            var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
+            return result;
+        }
+
+        public void Load(string filename)
+        {
+            filename = filename + ".queryBuilder";
+            if (!File.Exists(filename)) return;
+
+            string data = File.ReadAllText(filename);
+            var model = LoadJson(data);
+            LoadViewModel(model);
+        }
+
+        private void LoadViewModel(QueryBuilderViewModel model)
+        {
+            this.Columns.Clear();
+            foreach (var col in model.Columns)
+            {
+                this.Columns.Add(col);
+            }
+
+            this.Filters.Clear();
+            foreach (var filter in model.Filters.Items)
+            {
+                this.Filters.Add(filter);
+            }
+
+            this.IsVisible = true;
+        }
+
+        public void SavePackage(Package package)
+        {
+           
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryBuilder, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJson());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryBuilder, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                var model = LoadJson(data);
+                LoadViewModel(model);
+            }
+            
+        }
+
+        public void Handle(DuplicateMeasureEvent message)
+        {
+            Log.Information(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
+            var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
+                { MeasureExpression = message.Measure.MeasureExpression };
+            Columns.Add(meas);
         }
     }
 }

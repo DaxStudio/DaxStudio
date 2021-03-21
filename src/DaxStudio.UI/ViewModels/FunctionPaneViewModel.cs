@@ -1,19 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Windows.Input;
+using System.Windows.Media;
 using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using Serilog;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export(typeof(FunctionPaneViewModel))]
-    public class FunctionPaneViewModel:ToolPaneBaseViewModel, IMetadataPane, IHandle<ConnectionChangedEvent>
+    public class FunctionPaneViewModel:ToolPaneBaseViewModel
+        , IMetadataPane
+        , IHandle<ConnectionChangedEvent>
     {
         private IFunctionProvider _functionProvider;
         [ImportingConstructor]
@@ -39,16 +46,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public override string DefaultDockingPane
+        public override string DefaultDockingPane => "DockLeft";
+        public override string ContentId => "functions";
+        public override ImageSource IconSource
         {
-            get { return "DockLeft"; }
-            set { base.DefaultDockingPane = value; }
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png") as ImageSource;
+
+            }
         }
-        public override string Title
-        {
-            get { return "Functions"; }
-            set { base.Title = value; }
-        }
+
+        public override string Title => "Functions";
 
         public DocumentViewModel Document { get; private set; }
         public IGlobalOptions Options { get; }
@@ -89,6 +100,23 @@ namespace DaxStudio.UI.ViewModels
         {
             NotifyOfPropertyChange(() => FunctionGroups);
             //EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+        }
+
+        public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)
+        {
+            switch (args.Key)
+            {
+                case Key.F1:
+                    
+                    LaunchDaxGuide(selectedItem);
+                    break;
+            }
+        }
+
+        public void LaunchDaxGuide(IFilterableTreeViewItem selectedItem)
+        {
+            if (!(selectedItem is ADOTabularFunctionsExtensions.TreeViewFunction func)) return;
+            Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}"));
         }
     }
 }

@@ -2,21 +2,14 @@
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
 using System.Windows.Data;
-using System;
 using System.ComponentModel;
 using Serilog;
-using System.Windows.Input;
 using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
-using System.Windows.Navigation;
-using System.Web.UI.WebControls;
-using System.Windows.Controls;
-using DataGrid = System.Windows.Controls.DataGrid;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -164,9 +157,18 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
 
         // TODO: we might add the database name here
-        public override string Title
-        {
-            get { return "VertiPaq Analyzer Metrics"; }
+        public override string Title => "VertiPaq Analyzer Metrics";
+
+        public override string DefaultDockingPane => "DockBottom";
+        public override string ContentId => "vertipaq-analyzer";
+        public override ImageSource IconSource {
+            get
+            {
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-view-metrics.png") as ImageSource;
+
+            }
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)
@@ -269,11 +271,13 @@ namespace DaxStudio.UI.ViewModels
             public string TableRows => "The total number of rows in the table";
             public string MaxFromCardinality => "The maximum number of distinct values on the 'from' side of the relationship";
             public string MaxToCardinality => "The maximum number of distinct values on the 'to' side of the relationship";
+            public string MaxOneToManyRatio => "The maximum ratio of rows between the 'to' and the 'from' side of the relationship (only for 1:M type)";
             public string MissingKeys => "The number of distinct missing key values";
             public string InvalidRows => "The number of rows with missing keys";
             public string SampleViolations => "3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
             public string TableColumn => "A combination of the table and column name in the form '<table>-<column>'";
             public string TableRelationship => "The name of the relationship";
+            public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
         }
 
     }

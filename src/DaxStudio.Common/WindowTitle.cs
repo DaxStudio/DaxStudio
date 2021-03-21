@@ -70,7 +70,9 @@ namespace DaxStudio.Common
                     // ignore it and skip to the next one in the collection
                     title = GetWindowTextTimeout(handle, timeout);
                 }
+#pragma warning disable CA1031
                 catch (Exception)
+#pragma warning restore CA1031
                 {
                     title = "";
                 }
@@ -114,7 +116,9 @@ namespace DaxStudio.Common
                 if (!String.IsNullOrEmpty(windowText.ToString()) && !String.IsNullOrWhiteSpace(windowText.ToString()))
                     caption = windowText.ToString();
             }
+#pragma warning disable CA1031
             catch (Exception ex)
+#pragma warning restore CA1031
             {
                 caption = ex.Message;
             }

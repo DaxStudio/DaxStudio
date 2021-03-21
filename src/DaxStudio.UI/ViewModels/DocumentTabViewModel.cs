@@ -127,22 +127,30 @@ namespace DaxStudio.UI.ViewModels
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
             using (new StatusBarMessage(newDoc, $"Recovering \"{file.DisplayName}\""))
             {
-                newDoc.DisplayName = file.DisplayName;
-                newDoc.IsDiskFileName = file.IsDiskFileName;
-                newDoc.FileName = file.OriginalFileName;
-                newDoc.AutoSaveId = file.AutoSaveId;
-                newDoc.State = DocumentState.RecoveryPending;
+                try
+                {
+                    newDoc.DisplayName = file.DisplayName;
+                    newDoc.IsDiskFileName = file.IsDiskFileName;
+                    newDoc.FileName = file.OriginalFileName;
+                    newDoc.AutoSaveId = file.AutoSaveId;
+                    newDoc.State = DocumentState.RecoveryPending;
 
-                Items.Add(newDoc);
-                ActivateItem(newDoc);
-                ActiveDocument = newDoc;
-                newDoc.IsDirty = true;
+                    Items.Add(newDoc);
+                    ActivateItem(newDoc);
+                    ActiveDocument = newDoc;
+                    newDoc.IsDirty = true;
 
-                file.ShouldOpen = false;
+                    file.ShouldOpen = false;
 
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
 
-                Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
+                    Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
+                }
+                catch (Exception ex)
+                {
+                    _eventAggregator.PublishOnUIThread( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(RecoverAutoSaveFile), $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}");
+                }
             }
         }
 

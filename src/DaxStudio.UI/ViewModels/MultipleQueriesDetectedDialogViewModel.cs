@@ -43,7 +43,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
-
+            Result = MultipleQueriesDetectedDialogResult.Cancel;
         }
 
         public bool RememberChoice { get; set; }

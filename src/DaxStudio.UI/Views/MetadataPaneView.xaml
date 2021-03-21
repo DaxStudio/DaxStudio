@@ -396,6 +396,7 @@
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition />
                                                                     <RowDefinition />
+                                                                    <RowDefinition />
                                                                 </Grid.RowDefinitions>
                                                                 <TextBlock Style="{StaticResource ToolTipLabel}">Columns:</TextBlock>
                                                                 <TextBlock Grid.Row="0"
@@ -405,9 +406,18 @@
                                                                            Grid.Row="1" 
                                                                            Style="{StaticResource ToolTipLabel}"
                                                                            Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"
-                                                                           >Rows:</TextBlock>
+                                                                >Measures:</TextBlock>
                                                                 <TextBlock Grid.Column="1" 
                                                                            Grid.Row="1" 
+                                                                           Text="{Binding Path=MeasureCount, StringFormat={}{0:N0}, Mode=OneWay}" 
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"/>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Grid.Row="2" 
+                                                                           Style="{StaticResource ToolTipLabel}"
+                                                                           Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"
+                                                                           >Rows:</TextBlock>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Grid.Row="2" 
                                                                            Text="{Binding Path=RowCount, StringFormat={}{0:N0}, Mode=OneWay}" 
                                                                            Visibility="{Binding ShowRowCount, Converter={StaticResource BoolToCollapsedConverter} }"/>
                                                             </Grid>

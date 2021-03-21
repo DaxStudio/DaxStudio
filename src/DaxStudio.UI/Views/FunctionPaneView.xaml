@@ -17,6 +17,7 @@
             <BitmapImage x:Key="FunctionGroup" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Folder.ico"/>
             <BitmapImage x:Key="Function" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png" />
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:MaxMultiConverter x:Key="MaxMultiConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
@@ -63,7 +64,7 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
                   >
             <!--" dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">>-->
             <TreeView.ItemTemplate>
@@ -76,19 +77,28 @@
                     <!-- Function Template -->
                     <HierarchicalDataTemplate.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" >
+                            <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=FunctionGroups}">
                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
                                 <TextBlock Text="{Binding Caption}" >
                                     <TextBlock.ToolTip>
-                                        <StackPanel>
+                                        <!-- Function Tooltip -->
+                                        <StackPanel x:Name="FunctionTooltip" MaxWidth="750" >
                                             <StackPanel Orientation="Horizontal">
                                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
                                                 <TextBlock Text="{Binding Caption}" FontWeight="Bold"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding DaxName}"/>
+                                            <TextBlock FontFamily="Courier New" Text="{Binding DaxName}" x:Name="DaxName"/>
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding Description}" />
                                         </StackPanel>
                                     </TextBlock.ToolTip>
                                 </TextBlock>
+                                <StackPanel.ContextMenu>
+                                    <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="Open in Dax.Guide"
+                                                  cal:Message.Attach="[Event Click] = [Action LaunchDaxGuide($dataContext)]">
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </StackPanel.ContextMenu>
                             </StackPanel>
                         </DataTemplate>
                     </HierarchicalDataTemplate.ItemTemplate>

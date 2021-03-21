@@ -88,7 +88,6 @@
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
   </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -175,18 +174,19 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.14.0</Version>
+      <Version>19.16.3.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.1</Version>
+      <Version>5.0.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Unofficial.Excel.Amo" Version="11.0.2832.12" Aliases="ExcelAdomdClientReference">
+      <ExcludeAssets>runtime;buildtransitive</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
-
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

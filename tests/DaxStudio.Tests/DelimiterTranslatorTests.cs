@@ -186,5 +186,19 @@ Evaluate ROW(""Test""; PERCENTILE.EXC( 1,0 ) )";
             Assert.AreEqual(input, actual,"Toggle the delimiters back the original state");
         }
 
+        [TestMethod]
+        public void SwitchRefreshSessionQuery()
+        {
+            string input = Common.Constants.RefreshSessionQuery;
+
+            var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+            string actual = dsm.ProcessString(input);
+            string expected = "EVALUATE /* <<DAX Studio Internal>> */ ROW(\"DAX Studio Session Refresh\";0)";
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+
     }
 }

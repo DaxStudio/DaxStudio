@@ -7,7 +7,7 @@ DAX Queries have quite a simple structure. Microsoft describes the query syntax 
 If you want to follow along and try out these queries yourself all you need is:
 * DAX Studio
 * Power BI Desktop
-* the [Adventure Works 2020](https://aka.ms/dax-docs-sample-file) sample file
+* the [Adventure Works 2020](https://github.com/microsoft/powerbi-desktop-samples/raw/master/DAX/Adventure%20Works%20DW%202020.pbix) sample file
 
 The simplest way to get started after installing both DAX Studio and Power BI Desktop is to open the **Adventure Works 2020.pbix** file, then click on External Tools and launch DAX Studio from there. 
 
@@ -27,19 +27,19 @@ But you don't just have to use a table name, you can use any function that retur
 
 ![](evaluate-customer-city.png)
 
-Or if you don't want every row in the table you could use the [FILTER](https://dax.guide/filter) function to only return rows that meet a given criteria.
+Or if you don't want every row in the table you could use the [CALCULATETABLE](https://dax.guide/calculatetable) function to only return rows that meet a given criteria.
 
-<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">FILTER</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer,&nbsp;Customer[City]&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"Redmond"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br>
+<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">CALCULATETABLE</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer,&nbsp;Customer[City]&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"Redmond"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br>
 
-You can even combine these two functions to get a list of all Cities that have a first character of "R"
+You can even combine the [VALUES](https://dax.guide/values) and [CALCULATETABLE](https://dax.guide/calculatetable) functions to get a list of all Cities that have a first character of "R"
 
-<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">FILTER</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;<span class="Keyword" style="color:#035aca">VALUES</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City]&nbsp;<span class="Parenthesis" style="color:#808080">)</span>,&nbsp;<span class="Keyword" style="color:#035aca">LEFT</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City],&nbsp;<span class="Number" style="color:#EE7F18">1</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span>&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"R"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br>
+<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">CALCULATETABLE</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;<span class="Keyword" style="color:#035aca">VALUES</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City]&nbsp;<span class="Parenthesis" style="color:#808080">)</span>,&nbsp;<span class="Keyword" style="color:#035aca">LEFT</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City],&nbsp;<span class="Number" style="color:#EE7F18">1</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span>&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"R"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br>
 
 ## Sorting Results
 
 If we continue on with the previous example you will see that the results come back in a random order. If we want our query to sort the results we can add an optional `ORDER BY` clause to the end of the query. So if we wanted to sort the results by the city name we would do the following:
 
-<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">FILTER</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;<span class="Keyword" style="color:#035aca">VALUES</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City]&nbsp;<span class="Parenthesis" style="color:#808080">)</span>,&nbsp;<span class="Keyword" style="color:#035aca">LEFT</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City],&nbsp;<span class="Number" style="color:#EE7F18">1</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span>&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"R"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br><span class="Keyword" style="color:#035aca">ORDER</span>&nbsp;<span class="Keyword" style="color:#035aca">BY</span>&nbsp;Customer[City]<br>
+<span class="Keyword" style="color:#035aca">EVALUATE</span><br><span class="Keyword" style="color:#035aca">CALCULATETABLE</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;<span class="Keyword" style="color:#035aca">VALUES</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City]&nbsp;<span class="Parenthesis" style="color:#808080">)</span>,&nbsp;<span class="Keyword" style="color:#035aca">LEFT</span><span class="Parenthesis" style="color:#808080">&nbsp;(</span>&nbsp;Customer[City],&nbsp;<span class="Number" style="color:#EE7F18">1</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span>&nbsp;=&nbsp;<span class="StringLiteral" style="color:#D93124">"R"</span>&nbsp;<span class="Parenthesis" style="color:#808080">)</span><br><span class="Keyword" style="color:#035aca">ORDER</span>&nbsp;<span class="Keyword" style="color:#035aca">BY</span>&nbsp;Customer[City]<br>
 
 > **NOTE:** Some client tools (like Power BI Desktop) will generate an `ORDER BY` clause for you based on the properties set in your data model
 

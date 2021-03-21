@@ -28,8 +28,10 @@ namespace DaxStudio.UI
     using MLib;
     using MLib.Interfaces;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public class AppBootstrapper : BootstrapperBase//<IShell>
-	{
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+    {
 		CompositionContainer _container;
 	    private readonly Assembly _hostAssembly;
         
@@ -320,7 +322,5 @@ namespace DaxStudio.UI
             
             
         }
-        
-
     }
 }

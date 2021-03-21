@@ -1,0 +1,74 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.HelpWatermarkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:converters="clr-namespace:DaxStudio.UI.Converters" xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="500"
+             MaxWidth="500"
+             >
+            
+    <UserControl.Resources>
+        <converters:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+        <SolidColorBrush x:Key="WatermarkTextColor">DarkGray</SolidColorBrush>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource WatermarkTextColor}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontSize" Value="14"></Setter>
+            <Setter Property="FontFamily" Value="Segoe UI"></Setter>
+        </Style>
+        
+        <Style x:Key="HyperlinkButton" TargetType="Button">
+            <Setter Property ="Padding" Value="0 5 0 0 "/>
+            <Setter Property="Margin" Value="0 "/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="VerticalContentAlignment" Value="Bottom"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+    <UserControl.LayoutTransform>
+        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
+    </UserControl.LayoutTransform>
+    <Grid Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
+          attachedProperties:VisibilityAnimation.AnimationType="Fade">
+    <Border Padding="10"
+            Grid.RowSpan="2" 
+            Grid.ColumnSpan="2" >
+        <!-- Help Watermark -->
+        <StackPanel  
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center">
+            <TextBlock  HorizontalAlignment="Center" FontWeight="Normal" FontSize="28" Margin="0 10">Start by typing your query in this area. </TextBlock>
+            <TextBlock >The simplest DAX query is in the form of:</TextBlock>
+            <TextBlock  FontFamily="Courier New" Margin="10 10">EVALUATE &lt;table expression&gt;</TextBlock>
+            <TextBlock >Where the &lt;table expression&gt; can be as simple as the name of a table or it could be a DAX function that returns a table such as FILTER or SUMMARIZECOLUMNS.</TextBlock>
+            <TextBlock HorizontalAlignment="Center" Margin="0 10 0 0" >See more examples at <Hyperlink NavigateUri="https://daxstudio.org/tutorials/writing-dax-queries" attachedProperties:HyperlinkExtensions.IsExternal="true">https://daxstudio.org/tutorials/writing-dax-queries</Hyperlink></TextBlock>
+            <TextBlock  HorizontalAlignment="Center" Margin="0"> or</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                <TextBlock VerticalAlignment="Center">For a drag/drop experience open the</TextBlock>
+                <fa:FontAwesome Icon="Wrench" FontSize="18" Margin="3"/>
+                
+                    <Border>
+                    <Button cal:Message.Attach="[Event Click] = [Action OpenQueryBuilder()]" Style="{StaticResource HyperlinkButton}" VerticalAlignment="Center">
+                    <Hyperlink Focusable="False">Query Builder</Hyperlink>
+                </Button>
+                    </Border>
+                
+            </StackPanel>
+            <CheckBox HorizontalAlignment="Center" Foreground="{StaticResource WatermarkTextColor}" Margin="0 15 0 0" x:Name="NeverShowHelpWatermark">Do not show this help text in future</CheckBox>
+        </StackPanel>
+    </Border>
+    </Grid>
+</UserControl>

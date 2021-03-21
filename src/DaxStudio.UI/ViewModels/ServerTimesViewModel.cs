@@ -14,9 +14,14 @@ using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Windows.Media;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Converters;
-using Microsoft.Xaml.Behaviors.Media;
+using System.IO.Packaging;
+using System;
+using System.Globalization;
+using DaxStudio.Common;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -69,12 +74,16 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            get {
-                return _queryRichText;
-            }
+            get => _queryRichText;
         }
 
-        protected IGlobalOptions Options;
+        private IGlobalOptions _options;
+        protected IGlobalOptions Options { get {
+                if (_options == null) _options = IoC.Get<IGlobalOptions>();
+                return _options;
+            }
+            private set { _options = value; }
+        }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
         {
@@ -360,7 +369,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                         }
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
@@ -368,7 +377,7 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineDuration += traceEvent.Duration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
@@ -376,7 +385,7 @@ namespace DaxStudio.UI.ViewModels
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;
                         //StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
@@ -384,12 +393,12 @@ namespace DaxStudio.UI.ViewModels
                         TotalDuration = traceEvent.Duration;
                         TotalCpuDuration = traceEvent.CpuTime;
                         //FormulaEngineDuration = traceEvent.CpuTime;
-
+                        QueryEndDateTime = traceEvent.EndTime;
                     }
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                     {
                         VertipaqCacheMatches++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count() + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
                     }
                 }
 
@@ -406,10 +415,13 @@ namespace DaxStudio.UI.ViewModels
 
                 Events.Clear();
 
-                NotifyOfPropertyChange(() => StorageEngineEvents);
-                NotifyOfPropertyChange(() => CanExport);
+                NotifyOfPropertyChange(nameof(StorageEngineEvents));
+                NotifyOfPropertyChange(nameof(CanExport));
+                NotifyOfPropertyChange(nameof(CanCopyResults));
             }
         }
+
+        public DateTime QueryEndDateTime { get; set; }
 
         private long _totalCpuDuration;
         public long TotalCpuDuration
@@ -568,20 +580,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // IToolWindow interface
-        public override string Title
-        {
-            get { return "Server Timings"; }
-            set { }
-        }
-
-        public override string ToolTipText
+        public override string Title => "Server Timings";
+        public override string ContentId => "server-timings-trace";
+        public override ImageSource IconSource
         {
             get
             {
-                return "Runs a server trace to record detailed timing information for performance profiling";
+                var imgSourceConverter = new ImageSourceConverter();
+                return imgSourceConverter.ConvertFromInvariantString(
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
+
             }
-            set { }
         }
+
+        public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 
         public override void OnReset()
         {
@@ -598,6 +610,31 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+            }
+
+        }
+
         private string GetJsonString()
         {
             var m = new ServerTimesModel()
@@ -609,7 +646,8 @@ namespace DaxStudio.UI.ViewModels
                 VertipaqCacheMatches = this.VertipaqCacheMatches,
                 StorageEngineQueryCount = this.StorageEngineQueryCount,
                 StoreageEngineEvents = this._storageEngineEvents,
-                TotalCpuDuration = this.TotalCpuDuration
+                TotalCpuDuration = this.TotalCpuDuration,
+                QueryEndDateTime = this.QueryEndDateTime
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             return json;
@@ -623,6 +661,11 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             var eventConverter = new ServerTimingConverter();
             var deseralizeSettings = new JsonSerializerSettings();
             deseralizeSettings.Converters.Add(eventConverter);
@@ -638,11 +681,10 @@ namespace DaxStudio.UI.ViewModels
             VertipaqCacheMatches = m.VertipaqCacheMatches;
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
-
+            QueryEndDateTime = m.QueryEndDateTime;
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
-
         }
 
         #endregion
@@ -654,7 +696,7 @@ namespace DaxStudio.UI.ViewModels
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
-        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0) : new GridLength(1, GridUnitType.Star); } }
+        public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0, GridUnitType.Pixel) : new GridLength(1, GridUnitType.Star); } }
 
         private ServerTimingDetailsViewModel _serverTimingDetails;
         public ServerTimingDetailsViewModel ServerTimingDetails
@@ -717,6 +759,29 @@ namespace DaxStudio.UI.ViewModels
             Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
         }
         #endregion
+
+        public override bool CanCopyResults => CanExport;
+        public override bool IsCopyResultsVisible => true;
+        public override void CopyResults()
+        {
+            CopyResultsData(true);
+        }
+
+        public void CopyResultsData()
+        {
+            CopyResultsData(false);
+        }
+        public void CopyResultsData(bool includeHeader)
+        {
+            var dataObject = new DataObject();
+            var headers = string.Empty;
+            if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE CPU(parallelism factor)\tSE Queries\tSE Cache\n";
+            var values = $"{QueryEndDateTime.ToString(Constants.IsoDateFormatPaste)}\t{TotalDuration}\t{FormulaEngineDuration}\t{StorageEngineDuration}\t{StorageEngineCpu}\t{StorageEngineCpuFactor}\t{StorageEngineQueryCount}\t{VertipaqCacheMatches}";
+            dataObject.SetData(DataFormats.StringFormat, $"{headers}{values}");
+            dataObject.SetData(DataFormats.CommaSeparatedValue, $"{headers.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}\n{values.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}");
+
+            Clipboard.SetDataObject(dataObject);
+        }
 
         public override bool CanExport => _storageEngineEvents.Count > 0;
         public override void ExportTraceDetails(string filePath)

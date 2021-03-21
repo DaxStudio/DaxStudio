@@ -3,18 +3,16 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System;
 using DaxStudio.UI.Model;
-using System.Threading.Tasks;
 using System.Linq;
 using DaxStudio.UI.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using System.ComponentModel;
-using Newtonsoft.Json;
 using System.Security;
 using System.Runtime.Serialization;
 using System.Globalization;
-using DaxStudio.Common.Exceptions;
+using System.Reflection;
 
 namespace DaxStudio.UI.Utils
 {
@@ -23,7 +21,7 @@ namespace DaxStudio.UI.Utils
     public class RegistrySettingProvider:ISettingProvider
     {
     
-        private const string registryRootKey = "SOFTWARE\\DaxStudio";
+        private const string RegistryRootKey = "SOFTWARE\\DaxStudio";
 
 
         public string LogPath => ApplicationPaths.LogPath;
@@ -53,7 +51,7 @@ namespace DaxStudio.UI.Utils
                 servers.Insert(0, currentServer);
                 while (servers.Count > Constants.MaxMruSize)
                 {
-                    servers.RemoveAt(servers.Count() - 1);
+                    servers.RemoveAt(servers.Count - 1);
                 }
             }
 
@@ -102,7 +100,7 @@ namespace DaxStudio.UI.Utils
 
         public T GetValue<T>(string subKey, T defaultValue )
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
             if (regDaxStudio == null) return defaultValue;
             return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T), CultureInfo.InvariantCulture );
         }
@@ -110,28 +108,88 @@ namespace DaxStudio.UI.Utils
 
         private static T GetValue<T>(string subKey)
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             if (regDaxStudio != null) return (T) regDaxStudio.GetValue(subKey);
             return default;
         }
 
-        public void SetValue(string subKey, DateTime value, bool isInitializing)
+        // Datetime overload of SetValue
+        public void SetValue(string subKey, DateTime value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
-                if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true) 
-                                   ?? Registry.CurrentUser.CreateSubKey(registryRootKey);
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
+                                ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
+
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+
+            var defaultValue = DateTime.Parse(defaultValueAttribute.Value.ToString());
+            if (value == defaultValue)
+            {
+                regDaxStudio.DeleteValue(subKey);
+                return;
+            }
 
                 regDaxStudio?.SetValue(subKey,
                     value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
         }
 
-        public void SetValue<T>(string subKey, T value, bool isInitializing)
+        // Version overload of SetValue
+        public void SetValue(string subKey, Version value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
-                if (isInitializing) return;
-                var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, true);
-                if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(registryRootKey); }
-                
-                regDaxStudio.SetValue(subKey, value);
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true)
+                                ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
+
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+
+            var defaultValue = Version.Parse(defaultValueAttribute.Value.ToString());
+            if (value == defaultValue)
+            {
+                regDaxStudio.DeleteValue(subKey);
+                return;
+            }
+
+            regDaxStudio?.SetValue(subKey, value.ToString());
+        }
+
+        // Generic SetValue method
+        public void SetValue<T>(string subKey, T value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
+        {
+            if (isInitializing) return;
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
+
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName,true);
+
+            var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
+            bool valueIsSetToDefault = false;
+            if (typeof(T) == typeof(Version))
+            {
+                try
+                {
+                    var defaultValueVer = Version.Parse(defaultValueAttribute.Value.ToString());
+                    valueIsSetToDefault = defaultValueVer.Equals(value);
+                }
+                catch
+                {
+                    // ignore any errors parsing the version and assume the versions do not match
+                }
+            }
+            else
+            {
+                var defaultValue = (T)(object)defaultValueAttribute.Value;
+                valueIsSetToDefault = defaultValue.Equals(value);
+            }
+            
+            if (valueIsSetToDefault)
+            {
+                if (regDaxStudio.GetValue(subKey) != null) regDaxStudio.DeleteValue(subKey);
+                return;
+            }
+
+            regDaxStudio.SetValue(subKey, value);
         }
 
         public bool IsFileLoggingEnabled()
@@ -142,7 +200,7 @@ namespace DaxStudio.UI.Utils
 
         private bool KeyExists(string subKey)
         {
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             return (regDaxStudio.GetSubKeyNames().ToList().Contains(subKey));
         }
 
@@ -150,7 +208,7 @@ namespace DaxStudio.UI.Utils
         internal ObservableCollection<string> GetMRUListFromRegistry(string listName)
         {
             var list = new ObservableCollection<string>();
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
             if (regDaxStudio != null)
             {
                 var regListMRU = regDaxStudio.OpenSubKey($"{listName}MRU");
@@ -170,9 +228,9 @@ namespace DaxStudio.UI.Utils
         internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
         {
             var listKey = $"{listName}MRU";
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(registryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
             if (regDaxStudio == null)
-                Registry.CurrentUser.CreateSubKey(registryRootKey);
+                Registry.CurrentUser.CreateSubKey(RegistryRootKey);
             if (regDaxStudio != null)
             {
                 // clear existing data
@@ -193,16 +251,17 @@ namespace DaxStudio.UI.Utils
             }
         }
 
+        /// <summary>
+        /// This method loops through each of the properties using reflection and attempts
+        /// to load the values from the registry
+        /// </summary>
+        /// <param name="options"></param>
         public void Initialize(IGlobalOptions options)
         {
+            
             var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
-                //if (interfaceProps.Find(prop.Name, true)==null) continue;
-
-                //JsonIgnoreAttribute ignoreAttr = prop.Attributes[typeof(JsonIgnoreAttribute)] 
-                //                                                 as JsonIgnoreAttribute;
-                //if (ignoreAttr != null) continue; // go to next attribute if this prop is tagged as [JsonIgnore]
 
                 // Set default value if DefaultValueAttribute is present
                 DefaultValueAttribute attrDefaultVal = prop.Attributes[typeof(DefaultValueAttribute)]
@@ -271,9 +330,32 @@ namespace DaxStudio.UI.Utils
                     prop.SetValue(options, val);
                 }
             }
-            
+
+            // Check for machine level settings which are configured by the installer
+            InitializeMachineSettings(options);
+
+            // Clean up Preview keys
+            CleanupPreviewKeys();
         }
 
-        
+        private void CleanupPreviewKeys()
+        {
+            var previewKeys = new string[] { "ShowPreviewQueryBuilder", "ShowPreviewBenchmark" };
+
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            if (regDaxStudio == null) return;
+            foreach (var subKey in previewKeys)
+            {
+                regDaxStudio.DeleteValue(subKey,false);
+            }
+        }
+
+        private static void InitializeMachineSettings(IGlobalOptions options)
+        {
+            var regDaxStudio = Registry.LocalMachine.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
+            if (regDaxStudio == null) return;
+            const string subKey = "BlockAllInternetAccess";
+            options.BlockAllInternetAccess = (bool)Convert.ChangeType(regDaxStudio.GetValue(subKey, false), typeof(bool), CultureInfo.InvariantCulture);
+        }
     }
 }

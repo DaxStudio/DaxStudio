@@ -82,6 +82,18 @@ namespace ADOTabular
             get { return _columnColl ??= new ADOTabularColumnCollection(_adoTabConn, this); }
         }
 
+        public int ColumnCount => Columns.Count(c =>
+            c.Contents != "RowNumber" &&
+            (c.ObjectType == ADOTabularObjectType.Column || 
+             c.ObjectType == ADOTabularObjectType.Level));
+
+        public int MeasureCount => Columns.Count(c =>
+            c.Contents != "RowNumber" &&
+            (c.ObjectType == ADOTabularObjectType.Measure ||
+             c.ObjectType == ADOTabularObjectType.KPI     || 
+             c.ObjectType == ADOTabularObjectType.KPIGoal ||
+             c.ObjectType == ADOTabularObjectType.KPIStatus));
+
         public ADOTabularMeasureCollection Measures
         {
             get { return _measuresColl ??= new ADOTabularMeasureCollection(_adoTabConn, this); }
@@ -109,9 +121,19 @@ namespace ADOTabular
             if (connection == null) return;
 
             string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
-
-            using var dt = connection.ExecuteDaxQueryDataTable(qry);
-            RowCount = (long)dt.Rows[0][0];
+            try
+            {
+                using var dt = connection.ExecuteDaxQueryDataTable(qry);
+                long.TryParse(dt.Rows[0][0].ToString(), out var rows);
+                RowCount = rows;
+            }
+            catch
+            {
+                // swallow any errors getting the row count
+                RowCount = 0;
+            }
+            
+            
         }
     }
 }

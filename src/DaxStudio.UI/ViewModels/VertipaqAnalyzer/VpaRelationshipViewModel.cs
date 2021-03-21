@@ -33,6 +33,6 @@ namespace DaxStudio.UI.ViewModels
         public long MissingKeys => _rel.MissingKeys;
         public long InvalidRows => _rel.InvalidRows;
         public string SampleReferentialIntegrityViolations => _rel.SampleReferentialIntegrityViolations;
-
+        public double OneToManyRatio => _rel.OneToManyRatio;
     }
 }

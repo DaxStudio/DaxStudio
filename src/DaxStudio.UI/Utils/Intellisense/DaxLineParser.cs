@@ -235,7 +235,17 @@ namespace DaxStudio.UI.Utils
                 }
 
             }
-            
+
+            if (daxState.LineState != LineState.String
+                && daxState.LineState != LineState.Table
+                && daxState.LineState != LineState.Column
+                && daxState.LineState != LineState.Measure
+                )
+            {
+
+                daxState.SetState( LineState.Other, line.Length);
+            }
+
             daxState.TableName = sbTableName.ToString();
             daxState.ColumnName = sbColumnName.ToString();
             return daxState;

@@ -63,11 +63,12 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderColumn Column { get => _column;
             internal set {
                 _column = value;
+                NotifyOfPropertyChange(nameof(Tables));
                 MeasureExpression.Text = _column.MeasureExpression??string.Empty;
                 MeasureName = _column.Caption;
                 SelectedTable = _column.SelectedTable;
                 IsModelItem = _column.IsModelItem;
-                NotifyOfPropertyChange(nameof(Tables));
+                
                 NotifyOfPropertyChange(nameof(SelectedTable));
 
             } 
@@ -80,7 +81,8 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
             Options = options;
             IntellisenseProvider = new DaxIntellisenseProvider(Document, EventAggregator, Options);
-
+            
+            
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
             SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
         }
@@ -209,6 +211,10 @@ namespace DaxStudio.UI.ViewModels
             Document.OutputPane.AddError(error, double.NaN);
         }
 
+        public bool ConvertTabsToSpaces => Options.EditorConvertTabsToSpaces;
+        public int IndentationSize => Options.EditorIndentationSize;
+        public bool WordWrap => Options.EditorWordWrap;
+        public bool IsFocused { get; set; }
         public void UpdateSettings()
         {
             var editor = GetEditor();
@@ -239,7 +245,9 @@ namespace DaxStudio.UI.ViewModels
                 editor.DisableIntellisense();
             }
 
-
+            NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
+            NotifyOfPropertyChange(nameof(IndentationSize));
+            NotifyOfPropertyChange(nameof(WordWrap));
         }
 
     }

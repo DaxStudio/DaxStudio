@@ -23,6 +23,7 @@
     d:DesignWidth="500" 
     d:DesignHeight="400"
     d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
+    
     >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -44,6 +45,7 @@
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
+
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
@@ -403,6 +405,23 @@
                                             <Image Source="{StaticResource TraceClearAll}" Style="{StaticResource ButtonImage}"/>
                                         </Border>
                                     </Button>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"/>
+                                    <!-- copy results -->
+                                    <Button x:Name="CopyResults" BorderThickness="0" Padding="2" 
+                                            cal:Bind.Model="{Binding Content}"
+                                            Visibility="{Binding IsCopyResultsVisible, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <Button.ToolTip>
+                                            <Fluent:ScreenTip
+                                                Title="Copy Results"
+                                                Text="Copies the results to the clipboard"/>
+                                        </Button.ToolTip>
+                                        <Border Background="White" BorderThickness="0" Padding="2">
+                                            
+                                            <fa:FontAwesome Icon="Copy" />
+                                        </Border>
+                                    </Button>
+                                    <Separator Width="10" BorderThickness="0" Foreground="Transparent" Background="Transparent"/>
+
                                     <!-- copy all -->
                                     <Button x:Name="CopyAll" BorderThickness="0" Padding="2" 
                                             cal:Bind.Model="{Binding Content}"
@@ -646,7 +665,9 @@
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
-                                                   >
+                                                   cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]"
+                                                  
+                                    >
                                         <!--dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"-->
                                         <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
                                         EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
@@ -662,7 +683,8 @@
 
                                         </i:Interaction.Triggers>
                                         <ContextMenuService.ContextMenu>
-                                            <ContextMenu>
+                                            
+                                            <ContextMenu ContextMenuOpening="ContextMenu_ContextMenuOpening">
                                                 <MenuItem x:Name="Cut"  Header="Cut"
                                                       cal:Message.Attach="Cut()">
                                                     <MenuItem.Icon>
@@ -700,10 +722,26 @@
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
+                                                <Separator/>
+                                                <MenuItem x:Name="LookupDaxGuide" 
+                                                          Header="{Binding LookupDaxGuideHeader}"
+                                                          cal:Message.Attach="LookupDaxGuide()" 
+                                                          IsEnabled="{Binding CanLookupDaxGuide}">
+                                                </MenuItem>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
 
                                     </dax:DAXEditor>
+
+                                    <!-- Help Watermark -->
+                                    <ContentControl x:Name="HelpWatermark"
+                                                    cal:View.Model="{Binding HelpWatermark}" 
+                                                    cal:View.ApplyConventions="true"
+                                                    Grid.RowSpan="2"
+                                                    Grid.ColumnSpan="2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    ></ContentControl>
 
                                     <!-- Floats over the main editor control -->
                                     <Border x:Name="borExpressionBackground" 

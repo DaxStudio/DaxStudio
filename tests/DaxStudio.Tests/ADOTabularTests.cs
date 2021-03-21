@@ -358,6 +358,27 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestPowerBIOrderByVisitor()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\powerbi-csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var localDateTable = tabs["LocalDateTable_697ceb23-7c16-46b1-a1ed-0100727de4c7"];
+            Assert.IsNotNull(localDateTable);
+            Assert.AreEqual(localDateTable.Columns["MonthNo"], localDateTable.Columns["Month"].OrderBy);
+            Assert.AreEqual(localDateTable.Columns["QuarterNo"], localDateTable.Columns["Quarter"].OrderBy);
+            Assert.IsNull( localDateTable.Columns["Year"].OrderBy);
+
+        }
+
+        [TestMethod]
         public void TestPowerBIDatabaseCulture()
         {
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);

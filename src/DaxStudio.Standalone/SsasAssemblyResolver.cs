@@ -7,7 +7,6 @@ namespace DaxStudio.Standalone
 {
     internal sealed class SsasAssemblyResolver
     {
-        private static readonly SsasAssemblyResolver instance = new SsasAssemblyResolver();
         private readonly Dictionary<string,Assembly> _assemblies = new Dictionary<string,Assembly>();
         //private const string amoStrongNamePattern = "Microsoft.AnalysisServices, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
         //private const string adomdStrongNamePattern = "Microsoft.AnalysisServices.AdomdClient, Version={0}.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
@@ -26,27 +25,24 @@ namespace DaxStudio.Standalone
         {
         }
 
-        public static SsasAssemblyResolver Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public static SsasAssemblyResolver Instance { get; } = new SsasAssemblyResolver();
 
         public Assembly Resolve(string name)
         {
             bool addToCache = false;
             if (_assemblies.ContainsKey(name)) return _assemblies[name];
             // double lock before adding an assembly to the cache to make 100% sure we are threadsafe
-            if (!_resolving.Contains(name))
+            lock (_mutex)
             {
-                lock(_mutex)
+                if (!_resolving.Contains(name))
                 {
-                    if (!_resolving.Contains(name))
+                    lock(_mutex)
                     {
-                        _resolving.Add(name);
-                        addToCache = true;
+                        if (!_resolving.Contains(name))
+                        {
+                            _resolving.Add(name);
+                            addToCache = true;
+                        }
                     }
                 }
             }

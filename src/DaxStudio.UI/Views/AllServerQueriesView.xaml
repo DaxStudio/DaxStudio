@@ -34,6 +34,7 @@
                 <sys:String>DMX</sys:String>
                 <sys:String>MDX</sys:String>
                 <sys:String>SQL</sys:String>
+                <sys:String>ERR</sys:String>
             </col:ArrayList>
 
             <Style TargetType="{x:Type ToolTip}">
@@ -68,7 +69,19 @@
                     </Setter.Value>
                 </Setter>-->
             </Style>
-            
+
+            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding QueryType}" Value="ERR">
+                        <Setter Property="Foreground" Value="OrangeRed"/>
+                    </DataTrigger>
+                </Style.Triggers>
+                
+            </Style>
+            <Style x:Key="QueryTextStyle">
+
+            </Style>
+
             <DataTemplate x:Key="QueryTextCell">
                 <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
                     <Border Margin="0" Padding="0" 
@@ -168,7 +181,7 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
@@ -225,8 +238,8 @@
                 <DataGridComboBoxColumn Header="Type" Width="40" 
                                         filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
                                         ItemsSource="{StaticResource QueryTypes}"
-                                        SelectedItemBinding="{Binding QueryType}">
-                </DataGridComboBoxColumn>
+                                        SelectedItemBinding="{Binding QueryType}"
+                                        />
 
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
                                     Binding="{Binding Duration, StringFormat='#,0'}" 
@@ -278,6 +291,7 @@
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
                                             filter:DataGridColumnExtensions.CustomBindingPath="Query"
                                             filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                                            CellStyle="{StaticResource QueryTextStyle}"
                                             />
 
                 <!--<DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"

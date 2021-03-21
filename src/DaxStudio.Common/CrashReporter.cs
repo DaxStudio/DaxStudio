@@ -1,6 +1,5 @@
 ﻿using System;
 using CrashReporterDotNET;
-using DaxStudio.UI.Utils;
 
 namespace DaxStudio.Common
 {

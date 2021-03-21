@@ -21,5 +21,6 @@ namespace DaxStudio.UI.Model
         public long StorageEngineQueryCount { get; set; }
         public int VertipaqCacheMatches { get; set; }
         public long TotalCpuDuration { get; set; }
+        public DateTime QueryEndDateTime { get; set; }
     }
 }
