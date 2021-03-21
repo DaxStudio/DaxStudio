@@ -45,7 +45,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -67,7 +67,7 @@
     <OutputPath>bin\x86\Debug Standalone\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -226,6 +226,7 @@
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
     <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
+    <Compile Include="AttachedProperties\VisibilityAnimation.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
@@ -258,6 +259,7 @@
     <Compile Include="Converters\BoolToThicknessConverter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converters\CanDuplicateMeasureConverter.cs" />
     <Compile Include="Converters\CappedRowHeightConverter.cs" />
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
@@ -267,6 +269,12 @@
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Events\DuplicateMeasureEvent.cs" />
+    <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\ToggleCommentEvent.cs" />
+    <Compile Include="Extensions\HyperlinkExtensions.cs" />
+    <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
+    <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
     <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
@@ -275,6 +283,7 @@
     <Compile Include="Events\ConnectFailedEvent.cs" />
     <Compile Include="Events\ConnectionOpenedEvent.cs" />
     <Compile Include="Events\DatabaseChangedEvent.cs" />
+    <Compile Include="Events\EditorResizeEvent.cs" />
     <Compile Include="Events\ReconnectEvent.cs" />
     <Compile Include="Events\RefreshTablesEvent.cs" />
     <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
@@ -296,6 +305,7 @@
     <Compile Include="Interfaces\IQueryRunner.cs" />
     <Compile Include="Interfaces\IQueryTextProvider.cs" />
     <Compile Include="Interfaces\IZoomable.cs" />
+    <Compile Include="JsonConverters\InterfaceContractResolver.cs" />
     <Compile Include="JsonConverters\SecureStringConverter.cs" />
     <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
@@ -381,6 +391,7 @@
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
+    <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilder.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderColumn.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderDropHandler.cs" />
@@ -468,6 +479,7 @@
     <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
     <Compile Include="Model\ToolWindowBase.cs" />
     <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
+    <Compile Include="TemplateSelectors\OptionsPropertyTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\ResultsGridCellTemplateSelector.cs" />
     <Compile Include="Theme\DaxStudioLightTheme.cs" />
     <Compile Include="Theme\ThemeManager.cs" />
@@ -478,11 +490,14 @@
     <Compile Include="Triggers\KeyBindingTrigger.cs" />
     <Compile Include="Triggers\KeyPressTrigger.cs" />
     <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
+    <Compile Include="Utils\ApplicationHelper.cs" />
     <Compile Include="Utils\AssemblyLoader.cs" />
     <Compile Include="Utils\AutoSaver.cs" />
     <Compile Include="Utils\ClipboardHelper.cs" />
+    <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\FocusManager.cs" />
+    <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
     <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
@@ -557,6 +572,7 @@
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
+    <Compile Include="ViewModels\HelpWatermarkViewModel.cs" />
     <Compile Include="ViewModels\MeasureExpressionEditorViewModel.cs" />
     <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
     <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
@@ -584,6 +600,9 @@
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
+      <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
       <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
     </Compile>
@@ -592,9 +611,6 @@
     </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ShellView.xaml.cs">
-      <DependentUpon>ShellView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml.cs">
       <DependentUpon>ExportDataWizardExportStatusView.xaml</DependentUpon>
@@ -619,6 +635,9 @@
     </Compile>
     <Compile Include="Views\GotoLineDialogView.xaml.cs">
       <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HelpWatermarkView.xaml.cs">
+      <DependentUpon>HelpWatermarkView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MeasureExpressionEditorView.xaml.cs">
       <DependentUpon>MeasureExpressionEditorView.xaml</DependentUpon>
@@ -744,7 +763,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Dark.DaxStudio.Colors.xaml">
+    <Page Include="Theme\Dark.DaxStudio.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -761,6 +780,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Monotone.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CrashReportingBlockedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -797,6 +820,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ExportDataWizard\ExportDataWizardView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HelpWatermarkView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -845,7 +872,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Theme\Light.DaxStudio.Colors.xaml">
+    <Page Include="Theme\Light.DaxStudio.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -985,14 +1012,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Page Include="Theme\Dark.DaxStudio.Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
@@ -1498,7 +1517,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.0.1</Version>
+      <Version>6.1.0</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>3.2.0</Version>
@@ -1507,25 +1526,25 @@
       <Version>4.4.0</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>18.0.0</Version>
+      <Version>26.0.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.0.30</Version>
+      <Version>1.0.34</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.0.30</Version>
+      <Version>1.0.34</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.0.30</Version>
+      <Version>1.0.34</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.0.30</Version>
+      <Version>1.0.34</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>4.50.1</Version>
+      <Version>3.6.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
-      <Version>4.50.1</Version>
+      <Version>3.6.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.MLib">
       <Version>1.3.0.1</Version>
@@ -1543,7 +1562,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>8.0.0</Version>
+      <Version>8.0.3</Version>
     </PackageReference>
     <PackageReference Include="FontAwesome.WPF">
       <Version>4.7.0.9</Version>
@@ -1560,9 +1579,6 @@
     <PackageReference Include="LargeXlsx">
       <Version>1.1.1</Version>
     </PackageReference>
-    <PackageReference Include="MahApps.Metro">
-      <Version>2.4.3</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.7</Version>
     </PackageReference>
@@ -1570,7 +1586,7 @@
       <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.1</Version>
+      <Version>5.0.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -1587,7 +1603,7 @@
       <Version>2.10.0</Version>
     </PackageReference>
     <PackageReference Include="SharpCompress">
-      <Version>0.26.0</Version>
+      <Version>0.28.1</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
@@ -1611,4 +1627,14 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="ApplyAlias" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">
+        <Aliases>ExcelAmo</Aliases>
+      </ReferencePath>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.AdomdClient'">
+        <Aliases>ExcelAdomdClient</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
 </Project>
