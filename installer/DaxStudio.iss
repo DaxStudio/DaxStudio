@@ -81,6 +81,7 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all features requiring internet access including version checks, dax formatting and crash reporting. This setting requires a re-install to change."; GroupDescription: "Privacy"; Flags: unchecked; Check: IsAdmin
 ;Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration"; Check: IsAdmin;
 
 [Files]
@@ -88,7 +89,7 @@ Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json;*.portable"
+Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json;*.portable;Microsoft.Excel.*.dll"
 
 ; PBI Desktop integration (If installing in ALL USERS mode)
 Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode;                                                                                    
@@ -140,6 +141,7 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 Root: "HKA"; Subkey: "Software\DaxStudio"; Flags: uninsdeletekey; Components: Core; Permissions: users-read
 Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "64Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is64BitExcelFromRegisteredExe
 Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "ExcelBitness"; ValueData: "32Bit"; Flags: uninsdeletekey; Components: Core; Permissions: users-read; Check: Is32BitExcelFromRegisteredExe
+Root: "HKA"; Subkey: "Software\DaxStudio"; ValueType: dword; ValueName: "BlockAllInternetAccess"; ValueData: 1; Flags: uninsdeletekey; Tasks: blockallinternetaccess
 
 ;Excel x86 Addin Keys - All Users
 Root: "HKA32"; Subkey: "Software\DaxStudio"; ValueType: string; ValueName: "Path"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
@@ -183,6 +185,8 @@ Name: "Core"; Description: "DaxStudio Core (includes connectivity to SSAS Tabula
 
 [InstallDelete]
 ; Make sure that local copies of the Excel files do not exist
+Type: files; Name: "{app}\bin\Microsoft.Excel.Amo.dll"
+Type: files; Name: "{app}\bin\Microsoft.Excel.AdomdClient.dll"
 Type: files; Name: "{app}\Microsoft.Excel.Amo.dll"
 Type: files; Name: "{app}\Microsoft.Excel.AdomdClient.dll"
 ; Make sure the .portable file does not exist 
@@ -417,6 +421,8 @@ begin
   try 
     Log('Clearing Disabled items from Excel Add-in registry location');
     CleanDisabledItems();
+
+
   except
     // Catch the exception, show it, and continue
     ShowExceptionMessage;
@@ -709,6 +715,7 @@ begin
   
     Log('Clearing AutoSave Folder'); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
+
   end;
 end;
 

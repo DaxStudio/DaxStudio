@@ -15,7 +15,8 @@
             xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
-             mc:Ignorable="d" 
+            xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
+            mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -192,6 +193,7 @@
                     <sys:String x:Key="Query History">History</sys:String>
                     <sys:String x:Key="Results">Table</sys:String>
                     <sys:String x:Key="Server Timings">Database</sys:String>
+                    <sys:String x:Key="Sounds">VolumeUp</sys:String>
                     <sys:String x:Key="Timeouts">ClockOutline</sys:String>
                     <sys:String x:Key="Trace">Search</sys:String>
                 </ResourceDictionary>
@@ -199,7 +201,8 @@
 
             <!-- PropertyList Styles Start -->
 
-            <pg:PropertyTemplateSelector x:Key="PropertyTemplateSelector"/>
+
+            <templateSelectors:OptionsPropertyTemplateSelector x:Key="OptionsPropertyTemplateSelector" />
             <pg:DescriptionAttributeConverter x:Key="DescriptionAttributeConverter"/>
 
             <Style x:Key="DescriptionStyle" TargetType="{x:Type TextBlock}">
@@ -326,6 +329,39 @@
                         </ComboBox.ItemsSource>
                     </ComboBox>
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="SoundTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ComboBox ItemsSource="{pg:EnumerateBinding Value}" 
+                              SelectedValue="{Binding Value, Mode=TwoWay}"  
+                              Grid.Row="0"
+                              IsEnabled="{Binding ValueEnabled}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock 
+                                    Text="{Binding Converter={StaticResource DescriptionAttributeConverter}, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                        <Button Margin="10 0 0 0" 
+                                Padding="10 0" 
+                                IsEnabled="{Binding ValueEnabled}"
+                                cal:Message.Attach="[Event Click] = [Action PlaySound($dataContext)]"><fa:ImageAwesome Icon="Play" Width="10" Foreground="Green"></fa:ImageAwesome></Button>
+                        
+                    </StackPanel>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
             </DataTemplate>
 
@@ -555,7 +591,7 @@
                         Grid.RowSpan="3"
                         CategoryFilter="{Binding SelectedCategory}"
                         SearchText="{Binding SearchText}"
-                        ItemTemplateSelector="{StaticResource PropertyTemplateSelector}"
+                        ItemTemplateSelector="{StaticResource OptionsPropertyTemplateSelector}"
                         Grid.Column="1" 
                         ItemContainerStyle="{StaticResource ItemStyle}"
                         pg:ListViewBehaviors.IsAutoUpdatingColumnWidths="true"
@@ -585,7 +621,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn CellTemplateSelector="{StaticResource PropertyTemplateSelector}"
+                                <GridViewColumn CellTemplateSelector="{StaticResource OptionsPropertyTemplateSelector}"
                                      beh:GridViewColumnResize.Width="2*">
 
                                 </GridViewColumn>
@@ -1176,14 +1212,7 @@
 
                                 <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>
-
-                                <CheckBox Grid.Row="8" Grid.Column="0" x:Name="ShowPreviewQueryBuilder" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Query Builder Button" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="9" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a button on the Home tab which allows for the building of queries using a drag/drop interface</TextBlock>
-
-                                <CheckBox Grid.Row="10" Grid.Column="0" x:Name="ShowPreviewBenchmark" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Benchmark Button" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="11" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a button on the advanced tab which will run a give query a number of times against both a cold and warm cache and collection the exection statistics</TextBlock>
-
-                                
+                               
 
                             </Grid>
                         </GroupBox>
@@ -1200,13 +1229,16 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
                                 <CheckBox Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" Content="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
-                                <Label Grid.Row="2" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
-                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="100" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
+                                <CheckBox Grid.Row="2" Grid.Column="0" x:Name="VpaxReadStatisticsFromData" VerticalAlignment="Top" Content="Read statistics from data" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.</TextBlock>
+                                <Label Grid.Row="4" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
+                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="100" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                             </Grid>
                         </GroupBox>
                     </WrapPanel>

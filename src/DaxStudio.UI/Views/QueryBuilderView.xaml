@@ -22,7 +22,7 @@
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
             <conv:FilterValueHeightConverter x:Key="FilterValueHeightConverter" />
             <conv:IsMultiLineFilterTypeConverter x:Key="IsMultiLineFilterTypeConverter"/>
-            
+            <conv:CanDuplicateMeasureConverter x:Key="CanDuplicateMeasureConverter"></conv:CanDuplicateMeasureConverter>
             <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
             <Setter Property="Width" Value="10"/>
             <Setter Property="Height" Value="10"/>
@@ -164,13 +164,18 @@
                  Style="{StaticResource EmptyColumnListStyle}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid >
+                    <Grid Tag="{Binding DataContext, ElementName=Columns}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                   
+                   <Grid.ContextMenu>
+                            <!-- cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}" -->
+                       <ContextMenu Name="cm" >
+                                <MenuItem Header="Duplicate Measure" cal:Message.Attach="DuplicateMeasure()" IsEnabled="{Binding Converter={StaticResource CanDuplicateMeasureConverter}}"></MenuItem>
+                       </ContextMenu>
+                   </Grid.ContextMenu>
                         <Grid>
                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" Grid.Column="0" />
                             <fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>

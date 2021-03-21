@@ -325,7 +325,7 @@ namespace DaxStudio.QueryTrace
                 Log.Debug("{class} {method} TraceEvent: {eventClass}", "QueryTraceEngineExcel", "OnTraceEventInternal", e.EventClass.ToString());
                 //OnTraceEvent(e);
                 _capturedEvents.Add( CreateTraceEventArg(e, _friendlyServerName));
-                if (e.EventClass == xlAmo.TraceEventClass.QueryEnd)
+                if (e.EventClass == xlAmo.TraceEventClass.QueryEnd || e.EventClass == xlAmo.TraceEventClass.Error)
                 {
                     // Raise an event with the captured events
                     TraceCompleted?.Invoke(this, _capturedEvents);

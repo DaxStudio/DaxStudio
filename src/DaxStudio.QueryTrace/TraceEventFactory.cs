@@ -24,7 +24,7 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.NTUserName);
             }
 
-            if (eventClass != TraceEventClass.DirectQueryEnd) {
+            if (eventClass != TraceEventClass.DirectQueryEnd && eventClass != TraceEventClass.Error) {
                 // DirectQuery doesn't have subclasses
                 trc.Columns.Add(TraceColumn.EventSubclass);
             }

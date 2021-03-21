@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using DaxStudio.UI.ViewModels;
+using System.Windows.Controls;
 
 namespace DaxStudio.UI.Views
 {
@@ -12,5 +13,9 @@ namespace DaxStudio.UI.Views
             InitializeComponent();
         }
 
+        private void ContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            ((DocumentViewModel)DataContext).EditorContextMenuOpening();
+        }
     }
 }

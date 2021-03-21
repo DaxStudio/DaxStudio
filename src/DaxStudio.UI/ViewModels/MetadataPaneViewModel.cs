@@ -42,7 +42,8 @@ namespace DaxStudio.UI.ViewModels
         private string _modelName;
         private readonly IGlobalOptions _options;
         private readonly IMetadataProvider _metadataProvider;
-
+        private List<IExpandedItem> _expandedItems = new List<IExpandedItem>();
+        
         [ImportingConstructor]
         public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
             : base( eventAggregator)
@@ -114,9 +115,10 @@ namespace DaxStudio.UI.ViewModels
                 if (!_metadataProvider.IsConnected) return;
                 _metadataProvider.Refresh();
                 var tmpModel = _selectedModel;
+                SaveExpandedState();
+                
                 ModelList = _metadataProvider.GetModels();
-                // TODO - should we get tables, databases and reset selected database??
-
+                
                 ShowMetadataRefreshPrompt = false;
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
             }
@@ -125,6 +127,49 @@ namespace DaxStudio.UI.ViewModels
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
                 Log.Error(ex,Common.Constants.LogMessageTemplate,nameof(MetadataPaneViewModel), nameof(RefreshMetadata), ex.Message);
             }
+        }
+
+        private void RestoreExpandedState(string tmpModelName)
+        {
+            RestoreExpandedStateInternal(_treeViewTables, _expandedItems);
+            _expandedItems.Clear();
+        }
+
+        private void RestoreExpandedStateInternal(IEnumerable<IFilterableTreeViewItem> metadataItems, List<IExpandedItem> expandedItems)
+        {
+            var filterableTreeViewItems = metadataItems as IFilterableTreeViewItem[] ?? metadataItems.ToArray();
+            foreach (var item in expandedItems)
+            {
+                foreach (var metadataItem in filterableTreeViewItems)
+                {
+                    if (item.Name == metadataItem.Name)
+                    {
+                        metadataItem.IsExpanded = true;
+                        RestoreExpandedStateInternal(metadataItem.Children, item.Children);
+                    }
+                }
+            }
+        }
+
+        private void SaveExpandedState()
+        {
+            _expandedItems.Clear();
+            SaveExpandedStateInternal(Tables, _expandedItems);
+        }
+
+        private void SaveExpandedStateInternal(IEnumerable<IFilterableTreeViewItem> items, List<IExpandedItem> expandedItems)
+        {
+            if (items == null) return;
+            foreach (var item in items)
+            {
+                if (item.IsExpanded)
+                {
+                    var newExpandedItem = new ExpandedItem(item.Name);
+                    expandedItems.Add(newExpandedItem);
+                    SaveExpandedStateInternal(item.Children, newExpandedItem.Children);
+                }
+            }
+            
         }
 
         private bool _showMetadataRefreshPrompt;
@@ -153,6 +198,7 @@ namespace DaxStudio.UI.ViewModels
                     _selectedModel = value;
                     NotifyOfPropertyChange(nameof(SelectedModel));
                     //EventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent( SelectedModelName));
+                    
                     // clear table list
                     _treeViewTables = null;
                     _metadataProvider.SetSelectedModel(SelectedModel);
@@ -196,6 +242,7 @@ namespace DaxStudio.UI.ViewModels
                         _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
                         sw.Stop();
                         Log.Information("{class} {method} {message}", "MetadataPaneViewModel", "RefreshTables", $"Finished Refresh of tables (duration: {sw.ElapsedMilliseconds}ms)");
+                        RestoreExpandedState("");
                     }
                     catch (Exception ex)
                     {
@@ -807,8 +854,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (item != null)
                 {
-                    var txt = item.Name;
+                    var criteria = $"WHERE [REFERENCED_OBJECT] = '{item.Name}'";
+
+                    // if the current item is a column we should also include the table name
+                    if ( item.IsColumn)
+                    {
+                        criteria += Environment.NewLine + $" AND [REFERENCED_TABLE] = '{item.InternalColumn.TableName}'";
+                    }
+
                     var thisItem =
+                        Environment.NewLine +
                         "SELECT " + Environment.NewLine +
                         " [OBJECT_TYPE] AS [Object Type], " + Environment.NewLine +
                         " [TABLE] AS [Object's Table], " + Environment.NewLine +
@@ -817,8 +872,8 @@ namespace DaxStudio.UI.ViewModels
                         " [REFERENCED_OBJECT] AS [Referenced Object], " + Environment.NewLine +
                         " [REFERENCED_OBJECT_TYPE] AS [Referenced Object Type] " + Environment.NewLine +
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
-                        "WHERE [REFERENCED_OBJECT] = '" + txt + "'" + Environment.NewLine +
-                        "ORDER BY [OBJECT_TYPE]";
+                        criteria + Environment.NewLine +
+                        "ORDER BY [OBJECT_TYPE]" + Environment.NewLine;
                     EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
                 }
             }
@@ -881,29 +936,38 @@ namespace DaxStudio.UI.ViewModels
                 case Key.C:
                     if (selectedItem is ITreeviewColumn col)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(col, QueryBuilderItemType.Column));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(col, QueryBuilderItemType.Column));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this ,nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
                 case Key.Space:
                 case Key.F:
                     if (selectedItem is ITreeviewColumn filter)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(filter, QueryBuilderItemType.Filter));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(filter, QueryBuilderItemType.Filter));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this,nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
                 case Key.B:
                     if (selectedItem is ITreeviewColumn item)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToEditorEvent(item, QueryBuilderItemType.Both));
+                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(item, QueryBuilderItemType.Both));
                         SelectedTreeViewItem = null;
-                        CurrentCriteria = string.Empty;
-                        FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        if (!string.IsNullOrWhiteSpace(CurrentCriteria))
+                        {
+                            CurrentCriteria = string.Empty;
+                            FocusManager.SetFocus(this, nameof(CurrentCriteria));
+                        }
                     }
                     break;
             }
@@ -1015,5 +1079,22 @@ namespace DaxStudio.UI.ViewModels
         public string Caption { get; set; }
 
         public string Description { get; set; }
+    }
+
+    class ExpandedItem: IExpandedItem
+    {
+        public ExpandedItem(string name)
+        {
+            Name = name;
+            Children = new List<IExpandedItem>();
+        }
+        public string Name { get; set; }
+        public List<IExpandedItem>Children { get; set; }
+    }
+
+    interface IExpandedItem
+    {
+        string Name { get; set; }
+        List<IExpandedItem> Children { get; set; }
     }
 }

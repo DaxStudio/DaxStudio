@@ -134,38 +134,18 @@ namespace DaxStudio.Standalone
                 bootstrapper.DisplayShell();
                 App.Run();
             //}
-            catch (ReflectionTypeLoadException ex)
-            {
-                
-                var loaderExceptions = ex.LoaderExceptions;
-                var sbError = new StringBuilder();
-                foreach(var innerEx in ex.LoaderExceptions)
-                {
-                    sbError.AppendLine(innerEx.Message);
-                }
-                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main",  sbError.ToString());
-
-                LogFatalCrash(ex, ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-                Log.CloseAndFlush();
-//#if DEBUG
-//                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-//#else
-                // use CrashReporter.Net to send bug to DrDump
-                CrashReporter.ReportCrash(ex,"DAX Studio Standalone Fatal crash in Main() method" );
-//#endif
 
             //catch (Exception ex)
             //{
-            //    Log.Fatal(ex, "Class: {0} Method: {1} Error: {2} Stack: {3}", "EntryPoint", "Main", ex.Message, ex.StackTrace);
-                
+            //    Log.Fatal(ex, "Class: {0} Method: {1} Error: {2}", "EntryPoint", "Main", ex.Message);
+            //    Log.CloseAndFlush();
+            //    //#if DEBUG
+            //    //                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
+            //    //#else
             //    // use CrashReporter.Net to send bug to DrDump
-            //    LogFatalCrash(ex, "DAX Studio Standalone Fatal crash in Main() method", _options);
-                
-       
+            //    LogFatalCrash(ex, ex.Message, _options);
+            //    //#endif
+
             //}
             //finally
             //{
@@ -225,8 +205,8 @@ namespace DaxStudio.Standalone
                 Log.Debug("Verbose Logging Enabled");
 
 #else
-                    levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
-                    Log.Debug("Debug Logging Enabled");
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
+                Log.Debug("Debug Logging Enabled");
 #endif
             }
             else
@@ -235,9 +215,8 @@ namespace DaxStudio.Standalone
                 levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
                 Log.Information("Information Logging Enabled due to running in debug mode");
 #else
-            Log.Information("Changing minimum log event to Error");
-            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
-
+                Log.Information("Changing minimum log event to Error");
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
 #endif
             }
 
@@ -309,6 +288,8 @@ namespace DaxStudio.Standalone
             if (!App.Properties.Contains("HasCrashed"))
                 App.Properties.Add("HasCrashed", true);
 
+            UpdateErrorForLoaderExceptions(ref msg, ex);
+
             Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
 
             if (_options.BlockCrashReporting)
@@ -318,7 +299,6 @@ namespace DaxStudio.Standalone
                     // but we are unable to automatically log the crash due to their privacy settings
                     var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = msg}};
                     blockedDlg.ShowDialog();
-
                 });
 
                 return;
@@ -340,6 +320,22 @@ namespace DaxStudio.Standalone
                     Application.Current.Dispatcher.Invoke(() => CrashReporter.ReportCrash(ex, msg));
                 }
             });
+        }
+
+        private static void UpdateErrorForLoaderExceptions(ref string msg, Exception ex)
+        {
+            // if this is a type load exception we need to list out the LoaderException messages.
+            if (ex is ReflectionTypeLoadException loaderEx)
+            {
+
+                var loaderExceptions = loaderEx.LoaderExceptions;
+                var sbError = new StringBuilder();
+                foreach (var innerEx in loaderEx.LoaderExceptions)
+                {
+                    sbError.AppendLine(innerEx.Message);
+                }
+                msg += '\n' +  sbError.ToString();
+            }
         }
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

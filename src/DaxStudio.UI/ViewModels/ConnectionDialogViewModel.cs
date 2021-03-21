@@ -183,6 +183,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => ServerModeSelected);
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -198,6 +199,7 @@ namespace DaxStudio.UI.ViewModels
                     InitialCatalog = string.Empty;
                     NotifyOfPropertyChange(nameof(IsRolesEnabled));
                     NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                    NotifyOfPropertyChange(nameof(CanConnect));
                 }
             }
         }
@@ -302,6 +304,7 @@ namespace DaxStudio.UI.ViewModels
             set{ _dataSource=CleanDataSourceName(value);
                 NotifyOfPropertyChange(nameof( DataSource));
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
+                NotifyOfPropertyChange(nameof(CanConnect));
                 SelectedServerSetFocus = true;
             }
         }
@@ -313,14 +316,14 @@ namespace DaxStudio.UI.ViewModels
                 {
                     return string.Empty;
                 }
-                return _roles.Trim();
+                return _roles;
             }
-            set { _roles = value; }
+            set => _roles = value;
         }
 
-        public bool IsRolesEnabled { get { return true;} }
+        public bool IsRolesEnabled => true;
         public string EffectiveUserName { get; set; }
-        public bool IsEffectiveUserNameEnabled { get { return true; } }
+        public bool IsEffectiveUserNameEnabled => true;
         public string ApplicationName { get; set; }
 
         private string _directQueryMode;
@@ -369,13 +372,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ObservableCollection<string> RecentServers
-        {
-            //get {var list = SettingProvider.GetServerMRUList();
-            //    return list;
-            //}
-            get => Options.RecentServers;
-        }
+        public ObservableCollection<string> RecentServers => Options.RecentServers;
 
         public bool PowerPivotEnabled { get; private set; }
 
@@ -383,7 +380,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetRolesProperty()
         {
-            return Roles.Length == 0 ? string.Empty : string.Format("Roles={0};", Roles);
+            return Roles.Length == 0 ? string.Empty : $"Roles={Roles};";
         }
 
         private string GetDirectQueryMode()
@@ -391,12 +388,12 @@ namespace DaxStudio.UI.ViewModels
             if (string.IsNullOrEmpty(DirectQueryMode) || DirectQueryMode.ToLower() == "default")
                 return string.Empty;
             else
-                return string.Format("DirectQueryMode={0};", DirectQueryMode);
+                return $"DirectQueryMode={DirectQueryMode};";
         }
 
         private string GetMdxCompatibilityMode()
         {
-            return string.Format("MDX Compatibility={0};", MdxCompatibility.Substring(0, 1));
+            return $"MDX Compatibility={MdxCompatibility.Substring(0, 1)};";
         }
 
         private string _mdxCompatibility;
@@ -602,6 +599,7 @@ namespace DaxStudio.UI.ViewModels
                 InitialCatalog = string.Empty;
                 NotifyOfPropertyChange(nameof(IsRolesEnabled));
                 NotifyOfPropertyChange(nameof(IsEffectiveUserNameEnabled));
+                NotifyOfPropertyChange(nameof(CanConnect));
             }
         }
 

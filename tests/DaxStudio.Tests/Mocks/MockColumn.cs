@@ -9,7 +9,7 @@ namespace DaxStudio.Tests.Mocks
     public class MockColumn 
     {
 
-        public static QueryBuilderColumn Create(string caption, string daxName, Type dataType, ADOTabularObjectType objectType, bool isModelItem = true)
+        public static IADOTabularColumn CreateADOTabularColumn(string caption, string daxName, Type dataType, ADOTabularObjectType objectType, bool isModelItem = true)
         {
             var col = new Mock<IADOTabularColumn>();
             col.SetupGet(x => x.Caption).Returns(caption);
@@ -17,7 +17,14 @@ namespace DaxStudio.Tests.Mocks
             col.SetupGet(x => x.SystemType).Returns(dataType);
             col.SetupGet(x => x.ObjectType).Returns(objectType);
 
-            var col2 = new QueryBuilderColumn(col.Object, isModelItem);
+            return col.Object;
+        }
+
+        public static QueryBuilderColumn Create(string caption, string daxName, Type dataType, ADOTabularObjectType objectType, bool isModelItem = true)
+        {
+            var col = CreateADOTabularColumn(caption, daxName, dataType, objectType, isModelItem);
+
+            var col2 = new QueryBuilderColumn(col, isModelItem, new MockEventAggregator());
 
             return col2;
         }

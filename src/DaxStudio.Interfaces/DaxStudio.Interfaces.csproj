@@ -102,10 +102,12 @@
     <Compile Include="Enums\DaxFormatStyle.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
+    <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IDatabaseReference.cs" />
     <Compile Include="IFilterableTreeViewItem.cs" />
     <Compile Include="IFunctionProvider.cs" />
+    <Compile Include="IGlobalOptionsBase.cs" />
     <Compile Include="IMetadataPane.cs" />
     <Compile Include="IModelIntellisenseProvider.cs" />
     <Compile Include="ITabularConnection.cs" />
@@ -138,7 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.1</Version>
+      <Version>5.0.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

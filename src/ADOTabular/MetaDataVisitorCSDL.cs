@@ -485,6 +485,42 @@ namespace ADOTabular
             , string eEntityType)
         {
             if (rdr.NameTable != null)
+            var eProperty = rdr.NameTable.Add("Property");
+            var eMeasure = rdr.NameTable.Add("Measure");
+            var eSummary = rdr.NameTable.Add("Summary");
+            var eStatistics = rdr.NameTable.Add("Statistics");
+            var eMinValue = rdr.NameTable.Add("MinValue");
+            var eMaxValue = rdr.NameTable.Add("MaxValue");
+            var eOrderBy = rdr.NameTable.Add("OrderBy");
+            
+            // this routine effectively processes and <EntityType> element and it's children
+            string caption = string.Empty;
+            string description = string.Empty;
+            bool isVisible = true;
+            string name = null;
+            string refName = string.Empty;
+            string dataType = string.Empty;
+            string contents = string.Empty;
+            string minValue = string.Empty;
+            string maxValue = string.Empty;
+            string formatString = string.Empty;
+            string keyRef = string.Empty;
+            string orderBy = string.Empty;
+            string defaultAggregateFunction = string.Empty;
+            long stringValueMaxLength = 0;
+            long distinctValueCount = 0;
+            bool nullable = true;
+            ADOTabularTable tab = null;
+
+            IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
+
+            List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
+
+            KpiDetails kpi = new KpiDetails();
+
+            var colType = ADOTabularObjectType.Column;
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                     && rdr.LocalName == eEntityType))
             {
                 var eProperty = rdr.NameTable.Add("Property");
                 var eMeasure = rdr.NameTable.Add("Measure");
@@ -577,15 +613,15 @@ namespace ADOTabular
                         kpi = ProcessKpi(rdr);
                     }
 
-                    string defaultAggregateFunction;
-                    if (rdr.NodeType == XmlNodeType.Element
-                        && (rdr.LocalName == eProperty
-                            || rdr.LocalName == eMeasure
-                            || rdr.LocalName == eSummary
-                            || rdr.LocalName == eStatistics
-                            || rdr.LocalName == eMinValue
-                            || rdr.LocalName == eMaxValue))
-                    {
+                if (rdr.NodeType == XmlNodeType.Element
+                    && (rdr.LocalName == eProperty
+                    || rdr.LocalName == eMeasure
+                    || rdr.LocalName == eSummary
+                    || rdr.LocalName == eOrderBy
+                    || rdr.LocalName == eStatistics
+                    || rdr.LocalName == eMinValue
+                    || rdr.LocalName == eMaxValue))
+                {
 
                         if (rdr.LocalName == eMeasure)
                             colType = ADOTabularObjectType.Measure;
@@ -649,6 +685,11 @@ namespace ADOTabular
                         variations = ProcessVariations(rdr);
                     }
 
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "OrderBy")
+                {
+                    orderBy = ProcessOrderBy(rdr);
+                }
 
                     if (rdr.NodeType == XmlNodeType.EndElement
                         && rdr.LocalName == eProperty
@@ -737,6 +778,25 @@ namespace ADOTabular
             return keyRef;
         }
 
+        private static string ProcessOrderBy(XmlReader rdr)
+        {
+            var orderBy = string.Empty;
+            
+            while (!(rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "OrderBy"))
+            {
+                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "PropertyRef")
+                {
+                    rdr.MoveToAttribute("Name");
+                    rdr.ReadAttributeValue();
+                    orderBy = rdr.Value;
+                }
+
+                rdr.Read();
+            }
+
+            return orderBy;
+        }
+        
         private static List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
         {
             string _name;
@@ -1291,13 +1351,18 @@ namespace ADOTabular
             const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
 
             // Load remapping
-
             using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS);
             while (result.Read())
             {
                 string columnId = GetString(result, 0);
                 string columnName = GetString(result, 1);
-                daxColumnsRemap.RemapNames.Add(columnId, columnName);
+
+                // PowerPivot does not include the table id in the columnid so if two 
+                // tables have a column with the same name this can throw a duplicate key error
+                // the IF check prevents this.
+                if (!daxColumnsRemap.RemapNames.ContainsKey(columnId))
+                    daxColumnsRemap.RemapNames.Add(columnId, columnName);
+                
             }
         }
     }

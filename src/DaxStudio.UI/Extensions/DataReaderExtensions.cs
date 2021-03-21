@@ -40,26 +40,26 @@ namespace DaxStudio.UI.Extensions
             //                    select col).Count() > 0;
             bool isMdxResult = (from col in columns
                                 where mdxPattern.IsMatch(col)
-                                select col).Count() > 0;
+                                select col).Any();
 
             var measuresColumns = (from col in columns
-                                   where col.IndexOf(MEASURES_MDX) >= 0
+                                   where col.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase) >= 0
                                    select col);
-            bool hasPlainMeasures = (from col in measuresColumns
-                                     where col.IndexOf("].[", col.IndexOf(MEASURES_MDX) + MEASURES_MDX.Length) > 0
-                                     select col).Count() == 0;
+            bool hasPlainMeasures = !(from col in measuresColumns
+                                      where col.IndexOf("].[", col.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase) + MEASURES_MDX.Length, StringComparison.OrdinalIgnoreCase) > 0
+                                      select col).Any();
             foreach (string columnName in columns)
             {
                 bool removeCaption = false;
                 string name = columnName;
                 bool removeSquareBrackets = !isMdxResult;
-                int measuresMdxPos = name.IndexOf(MEASURES_MDX);// + MEASURES_MDX.Length;
+                int measuresMdxPos = name.IndexOf(MEASURES_MDX, StringComparison.OrdinalIgnoreCase);// + MEASURES_MDX.Length;
                 if (isMdxResult)
                 {
                     if ((measuresMdxPos >= 0))
                     {
-                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length) == -1)
-                        && (name.IndexOf("].[", 0) == MEASURES_MDX.Length - 2))
+                        if ((name.IndexOf("].[", measuresMdxPos + MEASURES_MDX.Length, StringComparison.OrdinalIgnoreCase) == -1)
+                        && (name.IndexOf("].[", 0, StringComparison.OrdinalIgnoreCase) == MEASURES_MDX.Length - 2))
                         {
                             removeSquareBrackets = true;
                         }
@@ -232,16 +232,17 @@ namespace DaxStudio.UI.Extensions
 
             int iMaxCol = reader.FieldCount - 1;
             int iRowCnt = 0;
+            
+            // CSV Writer config
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) {Delimiter = sep};
 
-            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.InvariantCulture))
+
+            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
             {
-                // CSV Writer config
 
-                csvWriter.Configuration.Delimiter = sep;
 
                 // Datetime as ISOFormat
-
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                csvWriter.Context.TypeConverterOptionsCache.AddOptions(
                     typeof(DateTime),
                     new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new string[] { isoDateFormat } });
 

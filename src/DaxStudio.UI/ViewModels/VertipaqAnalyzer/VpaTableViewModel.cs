@@ -1,19 +1,7 @@
-﻿using System.ComponentModel.Composition;
-using Caliburn.Micro;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
-using System.Windows.Data;
-using System;
-using System.ComponentModel;
-using Serilog;
-using System.Windows.Input;
-using DaxStudio.Interfaces;
+﻿using System;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
-using System.Windows.Navigation;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,12 +22,12 @@ namespace DaxStudio.UI.ViewModels
             _table = table;
             _parentViewModel = parentViewModel;
             Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this));
-            if (Columns.Count() > 0) {
+            if (Columns.Any()) {
                 ColumnMaxTotalSize = Columns.Max(c => c.TotalSize);
                 ColumnsMaxCardinality = Columns.Max(c => c.ColumnCardinality);
             }
             RelationshipsFrom = _table.RelationshipsFrom.Select(r => new VpaRelationshipViewModel(r, this));
-            if (RelationshipsFrom.Count() > 0)
+            if (RelationshipsFrom.Any())
             {
                 RelationshipMaxFromCardinality = RelationshipsFrom.Max(r => r.FromColumnCardinality);
                 RelationshipMaxToCardinality = RelationshipsFrom.Max(r => r.ToColumnCardinality);
@@ -177,7 +165,7 @@ namespace DaxStudio.UI.ViewModels
                 case "UsedSize":
                     return RelationshipSize.CompareTo(objTable.RelationshipSize) * SortDirection;
                 default:
-                    return TableName.CompareTo(objTable.TableName) * SortDirection;
+                    return string.Compare(TableName, objTable.TableName, StringComparison.OrdinalIgnoreCase) * SortDirection;
             }
 
         }

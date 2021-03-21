@@ -11,6 +11,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using System.Data;
+using System.Diagnostics;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using Serilog;
@@ -22,14 +23,16 @@ namespace DaxStudio.UI.ViewModels
         ,IHandle<TraceChangedEvent>
     {
 
+        private Stopwatch _stopwatch;
+        
         [ImportingConstructor]
-        public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon)
+        public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
         {
             EventAggregator = eventAggregator;
             EventAggregator.Subscribe(this);
             Document = document;
             Ribbon = ribbon;
-            
+            Options = options;
             ColdRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.ClearThenRun);
             WarmRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultTargetTimer));
@@ -47,6 +50,8 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                _stopwatch = new Stopwatch();
+                _stopwatch.Start();
                 ProgressIcon = FontAwesomeIcon.Refresh;
                 ProgressSpin = true;
                 ProgressMessage = "Starting Server Timings trace...";
@@ -68,11 +73,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                _stopwatch?.Stop();
             }
         }
 
         public void Cancel()
         {
+            _stopwatch?.Stop();
             IsCancelled = true;
             TryClose(true);
         }
@@ -88,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void StartServerTimings()
         {
-            var serverTimings = Ribbon.TraceWatchers.FirstOrDefault(tw => tw.GetType() == typeof(ServerTimesViewModel));
+            var serverTimings = Ribbon.TraceWatchers.First(tw => tw.GetType() == typeof(ServerTimesViewModel));
             if (serverTimings.IsChecked)
             {
                 // if the server timings trace is already active start running queries
@@ -121,7 +128,9 @@ namespace DaxStudio.UI.ViewModels
                 EventAggregator.PublishOnUIThread(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
-            if (ProgressPercentage == 1)
+            // if we have completed all the cold and warm runs set completed to true
+            if (_currentColdRun == ColdCacheRuns 
+                && _currentWarmRun == WarmCacheRuns )
             {
                 _benchmarkingComplete = true;
             }
@@ -149,6 +158,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void BenchmarkingComplete()
         {
+            _stopwatch?.Stop();
             // Stop listening to events
             EventAggregator.Unsubscribe(this);
 
@@ -166,8 +176,11 @@ namespace DaxStudio.UI.ViewModels
             ProgressIcon = FontAwesomeIcon.CheckCircle;
             ProgressMessage = "Benchmark Complete";
             ProgressColor = "Green";
-
-            // todo - activeate results
+            var duration = _stopwatch.ElapsedMilliseconds;
+            Options.PlayLongOperationSound((int)(duration / 1000));
+            
+            Document.OutputMessage("Benchmark Complete", duration);
+            // todo - activate results
 
             // close the Benchmarking dialog
             this.TryClose(true);
@@ -353,6 +366,7 @@ namespace DaxStudio.UI.ViewModels
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
         public RibbonViewModel Ribbon { get; }
+        public IGlobalOptions Options { get; }
 
         private readonly RunStyle ColdRunStyle;
         private readonly RunStyle WarmRunStyle;

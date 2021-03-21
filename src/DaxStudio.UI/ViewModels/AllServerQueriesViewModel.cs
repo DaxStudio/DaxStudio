@@ -15,9 +15,11 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
+using System.IO.Packaging;
 using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -54,6 +56,7 @@ namespace DaxStudio.UI.ViewModels
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QueryEnd,
                   DaxStudioTraceEventClass.QueryBegin,
+                  DaxStudioTraceEventClass.Error,
                   DaxStudioTraceEventClass.AggregateTableRewriteQuery
             };
         }
@@ -94,10 +97,8 @@ namespace DaxStudio.UI.ViewModels
                                 _rewriteEventCache.Remove(traceEvent.RequestID);
                             }
 
-                            // TODO - update newEvent with queryBegin
-                            QueryBeginEvent beginEvent = null;
-
-                            _queryBeginCache.TryGetValue(traceEvent.RequestID??"", out beginEvent);
+                            // check if we have a queryBegin event cached
+                            _queryBeginCache.TryGetValue(traceEvent.RequestID??"", out var beginEvent);
                             if (beginEvent != null)
                             {
 
@@ -119,6 +120,10 @@ namespace DaxStudio.UI.ViewModels
                             
 
                             QueryEvents.Insert(0, newEvent);
+                            break;
+                        case DaxStudioTraceEventClass.Error:
+                            newEvent.QueryType = "ERR";
+                            QueryEvents.Insert(0,newEvent);
                             break;
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events
@@ -258,6 +263,12 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
         }
 
+        public override void CopyResults()
+        {
+            // not supported by AllQueries
+            throw new NotImplementedException();
+        }
+
         public override void ClearFilters()
         {
             var vw = GetView() as Views.AllServerQueriesView;
@@ -295,14 +306,46 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
+            LoadJsonString(data);
+        }
+
+        private void LoadJsonString(string data)
+        {
             List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
-            
+
             _queryEvents.Clear();
             _queryEvents.AddRange(qe);
             NotifyOfPropertyChange(() => QueryEvents);
         }
 
-        
+        public void SavePackage(Package package)
+        {
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
+            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            {
+                tw.Write(GetJsonString());
+                tw.Close();
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            var part = package.GetPart(uri);
+            using (TextReader tr = new StreamReader(part.GetStream()))
+            {
+                string data = tr.ReadToEnd();
+                LoadJsonString(data);
+                
+            }
+
+        }
+
+
 
         public void SetDefaultFilter(string column, string value)
         {

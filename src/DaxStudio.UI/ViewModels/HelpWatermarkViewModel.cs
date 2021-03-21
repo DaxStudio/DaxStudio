@@ -27,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showHelpWatermark = true;
         public bool ShowHelpWatermark
         {
-            get => _showHelpWatermark && AlwaysShowHelpWatermark && !EditorTooSmall;
+            get => _showHelpWatermark && !NeverShowHelpWatermark && !EditorTooSmall;
             set
             {
                 if (value == _showHelpWatermark) return;
@@ -37,19 +37,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool AlwaysShowHelpWatermark
+        public bool NeverShowHelpWatermark
         {
-            get => Options.ShowHelpWatermark;
+            get => !Options.ShowHelpWatermark;
             set
             {
-                Options.ShowHelpWatermark = value;
+                Options.ShowHelpWatermark = !value;
                 NotifyOfPropertyChange(nameof(ShowHelpWatermark));
             }
         }
 
         public void Handle(UpdateGlobalOptions message)
         {
-            NotifyOfPropertyChange(nameof(AlwaysShowHelpWatermark));
+            NotifyOfPropertyChange(nameof(NeverShowHelpWatermark));
             NotifyOfPropertyChange(nameof(ShowHelpWatermark));
         }
 

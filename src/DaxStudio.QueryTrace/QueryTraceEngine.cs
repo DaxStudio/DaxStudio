@@ -111,7 +111,7 @@ namespace DaxStudio.QueryTrace
         //private List<DaxStudioTraceEventClass> _eventsToCapture;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-        private readonly IGlobalOptions _globalOptions;
+        private readonly IGlobalOptionsBase _globalOptions;
         private readonly object _connectionLockObj = new object();
         private readonly bool _filterForCurrentSession;
         private readonly string _powerBiFileName;
@@ -137,7 +137,7 @@ namespace DaxStudio.QueryTrace
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptionsBase globalOptions, bool filterForCurrentSession, string powerBiFileName)
         {
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionString);
             _globalOptions = globalOptions;
@@ -302,7 +302,7 @@ namespace DaxStudio.QueryTrace
 
                         policy.Execute(() => {
                             if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-                            Debug.WriteLine("Connection.Ping()");
+                            Debug.WriteLine("Connection.PingTrace()");
                             _connection.PingTrace(); 
                             Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
                         });
@@ -471,7 +471,7 @@ namespace DaxStudio.QueryTrace
                     
                     OnTraceEvent(e);
                     _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    if (e.EventClass == TraceEventClass.QueryEnd)
+                    if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error)
                     {
                         // if this is not an internal DAX Studio query 
                         // like the one we issue after a ClearCache to re-establish the session
