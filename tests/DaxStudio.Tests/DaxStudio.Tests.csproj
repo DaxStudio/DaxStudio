@@ -51,6 +51,15 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Tests\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Caliburn.Micro, Version=3.2.0.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Caliburn.Micro.Core.3.2.0\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -136,6 +145,7 @@
     <Compile Include="DaxLineParserTests.cs" />
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
+    <Compile Include="TomTests.cs" />
     <Compile Include="TraceEventTests.cs" />
     <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="QueryBuilderTests.cs" />

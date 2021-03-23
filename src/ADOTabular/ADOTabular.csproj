@@ -88,6 +88,15 @@
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Tests\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -179,7 +188,7 @@
       <Version>19.16.3.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.14.0</Version>
+      <Version>19.16.3.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>

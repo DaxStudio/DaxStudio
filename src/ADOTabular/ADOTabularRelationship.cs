@@ -3,8 +3,8 @@
     public class ADOTabularRelationship
     {
         public string InternalName { get; set; }
-        public string FromTable { get; set; }
-        public string ToTable { get; set; }
+        public ADOTabularTable FromTable { get; set; }
+        public ADOTabularTable ToTable { get; set; }
         public string FromColumn { get; set; }
         public string FromColumnMultiplicity { get; set; }
         public string ToColumnMultiplicity { get; set; }

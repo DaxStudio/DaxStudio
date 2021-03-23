@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using DaxStudio.UI.Events;
+using Microsoft.AnalysisServices.Tabular;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
@@ -52,7 +53,7 @@ namespace DaxStudio.UI.Model
 
         public Type SystemType => TabularObject?.SystemType;
         
-        public Type DataType => TabularObject?.DataType;
+        public DataType DataType => TabularObject?.DataType??DataType.Unknown;
         public string TableName => TabularObject.TableName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
 

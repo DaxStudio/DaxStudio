@@ -204,6 +204,9 @@
     <None Include="App.Debug.config">
       <DependentUpon>App.config</DependentUpon>
     </None>
+    <None Include="App.Tests.config">
+      <DependentUpon>App.config</DependentUpon>
+    </None>
     <None Include="App.Release.config">
       <DependentUpon>App.config</DependentUpon>
       <SubType>Designer</SubType>
@@ -240,6 +243,7 @@
   <ItemGroup>
     <SplashScreen Include="daxstudio-logo_250x250.png" />
     <Content Include="DaxStudio.ico" />
+    <None Include="App.Tests.config" />
     <None Include="daxstudio.pbitool.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -291,6 +295,26 @@
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Tests\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Tests\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\Web\Microsoft.Web.Publishing.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\Web\Microsoft.Web.Publishing.targets" Condition="false" />

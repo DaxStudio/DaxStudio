@@ -142,8 +142,27 @@ namespace ADOTabular
             foreach (var t in tabs)
             {
                 TagKpiComponentColumns(t);
+                UpdateTomRelationships(t);
             }
 
+        }
+
+        private void UpdateTomRelationships(ADOTabularTable table)
+        {
+            var tomTable = table.Model.TOMModel.Tables[table.Name];
+            foreach (var r in table.Relationships)
+            {
+                //var relationship = new SingleColumnRelationship();
+                //relationship.FromColumn =  tomTable.Columns.First(c => c. r.FromColumn);
+                //relationship.FromColumn = tomTable.Columns.Find(r.ToColumn);
+                //if (Enum.TryParse<RelationshipEndCardinality>(r.FromColumnMultiplicity, out var fromCardinality))
+                //    relationship.FromCardinality = fromCardinality;
+                //if (Enum.TryParse<RelationshipEndCardinality>(r.ToColumnMultiplicity, out var toCardinality))
+                //    relationship.ToCardinality = toCardinality;
+                //if (Enum.TryParse<CrossFilteringBehavior>(r.CrossFilterDirection, out var crossFilteringBehavior))
+                //    relationship.CrossFilteringBehavior = crossFilteringBehavior;
+                //table.Model.TOMModel.Relationships.Add(relationship);
+            }
         }
 
         // Read the "Culture" attribute from <bi:EntityContainer>
@@ -337,8 +356,8 @@ namespace ADOTabular
 
             var fromTable = tabs.GetById(fromTableRef);
             fromTable.Relationships.Add(new ADOTabularRelationship() {
-                FromTable = fromTableRef,
-                ToTable = toTableRef,
+                FromTable = tabs.GetById(fromTableRef),
+                ToTable = tabs.GetById(toTableRef),
                 InternalName = refName,
                 CrossFilterDirection = crossFilterDir
             });
@@ -484,41 +503,8 @@ namespace ADOTabular
             , ADOTabularTableCollection tables
             , string eEntityType)
         {
-            if (rdr.NameTable != null)
-            var eProperty = rdr.NameTable.Add("Property");
-            var eMeasure = rdr.NameTable.Add("Measure");
-            var eSummary = rdr.NameTable.Add("Summary");
-            var eStatistics = rdr.NameTable.Add("Statistics");
-            var eMinValue = rdr.NameTable.Add("MinValue");
-            var eMaxValue = rdr.NameTable.Add("MaxValue");
-            var eOrderBy = rdr.NameTable.Add("OrderBy");
             
-            // this routine effectively processes and <EntityType> element and it's children
-            string caption = string.Empty;
-            string description = string.Empty;
-            bool isVisible = true;
-            string name = null;
-            string refName = string.Empty;
-            string dataType = string.Empty;
-            string contents = string.Empty;
-            string minValue = string.Empty;
-            string maxValue = string.Empty;
-            string formatString = string.Empty;
-            string keyRef = string.Empty;
-            string orderBy = string.Empty;
-            string defaultAggregateFunction = string.Empty;
-            long stringValueMaxLength = 0;
-            long distinctValueCount = 0;
-            bool nullable = true;
-            ADOTabularTable tab = null;
 
-            IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
-
-            List<ADOTabularVariation> _variations = new List<ADOTabularVariation>();
-
-            KpiDetails kpi = new KpiDetails();
-
-            var colType = ADOTabularObjectType.Column;
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == eEntityType))
             {
@@ -528,20 +514,23 @@ namespace ADOTabular
                 var eStatistics = rdr.NameTable.Add("Statistics");
                 var eMinValue = rdr.NameTable.Add("MinValue");
                 var eMaxValue = rdr.NameTable.Add("MaxValue");
+                var eOrderBy = rdr.NameTable.Add("OrderBy");
 
                 // this routine effectively processes and <EntityType> element and it's children
                 string caption = "";
                 string description = "";
                 bool isVisible = true;
                 string name = null;
-                string refName = "";
-                string tableId = "";
-                string dataType = "";
-                string contents = "";
-                string minValue = "";
-                string maxValue = "";
-                string formatString = "";
-                string keyRef = "";
+                string refName = string.Empty;
+                string tableId = string.Empty;
+                string dataType = string.Empty;
+                string contents = string.Empty;
+                string minValue = string.Empty;
+                string maxValue = string.Empty;
+                string formatString = string.Empty;
+                string keyRef = string.Empty;
+                string defaultAggregateFunction = string.Empty;
+                string orderBy = string.Empty;
                 long stringValueMaxLength = 0;
                 long distinctValueCount = 0;
                 bool nullable = true;
@@ -712,7 +701,8 @@ namespace ADOTabular
                                     MaxValue = maxValue,
                                     DistinctValues = distinctValueCount,
                                     FormatString = formatString,
-                                    StringValueMaxLength = stringValueMaxLength
+                                    StringValueMaxLength = stringValueMaxLength,
+                                    OrderByRef = orderBy
                                 };
                                 col.Variations.AddRange(variations);
                                 tables.Model.AddRole(col);
@@ -748,7 +738,7 @@ namespace ADOTabular
                         colType = ADOTabularObjectType.Column;
                         variations = new List<ADOTabularVariation>();
                         dataTypeEnum = DataType.Unknown;
-
+                        orderBy = string.Empty;
                     }
                     if (!rdr.Read()) break;// quit the read loop if there is no more data
                 }

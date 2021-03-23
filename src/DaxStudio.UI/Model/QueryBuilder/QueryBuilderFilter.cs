@@ -74,7 +74,7 @@ namespace DaxStudio.UI.Model
                         case FilterType.In:
                         case FilterType.NotIn:
                             // if the data type is string and the model supports TREATAS
-                            if (TabularObject.DataType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) ) yield return ft;
+                            if (TabularObject.SystemType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) ) yield return ft;
                             break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
