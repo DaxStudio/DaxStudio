@@ -4070,7 +4070,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(ReconnectEvent message)
         {
             UpdateRunningTraces();
-            Spid = Connection.SPID;
+            Spid = Connection?.SPID??-1;
         }
 
         private void UpdateRunningTraces()
