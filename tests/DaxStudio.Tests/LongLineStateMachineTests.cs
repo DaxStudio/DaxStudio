@@ -73,7 +73,7 @@ namespace DaxStudio.Tests
         {
             var sm = new LongLineStateMachine(25);
             var input = "EVALUATE {123}\n" +
-                        "// SQL Query\n" +
+                        "// Direct Query\n" +
                         "SELECT * FROM Table";
             sm.ProcessString(input);
             Assert.AreEqual(15, sm.SqlQueryCommentPosition);
@@ -84,7 +84,7 @@ namespace DaxStudio.Tests
         {
             var sm = new LongLineStateMachine(25);
             var input = "EVALUATE {123}\n" +
-                        "// SQL Query\n" +
+                        "// Direct Query\n" +
                         "SELECT * FROM Table";
             var actual = sm.ProcessString(input).Substring(0,sm.SqlQueryCommentPosition);
             var expected = "EVALUATE {123}\n";
