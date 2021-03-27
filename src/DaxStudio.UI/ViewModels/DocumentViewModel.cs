@@ -4198,7 +4198,7 @@ namespace DaxStudio.UI.ViewModels
             if (!this.Connection.IsConnected) return;
             if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
             {
-                System.Diagnostics.Process.Start($"https://dax.guide/{word}");
+                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
             }
         }
 

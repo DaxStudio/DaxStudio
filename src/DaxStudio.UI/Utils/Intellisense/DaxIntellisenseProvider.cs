@@ -390,7 +390,7 @@ namespace DaxStudio.UI.Utils.Intellisense
 
             var docLink = new Hyperlink();
             docLink.Inlines.Add($"https://dax.guide/{f.Caption}");
-            docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}");
+            docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}/?aff=dax-studio");
             docLink.RequestNavigate += InsightHyperLinkNavigate;
             tb.Inlines.Add("\n");
             tb.Inlines.Add(docLink);
