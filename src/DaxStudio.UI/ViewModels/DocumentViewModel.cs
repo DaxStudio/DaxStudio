@@ -4202,7 +4202,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in dax.guide";
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {

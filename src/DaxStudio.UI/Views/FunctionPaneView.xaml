@@ -94,7 +94,7 @@
                                 </TextBlock>
                                 <StackPanel.ContextMenu>
                                     <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Open in Dax.Guide"
+                                        <MenuItem Header="Open in DAX Guide"
                                                   cal:Message.Attach="[Event Click] = [Action LaunchDaxGuide($dataContext)]">
                                         </MenuItem>
                                     </ContextMenu>
