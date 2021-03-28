@@ -116,7 +116,7 @@ namespace DaxStudio.UI.ViewModels
         public void LaunchDaxGuide(IFilterableTreeViewItem selectedItem)
         {
             if (!(selectedItem is ADOTabularFunctionsExtensions.TreeViewFunction func)) return;
-            Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}"));
+            Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}/?aff=dax-studio"));
         }
     }
 }

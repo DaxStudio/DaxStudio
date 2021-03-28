@@ -238,7 +238,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Multiple queries detected on paste")]
-        [Description("Specifies how to handle code after a \"// SQL Query\" comment when pasting code from Power BI Performance Analyzer")]
+        [Description("Specifies how to handle code after a \"// Direct Query\" comment when pasting code from Power BI Performance Analyzer")]
         [SortOrder(60)]
         [DataMember]
         [DefaultValue(MultipleQueriesDetectedOnPaste.Prompt)]

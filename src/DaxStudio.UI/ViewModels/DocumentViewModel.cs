@@ -4068,7 +4068,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(ReconnectEvent message)
         {
             UpdateRunningTraces();
-            Spid = Connection.SPID;
+            Spid = Connection?.SPID??-1;
         }
 
         private void UpdateRunningTraces()
@@ -4196,11 +4196,11 @@ namespace DaxStudio.UI.ViewModels
             if (!this.Connection.IsConnected) return;
             if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
             {
-                System.Diagnostics.Process.Start($"https://dax.guide/{word}");
+                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
             }
         }
 
-        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in dax.guide";
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {
