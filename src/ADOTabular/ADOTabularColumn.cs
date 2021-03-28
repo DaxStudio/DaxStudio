@@ -73,6 +73,17 @@ namespace ADOTabular
         public string DefaultAggregateFunction { get; internal set; }
         public long StringValueMaxLength { get; internal set; }
         public string DataTypeName { get { return DataType==null?string.Empty:DataType.ToString().Replace("System.", ""); } }
+        
+        internal string OrderByRef { get; set; }
+
+        public ADOTabularColumn OrderBy
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(OrderByRef)) return null;
+                return Table.Columns.GetByPropertyRef(OrderByRef);
+            }
+        }
 
         //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
         public string MeasureExpression

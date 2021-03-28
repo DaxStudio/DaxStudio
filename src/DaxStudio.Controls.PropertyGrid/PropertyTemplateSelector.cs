@@ -7,8 +7,7 @@ namespace DaxStudio.Controls.PropertyGrid
 {
     public class PropertyTemplateSelector : DataTemplateSelector
     {
-        public override DataTemplate
-            SelectTemplate(object item, DependencyObject container)
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             FrameworkElement element = container as FrameworkElement;
 

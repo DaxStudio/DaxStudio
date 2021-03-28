@@ -75,7 +75,8 @@ namespace DaxStudio.Controls.PropertyGrid
 
         private static bool CategoryFilterPredicate( PropertyBinding<object> p, DependencyObject d)
         {
-            return System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => CategoryFilterContains(p, d));
+            if (Application.Current.Dispatcher.CheckAccess()) return CategoryFilterContains(p, d);
+            return Application.Current.Dispatcher.Invoke(() => CategoryFilterContains(p, d));
         }
 
         private static bool CategoryFilterContains(PropertyBinding<object> p, DependencyObject d)

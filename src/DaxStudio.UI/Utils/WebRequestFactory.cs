@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using ICSharpCode.SharpDevelop.Dom;
 
 namespace DaxStudio.UI.Utils
 {
@@ -78,7 +79,7 @@ namespace DaxStudio.UI.Utils
                    //todo - how to check that this works with different proxies...??
                    try
                    {
-                       if (Proxy == null)
+                       if (Proxy == null  )
                            Proxy = GetProxy(DaxTextFormatUri);
                    }
                    catch (WebException)
@@ -172,7 +173,7 @@ namespace DaxStudio.UI.Utils
         {
             Log.Verbose("Using System Proxy");
             Proxy = WebRequest.GetSystemWebProxy();
-            if (RequiresProxyCredentials(_proxy))
+            if (RequiresProxyCredentials(Proxy))
             {
                 Proxy.Credentials = CredentialCache.DefaultCredentials;
                 Log.Verbose("Using System Proxy with default credentials");
@@ -196,7 +197,9 @@ namespace DaxStudio.UI.Utils
             }
             catch (WebException wex)
             {
-                if (wex.Status == WebExceptionStatus.ProtocolError || wex.Status == WebExceptionStatus.NameResolutionFailure)
+                if (wex.Status == WebExceptionStatus.ProtocolError 
+                    || wex.Status == WebExceptionStatus.NameResolutionFailure 
+                    || wex.Status == WebExceptionStatus.ConnectFailure)
                 {
                     return true;
                 }

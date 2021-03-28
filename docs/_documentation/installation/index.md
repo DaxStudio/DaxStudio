@@ -15,7 +15,8 @@ Where ever possible we recommend using the default **All Users** install option 
 
 |  | All Users | Current User | Portable |
 |---|---|---|---|
-|Requires Admin rights| **√ Yes** | No | No | 
+|Requires Admin rights to install| **√ Yes** | No | No | 
+|Requires Admin rights to run | No | No | No | 
 |Available for all users on the current machine| **√ Yes** | No | No | 
 |Excel Add-in available| **√ Yes** | **√ Yes** | No | 
 |Power BI External Tools integration| **√ Yes** | No | No | 

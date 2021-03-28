@@ -64,7 +64,7 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
                   >
             <!--" dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">>-->
             <TreeView.ItemTemplate>
@@ -77,7 +77,7 @@
                     <!-- Function Template -->
                     <HierarchicalDataTemplate.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" >
+                            <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=FunctionGroups}">
                                 <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
                                 <TextBlock Text="{Binding Caption}" >
                                     <TextBlock.ToolTip>
@@ -92,6 +92,13 @@
                                         </StackPanel>
                                     </TextBlock.ToolTip>
                                 </TextBlock>
+                                <StackPanel.ContextMenu>
+                                    <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="Open in DAX Guide"
+                                                  cal:Message.Attach="[Event Click] = [Action LaunchDaxGuide($dataContext)]">
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </StackPanel.ContextMenu>
                             </StackPanel>
                         </DataTemplate>
                     </HierarchicalDataTemplate.ItemTemplate>

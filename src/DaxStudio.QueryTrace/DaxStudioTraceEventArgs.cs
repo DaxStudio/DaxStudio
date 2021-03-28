@@ -65,6 +65,10 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.DAXQueryPlan:
                     // no additional properties captured, the plan is stored in the text field
                     break;
+                case TraceEventClass.Error:
+                    StartTime = e.StartTime;
+                    NTUserName = e.NTUserName;
+                    break;
                 default:
                     throw new ArgumentException($"No mapping for the event class {e.EventClass.ToString()} was found");
 

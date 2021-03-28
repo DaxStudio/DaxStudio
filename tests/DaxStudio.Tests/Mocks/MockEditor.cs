@@ -110,6 +110,9 @@ namespace DaxStudio.Tests.Mocks
             // do nothing
         }
 
-
+        public DocumentLine DocumentGetLineByNumber(int line)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

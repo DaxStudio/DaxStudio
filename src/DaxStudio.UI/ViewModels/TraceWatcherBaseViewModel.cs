@@ -10,6 +10,7 @@ using DaxStudio.QueryTrace;
 using System.Timers;
 using DaxStudio.UI.Utils;
 using System;
+using System.Linq;
 using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 
@@ -274,6 +275,7 @@ namespace DaxStudio.UI.ViewModels
         public bool CanStop { get { return IsChecked; } }
         public void Stop()
         {
+            IsBusy = false;
             IsPaused = false;
             IsChecked = false;
         }
@@ -300,6 +302,10 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool IsCopyAllVisible { get { return false; } }
         public abstract void CopyAll();
 
+        public virtual bool CanCopyResults => false;
+        public abstract void CopyResults();
+        public virtual bool IsCopyResultsVisible => false;
+        
         public virtual bool CanExport { get { return true; }  }  // TODO - should this be conditional on whether we have data?
 
         public void Export() {
@@ -350,18 +356,28 @@ namespace DaxStudio.UI.ViewModels
             if (isCancelled) return;
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 
-            // start timer, if timer elapses then print warning and set IsBusy = false
-            _timeout = new Timer(_globalOptions.QueryEndEventTimeout.SecondsToMilliseconds());
-            _timeout.AutoReset = false;
-            _timeout.Elapsed += QueryEndEventTimeout;
-            _timeout.Start();
-            BusyMessage = "Waiting for Query End event...";
+            // Check if the Events collection does not already contain a QueryEnd event
+            // if it doesn't we start the timeout timer
+            if (!Events.Any(ev => ev.EventClass == DaxStudioTraceEventClass.QueryEnd))
+            {
+                // start timer, if timer elapses then print warning and set IsBusy = false
+                _timeout = new Timer(_globalOptions.QueryEndEventTimeout.SecondsToMilliseconds());
+                _timeout.AutoReset = false;
+                _timeout.Elapsed += QueryEndEventTimeout;
+                _timeout.Start();
+                BusyMessage = "Waiting for Query End event...";
+            }
         }
 
         private void QueryEndEventTimeout(object sender, ElapsedEventArgs e)
         {
-            Reset();
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
+            // Check that the QueryEnd event is not in the collection of events, if not we only have
+            // a partial set of events and they cannot be relied upon so we clear them
+            if(!Events.Any(ev => ev.EventClass == DaxStudioTraceEventClass.QueryEnd)) {
+                Reset();
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                    "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
+            }
         }
 
     }

@@ -149,6 +149,14 @@ namespace DAXEditorControl
         }
         #endregion CaretPosition
 
+        public static readonly DependencyProperty ContextMenuWordProperty =
+                DependencyProperty.Register("ContextMenuWord", typeof(string), typeof(DAXEditor), new UIPropertyMetadata(string.Empty));
+        public string ContextMenuWord
+        {
+            get => (string)GetValue(ContextMenuWordProperty);
+            set => SetValue(ContextMenuWordProperty, value);
+        }
+
         #region EditorStateProperties
         /// <summary>
         /// Dependency property to allow ViewModel binding

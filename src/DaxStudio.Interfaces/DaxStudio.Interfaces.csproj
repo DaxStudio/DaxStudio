@@ -102,6 +102,7 @@
     <Compile Include="Enums\DaxFormatStyle.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
+    <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="IActivateResults.cs" />
     <Compile Include="IDatabaseReference.cs" />
     <Compile Include="IFilterableTreeViewItem.cs" />

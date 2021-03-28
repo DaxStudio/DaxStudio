@@ -24,7 +24,7 @@ namespace DaxStudio.Tests.Mocks
         {
             var col = CreateADOTabularColumn(caption, daxName, dataType, objectType, isModelItem);
 
-            var col2 = new QueryBuilderColumn(col, isModelItem);
+            var col2 = new QueryBuilderColumn(col, isModelItem, new MockEventAggregator());
 
             return col2;
         }

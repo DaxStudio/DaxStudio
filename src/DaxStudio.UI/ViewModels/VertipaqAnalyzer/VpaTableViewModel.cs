@@ -1,19 +1,7 @@
-﻿using System.ComponentModel.Composition;
-using Caliburn.Micro;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
-using System.Windows.Data;
-using System;
-using System.ComponentModel;
-using Serilog;
-using System.Windows.Input;
-using DaxStudio.Interfaces;
+﻿using System;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
-using System.Windows.Navigation;
 
 namespace DaxStudio.UI.ViewModels
 {

@@ -290,6 +290,13 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Warning("CopyAll method not implemented for QueryPlanTraceViewModel");
         }
+
+        public override void CopyResults()
+        {
+            // QueryPlan does not support this operation
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         public override bool CanExport => _logicalQueryPlanRows.Count > 0;
