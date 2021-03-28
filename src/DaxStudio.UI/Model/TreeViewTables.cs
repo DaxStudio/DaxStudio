@@ -150,7 +150,9 @@ namespace DaxStudio.UI.Model
     }
 
     //public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IGlobalOptions options, IEventAggregator eventAggregator);
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     public delegate IEnumerable<FilterableTreeViewItem> GetChildrenDelegate(IADOTabularObject tabularObject, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     
     public abstract class FilterableTreeViewItem : PropertyChangedBase, IFilterableTreeViewItem
     {
@@ -310,7 +312,9 @@ namespace DaxStudio.UI.Model
         // so for a column it would be something like 'table name'[column name]
         // but for a table it would be 'table name'
         public string DaxName => _table.DaxName;
-        public int ColumnCount => _table.Columns.Count;
+        public int ColumnCount => _table.ColumnCount;
+
+        public int MeasureCount => _table.MeasureCount;
 
         private bool _rowCountSet;
         private long _rowCount;

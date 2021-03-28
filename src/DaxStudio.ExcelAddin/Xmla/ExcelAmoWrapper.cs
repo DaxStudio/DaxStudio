@@ -47,7 +47,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(string.Format("Error loading AMO from '{0}' - {1}", ExcelAdomdClientAssemblyPath, e.Message));
+                    throw new Exception($"Error loading AMO from '{ExcelAdomdClientAssemblyPath}' - {e.Message}");
                 }
 
             }

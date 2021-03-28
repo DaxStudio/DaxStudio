@@ -10,59 +10,70 @@ namespace DaxStudio.Interfaces
 {
     public interface IGlobalOptions: IGlobalOptionsBase
     {
-        [DefaultValue(true)] bool EditorShowLineNumbers { get; set; }
-        [JsonIgnore] double EditorFontSizePx { get; }
-        string EditorFontFamily { get; set; }
-        [JsonIgnore] double ResultFontSizePx { get; }
-        string ResultFontFamily { get; set; }
-        bool EditorEnableIntellisense { get; set; }
-        int QueryHistoryMaxItems { get; set; }
-        bool QueryHistoryShowTraceColumns { get; set; }
-        bool ProxyUseSystem { get; set; }
-        string ProxyAddress { get; set; }
-        bool ShowHelpWatermark { get; set; }
-        string ProxyUser { get; set; }
-        SecureString ProxySecurePassword { get; set; }
-        int QueryEndEventTimeout { get; set; }
-        int DaxFormatterRequestTimeout { get; set; }
-        int TraceStartupTimeout { get; set; }
-        DelimiterType DefaultSeparator { get; set; }
-        DaxFormatStyle DefaultDaxFormatStyle { get; set; }
-        bool SkipSpaceAfterFunctionName { get; set; }
-
-        bool ShowPreReleaseNotifications { get; set; }
-        bool ShowTooltipBasicStats { get; set; }
-        bool ShowTooltipSampleData { get; set; }
-        bool CanPublishDaxFunctions { get; set; }
-        bool ExcludeHeadersWhenCopyingResults { get; set; }
-
-        bool ResultAutoFormat { get; set; }
-        string DefaultDateAutoFormat { get; set; }
-        bool ScaleResultsFontWithEditor { get; set; }
-        int CodeCompletionWindowWidthIncrease { get; set; }
-        bool KeepMetadataSearchOpen { get; set; }
-        bool SortFoldersFirstInMetadata { get; set; }
-        bool ShowHiddenMetadata { get; set; }
-        bool SetClearCacheAsDefaultRunStyle { get; set; }
-        string WindowPosition { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
-        bool AutoRefreshMetadataLocalNetwork { get; set; }
         bool AutoRefreshMetadataLocalMachine { get; set; }
-        DateTime LastVersionCheckUTC { get; set; }
-        Version DismissedVersion { get; set; }
-        string Theme { get; set; }
-        bool CustomCsvQuoteStringFields { get; set; }
+        bool AutoRefreshMetadataLocalNetwork { get; set; }
+        bool CanPublishDaxFunctions { get; set; }
+        int CodeCompletionWindowWidthIncrease { get; set; }
+        Version CurrentDownloadVersion { get; set; }
         CustomCsvDelimiterType CustomCsvDelimiterType { get; set; }
-        ObservableCollection<IDaxFile> RecentFiles { get; }
-        ObservableCollection<string> RecentServers { get; }
-
+        bool CustomCsvQuoteStringFields { get; set; }
+        
+        int DaxFormatterRequestTimeout { get; set; }
+        string DefaultDateAutoFormat { get; set; }
+        DaxFormatStyle DefaultDaxFormatStyle { get; set; }
+        DelimiterType DefaultSeparator { get; set; }
+        Version DismissedVersion { get; set; }
         bool EditorConvertTabsToSpaces { get; set; }
+        bool EditorEnableIntellisense { get; set; }
+        string EditorFontFamily { get; set; }
+        [JsonIgnore] double EditorFontSizePx { get; }
         int EditorIndentationSize { get; set; }
         MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
+        bool EditorShowFunctionInsightsOnHover { get; set; }
+        bool EditorShowLineNumbers { get; set; }
+        bool EditorWordWrap { get; set; }
+        bool ExcludeHeadersWhenCopyingResults { get; set; }
+        bool KeepMetadataSearchOpen { get; set; }
+        DateTime LastVersionCheckUTC { get; set; }
+        string ProxyAddress { get; set; }
+        bool ProxyUseSystem { get; set; }
+        string ProxyUser { get; set; }
+        SecureString ProxySecurePassword { get; set; }
+        [JsonIgnore] double ResultFontSizePx { get; }
+        string ResultFontFamily { get; set; }
+        int QueryEndEventTimeout { get; set; }
+        int QueryHistoryMaxItems { get; set; }
+        bool QueryHistoryShowTraceColumns { get; set; }
+        ObservableCollection<IDaxFile> RecentFiles { get; }
+        ObservableCollection<string> RecentServers { get; }
+        bool ResultAutoFormat { get; set; }
+        bool ScaleResultsFontWithEditor { get; set; }
+        bool SetClearCacheAsDefaultRunStyle { get; set; }
+        bool ShowHelpWatermark { get; set; }
+        bool ShowHiddenMetadata { get; set; }
+        bool ShowPreReleaseNotifications { get; set; }
         bool ShowUserInTitlebar { get; set; }
+        bool ShowTooltipBasicStats { get; set; }
+        bool ShowTooltipSampleData { get; set; }
+        bool SkipSpaceAfterFunctionName { get; set; }
+        bool SortFoldersFirstInMetadata { get; set; }
+        string Theme { get; set; }
+        int TraceStartupTimeout { get; set; }
+        string WindowPosition { get; set; }
 
-        Version CurrentDownloadVersion { get; set; }
-        
+
+
+
+
+        bool PlaySoundAfterLongOperation { get; set; }
+        bool PlaySoundIfNotActive { get; set; }
+        LongOperationSounds LongOperationSound { get; set; }
+        int LongQuerySeconds { get; set; }
+
+
+
+
         #region Hotkeys
 
         [JsonIgnore] string HotkeyWarningMessage { get; set; }
@@ -88,11 +99,13 @@ namespace DaxStudio.Interfaces
         bool ShowExportMetrics { get; set; }
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
+        bool VpaxReadStatisticsFromData { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }
+
 
         #region Methods
 
@@ -102,7 +115,7 @@ namespace DaxStudio.Interfaces
 
         // 
         [JsonIgnore] bool IsRunningPortable { get; set; }
-        bool EditorWordWrap { get; set; }
+        
         bool ShowMetadataRefreshPrompt { get; set; }
         [JsonIgnore] bool BlockAllInternetAccess { get; set; }
         bool BlockVersionChecks { get; set; }
@@ -110,6 +123,8 @@ namespace DaxStudio.Interfaces
         bool BlockExternalServices { get; set; }
 
         bool AnyExternalAccessAllowed();
+
+        void PlayLongOperationSound(int currentOperationSeconds);
 
         #endregion
     }

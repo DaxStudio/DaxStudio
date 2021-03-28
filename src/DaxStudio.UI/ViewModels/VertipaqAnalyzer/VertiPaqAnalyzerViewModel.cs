@@ -277,6 +277,7 @@ namespace DaxStudio.UI.ViewModels
             public string SampleViolations => "3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
             public string TableColumn => "A combination of the table and column name in the form '<table>-<column>'";
             public string TableRelationship => "The name of the relationship";
+            public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
         }
 
     }

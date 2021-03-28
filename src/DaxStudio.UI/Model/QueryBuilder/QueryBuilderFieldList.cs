@@ -7,9 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Model
@@ -44,10 +41,14 @@ namespace DaxStudio.UI.Model
         {
             var builderItem = item as QueryBuilderColumn;
             if (builderItem == null)
-                 builderItem = new QueryBuilderColumn(item, true);
+                 builderItem = new QueryBuilderColumn(item, true, EventAggregator);
             if (item is ADOTabularColumn col)
             {
                 builderItem.SelectedTable = col.Table;
+                if (col.OrderBy != null)
+                {
+                    // TODO - look at automatically pulling OrderBy columns into the query
+                }
             }
             Items.Add(builderItem);
             NotifyOfPropertyChange(nameof(Items));
@@ -62,7 +63,7 @@ namespace DaxStudio.UI.Model
 
         public bool Contains(IADOTabularColumn item)
         {
-            return Items.FirstOrDefault(c => c == item) != null;
+            return Items.FirstOrDefault(c => c.TabularObject == item) != null;
             
         }
 
@@ -74,7 +75,7 @@ namespace DaxStudio.UI.Model
         }
         public void Insert(int index, IADOTabularColumn item)
         {
-            var builderItem = new QueryBuilderColumn(item,true);
+            var builderItem = new QueryBuilderColumn(item,true, EventAggregator);
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(builderItem);
             else Items.Insert(index, builderItem);
@@ -82,13 +83,24 @@ namespace DaxStudio.UI.Model
 
         public int IndexOf(IADOTabularColumn obj)
         {
-            var item = Items.FirstOrDefault(c => c == obj);
+            var item = Items.FirstOrDefault(c => c.TabularObject == obj);
             return Items.IndexOf(item);
         }
 
         public void EditMeasure(QueryBuilderColumn measure)
         {
             EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(measure));
+        }
+
+
+        //public bool CanDuplicateMeasure
+        //{
+        //    get => !string.IsNullOrEmpty(Selected.MeasureExpression);
+        //}
+        //public void DuplicateMeasure(QueryBuilderColumn measure)
+        public void DuplicateMeasure(object measure)
+        {
+            System.Diagnostics.Debug.WriteLine("Duplicating Measure");
         }
 
 

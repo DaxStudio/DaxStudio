@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Data.SqlClient;
 using System.Security;
-using Caliburn.Micro;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 
@@ -16,21 +15,21 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties
         public string ServerName {
-            get { return Wizard.ServerName; }
+            get => Wizard.ServerName;
             set {
                 Wizard.ServerName = value;
                 NotifyOfPropertyChange(() => CanNext);
             }
         }
         public string Username {
-            get { return Wizard.Username; }
+            get => Wizard.Username;
             set {
                 Wizard.Username = value;
                 NotifyOfPropertyChange(() => CanNext);
             }
         }
         public SecureString SecurePassword {
-            get { return Wizard.SecurePassword; }
+            get => Wizard.SecurePassword;
             set {
                 Wizard.SecurePassword = value;
                 NotifyOfPropertyChange(() => CanNext);
@@ -39,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string Database
         {
-            get { return Wizard.Database; }
+            get => Wizard.Database;
             set
             {
                 Wizard.Database = value;
@@ -49,7 +48,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string Schema
         {
-            get { return Wizard.Schema; }
+            get => Wizard.Schema;
             set
             {
                 Wizard.Schema = value;
@@ -59,12 +58,12 @@ namespace DaxStudio.UI.ViewModels
 
         public bool TruncateTables
         {
-            get { return Wizard.TruncateTables; }
-            set { Wizard.TruncateTables = value; }
+            get => Wizard.TruncateTables;
+            set => Wizard.TruncateTables = value;
         }
 
         public SqlAuthenticationType AuthenticationType {
-            get { return Wizard.AuthenticationType; }
+            get => Wizard.AuthenticationType;
             set {
                 Wizard.AuthenticationType = value;
                 NotifyOfPropertyChange(() => CanNext);
@@ -76,20 +75,14 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsWindowsAuth
         {
-            get { return AuthenticationType == SqlAuthenticationType.Windows; }
-            set {
-                if (value) { AuthenticationType = SqlAuthenticationType.Windows; }
-                else { AuthenticationType = SqlAuthenticationType.Sql; }
-            }
+            get => AuthenticationType == SqlAuthenticationType.Windows;
+            set => AuthenticationType = value ? SqlAuthenticationType.Windows : SqlAuthenticationType.Sql;
         }
 
         public bool IsSqlAuth
         {
-            get { return AuthenticationType == SqlAuthenticationType.Sql; }
-            set {
-                if (value) { AuthenticationType = SqlAuthenticationType.Sql; }
-                else { AuthenticationType = SqlAuthenticationType.Windows; }
-            }
+            get => AuthenticationType == SqlAuthenticationType.Sql;
+            set => AuthenticationType = value ? SqlAuthenticationType.Sql : SqlAuthenticationType.Windows;
         }
 
         #endregion
@@ -105,26 +98,31 @@ namespace DaxStudio.UI.ViewModels
 
         private void BuildConnectionString()
         {
+            var builder = new SqlConnectionStringBuilder
+            {
+                ApplicationName = "DAX Studio", 
+                DataSource = ServerName, 
+                InitialCatalog = Database
+            };
+
             if (AuthenticationType == SqlAuthenticationType.Windows)
             {
-                Wizard.SqlConnectionString = $"Server={ServerName};Database={Database};Trusted_Connection=True;";
+                builder.IntegratedSecurity = true;
             }
             else
             {
-                Wizard.SqlConnectionString = $"Server={ServerName};Database={Database};User Id={Username};Password={SecurePassword.ConvertToUnsecureString()}";
+                builder.UserID = Username;
+                builder.Password = SecurePassword.ConvertToUnsecureString();
             }
+
+            Wizard.SqlConnectionString = builder.ConnectionString;
         }
 
-        public bool CanNext
-        {
-            get
-            {
-                return ServerName.Length > 0 
-                    && Database.Length > 0
-                    && Schema.Length > 0
-                    && (AuthenticationType == SqlAuthenticationType.Windows || (Username.Length > 0 && SecurePassword.Length > 0));
-            }
-        }
+        public bool CanNext =>
+            ServerName.Length > 0 
+            && Database.Length > 0
+            && Schema.Length > 0
+            && (AuthenticationType == SqlAuthenticationType.Windows || (Username.Length > 0 && SecurePassword.Length > 0));
 
         public void Next()
         {

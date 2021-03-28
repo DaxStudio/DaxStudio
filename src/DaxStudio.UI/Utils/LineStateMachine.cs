@@ -8,6 +8,7 @@ namespace DaxStudio.UI.Utils
     {
         private const char NewLine = '\n';
         private const string SqlQueryComment = "// SQL Query";
+        private const string SqlDirectQueryComment = "// Direct Query";
         public State CurrentState { get; set; }
         private StringBuilder _sbMain;
         private StringBuilder _sbCurrentLine;
@@ -42,7 +43,7 @@ namespace DaxStudio.UI.Utils
 
         public bool CurrentLineIsSqlQueryComment()
         {
-            return _sbCurrentLine.ToString() == SqlQueryComment;
+            return _sbCurrentLine.ToString() == SqlQueryComment || _sbCurrentLine.ToString() == SqlDirectQueryComment;
         }
 
         public bool SqlQueryCommentFound { get; private set; }

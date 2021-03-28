@@ -12,6 +12,7 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
+using System.Windows.Input;
 using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
 using DaxStudio.UI.Extensions;
@@ -248,7 +249,8 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
             yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
             yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
-
+            yield return new InputBindingCommand(this, nameof(ToggleComment), "Ctrl + Divide");
+            
         }
 
         public void ResetInputBindings()
@@ -431,6 +433,11 @@ namespace DaxStudio.UI.ViewModels
         public void SwapDelimiters()
         {
             Ribbon.SwapDelimiters();
+        }
+
+        public void ToggleComment()
+        {
+            _eventAggregator.PublishOnUIThread(new ToggleCommentEvent());
         }
 
         #endregion

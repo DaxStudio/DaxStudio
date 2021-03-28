@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 
 namespace DaxStudio.UI.ViewModels
@@ -48,17 +50,18 @@ namespace DaxStudio.UI.ViewModels
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Regex _illegalFileCharsRegex;
         const long MaxBatchSize = 10000;
+        private Stopwatch _stopwatch = new Stopwatch();
 
         private const string ExportCompleteMsg = "Model Export Complete: {0} tables exported";
         private const string ExportTableMsg = "Exported {0:N0} row{1} to {2}";
         #endregion
 
         #region Constructor
-        public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document)
+        public ExportDataWizardViewModel(IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions options)
         {
             Document = document ?? throw new ArgumentNullException(nameof(document));
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-
+            Options = options;
             EventAggregator.Subscribe(this);
 
             // check connection state
@@ -144,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties
         public IEventAggregator EventAggregator { get; }
+        public IGlobalOptions Options { get; }
         public DocumentViewModel Document { get; }
 
         public ExportDataType ExportType { get; set; }
@@ -196,6 +200,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void Export()
         {
+            _stopwatch.Reset();
+            _stopwatch.Start();
             _ = Task.Run(() =>
             {
                 Document.IsQueryRunning = true;
@@ -212,28 +218,34 @@ namespace DaxStudio.UI.ViewModels
                         default:
                             throw new ArgumentException("Unknown ExportType requested");
                     }
-                    
+                    _stopwatch.Stop();
+                    Document.OutputMessage("Data Export Complete", _stopwatch.ElapsedMilliseconds );
                 }
                 finally
                 {
                     Document.IsQueryRunning = false;
+                    if (_stopwatch.IsRunning) _stopwatch.Stop();
+                    
+                    Options.PlayLongOperationSound((int)(_stopwatch.ElapsedMilliseconds / 1000) );
+                    
                 }
             } )
-            .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted)
-            .ContinueWith(prevTask => {
-                //TryClose(true);
-            });
+            .ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted);
 
 
             void HandleFaults(Task t)
             {
-                if (t.Exception != null)
-                {
-                    var ex = t.Exception.GetBaseException();
+                if (t.Exception == null) return;
+                var ex = t.Exception.GetBaseException();
+                // calls HandleExceptions on each child exception in the AggregateException from the Task
+                t.Exception.Handle(HandleExceptions);
+            }
 
-                    Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
-                }
+            bool HandleExceptions(Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+                return true;
             }
         }
 
@@ -288,8 +300,9 @@ namespace DaxStudio.UI.ViewModels
                     StreamWriter textWriter = null;
                     try { 
                         textWriter = new StreamWriter(csvFilePath, false, encoding);
-
-                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, CultureInfo.CurrentCulture))
+                        // configure csv delimiter and culture
+                        var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = CsvDelimiter};
+                        using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
                         using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                         {
                             for (long batchRows = 0; batchRows < totalRows; batchRows += MaxBatchSize)
@@ -304,13 +317,9 @@ namespace DaxStudio.UI.ViewModels
                                 using (var reader = connRead.ExecuteReader(daxQuery))
                                 {
                                     var rows = 0;
-                                    
-
-                                    // configure delimiter
-                                    csvWriter.Configuration.Delimiter = CsvDelimiter;
 
                                     // output dates using ISO 8601 format
-                                    csvWriter.Configuration.TypeConverterOptionsCache.AddOptions(
+                                    csvWriter.Context.TypeConverterOptionsCache.AddOptions(
                                         typeof(DateTime),
                                         new CsvHelper.TypeConversion.TypeConverterOptions() { Formats = new[] { isoDateFormat } });
 
@@ -507,20 +516,16 @@ namespace DaxStudio.UI.ViewModels
                                     {
                                         _sqlTableName = $"[{schemaName}].[{table.Caption}]";
                                         _sqlBatchRows = batchRows;
+                                        
                                         // if this is the first batch ensure the table exists
                                         if (batchRows == 0)
-                                            EnsureSQLTableExists(conn, _sqlTableName, reader);
+                                            EnsureSQLTableExists(conn, _sqlTableName, reader, truncateTables);
 
+                                        // if truncate tables is false we assume that this is a second run and that
+                                        // the table already exists with the correct structure.
+                                        
                                         using (var transaction = conn.BeginTransaction())
                                         {
-                                            if (truncateTables && batchRows == 0)
-                                            {
-                                                using (var cmd = new SqlCommand($"truncate table {_sqlTableName}", conn))
-                                                {
-                                                    cmd.Transaction = transaction;
-                                                    cmd.ExecuteNonQuery();
-                                                }
-                                            }
 
                                             using (var sqlBulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                                             {
@@ -643,7 +648,7 @@ namespace DaxStudio.UI.ViewModels
             Document.RefreshElapsedTime();
         }
 
-        private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader)
+        private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader, bool truncateTable)
         {
             var strColumns = new StringBuilder();
 
@@ -669,14 +674,21 @@ namespace DaxStudio.UI.ViewModels
 
             // ReSharper disable once StringLiteralTypo
             var cmdText = @"                
-                declare @sqlCmd nvarchar(max)
+                declare @sqlCmd nvarchar(max)";
+
+            if (truncateTable)
+            {
+                cmdText += @"
 
                 IF object_id(@tableName, 'U') is not null
                 BEGIN
                     raiserror('Droping Table ""%s""', 1, 1, @tableName)
                     set @sqlCmd = 'drop table ' + @tableName + char(13)
                     exec sp_executesql @sqlCmd
-                END
+                END";
+            }
+
+            cmdText += @"
 
                 IF object_id(@tableName, 'U') is null
                 BEGIN

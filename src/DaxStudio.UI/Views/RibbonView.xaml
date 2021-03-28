@@ -395,7 +395,7 @@
         
                 <!-- Output Targets -->
 
-                <!--<Fluent:DropDownButton x:Name="OutputTargets"
+                <Fluent:DropDownButton x:Name="OutputTargets"
                                            Header="Output"
                                            Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
                                            LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
@@ -403,7 +403,7 @@
                                            IsEnabled="True"
                                            VerticalAlignment="Top"  Margin="4,0"
                                        
-                                       >-->
+                                       >
 
                     <!--Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"-->
 <!--                        ItemWidth="80"
@@ -411,27 +411,35 @@
 
                     <!--                         ItemWidth="64"
                         ItemHeight="74" -->
-                    <Fluent:InRibbonGallery 
+
+<!--
+                    
+                    Header="Output"
+                        Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
+                        LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
+                    SizeDefinition="Medium,Medium,Small"
+                    CanCollapseToButton="True"
+                        IsCollapsed="{Binding IsOutputTargetCollapsed}"
+                    -->
+
+                    <Fluent:Gallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
                         x:Name="OutputGallery2"
                         MinItemsInRow="1"
                         MaxItemsInRow="2"
                         Orientation="Horizontal"
-                        IsCollapsed="True"
-                        Header="Output"
-                        Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
-                        LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
+                        IsGrouped="True"
                         ItemWidth="62"
-                        SizeDefinition="Large,Large,Small"
-                        CanCollapseToButton="True"
+
                         ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}"
-                        
+
                         GroupBy="Group" 
+                        
                         >
 
-                        <Fluent:InRibbonGallery.Filters>
+                        <Fluent:Gallery.Filters>
                             <Fluent:GalleryGroupFilter Title="All"
                                                        Groups="Standard,Excel,Undefined"
                                                        x:Name="galleryFilterAll3" />
@@ -441,17 +449,16 @@
                             <Fluent:GalleryGroupFilter Title="Excel"
                                                        Groups="Excel"
                                                        x:Name="galleryFilterExcel"/>
-                        </Fluent:InRibbonGallery.Filters>
+                        </Fluent:Gallery.Filters>
 
-                        <Fluent:InRibbonGallery.ToolTip>
+                        <!--<Fluent:Gallery.ToolTip>
                             <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
-                        </Fluent:InRibbonGallery.ToolTip>
-                    </Fluent:InRibbonGallery>
-
-                    <!--<Fluent:DropDownButton.ToolTip>
-                        
+                        </Fluent:Gallery.ToolTip>-->
+                    </Fluent:Gallery>
+                    <Fluent:DropDownButton.ToolTip>
+                        <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
                     </Fluent:DropDownButton.ToolTip>
-                </Fluent:DropDownButton>-->
+                </Fluent:DropDownButton>
 
             </Fluent:RibbonGroupBox>
 
@@ -897,7 +904,7 @@
                                    SizeDefinition="Large,Large,Small">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip Title="Export Data"
-                                   Text="Exports data from your tabular database to CSV files or SQL Server tables."                                
+                                   Text="Exports entire Tables from your tabular database to CSV files or SQL Server tables."                                
                                    ></Fluent:ScreenTip>
                         </Fluent:Button.ToolTip>
                     </Fluent:Button>

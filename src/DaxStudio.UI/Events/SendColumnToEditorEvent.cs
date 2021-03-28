@@ -3,9 +3,9 @@ using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.Events
 {
-    public class SendColumnToEditorEvent
+    public class SendColumnToQueryBuilderEvent
     {
-        public SendColumnToEditorEvent(ITreeviewColumn column, QueryBuilderItemType itemType)
+        public SendColumnToQueryBuilderEvent(ITreeviewColumn column, QueryBuilderItemType itemType)
         {
             Column = column;
             ItemType = itemType;

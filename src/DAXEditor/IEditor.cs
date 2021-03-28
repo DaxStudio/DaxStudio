@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
+using System;
 
 namespace DAXEditorControl
 {
@@ -18,6 +19,7 @@ namespace DAXEditorControl
         TextLocation DocumentGetLocation(int offset);
         void DocumentReplace(int offset, int length, string newText);
         DocumentLine DocumentGetLineByOffset(int pos);
+        DocumentLine DocumentGetLineByNumber(int line);
         string DocumentGetText(int offset, int length);
         string DocumentGetText(TextSegment segment);
         bool IsMouseOverCompletionWindow { get; set; }

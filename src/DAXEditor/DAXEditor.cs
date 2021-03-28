@@ -16,6 +16,8 @@ using DAXEditorControl.Renderers;
 using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Text;
+using ICSharpCode.AvalonEdit;
+using System.ComponentModel;
 
 namespace DAXEditorControl
 {
@@ -104,6 +106,7 @@ namespace DAXEditorControl
             var brush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#C8FFA55F")); //orange // grey FFE6E6E6
             HighlightBackgroundBrush = brush;
             this.TextArea.SelectionChanged += TextEditor_TextArea_SelectionChanged;
+            
             TextView textView = this.TextArea.TextView;
 
             // Add Bracket Highlighter
@@ -117,7 +120,7 @@ namespace DAXEditorControl
             textView.BackgroundRenderers.Add(_textMarkerService);
             textView.LineTransformers.Add(_textMarkerService);
             textView.Services.AddService(typeof(TextMarkerService), _textMarkerService);
-
+            
             // add handlers for tooltip error display
             textView.MouseHover += TextEditorMouseHover;
             textView.MouseHoverStopped += TextEditorMouseHoverStopped;
@@ -257,7 +260,7 @@ namespace DAXEditorControl
             TextArea.TextEntering += TextEditor_TextArea_TextEntering;
             TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextArea.PreviewKeyDown += TextArea_PreviewKeyDown;
-
+            TextArea.ContextMenuOpening += TextArea_ContextMenuOpening;
             TextArea.Caret.PositionChanged += Caret_PositionChanged;
             this.TextChanged += TextArea_TextChanged;
 
@@ -281,6 +284,25 @@ namespace DAXEditorControl
             this.FontSize = DefaultFontSize;
             this.ShowLineNumbers = true;
             
+        }
+
+        private void TextArea_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var pos2 = Mouse.GetPosition(this);
+            // get line at position
+            var mousePos = new Point(e.CursorLeft, e.CursorTop);
+            var pos = this.GetPositionFromPoint(pos2);
+            if (pos == null) {
+                ContextMenuWord = string.Empty;
+            }
+            else
+            {
+                var word = IntellisenseProvider.GetCurrentWord((TextViewPosition)pos);
+                ContextMenuWord = word;
+            }
+            
+            // get word
+            // set contextMenuWord
         }
 
         void TextArea_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -439,6 +461,32 @@ namespace DAXEditorControl
             SelectedText = rxComment.Replace(SelectedText, string.Format(invariantCulture,"{0}$1",COMMENT_DELIM_SLASH));
         }
 
+        public bool AllLinesCommented()
+        {
+            
+            foreach (var line in SelectedText.Split('\n'))
+            {
+                if (!line.StartsWith(COMMENT_DELIM_DASH)) return false;
+
+            }
+
+            return true;
+        }
+        
+        public void ToggleCommentSelectedLines()
+        {
+            SelectFullLines();
+            if (AllLinesCommented())
+            {
+                CommentSelectedLines();
+            }
+                else
+            {
+                
+                UncommentSelectedLines();
+            }
+        }
+
         public void UncommentSelectedLines()
         {
             SelectFullLines();
@@ -564,6 +612,7 @@ namespace DAXEditorControl
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
+            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {IsMouseOverCompletionWindow}");
             if (IsMouseOverCompletionWindow) return;
             lock (_disposeLock)
             {
@@ -583,6 +632,7 @@ namespace DAXEditorControl
                     //swallow any errors while trying to close the completion window
                 }
                 _completionWindow = null;
+
             }
         }
 
@@ -601,6 +651,11 @@ namespace DAXEditorControl
             return Document.GetLineByOffset(pos);
         }
 
+        public DocumentLine DocumentGetLineByNumber(int line)
+        {
+            return Document.GetLineByNumber(line);
+        }
+
         public string DocumentGetText(int offset, int length)
         {
             return Document.GetText(offset, length);
@@ -609,6 +664,32 @@ namespace DAXEditorControl
         public string DocumentGetText(TextSegment segment)
         {
             return Document.GetText(segment);
+        }
+
+        public void SetCaretPosition(int line, int column)
+        {
+            var offset = Document.GetOffset(line, column);
+            CaretOffset = offset;
+        }
+
+        public string GetCurrentWord(TextViewPosition pos)
+        {
+            return IntellisenseProvider.GetCurrentWord(pos);
+        }
+
+        public int GetOffset(int line, int column)
+        {
+            return Document.GetOffset(line, column);
+        }
+        
+        public void ShowInsightWindow(string functionName)
+        {
+            IntellisenseProvider?.ShowInsight(functionName);
+        }
+
+        public void ShowInsightWindow(string functionName, int offset)
+        {
+            IntellisenseProvider?.ShowInsight(functionName, offset);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -626,4 +707,6 @@ namespace DAXEditorControl
             GC.SuppressFinalize(this);
         }
     }
+
+
 }

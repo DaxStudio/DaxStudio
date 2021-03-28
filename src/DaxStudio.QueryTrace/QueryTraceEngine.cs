@@ -302,7 +302,7 @@ namespace DaxStudio.QueryTrace
 
                         policy.Execute(() => {
                             if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
-                            Debug.WriteLine("Connection.Ping()");
+                            Debug.WriteLine("Connection.PingTrace()");
                             _connection.PingTrace(); 
                             Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
                         });
@@ -471,7 +471,7 @@ namespace DaxStudio.QueryTrace
                     
                     OnTraceEvent(e);
                     _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    if (e.EventClass == TraceEventClass.QueryEnd)
+                    if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error)
                     {
                         // if this is not an internal DAX Studio query 
                         // like the one we issue after a ClearCache to re-establish the session

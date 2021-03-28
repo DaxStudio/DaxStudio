@@ -44,8 +44,11 @@ using DaxStudio.UI.Utils.DelimiterTranslator;
 using DaxStudio.UI.Utils.Intellisense;
 using DaxStudio.UI.Views;
 using GongSolutions.Wpf.DragDrop;
+using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit.Rendering;
+using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Serilog;
@@ -81,6 +84,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryResultsPaneMessageEvent>
         , IHandle<ReconnectEvent>
         , IHandle<RunQueryEvent>
+        , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
@@ -236,7 +240,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RecoverNextAutoSaveFileEvent());
         }
 
-
+        public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
 
 
         public override void TryClose(bool? dialogResult = null)
@@ -558,6 +562,7 @@ namespace DaxStudio.UI.ViewModels
         {
             OutputError(e);
             _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
+            ShutDownTraces();
         }
 
         private void TracerOnTraceWarning(object sender, string e)
@@ -832,6 +837,7 @@ namespace DaxStudio.UI.ViewModels
                     _eventAggregator.Subscribe(tw);
                 }
                 _ribbon.SelectedTarget = SelectedTarget;
+                SelectedRunStyle = _ribbon.SelectedRunStyle;
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
@@ -984,7 +990,7 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             if (Connection.Databases.Count == 0) {
-                var msg = $"No Databases were found in the when connecting to {Connection.ServerName} ({Connection.ServerType})"
+                var msg = $"No Databases were found when connecting to {Connection.ServerName} ({Connection.ServerType})"
                 + (Connection.ServerType == ServerType.PowerBIDesktop ? "\nIf your Power BI File is using a Live Connection please connect directly to the source model instead." : "");
                 OutputWarning(msg);
             }
@@ -1303,6 +1309,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void ToggleCommentSelection()
+        {
+            var editor = GetEditor();
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.ToggleCommentSelectedLines();
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(() => editor.ToggleCommentSelectedLines());
+            }
+        }
+
         public void UnCommentSelection()
         {
             var editor = GetEditor();
@@ -1538,6 +1557,9 @@ namespace DaxStudio.UI.ViewModels
 
             await RunQueryInternalAsync(message);
 
+            int durationSecs = CurrentQueryInfo.ClientDurationMs>int.MaxValue? int.MaxValue / 1000: (int)CurrentQueryInfo.ClientDurationMs/ 1000;
+            Options.PlayLongOperationSound(durationSecs );
+
         }
 
         private void BenchmarkQuery()
@@ -1552,7 +1574,7 @@ namespace DaxStudio.UI.ViewModels
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked??false;
                 
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon))
+                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options))
                 {
 
                     _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
@@ -2803,7 +2825,21 @@ namespace DaxStudio.UI.ViewModels
 
                 Connection.Database.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
-                await ExecuteDataTableQueryAsync(Constants.RefreshSessionQuery);
+
+                
+                string refreshQuery;
+                if (Options.DefaultSeparator == DelimiterType.SemiColon)
+                {
+                    // switch the default delimiter on the refresh query to the semi-colon style
+                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                    refreshQuery = dsm.ProcessString(Constants.RefreshSessionQuery);
+                }
+                else
+                {
+                    refreshQuery = Constants.RefreshSessionQuery;
+                }
+
+                await ExecuteDataTableQueryAsync(refreshQuery);
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
@@ -3394,7 +3430,9 @@ namespace DaxStudio.UI.ViewModels
                 Connection.Refresh();
                 MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
                 Databases = MetadataPane.Databases;
-                MetadataPane.ModelList = Connection.Database.Models;
+                //MetadataPane.ModelList = Connection.Database.Models;
+                MetadataPane.RefreshMetadata();
+                
                 //this.MetadataPane.RefreshMetadata();
                 //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");
@@ -3638,6 +3676,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ViewAnalysisData()
         {
+            Stopwatch sw = new Stopwatch();
             if (!IsConnected)
             {
                 OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option");
@@ -3655,7 +3694,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 IsVertipaqAnalyzerRunning = true;
-
+                sw.Start();
                 var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
 
                 // check if PerfData Window is already open and use that
@@ -3674,18 +3713,48 @@ namespace DaxStudio.UI.ViewModels
                 vpaView.IsBusy = true;
                 vpaView.Activate();
 
+                // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
+                bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
+                    || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
+                    || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
+
+                bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+
                 VpaModel viewModel = null;
 
                 var task = new Task(() => {
                     // run Vertipaq Analyzer Async
 
-                    Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                    Dax.Metadata.Model model = TomExtractor.GetDaxModel(
-                        Connection.ServerName, Connection.SelectedDatabaseName, 
-                        "DaxStudio", version.ToString(), 
-                        readStatisticsFromData: true, 
-                        sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
+                    Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                    Dax.Metadata.Model model;
+                    try
+                    {
+                        model = TomExtractor.GetDaxModel(
+                            Connection.ServerName, Connection.SelectedDatabaseName, 
+                            "DaxStudio", version.ToString(), 
+                            readStatisticsFromData: readStatisticsFromData, 
+                            sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there is an error reading the statistics from data (e.g. model not processed, bug in SSAS), then retry without statistics
+                        if (readStatisticsFromData)
+                        {
+                            Log.Warning(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view with ReadStatisticsFromData enabled: {ex.Message}");
+                            OutputWarning($"Error viewing metrics with ReadStatisticsFromData enabled (retry without statistics): {ex.Message}");
 
+                            model = TomExtractor.GetDaxModel(
+                                Connection.ServerName, Connection.SelectedDatabaseName,
+                                "DaxStudio", version.ToString(),
+                                readStatisticsFromData: false, // Disable statistics during retry
+                                sampleRows: Options.VpaxSampleReferentialIntegrityViolations);
+                        }
+                        else
+                        {
+                            // propagate exception if ReadStatisticsFromData was disabled
+                            throw;
+                        }
+                    }
                     viewModel = new VpaModel(model);
                 });
                 task.ContinueWith(prevTask =>
@@ -3719,6 +3788,10 @@ namespace DaxStudio.UI.ViewModels
                     IsVertipaqAnalyzerRunning = false;
                     msg2.Dispose();
                     //if (prevTask.IsFaulted) throw prevTask.Exception;
+
+                    sw.Stop();
+                    Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
+                    
 
                 }, TaskScheduler.Default);
                 task.Start(TaskScheduler.Default);
@@ -3838,7 +3911,7 @@ namespace DaxStudio.UI.ViewModels
 
                     OutputMessage(String.Format("Saving {0}...", path));
                     // get current DAX Studio version
-                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                    Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     string modelCaption = Connection.Database.Name;
                     switch (Connection.ServerType)
                     {
@@ -3858,7 +3931,33 @@ namespace DaxStudio.UI.ViewModels
                             modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
                             break;
                     }
-                    ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString());
+                    // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
+                    bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
+                        || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
+                        || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
+
+                    bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+                    try
+                    {
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData);
+                    }
+                    catch (Exception ex)
+                    {
+                        // If there is an error reading the statistics from data (e.g. model not processed, bug in SSAS), then retry without statistics
+                        if (readStatisticsFromData)
+                        {
+                            Log.Warning(ex, "{class} {method} Error Exporting Metrics with ReadStatisticsFromData enabled", "DocumentViewModel", "ExportAnalysisData");
+                            var exMsg = ex.GetAllMessages();
+                            OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
+
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false); // Disable statistics during retry
+                        }
+                        else
+                        {
+                            // propagate excetpion if ReadStatisticsFromData was disabled
+                            throw;
+                        }
+                    }
                     OutputMessage("Model Metrics exported successfully");
                 }
                 catch (Exception ex)
@@ -3971,7 +4070,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(ReconnectEvent message)
         {
             UpdateRunningTraces();
-            Spid = Connection.SPID;
+            Spid = Connection?.SPID??-1;
         }
 
         private void UpdateRunningTraces()
@@ -4066,6 +4165,81 @@ namespace DaxStudio.UI.ViewModels
         public void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
         {
             _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
+        }
+
+        public void Handle(RunStyleChangedEvent message)
+        {
+            SelectedRunStyle = message.RunStyle;
+        }
+
+        public RunStyle SelectedRunStyle { get; set; }
+
+        public void EditorContextMenuOpening()
+        {
+            NotifyOfPropertyChange(nameof(CanLookupDaxGuide));
+            NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+        }
+
+        public bool CanLookupDaxGuide { 
+            get {
+                NotifyOfPropertyChange(nameof(LookupDaxGuideHeader));
+                if (this.Connection == null) return false;
+                if (!this.Connection.IsConnected) return false;
+                if (this.Connection.AllFunctions.Contains(_editor.ContextMenuWord, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                return false;
+            } 
+        }
+        public void LookupDaxGuide() {
+            string word = _editor.ContextMenuWord;
+            if (this.Connection == null) return;
+            if (!this.Connection.IsConnected) return;
+            if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
+            }
+        }
+
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
+
+        public void OnEditorHover(object source, MouseEventArgs eventArgs)
+        {
+            if (!Options.EditorShowFunctionInsightsOnHover) return;
+            if (Connection == null) return;
+            if (!Connection.IsConnected) return;
+
+            try
+            {
+                var mousePoint = eventArgs.GetPosition((DAXEditorControl.DAXEditor) eventArgs.Source);
+                // get the line and column position
+                var pos = _editor.GetPositionFromPoint(mousePoint);
+                
+                if (pos == null) return;
+                var word = _editor.GetCurrentWord((TextViewPosition) pos);
+                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Hovering over '{word}'");
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
+                        $"Hovering over '{word}'");
+                    // the function Insight window always positions itself under the cursor
+                    // so we need to set the caret position to where the cursor is hovering
+                    // or the insight window will appear in the wrong position.
+                    // the Insight window also has code to move itself when the parent window is moved
+                    // so we can't simply override the positioning
+                    //_editor.SetCaretPosition(pos.Value.Line, pos.Value.Column);
+                    var offset = _editor.GetOffset(pos.Value.Line, pos.Value.Column);
+                    _editor.ShowInsightWindow(word, offset);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
+                    $"The following error occurred: {ex.Message}");
+
+            }
+
         }
     }
 }

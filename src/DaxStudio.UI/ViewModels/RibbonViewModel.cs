@@ -1,5 +1,4 @@
-﻿using ADOTabular.AdomdClientWrappers;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Events;
@@ -16,8 +15,6 @@ using System.Linq;
 using System.Windows;
 using System.ComponentModel;
 using System.Net;
-using System.Net.Http;
-using ADOTabular;
 using System.Reflection;
 using Microsoft.AnalysisServices.AdomdClient;
 
@@ -25,22 +22,23 @@ namespace DaxStudio.UI.ViewModels
 {
     [Export(typeof(RibbonViewModel))]
     public class RibbonViewModel : PropertyChangedBase
+        , IHandle<ActivateDocumentEvent>
+        , IHandle<AllDocumentsClosedEvent>
+        , IHandle<ApplicationActivatedEvent>
         , IHandle<ConnectionPendingEvent>
         , IHandle<CancelConnectEvent>
-        , IHandle<ActivateDocumentEvent>
-        , IHandle<QueryFinishedEvent>
-        , IHandle<ApplicationActivatedEvent>
+        , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<FileOpenedEvent>
         , IHandle<FileSavedEvent>
+        , IHandle<QueryFinishedEvent>
+        , IHandle<RefreshOutputTargetsEvent>
         , IHandle<TraceChangingEvent>
         , IHandle<TraceChangedEvent>
         , IHandle<TraceWatcherToggleEvent>
-        , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
-        , IHandle<AllDocumentsClosedEvent>
-        , IHandle<RefreshOutputTargetsEvent>
         , IHandle<UpdateHotkeys>
-    //        , IViewAware
+
+        //        , IViewAware
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
@@ -98,26 +96,19 @@ namespace DaxStudio.UI.ViewModels
         public ObservableCollection<RunStyle> RunStyles { get; } = new ObservableCollection<RunStyle>();
         private RunStyle _selectedRunStyle;
         public RunStyle SelectedRunStyle {
-            get { return _selectedRunStyle; }
+            get => _selectedRunStyle;
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
+                _eventAggregator.PublishOnUIThread(new RunStyleChangedEvent(SelectedRunStyle));
                 //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }
-        public Visibility OutputGroupIsVisible
-        {
-            get { return _host.IsExcel ? Visibility.Visible : Visibility.Collapsed; }
-        }
+        public Visibility OutputGroupIsVisible => _host.IsExcel ? Visibility.Visible : Visibility.Collapsed;
 
-        public bool ServerTimingsIsChecked
-        {
-            get
-            {
-                // TODO - Check if ServerTiming Trace is checked - Update on check change
-                //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
-                return true; 
-            }
-        }
+        public bool ServerTimingsIsChecked =>
+            // TODO - Check if ServerTiming Trace is checked - Update on check change
+            //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
+            true;
 
         public void NewQuery()
         {
@@ -129,23 +120,13 @@ namespace DaxStudio.UI.ViewModels
         public void NewQueryWithCurrentConnection()
         {
             if (ActiveDocument == null) return;
-
-            var connectionString = "";
-            if (ActiveDocument.IsConnected)
-                connectionString = ActiveDocument.ConnectionStringWithInitialCatalog;
             _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
-        public bool CanNewQueryWithCurrentConnection
-        {
-            get
-            {
-                if (ActiveDocument == null) return false;
-                return ActiveDocument.IsConnected;
-            }
-        }
+        public bool CanNewQueryWithCurrentConnection => ActiveDocument != null && ActiveDocument.IsConnected;
 
-        public bool CanCommentSelection { get => ActiveDocument != null; }
+        public bool CanCommentSelection => ActiveDocument != null;
+
         public void CommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(true));
@@ -159,7 +140,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.MergeParameters();
         }
 
-        public bool CanFormatQueryStandard { get => ActiveDocument != null && !Options.BlockExternalServices; }
+        public bool CanFormatQueryStandard => ActiveDocument != null && !Options.BlockExternalServices;
 
         public void FormatQueryStandard()
         {
@@ -176,8 +157,11 @@ namespace DaxStudio.UI.ViewModels
 
         public string FormatQueryAlternateTitle { get 
             {
-                var title = string.Empty;
-                if (Options.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine) { title = DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine.GetDescription(); }
+                string title;
+                if (Options.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine)
+                {
+                    title = DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine.GetDescription();
+                }
                 else
                 {
                     title = DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine.GetDescription();
@@ -196,31 +180,36 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanUndo { get => ActiveDocument != null; }
+        public bool CanUndo => ActiveDocument != null;
+
         public void Undo()
         {
             ActiveDocument?.Undo();
         }
 
-        public bool CanRedo { get => ActiveDocument != null; }
+        public bool CanRedo => ActiveDocument != null;
+
         public void Redo()
         {
             ActiveDocument?.Redo();
         }
-        public bool CanUncommentSelection { get => ActiveDocument != null; }
+        public bool CanUncommentSelection => ActiveDocument != null;
+
         public void UncommentSelection()
         {
             _eventAggregator.PublishOnUIThread(new CommentEvent(false));
         }
         public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
-        public bool CanToUpper { get => ActiveDocument != null; }
+        public bool CanToUpper => ActiveDocument != null;
+
         public void ToUpper()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
         public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
-        public bool CanToLower { get => ActiveDocument != null; }
+        public bool CanToLower => ActiveDocument != null;
+
         public void ToLower()
         {
             _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
@@ -266,51 +255,30 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool CanRunQuery
-        {
-            get
-            {
-                return !QueryRunning 
-                    && (ActiveDocument != null && ActiveDocument.IsConnected) 
-                    && !ActiveDocument.ShowMeasureExpressionEditor
-                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
-            }
-        }
+        public bool CanRunQuery =>
+            !QueryRunning 
+            && (ActiveDocument != null && ActiveDocument.IsConnected) 
+            && !ActiveDocument.ShowMeasureExpressionEditor
+            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
 
-        public bool CanDisplayQueryBuilder
-        {
-            get
-            {
-                return !QueryRunning
-                    && (ActiveDocument != null && ActiveDocument.IsConnected)
-                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
-            }
-        }
+        public bool CanDisplayQueryBuilder =>
+            !QueryRunning
+            && (ActiveDocument != null && ActiveDocument.IsConnected)
+            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
 
-        public bool CanRunBenchmark
-        {
-            get
-            {
-                return !QueryRunning
-                    && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
-                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
-            }
-        }
+        public bool CanRunBenchmark =>
+            !QueryRunning
+            && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
+            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
 
         public void CancelQuery()
         {
             _eventAggregator.PublishOnUIThread(new CancelQueryEvent());
         }
 
-        public bool CanCancelQuery
-        {
-            get { return !CanRunQuery && (ActiveDocument != null && ActiveDocument.IsConnected); }
-        }
+        public bool CanCancelQuery => !CanRunQuery && (ActiveDocument != null && ActiveDocument.IsConnected);
 
-        public bool CanClearCache
-        {
-            get { return CanRunQuery && (ActiveDocument != null && ActiveDocument.IsAdminConnection); }
-        }
+        public bool CanClearCache => CanRunQuery && (ActiveDocument != null && ActiveDocument.IsAdminConnection);
 
         public string ClearCacheDisableReason
         {
@@ -351,15 +319,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         //private bool _canConnect;
-        public bool CanConnect
-        {
-            get {
-                return ActiveDocument != null 
-                    && !QueryRunning 
-                    && !_isConnecting 
-                    && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
-            }
-        }
+        public bool CanConnect =>
+            ActiveDocument != null 
+            && !QueryRunning 
+            && !_isConnecting 
+            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
 
         public ShellViewModel Shell { get; set; }
 
@@ -441,8 +405,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public IObservableCollection<ITraceWatcher> TraceWatchers { get { return ActiveDocument == null ? null : ActiveDocument.TraceWatchers; } }
-         
+        public IObservableCollection<ITraceWatcher> TraceWatchers => ActiveDocument?.TraceWatchers;
+
         public void Handle(ActivateDocumentEvent message)
         {
             DocumentViewModel doc = null;
@@ -472,7 +436,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<ActivateDocumentEvent>", ex.Message);
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<ActivateDocumentEvent>", ex.Message);
                 doc?.OutputError($"Error Activating Document: {ex.Message}");
             }
    
@@ -542,7 +506,7 @@ namespace DaxStudio.UI.ViewModels
          
         public DocumentViewModel ActiveDocument
         {
-            get { return _activeDocument; }
+            get => _activeDocument;
             set {
                 if(_activeDocument != null) _activeDocument.PropertyChanged -= ActiveDocumentPropertyChanged;
                 _activeDocument = value;
@@ -557,6 +521,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
                 NotifyOfPropertyChange(() => FormatQueryDisabledReason);
+                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -763,10 +728,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.RefreshMetadata();
         }
 
-        public bool CanRefreshMetadata
-        {
-            get { return ActiveDocument != null && ActiveDocument.IsConnected; }
-        }
+        public bool CanRefreshMetadata => ActiveDocument != null && ActiveDocument.IsConnected;
 
         internal void FindNow()
         {
@@ -781,9 +743,9 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.FindReplaceDialog.FindText();
         }
 
-        public bool ServerTimingsChecked { get { return ActiveDocument?.ServerTimingsChecked??false; } }
+        public bool ServerTimingsChecked => ActiveDocument?.ServerTimingsChecked??false;
 
-        public ServerTimingDetailsViewModel ServerTimingDetails { get { return ActiveDocument?.ServerTimingDetails; } }
+        public ServerTimingDetailsViewModel ServerTimingDetails => ActiveDocument?.ServerTimingDetails;
 
         public void Handle(TraceWatcherToggleEvent message)
         {
@@ -913,7 +875,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _ResultAutoFormat;
         public bool ResultAutoFormat {
-            get { return _ResultAutoFormat; }
+            get => _ResultAutoFormat;
             private set {
                 _ResultAutoFormat = value;
                 NotifyOfPropertyChange(() => ResultAutoFormat);
@@ -948,7 +910,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-                using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument))
+                using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument, Options))
                 {
 
                     _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
@@ -1056,7 +1018,7 @@ namespace DaxStudio.UI.ViewModels
         private string _theme = "Light"; // default to light theme
         public string Theme
         {
-            get { return _theme; }
+            get => _theme;
             set { if (value != _theme)
                 {
                     _theme = value;
@@ -1092,10 +1054,7 @@ namespace DaxStudio.UI.ViewModels
             _isConnecting = false;
         }
 
-        public bool CanLoadPowerBIPerformanceData
-        {
-            get { return ActiveDocument != null; }
-        }
+        public bool CanLoadPowerBIPerformanceData => ActiveDocument != null;
 
         public void LoadPowerBIPerformanceData()
         {
@@ -1161,7 +1120,9 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
-        public bool TraceLayoutGroupVisible { get {
+        public bool TraceLayoutGroupVisible { get
+            {
+                if (ActiveDocument == null) return false;
                 if (TraceWatchers == null) return false;
                 return TraceWatchers.Any(tw => tw.IsChecked && tw is ServerTimesViewModel);
             } 

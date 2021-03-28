@@ -185,7 +185,7 @@ namespace DaxStudio.UI.Utils
             
             if (valueIsSetToDefault)
             {
-                regDaxStudio.DeleteValue(subKey);
+                if (regDaxStudio.GetValue(subKey) != null) regDaxStudio.DeleteValue(subKey);
                 return;
             }
 

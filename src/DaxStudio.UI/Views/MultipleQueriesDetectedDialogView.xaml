@@ -43,7 +43,7 @@
                            FontWeight="Light" FontSize="44" ></Label>
                     <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
                 </StackPanel>
-                <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green">// SQL Query </Run> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
+                <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green">// Direct Query </Run> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
                     <Run Foreground="Blue" TextDecorations="Underline">remote storage engine (Direct Query)
                         <Run.ToolTip>
                             <ToolTip MaxWidth="300" HasDropShadow="True" >
@@ -57,7 +57,7 @@
                                 </Grid>
                             </ToolTip>
                         </Run.ToolTip></Run>.</TextBlock>
-                <TextBlock Padding="10" TextWrapping="Wrap">There are <Run Text="{Binding CharactersBeforeComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters before the <Run FontFamily="Courier New" Foreground="Green">// SQL Query</Run> comment and <Run Text="{Binding CharactersAfterComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters after it.</TextBlock>
+                <TextBlock Padding="10" TextWrapping="Wrap">There are <Run Text="{Binding CharactersBeforeComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters before the <Run FontFamily="Courier New" Foreground="Green">// Direct Query</Run> comment and <Run Text="{Binding CharactersAfterComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters after it.</TextBlock>
                 <TextBlock Padding="10" TextWrapping="Wrap" FontWeight="Light" FontSize="24" HorizontalAlignment="Center">Which queries do you want to paste?</TextBlock>
             </StackPanel>
             
