@@ -345,12 +345,13 @@
                         -->
                         <ctrl:TreeViewEx x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                                         Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+                                        
                                         FocusManager.IsFocusScope="True"
                                         dd:DragDrop.IsDragSource="True"
                                         dd:DragDrop.IsDropTarget="False" 
                                         dd:DragDrop.DragHandler="{Binding}"
                                         dd:DragDrop.UseDefaultDragAdorner="True"
-                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
+                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]; [Event SelectedItemChanged] = [Action SelectedItemChanged()]"
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         Margin="0,2,0,-2">
@@ -446,7 +447,10 @@
                                                 <Separator/>
                                                 <MenuItem Header="{Binding Path=MetadataPane.ShowHiddenObjectsLabel}"
                                                           cal:Message.Attach="[Event Click] = [Action ToggleHiddenObjects()]" />
-                                                
+                                                <Separator/>
+                                                <MenuItem Header="Run Query for this Table"
+                                                          cal:Message.Attach="[Event Click] = [Action RunQueryForSelectedMetadataItem($dataContext)]"
+                                                          IsEnabled="{Binding CanRunQueryForSelectedMetadataItem}" />
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
                                     </StackPanel>
@@ -574,6 +578,10 @@
                                                         cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceColumnOrMeasure($dataContext)]"
                                                           Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsColumn}">
                                                 </MenuItem>
+                                                <Separator/>
+                                                <MenuItem Header="Run Query for this Item"
+                                                          cal:Message.Attach="[Event Click] = [Action RunQueryForSelectedMetadataItem($dataContext)]"
+                                                          IsEnabled="{Binding CanRunQueryForSelectedMetadataItem}" />
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 

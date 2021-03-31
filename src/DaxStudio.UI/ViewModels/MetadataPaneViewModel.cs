@@ -991,6 +991,98 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public string GenerateQueryForSelectedMetadataItem(object selection)
+        {
+            const string unknownValue = "<UNKNOWN>";
+            const string queryHeader = "// Generated DAX Query\n";
+            string objectType = unknownValue;
+            string objectName = unknownValue;
+            string query = string.Empty;
+            //var selection = SelectedItems.ToList()[0];
+            switch (selection)
+            {
+                case TreeViewTable t:
+                    objectType = "Table";
+                    objectName = t.Caption;
+                    query = $"{queryHeader}EVALUATE {t.DaxName}\n";
+                    break;
+                case TreeViewColumn c when c.IsColumn:
+                    objectType = "Column";
+                    objectName = c.Caption;
+                    query = $"{queryHeader}EVALUATE VALUES({c.DaxName})\n";
+                    break;
+                case TreeViewColumn m when m.IsMeasure:
+                    objectType = "Measure";
+                    objectName = m.Caption;
+                    if (  ActiveDocument.Connection.SelectedModel.Capabilities.TableConstructor)
+                        query = $"{queryHeader}EVALUATE {{ {m.DaxName} }}\n";
+                    else
+                        query = $"{queryHeader}EVALUATE ROW(\"{m.Caption}\", {m.DaxName})\n";
+                    break;
+                case TreeViewColumn h when h.Column is ADOTabularHierarchy:
+                    objectType = "Hierarchy";
+                    objectName = h.Caption;
+                    var hier = ((ADOTabularHierarchy)h.Column);
+                    query = $"{queryHeader}EVALUATE GROUPBY({hier.Table.DaxName},\n{ string.Join(",\n", hier.Levels.Select(l => l.Column.DaxName)) }\n)\n";
+                    break;
+                default:
+
+                    break;
+            }
+
+            if (objectType == unknownValue)
+            {
+                // todo - do we need a different message box here or is the standard warning enough?
+                return string.Empty;
+            }
+
+            return query;
+        }
+
+        public void RunQueryForSelectedMetadataItem(object selectedItem)
+        {
+            var query = GenerateQueryForSelectedMetadataItem(selectedItem);
+            if (!string.IsNullOrEmpty(query))
+            {
+                // run query
+                EventAggregator.PublishOnUIThread(new SendTextToEditor(query, true));
+            }
+            else
+            {
+                // throw error
+                ActiveDocument.OutputError("The selected metadata object does not support query generation");
+            }
+
+        }
+
+        public bool CanRunQueryForSelectedMetadataItem
+        {
+            get {
+                var selectedItems = SelectedItems.ToList();
+                if (selectedItems.Count != 1) return false;
+                var selectedItem = selectedItems[0];
+                switch (selectedItem)
+                {
+                    case TreeViewTable t:
+                        return true;
+                    case TreeViewColumn c when c.IsColumn:
+                        return true;
+                    case TreeViewColumn m when m.IsMeasure:
+                        return true;
+                    case TreeViewColumn h when h.Column is ADOTabularHierarchy:
+                        return true;
+                    default:
+                        return false;
+                }
+
+            }
+        }
+
+        public void SelectedItemChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanRunQueryForSelectedMetadataItem));
+        }
+
         public void Handle(QueryStartedEvent message)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
