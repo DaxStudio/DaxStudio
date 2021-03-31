@@ -1685,6 +1685,13 @@ namespace DaxStudio.UI.ViewModels
                                     InsertTextAtSelection(queryGenerated, false);
 
                                 }
+                                else
+                                {
+                                    OutputError("There is no query text in the editor that can be executed");
+                                    ActivateOutput();
+                                    IsQueryRunning = false;
+                                    return;
+                                }
                             }
                             
                         }
