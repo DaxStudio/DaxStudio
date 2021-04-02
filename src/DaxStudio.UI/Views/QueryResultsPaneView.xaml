@@ -153,11 +153,13 @@
 		                        ResourceId=DataGridHeaderFilterControlStyle}}"
                         
                         FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}" 
+                        
+                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
                         -->
                          <DataGrid
                             x:Name="DefaultView" 
                             
-                            Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
+                            
                             ItemsSource="{Binding DefaultView}"
                             ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             SelectionMode="Extended"       

@@ -998,18 +998,26 @@ namespace DaxStudio.UI.ViewModels
             string objectType = unknownValue;
             string objectName = unknownValue;
             string query = string.Empty;
-            //var selection = SelectedItems.ToList()[0];
+            string topnPrefix = string.Empty;
+            string topnSuffix = string.Empty;
+
+            if (_options.PreviewDataRowLimit > 0)
+            {
+                topnPrefix = $"\nTOPN( {_options.PreviewDataRowLimit}, ";
+                topnSuffix = " )";
+            }
+
             switch (selection)
             {
                 case TreeViewTable t:
                     objectType = "Table";
                     objectName = t.Caption;
-                    query = $"{queryHeader}EVALUATE {t.DaxName}\n";
+                    query = $"{queryHeader}EVALUATE {topnPrefix}{t.DaxName}{topnSuffix}\n";
                     break;
                 case TreeViewColumn c when c.IsColumn:
                     objectType = "Column";
                     objectName = c.Caption;
-                    query = $"{queryHeader}EVALUATE VALUES({c.DaxName})\n";
+                    query = $"{queryHeader}EVALUATE {topnPrefix}VALUES({c.DaxName}){topnSuffix}\n";
                     break;
                 case TreeViewColumn m when m.IsMeasure:
                     objectType = "Measure";
@@ -1023,10 +1031,10 @@ namespace DaxStudio.UI.ViewModels
                     objectType = "Hierarchy";
                     objectName = h.Caption;
                     var hier = ((ADOTabularHierarchy)h.Column);
-                    query = $"{queryHeader}EVALUATE GROUPBY({hier.Table.DaxName},\n{ string.Join(",\n", hier.Levels.Select(l => l.Column.DaxName)) }\n)\n";
+                    query = $"{queryHeader}EVALUATE {topnPrefix}\n    GROUPBY({hier.Table.DaxName},\n        { string.Join(",\n        ", hier.Levels.Select(l => l.Column.DaxName)) }\n    )\n{topnSuffix}\n";
                     break;
                 default:
-
+                    // do nothing if we do not match one of the above cases
                     break;
             }
 
@@ -1039,7 +1047,7 @@ namespace DaxStudio.UI.ViewModels
             return query;
         }
 
-        public void RunQueryForSelectedMetadataItem(object selectedItem)
+        public void PreviewDataForSelectedMetadataItem(object selectedItem)
         {
             var query = GenerateQueryForSelectedMetadataItem(selectedItem);
             if (!string.IsNullOrEmpty(query))
@@ -1055,7 +1063,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public bool CanRunQueryForSelectedMetadataItem
+        public bool CanPreviewDataForSelectedMetadataItem
         {
             get {
                 var selectedItems = SelectedItems.ToList();
@@ -1080,7 +1088,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SelectedItemChanged()
         {
-            NotifyOfPropertyChange(nameof(CanRunQueryForSelectedMetadataItem));
+            NotifyOfPropertyChange(nameof(CanPreviewDataForSelectedMetadataItem));
         }
 
         public void Handle(QueryStartedEvent message)

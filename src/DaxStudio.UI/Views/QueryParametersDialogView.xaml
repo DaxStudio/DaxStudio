@@ -6,6 +6,8 @@
              xmlns:viewModel="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels" xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
 
@@ -13,14 +15,20 @@
              Height="350">
     <UserControl.Resources>
         <ResourceDictionary>
-        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"></conv:BoolToCollapsedConverter>
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"></conv:BoolToNotCollapsedConverter>
+            
+            <CollectionViewSource Source="{Binding ParameterDataTypes}" x:Key="types"/>
+            
         <Style TargetType="Button">
-            <Setter Property="Margin" Value="4,2"/>
-                <Setter Property="Padding" Value="8,2"/>
-            </Style>
+        <Setter Property="Margin" Value="4,2"/>
+            <Setter Property="Padding" Value="8,2"/>
+        </Style>
         <!--<DataTemplate  DataType="{x:Type coll:System.Collection.Generic.KeyValuePair}">
                 
                     
@@ -67,7 +75,7 @@
                     <DataGridTemplateColumn Header="Parameter"  IsReadOnly="True" KeyboardNavigation.IsTabStop="False" >
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Focusable="False" KeyboardNavigation.TabNavigation="None">
+                                <StackPanel Orientation="Horizontal" Focusable="False" KeyboardNavigation.TabNavigation="None" Margin="0,2">
                                     <TextBlock Width="Auto" Focusable="False" Padding="3,3,0,3" Foreground="{DynamicResource DaxStudioBrush}">@</TextBlock>
                                     <TextBlock Text="{Binding Name}" Width="Auto" Focusable="False" Padding="0,3,3,3" Foreground="{DynamicResource DaxStudioBrush}" />
                                 </StackPanel>
@@ -75,17 +83,50 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <!--<DataGridTextColumn Header="Value" Binding="{Binding Value}"  Width="*" 
-                            CellStyle="{DynamicResource SelectableCellStyle}"/>--> 
-
+                            CellStyle="{DynamicResource SelectableCellStyle}"/>-->
+                    <!--<DataGridComboBoxColumn 
+                        Header="Type"
+                        IsReadOnly="False"
+                        ItemsSource="{Binding Source={StaticResource types}}"
+                        SelectedItemBinding="{Binding TypeName}">
+                        
+                    </DataGridComboBoxColumn>-->
+                    <DataGridTemplateColumn Header="Type">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding Source={StaticResource types}}" 
+                                          SelectedItem="{Binding TypeName, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                          IsSynchronizedWithCurrentItem="False"
+                                          Margin="0,2"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Value" Width="*" >
                         <!--CellStyle="{DynamicResource SelectableCellStyle}" -->
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBox x:Name="ValueBox" Text="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2px" Padding="3px" HorizontalAlignment="Stretch" />
-                              
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ValueBox" DockPanel.Dock="Left" Text="{Binding ValueString,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2px" Padding="3px" HorizontalAlignment="Stretch" />
+                                <fa:FontAwesome Icon="CheckCircle" 
+                                                VerticalAlignment="Center"
+                                                Grid.Column="1"
+                                                Foreground="LightGreen" 
+                                                Visibility="{Binding IsValid, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                    <fa:FontAwesome Icon="TimesCircle" 
+                                                VerticalAlignment="Center"
+                                                Grid.Column="1"
+                                                Foreground="Red" 
+                                                Visibility="{Binding IsValid, Converter={StaticResource BoolToNotCollapsedConverter}}"
+                                                ToolTip="{Binding ConversionError}" />
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+                    
                 </DataGrid.Columns>
                 <DataGrid.Resources>
                     <Style  x:Key="SelectableCellStyle"

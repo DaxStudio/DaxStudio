@@ -76,7 +76,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(1, queryInfo.Parameters.Count);
             Assert.AreEqual("param3", queryInfo.Parameters["param3"].Name);
-            StringAssertion.ShouldEqualWithDiff(expectedQry, queryInfo.ProcessedQuery,DiffStyle.Full);
+            StringAssertion.ShouldEqualWithDiff(expectedQry, queryInfo.QueryWithMergedParameters,DiffStyle.Full);
             
         }
 

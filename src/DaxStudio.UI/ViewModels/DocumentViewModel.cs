@@ -1130,6 +1130,19 @@ namespace DaxStudio.UI.ViewModels
 
         public string QueryText=> QueryInfo?.ProcessedQuery ?? string.Empty;
 
+
+        public List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> ParameterCollection
+        {
+            get
+            {
+                var coll = new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                foreach (var p in QueryInfo?.Parameters?.Values)
+                {
+                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter( p.Name, p.Value));
+                }
+                return coll;
+            }
+        }
         public Dictionary<string, QueryParameter> QueryParameters => QueryInfo?.Parameters ?? new Dictionary<string, QueryParameter>();
 
         public string EditorText
@@ -1163,8 +1176,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator);
-            txt = queryProcessor.ProcessedQuery;
+            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator); 
+            txt = DaxHelper.replaceParamsInQuery(queryProcessor.ProcessedQuery, queryProcessor.Parameters);
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
@@ -1447,7 +1460,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public AdomdDataReader ExecuteDataReaderQuery(string daxQuery)
+        public AdomdDataReader ExecuteDataReaderQuery(string daxQuery, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
             int row = 0;
             int col = 0;
@@ -1476,7 +1489,7 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
                 _queryStopWatch.Start();
-                var dr = c.ExecuteReader(daxQuery);
+                var dr = c.ExecuteReader(daxQuery, paramList);
 
                 return dr;
             }
@@ -1678,7 +1691,7 @@ namespace DaxStudio.UI.ViewModels
 
                                         break;
                                 }
-                                var noQueryMessage = $"There is no query text in the editor and the Query Builder is not open, but you do have the \"{objectName}\" {objectType} selected in the Metadata Pane.\n\nWould you like DAX Studio to generate a query to show all the values for the selected {objectType}?";
+                                var noQueryMessage = $"There is no query text in the editor and the Query Builder is not open, but you do have the \"{objectName}\" {objectType} selected in the Metadata Pane.\n\nWould you like DAX Studio to generate a query to show a preview of the data for the selected {objectType}?";
                                 if (MessageBox.Show(noQueryMessage, "No Query Text Found", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                                 {
 
@@ -1715,7 +1728,7 @@ namespace DaxStudio.UI.ViewModels
 
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
-                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText);
+                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(QueryInfo));
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 

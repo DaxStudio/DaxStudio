@@ -2,7 +2,7 @@
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 
@@ -11,6 +11,15 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class QueryParametersDialogViewModel:Screen
     {
+        static QueryParametersDialogViewModel()
+        {
+            ParameterDataTypes.Add("string");
+            ParameterDataTypes.Add("int");
+            ParameterDataTypes.Add("dateTime");
+            ParameterDataTypes.Add("boolean");
+            ParameterDataTypes.Add("double");
+        }
+
         private readonly QueryInfo _queryInfo;
         private readonly DocumentViewModel _document;
         [ImportingConstructor]
@@ -24,6 +33,9 @@ namespace DaxStudio.UI.ViewModels
         public ObservableCollection<QueryParameter> Parameters { get; private set; }
 
         public DialogResult DialogResult { get; set; }
+
+        public static ObservableCollection<string> ParameterDataTypes { get; } = new ObservableCollection<string>();
+
 
         #region button click handlers
 

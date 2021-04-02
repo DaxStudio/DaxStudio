@@ -377,7 +377,7 @@ namespace ADOTabular
             }
         }
 
-        public ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string command)
+        public ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string command, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
             if (_runningCommand != null)
             {
@@ -388,6 +388,12 @@ namespace ADOTabular
             _runningCommand = _adomdConn.CreateCommand();
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = command;
+
+            foreach (var p in paramList)
+            {
+                _runningCommand.Parameters.Add(p);
+            }
+
             // TOOO - add parameters to connection
 
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
