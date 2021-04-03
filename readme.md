@@ -41,5 +41,12 @@ Once you have the above dependencies installed,
 the following commands will run the DAX Studio site locally:
 ```
 cd /mnt/c/<folder with DaxStudio git repo>/docs
-bundler exec jekyll serve -w
+bundler exec jekyll serve --force_polling --host $(hostname -I)
 ```
+
+The URL will appear like:
+```
+Server address: http://172.24.191.144:4000
+```
+
+Open a browser in Windows and point to it.
