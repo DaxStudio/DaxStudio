@@ -115,9 +115,6 @@ namespace DaxStudio.Standalone
                 themeManager.SetTheme(_options.Theme);
                 Log.Information("ThemeManager configured");
 
-                //var theme = options.Theme;// "Light"; 
-                //if (theme == "Dark") app.LoadDarkTheme();
-                //else app.LoadLightTheme();
 
                 // log startup switches
                 if (_options.AnyExternalAccessAllowed())

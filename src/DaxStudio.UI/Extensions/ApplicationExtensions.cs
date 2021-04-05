@@ -10,55 +10,55 @@ namespace DaxStudio.UI.Extensions
     public static class ApplicationExtensions
     {
         //private const string _prefix = "/DaxStudio.UI;component/Theme/";
-        private const string _prefix = "pack://application:,,,/DaxStudio.UI;Component/Theme/";
-        public static void LoadDarkTheme(this Application app)
-        {
+        //private const string _prefix = "pack://application:,,,/DaxStudio.UI;Component/Theme/";
+        //public static void LoadDarkTheme(this Application app)
+        //{
 
-            RemoveMergedThemeDictionaries(app, new[] {"Light.DaxStudio.xaml" });
+        //    RemoveMergedThemeDictionaries(app, new[] {"Light.DaxStudio.xaml" });
 
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Dark.DaxStudio.xaml"), UriKind.Absolute) });
+        //    app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Dark.DaxStudio.xaml"), UriKind.Absolute) });
 
-            //Monotone Theme files
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Colors.xaml"), UriKind.Absolute) });
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Brushes.xaml"), UriKind.Absolute) });
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.xaml"), UriKind.Absolute) });
-            //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.DaxEditor.xaml"), UriKind.Absolute) });
-            ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.ExtendedWPFToolkit.xaml"), UriKind.Absolute) });
-            ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "DarkTheme.xaml"), UriKind.Absolute) });
-            app.ChangeRibbonTheme("Dark");
-        }
+        //    //Monotone Theme files
+        //    //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Colors.xaml"), UriKind.Absolute) });
+        //    //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.Brushes.xaml"), UriKind.Absolute) });
+        //    //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.xaml"), UriKind.Absolute) });
+        //    //app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.DaxEditor.xaml"), UriKind.Absolute) });
+        //    ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Monotone.ExtendedWPFToolkit.xaml"), UriKind.Absolute) });
+        //    ////app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "DarkTheme.xaml"), UriKind.Absolute) });
+        //    app.ChangeRibbonTheme("Dark");
+        //}
 
-        public static void LoadLightTheme(this Application app)
-        {
-            //List<int> indexesToRemove = new List<int>();
-            //for (int i =0; i< app.Resources.MergedDictionaries.Count;i++)
-            //{
+        //public static void LoadLightTheme(this Application app)
+        //{
+        //    //List<int> indexesToRemove = new List<int>();
+        //    //for (int i =0; i< app.Resources.MergedDictionaries.Count;i++)
+        //    //{
 
-            //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.Colors.xaml")) indexesToRemove.Add(i);
-            //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.Brushes.xaml")) indexesToRemove.Add(i);
-            //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.xaml")) indexesToRemove.Add(i);
-            //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.ExtendedWPFToolkit.xaml")) indexesToRemove.Add(i);
-            //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.DaxEditor.xaml")) indexesToRemove.Add(i);
-            //    //if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/DarkTheme.xaml")) indexesToRemove.Add(i);
-            //}
+        //    //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.Colors.xaml")) indexesToRemove.Add(i);
+        //    //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.Brushes.xaml")) indexesToRemove.Add(i);
+        //    //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.xaml")) indexesToRemove.Add(i);
+        //    //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.ExtendedWPFToolkit.xaml")) indexesToRemove.Add(i);
+        //    //    if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/Monotone.DaxEditor.xaml")) indexesToRemove.Add(i);
+        //    //    //if (app.Resources.MergedDictionaries[i].Source.LocalPath.EndsWith("/DarkTheme.xaml")) indexesToRemove.Add(i);
+        //    //}
 
-            //indexesToRemove.Reverse();
-            //foreach (var i in indexesToRemove)
-            //{
-            //    app.Resources.MergedDictionaries.RemoveAt(i);
-            //}
+        //    //indexesToRemove.Reverse();
+        //    //foreach (var i in indexesToRemove)
+        //    //{
+        //    //    app.Resources.MergedDictionaries.RemoveAt(i);
+        //    //}
 
-            RemoveMergedThemeDictionaries(app, new[] {
-                "Monotone.Colors.xaml"
-                , "Monotone.Brushes.xaml"
-                , "Monotone.xaml"
-                , "Monotone.ExtendedWPFToolkit.xaml"
-                , "Monotone.DaxEditor.xaml" });
+        //    RemoveMergedThemeDictionaries(app, new[] {
+        //        "Monotone.Colors.xaml"
+        //        , "Monotone.Brushes.xaml"
+        //        , "Monotone.xaml"
+        //        , "Monotone.ExtendedWPFToolkit.xaml"
+        //        , "Monotone.DaxEditor.xaml" });
 
-            app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Light.DaxStudio.xaml"), UriKind.Absolute) });
+        //    app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(String.Concat(_prefix + "Light.DaxStudio.xaml"), UriKind.Absolute) });
 
-            app.ChangeRibbonTheme("Light");
-        }
+        //    app.ChangeRibbonTheme("Light");
+        //}
 
 
 

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using Serilog;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

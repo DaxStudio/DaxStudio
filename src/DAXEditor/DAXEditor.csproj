@@ -113,6 +113,7 @@
     <Compile Include="IIntellisenseProvider.cs" />
     <Compile Include="IntellisenseProviderStub.cs" />
     <Compile Include="Renderers\TextMarkerService.cs" />
+    <Compile Include="Resources\ResourceKeys.cs" />
     <Compile Include="TextBoxController.cs" />
     <Compile Include="WordHighlighTransformer.cs" />
     <Page Include="Themes\Generic.xaml">
@@ -171,7 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.0</Version>
+      <Version>6.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>

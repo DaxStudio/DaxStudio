@@ -763,7 +763,35 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Dark.DaxStudio.xaml">
+    <Page Include="Theme\Dark.AvalonDock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Dark.AvalonEdit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Dark.DaxStudio.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Dark.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.AvalonDock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.AvalonEdit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.DaxStudio.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.DaxStudio.Theme.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -871,10 +899,6 @@
     <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
@@ -1517,7 +1541,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.0</Version>
+      <Version>6.1.1</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>3.2.0</Version>
@@ -1526,7 +1550,7 @@
       <Version>4.4.0</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>26.0.0</Version>
+      <Version>26.1.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
       <Version>1.0.34</Version>
@@ -1541,10 +1565,10 @@
       <Version>1.0.34</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>3.6.2</Version>
+      <Version>4.50.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
-      <Version>3.6.2</Version>
+      <Version>4.50.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.MLib">
       <Version>1.3.0.1</Version>
@@ -1577,7 +1601,10 @@
       <Version>2.8.26</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.1.1</Version>
+      <Version>1.2.0</Version>
+    </PackageReference>
+    <PackageReference Include="MahApps.Metro">
+      <Version>2.4.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.7</Version>

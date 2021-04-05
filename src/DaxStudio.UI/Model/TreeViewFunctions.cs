@@ -21,6 +21,8 @@ namespace DaxStudio.UI.Model
         public static List<FilterableTreeViewItem> TreeViewFunctions(this IFunctionProvider funcProvider, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
         {
             var lst = new List<FilterableTreeViewItem>();
+            var grps = funcProvider.FunctionGroups;
+            if (grps == null) return lst;
             foreach (var fg in funcProvider.FunctionGroups)
             {
                 
