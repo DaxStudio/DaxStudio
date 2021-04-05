@@ -131,8 +131,8 @@
     <Compile Include="ADOTabularModelCapabilities.cs" />
     <Compile Include="ADOTabularModelCollection.cs" />
     <Compile Include="ADOTabularObjectReference.cs" />
-    <Compile Include="ADOTabularParameter.cs" />
-    <Compile Include="ADOTabularParameterCollection.cs" />
+    <Compile Include="ADOTabularFunctionArgument.cs" />
+    <Compile Include="ADOTabularFunctionArgumentCollection.cs" />
     <Compile Include="ADOTabularRelationship.cs" />
     <Compile Include="ADOTabularStandardColumn.cs" />
     <Compile Include="ADOTabularTable.cs" />

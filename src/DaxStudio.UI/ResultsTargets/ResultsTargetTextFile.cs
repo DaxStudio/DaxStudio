@@ -83,7 +83,7 @@ namespace DaxStudio.UI.Model
                         }
 
                         var daxQuery = textProvider.QueryText;
-                        var reader = runner.ExecuteDataReaderQuery(daxQuery);
+                        var reader = runner.ExecuteDataReaderQuery(daxQuery,textProvider.ParameterCollection);
 
                         using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
                         {

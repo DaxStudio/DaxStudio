@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Model
                 var baseQuery = InjectEvaluate ? "EVALUATE " : "";
                 baseQuery += InjectRowFunction ? "ROW(\"Value\", " : "";
                 if (HasParameters) {
-                    baseQuery += DaxHelper.replaceParamsInQuery(QueryText, Parameters);
+                    baseQuery += QueryText; 
                 } else {
                     baseQuery += rawQuery;
                 }
@@ -39,6 +39,13 @@ namespace DaxStudio.UI.Model
         public bool InjectEvaluate { get; }
         public bool InjectRowFunction { get; }
 
+        public string QueryWithMergedParameters
+        {
+            get
+            {
+                return DaxHelper.replaceParamsInQuery(ProcessedQuery, Parameters);
+            }
+        }
         public Dictionary<string,QueryParameter> Parameters { get { return _parameters; } }
     }
 }

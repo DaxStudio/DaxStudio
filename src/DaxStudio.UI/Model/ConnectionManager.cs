@@ -154,9 +154,9 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
         }
-        public AdomdDataReader ExecuteReader(string query)
+        public AdomdDataReader ExecuteReader(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
-            return _retry.Execute(()=> _connection.ExecuteReader(query));
+            return _retry.Execute(()=> _connection.ExecuteReader(query,paramList));
         }
         public string FileName => _connection.FileName;
 

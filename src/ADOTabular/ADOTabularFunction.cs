@@ -13,11 +13,11 @@ namespace ADOTabular
             Caption = dr["FUNCTION_NAME"].ToString();
             Description = dr["DESCRIPTION"].ToString();
             Group = dr["INTERFACE_NAME"].ToString();
-            Parameters = new ADOTabularParameterCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
+            Parameters = new ADOTabularFunctionArgumentCollection(dr.GetChildRows("rowsetTablePARAMETERINFO"));
             
         }
 
-        public ADOTabularFunction(string caption, string description, string groupName, ADOTabularParameterCollection param)
+        public ADOTabularFunction(string caption, string description, string groupName, ADOTabularFunctionArgumentCollection param)
         {
             Caption = caption;
             Description = description;
@@ -34,7 +34,7 @@ namespace ADOTabular
 
         public string Group { get; }
 
-        public ADOTabularParameterCollection Parameters { get; }
+        public ADOTabularFunctionArgumentCollection Parameters { get; }
 
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Function;
         public string DaxName => $"{Caption}({Parameters})";

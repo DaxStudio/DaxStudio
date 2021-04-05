@@ -353,6 +353,8 @@ namespace DaxStudio.UI.Model
             _table.UpdateBasicStats(newConn);
             RowCount = _table.RowCount;
         }
+
+        public bool IsTable => true;
     }
 
     public static class TreeViewColumnFactory
@@ -540,8 +542,6 @@ namespace DaxStudio.UI.Model
 
         public override bool IsVisible => _column?.IsVisible ?? true;
 
-        public bool IsColumnOrMeasure => IsColumn || IsMeasure;
-
         public bool IsColumn =>  this.MetadataImage == MetadataImages.Column
                               || this.MetadataImage == MetadataImages.HiddenColumn;
 
@@ -553,7 +553,30 @@ namespace DaxStudio.UI.Model
 
         public bool IsTable => MetadataImage == MetadataImages.Table
                             || MetadataImage == MetadataImages.HiddenTable;
-         
+
+
+        public bool ShowContextMenu => CanPreviewData;
+
+        public bool CanPreviewData
+        {
+            get
+            {
+                if (Column == null) return false;
+
+                switch (Column.ObjectType)
+                {
+                    case ADOTabularObjectType.Column:
+                    case ADOTabularObjectType.Measure:
+                    case ADOTabularObjectType.Level:
+                    case ADOTabularObjectType.Table:
+                    case ADOTabularObjectType.Hierarchy:
+                    case ADOTabularObjectType.UnnaturalHierarchy:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
 
         public IADOTabularObject Column { get; }
 

@@ -314,7 +314,7 @@ namespace DaxStudio.UI.ViewModels
                                 if (connRead.AllFunctions.Contains("TOPNSKIP"))
                                     daxQuery = $"EVALUATE TOPNSKIP({MaxBatchSize}, {batchRows}, {table.DaxName} )";
                                 
-                                using (var reader = connRead.ExecuteReader(daxQuery))
+                                using (var reader = connRead.ExecuteReader(daxQuery, null))
                                 {
                                     var rows = 0;
 
@@ -512,7 +512,7 @@ namespace DaxStudio.UI.ViewModels
                                     if (connRead.AllFunctions.Contains("TOPNSKIP"))
                                         daxQuery = $"EVALUATE TOPNSKIP({MaxBatchSize}, {batchRows}, {table.DaxName} )";
 
-                                    using (var reader = connRead.ExecuteReader(daxQuery))
+                                    using (var reader = connRead.ExecuteReader(daxQuery, null))
                                     {
                                         _sqlTableName = $"[{schemaName}].[{table.Caption}]";
                                         _sqlBatchRows = batchRows;

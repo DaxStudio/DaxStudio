@@ -70,10 +70,13 @@ namespace DaxStudio.UI.Utils
                 foreach (System.Xml.XmlNode n in doc.SelectNodes("/x:Parameters/x:Parameter", nsMgr))
                 {
                     foundXmlNameSpacedParams = true;
+                    string paramTypeName = n["Value"].Attributes["xsi:type"].Value;
+                    Type paramType = DaxStudio.Common.XmlTypeMapper.GetSystemType(paramTypeName);
+                    object val = Convert.ChangeType(n["Value"].InnerText, paramType);
                     if (!paramDict.ContainsKey(n["Name"].InnerText))
-                        paramDict.Add(n["Name"].InnerText, new QueryParameter(n["Name"].InnerText, n["Value"].InnerText));
+                        paramDict.Add(n["Name"].InnerText, new QueryParameter(n["Name"].InnerText, val, paramTypeName));
                     else
-                        paramDict[n["Name"].InnerText] = new QueryParameter(n["Name"].InnerText, n["Value"].InnerText);
+                        paramDict[n["Name"].InnerText] = new QueryParameter(n["Name"].InnerText, val, paramTypeName);
                 }
 
                 // if we did not find the proper namespace try searching for just the raw names
@@ -81,10 +84,21 @@ namespace DaxStudio.UI.Utils
                 {
                     foreach (System.Xml.XmlNode n in doc.SelectNodes("/Parameters/Parameter", nsMgr))
                     {
+                        string paramTypeName = "xsd:string"; 
+                        if (n["Value"].Attributes.Count > 0)
+                        { 
+                            if (n["Value"].Attributes["xsi:type"] != null)
+                            {
+                                paramTypeName = n["Value"].Attributes["xsi:type"].Value;
+                            }
+                        
+                        }
+                        
+
                         if (!paramDict.ContainsKey(n["Name"].InnerText))
-                            paramDict.Add(n["Name"].InnerText, new QueryParameter(n["Name"].InnerText, n["Value"].InnerText));
+                            paramDict.Add(n["Name"].InnerText, new QueryParameter(n["Name"].InnerText, n["Value"].InnerText, paramTypeName));
                         else
-                            paramDict[n["Name"].InnerText] = new QueryParameter(n["Name"].InnerText, n["Value"].InnerText);
+                            paramDict[n["Name"].InnerText] = new QueryParameter(n["Name"].InnerText, n["Value"].InnerText, paramTypeName);
                     }
 
                 }
@@ -104,8 +118,11 @@ namespace DaxStudio.UI.Utils
             var sqry = query + " "; // HACK: adding space as parameters at the end of the string were not being matched
             foreach(var p in param.Keys)
             {
+                var quotes = string.Empty;
+
+                if (param[p].Value is string) quotes = "\"";
                 sqry = new Regex(string.Format("{0}{1}{2}", startRegex, p, endRegex), RegexOptions.Singleline| RegexOptions.IgnoreCase)
-                    .Replace(sqry,"\"" + param[p].Value + "\"");
+                    .Replace(sqry, param[p].LiteralValue);
                 //query.Replace(string.Format("@{0}",p), string.Format("\"{0}\"", param[p]));
             }
              
