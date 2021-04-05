@@ -351,7 +351,7 @@
                                         dd:DragDrop.IsDropTarget="False" 
                                         dd:DragDrop.DragHandler="{Binding}"
                                         dd:DragDrop.UseDefaultDragAdorner="True"
-                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]; [Event SelectedItemChanged] = [Action SelectedItemChanged()]"
+                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
                                         VirtualizingPanel.IsVirtualizing="True"
                                         VirtualizingPanel.VirtualizationMode="Recycling"
                                         Margin="0,2,0,-2">

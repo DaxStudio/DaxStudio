@@ -1059,36 +1059,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 // throw error
                 ActiveDocument.OutputError("The selected metadata object does not support query generation");
+                ActiveDocument.ActivateOutput();
             }
 
-        }
-
-        public bool CanPreviewDataForSelectedMetadataItem
-        {
-            get {
-                var selectedItems = SelectedItems.ToList();
-                if (selectedItems.Count != 1) return false;
-                var selectedItem = selectedItems[0];
-                switch (selectedItem)
-                {
-                    case TreeViewTable t:
-                        return true;
-                    case TreeViewColumn c when c.IsColumn:
-                        return true;
-                    case TreeViewColumn m when m.IsMeasure:
-                        return true;
-                    case TreeViewColumn h when h.Column is ADOTabularHierarchy:
-                        return true;
-                    default:
-                        return false;
-                }
-
-            }
-        }
-
-        public void SelectedItemChanged()
-        {
-            NotifyOfPropertyChange(nameof(CanPreviewDataForSelectedMetadataItem));
         }
 
         public void Handle(QueryStartedEvent message)
